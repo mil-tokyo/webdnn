@@ -1,0 +1,59 @@
+<title>computeCommand with WebGPU : sgemm</title>
+
+Open Debug Console and Run <code>main()</code> Function.
+
+<script src="./gpgpu.js"></script>
+<script src="./webgpublas.js"></script>
+<script>
+    let BLAS;
+
+    async function initialize() {
+        if (!GPGPU.isBrowserSupported) {
+            console.warn('WebGPURenderingContext is not supported in this browser.');
+            return;
+        }
+
+        BLAS = await initWebGPUBLAS(new GPGPU());
+    }
+
+    async function sgemm(M, N, K) {
+        const T = 20;
+
+        let A = new Float32Array(M * K);
+        let B = new Float32Array(K * N);
+        let C = new Float32Array(M * N);
+
+        //warm up
+        for (let i = 0; i < 10; i++) BLAS.sgemm(M, N, K, 1.0, A, B, 0.0, C);
+
+        await BLAS.sync();
+        let clockStart = performance.now();
+
+        for (let i = 0; i < T; i++) BLAS.sgemm(M, N, K, 1.0, A, B, 0.0, C);
+
+        await BLAS.sync();
+        let clockEnd = performance.now();
+
+        const FLOPS = (M * N * K * T) / ((clockEnd - clockStart) / 1000);
+
+        console.log(`sgemm (${M}, ${K})x(${K}, ${N}): ${(FLOPS/1e9).toFixed(2)} [G FLOPS]`);
+    }
+
+    async function main() {
+        try {
+            await initialize();
+
+            await sgemm(64, 64, 64);
+            await sgemm(128, 128, 128);
+            await sgemm(256, 256, 256);
+            await sgemm(512, 512, 512);
+            await sgemm(128, 1024, 4096);
+
+            console.info(`conv 128x512x8x8 with 512x3x3 filter`);
+            await sgemm(128 * 8 * 8, 512 * 9, 512);
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+</script>
