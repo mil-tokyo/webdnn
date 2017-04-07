@@ -1,9 +1,13 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2017",
         "module": "system",
         "sourceMap": true,
-        "outFile": "webdnn.js"
+        "outFile": "webdnn.js",
+        "lib": [
+          "es2017",
+          "dom"
+        ]
     },
     "files": [
       "gpu_interface_fallback.ts",
