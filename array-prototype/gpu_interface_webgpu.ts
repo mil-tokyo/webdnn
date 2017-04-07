@@ -40,26 +40,10 @@ kernel void ${op[0]}(const device int *_n[[buffer(0)]],
     }
 
     async toCPU(m: MatrixWebGPU): Promise<MatrixCPU> {
-      let commandBuffer = this.webgpuHandler.createCommandBuffer();
-      let commandEncoder = commandBuffer.createComputeCommandEncoder();
-
-      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.sync'));
-      commandEncoder.dispatch({
-        width: 1,
-        height: 1,
-        depth: 1
-      }, {
-          width: 1,
-          height: 1,
-          depth: 1
-        });
-      commandEncoder.endEncoding();
-      let promise = commandBuffer.completed();
-      commandBuffer.commit();
-      await promise;
+      await this.webgpuHandler.sync();
       if (m.size > 0) {
-        let data = new Float32Array(m.webgpuBuffer.contents);
-        return new MatrixCPU(m.shape, data, true);
+        // copy data here so as not to modify GPU data
+        return new MatrixCPU(m.shape, m.webgpuBufferView.slice(), true);
       } else {
         // synchronize even if 0 byte matrix is used
         return new MatrixCPU(m.shape);

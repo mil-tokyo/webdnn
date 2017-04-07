@@ -66,6 +66,26 @@ namespace WebDNN {
       commandEncoder.endEncoding();
       commandBuffer.commit();
     }
+
+    async sync(): Promise<void> {
+      let commandBuffer = this.createCommandBuffer();
+      let commandEncoder = commandBuffer.createComputeCommandEncoder();
+
+      commandEncoder.setComputePipelineState(this.getPipelineStateByName('basic.sync'));
+      commandEncoder.dispatch({
+        width: 1,
+        height: 1,
+        depth: 1
+      }, {
+          width: 1,
+          height: 1,
+          depth: 1
+        });
+      commandEncoder.endEncoding();
+      let promise = commandBuffer.completed();
+      commandBuffer.commit();
+      return promise;
+    }
   }
 
   WebGPUHandler.isBrowserSupported = 'WebGPURenderingContext' in window;

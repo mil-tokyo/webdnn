@@ -11,5 +11,14 @@ namespace WebDNN {
     private dummy() {
       return;
     }
+
+    // async: there may be platforms synchronization is needed before writing
+    async write(src: Float32Array, dst_offset?: number): Promise<void> {
+      throw new Error();
+    }
+
+    async read(dst: Float32Array, src_offset?: number, length?: number): Promise<Float32Array> {
+      throw new Error();
+    }
   }
 }

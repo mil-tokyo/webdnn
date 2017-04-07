@@ -15,5 +15,21 @@ namespace WebDNN {
         this.data = new Float32Array(this.size);
       }
     }
+
+    async write(src: Float32Array, dst_offset?: number): Promise<void> {
+      this.data.set(src, dst_offset);
+    }
+
+    async read(dst: Float32Array = null, src_offset: number = 0, length?: number): Promise<Float32Array> {
+      if (length === undefined) {
+        length = this.data.length - src_offset;
+      }
+      var src_view = new Float32Array(this.data.buffer, this.data.byteOffset + src_offset * Float32Array.BYTES_PER_ELEMENT, length);
+      if (!dst) {
+        dst = new Float32Array(src_view.length);
+      }
+      dst.set(src_view);
+      return dst;
+    }
   }
 }
