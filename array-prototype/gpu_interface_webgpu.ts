@@ -13,7 +13,7 @@ namespace WebDNN {
     private init_basic_kernels() {
       this.webgpuHandler.loadKernel(`
       kernel void sync(){}
-      `);
+      `, 'basic');
       this.webgpuHandler.loadKernel(`
 #include <metal_stdlib>
 using namespace metal;
@@ -28,18 +28,18 @@ kernel void add(const device int *_n[[buffer(0)]],
     for (int gid = index; gid < n; gid += 4096)
         c[gid] = a[gid] + b[gid];
 }
-      `);
+      `, 'basic');
     }
 
     toGPU(m: MatrixCPU): MatrixGPU {
       return new MatrixWebGPU(m.shape, m.data);
     }
 
-    async toCPU(m: MatrixGPU): Promise<MatrixCPU> {
+    async toCPU(m: MatrixWebGPU): Promise<MatrixCPU> {
       let commandBuffer = this.webgpuHandler.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
-      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('sync'));
+      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.sync'));
       commandEncoder.dispatch({
         width: 1,
         height: 1,
@@ -54,7 +54,7 @@ kernel void add(const device int *_n[[buffer(0)]],
       commandBuffer.commit();
       await promise;
       if (m.size > 0) {
-        let data = new Float32Array((<MatrixWebGPU>m).webgpuBuffer.contents);
+        let data = new Float32Array(m.webgpuBuffer.contents);
         return new MatrixCPU(m.shape, data, true);
       } else {
         // synchronize even if 0 byte matrix is used
@@ -69,7 +69,7 @@ kernel void add(const device int *_n[[buffer(0)]],
       let commandBuffer = this.webgpuHandler.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
-      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('add'));
+      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.add'));
       commandEncoder.setBuffer(nbuffer, 0, 0);
       commandEncoder.setBuffer(a.webgpuBuffer, 0, 1);
       commandEncoder.setBuffer(b.webgpuBuffer, 0, 2);

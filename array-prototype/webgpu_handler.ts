@@ -18,14 +18,14 @@ namespace WebDNN {
       return this.context.createBuffer(arrayBuffer);
     }
 
-    loadKernel(librarySource) {
+    loadKernel(librarySource: string, namespace: string = '') {
       let library = this.context.createLibrary(librarySource);
 
       for (let name of library.functionNames) {
         let kernelFunction = library.functionWithName(name);
         let pipelineStates = this.context.createComputePipelineState(kernelFunction);
 
-        this.pipelineStates.set(name, pipelineStates);
+        this.pipelineStates.set(namespace + '.' + name, pipelineStates);
       }
     }
 
