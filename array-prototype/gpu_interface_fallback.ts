@@ -18,5 +18,14 @@ namespace WebDNN {
     add(a: MatrixGPUFallback, b: MatrixGPUFallback): MatrixGPUFallback {
       return WebDNN.add(a, b);
     }
+    sub(a: MatrixGPUFallback, b: MatrixGPUFallback): MatrixGPUFallback {
+      return WebDNN.sub(a, b);
+    }
+    mul(a: MatrixGPUFallback, b: MatrixGPUFallback): MatrixGPUFallback {
+      return WebDNN.mul(a, b);
+    }
+    div(a: MatrixGPUFallback, b: MatrixGPUFallback): MatrixGPUFallback {
+      return WebDNN.div(a, b);
+    }
   }
 }

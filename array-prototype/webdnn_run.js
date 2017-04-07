@@ -12,6 +12,9 @@ async function main() {
   let mg_a = $Mg.toGPU(m_a);
   let mg_b = $Mg.toGPU(m_b);
   let mg_c = $Mg.add(mg_a, mg_b);
+  let mg_d = $Mg.mul(mg_a, mg_b);
   let m_c = await $Mg.toCPU(mg_c);
+  let m_d = await $Mg.toCPU(mg_d);
   console.log(`${m_a.data} + ${m_b.data} = ${m_c.data}`);
+  console.log(`${m_a.data} .* ${m_b.data} = ${m_d.data}`);
 }

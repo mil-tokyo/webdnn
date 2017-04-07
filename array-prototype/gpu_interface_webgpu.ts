@@ -12,13 +12,15 @@ namespace WebDNN {
 
     private init_basic_kernels() {
       this.webgpuHandler.loadKernel(`
-      kernel void sync(){}
+kernel void sync(){}
       `, 'basic');
-      this.webgpuHandler.loadKernel(`
+
+      [['add', '+'], ['sub', '-'], ['mul', '*'], ['div', '/']].forEach((op) => {
+        this.webgpuHandler.loadKernel(`
 #include <metal_stdlib>
 using namespace metal;
 
-kernel void add(const device int *_n[[buffer(0)]],
+kernel void ${op[0]}(const device int *_n[[buffer(0)]],
                   const device float *a[[buffer(1)]],
                   const device float *b[[buffer(2)]],
                   device float *c[[buffer(3)]],
@@ -26,9 +28,11 @@ kernel void add(const device int *_n[[buffer(0)]],
 {
     const int n = _n[0];
     for (int gid = index; gid < n; gid += 4096)
-        c[gid] = a[gid] + b[gid];
+        c[gid] = a[gid] ${op[1]} b[gid];
 }
       `, 'basic');
+      });
+
     }
 
     toGPU(m: MatrixCPU): MatrixGPU {
@@ -64,12 +68,25 @@ kernel void add(const device int *_n[[buffer(0)]],
 
 
     add(a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
+      return this.add_sub_mul_div('add', a, b);
+    }
+    sub(a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
+      return this.add_sub_mul_div('sub', a, b);
+    }
+    mul(a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
+      return this.add_sub_mul_div('mul', a, b);
+    }
+    div(a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
+      return this.add_sub_mul_div('div', a, b);
+    }
+
+    private add_sub_mul_div(op: string, a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
       let c = new MatrixWebGPU(a.shape);
       let nbuffer = this.webgpuHandler.createBuffer(new Int32Array([a.size]));
       let commandBuffer = this.webgpuHandler.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
-      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.add'));
+      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.' + op));
       commandEncoder.setBuffer(nbuffer, 0, 0);
       commandEncoder.setBuffer(a.webgpuBuffer, 0, 1);
       commandEncoder.setBuffer(b.webgpuBuffer, 0, 2);
