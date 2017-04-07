@@ -17,4 +17,5 @@ async function main() {
   let m_d = await $Mg.toCPU(mg_d);
   console.log(`${m_a.data} + ${m_b.data} = ${m_c.data}`);
   console.log(`${m_a.data} .* ${m_b.data} = ${m_d.data}`);
+  console.log(`mat[1, 0] = ${m_d.getScalar([1, 0])}`);
 }

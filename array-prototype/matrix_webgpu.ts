@@ -1,3 +1,5 @@
+/// <reference path="./matrix_gpu.ts" />
+
 namespace WebDNN {
   export class MatrixWebGPU extends MatrixGPU {
     private static webgpuHandler: WebGPUHandler;
