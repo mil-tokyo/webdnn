@@ -5,7 +5,7 @@ namespace WebDNN {
       this.ioNames = ioNames;
     }
 
-    getKernel(batchSize: number): DNNPrimitiveKernel {
+    getKernel(batchSize: number): DNNPrimitiveKernel[] {
       throw new Error();
     }
   }

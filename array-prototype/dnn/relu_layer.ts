@@ -35,7 +35,7 @@ kernel void relu(const device int *meta_int[[buffer(0)]],
       `, 'dnn');
     }
 
-    getKernel(batchSize: number): DNNPrimitiveKernel {
+    getKernel(batchSize: number): DNNPrimitiveKernel[] {
       if (batchSize !== 1) {
         throw new Error();
       }
@@ -56,7 +56,7 @@ kernel void relu(const device int *meta_int[[buffer(0)]],
       kernel.metaInts = [batchSize * this.size];
       kernel.metaFloats = [0.0];
 
-      return kernel;
+      return [kernel];
     }
     
   }
