@@ -1,6 +1,6 @@
 namespace WebDNN {
   export class GPUInterfaceWebGPU implements GPUInterface {
-    private webgpuHandler: WebGPUHandler;
+    webgpuHandler: WebGPUHandler;
 
     async init(option?: any) {
       // initialize webgpu, build kernels

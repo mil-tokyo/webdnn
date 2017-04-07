@@ -21,6 +21,12 @@
       "webdnn.ts",
       "webgpu_handler.ts",
       "gpu_interface_webgpu.ts",
-      "op_cpu.ts"
+      "op_cpu.ts",
+      "dnn/dnn.ts",
+      "dnn/dnn_pipeline.ts",
+      "dnn/dnn_primitive_kernel.ts",
+      "dnn/dnn_layer.ts",
+      "dnn/relu_layer.ts",
+      "dnn/dnn_layer_io_names.ts"
     ]
 }

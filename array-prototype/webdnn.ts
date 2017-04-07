@@ -6,6 +6,7 @@ namespace WebDNN {
     try {
       await webgpuif.init();
       gpu = webgpuif;
+      DNN.webgpuHandler = webgpuif.webgpuHandler;
       backend = 'webgpu';
     } catch (e) {
       console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
