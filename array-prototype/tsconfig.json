@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "system",
+        "sourceMap": true,
+        "outFile": "webdnn.js"
+    },
+    "files": [
+      "gpu_interface_fallback.ts",
+      "gpu_interface.ts",
+      "init.ts",
+      "matrix_base.ts",
+      "matrix_cpu.ts",
+      "matrix_gpu_fallback.ts",
+      "matrix_gpu.ts",
+      "matrix_webgpu.ts",
+      "webdnn.ts",
+      "webgpu_handler.ts",
+      "gpu_interface_webgpu.ts",
+      "op_cpu.ts"
+    ]
+}
