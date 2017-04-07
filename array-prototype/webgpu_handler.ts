@@ -1,5 +1,6 @@
 namespace WebDNN {
   export class WebGPUHandler {
+    static isBrowserSupported: boolean;
     private context: WebGPURenderingContext;
     private commandQueue: WebGPUCommandQueue;
     private pipelineStates: Map<string, WebGPUComputePipelineState>;
@@ -9,6 +10,9 @@ namespace WebDNN {
 
     async init(): Promise<void> {
       // asynchronous operation may be added in future
+      if (!WebGPUHandler.isBrowserSupported) {
+        throw new Error('This browser does not support WebGPU');
+      }
       this.context = <WebGPURenderingContext>(<any>document.createElement('canvas').getContext('webgpu'));//force cast
       this.commandQueue = this.context.createCommandQueue();
       this.pipelineStates = new Map();
@@ -52,6 +56,7 @@ namespace WebDNN {
         if (buffer instanceof MatrixWebGPU) {
           wgbuf = buffer.webgpuBuffer;
         } else {
+          // cannot perform (buffer instanceof WebGPUBuffer) currently
           wgbuf = buffer;
         }
 
@@ -63,6 +68,7 @@ namespace WebDNN {
     }
   }
 
+  WebGPUHandler.isBrowserSupported = 'WebGPURenderingContext' in window;
 }
 
 declare interface WebGPURenderingContext {
