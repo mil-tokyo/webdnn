@@ -47,10 +47,8 @@ Open Debug Console and Run <code>main()</code> Function.
             await sgemm(128, 128, 128);
             await sgemm(256, 256, 256);
             await sgemm(512, 512, 512);
-            await sgemm(128, 1024, 4096);
-
-            console.info(`conv 128x512x8x8 with 512x3x3 filter`);
-            await sgemm(128 * 8 * 8, 512 * 9, 512);
+            await sgemm(1024, 1024, 1024);
+            await sgemm(2048, 2048, 2048);
 
         } catch (e) {
             console.error(e);

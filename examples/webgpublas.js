@@ -126,7 +126,7 @@
                 depth: 1
             });
             commandEncoder.endEncoding();
-            let promise = commandBuffer.completed();
+            let promise = commandBuffer.completed;
             commandBuffer.commit();
 
             return promise;
