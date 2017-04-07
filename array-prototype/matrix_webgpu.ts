@@ -1,7 +1,7 @@
 namespace WebDNN {
   export class MatrixWebGPU extends MatrixGPU {
     private static webgpuHandler: WebGPUHandler;
-    webgpuBuffer: any;
+    webgpuBuffer: WebGPUBuffer;
 
     constructor(shape: number[], data?: Float32Array) {
       super(shape);

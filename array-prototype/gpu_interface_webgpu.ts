@@ -83,15 +83,7 @@ kernel void ${op[0]}(const device int *_n[[buffer(0)]],
     private add_sub_mul_div(op: string, a: MatrixWebGPU, b: MatrixWebGPU): MatrixWebGPU {
       let c = new MatrixWebGPU(a.shape);
       let nbuffer = this.webgpuHandler.createBuffer(new Int32Array([a.size]));
-      let commandBuffer = this.webgpuHandler.createCommandBuffer();
-      let commandEncoder = commandBuffer.createComputeCommandEncoder();
-
-      commandEncoder.setComputePipelineState(this.webgpuHandler.getPipelineStateByName('basic.' + op));
-      commandEncoder.setBuffer(nbuffer, 0, 0);
-      commandEncoder.setBuffer(a.webgpuBuffer, 0, 1);
-      commandEncoder.setBuffer(b.webgpuBuffer, 0, 2);
-      commandEncoder.setBuffer(c.webgpuBuffer, 0, 3);
-      commandEncoder.dispatch({
+      this.webgpuHandler.executeSinglePipelineState('basic.' + op, {
         width: 4096 / 512,
         height: 1,
         depth: 1
@@ -99,9 +91,7 @@ kernel void ${op[0]}(const device int *_n[[buffer(0)]],
           width: 512,
           height: 1,
           depth: 1
-        });
-      commandEncoder.endEncoding();
-      commandBuffer.commit();
+        }, [nbuffer, a, b, c]);
 
       return c;
     }
