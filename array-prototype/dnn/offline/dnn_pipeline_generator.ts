@@ -24,6 +24,9 @@ namespace WebDNN {
           case 'relu':
             layer_instance = new DNNPipelineReluLayer(layer.params);
             break;
+          case 'linear':
+            layer_instance = new DNNPipelineLinearLayer(layer.params);
+            break;
           default:
             throw new Error('Unknown layer');
         }

@@ -20,8 +20,8 @@ namespace WebDNN {
       this.dataMat = new MatrixWebGPU([this.dnnPipelineData.dataBuffersAssignment.totalSize]);
     }
 
-    loadWeights(mats: MatrixCPU[]) {
-      //TODO
+    async loadWeights(weightsData: Float32Array) {
+      await this.weightMat.write(weightsData);
     }
 
     async run(inputs: MatrixCPU[], inputIndices: number[], outputIndices: number[]) {
@@ -37,7 +37,6 @@ namespace WebDNN {
         let kernel = this.dnnPipelineData.kernels[i];
         let kernel_namespace = 'pipeline_' + i;
         let kernel_name = kernel_namespace + '.' + kernel.kernelFunctionName;
-        console.log(`running lernel ${kernel_name}`);
         this.webgpuHandler.executeSinglePipelineState(kernel_name,
           kernel.threadgroupsPerGrid, kernel.threadsPerThreadgroup,
           [this.weightMat, this.dataMat]);
