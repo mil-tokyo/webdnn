@@ -3,18 +3,15 @@
 Open Debug Console and Run <code>main()</code> Function.
 
 <script src="./gpgpu.js"></script>
-<script src="./webgpublas.js"></script>
+<script src="./functions/sgemm.js"></script>
 <script>
-    let BLAS;
-
     async function main() {
         if (!GPGPU.isBrowserSupported) {
             console.warn('WebGPURenderingContext is not supported in this browser.');
             return;
         }
 
-        gpu = new GPGPU();
-        BLAS = await initWebGPUBLAS(gpu);
+        await GPGPU.loaded;
 
         const M = 128;
         const N = 1024;
@@ -24,23 +21,23 @@ Open Debug Console and Run <code>main()</code> Function.
 
         let A = new Float32Array(M * K);
         let B = new Float32Array(K * N);
-        let C1 = gpu.createBuffer(new Float32Array(M * N));
-        let C2 = gpu.createBuffer(new Float32Array(M * N));
+        let C1 = GPGPU.createBuffer(new Float32Array(M * N));
+        let C2 = GPGPU.createBuffer(new Float32Array(M * N));
 
         for (let i = 0; i < A.length; i++) A[i] = i;
         for (let i = 0; i < B.length; i++) B[i] = i;
 
-        await BLAS.sync();
+        await GPGPU.sync();
 
         console.log('sgemm');
-        BLAS.sgemm(M, N, K, alpha, A, B, beta, C1);
+        sgemm(M, N, K, alpha, A, B, beta, C1);
 
-        await BLAS.sync();
+        await GPGPU.sync();
 
         console.log('sgemm(naive)');
-        BLAS.sgemmNaive(M, N, K, alpha, A, B, beta, C2);
+        sgemmNaive(M, N, K, alpha, A, B, beta, C2);
 
-        await BLAS.sync();
+        await GPGPU.sync();
 
         C1 = new Float32Array(C1.contents);
         C2 = new Float32Array(C2.contents);

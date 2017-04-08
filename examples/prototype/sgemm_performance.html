@@ -1,54 +1,78 @@
-<title>computeCommand with WebGPU : sgemm</title>
+<title>Performance Test: sgemm</title>
 
-Open Debug Console and Run <code>main()</code> Function.
+<h1>Performance Test: sgemm</h1>
+<p>
+    Open Debug Console and Run <code>main()</code> Function.
+</p>
 
 <script src="./gpgpu.js"></script>
-<script src="./webgpublas.js"></script>
+<script src="./functions/warmup.js"></script>
+<script src="./functions/sgemm.js"></script>
+<script src="./test_harness.js"></script>
 <script>
-    let BLAS;
-
     async function initialize() {
         if (!GPGPU.isBrowserSupported) {
             console.warn('WebGPURenderingContext is not supported in this browser.');
             return;
         }
 
-        BLAS = await initWebGPUBLAS(new GPGPU());
+        await GPGPU.loaded;
     }
 
-    async function sgemm(M, N, K) {
-        const T = 20;
+    function createTest(N, useNaiveKernel) {
+        const numIteration = 30;
+        let A, B, C;
 
-        let A = new Float32Array(M * K);
-        let B = new Float32Array(K * N);
-        let C = new Float32Array(M * N);
+        return {
+            name: `sgemm-${useNaiveKernel?'naive-':''}${N}`,
+            pre: () => {
+                A = GPGPU.createBuffer(new Float32Array(N * N));
+                B = GPGPU.createBuffer(new Float32Array(N * N));
+                C = GPGPU.createBuffer(new Float32Array(N * N));
+            },
+            main: useNaiveKernel ?
+                () => {
+                    for (let i = 0; i < numIteration; i++) sgemmNaive(N, N, N, 1.0, A, B, 0.0, C);
+                } :
+                () => {
+                    for (let i = 0; i < numIteration; i++) sgemm(N, N, N, 1.0, A, B, 0.0, C);
+                },
+            post: () => {
+                delete A;
+                delete B;
+                delete C;
+            },
+            summarize: (elapsedTime) => {
+                let flops = (N * N * N * numIteration) / (elapsedTime / 1e3);
 
-        //warm up
-        for (let i = 0; i < 10; i++) BLAS.sgemm(M, N, K, 1.0, A, B, 0.0, C);
-
-        await BLAS.sync();
-        let clockStart = performance.now();
-
-        for (let i = 0; i < T; i++) BLAS.sgemm(M, N, K, 1.0, A, B, 0.0, C);
-
-        await BLAS.sync();
-        let clockEnd = performance.now();
-
-        const FLOPS = (M * N * K * T) / ((clockEnd - clockStart) / 1000);
-
-        console.log(`sgemm (${M}, ${K})x(${K}, ${N}): ${(FLOPS/1e9).toFixed(2)} [G FLOPS]`);
+                return {
+                    'kernel': `sgemm${useNaiveKernel?'-naive':''}`,
+                    'size': N,
+                    'elapsed time [ms]': elapsedTime.toFixed(2),
+                    'FLOPS [G op/s]': (flops / 1e9).toFixed(2)
+                }
+            }
+        };
     }
 
     async function main() {
         try {
             await initialize();
 
-            await sgemm(64, 64, 64);
-            await sgemm(128, 128, 128);
-            await sgemm(256, 256, 256);
-            await sgemm(512, 512, 512);
-            await sgemm(1024, 1024, 1024);
-            await sgemm(2048, 2048, 2048);
+            await TestHarness.runPerformanceTestAsync(createTest(64, true));
+            await TestHarness.runPerformanceTestAsync(createTest(64, false));
+            await TestHarness.runPerformanceTestAsync(createTest(128, true));
+            await TestHarness.runPerformanceTestAsync(createTest(128, false));
+            await TestHarness.runPerformanceTestAsync(createTest(256, true));
+            await TestHarness.runPerformanceTestAsync(createTest(256, false));
+            await TestHarness.runPerformanceTestAsync(createTest(512, true));
+            await TestHarness.runPerformanceTestAsync(createTest(512, false));
+            await TestHarness.runPerformanceTestAsync(createTest(1024, true));
+            await TestHarness.runPerformanceTestAsync(createTest(1024, false));
+            await TestHarness.runPerformanceTestAsync(createTest(2048, true));
+            await TestHarness.runPerformanceTestAsync(createTest(2048, false));
+
+            TestHarness.showSummaryAsTable();
 
         } catch (e) {
             console.error(e);
