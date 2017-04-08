@@ -10,7 +10,7 @@ function warmup() {
     commandEncoder.setComputePipelineState(GPGPU.getPipelineStateByName('warmup'));
     commandEncoder.setBuffer(dummyBuffer, 0, 0);
     commandEncoder.dispatch({
-        width: 128,
+        width: 256,
         height: 1,
         depth: 1
     }, {

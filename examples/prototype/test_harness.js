@@ -20,10 +20,10 @@ Object.defineProperty(window, 'TestHarness', {
             if ('name' in test) console.log(`test: ${test.name}`);
             if ('pre' in test) test.pre();
 
-            warmup();
+            // warmup();
 
-            let clockStart;
-            GPGPU.sync().then(() => clockStart = performance.now());
+            await GPGPU.sync();
+            let clockStart = performance.now();
 
             test.main();
 

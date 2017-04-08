@@ -64,6 +64,38 @@ function convolution2dNaive(desc, X, W, Y) {
  * @param {Float32Array|WebGPUBuffer} W filter buffer
  * @param {Float32Array|WebGPUBuffer} Y output buffer
  */
+function convolution2dNaiveAndRelu(desc, X, W, Y) {
+    let XBuffer = X instanceof WebGPUBuffer ? X : GPGPU.createBuffer(X);
+    let WBuffer = W instanceof WebGPUBuffer ? W : GPGPU.createBuffer(W);
+    let YBuffer = Y instanceof WebGPUBuffer ? Y : GPGPU.createBuffer(Y);
+
+    let commandBuffer = GPGPU.createCommandBuffer();
+    let commandEncoder = commandBuffer.createComputeCommandEncoder();
+
+    commandEncoder.setComputePipelineState(GPGPU.getPipelineStateByName('convolution2d_naive_and_relu'));
+    commandEncoder.setBuffer(desc.buffer, 0, 0);
+    commandEncoder.setBuffer(XBuffer, 0, 1);
+    commandEncoder.setBuffer(WBuffer, 0, 2);
+    commandEncoder.setBuffer(YBuffer, 0, 3);
+    commandEncoder.dispatch({
+        width: Math.ceil(desc.batchsize * desc.c2 * desc.h2 * desc.w2 / 512),
+        height: 1,
+        depth: 1
+    }, {
+        width: 512,
+        height: 1,
+        depth: 1
+    });
+    commandEncoder.endEncoding();
+    commandBuffer.commit();
+}
+
+/**
+ * @param {Convolution2dDescriptor} desc convolution2d descriptor
+ * @param {Float32Array|WebGPUBuffer} X input buffer
+ * @param {Float32Array|WebGPUBuffer} W filter buffer
+ * @param {Float32Array|WebGPUBuffer} Y output buffer
+ */
 function im2col(descBuffer, im, col) {
     let imBuffer = im instanceof WebGPUBuffer ? im : GPGPU.createBuffer(im);
     let colBuffer = col instanceof WebGPUBuffer ? col : GPGPU.createBuffer(col);

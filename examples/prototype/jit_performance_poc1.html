@@ -1,0 +1,173 @@
+<title>Performance Test: Convolution2D</title>
+<meta charset="utf-8">
+
+<h1>Performance Test: Convolution2D</h1>
+<p>
+    convolutionとelement-wiseな処理(relu)を、バラバラのカーネルで実行する場合と、まとめて実行する場合での性能比較
+</p>
+<p>
+    convolutionは単体で十分重いカーネルなので、まとめることの効果は薄いが、一応効果はある。
+</p>
+<p>
+    Open Debug Console and Run <code>main()</code> Function.
+</p>
+
+<script src="./gpgpu.js"></script>
+<script src="./functions/warmup.js"></script>
+<script src="./functions/elementwise.js"></script>
+<script src="./functions/convolution2d.js"></script>
+<script src="./test_harness.js"></script>
+<script>
+    async function initialize() {
+        if (!GPGPU.isBrowserSupported) {
+            console.warn('WebGPURenderingContext is not supported in this browser.');
+            return;
+        }
+
+        await GPGPU.loaded;
+    }
+
+    function createTest(desc, isConvOnly, isReluOnly, isJitEnabled) {
+        const numIteration = 30;
+        let X, W, Y;
+
+        return {
+            name: isConvOnly ?
+                'Conv' : isReluOnly ?
+                'ReLU' : isJitEnabled ?
+                'Conv+ReLU (JIT)' : 'Conv+ReLU',
+            pre: () => {
+                X = new Float32Array(desc.batchsize * desc.c1 * desc.h1 * desc.w1);
+                W = new Float32Array(desc.c2 * desc.c1 * desc.kh * desc.kw);
+                Y = new Float32Array(desc.batchsize * desc.c2 * desc.h2 * desc.w2);
+
+                for (let i = 0; i < X.length; i++) X[i] = Math.random() - 0.5;
+                for (let i = 0; i < W.length; i++) W[i] = Math.random() - 0.5;
+                for (let i = 0; i < Y.length; i++) Y[i] = Math.random() - 0.5;
+            },
+            main: isConvOnly ?
+                () => {
+                    for (let i = 0; i < numIteration; i++) convolution2dNaive(desc, X, W, Y);
+                } : isReluOnly ?
+                () => {
+                    for (let i = 0; i < numIteration; i++) inplaceRelu(desc.batchsize * desc.c2 * desc.h2 * desc.w2, Y);
+                } : isJitEnabled ?
+                () => {
+                    for (let i = 0; i < numIteration; i++) convolution2dNaiveAndRelu(desc, X, W, Y);
+                } :
+                () => {
+                    for (let i = 0; i < numIteration; i++) {
+                        convolution2dNaive(desc, X, W, Y);
+                        inplaceRelu(desc.batchsize * desc.c2 * desc.h2 * desc.w2, Y);
+                    }
+                },
+            post: () => {
+                delete X;
+                delete W;
+                delete Y;
+            },
+            summarize: (elapsedTime) => {
+                return {
+                    'type': isConvOnly ? 'Conv' : isReluOnly ? 'ReLU' : isJitEnabled ? 'Conv+ReLU (JIT)' : 'Conv+ReLU',
+                    '#batch': desc.batchsize,
+                    '#channel_in': desc.c1,
+                    '#channel_out': desc.c2,
+                    'image size': desc.h1,
+                    'kernel': desc.kh,
+                    'stride': desc.sh,
+                    'padding': desc.ph,
+                    'elapsed time [ms]': (elapsedTime / numIteration).toFixed(2)
+                }
+            }
+        };
+    }
+
+    async function main() {
+        try {
+            await initialize();
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 32,
+                channels: [128, 128]
+            }), true, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 32,
+                channels: [128, 128]
+            }), false, true, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 32,
+                channels: [128, 128]
+            }), false, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 32,
+                channels: [128, 128]
+            }), false, false, true));
+
+
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 16,
+                channels: [256, 256]
+            }), true, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 16,
+                channels: [256, 256]
+            }), false, true, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 16,
+                channels: [256, 256]
+            }), false, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 16,
+                channels: [256, 256]
+            }), false, false, true));
+
+
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 8,
+                channels: [512, 512]
+            }), true, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 8,
+                channels: [512, 512]
+            }), false, true, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 8,
+                channels: [512, 512]
+            }), false, false, false));
+
+            await TestHarness.runPerformanceTestAsync(createTest(new Convolution2dDescriptor({
+                batchsize: 8,
+                size: 8,
+                channels: [512, 512]
+            }), false, false, true));
+
+
+
+            TestHarness.showSummaryAsTable();
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+</script>
