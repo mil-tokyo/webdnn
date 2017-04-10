@@ -38,11 +38,11 @@ namespace WebDNN {
     }
 
     getPipelineStateByName(name: string): WebGPUComputePipelineState {
-      if (!this.pipelineStates.has(name)) {
+      let state = this.pipelineStates.get(name);//State | undefined
+      if (!state) {
         throw TypeError(`Kernel function "${name}" is not loaded.`);
       }
-
-      return this.pipelineStates.get(name);
+      return state;
     }
 
     executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | DNNBufferWebGPU)[]): void {

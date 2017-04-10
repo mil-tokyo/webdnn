@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es2017",
         "module": "system",
+        "strictNullChecks": true,
         "sourceMap": true,
         "outFile": "webdnn.js",
         "lib": [

@@ -9,7 +9,7 @@ namespace WebDNN {
     }
 
     getKernels(ioBuffer: DNNPipelineLayerIOBuffer): DNNPipelineKernel[] {
-      let kernels = [];
+      let kernels: DNNPipelineKernel[] = [];
       if (this.params.nobias) {
         kernels.push(this.makeKernelMul(ioBuffer.bottoms[0], ioBuffer.tops[0], ioBuffer.weights[0]));
       } else {

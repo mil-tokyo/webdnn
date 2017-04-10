@@ -1,5 +1,5 @@
 namespace WebDNN {
-  export var gpu: GPUInterface = null;
+  export var gpu: GPUInterface;
 
   export async function init(backend?: string, backendOption?: any): Promise<string> {
     let webgpuif = new GPUInterfaceWebGPU(backendOption);

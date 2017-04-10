@@ -2,6 +2,6 @@
 
 namespace WebDNN {
   export interface GPUInterface {
-    init(): Promise<null>;
+    init(): Promise<void>;
   }
 }
