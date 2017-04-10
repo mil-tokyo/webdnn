@@ -20,9 +20,9 @@ async function run() {
   runner = new $M.DNNPipelineRunner(pipeline_data, $Mg.webgpuHandler);
   runner.compile();
 
-  let input_mat = new $M.MatrixCPU([4], new Float32Array([1.1, 2.1, -1.0, 3.5]));
+  let input_mat = new Float32Array([1.1, 2.1, -1.0, 3.5]);
   let output_mats = await runner.run([input_mat], [0], [1]);
-  console.log(output_mats[0].data);
+  console.log(output_mats[0]);
 }
 
 async function init() {

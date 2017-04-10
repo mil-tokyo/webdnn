@@ -29,7 +29,7 @@ async function run() {
     console.log(`ground truth: ${sample.y}`);
     let output_mats = await runner.run([sample.x], [0], [5]);
 
-    let out_vec = output_mats[0].data;
+    let out_vec = output_mats[0];
     let pred_label = 0;
     let pred_score = -Infinity;
     for (let j = 0; j < out_vec.length; j++) {
@@ -51,7 +51,7 @@ async function init() {
 }
 
 function makeMatFromJson(mat_data) {
-  var mat = new $M.MatrixCPU(mat_data['shape'], new Float32Array(mat_data['data']));
+  var mat = new Float32Array(mat_data['data']);
   return mat;
 }
 
