@@ -13,12 +13,16 @@ namespace WebDNN {
       let kernels: DNNPipelineKernel[] = [];
       for (let layer_idx = 0; layer_idx < dnnGraph.layers.length; layer_idx++) {
         let layer = dnnGraph.layers[layer_idx];
-        let layer_inputs: DNNPipelineBuffer[] =
+        let layer_bottoms: DNNPipelineBuffer[] =
           layer.bottoms.map((data_idx) => { return data_buffers_assignment.buffers[data_idx]; });
-        let layer_outputs: DNNPipelineBuffer[] =
+        let layer_tops: DNNPipelineBuffer[] =
           layer.tops.map((data_idx) => { return data_buffers_assignment.buffers[data_idx]; });
+        let layer_temporaries: DNNPipelineBuffer[] =
+          layer.temporaries.map((data_idx) => { return data_buffers_assignment.buffers[data_idx]; });
         let layer_weights: DNNPipelineBuffer[] =
           layer.weights.map((weight_idx) => { return weight_buffers_assignment.buffers[weight_idx]; });
+        let layer_io_buffers = {bottoms: layer_bottoms, tops: layer_tops,
+        temporaries: layer_temporaries, weights: layer_weights};
         let layer_instance: DNNPipelineLayer;
         switch (layer.type) {
           case 'relu':
@@ -30,7 +34,7 @@ namespace WebDNN {
           default:
             throw new Error('Unknown layer');
         }
-        let layer_kernels = layer_instance.getKernels(layer_inputs, layer_outputs, layer_weights);
+        let layer_kernels = layer_instance.getKernels(layer_io_buffers);
         Array.prototype.push.apply(kernels, layer_kernels);
       }
 
@@ -74,6 +78,7 @@ namespace WebDNN {
     params: any;
     bottoms: number[];
     tops: number[];
+    temporaries: number[];
     weights: number[];
   }
 
@@ -81,6 +86,13 @@ namespace WebDNN {
     shape: number[];
     offset: number;// unit: sizeof(float)
     size: number;// unit: sizeof(float)
+  }
+
+  export interface DNNPipelineLayerIOBuffer {
+    bottoms: DNNPipelineBuffer[];
+    tops: DNNPipelineBuffer[];
+    temporaries: DNNPipelineBuffer[];
+    weights: DNNPipelineBuffer[];
   }
 
   export class DNNPipelineKernel {

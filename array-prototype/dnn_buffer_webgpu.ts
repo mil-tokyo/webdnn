@@ -1,3 +1,4 @@
+/// <reference path="./dnn_buffer_gpu.ts" />
 
 namespace WebDNN {
   export class DNNBufferWebGPU extends DNNBufferGPU {

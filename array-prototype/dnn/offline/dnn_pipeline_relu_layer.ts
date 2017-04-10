@@ -3,14 +3,14 @@ namespace WebDNN {
     constructor(params: any) {
     }
 
-    getKernels(inputs: DNNPipelineBuffer[], outputs: DNNPipelineBuffer[], weights: DNNPipelineBuffer[]): DNNPipelineKernel[] {
+    getKernels(ioBuffer: DNNPipelineLayerIOBuffer): DNNPipelineKernel[] {
       let kernel_string = `
 #include <metal_stdlib>
 using namespace metal;
 
-#define INPUT_OFFSET ${inputs[0].offset}
-#define OUTPUT_OFFSET ${outputs[0].offset}
-#define N ${inputs[0].size}
+#define INPUT_OFFSET ${ioBuffer.bottoms[0].offset}
+#define OUTPUT_OFFSET ${ioBuffer.tops[0].offset}
+#define N ${ioBuffer.tops[0].size}
 
 kernel void relu(const device float *weight_buffer[[buffer(0)]],
                  device float *data_buffer[[buffer(1)]],

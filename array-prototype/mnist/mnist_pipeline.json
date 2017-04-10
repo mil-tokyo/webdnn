@@ -94,17 +94,41 @@
       {
         "shape": [
           1,
-          10
+          100
         ],
         "offset": 1184,
+        "size": 100
+      },
+      {
+        "shape": [
+          1,
+          100
+        ],
+        "offset": 1284,
+        "size": 100
+      },
+      {
+        "shape": [
+          1,
+          10
+        ],
+        "offset": 1384,
+        "size": 10
+      },
+      {
+        "shape": [
+          1,
+          10
+        ],
+        "offset": 1394,
         "size": 10
       }
     ],
-    "totalSize": 1194
+    "totalSize": 1404
   },
   "kernels": [
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 0\n#define INPUT_OFFSET 0\n#define OUTPUT_OFFSET 784\n#define N 784\n#define IN_CH 784\n#define OUT_CH 100\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 0\n#define INPUT_OFFSET 0\n#define OUTPUT_OFFSET 784\n#define N 100\n#define IN_CH 784\n#define OUT_CH 100\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
       "kernelFunctionName": "linear_mul",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -118,7 +142,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 78400\n#define INPUT_OFFSET 0\n#define OUTPUT_OFFSET 784\n#define N 784\n#define IN_CH 784\n#define OUT_CH 100\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  //device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] += bias_data[chid];\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 78400\n#define INPUT_OFFSET 784\n#define OUTPUT_OFFSET 884\n#define N 100\n#define IN_CH 784\n#define OUT_CH 100\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] = input_data[gid] + bias_data[chid];\n    }\n}\n      ",
       "kernelFunctionName": "linear_bias",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -132,7 +156,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define INPUT_OFFSET 784\n#define OUTPUT_OFFSET 884\n#define N 100\n\nkernel void relu(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      float val = input_data[gid];\n      if (val < 0.0) {\n        val = 0.0;\n      }\n      output_data[gid] = val;\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define INPUT_OFFSET 884\n#define OUTPUT_OFFSET 984\n#define N 100\n\nkernel void relu(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      float val = input_data[gid];\n      if (val < 0.0) {\n        val = 0.0;\n      }\n      output_data[gid] = val;\n    }\n}\n      ",
       "kernelFunctionName": "relu",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -146,7 +170,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 78500\n#define INPUT_OFFSET 884\n#define OUTPUT_OFFSET 984\n#define N 100\n#define IN_CH 100\n#define OUT_CH 100\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 78500\n#define INPUT_OFFSET 984\n#define OUTPUT_OFFSET 1084\n#define N 100\n#define IN_CH 100\n#define OUT_CH 100\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
       "kernelFunctionName": "linear_mul",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -160,7 +184,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 88500\n#define INPUT_OFFSET 884\n#define OUTPUT_OFFSET 984\n#define N 100\n#define IN_CH 100\n#define OUT_CH 100\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  //device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] += bias_data[chid];\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 88500\n#define INPUT_OFFSET 1084\n#define OUTPUT_OFFSET 1184\n#define N 100\n#define IN_CH 100\n#define OUT_CH 100\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] = input_data[gid] + bias_data[chid];\n    }\n}\n      ",
       "kernelFunctionName": "linear_bias",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -174,7 +198,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define INPUT_OFFSET 984\n#define OUTPUT_OFFSET 1084\n#define N 100\n\nkernel void relu(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      float val = input_data[gid];\n      if (val < 0.0) {\n        val = 0.0;\n      }\n      output_data[gid] = val;\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define INPUT_OFFSET 1184\n#define OUTPUT_OFFSET 1284\n#define N 100\n\nkernel void relu(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      float val = input_data[gid];\n      if (val < 0.0) {\n        val = 0.0;\n      }\n      output_data[gid] = val;\n    }\n}\n      ",
       "kernelFunctionName": "relu",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -188,7 +212,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 88600\n#define INPUT_OFFSET 1084\n#define OUTPUT_OFFSET 1184\n#define N 100\n#define IN_CH 100\n#define OUT_CH 10\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define WEIGHT_OFFSET 88600\n#define INPUT_OFFSET 1284\n#define OUTPUT_OFFSET 1384\n#define N 10\n#define IN_CH 100\n#define OUT_CH 10\n\nkernel void linear_mul(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *weight_data = weight_buffer + WEIGHT_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int out_chid = gid % OUT_CH;\n      int sample_id = gid / OUT_CH;\n      float sum = 0.0;\n      for (int in_chid = 0; in_chid < IN_CH; in_chid++) {\n        sum += input_data[sample_id * IN_CH + in_chid] * weight_data[in_chid * OUT_CH + out_chid];\n      }\n      output_data[gid] = sum;\n    }\n}\n      ",
       "kernelFunctionName": "linear_mul",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -202,7 +226,7 @@
       }
     },
     {
-      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 89600\n#define INPUT_OFFSET 1084\n#define OUTPUT_OFFSET 1184\n#define N 100\n#define IN_CH 100\n#define OUT_CH 10\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  //device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] += bias_data[chid];\n    }\n}\n      ",
+      "kernelString": "\n#include <metal_stdlib>\nusing namespace metal;\n\n#define BIAS_OFFSET 89600\n#define INPUT_OFFSET 1384\n#define OUTPUT_OFFSET 1394\n#define N 10\n#define IN_CH 100\n#define OUT_CH 10\n\nkernel void linear_bias(const device float *weight_buffer[[buffer(0)]],\n                 device float *data_buffer[[buffer(1)]],\n                  uint index[[thread_position_in_grid]])\n{\n  device float *input_data = data_buffer + INPUT_OFFSET;\n  device float *output_data = data_buffer + OUTPUT_OFFSET;\n  const device float *bias_data = weight_buffer + BIAS_OFFSET;\n    for (int gid = index; gid < N; gid += 4096) {\n      int chid = gid % OUT_CH;\n      output_data[gid] = input_data[gid] + bias_data[chid];\n    }\n}\n      ",
       "kernelFunctionName": "linear_bias",
       "threadgroupsPerGrid": {
         "width": 8,
@@ -220,6 +244,6 @@
     0
   ],
   "outputs": [
-    5
+    8
   ]
 }

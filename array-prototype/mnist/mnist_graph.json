@@ -12,6 +12,9 @@
         0
       ],
       "tops": [
+        2
+      ],
+      "temporaries": [
         1
       ],
       "weights": [
@@ -26,11 +29,12 @@
         "in_size": 100
       },
       "bottoms": [
-        1
-      ],
-      "tops": [
         2
       ],
+      "tops": [
+        3
+      ],
+      "temporaries": [],
       "weights": []
     },
     {
@@ -42,10 +46,13 @@
         "nobias": false
       },
       "bottoms": [
-        2
+        3
       ],
       "tops": [
-        3
+        5
+      ],
+      "temporaries": [
+        4
       ],
       "weights": [
         2,
@@ -59,11 +66,12 @@
         "in_size": 100
       },
       "bottoms": [
-        3
+        5
       ],
       "tops": [
-        4
+        6
       ],
+      "temporaries": [],
       "weights": []
     },
     {
@@ -75,10 +83,13 @@
         "nobias": false
       },
       "bottoms": [
-        4
+        6
       ],
       "tops": [
-        5
+        8
+      ],
+      "temporaries": [
+        7
       ],
       "weights": [
         4,
@@ -90,7 +101,7 @@
     0
   ],
   "outputs": [
-    5
+    8
   ],
   "data_shapes": [
     [
@@ -112,6 +123,18 @@
     [
       1,
       100
+    ],
+    [
+      1,
+      100
+    ],
+    [
+      1,
+      100
+    ],
+    [
+      1,
+      10
     ],
     [
       1,
