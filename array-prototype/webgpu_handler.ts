@@ -38,14 +38,14 @@ namespace WebDNN {
     }
 
     getPipelineStateByName(name: string): WebGPUComputePipelineState {
-      if (!this.pipelineStates.has(name)) {
+      let state = this.pipelineStates.get(name);//State | undefined
+      if (!state) {
         throw TypeError(`Kernel function "${name}" is not loaded.`);
       }
-
-      return this.pipelineStates.get(name);
+      return state;
     }
 
-    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | MatrixWebGPU)[]): void {
+    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | DNNBufferWebGPU)[]): void {
       let commandBuffer = this.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
@@ -53,8 +53,8 @@ namespace WebDNN {
       for (let i = 0; i < buffers.length; i++) {
         let buffer = buffers[i];
         let wgbuf: WebGPUBuffer;
-        if (buffer instanceof MatrixWebGPU) {
-          wgbuf = buffer.webgpuBuffer;
+        if (buffer instanceof DNNBufferWebGPU) {
+          wgbuf = buffer.buffer;
         } else {
           // cannot perform (buffer instanceof WebGPUBuffer) currently
           wgbuf = buffer;

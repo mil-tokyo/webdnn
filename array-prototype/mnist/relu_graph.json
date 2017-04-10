@@ -1,0 +1,34 @@
+{
+  "layers": [
+    {
+      "name": "relu1",
+      "type": "relu",
+      "params": {
+        "in_size": 4
+      },
+      "bottoms": [
+        0
+      ],
+      "tops": [
+        1
+      ],
+      "temporaries": [],
+      "weights": []
+    }
+  ],
+  "inputs": [
+    0
+  ],
+  "outputs": [
+    1
+  ],
+  "data_shapes": [
+    [
+      4
+    ],
+    [
+      4
+    ]
+  ],
+  "weight_shapes": []
+}

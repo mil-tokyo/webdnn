@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es2017",
         "module": "system",
+        "strictNullChecks": true,
         "sourceMap": true,
         "outFile": "webdnn.js",
         "lib": [
@@ -12,22 +13,17 @@
     "files": [
       "gpu_interface_fallback.ts",
       "gpu_interface.ts",
-      "init.ts",
-      "matrix_base.ts",
-      "matrix_cpu.ts",
-      "matrix_gpu.ts",
-      "matrix_gpu_fallback.ts",
-      "matrix_webgpu.ts",
-      "webdnn.ts",
       "webgpu_handler.ts",
+      "init.ts",
+      "dnn_buffer_gpu.ts",
+      "dnn_buffer_webgpu.ts",
+      "dnn_buffer_fallback.ts",
+      "webdnn.ts",
       "gpu_interface_webgpu.ts",
-      "op_cpu.ts",
-      "dnn/dnn.ts",
-      "dnn/dnn_pipeline.ts",
-      "dnn/dnn_primitive_kernel.ts",
-      "dnn/dnn_layer.ts",
-      "dnn/relu_layer.ts",
-      "dnn/fully_connected_layer.ts",
-      "dnn/dnn_layer_io_names.ts"
+      "dnn/offline/dnn_pipeline_generator.ts",
+      "dnn/offline/dnn_pipeline_layer.ts",
+      "dnn/offline/dnn_pipeline_relu_layer.ts",
+      "dnn/offline/dnn_pipeline_linear_layer.ts",
+      "dnn/online/dnn_pipeline_runner.ts"
     ]
 }

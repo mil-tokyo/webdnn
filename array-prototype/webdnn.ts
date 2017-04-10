@@ -1,12 +1,11 @@
 namespace WebDNN {
-  export var gpu: GPUInterface = null;
+  export var gpu: GPUInterface;
 
-  export async function init(backend?: string, backend_option?: any): Promise<string> {
-    let webgpuif = new GPUInterfaceWebGPU();
+  export async function init(backend?: string, backendOption?: any): Promise<string> {
+    let webgpuif = new GPUInterfaceWebGPU(backendOption);
     try {
       await webgpuif.init();
       gpu = webgpuif;
-      DNN.webgpuHandler = webgpuif.webgpuHandler;
       backend = 'webgpu';
     } catch (e) {
       console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
