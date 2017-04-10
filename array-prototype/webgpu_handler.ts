@@ -45,7 +45,7 @@ namespace WebDNN {
       return this.pipelineStates.get(name);
     }
 
-    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[]): void {
+    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | DNNBufferWebGPU)[]): void {
       let commandBuffer = this.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
@@ -53,7 +53,7 @@ namespace WebDNN {
       for (let i = 0; i < buffers.length; i++) {
         let buffer = buffers[i];
         let wgbuf: WebGPUBuffer;
-        if (buffer instanceof BufferGPU) {
+        if (buffer instanceof DNNBufferWebGPU) {
           wgbuf = buffer.buffer;
         } else {
           // cannot perform (buffer instanceof WebGPUBuffer) currently

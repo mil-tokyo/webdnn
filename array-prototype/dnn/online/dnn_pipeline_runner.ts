@@ -2,8 +2,8 @@ namespace WebDNN {
   export class DNNPipelineRunner {
     dnnPipelineData: DNNPipelineData;
     webgpuHandler: WebGPUHandler;
-    weightMat: BufferWebGPU;
-    dataMat: BufferWebGPU;
+    weightMat: DNNBufferWebGPU;
+    dataMat: DNNBufferWebGPU;
 
     constructor(dnnPipelineData: DNNPipelineData, webgpuHandler: WebGPUHandler) {
       this.dnnPipelineData = dnnPipelineData;
@@ -16,8 +16,8 @@ namespace WebDNN {
         let kernel_namespace = 'pipeline_' + i;
         this.webgpuHandler.loadKernel(kernel.kernelString, kernel_namespace);
       }
-      this.weightMat = new BufferWebGPU(this.dnnPipelineData.weightBuffersAssignment.totalSize * Float32Array.BYTES_PER_ELEMENT);
-      this.dataMat = new BufferWebGPU(this.dnnPipelineData.dataBuffersAssignment.totalSize * Float32Array.BYTES_PER_ELEMENT);
+      this.weightMat = new DNNBufferWebGPU(this.dnnPipelineData.weightBuffersAssignment.totalSize * Float32Array.BYTES_PER_ELEMENT);
+      this.dataMat = new DNNBufferWebGPU(this.dnnPipelineData.dataBuffersAssignment.totalSize * Float32Array.BYTES_PER_ELEMENT);
     }
 
     async loadWeights(weightsData: Float32Array) {

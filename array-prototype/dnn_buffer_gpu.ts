@@ -1,5 +1,5 @@
 namespace WebDNN {
-  export class BufferGPU {
+  export class DNNBufferGPU {
     backend: string;
     buffer: any;
 
