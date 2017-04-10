@@ -24,10 +24,10 @@ namespace WebDNN {
       await this.weightMat.write(weightsData);
     }
 
-    async run(inputs: Float32Array[], inputIndices: number[], outputIndices: number[]) {
+    async run(inputs: Float32Array[]): Promise<Float32Array[]> {
       //set input to GPU
-      for (let i = 0; i < inputIndices.length; i++) {
-        let input_index = inputIndices[i];
+      for (let i = 0; i < this.dnnPipelineData.inputs.length; i++) {
+        let input_index = this.dnnPipelineData.inputs[i];
         let offset = this.dnnPipelineData.dataBuffersAssignment.buffers[input_index].offset;
         await this.dataMat.write(inputs[i], offset);
       }
@@ -44,8 +44,8 @@ namespace WebDNN {
 
       //get output from GPU
       let outputs: Float32Array[] = [];
-      for (let i = 0; i < outputIndices.length; i++) {
-        let output_index = outputIndices[i];
+      for (let i = 0; i < this.dnnPipelineData.outputs.length; i++) {
+        let output_index = this.dnnPipelineData.outputs[i];
         let buf_info = this.dnnPipelineData.dataBuffersAssignment.buffers[output_index];
         let output_array = new Float32Array(buf_info.size);
         await this.dataMat.read(output_array, buf_info.offset, buf_info.size);

@@ -37,7 +37,9 @@ namespace WebDNN {
       return {
         weightBuffersAssignment: weight_buffers_assignment,
         dataBuffersAssignment: data_buffers_assignment,
-        kernels: kernels
+        kernels: kernels,
+        inputs: dnnGraph.inputs,
+        outputs: dnnGraph.outputs
       };
     }
 
@@ -102,5 +104,7 @@ namespace WebDNN {
     weightBuffersAssignment: DNNPipelineWeightBufferAssignment;
     dataBuffersAssignment: DNNPipelineDataBufferAssignment;
     kernels: DNNPipelineKernel[];
+    inputs: number[];
+    outputs: number[];
   }
 }

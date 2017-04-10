@@ -27,7 +27,7 @@ async function run() {
   for (let i = 0; i < test_samples.length; i++) {
     let sample = test_samples[i];
     console.log(`ground truth: ${sample.y}`);
-    let output_mats = await runner.run([sample.x], [0], [5]);
+    let output_mats = await runner.run([sample.x]);
 
     let out_vec = output_mats[0];
     let pred_label = 0;
