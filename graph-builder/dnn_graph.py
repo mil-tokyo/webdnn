@@ -93,7 +93,7 @@ class DNNGraphOptimizer:
                 if prod is not None \
                 and prod.layer.layer_type == DNNLayerType.Linear \
                 and len(cons_list) == 1\
-                and cons_first.layer.layer_type == DNNLayerType.Relu:
+                and DNNLayerAttributes.Elementwise in cons_first.layer.attributes:
                     # linearのうしろにreluをくっつける
                     prod.layer.append_child_to_tail(cons_first.layer)
                     # linearの出力がreluの出力になる
