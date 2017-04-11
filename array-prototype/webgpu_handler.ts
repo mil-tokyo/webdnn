@@ -1,3 +1,5 @@
+/// <reference path="./dnn_buffer_webgpu.ts" />
+
 namespace WebDNN {
   export class WebGPUHandler {
     static isBrowserSupported: boolean;
