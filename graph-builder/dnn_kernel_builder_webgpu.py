@@ -194,7 +194,7 @@ class KernelData:
         self.meta_buffer = meta_buffer
 
 linear_mul_source = """
-kernel void linear_mul(const device float *weight_buffer[[buffer(0)]],
+kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                  device float *data_buffer[[buffer(1)]],
                  const device int *meta_buffer[[buffer(2)]],
                   uint index[[thread_position_in_grid]])
@@ -212,15 +212,21 @@ kernel void linear_mul(const device float *weight_buffer[[buffer(0)]],
       for (int in_chid = 0; in_chid < in_ch; in_chid++) {
         sum += input_data[sample_id * in_ch + in_chid] * weight_data[in_chid * out_ch + out_chid];
       }
-      output_data[gid] = sum;
+      output_data[gid] = %%MAKE_OUTPUT%%;
     }
+}
+"""
+
+elementwise_relu_source = """
+float elementwise_relu(float x)
+{
+    return x >= 0.0 ? x : 0.0;
 }
 """
 
 class KBLinearLayer:
     def __init__(self, layer: DNNLayer):
         self.layer = layer
-        assert len(self.layer.children) == 0
     
     def generate_kernels(self, batch_size: int,
         bottoms: List[DNNVariable], tops: List[DNNVariable],
@@ -234,7 +240,21 @@ class KBLinearLayer:
         meta_buffer = meta_array.tobytes()
         threadgroups_per_grid = {'width': 8, 'height': 1, 'depth': 1}
         threads_per_thread_group = {'width': 512, 'height': 1, 'depth': 1}
-        kernel_data = KernelData({'linear_mul': linear_mul_source}, 'linear_mul', threadgroups_per_grid, threads_per_thread_group, meta_buffer)
+        sources = OrderedDict()# to preserve order
+        func_name = 'linear_mul_'
+        make_output = 'sum'
+        for children in self.layer.iterate_self_and_children():
+            if children is self.layer:
+                continue
+            if children.layer_type == DNNLayerType.Relu:
+                make_output = 'elementwise_relu(' + make_output + ')'
+                func_name += 'relu_'
+                sources['elementwise_relu'] = elementwise_relu_source
+            else:
+                raise ValueError('Unknown child node')
+        sources[func_name] = linear_mul_source.replace('%%FUNC_NAME%%', func_name).replace('%%MAKE_OUTPUT%%', make_output)
+        
+        kernel_data = KernelData(sources, func_name, threadgroups_per_grid, threads_per_thread_group, meta_buffer)
         return [kernel_data]
 
 
