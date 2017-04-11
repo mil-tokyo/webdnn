@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "sourceMap": false,
+        "outFile": "./resnet50.build.js",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "watch": true
+    },
+    "files": [
+        "./resnet50.ts"
+    ]
+}

@@ -1,0 +1,14 @@
+<title>WebGPU Performance Test: resnet50</title>
+<link rel="stylesheet" href="../src/common.css">
+
+<header>
+    <h1>WebGPU Performance Test: resnet50</h1>
+    <button onclick="main()">START</button>
+</header>
+<main>
+    <div id="log"></div>
+</main>
+<script type="x-shader/x-metal" id="sync" src="../src/kernels/sync.metal"></script>
+<script type="x-shader/x-metal" id="sgemm" src="../src/kernels/sgemm.metal"></script>
+
+<script src="./resnet50.build.js"></script>
