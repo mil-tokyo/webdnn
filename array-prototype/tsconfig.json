@@ -24,6 +24,7 @@
       "dnn/offline/dnn_pipeline_layer.ts",
       "dnn/offline/dnn_pipeline_relu_layer.ts",
       "dnn/offline/dnn_pipeline_linear_layer.ts",
-      "dnn/online/dnn_pipeline_runner.ts"
+      "dnn/online/dnn_pipeline_runner.ts",
+      "dnn/dnn_descriptor_runner.ts"
     ]
 }
