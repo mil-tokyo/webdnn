@@ -5,7 +5,7 @@ import sys
 import os
 import numpy as np
 import json
-from dnn_graph import DNNLayer, DNNLayerAttributes, DNNLayerType, DNNVariable, DNNGraphNode, DNNGraph, DNNVariableAttributes, DNNGraphOptimizer
+from dnn_graph import DNNLayer, DNNLinearLayer, DNNReluLayer, DNNLayerAttributes, DNNLayerType, DNNVariable, DNNGraphNode, DNNGraph, DNNVariableAttributes, DNNGraphOptimizer
 from dnn_kernel_builder_webgpu import DNNKernelBuilderWebGPU, DNNDescriptorWebGPU
 
 def main():
@@ -18,10 +18,11 @@ def main():
 #     node_l1_mul = DNNGraphNode(layer_l1_mul.name, layer_l1_mul, [var_x], [var_h])
 #     node_relu = DNNGraphNode(layer_relu.name, layer_relu, [var_h], [var_y])
 #     graph = DNNGraph([node_l1_mul, node_relu], [var_x], [var_y])
-    layer_l0_mul = DNNLayer('l0', DNNLayerType.Linear, set(), {'in_size': 4, 'out_size': 3}, {'W': np.random.rand(4, 3).astype(np.float32)}, [], None)
-    layer_l1_mul = DNNLayer('l1', DNNLayerType.Linear, set(), {'in_size': 3, 'out_size': 2}, {'W': np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32)}, [], None)
-    layer_relu1 = DNNLayer('relu1', DNNLayerType.Relu, {DNNLayerAttributes.Elementwise}, {'out_size': 2}, {}, [], None)
-    layer_relu2 = DNNLayer('relu2', DNNLayerType.Relu, set(), {'out_size': 2}, {}, [], None)
+    layer_l0_mul = DNNLinearLayer('l0', {'in_size': 4, 'out_size': 3}, {'W': np.random.rand(4, 3).astype(np.float32)}, [])
+    layer_l1_mul = DNNLinearLayer('l1', {'in_size': 4, 'out_size': 3}, {'W': np.random.rand(3, 2).astype(np.float32)}, [])
+    layer_relu1 = DNNReluLayer('relu1', {'out_size': 2}, {}, [])
+    layer_relu2 = DNNReluLayer('relu2', {'out_size': 2}, {}, [])
+    
     var_x = DNNVariable('x', (1, 4), {DNNVariableAttributes.Input})
     var_x2 = DNNVariable('x2', (1, 3), set())
     var_h1 = DNNVariable('h1', (1, 2), set())

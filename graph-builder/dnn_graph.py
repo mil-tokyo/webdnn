@@ -18,7 +18,7 @@ class DNNLayerAttributes(Enum):
     Inplace = auto()
     Elementwise = auto()
     Channelwise = auto()
-    PostElementwise = auto()
+    PostElementwise = auto()#後ろにElementwiseを接続できる
     PostChannelwise = auto()
 
 class DNNVariableAttributes(Enum):
@@ -49,6 +49,7 @@ class DNNLayer:
         # 今の所、1出力レイヤーの後ろに1入力1出力レイヤーをくっつけるだけの機能
         # 連結グラフとして表現
         self.next_node = next_node
+        self.is_root = True# 誰かの子でない
     
     def iterate_self_and_children(self):
         yield self
@@ -60,10 +61,23 @@ class DNNLayer:
         """
         連結グラフの末尾にレイヤーをくっつける
         """
+        layer.is_root = False
         if self.next_node is None:
             self.next_node = layer
         else:
             self.next_node.append_child_to_tail(layer)
+
+class DNNLinearLayer(DNNLayer):
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
+        super(DNNLinearLayer, self).__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+
+class DNNReluLayer(DNNLayer):
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.Elementwise, DNNLayerAttributes.Inplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
+        super(DNNReluLayer, self).__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
 
 class DNNGraphNode:
     def __init__(self, name: str, layer: DNNLayer, bottoms: List[DNNVariable], tops: List[DNNVariable]):
@@ -91,7 +105,7 @@ class DNNGraphOptimizer:
                 cons_list = prod_cons['consumers']
                 cons_first = cons_list[0] if len(cons_list) > 0 else None
                 if prod is not None \
-                and prod.layer.layer_type == DNNLayerType.Linear \
+                and DNNLayerAttributes.PostElementwise in prod.layer.attributes \
                 and len(cons_list) == 1\
                 and DNNLayerAttributes.Elementwise in cons_first.layer.attributes:
                     # linearのうしろにreluをくっつける

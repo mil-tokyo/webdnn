@@ -243,7 +243,7 @@ class KBLinearLayer(KBLayer):
         func_name = 'linear_mul_'
         make_output = 'sum'
         for child in self.layer.iterate_self_and_children():
-            if child is self.layer:
+            if child.is_root:
                 continue
             kb_child_layer = KBLayerGenerator.generate(child)
             elementwise_operator = kb_child_layer.get_elementwise_operator()
