@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "sourceMap": false,
+        "outDir": "./build",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "watch": true
+    },
+    "files": [
+        "./resnet50/resnet50.ts",
+        "./sgemm/sgemm.ts",
+        "./convolution2d/convolution2d.ts"
+    ]
+}

@@ -27,6 +27,8 @@ kernel void sgemm64(const device int *MNK[[buffer(0)]],
     const int ldx = (index >= 32) ? 1 : M;
     int track0 = (index >= 32) ? ((n_tile_offset * 64 + index - 32) * K) : (m_tile_offset * 64 + index);
     int track1 = (index >= 32) ? (track0 + 32 * K) : (track0 + 32);
+    bool flag0 = (index >= 32) ? ((n_tile_offset * 64 + index - 32) >= N) : (m_tile_offset * 64 + index >= M);
+    bool flag1 = (index >= 32) ? ((n_tile_offset * 64 + index) >= N) : (m_tile_offset * 64 + index + 32 >= M);
     int shared_offset = (index >= 32) ? (index + 32) : index;
     int read_A_offset = m_offset * 8;
     int read_B_offset = n_offset * 8 + 64;
@@ -43,6 +45,8 @@ kernel void sgemm64(const device int *MNK[[buffer(0)]],
 #pragma unroll 8
         for (int k_sub = 0; k_sub < 8; k_sub++)
         {
+            shared[shared_offset + k_sub * 128 + 32 * 0] = (k + k_sub >= K || flag0) ? 0 : load_target[track0 + k_sub * ldx];
+            shared[shared_offset + k_sub * 128 + 32 * 1] = (k + k_sub >= K || flag1) ? 0 : load_target[track1 + k_sub * ldx];
             shared[shared_offset + k_sub * 128 + 32 * 0] = load_target[track0 + k_sub * ldx];
             shared[shared_offset + k_sub * 128 + 32 * 1] = load_target[track1 + k_sub * ldx];
         }
@@ -82,12 +86,16 @@ kernel void sgemm64(const device int *MNK[[buffer(0)]],
         track1 += ldx * 8;
     }
 
+#pragma unroll 8
     for (int m_sub = 0; m_sub < 8; m_sub++)
     {
+        if (m_tile_offset * 64 + m_offset * 8 + m_sub >= M) continue;
 
 #pragma unroll 8
         for (int n_sub = 0; n_sub < 8; n_sub++)
         {
+            if (n_tile_offset * 64 + n_offset * 8 + n_sub >= N) continue;
+
             C[(n_tile_offset * 64 + n_offset * 8 + n_sub) * M + m_tile_offset * 64 + m_offset * 8 + m_sub] =
                 alpha * result[n_sub * 8 + m_sub] +
                 beta * C[(n_tile_offset * 64 + n_offset * 8 + n_sub) * M + m_tile_offset * 64 + m_offset * 8 + m_sub];
