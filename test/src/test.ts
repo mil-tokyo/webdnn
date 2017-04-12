@@ -126,7 +126,7 @@ namespace WebDNN {
         }
 
         export interface PerformanceTest {
-            name: string
+            name?: string
             setup?: () => void
             setupAsync?: () => Promise<any>
             main: () => any
@@ -188,15 +188,15 @@ namespace WebDNN {
             }
 
             clearText() {
-                this.outputContainer.innerHTML = '';
-
-                this.output = document.createElement("pre");
-                this.outputContainer.appendChild(this.output);
+                this.output.innerHTML = '';
             }
 
             clearAll() {
                 this.clearSummary();
-                this.clearText();
+
+                this.outputContainer.innerHTML = '';
+                this.output = document.createElement("pre");
+                this.outputContainer.appendChild(this.output);
             }
 
             success(text) {

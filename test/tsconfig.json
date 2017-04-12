@@ -11,6 +11,7 @@
     },
     "files": [
         "./resnet50/resnet50.ts",
-        "./sgemm/sgemm.ts"
+        "./sgemm/sgemm.ts",
+        "./convolution2d/convolution2d.ts"
     ]
 }
