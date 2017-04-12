@@ -1,4 +1,5 @@
 /// <reference path="../../array-prototype/webgpu_handler.ts" />
+/// <reference path="./functions/sync.ts" />
 
 
 namespace WebDNN {
