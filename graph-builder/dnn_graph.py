@@ -12,14 +12,15 @@ class DNNLayerType(Enum):
     Custom = auto()
     Linear = auto()
     Bias = auto()
+    Scale = auto()
     Relu = auto()
 
 class DNNLayerAttributes(Enum):
-    Inplace = auto()
+    Inplace = auto()#入出力メモリが同じアドレスでよい（違っていても良い）
     Elementwise = auto()
-    Channelwise = auto()
+    Channelwise = auto()#最内ループのインデックスごとに違う処理をするレイヤー
     PostElementwise = auto()#後ろにElementwiseを接続できる
-    PostChannelwise = auto()
+    PostChannelwise = auto()#後ろにChannelwiseを接続できる
 
 class DNNVariableAttributes(Enum):
     Input = auto()
@@ -68,13 +69,38 @@ class DNNLayer:
             self.next_node.append_child_to_tail(layer)
 
 class DNNLinearLayer(DNNLayer):
-    ATTRIBUTES = {DNNLayerAttributes.PostElementwise}
+    """
+    行列積レイヤー(bias含まず)
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
         super(DNNLinearLayer, self).__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
 
+class DNNBiasLayer(DNNLayer):
+    """
+    Channelwiseにウェイトを加算するレイヤー
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
+        super(DNNBiasLayer, self).__init__(name, DNNLayerType.Bias, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+
+class DNNScaleLayer(DNNLayer):
+    """
+    Channelwiseにウェイトを乗算するレイヤー
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
+        super(DNNScaleLayer, self).__init__(name, DNNLayerType.Scale, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+
 class DNNReluLayer(DNNLayer):
-    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.Elementwise, DNNLayerAttributes.Inplace}
+    """
+    Reluレイヤー
+    """
+    # ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Elementwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
         super(DNNReluLayer, self).__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
@@ -112,9 +138,24 @@ class DNNGraphOptimizer:
                     prod.layer.append_child_to_tail(cons_first.layer)
                     # linearの出力がreluの出力になる
                     prod.tops[0] = cons_first.tops[0]
+                    #後続レイヤーが持たないattributeを消す(これでいいのか？)
+                    prod.layer.attributes &= cons_first.layer.attributes
                     # reluのノードは消える (同時に、linear-relu間の変数もなくなる)
                     self.graph.nodes.remove(cons_first)
-                    break
+                    break#グラフが変わったのでvariable_to_nodeをつくりなおす
+                if prod is not None \
+                and DNNLayerAttributes.PostChannelwise in prod.layer.attributes \
+                and len(cons_list) == 1\
+                and DNNLayerAttributes.Channelwise in cons_first.layer.attributes:
+                    # linearのうしろにbiasをくっつける
+                    prod.layer.append_child_to_tail(cons_first.layer)
+                    # linearの出力がbiasの出力になる
+                    prod.tops[0] = cons_first.tops[0]
+                    #後続レイヤーが持たないattributeを消す(これでいいのか？)
+                    prod.layer.attributes &= cons_first.layer.attributes
+                    # biasのノードは消える (同時に、linear-bias間の変数もなくなる)
+                    self.graph.nodes.remove(cons_first)
+                    break#グラフが変わったのでvariable_to_nodeをつくりなおす
             else:
                 # グラフが変化しなかった
                 break

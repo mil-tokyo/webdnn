@@ -20,9 +20,9 @@ async function run() {
   runner = new $M.DNNDescriptorRunner(pipeline_data, $Mg.webgpuHandler);
   await runner.compile();
 
-  runner.loadWeights(new Float32Array([2, 3, 5, 7, 1.1, -1.3]));
+  runner.loadWeights(await fetchWeights('./weight.bin'));
 
-  let input_mat = new Float32Array([1.0, 0, -2.0]);
+  let input_mat = new Float32Array([1.0, 1.0, 1.0]);
   let output_mats = await runner.run([input_mat]);
   console.log(output_mats[0]);
 }
@@ -32,4 +32,12 @@ async function init() {
   let backend = await $M.init();
   console.log(`backend: ${backend}`);
   $Mg = $M.gpu;
+}
+
+async function fetchWeights(path) {
+  let response = await fetch(path);
+  let ab = await response.arrayBuffer();
+  let weights_data = new Float32Array(ab);
+
+  return weights_data;
 }

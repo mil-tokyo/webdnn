@@ -7,10 +7,18 @@ DNN Kernel Builder for WebGPU
 - schedule memory allocation
 """
 
+from enum import Enum, auto
 from collections import defaultdict, OrderedDict
 from typing import List, Set, Dict, Tuple
 import numpy as np
 from dnn_graph import DNNLayer, DNNLayerAttributes, DNNLayerType, DNNVariable, DNNGraphNode, DNNGraph
+
+next_unique_suffix_number = 0
+def get_unique_suffix():
+    global next_unique_suffix_number
+    suffix = '_u{}'.format(next_unique_suffix_number)
+    next_unique_suffix_number += 1
+    return suffix
 
 SIZEOF_FLOAT = 4
 
@@ -52,7 +60,6 @@ class DNNKernelBuilderWebGPU(DNNKernelBuilder):
         weights = {}#(layer_name, weight_name) => array
         for node in self.graph.nodes:
             for layer in node.layer.iterate_self_and_children():
-                layer = node.layer
                 layer_name = layer.name
                 for weight_name, array in layer.weights.items():
                     weights[(layer_name, weight_name)] = array
@@ -188,8 +195,15 @@ class KernelData:
         self.threads_per_thread_group = threads_per_thread_group
         self.meta_buffer = meta_buffer
 
+class KBLayerAttribute(Enum):
+    Elementwise = auto()
+    Channelwise = auto()
+
 class KBLayer:
-    pass
+    def __init__(self, layer: DNNLayer, name: str, attributes: Set[KBLayerAttribute]):
+        self.layer = layer
+        self.name = name
+        self.attributes = attributes
 
 linear_mul_source = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -197,12 +211,13 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                  const device int *meta_buffer[[buffer(2)]],
                   uint index[[thread_position_in_grid]])
 {
-  device float *input_data = data_buffer + meta_buffer[0];
-  device float *output_data = data_buffer + meta_buffer[1];
-  const device float *weight_data = weight_buffer + meta_buffer[2];
-  const int n = meta_buffer[3];
-  const int out_ch = meta_buffer[4];
-  const int in_ch = meta_buffer[5];
+  device float *input_data = data_buffer + (*meta_buffer++);
+  device float *output_data = data_buffer + (*meta_buffer++);
+  const device float *weight_data = weight_buffer + (*meta_buffer++);
+  const int n = (*meta_buffer++);
+  const int out_ch = (*meta_buffer++);
+  const int in_ch = (*meta_buffer++);
+  %%POST_INIT%%
     for (int gid = index; gid < n; gid += 4096) {
       int out_chid = gid % out_ch;
       int sample_id = gid / out_ch;
@@ -222,10 +237,16 @@ float elementwise_relu(float x)
 }
 """
 
+channelwise_bias_source = """
+float channelwise_bias(float x, float weight)
+{
+    return x + weight;
+}
+"""
+
 class KBLinearLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
-        self.layer = layer
-        self.name = "relu"
+        super().__init__(layer, 'linear', set())
     
     def generate_kernels(self, batch_size: int,
         bottoms: List[DNNVariable], tops: List[DNNVariable],
@@ -242,27 +263,75 @@ class KBLinearLayer(KBLayer):
         sources = OrderedDict()# to preserve order
         func_name = 'linear_mul_'
         make_output = 'sum'
+        post_init_source = ''
         for child in self.layer.iterate_self_and_children():
             if child.is_root:
                 continue
             kb_child_layer = KBLayerGenerator.generate(child)
-            elementwise_operator = kb_child_layer.get_elementwise_operator()
-            make_output = elementwise_operator.wrap_expression(make_output)
-            func_name += kb_child_layer.name + '_'
-            sources.update(elementwise_operator.sources)
-        sources[func_name] = linear_mul_source.replace('%%FUNC_NAME%%', func_name).replace('%%MAKE_OUTPUT%%', make_output)
+            if KBLayerAttribute.Elementwise in kb_child_layer.attributes:
+                elementwise_operator = kb_child_layer.get_elementwise_operator(weight_allocation)
+                post_init_source += elementwise_operator.post_init_source
+                make_output = elementwise_operator.wrap_expression(make_output)
+                func_name += kb_child_layer.name + '_'
+                sources.update(elementwise_operator.sources)
+                meta_buffer += elementwise_operator.meta_buffer
+            elif KBLayerAttribute.Channelwise in kb_child_layer.attributes:
+                channelwise_operator = kb_child_layer.get_channelwise_operator(weight_allocation)
+                post_init_source += channelwise_operator.post_init_source
+                make_output = channelwise_operator.wrap_expression(make_output)
+                func_name += kb_child_layer.name + '_'
+                sources.update(channelwise_operator.sources)
+                meta_buffer += channelwise_operator.meta_buffer
+        sources[func_name] = linear_mul_source.replace('%%POST_INIT%%', post_init_source)\
+        .replace('%%FUNC_NAME%%', func_name)\
+        .replace('%%MAKE_OUTPUT%%', make_output)
         
         kernel_data = KernelData(sources, func_name, threadgroups_per_grid, threads_per_thread_group, meta_buffer)
         return [kernel_data]
 
+class KBChannelwiseWeightOperator:
+    """
+    Channelwiseかつ1つのウェイトをとる処理
+    """
+    def __init__(self, func_name, sources, weight_offset):
+        self.func_name = func_name
+        self.sources = sources
+        self._weight_data_name = 'weight_data' + get_unique_suffix()
+        self.post_init_source = """
+const device float *{0} = weight_buffer + (*meta_buffer++);
+        """.format(self._weight_data_name)
+        self.meta_buffer = np.array([weight_offset], dtype=np.int32).tobytes()
+    
+    def wrap_expression(self, expression):
+        return '{0}({1}, {2}[out_chid])'.format(self.func_name, expression, self._weight_data_name)
+
 
 class KBElementwiseOperator:
+    """
+    Elementwiseかつウェイト不要の処理が他のレイヤーに後続する際のカーネル関数生成
+    """
     def __init__(self, func_name, sources):
         self.func_name = func_name
         self.sources = sources
+        self.post_init_source = """
+        """#初期化不要
+        self.meta_buffer = b''
     
     def wrap_expression(self, expression):
         return '{0}({1})'.format(self.func_name, expression)
+
+class KBBiasLayer(KBLayer):
+    def __init__(self, layer: DNNLayer):
+        super().__init__(layer, 'bias', {KBLayerAttribute.Channelwise})
+    
+    def get_channelwise_operator(self, weight_allocation: KBWeightAllocation):
+        weight_aw = weight_allocation.allocation[self.layer.name + '/b']
+        return KBChannelwiseWeightOperator('channelwise_bias', {'channelwise_bias': channelwise_bias_source}, weight_aw.offset)
+    
+    def generate_kernels(self, batch_size: int,
+        bottoms: List[DNNVariable], tops: List[DNNVariable],
+        weight_allocation: KBWeightAllocation, variable_allocation: KBVariableAllocation) -> List[KernelData]:
+        raise NotImplementedError()
 
 relu_source = """
 
@@ -286,10 +355,9 @@ kernel void relu(const device float *weight_buffer[[buffer(0)]],
 
 class KBReluLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
-        self.layer = layer
-        self.name = "relu"
+        super().__init__(layer, 'relu', {KBLayerAttribute.Elementwise})
     
-    def get_elementwise_operator(self):
+    def get_elementwise_operator(self, weight_allocation: KBWeightAllocation):
         return KBElementwiseOperator('elementwise_relu', {'elementwise_relu': elementwise_relu_source})
     
     def generate_kernels(self, batch_size: int,
@@ -311,6 +379,8 @@ class KBLayerGenerator:
     def generate(cls, layer: DNNLayer) -> KBLayer:
         if layer.layer_type == DNNLayerType.Linear:
             kb_layer = KBLinearLayer(layer)
+        elif layer.layer_type == DNNLayerType.Bias:
+            kb_layer = KBBiasLayer(layer)
         elif layer.layer_type == DNNLayerType.Relu:
             kb_layer = KBReluLayer(layer)
         else:
