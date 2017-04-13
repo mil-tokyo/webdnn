@@ -91,9 +91,7 @@ class DNNKernelBuilderWebGPU(DNNKernelBuilder):
         for node in self.graph.nodes:
             for v in node.bottoms + node.tops:
                 variables[v.name] = v
-            for layer in node.layer.iterate_self_and_children():
-                for v in layer.temporary_variables:
-                    variables[v.name] = v
+            # TODO: temporary variable (im2colのバッファなど、サイズが実装依存なのでbuilder内でサイズを決めて確保)
         return variables
     
     def _allocate_variables(self, variables):

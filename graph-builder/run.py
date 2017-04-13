@@ -19,10 +19,10 @@ def main():
 #     node_relu = DNNGraphNode(layer_relu.name, layer_relu, [var_h], [var_y])
 #     graph = DNNGraph([node_l1_mul, node_relu], [var_x], [var_y])
     layer_l1_mul = DNNLinearLayer('l1', {'in_size': 3, 'out_size': 2},
-    {'W': np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32)}, [])
+    {'W': np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32)})
     layer_bias1 = DNNBiasLayer('bias1', {'out_size': 2}, 
-    {'b': np.array([1.0, -10.0], dtype=np.float32)}, [])
-    layer_relu1 = DNNReluLayer('relu1', {'out_size': 2}, {}, [])
+    {'b': np.array([1.0, -10.0], dtype=np.float32)})
+    layer_relu1 = DNNReluLayer('relu1', {'out_size': 2})
     
     var_x = DNNVariable('x', (1, 3), {DNNVariableAttributes.Input})
     var_h1 = DNNVariable('h1', (1, 2), set())

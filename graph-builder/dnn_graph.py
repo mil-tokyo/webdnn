@@ -25,7 +25,6 @@ class DNNLayerAttributes(Enum):
 class DNNVariableAttributes(Enum):
     Input = auto()
     Output = auto()
-    Temporary = auto()
 
 class DNNVariable:
     instances = {}
@@ -40,13 +39,12 @@ class DNNVariable:
         return cls.instances[name]
 
 class DNNLayer:
-    def __init__(self, name: str, layer_type: DNNLayerType, attributes: Set[DNNLayerAttributes], parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable], next_node):
+    def __init__(self, name: str, layer_type: DNNLayerType, attributes: Set[DNNLayerAttributes], parameters: Dict[str, object], weights: Dict[str, np.ndarray]=None, next_node=None):
         self.name = name
         self.layer_type = layer_type
         self.attributes = attributes
         self.parameters = parameters
-        self.weights = weights
-        self.temporary_variables = temporary_variables
+        self.weights = weights if weights is not None else dict()
         # 今の所、1出力レイヤーの後ろに1入力1出力レイヤーをくっつけるだけの機能
         # 連結グラフとして表現
         self.next_node = next_node
@@ -74,8 +72,8 @@ class DNNLinearLayer(DNNLayer):
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise}
 
-    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
-        super(DNNLinearLayer, self).__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
+        super(DNNLinearLayer, self).__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights)
 
 class DNNBiasLayer(DNNLayer):
     """
@@ -83,8 +81,8 @@ class DNNBiasLayer(DNNLayer):
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
-        super(DNNBiasLayer, self).__init__(name, DNNLayerType.Bias, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
+        super(DNNBiasLayer, self).__init__(name, DNNLayerType.Bias, DNNReluLayer.ATTRIBUTES, parameters, weights)
 
 class DNNScaleLayer(DNNLayer):
     """
@@ -92,8 +90,8 @@ class DNNScaleLayer(DNNLayer):
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
-        super(DNNScaleLayer, self).__init__(name, DNNLayerType.Scale, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
+        super(DNNScaleLayer, self).__init__(name, DNNLayerType.Scale, DNNReluLayer.ATTRIBUTES, parameters, weights)
 
 class DNNReluLayer(DNNLayer):
     """
@@ -102,8 +100,8 @@ class DNNReluLayer(DNNLayer):
     # ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise, DNNLayerAttributes.PostChannelwise, DNNLayerAttributes.Elementwise, DNNLayerAttributes.Channelwise, DNNLayerAttributes.Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray], temporary_variables: List[DNNVariable]):
-        super(DNNReluLayer, self).__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights, temporary_variables, None)
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]=None):
+        super(DNNReluLayer, self).__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights)
 
 class DNNGraphNode:
     def __init__(self, name: str, layer: DNNLayer, bottoms: List[DNNVariable], tops: List[DNNVariable]):
