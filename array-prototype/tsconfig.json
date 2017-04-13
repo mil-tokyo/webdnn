@@ -20,11 +20,6 @@
       "dnn_buffer_fallback.ts",
       "webdnn.ts",
       "gpu_interface_webgpu.ts",
-      "dnn/offline/dnn_pipeline_generator.ts",
-      "dnn/offline/dnn_pipeline_layer.ts",
-      "dnn/offline/dnn_pipeline_relu_layer.ts",
-      "dnn/offline/dnn_pipeline_linear_layer.ts",
-      "dnn/online/dnn_pipeline_runner.ts",
       "dnn/dnn_descriptor_runner.ts"
     ]
 }
