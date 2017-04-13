@@ -47,7 +47,7 @@ namespace WebDNN {
       return state;
     }
 
-    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | DNNBufferWebGPU)[]): void {
+    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | DNNBufferWebGPU)[], getCompletedPromise?: boolean): Promise<void> | null {
       let commandBuffer = this.createCommandBuffer();
       let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
@@ -66,7 +66,12 @@ namespace WebDNN {
       }
       commandEncoder.dispatch(threadgroupsPerGrid, threadsPerThreadgroup);
       commandEncoder.endEncoding();
+      let promise: Promise<void> | null = null;
+      if (getCompletedPromise) {
+        promise = commandBuffer.completed();
+      }
       commandBuffer.commit();
+      return promise;
     }
 
     async sync(): Promise<void> {
