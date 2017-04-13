@@ -10,11 +10,19 @@ import numpy as np
 
 
 class DNNLayerType(Enum):
-    Custom = auto()
+    Unknown = auto()
     Linear = auto()
-    Bias = auto()
-    Scale = auto()
+    Convolution2D = auto()
+    ChannelwiseBias = auto()
+    ChannelwiseScale = auto()
     Relu = auto()
+    Sigmoid = auto()
+    Deconvolution2D = auto()
+    MaxPooling2D = auto()
+    AveragePooling2D = auto()
+    Concat = auto()
+    ElementwiseSum = auto()
+    Reshape = auto()
 
 
 class DNNLayerAttributes(Enum):
@@ -24,7 +32,9 @@ class DNNLayerAttributes(Enum):
     """
 
     Inplace = auto()  # 入出力メモリが同じアドレスでよい（違っていても良い）
-    Elementwise = auto()
+    FirstInplace = auto()  # 最初の入力および出力メモリが同じアドレスで良い(A=A+B)（違っていても良い）
+    HaveWeights = auto()  # ウェイトを持つ
+    Elementwise = auto()  # 全要素に同じ処理をするレイヤー
     Channelwise = auto()  # 最内ループのインデックスごとに違う処理をするレイヤー
     PostElementwise = auto()  # 後ろにElementwiseを接続できる
     PostChannelwise = auto()  # 後ろにChannelwiseを接続できる
@@ -44,11 +54,16 @@ class DNNVariable:
     """
     レイヤー間で受け渡される変数
     名前で識別される
+    現在のところ、float32型(4byte/element)を想定している
+    shapeは、(n, c)または(n, h, w, c) n: バッチサイズ、 c: チャンネルサイズ
+    必ず、最初がバッチサイズ、最後がchannel
     """
     instances = {}
 
-    def __init__(self, name: str, shape: Tuple[int], attributes: Set[DNNVariableAttributes]):
+    def __init__(self, name: str, shape: Tuple, attributes: Set[DNNVariableAttributes] = None):
         assert name not in DNNVariable.instances
+        if attributes is None:
+            attributes = set()
         self.name = name
         self.shape = shape
         self.attributes = attributes
@@ -61,7 +76,8 @@ class DNNVariable:
 
 class DNNLayer:
     def __init__(self, name: str, layer_type: DNNLayerType, attributes: Set[DNNLayerAttributes],
-                 parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None, next_node=None):
+                 parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None,
+                 n_inputs: int = 1, n_outputs: int = 1, next_node=None):
         self.name = name
         self.layer_type = layer_type
         self.attributes = attributes
@@ -71,6 +87,8 @@ class DNNLayer:
         # 連結グラフとして表現
         self.next_node = next_node
         self.is_root = True  # 誰かの子でない
+        self.n_inputs = n_inputs  # 入力変数の数
+        self.n_outputs = n_outputs  # 出力変数の数
 
     def iterate_self_and_children(self):
         yield self
@@ -84,6 +102,7 @@ class DNNLayer:
         """
         layer.is_root = False
         if self.next_node is None:
+            assert self.n_outputs == self.n_inputs
             self.next_node = layer
         else:
             self.next_node.append_child_to_tail(layer)
@@ -92,30 +111,35 @@ class DNNLayer:
 class DNNLinearLayer(DNNLayer):
     """
     行列積レイヤー(bias含まず)
+    Convolutionの後に接続する場合、Reshapeレイヤーで2次元入力(n, c)に変換してから入力する
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
-                  DNNLayerAttributes.PostChannelwise}
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
         """
-        weights['w']: (in_size, out_size)
+        weights['W']: (in_size, out_size)
         :param name: 
         :param parameters: 
         :param weights: 
         """
         assert len(weights) == 1
         assert 'W' in weights
-        super(DNNLinearLayer, self).__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights)
+        assert 'in_size' in parameters
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.Linear, DNNLinearLayer.ATTRIBUTES, parameters, weights)
 
 
-class DNNBiasLayer(DNNLayer):
+class DNNChannelwiseBiasLayer(DNNLayer):
     """
     Channelwiseにウェイトを加算するレイヤー
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
                   DNNLayerAttributes.PostChannelwise,
                   DNNLayerAttributes.Channelwise,
-                  DNNLayerAttributes.Inplace}
+                  DNNLayerAttributes.Inplace,
+                  DNNLayerAttributes.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
         """
@@ -126,20 +150,22 @@ class DNNBiasLayer(DNNLayer):
         """
         assert len(weights) == 1
         assert 'b' in weights
-        super(DNNBiasLayer, self).__init__(name, DNNLayerType.Bias, DNNReluLayer.ATTRIBUTES, parameters, weights)
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.ChannelwiseBias, DNNChannelwiseBiasLayer.ATTRIBUTES, parameters, weights)
 
 
-class DNNScaleLayer(DNNLayer):
+class DNNChannelwiseScaleLayer(DNNLayer):
     """
     Channelwiseにウェイトを乗算するレイヤー
     """
     ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
                   DNNLayerAttributes.PostChannelwise,
                   DNNLayerAttributes.Channelwise,
-                  DNNLayerAttributes.Inplace}
+                  DNNLayerAttributes.Inplace,
+                  DNNLayerAttributes.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
-        super(DNNScaleLayer, self).__init__(name, DNNLayerType.Scale, DNNReluLayer.ATTRIBUTES, parameters, weights)
+        super().__init__(name, DNNLayerType.ChannelwiseScale, DNNChannelwiseScaleLayer.ATTRIBUTES, parameters, weights)
 
 
 class DNNReluLayer(DNNLayer):
@@ -154,7 +180,172 @@ class DNNReluLayer(DNNLayer):
                   DNNLayerAttributes.Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
-        super(DNNReluLayer, self).__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights)
+        super().__init__(name, DNNLayerType.Relu, DNNReluLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNSigmoidLayer(DNNLayer):
+    """
+    Sigmoidレイヤー
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.Elementwise,
+                  DNNLayerAttributes.Channelwise,
+                  DNNLayerAttributes.Inplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        super().__init__(name, DNNLayerType.Sigmoid, DNNSigmoidLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNConvolution2DLayer(DNNLayer):
+    """
+    Convolutionレイヤー(bias含まず)
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.HaveWeights}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
+        """
+        weights['W']: (kh, kw, in_size, out_size)
+        parameters: {in_size: int, out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int],
+         cover_all: Boolean=False}
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert len(weights) == 1
+        assert 'W' in weights
+        assert 'in_size' in parameters
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.Convolution2D, DNNConvolution2DLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNDeconvolution2DLayer(DNNLayer):
+    """
+    Deconvolutionレイヤー(bias含まず)
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.HaveWeights}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray]):
+        """
+        weights['W']: (kh, kw, in_size, out_size)
+        parameters: {in_size: int, out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert len(weights) == 1
+        assert 'W' in weights
+        assert 'in_size' in parameters
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.Deconvolution2D, DNNDeconvolution2DLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNMaxPooling2DLayer(DNNLayer):
+    """
+    Max pooling (2D) レイヤー
+    padding挙動はchainer準拠 (cover_allに注意)
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        """
+        parameters: {out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int], cover_all: Boolean=True}
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.MaxPooling2D, DNNMaxPooling2DLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNAveragePooling2DLayer(DNNLayer):
+    """
+    Average pooling (2D) レイヤー
+    padding挙動はchainer準拠
+    当面はglobal average poolingだけ実装
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        """
+        parameters: {out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert 'out_size' in parameters
+        super().__init__(name, DNNLayerType.AveragePooling2D, DNNAveragePooling2DLayer.ATTRIBUTES, parameters, weights)
+
+
+class DNNConcatLayer(DNNLayer):
+    """
+    n入力を連結するレイヤー
+    結合軸はparametersで指定(chainerと同じ挙動)
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        """
+        parameters: {axis: int, n_inputs: int}
+        n_inputs: 入力変数の数
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert 'axis' in parameters
+        assert 'n_inputs' in parameters
+        # 結合軸方向の各データの次元数がいる？
+        super().__init__(name, DNNLayerType.Concat, DNNConcatLayer.ATTRIBUTES, parameters, weights,
+                         n_inputs=parameters['n_inputs'])
+
+
+class DNNElementwiseSumLayer(DNNLayer):
+    """
+    n入力を加算するレイヤー
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.FirstInplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        """
+        parameters: {n_inputs: int}
+        n_inputs: 入力変数の数
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert 'axis' in parameters
+        assert 'n_inputs' in parameters
+        super().__init__(name, DNNLayerType.ElementwiseSum, DNNElementwiseSumLayer.ATTRIBUTES, parameters, weights,
+                         n_inputs=parameters['n_inputs'])
+
+
+class DNNReshapeLayer(DNNLayer):
+    """
+    入力変数の形を変形するレイヤー
+    形状変化を表現する便宜上のもので、データ操作はない
+    """
+    ATTRIBUTES = {DNNLayerAttributes.PostElementwise,
+                  DNNLayerAttributes.PostChannelwise,
+                  DNNLayerAttributes.Inplace}
+
+    def __init__(self, name: str, parameters: Dict[str, object], weights: Dict[str, np.ndarray] = None):
+        """
+        parameters: {out_shape: Tuple}
+        :param name: 
+        :param parameters: 
+        :param weights: 
+        """
+        assert 'out_shape' in parameters
+        super().__init__(name, DNNLayerType.Reshape, DNNReshapeLayer.ATTRIBUTES, parameters, weights)
 
 
 class DNNGraphNode:

@@ -5,8 +5,8 @@ import sys
 import os
 import numpy as np
 import json
-from dnn_graph import DNNLayer, DNNLinearLayer, DNNBiasLayer, DNNScaleLayer, DNNReluLayer, DNNLayerAttributes, \
-    DNNLayerType, DNNVariable, DNNGraphNode, DNNGraph, DNNVariableAttributes, DNNGraphOptimizer
+from dnn_graph import DNNLayer, DNNLinearLayer, DNNChannelwiseBiasLayer, DNNChannelwiseScaleLayer, DNNReluLayer, \
+    DNNLayerAttributes, DNNLayerType, DNNVariable, DNNGraphNode, DNNGraph, DNNVariableAttributes, DNNGraphOptimizer
 from dnn_kernel_builder_webgpu import DNNKernelBuilderWebGPU, DNNDescriptorWebGPU
 
 
@@ -45,7 +45,7 @@ def construct_graph(weights, batch_size):
     layers.append(DNNLinearLayer('l1', {'in_size': 784, 'out_size': 100},
                                  {'W': weights['l1/W']}))
     var_shapes.append((batch_size, 100))
-    layers.append(DNNBiasLayer('bias1', {'out_size': 100},
+    layers.append(DNNChannelwiseBiasLayer('bias1', {'out_size': 100},
                                {'b': weights['l1/b']}))
     var_shapes.append((batch_size, 100))
     layers.append(DNNReluLayer('relu1', {'out_size': 100}))
@@ -54,7 +54,7 @@ def construct_graph(weights, batch_size):
     layers.append(DNNLinearLayer('l2', {'in_size': 100, 'out_size': 100},
                                  {'W': weights['l2/W']}))
     var_shapes.append((batch_size, 100))
-    layers.append(DNNBiasLayer('bias2', {'out_size': 100},
+    layers.append(DNNChannelwiseBiasLayer('bias2', {'out_size': 100},
                                {'b': weights['l2/b']}))
     var_shapes.append((batch_size, 100))
     layers.append(DNNReluLayer('relu2', {'out_size': 100}))
@@ -63,7 +63,7 @@ def construct_graph(weights, batch_size):
     layers.append(DNNLinearLayer('l3', {'in_size': 100, 'out_size': 10},
                                  {'W': weights['l3/W']}))
     var_shapes.append((batch_size, 10))
-    layers.append(DNNBiasLayer('bias3', {'out_size': 10},
+    layers.append(DNNChannelwiseBiasLayer('bias3', {'out_size': 10},
                                {'b': weights['l3/b']}))
     var_shapes.append((batch_size, 10))
 

@@ -372,7 +372,7 @@ class KBElementwiseOperator:
         return '{0}({1})'.format(self.func_name, expression)
 
 
-class KBBiasLayer(KBLayer):
+class KBChannelwiseBiasLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
         super().__init__(layer, 'bias', {KBLayerAttribute.Channelwise})
 
@@ -441,8 +441,8 @@ class KBLayerGenerator:
     def generate(cls, layer: DNNLayer) -> KBLayer:
         if layer.layer_type == DNNLayerType.Linear:
             kb_layer = KBLinearLayer(layer)
-        elif layer.layer_type == DNNLayerType.Bias:
-            kb_layer = KBBiasLayer(layer)
+        elif layer.layer_type == DNNLayerType.ChannelwiseBias:
+            kb_layer = KBChannelwiseBiasLayer(layer)
         elif layer.layer_type == DNNLayerType.Relu:
             kb_layer = KBReluLayer(layer)
         else:
