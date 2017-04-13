@@ -242,6 +242,20 @@ float channelwise_bias(float x, float weight)
 }
 """
 
+class KBKernelSerialGenerator():
+    """
+    1カーネル内でユニークな変数suffixを作るためのカウンタ
+    カーネル内だけでシリアルを作ることで、同じ組み合わせ(linear-bias)で同じカーネルソースになることを期待している
+    """
+
+    def __init__(self):
+        self.value = 0
+    
+    def get(self):
+        value = self.value
+        self.value += 1
+        return value
+
 class KBLinearLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
         super().__init__(layer, 'linear', set())
@@ -262,19 +276,20 @@ class KBLinearLayer(KBLayer):
         func_name = 'linear_mul_'
         make_output = 'sum'
         post_init_source = ''
+        serial_generator = KBKernelSerialGenerator()
         for child in self.layer.iterate_self_and_children():
             if child.is_root:
                 continue
             kb_child_layer = KBLayerGenerator.generate(child)
             if KBLayerAttribute.Elementwise in kb_child_layer.attributes:
-                elementwise_operator = kb_child_layer.get_elementwise_operator(weight_allocation)
+                elementwise_operator = kb_child_layer.get_elementwise_operator(weight_allocation, serial_generator)
                 post_init_source += elementwise_operator.post_init_source
                 make_output = elementwise_operator.wrap_expression(make_output)
                 func_name += kb_child_layer.name + '_'
                 sources.update(elementwise_operator.sources)
                 meta_buffer += elementwise_operator.meta_buffer
             elif KBLayerAttribute.Channelwise in kb_child_layer.attributes:
-                channelwise_operator = kb_child_layer.get_channelwise_operator(weight_allocation)
+                channelwise_operator = kb_child_layer.get_channelwise_operator(weight_allocation, serial_generator)
                 post_init_source += channelwise_operator.post_init_source
                 make_output = channelwise_operator.wrap_expression(make_output)
                 func_name += kb_child_layer.name + '_'
@@ -291,10 +306,11 @@ class KBChannelwiseWeightOperator:
     """
     Channelwiseかつ1つのウェイトをとる処理
     """
-    def __init__(self, func_name, sources, weight_offset):
+    def __init__(self, func_name, sources, serial_generator, weight_offset):
         self.func_name = func_name
         self.sources = sources
-        self._weight_data_name = 'weight_data' + get_unique_suffix()
+        self.serial_generator = serial_generator
+        self._weight_data_name = 'weight_data' + str(self.serial_generator.get())
         self.post_init_source = """
 const device float *{0} = weight_buffer + (*meta_buffer++);
         """.format(self._weight_data_name)
@@ -308,12 +324,13 @@ class KBElementwiseOperator:
     """
     Elementwiseかつウェイト不要の処理が他のレイヤーに後続する際のカーネル関数生成
     """
-    def __init__(self, func_name, sources):
+    def __init__(self, func_name, sources, serial_generator):
         self.func_name = func_name
         self.sources = sources
         self.post_init_source = """
         """#初期化不要
         self.meta_buffer = b''
+        self.serial_generator = serial_generator
     
     def wrap_expression(self, expression):
         return '{0}({1})'.format(self.func_name, expression)
@@ -322,9 +339,9 @@ class KBBiasLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
         super().__init__(layer, 'bias', {KBLayerAttribute.Channelwise})
     
-    def get_channelwise_operator(self, weight_allocation: KBWeightAllocation):
+    def get_channelwise_operator(self, weight_allocation: KBWeightAllocation, serial_generator: KBKernelSerialGenerator):
         weight_aw = weight_allocation.allocation[self.layer.name + '/b']
-        return KBChannelwiseWeightOperator('channelwise_bias', {'channelwise_bias': channelwise_bias_source}, weight_aw.offset)
+        return KBChannelwiseWeightOperator('channelwise_bias', {'channelwise_bias': channelwise_bias_source}, serial_generator, weight_aw.offset)
     
     def generate_kernels(self, batch_size: int,
         bottoms: List[DNNVariable], tops: List[DNNVariable],
@@ -355,8 +372,8 @@ class KBReluLayer(KBLayer):
     def __init__(self, layer: DNNLayer):
         super().__init__(layer, 'relu', {KBLayerAttribute.Elementwise})
     
-    def get_elementwise_operator(self, weight_allocation: KBWeightAllocation):
-        return KBElementwiseOperator('elementwise_relu', {'elementwise_relu': elementwise_relu_source})
+    def get_elementwise_operator(self, weight_allocation: KBWeightAllocation, serial_generator: KBKernelSerialGenerator):
+        return KBElementwiseOperator('elementwise_relu', {'elementwise_relu': elementwise_relu_source}, serial_generator)
     
     def generate_kernels(self, batch_size: int,
         bottoms: List[DNNVariable], tops: List[DNNVariable],
