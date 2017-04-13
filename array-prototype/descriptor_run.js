@@ -17,14 +17,17 @@ async function run() {
   }
 
   let pipeline_data = JSON.parse($('#dnn_pipeline').val());
-  runner = new $M.DNNDescriptorRunner(pipeline_data, $Mg.webgpuHandler);
+  runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
   await runner.compile();
 
-  runner.loadWeights(await fetchWeights('./weight.bin'));
+  await runner.loadWeights(await fetchWeights('./weight.bin'));
 
-  let input_mat = new Float32Array([1.0, 1.0, 1.0]);
-  let output_mats = await runner.run([input_mat]);
-  console.log(output_mats[0]);
+  let input_views = await runner.getInputViews();
+  let output_views = await runner.getOutputViews();
+  let input_mat = new Float32Array([1.0, 1.0, -1.0]);
+  input_views[0].set(input_mat);
+  await runner.run([input_mat]);
+  console.log(output_views[0]);
 }
 
 async function init() {
