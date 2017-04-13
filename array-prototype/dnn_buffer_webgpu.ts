@@ -45,5 +45,24 @@ namespace WebDNN {
     static init(webgpuHandler: WebGPUHandler) {
       this.webgpuHandler = webgpuHandler;
     }
+
+    getWriteView(offset: number, length: number, number_type: any): ArrayBufferView {
+      let viewSameType = new number_type(this.bufferView.buffer, this.bufferView.byteOffset + offset * number_type.BYTES_PER_ELEMENT, length);
+      return viewSameType;
+    }
+
+    getReadView(offset: number, length: number, number_type: any): ArrayBufferView {
+      let viewSameType = new number_type(this.bufferView.buffer, this.bufferView.byteOffset + offset * number_type.BYTES_PER_ELEMENT, length);
+      return viewSameType;
+    }
+
+    async syncWriteViews(): Promise<void> {
+      // no sync needed
+    }
+
+    async syncReadViews(): Promise<void> {
+      // no sync needed
+      await DNNBufferWebGPU.webgpuHandler.sync();
+    }
   }
 }

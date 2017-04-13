@@ -7,5 +7,8 @@ namespace WebDNN {
     async init(option?: any) {
     }
 
+    createDNNDescriptorRunner(dnnDescriptor: any): DNNDescriptorRunner {
+      return new DNNDescriptorRunnerFallback(dnnDescriptor);
+    }
   }
 }

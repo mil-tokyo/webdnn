@@ -20,6 +20,8 @@
       "dnn_buffer_fallback.ts",
       "webdnn.ts",
       "gpu_interface_webgpu.ts",
-      "dnn/dnn_descriptor_runner.ts"
+      "dnn/dnn_descriptor_runner.ts",
+      "dnn/dnn_descriptor_runner_webgpu.ts",
+      "dnn/dnn_descriptor_runner_fallback.ts"
     ]
 }

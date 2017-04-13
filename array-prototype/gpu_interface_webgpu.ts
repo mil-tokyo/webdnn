@@ -23,5 +23,8 @@ kernel void sync(){}
 
     }
 
+    createDNNDescriptorRunner(dnnDescriptor: any): DNNDescriptorRunner {
+      return new DNNDescriptorRunnerWebGPU(dnnDescriptor, this.webgpuHandler);
+    }
   }
 }

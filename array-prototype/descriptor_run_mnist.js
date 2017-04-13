@@ -17,18 +17,21 @@ async function run() {
   }
 
   let pipeline_data = JSON.parse($('#dnn_pipeline').val());
-  runner = new $M.DNNDescriptorRunner(pipeline_data, $Mg.webgpuHandler);
+  runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
   await runner.compile();
 
-  runner.loadWeights(await fetchWeights('./weight.bin'));
+  await runner.loadWeights(await fetchWeights('./weight.bin'));
   let test_samples = await fetchSamples('./mnist/test_samples.json');
+  let input_views = await runner.getInputViews();
+  let output_views = await runner.getOutputViews();
 
   for (let i = 0; i < test_samples.length; i++) {
     let sample = test_samples[i];
+    input_views[0].set(sample.x);
     console.log(`ground truth: ${sample.y}`);
-    let output_mats = await runner.run([sample.x]);
+    await runner.run();
 
-    let out_vec = output_mats[0];
+    let out_vec = output_views[0];
     let pred_label = 0;
     let pred_score = -Infinity;
     for (let j = 0; j < out_vec.length; j++) {
