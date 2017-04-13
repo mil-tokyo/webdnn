@@ -68,7 +68,7 @@ namespace WebDNN {
       commandEncoder.endEncoding();
       let promise: Promise<void> | null = null;
       if (getCompletedPromise) {
-        promise = commandBuffer.completed();
+        promise = commandBuffer.completed;
       }
       commandBuffer.commit();
       return promise;
@@ -89,7 +89,7 @@ namespace WebDNN {
           depth: 1
         });
       commandEncoder.endEncoding();
-      let promise = commandBuffer.completed();
+      let promise = commandBuffer.completed;
       commandBuffer.commit();
       return promise;
     }
@@ -130,7 +130,7 @@ declare interface WebGPUCommandQueue {
 declare interface WebGPUCommandBuffer {
   createComputeCommandEncoder(): WebGPUComputeCommandEncoder;
   commit(): void;
-  completed(): Promise<void>;
+  completed: Promise<void>;
 }
 
 declare interface WebGPUCommandEncoder {
