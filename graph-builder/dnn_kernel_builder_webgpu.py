@@ -40,9 +40,8 @@ using namespace metal;
 """
 
 class DNNKernelBuilderWebGPU(DNNKernelBuilder):
-    def __init__(self, graph: DNNGraph, batch_size: int):
+    def __init__(self, graph: DNNGraph):
         self.graph = graph
-        self.batch_size = batch_size
     
     def build(self) -> DNNDescriptor:
         weights = self._enum_weights()
@@ -115,7 +114,7 @@ class DNNKernelBuilderWebGPU(DNNKernelBuilder):
         for node in self.graph.nodes:
             layer = node.layer
             kb_layer = KBLayerGenerator.generate(layer)
-            kernels = kb_layer.generate_kernels(self.batch_size, node.bottoms, node.tops, weight_allocation, variable_allocation)
+            kernels = kb_layer.generate_kernels(self.graph.batch_size, node.bottoms, node.tops, weight_allocation, variable_allocation)
             all_kernels.extend(kernels)
         return all_kernels
     
@@ -148,7 +147,8 @@ class DNNKernelBuilderWebGPU(DNNKernelBuilder):
         'weight_allocation': weight_allocation.to_dict(),
         'variable_allocation': variable_allocation.to_dict(),
         'inputs': [v.name for v in self.graph.inputs],
-        'outputs': [v.name for v in self.graph.outputs]
+        'outputs': [v.name for v in self.graph.outputs],
+        'batch_size': self.graph.batch_size
         }
         
 class KBAllocatedVariable:

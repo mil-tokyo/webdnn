@@ -113,10 +113,11 @@ class DNNGraphNode:
         self.tops = tops
 
 class DNNGraph:
-    def __init__(self, nodes: List[DNNGraphNode], inputs: List[DNNVariable], outputs: List[DNNVariable]):
+    def __init__(self, nodes: List[DNNGraphNode], inputs: List[DNNVariable], outputs: List[DNNVariable], batch_size: int):
         self.nodes = nodes
         self.inputs = inputs
         self.outputs = outputs
+        self.batch_size = batch_size
 
 class DNNGraphOptimizer:
     def __init__(self, graph):

@@ -31,11 +31,11 @@ def main():
     node_l1_mul = DNNGraphNode(layer_l1_mul.name, layer_l1_mul, [var_x], [var_h1])
     node_bias1 = DNNGraphNode(layer_bias1.name, layer_bias1, [var_h1], [var_h2])
     node_relu1 = DNNGraphNode(layer_relu1.name, layer_relu1, [var_h2], [var_y])
-    graph = DNNGraph([node_l1_mul, node_bias1, node_relu1], [var_x], [var_y])
+    graph = DNNGraph([node_l1_mul, node_bias1, node_relu1], [var_x], [var_y], 1)
     optimizer = DNNGraphOptimizer(graph)
     optimizer.optimize()
 
-    builder = DNNKernelBuilderWebGPU(graph, 1)
+    builder = DNNKernelBuilderWebGPU(graph)
     builder.build()
     desc = builder.description
     desc_str = json.dumps(desc, indent=2)
