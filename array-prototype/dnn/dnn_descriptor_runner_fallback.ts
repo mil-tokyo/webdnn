@@ -11,6 +11,12 @@ namespace WebDNN {
     run(): Promise<void> {
       throw new Error('Not implemented');
     }
+    async getInputViews(): Promise<Float32Array[]> {
+      throw new Error('Not implemented');
+    }
+    async getOutputViews(): Promise<Float32Array[]> {
+      throw new Error('Not implemented');
+    }
   }
   export interface DNNDescriptorFallback {
   }

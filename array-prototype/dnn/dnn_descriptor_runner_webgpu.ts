@@ -49,31 +49,39 @@ namespace WebDNN {
 
     async run(): Promise<void> {
       //set input to GPU
-      await this.dataMat.syncWriteViews();
+      //await this.dataMat.syncWriteViews();//not needed for DNNBufferWebGPU
 
       //execute kernels
+      let complete_promise: Promise<void> | null = null;
       for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
         let exec_info = this.descriptor.exec_infos[i];
-        this.webGPUHandler.executeSinglePipelineState(
+        let is_last = i == this.descriptor.exec_infos.length - 1;
+        complete_promise = this.webGPUHandler.executeSinglePipelineState(
           'descriptor.' + exec_info.entry_func_name,
           exec_info.threadgroups_per_grid,
           exec_info.threads_per_thread_group,
-          [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]]
+          [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
+          is_last
         );
       }
+      await complete_promise!;//wait to finish final kernel
 
       // get output from GPU
-      await this.dataMat.syncReadViews();
+      //await this.dataMat.syncReadViews();//not needed for DNNBufferWebGPU
     }
   }
 
   export interface DNNDescriptorWebGPU {
     kernel_source: string;
     exec_infos: DNNDescriptorWebGPUExecInfos[];
-    weight_allocation: {total_size: number;
-    allocation: {[index: string]: {name: string, offset: number, size: number}}};
-    variable_allocation: {total_size: number;
-    allocation: {[index: string]: {name: string, offset: number, size: number}}};
+    weight_allocation: {
+      total_size: number;
+      allocation: { [index: string]: { name: string, offset: number, size: number } }
+    };
+    variable_allocation: {
+      total_size: number;
+      allocation: { [index: string]: { name: string, offset: number, size: number } }
+    };
     inputs: string[];
     outputs: string[];
   }

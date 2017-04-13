@@ -61,7 +61,7 @@ namespace WebDNN {
     }
 
     async syncReadViews(): Promise<void> {
-      // no sync needed
+      // if the user awaits promise from final kernel execution, this function call is not needed.
       await DNNBufferWebGPU.webgpuHandler.sync();
     }
   }
