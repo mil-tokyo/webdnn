@@ -1,0 +1,15 @@
+<title>WebGPU Performance Test: sgemm</title>
+<link rel="stylesheet" href="../common/common.css">
+
+<header>
+    <h1>WebGPU Performance Test: sgemm</h1>
+    <button onclick="SgemmTest.main()">START</button>
+</header>
+<main>
+    <div id="log"></div>
+</main>
+<script type="x-shader/x-metal" id="sgemm" src="../kernels/sgemm.metal"></script>
+
+<script src="../../build/array_prototype/webdnn.js"></script>
+<script src="../../build/test/common/harness.js"></script>
+<script src="../../build/test/performance/sgemm.js"></script>

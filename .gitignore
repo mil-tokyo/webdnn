@@ -1,2 +1,5 @@
-array-prototype/webdnn.js
-array-prototype/webdnn.js.map
+__pycache__
+.idea
+build
+resources
+output

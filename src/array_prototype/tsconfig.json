@@ -1,16 +1,16 @@
 {
     "compilerOptions": {
         "target": "es2017",
-        "outDir": "../build/test",
+        "strictNullChecks": true,
+        "outFile": "../../build/array_prototype/webdnn.js",
         "lib": [
             "es2017",
             "dom"
         ],
+        "declaration": true,
         "sourceMap": true
     },
     "files": [
-        "./performance/sgemm.ts",
-        "./performance/convolution2d.ts",
-        "./performance/resnet50.ts"
+        "webdnn.ts"
     ]
 }
