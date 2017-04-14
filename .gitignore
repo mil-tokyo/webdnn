@@ -3,3 +3,4 @@ __pycache__
 build
 resources
 output
+.DS_Store
