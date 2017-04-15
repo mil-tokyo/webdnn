@@ -12,6 +12,7 @@ from graph_builder.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
 
 # from graph_builder.dnn_descriptor.dnn_descriptor_webgpu import DNNDescriptorWebGPU
 
+OPTIMIZE = os.environ.get('OPTIMIZE', '1') == '1'
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 RESOURCES_DIR = path.join(path.dirname(__file__), "../../resources/mnist")
 
@@ -90,8 +91,9 @@ def main():
     weights = load_mnist_weights(path.join(RESOURCES_DIR, "snapshot_iter_12000"))
     graph = construct_graph(weights, batch_size=1)
 
-    optimizer = GraphOptimizer(graph)
-    optimizer.optimize()
+    if OPTIMIZE:
+        optimizer = GraphOptimizer(graph)
+        optimizer.optimize()
 
     builder = GraphDescriptorGeneratorWebGPU(graph)
     descriptor = builder.generate()

@@ -1,52 +1,42 @@
-import numpy as np
 from typing import List
 
-from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph import Variable, Layer
 from graph_builder.backend.webgpu.allocator import MemoryLayout
-from graph_builder.backend.webgpu.attributes.elementwise import ElementwiseAttribute
+from graph_builder.backend.webgpu import attributes as A
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
-from graph_builder.backend.webgpu.operators.operator import Operator, SerialGenerator
-
-elementwise_relu_source = """
-float elementwise_relu(float x)
-{
-    return x >= 0.0 ? x : 0.0;
-}
-"""
+from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.operators.operator import Operator
 
 relu_source = """
-kernel void relu(const device float *param_buffer[[buffer(0)]],
-                 device float *data_buffer[[buffer(1)]],
-                 const device int * %%META_NAME%% [[buffer(2)]],
-                  uint index[[thread_position_in_grid]])
+kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
+                          device float *data_buffer[[buffer(1)]],
+                          const device int * %%META_NAME%% [[buffer(2)]],
+                          uint index[[thread_position_in_grid]])
 {
   device float *input_data = data_buffer + %%META_LOAD(input_data_offset)%%;
   device float *output_data = data_buffer + %%META_LOAD(output_data_offset)%%;
+
   const int n = %%META_LOAD(num_output_element)%%;
     for (int gid = index; gid < n; gid += 8192) {
       float val = input_data[gid];
       if (val < 0.0) {
         val = 0.0;
       }
+      
+      val = %%ELEMENTWISE_ATTACHABLE(val)%%;
       output_data[gid] = val;
     }
 }
 """
 
 
-class Relu(Operator, ElementwiseAttribute):
+class Relu(Operator,
+           A.Elementwise,
+           A.ElementwiseAttachable):
     name: str = "relu"
 
     # noinspection PyMethodMayBeStatic
     def apply_elementwise_operation(self, expression: str) -> str:
-        expression = "(({0}) >= 0.0 ? ({0}) : 0.0)".format(expression)
-
-        for child in self.children:
-            if isinstance(child, ElementwiseAttribute):
-                expression = child.apply_elementwise_operation(expression)
-
-        return expression
+        return "(({0}) >= 0.0 ? ({0}) : 0.0)".format(expression)
 
     def convert_to_kernels(self,
                            batch_size: int,
@@ -61,9 +51,17 @@ class Relu(Operator, ElementwiseAttribute):
             "num_output_element": num_output_element
         })
 
+        source = relu_source
+        source = self.apply_elementwise_attach(source)
+        source = metabuffer_injector.inject(source)
+
+        func_name = Operator.add_canonical_suffix("relu", source)
+
+        source = source.replace("%%FUNC_NAME%%", func_name)
+
         kernel = Kernel(
-            {"relu": metabuffer_injector.inject(relu_source)},
-            "relu",
+            {func_name: source},
+            func_name,
             GPUSize(8, 1, 1),
             GPUSize(1024, 1, 1),
             metabuffer_injector.generate_buffer()

@@ -32,4 +32,5 @@ class TagParser:
             # noinspection PyArgumentList
             result.append(Tag(original, name, args, span))
 
+        result.sort(key=lambda x: x.span[0], reverse=True)
         return result

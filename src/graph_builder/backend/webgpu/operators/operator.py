@@ -50,3 +50,23 @@ class Operator:
                            variable_allocation: MemoryLayout,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         raise NotImplementedError
+
+    def iter_children_all(self):
+        class Iterator:
+            children: List[Operator] = []
+
+            def __init__(self, children):
+                self.children += children
+
+            def __iter__(self):
+                return self
+
+            def __next__(self) -> Operator:
+                if len(self.children) == 0:
+                    raise StopIteration()
+
+                child = self.children.pop(0)
+                self.children += child.children
+                return child
+
+        return Iterator(self.children)

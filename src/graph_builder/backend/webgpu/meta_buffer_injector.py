@@ -19,10 +19,7 @@ class MetaBufferInjector:
         if self.offset_map is None:
             self.generate_buffer()
 
-        # 先に前方のタグを置換してしまうと、後続のタグのspan位置はずれてしまうので注意
-        tags = TagParser.parse(source)
-        tags.sort(key=lambda x: x.span[0], reverse=True)
-        for tag in tags:
+        for tag in TagParser.parse(source):
             if tag.name == "META_NAME":  # メタバッファ名の取得
                 source = source[:tag.span[0]] + self.arg_name + source[tag.span[1]:]
 
