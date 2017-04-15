@@ -1,5 +1,7 @@
 from typing import Dict
+
 import numpy as np
+
 from graph_builder.util import json
 
 
@@ -8,7 +10,7 @@ class GPUSize(json.SerializableMixin):
     height: int
     depth: int
 
-    def __init__(self, width: int, height: int, depth: int):
+    def __init__(self, width: int = 1, height: int = 1, depth: int = 1):
         self.width = width
         self.height = height
         self.depth = depth
@@ -19,9 +21,9 @@ class GPUSize(json.SerializableMixin):
 
 class KernelExecutionInfo(json.SerializableMixin):
     entry_func_name: str
-    threadgroups_per_grid: str
-    threads_per_thread_group: str
-    meta_buffer: str
+    threadgroups_per_grid: GPUSize
+    threads_per_thread_group: GPUSize
+    meta_buffer: bytes
 
     def __init__(self,
                  entry_func_name: str,

@@ -5,5 +5,5 @@ from graph_builder.backend.webgpu.attributes.attribute import Attribute
 
 class ElementwiseAttribute(Attribute):
     @abstractmethod
-    def wrap_expression(self, expression: str) -> str:
+    def apply_elementwise_operation(self, expression: str) -> str:
         raise NotImplementedError

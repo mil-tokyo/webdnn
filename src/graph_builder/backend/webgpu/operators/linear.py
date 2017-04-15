@@ -1,28 +1,26 @@
 from collections import OrderedDict
-
-import numpy as np
 from typing import List
 
-from graph_builder.graph import Layer, Variable
-from graph_builder.backend.webgpu.allocator_webgpu import WorkspaceLayoutWebGPU
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.attributes.channelwise import ChannelwiseAttribute
 from graph_builder.backend.webgpu.attributes.elementwise import ElementwiseAttribute
 from graph_builder.backend.webgpu.attributes.need_initialize import NeedInitializeAttribute
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
-from graph_builder.backend.webgpu.operators.operator import Operator, SerialGenerator
+from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.operators.operator import Operator
 
 linear_mul_source = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
-                          const device int *meta_buffer[[buffer(2)]],
+                          const device int * %%META_NAME%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]])
 {
-    device float *input_data = data_buffer + %%LOAD_META(meta_buffer, input_data_offset)%%;
-    device float *output_data = data_buffer + %%LOAD_META(meta_buffer, output_data_offset)%%;
-    const device float *param_data = param_buffer + %%LOAD_META(meta_buffer, param_data_offset)%%;
-    const int n = (*meta_buffer++);
-    const int out_ch = (*meta_buffer++);
-    const int in_ch = (*meta_buffer++);
+    device float *input_data = data_buffer + %%META_LOAD(input_data_offset)%%;
+    device float *output_data = data_buffer + %%META_LOAD(output_data_offset)%%;
+    const device float *param_data = param_buffer + %%META_LOAD(param_data_offset)%%;
+    const int n = %%META_LOAD(num_output_element)%%;
+    const int out_ch = %%META_LOAD(num_out_ch)%%;
+    const int in_ch = %%META_LOAD(num_in_ch)%%;
     
     %%INITIALIZE_EXPRESSION%%
   
@@ -40,60 +38,56 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 class Linear(Operator):
-    def __init__(self,
-                 layer: Layer,
-                 serial_generator: SerialGenerator,
-                 name: str = "linear"):
-        super().__init__(layer, serial_generator, name)
+    name: str = "linear"
 
-    def generate_kernel_self(self,
-                             batch_size: int,
-                             inputs: List[Variable],
-                             outputs: List[Variable],
-                             params_allocation: WorkspaceLayoutWebGPU,
-                             variable_allocation: WorkspaceLayoutWebGPU) -> List[Kernel]:
+    def convert_to_kernels(self,
+                           batch_size: int,
+                           params_allocation: MemoryLayout,
+                           variable_allocation: MemoryLayout,
+                           metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
 
-        input_var = variable_allocation.allocationDict[inputs[0].name]
-        output_var = variable_allocation.allocationDict[outputs[0].name]
+        input_var = variable_allocation.allocationDict[self.inputs[0].name]
+        output_var = variable_allocation.allocationDict[self.outputs[0].name]
         param_var = params_allocation.allocationDict[self.layer.name + "/W"]
 
-        meta_buffer = np.array([
-            input_var.offset,
-            output_var.offset,
-            param_var.offset,
-            batch_size * self.layer.parameters["out_size"],
-            self.layer.parameters["out_size"],
-            self.layer.parameters["in_size"]
-        ], dtype=np.int32).tobytes()
-
-        threadgroups_per_grid = GPUSize(8, 1, 1)
-        threads_per_thread_group = GPUSize(512, 1, 1)
+        metabuffer_injector.register({
+            "input_data_offset": input_var.offset,
+            "output_data_offset": output_var.offset,
+            "param_data_offset": param_var.offset,
+            "num_output_element": batch_size * self.layer.parameters["out_size"],
+            "num_out_ch": self.layer.parameters["out_size"],
+            "num_in_ch": self.layer.parameters["in_size"],
+        })
 
         sources = OrderedDict()  # to preserve order
-        func_name = "linear_mul_"
-
         initialize_expression = ""
         output_expression = "sum"
 
-        # FIXME: iteratorを用いて木構造・グラフ構造をiterationできるように。
         for child in self.children:
             if isinstance(child, ElementwiseAttribute):
-                output_expression = child.wrap_expression(output_expression)
-                func_name += child.name + "_"
+                output_expression = child.apply_elementwise_operation(output_expression)
 
             if isinstance(child, ChannelwiseAttribute):
-                output_expression = child.wrap_expression(output_expression, "out_chid")
-                func_name += child.name + "_"
+                output_expression = child.apply_channelwise_operation(output_expression, "out_chid")
 
             if isinstance(child, NeedInitializeAttribute):
-                initialize_expression = child.initialize(meta_buffer, params_allocation, initialize_expression)
-                func_name += child.name + "_"
+                initialize_expression = child.initialize(metabuffer_injector, params_allocation, initialize_expression)
 
-        sources[func_name] = linear_mul_source \
+        source = linear_mul_source \
             .replace("%%INITIALIZE_EXPRESSION%%", initialize_expression) \
-            .replace("%%OUTPUT_EXPRESSION%%", output_expression) \
-            .replace("%%FUNC_NAME%%", func_name)
+            .replace("%%OUTPUT_EXPRESSION%%", output_expression)
+        source = metabuffer_injector.inject(source)
 
-        kernel = Kernel(sources, func_name, threadgroups_per_grid, threads_per_thread_group, meta_buffer)
+        func_name = Operator.add_canonical_suffix("linear", source)
+
+        source = source.replace("%%FUNC_NAME%%", func_name)
+
+        kernel = Kernel(
+            {func_name: source},
+            func_name,
+            GPUSize(8, 1, 1),
+            GPUSize(512, 1, 1),
+            metabuffer_injector.generate_buffer()
+        )
 
         return [kernel]

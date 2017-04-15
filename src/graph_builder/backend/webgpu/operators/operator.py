@@ -1,8 +1,11 @@
-from typing import List
+import hashlib
 from abc import abstractmethod
-from graph_builder.graph import Layer, Variable
-from graph_builder.backend.webgpu.allocator_webgpu import WorkspaceLayoutWebGPU
+from typing import List
+
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
+from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
+from graph_builder.graph import Layer, Variable
 
 
 class SerialGenerator:
@@ -21,32 +24,29 @@ class SerialGenerator:
 
 
 class Operator:
-    layer: Layer
     name: str
+    layer: Layer
     children: List["Operator"]
+    inputs: List[Variable]
+    outputs: List[Variable]
 
     def __init__(self,
                  layer: Layer,
-                 serial_generator: SerialGenerator,
-                 name: str = "layer"):
+                 inputs: List[Variable],
+                 outputs: List[Variable]):
         self.layer = layer
-        self.name = name
+        self.children = []
+        self.inputs = inputs
+        self.outputs = outputs
+
+    @classmethod
+    def add_canonical_suffix(cls, base_name: str, source: str):
+        return f"{base_name}_{hashlib.sha224(source.encode('utf-8')).hexdigest()}"
 
     @abstractmethod
-    def generate_kernel_self(self,
-                             batch_size: int,
-                             inputs: List[Variable],
-                             outputs: List[Variable],
-                             params_allocation: WorkspaceLayoutWebGPU,
-                             variable_allocation: WorkspaceLayoutWebGPU) -> List[Kernel]:
+    def convert_to_kernels(self,
+                           batch_size: int,
+                           params_allocation: MemoryLayout,
+                           variable_allocation: MemoryLayout,
+                           metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         raise NotImplementedError
-
-    def generate_kernels(self,
-                         batch_size: int,
-                         inputs: List[Variable],
-                         outputs: List[Variable],
-                         params_allocation: WorkspaceLayoutWebGPU,
-                         variable_allocation: WorkspaceLayoutWebGPU) -> List[Kernel]:
-        kernels = self.generate_kernel_self(batch_size, inputs, outputs, params_allocation, variable_allocation)
-
-        return kernels

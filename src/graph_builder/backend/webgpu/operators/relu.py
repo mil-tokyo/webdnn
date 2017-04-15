@@ -1,8 +1,9 @@
 import numpy as np
 from typing import List
 
+from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph import Variable, Layer
-from graph_builder.backend.webgpu.allocator_webgpu import WorkspaceLayoutWebGPU
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.attributes.elementwise import ElementwiseAttribute
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
 from graph_builder.backend.webgpu.operators.operator import Operator, SerialGenerator
@@ -17,13 +18,13 @@ float elementwise_relu(float x)
 relu_source = """
 kernel void relu(const device float *param_buffer[[buffer(0)]],
                  device float *data_buffer[[buffer(1)]],
-                 const device int *meta_buffer[[buffer(2)]],
+                 const device int * %%META_NAME%% [[buffer(2)]],
                   uint index[[thread_position_in_grid]])
 {
-  device float *input_data = data_buffer + %%LOAD_META(meta_buffer, input_data_offset)%%;
-  device float *output_data = data_buffer + %%LOAD_META(meta_buffer, output_data_offset)%%;
-  const int n = meta_buffer[2];
-    for (int gid = index; gid < n; gid += 4096) {
+  device float *input_data = data_buffer + %%META_LOAD(input_data_offset)%%;
+  device float *output_data = data_buffer + %%META_LOAD(output_data_offset)%%;
+  const int n = %%META_LOAD(num_output_element)%%;
+    for (int gid = index; gid < n; gid += 8192) {
       float val = input_data[gid];
       if (val < 0.0) {
         val = 0.0;
@@ -35,40 +36,37 @@ kernel void relu(const device float *param_buffer[[buffer(0)]],
 
 
 class Relu(Operator, ElementwiseAttribute):
-    def __init__(self,
-                 layer: Layer,
-                 serial_generator: SerialGenerator,
-                 name: str = "relu"):
-        super().__init__(layer, serial_generator, name)
+    name: str = "relu"
 
     # noinspection PyMethodMayBeStatic
-    def wrap_expression(self, expression: str) -> str:
-        return "(({0}) >= 0.0 ? ({0}) : 0.0)".format(expression)
+    def apply_elementwise_operation(self, expression: str) -> str:
+        expression = "(({0}) >= 0.0 ? ({0}) : 0.0)".format(expression)
 
-    def generate_kernel_self(self, batch_size: int,
-                             inputs: List[Variable],
-                             outputs: List[Variable],
-                             params_allocation: WorkspaceLayoutWebGPU,
-                             variable_allocation: WorkspaceLayoutWebGPU) -> List[Kernel]:
-        layer = self.layer
-        num_output_element = layer.parameters["out_size"] * batch_size
+        for child in self.children:
+            if isinstance(child, ElementwiseAttribute):
+                expression = child.apply_elementwise_operation(expression)
 
-        meta_array = np.array([
-            variable_allocation.allocationDict[inputs[0].name].offset,
-            variable_allocation.allocationDict[outputs[0].name].offset,
-            num_output_element
-        ], dtype=np.int32)
+        return expression
 
-        meta_buffer = meta_array.tobytes()
-        threadgroups_per_grid = GPUSize(8, 1, 1)
-        threads_per_thread_group = GPUSize(512, 1, 1)
+    def convert_to_kernels(self,
+                           batch_size: int,
+                           params_allocation: MemoryLayout,
+                           variable_allocation: MemoryLayout,
+                           metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
+        num_output_element = self.layer.parameters["out_size"] * batch_size
+
+        metabuffer_injector.register({
+            "input_data_offset": variable_allocation.allocationDict[self.inputs[0].name].offset,
+            "output_data_offset": variable_allocation.allocationDict[self.outputs[0].name].offset,
+            "num_output_element": num_output_element
+        })
 
         kernel = Kernel(
-            {"relu": relu_source},
+            {"relu": metabuffer_injector.inject(relu_source)},
             "relu",
-            threadgroups_per_grid,
-            threads_per_thread_group,
-            meta_buffer
+            GPUSize(8, 1, 1),
+            GPUSize(1024, 1, 1),
+            metabuffer_injector.generate_buffer()
         )
 
         return [kernel]

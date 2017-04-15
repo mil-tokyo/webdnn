@@ -39,7 +39,6 @@ def main():
     builder = GraphDescriptorGeneratorWebGPU(graph)
     descriptor = builder.generate()
     desc_str = json.dumps(descriptor, indent=2)
-    print(desc_str)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
