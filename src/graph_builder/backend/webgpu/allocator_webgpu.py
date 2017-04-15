@@ -1,6 +1,6 @@
 from typing import Dict
 import numpy as np
-from graph_builder.kernel_builder.interface.allocator import WorkspaceLayout
+from graph_builder.backend.interface.allocator import WorkspaceLayout
 from graph_builder.util import json
 
 

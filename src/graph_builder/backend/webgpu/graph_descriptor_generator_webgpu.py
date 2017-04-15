@@ -11,13 +11,13 @@ import numpy as np
 from typing import Dict
 
 from graph_builder.graph import Graph
-from graph_builder.kernel_builder.interface.kernel_builder import KernelBuilder
-from graph_builder.kernel_builder.webgpu.allocator_webgpu import AllocatorWebGPU
-from graph_builder.kernel_builder.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
-from graph_builder.kernel_builder.webgpu.layer_generator import KBLayerGenerator
+from graph_builder.backend.interface.kernel_builder import GraphDescriptorGenerator
+from graph_builder.backend.webgpu.allocator_webgpu import AllocatorWebGPU, WorkspaceLayoutWebGPU
+from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
+from graph_builder.backend.webgpu.kernel_builder import KernelBuilder
 
 
-class KernelBuilderWebGPU(KernelBuilder):
+class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
     allocator: AllocatorWebGPU
     params_array: np.ndarray
     descriptor: GraphDescriptorWebGPU
@@ -28,19 +28,19 @@ class KernelBuilderWebGPU(KernelBuilder):
         self.params_array = None
         self.descriptor = None
 
-    def build(self) -> GraphDescriptorWebGPU:
+    def generate(self) -> GraphDescriptorWebGPU:
         params = self._enum_params()
-        params_allocation, self.params_array = self.allocator.allocate_params(params)
+        params_layout, self.params_array = self.allocator.allocate_params(params)
 
         variables = self._enum_variables()
-        variable_allocation = self.allocator.allocate_variables(variables)
+        variable_layout = self.allocator.allocate_variables(variables)
 
-        kernels = self._get_layers_kernels(params_allocation, variable_allocation)
+        kernels = self._get_layers_kernels(params_layout, variable_layout)
 
         return GraphDescriptorWebGPU(
             kernels=kernels,
-            params_allocation=params_allocation,
-            variable_allocation=variable_allocation,
+            params_layout=params_layout,
+            variable_layout=variable_layout,
             inputs=self.graph.inputs,
             outputs=self.graph.outputs,
             batch_size=self.graph.batch_size
@@ -66,16 +66,17 @@ class KernelBuilderWebGPU(KernelBuilder):
                 # TODO: temporary variable (im2colのバッファなど、サイズが実装依存なのでbuilder内でサイズを決めて確保)
         return variables
 
-    def _get_layers_kernels(self, params_allocation, variable_allocation):
+    def _get_layers_kernels(self, params_layout: WorkspaceLayoutWebGPU, variable_layout: WorkspaceLayoutWebGPU):
         all_kernels = []
 
         for node in self.graph.nodes:
-            kernels = KBLayerGenerator.generate(node.layer).generate_kernels(
+            kernels = KernelBuilder.build(
+                node.layer,
                 self.graph.batch_size,
                 node.bottoms,
                 node.tops,
-                params_allocation,
-                variable_allocation
+                params_layout,
+                variable_layout
             )
 
             all_kernels.extend(kernels)

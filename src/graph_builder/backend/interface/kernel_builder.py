@@ -2,11 +2,11 @@
 from graph_builder.graph import Graph
 
 
-class KernelBuilder:
+class GraphDescriptorGenerator:
     graph: Graph
 
     def __init__(self, graph: Graph):
         self.graph = graph
 
-    def build(self):
+    def generate(self):
         raise NotImplementedError

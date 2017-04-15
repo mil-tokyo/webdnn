@@ -10,7 +10,7 @@ sys.path.append(path.join(path.dirname(__file__), "../../src"))
 
 import numpy as np
 
-from graph_builder.kernel_builder.backend.kernel_builder_webgpu import KernelBuilderWebGPU
+from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
     Variable, GraphNode, Graph, VariableAttributes
@@ -36,15 +36,15 @@ def main():
     optimizer = GraphOptimizer(graph)
     optimizer.optimize()
 
-    builder = KernelBuilderWebGPU(graph)
-    descriptor = builder.build()
+    builder = GraphDescriptorGeneratorWebGPU(graph)
+    descriptor = builder.generate()
     desc_str = json.dumps(descriptor, indent=2)
     print(desc_str)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
         json.dump(descriptor, f, indent=2)
-    builder.weight_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    builder.params_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
 
 
 if __name__ == "__main__":
