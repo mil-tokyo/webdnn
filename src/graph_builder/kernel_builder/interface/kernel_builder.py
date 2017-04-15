@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
-from ..graph import Graph
+from graph_builder.graph import Graph
 
 
 class KernelBuilder:
+    graph: Graph
+
     def __init__(self, graph: Graph):
         self.graph = graph
 
