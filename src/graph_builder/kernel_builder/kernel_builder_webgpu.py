@@ -410,8 +410,7 @@ class KBReluLayer(KBLayer):
 
     def generate_kernels(self, batch_size: int,
                          bottoms: List[Variable], tops: List[Variable],
-                         weight_allocation: KBWeightAllocation, variable_allocation: KBVariableAllocation) -> List[
-        KernelData]:
+                         weight_allocation: KBWeightAllocation, variable_allocation: KBVariableAllocation) -> List[KernelData]:
         layer = self.layer
         n = layer.parameters["out_size"] * batch_size
         bottom_av = variable_allocation.allocation[bottoms[0].name]

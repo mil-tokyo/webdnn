@@ -9,8 +9,9 @@
         "sourceMap": true
     },
     "files": [
-        "./performance/sgemm.ts",
         "./performance/convolution2d.ts",
-        "./performance/resnet50.ts"
+        "./performance/mnist.ts",
+        "./performance/resnet50.ts",
+        "./performance/sgemm.ts"
     ]
 }

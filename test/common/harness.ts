@@ -30,23 +30,38 @@ namespace WebDNN {
                 if (test.setup) test.setup();
                 if (test.setupAsync) await test.setupAsync();
 
-                for (let i = 0; i < iterationCount; i++) {
-                    await this.webgpu.sync();
-                    let startTime = performance.now();
+                if ('main' in test) {
+                    for (let i = 0; i < iterationCount; i++) {
+                        await this.webgpu.sync();
+                        let startTime = performance.now();
 
-                    test.main();
+                        test.main();
 
-                    await this.webgpu.sync();
-                    let endTime = performance.now();
+                        await this.webgpu.sync();
+                        let endTime = performance.now();
 
-                    elapsedTimes.push(endTime - startTime);
+                        elapsedTimes.push(endTime - startTime);
+                    }
+
+                } else {
+                    for (let i = 0; i < iterationCount; i++) {
+                        await this.webgpu.sync();
+                        let startTime = performance.now();
+
+                        await test.mainAsync();
+
+                        await this.webgpu.sync();
+                        let endTime = performance.now();
+
+                        elapsedTimes.push(endTime - startTime);
+                    }
                 }
-
-                if (test.cleanup) test.cleanup();
-                if (test.cleanupAsync) await test.cleanupAsync();
 
                 let stats = computeStats(elapsedTimes);
                 this.summaries.push((test.summarize || this.summarizePerformanceTestResult)(stats, test));
+
+                if (test.cleanup) test.cleanup();
+                if (test.cleanupAsync) await test.cleanupAsync();
             }
 
             private summarizePerformanceTestResult(elapsedTime: StatsValue, test: Test) {
@@ -170,7 +185,8 @@ namespace WebDNN {
             name?: string
             setup?: () => void
             setupAsync?: () => Promise<any>
-            main: () => any
+            main?: () => any
+            mainAsync?: () => Promise<any>
             cleanup?: () => void
             cleanupAsync?: () => Promise<any>
             summarize?: (elapsedTime: StatsValue, test: Test) => TestSummary
