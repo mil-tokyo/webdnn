@@ -20,20 +20,20 @@ from graph_builder.util import flags
 
 class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
     allocator: Allocator
-    params_array: np.ndarray
+    weights_array: np.ndarray
     descriptor: GraphDescriptorWebGPU
 
     def __init__(self, graph: Graph):
         super().__init__(graph)
-        self.params_array = None
+        self.weights_array = None
         self.descriptor = None
 
     def generate(self) -> GraphDescriptorWebGPU:
         batch_size = 1
 
-        params_layout, self.params_array = Allocator.allocate_params(self.graph)
+        weights_layout, self.weights_array = Allocator.allocate_weights(self.graph)
         if flags.DEBUG:
-            print(f"[GraphDescriptorGeneratorWebGPU] params_layout total size: {params_layout.size} * sizeof(float)")
+            print(f"[GraphDescriptorGeneratorWebGPU] params_layout total size: {weights_layout.size} * sizeof(float)")
 
         variable_layout = Allocator.allocate_variables(self.graph)
         if flags.DEBUG:
@@ -45,14 +45,14 @@ class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
         for operator in operators:
             kernels.extend(operator.convert_to_kernels(
                 batch_size,
-                params_layout,
+                weights_layout,
                 variable_layout,
                 MetaBufferInjector()
             ))
 
         return GraphDescriptorWebGPU(
             kernels=kernels,
-            params_layout=params_layout,
+            weights_layout=weights_layout,
             variable_layout=variable_layout,
             inputs=self.graph.inputs,
             outputs=self.graph.outputs,

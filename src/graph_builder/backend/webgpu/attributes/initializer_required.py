@@ -9,6 +9,6 @@ class InitializerRequired(Attribute):
     @abstractmethod
     def apply_initializer(self,
                           metabuffer_injector: MetaBufferInjector,
-                          params_allocation: MemoryLayout,
+                          weights_layout: MemoryLayout,
                           initialize_expression: str):
         raise NotImplementedError

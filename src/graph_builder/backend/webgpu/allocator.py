@@ -29,18 +29,18 @@ class Allocation(json.SerializableMixin):
 
 class MemoryLayout(json.SerializableMixin):
     size: int
-    allocationDict: Dict[str, Allocation]
+    allocation_dict: Dict[str, Allocation]
 
     def __init__(self,
                  size: int,
                  allocationDict: Dict[str, Allocation]):
         self.size = size
-        self.allocationDict = allocationDict
+        self.allocation_dict = allocationDict
 
     def _to_serializable_(self):
         return {
             "total_size": self.size,
-            "allocation": {k: v for k, v in self.allocationDict.items()}
+            "allocation": {k: v for k, v in self.allocation_dict.items()}
         }
 
 
@@ -48,10 +48,10 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate_params(cls, graph: Graph) -> Tuple[MemoryLayout, np.ndarray]:
+    def allocate_weights(cls, graph: Graph) -> Tuple[MemoryLayout, np.ndarray]:
         offset = 0
         allocation_dict = {}
-        params = {}
+        weights = {}
 
         for node in graph.nodes:
             for layer in node.layer.iterate_self_and_children():
@@ -62,14 +62,14 @@ class Allocator:
 
                     size = array.size
                     allocation_dict[key] = Allocation(key, offset, size)
-                    params[key] = array
+                    weights[key] = array
                     offset += size
 
         layout = MemoryLayout(offset, allocation_dict)
 
         buffer = np.zeros(layout.size, dtype=np.float32)
-        for key, array in params.items():
-            allocation = layout.allocationDict[key]
+        for key, array in weights.items():
+            allocation = layout.allocation_dict[key]
             buffer[allocation.offset:allocation.offset + allocation.size] = array.flatten()
 
         return layout, buffer

@@ -10,7 +10,7 @@ from graph_builder.backend.webgpu.tag_parser import TagParser
 class InitializerAttachable(Attribute):
     def apply_initializer_attach(self,
                                  metabuffer_injector: MetaBufferInjector,
-                                 params_allocation: MemoryLayout,
+                                 weights_layout: MemoryLayout,
                                  source: str) -> str:
         block = ""
         for tag in TagParser.parse(source):
@@ -18,7 +18,7 @@ class InitializerAttachable(Attribute):
                 # noinspection PyUnresolvedReferences
                 for child in self.iter_children_all():
                     if isinstance(child, InitializerRequired):
-                        block = child.apply_initializer(metabuffer_injector, params_allocation, block)
+                        block = child.apply_initializer(metabuffer_injector, weights_layout, block)
 
                 source = source[:tag.span[0]] + block + source[tag.span[1]:]
 

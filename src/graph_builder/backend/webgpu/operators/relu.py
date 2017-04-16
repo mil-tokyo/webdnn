@@ -39,14 +39,14 @@ class Relu(Operator,
 
     def convert_to_kernels(self,
                            batch_size: int,
-                           params_allocation: MemoryLayout,
-                           variable_allocation: MemoryLayout,
+                           weights_layout: MemoryLayout,
+                           variable_layout: MemoryLayout,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         num_output_element = self.layer.parameters["out_size"] * batch_size
 
         metabuffer_injector.register({
-            "input_data_offset": variable_allocation.allocationDict[self.inputs[0].name].offset,
-            "output_data_offset": variable_allocation.allocationDict[self.outputs[0].name].offset,
+            "input_data_offset": variable_layout.allocation_dict[self.inputs[0].name].offset,
+            "output_data_offset": variable_layout.allocation_dict[self.outputs[0].name].offset,
             "num_output_element": num_output_element
         })
 
