@@ -5,7 +5,7 @@ from typing import List
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph import Layer, Variable
+from graph_builder.frontend.graph import Layer, Variable
 
 
 class SerialGenerator:
