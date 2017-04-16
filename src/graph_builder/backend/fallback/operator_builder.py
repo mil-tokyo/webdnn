@@ -4,6 +4,7 @@ from graph_builder.backend.fallback.operators.channelwise_bias import Channelwis
 from graph_builder.backend.fallback.operators.linear import Linear
 from graph_builder.backend.fallback.operators.operator import Operator
 from graph_builder.backend.fallback.operators.relu import Relu
+from graph_builder.backend.fallback.operators.convolution_2d import Convolution2D
 from graph_builder.frontend.graph import Layer, LayerType, Graph, Variable
 
 
@@ -29,6 +30,9 @@ class OperatorBuilder:
 
         elif layer.layer_type == LayerType.Relu:
             operator = Relu(layer, inputs, outputs)
+
+        elif layer.layer_type == LayerType.Convolution2D:
+            operator = Convolution2D(layer, inputs, outputs)
 
         else:
             raise NotImplementedError(f"layer type: {layer.layer_type}")

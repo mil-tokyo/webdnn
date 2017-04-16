@@ -38,7 +38,7 @@ def main():
     optimizer = GraphOptimizer(graph)
     optimizer.optimize()
 
-    builder_type = "fallback"
+    builder_type = "webgpu"
     if builder_type == "webgpu":
         builder = GraphDescriptorGeneratorWebGPU(graph)
         descriptor = builder.generate()

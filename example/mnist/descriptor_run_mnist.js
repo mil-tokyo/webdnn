@@ -21,7 +21,8 @@ async function run() {
     runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
     await runner.compile();
 
-    await runner.loadWeights(await fetchWeights('./output/weight_' + backend_name + '.bin'));
+    // use time to avoid cache
+    await runner.loadWeights(await fetchWeights('./output/weight_' + backend_name + '.bin?t=' + Date.now()));
     let test_samples = await fetchSamples('../../resources/mnist/test_samples.json');
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
