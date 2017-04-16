@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import json
 import os
 import os.path as path
 import sys
@@ -11,9 +10,12 @@ sys.path.append(path.join(path.dirname(__file__), "../../src"))
 import numpy as np
 
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
-from graph_builder.optimizer.graph_optimizer import GraphOptimizer
-from graph_builder.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
+from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
+from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
+from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
     Variable, GraphNode, Graph, VariableAttributes
+from graph_builder.util import json
+
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
@@ -36,14 +38,26 @@ def main():
     optimizer = GraphOptimizer(graph)
     optimizer.optimize()
 
-    builder = GraphDescriptorGeneratorWebGPU(graph)
-    descriptor = builder.generate()
+    builder_type = "fallback"
+    if builder_type == "webgpu":
+        builder = GraphDescriptorGeneratorWebGPU(graph)
+        descriptor = builder.generate()
+    elif builder_type == "fallback":
+        builder = GraphDescriptorGeneratorFallback(graph)
+        descriptor = builder.generate()
+    else:
+        raise NotImplementedError()
+
     desc_str = json.dumps(descriptor, indent=2)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
+    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(builder_type)), "w") as f:
         json.dump(descriptor, f, indent=2)
-    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    if builder_type == "webgpu":
+        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(builder_type)), "w") as f:
+            f.write(descriptor.concat_kernel_sources())
+
+    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(builder_type)))
 
 
 if __name__ == "__main__":

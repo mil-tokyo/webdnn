@@ -5,6 +5,7 @@ import os
 import os.path as path
 import numpy as np
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
+from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
 from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, Variable, GraphNode, Graph, VariableAttributes
 from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.util import json
@@ -92,16 +93,24 @@ def main():
         optimizer = GraphOptimizer(graph)
         optimizer.optimize()
 
-    builder = GraphDescriptorGeneratorWebGPU(graph)
-    descriptor = builder.generate()
+    builder_type = "fallback"
+    if builder_type == "webgpu":
+        builder = GraphDescriptorGeneratorWebGPU(graph)
+        descriptor = builder.generate()
+    elif builder_type == "fallback":
+        builder = GraphDescriptorGeneratorFallback(graph)
+        descriptor = builder.generate()
+    else:
+        raise NotImplementedError()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
+    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(builder_type)), "w") as f:
         json.dump(descriptor, f, indent=2)
-    with open(path.join(OUTPUT_DIR, "kernels.metal"), "w") as f:
-        f.write(descriptor.concat_kernel_sources())
+    if builder_type == "webgpu":
+        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(builder_type)), "w") as f:
+            f.write(descriptor.concat_kernel_sources())
 
-    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(builder_type)))
 
 
 if __name__ == "__main__":

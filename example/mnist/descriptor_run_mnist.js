@@ -12,15 +12,16 @@ function run_entry() {
 }
 
 async function run() {
+    let backend_name = $('input[name=backend_name]:checked').val();
     if (!$M) {
-        await init();
+        backend_name = await init(backend_name);
     }
 
     let pipeline_data = JSON.parse($('#dnn_pipeline').val());
     runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
     await runner.compile();
 
-    await runner.loadWeights(await fetchWeights('./output/weight.bin'));
+    await runner.loadWeights(await fetchWeights('./output/weight_' + backend_name + '.bin'));
     let test_samples = await fetchSamples('../../resources/mnist/test_samples.json');
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
@@ -45,11 +46,12 @@ async function run() {
     }
 }
 
-async function init() {
+async function init(backend_name) {
     $M = WebDNN;
-    let backend = await $M.init();
+    let backend = await $M.init(backend_name);
     console.log(`backend: ${backend}`);
     $Mg = $M.gpu;
+    return backend;
 }
 
 async function fetchWeights(path) {
@@ -70,7 +72,7 @@ async function fetchSamples(path) {
     let json = await response.json();
     let samples = [];
     for (let i = 0; i < json.length; i++) {
-        samples.push({'x': makeMatFromJson(json[i]['x']), 'y': json[i]['y']});
+        samples.push({ 'x': makeMatFromJson(json[i]['x']), 'y': json[i]['y'] });
     }
 
     return samples;
