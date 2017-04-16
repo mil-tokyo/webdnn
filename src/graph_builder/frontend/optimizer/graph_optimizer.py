@@ -1,4 +1,5 @@
-from ..graph import Graph, LayerAttributes
+from graph_builder.frontend.graph import Graph, LayerAttributes
+from graph_builder.util import flags
 
 
 class GraphOptimizer:
@@ -14,6 +15,7 @@ class GraphOptimizer:
                 cons_list = prod_cons['consumers']
                 cons_first = cons_list[0] if len(cons_list) > 0 else None
                 if prod is not None \
+                    and flags.optimize.CONCAT_ELEMENTWISE_OPERATION \
                     and LayerAttributes.PostElementwise in prod.layer.attributes \
                     and len(cons_list) == 1 \
                     and LayerAttributes.Elementwise in cons_first.layer.attributes:
@@ -27,6 +29,7 @@ class GraphOptimizer:
                     self.graph.nodes.remove(cons_first)
                     break  # グラフが変わったのでvariable_to_nodeをつくりなおす
                 if prod is not None \
+                    and flags.optimize.CONCAT_CHANNELWISE_OPERATION \
                     and LayerAttributes.PostChannelwise in prod.layer.attributes \
                     and len(cons_list) == 1 \
                     and LayerAttributes.Channelwise in cons_first.layer.attributes:

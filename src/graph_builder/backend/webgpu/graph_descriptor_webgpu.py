@@ -4,7 +4,7 @@ from typing import Iterable
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.frontend.graph import Variable
-from graph_builder.util.json import json
+from graph_builder.util import json
 
 source_header = """
 #include <metal_stdlib>

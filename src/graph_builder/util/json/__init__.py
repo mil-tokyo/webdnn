@@ -1,4 +1,4 @@
 from json import *
-from .json import dump
-from .json import dumps
-from .json import SerializableMixin
+from graph_builder.util.json.json import dump
+from graph_builder.util.json.json import dumps
+from graph_builder.util.json.json import SerializableMixin
