@@ -41,7 +41,7 @@ class Linear(Operator):
             self.name,
             inputs=[v.name for v in self.inputs],
             outputs=[v.name for v in self.outputs],
-            params=[self.layer.name + "/W"],
+            weights=[self.layer.name + "/W"],
             call_option={"m": batch_size,
                          "n": self.layer.parameters["out_size"],
                          "k": self.layer.parameters["in_size"]}

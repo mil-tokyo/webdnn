@@ -18,7 +18,7 @@ from graph_builder.frontend.graph import Graph, Variable, GraphNode
 
 class GraphDescriptorGeneratorFallback(GraphDescriptorGenerator):
     allocator: Allocator
-    params_array: np.ndarray
+    weights_array: np.ndarray
     #  descriptor: GraphDescriptorFallback
 
     def __init__(self, graph: Graph):
@@ -29,7 +29,7 @@ class GraphDescriptorGeneratorFallback(GraphDescriptorGenerator):
     def generate(self) -> GraphDescriptorFallback:
         batch_size = self.graph.batch_size
         u_graph = self._unfold_layer_chain()
-        params_layout, self.params_array = Allocator.allocate_params(u_graph)
+        weights_layout, self.weights_array = Allocator.allocate_weights(u_graph)
         variable_layout = Allocator.allocate_variables(u_graph)
         operators = OperatorBuilder.build_from_graph(u_graph)
 
@@ -41,7 +41,7 @@ class GraphDescriptorGeneratorFallback(GraphDescriptorGenerator):
 
         return GraphDescriptorFallback(
             kernels=kernels,
-            params_layout=params_layout,
+            weights_layout=weights_layout,
             variable_layout=variable_layout,
             inputs=self.graph.inputs,
             outputs=self.graph.outputs,

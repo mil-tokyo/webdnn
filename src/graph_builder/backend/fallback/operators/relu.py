@@ -33,7 +33,7 @@ class Relu(Operator):
             self.name,
             inputs=[v.name for v in self.inputs],
             outputs=[v.name for v in self.outputs],
-            params=[],
+            weights=[],
             call_option={"length": batch_size * self.layer.parameters["out_size"]}
         )
 

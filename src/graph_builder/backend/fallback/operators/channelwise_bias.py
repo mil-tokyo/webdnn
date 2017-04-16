@@ -41,7 +41,7 @@ class ChannelwiseBias(Operator):
             self.name,
             inputs=[v.name for v in self.inputs],
             outputs=[v.name for v in self.outputs],
-            params=[self.layer.name + "/b"],
+            weights=[self.layer.name + "/b"],
             call_option={"n": n,
                          "c": self.layer.parameters["out_size"]}
         )

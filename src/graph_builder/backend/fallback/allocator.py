@@ -28,18 +28,18 @@ class Allocation(json.SerializableMixin):
 
 class MemoryLayout(json.SerializableMixin):
     size: int
-    allocationDict: Dict[str, Allocation]
+    allocation_dict: Dict[str, Allocation]
 
     def __init__(self,
                  size: int,
-                 allocationDict: Dict[str, Allocation]):
+                 allocation_dict: Dict[str, Allocation]):
         self.size = size
-        self.allocationDict = allocationDict
+        self.allocation_dict = allocation_dict
 
     def _to_serializable_(self):
         return {
             "total_size": self.size,
-            "allocation": {k: v for k, v in self.allocationDict.items()}
+            "allocation": {k: v for k, v in self.allocation_dict.items()}
         }
 
 
@@ -47,28 +47,28 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate_params(cls, graph: Graph):
+    def allocate_weights(cls, graph: Graph):
         offset = 0
-        allocationDict = {}
-        params = {}
+        allocation_dict = {}
+        weights = {}
 
         for node in graph.nodes:
             for layer in node.layer.iterate_self_and_children():
                 for param_name, array in layer.weights.items():
                     key = layer.name + "/" + param_name
-                    if key in allocationDict:
+                    if key in allocation_dict:
                         continue
 
                     size = array.size
-                    allocationDict[key] = Allocation(key, offset, size)
-                    params[key] = array
+                    allocation_dict[key] = Allocation(key, offset, size)
+                    weights[key] = array
                     offset += size
 
-        layout = MemoryLayout(offset, allocationDict)
+        layout = MemoryLayout(offset, allocation_dict)
 
         buffer = np.zeros(layout.size, dtype=np.float32)
-        for key, array in params.items():
-            allocation = layout.allocationDict[key]
+        for key, array in weights.items():
+            allocation = layout.allocation_dict[key]
             buffer[allocation.offset:allocation.offset + allocation.size] = array.flatten()
 
         return layout, buffer
@@ -76,17 +76,17 @@ class Allocator:
     @classmethod
     def allocate_variables(cls, graph: Graph):
         offset = 0
-        allocationDict = {}
+        allocation_dict = {}
 
         for node in graph.nodes:
             for v in node.bottoms + node.tops:
 
-                if v.name in allocationDict:
+                if v.name in allocation_dict:
                     continue
 
                 # noinspection PyTypeChecker
                 size = int(np.prod(v.shape))
-                allocationDict[v.name] = Allocation(v.name, offset, size)
+                allocation_dict[v.name] = Allocation(v.name, offset, size)
                 offset += size
 
-        return MemoryLayout(offset, allocationDict)
+        return MemoryLayout(offset, allocation_dict)

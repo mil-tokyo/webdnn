@@ -42,7 +42,7 @@ namespace WebDNN {
                 let exec_info = this.descriptor.exec_infos[i];
                 let input_arrays = exec_info.inputs.map((name) => this.variableArrays.get(name));
                 let output_arrays = exec_info.outputs.map((name) => this.variableArrays.get(name));
-                let weight_arrays = exec_info.params.map((name) => this.weightArrays.get(name));
+                let weight_arrays = exec_info.weights.map((name) => this.weightArrays.get(name));
                 this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
             }
         }
@@ -78,7 +78,7 @@ namespace WebDNN {
         entry_func_name: string;
         inputs: string[];
         outputs: string[];
-        params: string[];
+        weights: string[];
         call_option: any;
     }
 }

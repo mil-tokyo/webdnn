@@ -16,7 +16,7 @@ source_footer = """
 
 class GraphDescriptorFallback(json.SerializableMixin):
     kernels: Iterable[Kernel]
-    params_layout: MemoryLayout
+    weights_layout: MemoryLayout
     variable_layout: MemoryLayout
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
@@ -24,13 +24,13 @@ class GraphDescriptorFallback(json.SerializableMixin):
 
     def __init__(self,
                  kernels: Iterable[Kernel],
-                 params_layout: MemoryLayout,
+                 weights_layout: MemoryLayout,
                  variable_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  batch_size: int):
         self.kernels = kernels
-        self.params_layout = params_layout
+        self.weights_layout = weights_layout
         self.variable_layout = variable_layout
         self.inputs = inputs
         self.outputs = outputs
@@ -56,7 +56,7 @@ class GraphDescriptorFallback(json.SerializableMixin):
         return {
             "kernel_source": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
-            "weight_allocation": self.params_layout,  # FIXME: weight => params へrename
+            "weight_allocation": self.weights_layout,
             "variable_allocation": self.variable_layout,
             "inputs": [v.name for v in self.inputs],
             "outputs": [v.name for v in self.outputs],

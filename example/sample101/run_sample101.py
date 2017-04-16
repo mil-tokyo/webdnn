@@ -45,17 +45,19 @@ def main():
     elif builder_type == "fallback":
         builder = GraphDescriptorGeneratorFallback(graph)
         descriptor = builder.generate()
+    else:
+        raise NotImplementedError()
 
     desc_str = json.dumps(descriptor, indent=2)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
+    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(builder_type)), "w") as f:
         json.dump(descriptor, f, indent=2)
     if builder_type == "webgpu":
-        with open(path.join(OUTPUT_DIR, "kernels.metal"), "w") as f:
+        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(builder_type)), "w") as f:
             f.write(descriptor.concat_kernel_sources())
 
-    builder.params_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(builder_type)))
 
 
 if __name__ == "__main__":
