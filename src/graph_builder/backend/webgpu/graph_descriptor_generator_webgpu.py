@@ -15,6 +15,7 @@ from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptor
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operator_builder import OperatorBuilder
 from graph_builder.frontend.graph import Graph
+from graph_builder.util import flags
 
 
 class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
@@ -29,8 +30,15 @@ class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
 
     def generate(self) -> GraphDescriptorWebGPU:
         batch_size = 1
+
         params_layout, self.params_array = Allocator.allocate_params(self.graph)
+        if flags.DEBUG:
+            print(f"[GraphDescriptorGeneratorWebGPU] params_layout total size: {params_layout.size} * sizeof(float)")
+
         variable_layout = Allocator.allocate_variables(self.graph)
+        if flags.DEBUG:
+            print(f"[GraphDescriptorGeneratorWebGPU] variable_layout total size: {variable_layout.size} * sizeof(float)")
+
         operators = OperatorBuilder.build_from_graph(self.graph)
 
         kernels = []
