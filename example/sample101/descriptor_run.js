@@ -12,11 +12,11 @@ async function run() {
         await init();
     }
 
-    let pipeline_data = JSON.parse((document.getElementById('dnn_pipeline') as HTMLTextAreaElement).value);
+    let pipeline_data = JSON.parse((document.getElementById('dnn_pipeline')).value);
     runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
     await runner.compile();
 
-    await runner.loadWeights(await fetchWeights('../../resources/sample101/weight.bin'));
+    await runner.loadWeights(await fetchWeights('./output/weight.bin'));
 
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
@@ -27,8 +27,8 @@ async function run() {
 }
 
 async function init() {
-    let $M = WebDNN;
-    let backend = await $M.init();
+    $M = WebDNN;
+    let backend = await $M.init($('input[name=backend_name]:checked').val());
     console.log(`backend: ${backend}`);
     $Mg = $M.gpu;
 }

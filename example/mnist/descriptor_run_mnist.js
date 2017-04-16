@@ -47,7 +47,7 @@ async function run() {
 
 async function init() {
     $M = WebDNN;
-    let backend = await $M.init();
+    let backend = await $M.init($('input[name=backend_name]:checked').val());
     console.log(`backend: ${backend}`);
     $Mg = $M.gpu;
 }
