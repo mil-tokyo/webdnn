@@ -43,7 +43,7 @@ def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
         json.dump(descriptor, f, indent=2)
-    builder.params_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
 
 
 if __name__ == "__main__":

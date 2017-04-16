@@ -37,10 +37,10 @@ class ChannelwiseBias(Operator,
 
     def apply_initializer(self,
                           metabuffer_injector: MetaBufferInjector,
-                          params_allocation: MemoryLayout,
+                          weights_allocation: MemoryLayout,
                           initialize_block: str):
         metabuffer_injector.register({
-            "bias_offset": params_allocation.allocationDict[f"{self.layer.name}/b"].offset
+            "bias_offset": weights_allocation.allocation_dict[f"{self.layer.name}/b"].offset
         })
         return f"{initialize_block}\nconst device float *bias = param_buffer + %%META_LOAD(bias_offset)%%;"
 
@@ -49,15 +49,15 @@ class ChannelwiseBias(Operator,
 
     def convert_to_kernels(self,
                            batch_size: int,
-                           params_allocation: MemoryLayout,
-                           variable_allocation: MemoryLayout,
+                           weights_layout: MemoryLayout,
+                           variable_layout: MemoryLayout,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         num_output_element = self.layer.parameters["out_size"] * batch_size
 
         metabuffer_injector.register({
-            "input_data_offset": variable_allocation.allocationDict[self.inputs[0].name].offset,
-            "output_data_offset": variable_allocation.allocationDict[self.outputs[0].name].offset,
-            "param_data_offset": params_allocation.allocationDict[f"{self.layer.name}/b"].offset,
+            "input_data_offset": variable_layout.allocation_dict[self.inputs[0].name].offset,
+            "output_data_offset": variable_layout.allocation_dict[self.outputs[0].name].offset,
+            "param_data_offset": weights_layout.allocation_dict[f"{self.layer.name}/b"].offset,
             "num_output_element": num_output_element,
             "num_out_ch": self.layer.parameters["out_size"]
         })

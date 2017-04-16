@@ -101,7 +101,7 @@ def main():
     with open(path.join(OUTPUT_DIR, "kernels.metal"), "w") as f:
         f.write(descriptor.concat_kernel_sources())
 
-    builder.params_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+    builder.weights_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
 
 
 if __name__ == "__main__":
