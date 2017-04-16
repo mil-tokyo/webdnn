@@ -1,5 +1,7 @@
 from typing import List
 
+import numpy as np
+
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.backend.fallback.operators.operator import Operator
 
@@ -34,7 +36,7 @@ class Relu(Operator):
             inputs=[v.name for v in self.inputs],
             outputs=[v.name for v in self.outputs],
             weights=[],
-            call_option={"length": batch_size * self.layer.parameters["out_size"]}
+            call_option={"length": int(np.prod(self.inputs[0].shape))}
         )
 
         return [kernel]

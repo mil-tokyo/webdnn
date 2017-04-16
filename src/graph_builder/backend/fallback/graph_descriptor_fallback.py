@@ -14,6 +14,7 @@ source_footer = """
 };
 """
 
+
 class GraphDescriptorFallback(json.SerializableMixin):
     kernels: Iterable[Kernel]
     weights_layout: MemoryLayout

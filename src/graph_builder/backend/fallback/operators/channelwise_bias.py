@@ -1,5 +1,7 @@
 from typing import List
 
+import numpy as np
+
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.backend.fallback.operators.operator import Operator
 
@@ -32,9 +34,7 @@ class ChannelwiseBias(Operator):
         source = channelwise_bias_source
         input_shape = self.inputs[0].shape
         assert self.layer.parameters["out_size"] == input_shape[-1]
-        n = 1
-        for s in input_shape[:-1]:
-            n *= s
+        n = int(np.prod(input_shape[:-1]))
 
         kernel = Kernel(
             {self.name: source},
