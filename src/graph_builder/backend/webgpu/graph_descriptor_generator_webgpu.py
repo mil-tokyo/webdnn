@@ -14,7 +14,7 @@ from graph_builder.backend.webgpu.allocator import Allocator
 from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operator_builder import OperatorBuilder
-from graph_builder.graph import Graph
+from graph_builder.frontend.graph import Graph
 
 
 class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):

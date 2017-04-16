@@ -4,7 +4,7 @@ from graph_builder.backend.webgpu.operators.channelwise_bias import ChannelwiseB
 from graph_builder.backend.webgpu.operators.linear import Linear
 from graph_builder.backend.webgpu.operators.operator import Operator
 from graph_builder.backend.webgpu.operators.relu import Relu
-from graph_builder.graph import Layer, LayerType, Graph, Variable
+from graph_builder.frontend.graph import Layer, LayerType, Graph, Variable
 
 
 class OperatorBuilder:

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from graph_builder.graph import Graph
+from graph_builder.frontend.graph import Graph
 
 
 class GraphDescriptorGenerator:
