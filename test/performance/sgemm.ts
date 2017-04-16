@@ -37,10 +37,10 @@ namespace SgemmTest {
         await harness.fetchKernel((document.getElementById('sgemm') as HTMLScriptElement).src);
     });
 
-    function createSgemmTest(N: number, M: number = N, K: number = N) {
+    function createSgemmTest(M: number, N: number = M, K: number = M, name=`sgemm-(${M})`) {
         let A, B, C;
         const T = 1;
-        const I = 1;
+        const I = 200;
 
         return {
             name: `sgemm-${N}`,
@@ -89,13 +89,13 @@ namespace SgemmTest {
         try {
             harness.clearAll();
 
-            await harness.runPerformanceTest(createSgemmTest(64));
-            await harness.runPerformanceTest(createSgemmTest(128));
-            await harness.runPerformanceTest(createSgemmTest(256));
-            await harness.runPerformanceTest(createSgemmTest(512));
-            await harness.runPerformanceTest(createSgemmTest(513));
-            await harness.runPerformanceTest(createSgemmTest(1024));
-            await harness.runPerformanceTest(createSgemmTest(2048));
+            await harness.runPerformanceTest(createSgemmTest(1, 1024, 768));
+            // await harness.runPerformanceTest(createSgemmTest(128));
+            // await harness.runPerformanceTest(createSgemmTest(256));
+            // await harness.runPerformanceTest(createSgemmTest(512));
+            // await harness.runPerformanceTest(createSgemmTest(513));
+            // await harness.runPerformanceTest(createSgemmTest(1024));
+            // await harness.runPerformanceTest(createSgemmTest(2048));
 
             harness.clearText();
             harness.success('summary');

@@ -43,12 +43,12 @@ class Linear(Operator,
 
     def convert_to_kernels(self,
                            batch_size: int,
-                           params_allocation: MemoryLayout,
-                           variable_allocation: MemoryLayout,
+                           weights_layout: MemoryLayout,
+                           variable_layout: MemoryLayout,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
-        input_var = variable_allocation.allocationDict[self.inputs[0].name]
-        output_var = variable_allocation.allocationDict[self.outputs[0].name]
-        param_var = params_allocation.allocationDict[self.layer.name + "/W"]
+        input_var = variable_layout.allocation_dict[self.inputs[0].name]
+        output_var = variable_layout.allocation_dict[self.outputs[0].name]
+        param_var = weights_layout.allocation_dict[self.layer.name + "/W"]
 
         metabuffer_injector.register({
             "input_data_offset": input_var.offset,
@@ -60,7 +60,7 @@ class Linear(Operator,
         })
 
         source = linear_mul_source
-        source = self.apply_initializer_attach(metabuffer_injector, params_allocation, source)
+        source = self.apply_initializer_attach(metabuffer_injector, weights_layout, source)
         source = self.apply_channelwise_attach(source)
         source = metabuffer_injector.inject(source)
 

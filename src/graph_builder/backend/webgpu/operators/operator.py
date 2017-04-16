@@ -46,8 +46,8 @@ class Operator:
     @abstractmethod
     def convert_to_kernels(self,
                            batch_size: int,
-                           params_allocation: MemoryLayout,
-                           variable_allocation: MemoryLayout,
+                           weights_layout: MemoryLayout,
+                           variable_layout: MemoryLayout,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         raise NotImplementedError
 
