@@ -68,9 +68,9 @@ namespace WebDNN {
                 let normalizedStd = elapsedTime.std / elapsedTime.mean;
 
                 return {
-                    'name': test.name,
-                    'elapsed time [ms]': elapsedTime.mean.toFixed(2),
-                    'std [ms]': (normalizedStd * 100).toFixed(2)
+                    'Name': test.name,
+                    'Elapsed time [ms]': elapsedTime.mean.toFixed(2),
+                    'Normalized std [%]': (normalizedStd).toFixed(2)
                 } as TestSummary
             }
 

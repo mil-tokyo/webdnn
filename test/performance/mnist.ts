@@ -4,8 +4,8 @@
 
 namespace MNISTTest {
     interface Sample {
-        x: any,
-        y: any
+        x: Float32Array,
+        y: number
     }
 
     let harness: WebDNN.Test.Harness;
@@ -15,13 +15,15 @@ namespace MNISTTest {
         harness = new WebDNN.Test.Harness((WebDNN.gpu as WebDNN.GPUInterfaceWebGPU).webgpuHandler, document.getElementById("log"));
     });
 
-    function createTest() {
+    function createTest(flagRun: boolean) {
         let runner: WebDNN.DNNDescriptorRunner;
         let samples: Sample[];
-        let inputView: Float32Array[];
+        let inputView: Float32Array;
+        let outputView: Float32Array;
+        let numCorrect = -1;
 
         return {
-            name: 'test',
+            name: 'MNIST',
             setupAsync: async () => {
                 harness.clearText();
                 harness.log('test');
@@ -31,7 +33,8 @@ namespace MNISTTest {
                 runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
                 await runner.compile();
                 await runner.loadWeights(new Float32Array(await (await fetch('../../example/mnist/output/weight.bin')).arrayBuffer()));
-                inputView = await runner.getInputViews();
+                inputView = (await runner.getInputViews())[0];
+                outputView = (await runner.getOutputViews())[0];
 
                 // load samples
                 samples = (await (await fetch('../../resources/mnist/test_samples.json')).json())
@@ -41,9 +44,23 @@ namespace MNISTTest {
                     }));
             },
             mainAsync: async () => {
+                numCorrect = 0;
+
                 for (let sample of samples) {
-                    inputView[0].set(sample.x);
-                    await runner.run();
+                    let predictedLabel = 0;
+                    let maxScore = 0;
+
+                    inputView.set(sample.x);
+                    flagRun && await runner.run();
+
+                    for (let j = 0; j < outputView.length; j++) {
+                        if (outputView[j] <= maxScore) continue;
+
+                        maxScore = outputView[j];
+                        predictedLabel = j;
+                    }
+
+                    if (predictedLabel === sample.y) numCorrect++;
                 }
             },
             cleanup: () => {
@@ -53,7 +70,9 @@ namespace MNISTTest {
             },
             summarize: (elapsedTime: WebDNN.Test.StatsValue, test: WebDNN.Test.Test) => {
                 return {
-                    'name': test.name,
+                    'Name': test.name,
+                    'Run?': flagRun,
+                    'Accuracy': (numCorrect / samples.length).toFixed(3),
                     'Elapsed time [ms/image]': (elapsedTime.mean / samples.length).toFixed(2),
                     'Std [ms/image]': (elapsedTime.std / samples.length).toFixed(2)
                 }
@@ -67,7 +86,8 @@ namespace MNISTTest {
         try {
             harness.clearAll();
 
-            await harness.runPerformanceTest(createTest());
+            await harness.runPerformanceTest(createTest(true));
+            await harness.runPerformanceTest(createTest(false));
 
             harness.clearText();
             harness.show();

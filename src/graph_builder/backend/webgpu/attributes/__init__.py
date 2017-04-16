@@ -1,0 +1,7 @@
+from graph_builder.backend.webgpu.attributes.channelwise import Channelwise
+from graph_builder.backend.webgpu.attributes.channelwise_attachable import ChannelwiseAttachable
+from graph_builder.backend.webgpu.attributes.elementwise import Elementwise
+from graph_builder.backend.webgpu.attributes.elementwise_attachable import ElementwiseAttachable
+from graph_builder.backend.webgpu.attributes.initializer_required import InitializerRequired
+from graph_builder.backend.webgpu.attributes.initializer_attachable import InitializerAttachable
+

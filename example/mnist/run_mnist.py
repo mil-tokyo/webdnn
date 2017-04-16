@@ -1,22 +1,18 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import json
 import os
 import os.path as path
-import sys
-
-sys.path.append(path.join(path.dirname(__file__), "../../src"))
-
 import numpy as np
-
-from graph_builder.kernel_builder.kernel_builder_webgpu import KernelBuilderWebGPU
+from graph_builder.util import json
+from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
     Variable, GraphNode, Graph, VariableAttributes
 
 # from graph_builder.dnn_descriptor.dnn_descriptor_webgpu import DNNDescriptorWebGPU
 
+OPTIMIZE = os.environ.get('OPTIMIZE', '1') == '1'
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 RESOURCES_DIR = path.join(path.dirname(__file__), "../../resources/mnist")
 
@@ -95,19 +91,20 @@ def main():
     weights = load_mnist_weights(path.join(RESOURCES_DIR, "snapshot_iter_12000"))
     graph = construct_graph(weights, batch_size=1)
 
-    optimizer = GraphOptimizer(graph)
-    optimizer.optimize()
+    if OPTIMIZE:
+        optimizer = GraphOptimizer(graph)
+        optimizer.optimize()
 
-    builder = KernelBuilderWebGPU(graph)
-    builder.build()
-    desc = builder.description
-    desc_str = json.dumps(desc, indent=2)
-    print(desc_str)
+    builder = GraphDescriptorGeneratorWebGPU(graph)
+    descriptor = builder.generate()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(path.join(OUTPUT_DIR, "graph.json"), "w") as f:
-        json.dump(desc, f, indent=2)
-    builder.weight_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
+        json.dump(descriptor, f, indent=2)
+    with open(path.join(OUTPUT_DIR, "kernels.metal"), "w") as f:
+        f.write(descriptor.concat_kernel_sources())
+
+    builder.params_array.tofile(path.join(OUTPUT_DIR, "weight.bin"))
 
 
 if __name__ == "__main__":
