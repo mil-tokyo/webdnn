@@ -22,8 +22,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
         val = 0.0;
       }
       
-      val = %%ELEMENTWISE_ATTACHABLE(val)%%;
-      output_data[gid] = val;
+      output_data[gid] = %%ELEMENTWISE_ATTACHABLE(val)%%;
     }
 }
 """

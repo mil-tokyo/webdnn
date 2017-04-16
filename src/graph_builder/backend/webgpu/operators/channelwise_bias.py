@@ -22,10 +22,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     int out_chid = gid % out_ch;
 
     float val = input_data[gid] + param_data[out_chid];
-    val = %%CHANNELWISE_ATTACHABLE(val, out_chid)%%;
-    val = %%ELEMENTWISE_ATTACHABLE(val)%%;
-
-    output_data[gid] = val;
+    output_data[gid] = %%CHANNELWISE_ATTACHABLE(val, out_chid)%%;
   }
 }
 """
@@ -34,8 +31,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 class ChannelwiseBias(Operator,
                       A.Channelwise,
                       A.InitializerRequired,
-                      A.ChannelwiseAttachable,
-                      A.ElementwiseAttachable):
+                      A.ChannelwiseAttachable):
     name: str = "channelwise_bias"
     bias_name: str
 
@@ -68,7 +64,6 @@ class ChannelwiseBias(Operator,
 
         source = channelwise_bias_source
         source = self.apply_channelwise_attach(source)
-        source = self.apply_elementwise_attach(source)
         source = metabuffer_injector.inject(source)
 
         func_name = Operator.add_canonical_suffix("channelwise_bias", source)

@@ -1,5 +1,6 @@
 from graph_builder.backend.webgpu.attributes.attribute import Attribute
 from graph_builder.backend.webgpu.attributes.channelwise import Channelwise
+from graph_builder.backend.webgpu.attributes.elementwise import Elementwise
 from graph_builder.backend.webgpu.tag_parser import TagParser
 
 
@@ -14,6 +15,9 @@ class ChannelwiseAttachable(Attribute):
                 for child in self.iter_children_all():
                     if isinstance(child, Channelwise):
                         expression = child.apply_channelwise_operation(expression, channel_index)
+
+                    elif isinstance(child, Elementwise):
+                        expression = child.apply_elementwise_operation(expression)
 
                 source = source[:tag.span[0]] + expression + source[tag.span[1]:]
 

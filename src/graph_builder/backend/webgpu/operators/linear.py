@@ -30,16 +30,13 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
             sum += input_data[sample_id * in_ch + in_chid] * param_data[in_chid * out_ch + out_chid];
         }
 
-        sum = %%CHANNELWISE_ATTACHABLE(sum, out_chid)%%;
-        sum = %%ELEMENTWISE_ATTACHABLE(sum)%%;
-        output_data[gid] = sum;
+        output_data[gid] = %%CHANNELWISE_ATTACHABLE(sum, out_chid)%%;
     }
 }
 """
 
 
 class Linear(Operator,
-             A.ElementwiseAttachable,
              A.ChannelwiseAttachable,
              A.InitializerAttachable):
     name: str = "linear"
@@ -64,7 +61,6 @@ class Linear(Operator,
 
         source = linear_mul_source
         source = self.apply_initializer_attach(metabuffer_injector, params_allocation, source)
-        source = self.apply_elementwise_attach(source)
         source = self.apply_channelwise_attach(source)
         source = metabuffer_injector.inject(source)
 
