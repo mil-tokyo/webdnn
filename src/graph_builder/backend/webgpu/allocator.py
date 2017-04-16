@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 import numpy as np
 
 from graph_builder.frontend.graph import Graph
@@ -47,7 +47,7 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate_params(cls, graph: Graph):
+    def allocate_params(cls, graph: Graph) -> Tuple[MemoryLayout, np.ndarray]:
         offset = 0
         allocationDict = {}
         params = {}
@@ -57,7 +57,7 @@ class Allocator:
                 for param_name, array in layer.weights.items():
                     key = layer.name + "/" + param_name
                     if key in allocationDict:
-                        return
+                        continue
 
                     size = array.size
                     allocationDict[key] = Allocation(key, offset, size)
