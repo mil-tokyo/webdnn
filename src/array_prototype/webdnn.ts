@@ -6,19 +6,31 @@ namespace WebDNN {
     export let gpu: GPUInterface;
 
     export async function init(backend?: string, backendOption?: any): Promise<string> {
-        let webgpuif = new GPUInterfaceWebGPU(backendOption);
-        try {
-            await webgpuif.init();
-            gpu = webgpuif;
-            backend = 'webgpu';
-        } catch (e) {
-            console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
-            let gpufbif = new GPUInterfaceFallback();
-            await gpufbif.init();
-            gpu = gpufbif;
-            backend = 'fallback';
+        let backend_loaded = false;
+        let loaded_backend_name = 'fallback';
+        if (!backend || backend == 'webgpu') {
+            try {
+                let webgpuif = new GPUInterfaceWebGPU(backendOption);
+                await webgpuif.init();
+                gpu = webgpuif;
+                loaded_backend_name = 'webgpu';
+                backend_loaded = true;
+            } catch (e) {
+                console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
+            }
+        } else if (backend == 'fallback') {
+            // use fallback backend explicitly
+        } else {
+            console.error('Unknown backend; fallback to pure js backend.');
         }
 
-        return backend;
+        if (!backend_loaded) {
+            let gpufbif = new GPUInterfaceFallback(backendOption);
+            await gpufbif.init();
+            gpu = gpufbif;
+            backend_loaded = true;
+        }
+
+        return loaded_backend_name;
     }
 }
