@@ -7,30 +7,31 @@ from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operators.operator import Operator
 
 linear_mul_source = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
+kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
                           const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]])
+                          uint index[[thread_position_in_grid]],
+                          uint num_threads[[threads_per_grid]])
 {
-    device float *input_data = data_buffer + %%META_LOAD(input_data_offset)%%;
-    device float *output_data = data_buffer + %%META_LOAD(output_data_offset)%%;
-    const device float *param_data = param_buffer + %%META_LOAD(param_data_offset)%%;
-    const int n = %%META_LOAD(num_output_element)%%;
-    const int out_ch = %%META_LOAD(num_out_ch)%%;
-    const int in_ch = %%META_LOAD(num_in_ch)%%;
+    const device float *X = data_buffer + %%META_LOAD(linear_X_offset)%%;
+    device float *Y = data_buffer + %%META_LOAD(linear_Y_offset)%%;
+    const device float *W = weight_buffer + %%META_LOAD(linear_W_offset)%%;
+    const int M = %%META_LOAD(linear_M)%%;
+    const int N = %%META_LOAD(linear_N)%%;
+    const int K = %%META_LOAD(linear_K)%%;
     
     %%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
   
-    for (int gid = index; gid < n; gid += 4096) {
-        int out_chid = gid % out_ch;
-        int sample_id = gid / out_ch;
+    for (int gid = index; gid < M * N * K; gid += num_threads) {
+        int n = gid % N;
+        int m = gid / N;
 
         float sum = 0.0;
-        for (int in_chid = 0; in_chid < in_ch; in_chid++) {
-            sum += input_data[sample_id * in_ch + in_chid] * param_data[in_chid * out_ch + out_chid];
+        for (int k = 0; k < K; k++) {
+            sum += X[m * K + k] * W[k * N + n];
         }
 
-        output_data[gid] = %%CHANNELWISE_ATTACHABLE(sum, out_chid)%%;
+        Y[gid] = %%CHANNELWISE_ATTACHABLE(sum, n)%%;
     }
 }
 """
@@ -48,15 +49,15 @@ class Linear(Operator,
                            metabuffer_injector: MetaBufferInjector) -> List[Kernel]:
         input_var = variable_layout.allocation_dict[self.inputs[0].name]
         output_var = variable_layout.allocation_dict[self.outputs[0].name]
-        param_var = weights_layout.allocation_dict[self.layer.name + "/W"]
+        weight_var = weights_layout.allocation_dict[self.layer.name + "/W"]
 
         metabuffer_injector.register({
-            "input_data_offset": input_var.offset,
-            "output_data_offset": output_var.offset,
-            "param_data_offset": param_var.offset,
-            "num_output_element": batch_size * self.layer.parameters["out_size"],
-            "num_out_ch": self.layer.parameters["out_size"],
-            "num_in_ch": self.layer.parameters["in_size"],
+            "linear_X_offset": input_var.offset,
+            "linear_Y_offset": output_var.offset,
+            "linear_W_offset": weight_var.offset,
+            "linear_M": batch_size,
+            "linear_N": self.layer.parameters["out_size"],
+            "linear_K": self.layer.parameters["in_size"],
         })
 
         source = linear_mul_source

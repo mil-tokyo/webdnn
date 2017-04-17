@@ -13,18 +13,18 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    device float *X = data_buffer + %%META_LOAD(input_data_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(output_data_offset)%%;
-    const device float *W = weight_buffer + %%META_LOAD(weight_data_offset)%%;
+    const device float *X = data_buffer + %%META_LOAD(convolution_2d_X_offset)%%;
+    device float *Y = data_buffer + %%META_LOAD(convolution_2d_Y_offset)%%;
+    const device float *W = weight_buffer + %%META_LOAD(convolution_2d_W_offset)%%;
 
-    const int N = %%META_LOAD(convolution_batchsize)%%;
-    const int C1 = %%META_LOAD(convolution_c1)%%;
-    const int C2 = %%META_LOAD(convolution_c2)%%;
-    const int H1 = %%META_LOAD(convolution_h1)%%;
-    const int W1 = %%META_LOAD(convolution_w1)%%;
-    const int K = %%META_LOAD(convolution_ksize)%%;
-    const int S = %%META_LOAD(convolution_stride)%%;
-    const int P = %%META_LOAD(convolution_pad)%%;
+    const int N = %%META_LOAD(convolution_2d_batchsize)%%;
+    const int C1 = %%META_LOAD(convolution_2d_c1)%%;
+    const int C2 = %%META_LOAD(convolution_2d_c2)%%;
+    const int H1 = %%META_LOAD(convolution_2d_h1)%%;
+    const int W1 = %%META_LOAD(convolution_2d_w1)%%;
+    const int K = %%META_LOAD(convolution_2d_ksize)%%;
+    const int S = %%META_LOAD(convolution_2d_stride)%%;
+    const int P = %%META_LOAD(convolution_2d_pad)%%;
     const int H2 = (H1+2*P - K) / S;
     const int W2 = (W1+2*P - K) / S;
     
@@ -75,17 +75,17 @@ class Convolution2D(Operator,
         weight_var = weights_layout.allocation_dict[self.layer.name + "/W"]
 
         metabuffer_injector.register({
-            "input_data_offset": input_var.offset,
-            "output_data_offset": output_var.offset,
-            "weight_data_offset": weight_var.offset,
-            "convolution_batchsize": batch_size,
-            "convolution_h1": self.inputs[0].shape[1],
-            "convolution_w1": self.inputs[0].shape[2],
-            "convolution_c1": self.layer.parameters["in_size"],
-            "convolution_c2": self.layer.parameters["out_size"],
-            "convolution_ksize": self.layer.parameters["ksize"][0],
-            "convolution_stride": self.layer.parameters["stride"][0],
-            "convolution_pad": self.layer.parameters["pad"][0],
+            "convolution_2d_X_offset": input_var.offset,
+            "convolution_2d_Y_offset": output_var.offset,
+            "convolution_2d_W_offset": weight_var.offset,
+            "convolution_2d_batchsize": batch_size,
+            "convolution_2d_h1": self.inputs[0].shape[1],
+            "convolution_2d_w1": self.inputs[0].shape[2],
+            "convolution_2d_c1": self.layer.parameters["in_size"],
+            "convolution_2d_c2": self.layer.parameters["out_size"],
+            "convolution_2d_ksize": self.layer.parameters["ksize"][0],
+            "convolution_2d_stride": self.layer.parameters["stride"][0],
+            "convolution_2d_pad": self.layer.parameters["pad"][0],
         })
 
         source = convolution2d_source

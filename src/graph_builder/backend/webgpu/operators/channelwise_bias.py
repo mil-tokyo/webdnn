@@ -7,23 +7,24 @@ from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operators.operator import Operator
 
 channelwise_bias_source = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
+kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
                           const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]])
+                          uint index[[thread_position_in_grid]],
+                          uint num_threads[[threads_per_grid]])
 {
-  device float *input_data = data_buffer + %%META_LOAD(input_data_offset)%%;
-  device float *output_data = data_buffer + %%META_LOAD(output_data_offset)%%;
-  const device float *param_data = param_buffer + %%META_LOAD(param_data_offset)%%;
-  const int n = %%META_LOAD(num_output_element)%%;
-  const int out_ch = %%META_LOAD(num_out_ch)%%;
+    const device float *X = data_buffer + %%META_LOAD(channelwise_bias_X_offset)%%;
+    device float *Y = data_buffer + %%META_LOAD(channelwise_bias_Y_offset)%%;
+    const device float *B = weight_buffer + %%META_LOAD(channelwise_bias_B_offset)%%;
+    const int N = %%META_LOAD(channelwise_bias_N)%%;
+    const int C = %%META_LOAD(channelwise_bias_C)%%;
   
-  for (int gid = index; gid < n; gid += 8192) {
-    int out_chid = gid % out_ch;
+    for (int gid = index; gid < N; gid += num_threads) {
+        int c = gid % C;
 
-    float val = input_data[gid] + param_data[out_chid];
-    output_data[gid] = %%CHANNELWISE_ATTACHABLE(val, out_chid)%%;
-  }
+        float result = X[gid] + B[c];
+        Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
+    }
 }
 """
 
@@ -40,9 +41,9 @@ class ChannelwiseBias(Operator,
                           weights_allocation: MemoryLayout,
                           initialize_block: str):
         metabuffer_injector.register({
-            "bias_offset": weights_allocation.allocation_dict[f"{self.layer.name}/b"].offset
+            "channelwise_bias_B_offset": weights_allocation.allocation_dict[f"{self.layer.name}/b"].offset
         })
-        return f"{initialize_block}\nconst device float *bias = param_buffer + %%META_LOAD(bias_offset)%%;"
+        return f"{initialize_block}\nconst device float *bias = weight_buffer + %%META_LOAD(channelwise_bias_B_offset)%%;"
 
     def apply_channelwise_operation(self, expression: str, channel_index: str) -> str:
         return f"(({expression}) + (bias[{channel_index}]))"
@@ -55,11 +56,11 @@ class ChannelwiseBias(Operator,
         num_output_element = self.layer.parameters["out_size"] * batch_size
 
         metabuffer_injector.register({
-            "input_data_offset": variable_layout.allocation_dict[self.inputs[0].name].offset,
-            "output_data_offset": variable_layout.allocation_dict[self.outputs[0].name].offset,
-            "param_data_offset": weights_layout.allocation_dict[f"{self.layer.name}/b"].offset,
-            "num_output_element": num_output_element,
-            "num_out_ch": self.layer.parameters["out_size"]
+            "channelwise_bias_X_offset": variable_layout.allocation_dict[self.inputs[0].name].offset,
+            "channelwise_bias_Y_offset": variable_layout.allocation_dict[self.outputs[0].name].offset,
+            "channelwise_bias_B_offset": weights_layout.allocation_dict[f"{self.layer.name}/b"].offset,
+            "channelwise_bias_N": num_output_element,
+            "channelwise_bias_C": self.layer.parameters["out_size"]
         })
 
         source = channelwise_bias_source
