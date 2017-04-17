@@ -1,6 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webgpu.operators.channelwise_bias import ChannelwiseBias
+from graph_builder.backend.webgpu.operators.convolution_2d import Convolution2D
 from graph_builder.backend.webgpu.operators.linear import Linear
 from graph_builder.backend.webgpu.operators.operator import Operator
 from graph_builder.backend.webgpu.operators.relu import Relu
@@ -29,6 +30,9 @@ class OperatorBuilder:
 
         elif layer.layer_type == LayerType.Relu:
             operator = Relu(layer, inputs, outputs)
+
+        elif layer.layer_type == LayerType.Convolution2D:
+            operator = Convolution2D(layer, inputs, outputs)
 
         else:
             raise NotImplementedError(f"layer type: {layer.layer_type}")
