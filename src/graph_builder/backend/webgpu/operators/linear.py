@@ -22,7 +22,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     
     %%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
   
-    for (int gid = index; gid < M * N * K; gid += num_threads) {
+    for (int gid = index; gid < M * N; gid += num_threads) {
         int n = gid % N;
         int m = gid / N;
 
