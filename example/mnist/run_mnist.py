@@ -12,7 +12,6 @@ from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, Relu
 from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.util import json
 
-# OPTIMIZE = os.environ.get('OPTIMIZE', '1') == '1'
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 RESOURCES_DIR = path.join(path.dirname(__file__), "../../resources/mnist")
 

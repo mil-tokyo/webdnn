@@ -8,7 +8,9 @@ Kernel Builder for WebGPU
 """
 
 import numpy as np
-
+import tempfile as tmp
+import os.path as path
+import subprocess
 from graph_builder.backend.interface.kernel_builder import GraphDescriptorGenerator
 from graph_builder.backend.webgpu.allocator import Allocator
 from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
@@ -16,6 +18,24 @@ from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operator_builder import OperatorBuilder
 from graph_builder.frontend.graph import Graph
 from graph_builder.util import flags
+
+
+def validate_kernel_source(descriptor: GraphDescriptorWebGPU):
+    # FIXME: WebGPU supports multi shader languages, but this test supposes the language as METAL.
+
+    source = descriptor.concat_kernel_sources()
+
+    with tmp.TemporaryDirectory() as tmpdir:
+        source_path = path.join(tmpdir, "kernel.metal")
+        lib_path = path.join(tmpdir, "kernel.air")
+
+        with open(source_path, "w+") as f:
+            f.write(source)
+
+        result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
+        if result.returncode != 0:
+            print("Generated kernel source is invalid.")
+            exit(result.returncode)
 
 
 class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
@@ -50,7 +70,7 @@ class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
                 MetaBufferInjector()
             ))
 
-        return GraphDescriptorWebGPU(
+        descriptor = GraphDescriptorWebGPU(
             kernels=kernels,
             weights_layout=weights_layout,
             variable_layout=variable_layout,
@@ -58,3 +78,11 @@ class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
             outputs=self.graph.outputs,
             batch_size=self.graph.batch_size
         )
+
+        if flags.backend.webgpu.VALIDATE_GENERATED_SOURCE:
+            if flags.DEBUG:
+                print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
+
+            validate_kernel_source(descriptor)
+
+        return descriptor
