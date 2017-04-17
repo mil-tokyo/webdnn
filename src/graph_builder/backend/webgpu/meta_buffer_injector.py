@@ -3,6 +3,7 @@ from typing import Dict
 import numpy as np
 
 from graph_builder.backend.webgpu.tag_parser import TagParser
+from graph_builder.util import flags
 
 
 class MetaBufferInjector:
@@ -28,7 +29,17 @@ class MetaBufferInjector:
                 if key not in self.data:
                     raise KeyError(f"key '{key}' is not registered in MetaBufferInjector.")
 
-                value = f"{self.arg_name}[{self.offset_map[key]}]"
+                if flags.optimize.EMBED_METABUFFER_VALUE:
+                    value = self.data[key]
+                    if isinstance(value, int) or isinstance(value, float):
+                        value = str(value)
+
+                    else:
+                        value = f"{self.arg_name}[{self.offset_map[key]}]"
+
+                else:
+                    value = f"{self.arg_name}[{self.offset_map[key]}]"
+
                 source = source[:tag.span[0]] + value + source[tag.span[1]:]
 
         return source

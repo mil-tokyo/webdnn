@@ -29,10 +29,10 @@ namespace MNISTTest {
                 harness.log('test');
 
                 // initialize graph
-                let pipelineData = await(await fetch('../../example/mnist/output/graph.json')).json();
+                let pipelineData = await(await fetch('../../example/mnist/output/graph_webgpu.json')).json();
                 runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
                 await runner.compile();
-                await runner.loadWeights(new Float32Array(await (await fetch('../../example/mnist/output/weight.bin')).arrayBuffer()));
+                await runner.loadWeights(new Float32Array(await (await fetch('../../example/mnist/output/weight_webgpu.bin')).arrayBuffer()));
                 inputView = (await runner.getInputViews())[0];
                 outputView = (await runner.getOutputViews())[0];
 
