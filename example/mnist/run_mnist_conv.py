@@ -6,7 +6,7 @@ import os.path as path
 import numpy as np
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
-from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, Variable, GraphNode, Graph, VariableAttributes
+from graph_builder.frontend.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, Variable, GraphNode, Graph, VariableAttributes
 from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.util import json
 
@@ -52,29 +52,29 @@ def construct_graph(weights, batch_size):
     var_shapes = []
     layers = []
     var_shapes.append((batch_size, 784))
-    layers.append(LinearLayer("l1", {"in_size": 784, "out_size": 100},
-                              {"W": weights["l1/W"]}))
+    layers.append(LinearOperator("l1", {"in_size": 784, "out_size": 100},
+                                 {"W": weights["l1/W"]}))
     var_shapes.append((batch_size, 100))
-    layers.append(ChannelwiseBiasLayer("bias1", {"out_size": 100},
-                                       {"b": weights["l1/b"]}))
+    layers.append(ChannelwiseBiasOperator("bias1", {"out_size": 100},
+                                          {"b": weights["l1/b"]}))
     var_shapes.append((batch_size, 100))
-    layers.append(ReluLayer("relu1", {"out_size": 100}))
-    var_shapes.append((batch_size, 100))
-
-    layers.append(LinearLayer("l2", {"in_size": 100, "out_size": 100},
-                              {"W": weights["l2/W"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ChannelwiseBiasLayer("bias2", {"out_size": 100},
-                                       {"b": weights["l2/b"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ReluLayer("relu2", {"out_size": 100}))
+    layers.append(ReluOperator("relu1", {"out_size": 100}))
     var_shapes.append((batch_size, 100))
 
-    layers.append(LinearLayer("l3", {"in_size": 100, "out_size": 10},
-                              {"W": weights["l3/W"]}))
+    layers.append(LinearOperator("l2", {"in_size": 100, "out_size": 100},
+                                 {"W": weights["l2/W"]}))
+    var_shapes.append((batch_size, 100))
+    layers.append(ChannelwiseBiasOperator("bias2", {"out_size": 100},
+                                          {"b": weights["l2/b"]}))
+    var_shapes.append((batch_size, 100))
+    layers.append(ReluOperator("relu2", {"out_size": 100}))
+    var_shapes.append((batch_size, 100))
+
+    layers.append(LinearOperator("l3", {"in_size": 100, "out_size": 10},
+                                 {"W": weights["l3/W"]}))
     var_shapes.append((batch_size, 10))
-    layers.append(ChannelwiseBiasLayer("bias3", {"out_size": 10},
-                                       {"b": weights["l3/b"]}))
+    layers.append(ChannelwiseBiasOperator("bias3", {"out_size": 10},
+                                          {"b": weights["l3/b"]}))
     var_shapes.append((batch_size, 10))
 
     return make_sequential_graph(layers, var_shapes, "x", "y", batch_size)

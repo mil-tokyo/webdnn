@@ -4,7 +4,7 @@ from typing import List
 
 from graph_builder.backend.fallback.allocator import MemoryLayout
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.frontend.graph import Layer, Variable
+from graph_builder.frontend.graph import Operator, Variable
 
 
 class SerialGenerator:
@@ -24,13 +24,13 @@ class SerialGenerator:
 
 class Operator:
     name: str
-    layer: Layer
+    layer: Operator
     children: List["Operator"]
     inputs: List[Variable]
     outputs: List[Variable]
 
     def __init__(self,
-                 layer: Layer,
+                 layer: Operator,
                  inputs: List[Variable],
                  outputs: List[Variable]):
         self.layer = layer

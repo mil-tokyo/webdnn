@@ -12,7 +12,7 @@ import numpy as np
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
 from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
-from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, \
+from graph_builder.frontend.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, \
     Variable, GraphNode, Graph, VariableAttributes
 from graph_builder.util import json
 
@@ -21,11 +21,11 @@ OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
 
 def main():
-    layer_l1_mul = LinearLayer("l1", {"in_size": 3, "out_size": 2},
-                               {"W": np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32)})
-    layer_bias1 = ChannelwiseBiasLayer("bias1", {"out_size": 2},
-                                       {"b": np.array([1.0, -10.0], dtype=np.float32)})
-    layer_relu1 = ReluLayer("relu1", {"out_size": 2})
+    layer_l1_mul = LinearOperator("l1", {"in_size": 3, "out_size": 2},
+                                  {"W": np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32)})
+    layer_bias1 = ChannelwiseBiasOperator("bias1", {"out_size": 2},
+                                          {"b": np.array([1.0, -10.0], dtype=np.float32)})
+    layer_relu1 = ReluOperator("relu1", {"out_size": 2})
 
     var_x = Variable("x", (1, 3), {VariableAttributes.Input})
     var_h1 = Variable("h1", (1, 2))

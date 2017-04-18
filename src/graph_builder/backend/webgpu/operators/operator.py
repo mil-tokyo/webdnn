@@ -5,7 +5,7 @@ from typing import List
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.frontend.graph import Layer, Variable
+from graph_builder.frontend.graph import Operator, Variable
 
 
 class SerialGenerator:
@@ -25,13 +25,13 @@ class SerialGenerator:
 
 class Operator:
     name: str
-    layer: Layer
+    layer: Operator
     children: List["Operator"]
     inputs: List[Variable]
     outputs: List[Variable]
 
     def __init__(self,
-                 layer: Layer,
+                 layer: Operator,
                  inputs: List[Variable],
                  outputs: List[Variable]):
         self.layer = layer

@@ -5,7 +5,7 @@ from graph_builder.backend.webgpu.operators.convolution_2d import Convolution2D
 from graph_builder.backend.webgpu.operators.linear import Linear
 from graph_builder.backend.webgpu.operators.operator import Operator
 from graph_builder.backend.webgpu.operators.relu import Relu
-from graph_builder.frontend.graph import Layer, LayerType, Graph, Variable
+from graph_builder.frontend.graph import Operator, OperatorType, Graph, Variable
 
 
 class OperatorBuilder:
@@ -19,23 +19,23 @@ class OperatorBuilder:
 
     @classmethod
     def build_from_layer(cls,
-                         layer: Layer,
+                         layer: Operator,
                          inputs: List[Variable],
                          outputs: List[Variable]) -> Operator:
-        if layer.layer_type == LayerType.Linear:
+        if layer.operator_type == OperatorType.Linear:
             operator = Linear(layer, inputs, outputs)
 
-        elif layer.layer_type == LayerType.ChannelwiseBias:
+        elif layer.operator_type == OperatorType.ChannelwiseBias:
             operator = ChannelwiseBias(layer, inputs, outputs)
 
-        elif layer.layer_type == LayerType.Relu:
+        elif layer.operator_type == OperatorType.Relu:
             operator = Relu(layer, inputs, outputs)
 
-        elif layer.layer_type == LayerType.Convolution2D:
+        elif layer.operator_type == OperatorType.Convolution2D:
             operator = Convolution2D(layer, inputs, outputs)
 
         else:
-            raise NotImplementedError(f"layer type: {layer.layer_type}")
+            raise NotImplementedError(f"layer type: {layer.operator_type}")
 
         if layer.next_node:
             operator.children.append(OperatorBuilder.build_from_layer(layer.next_node, [], []))

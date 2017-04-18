@@ -1,9 +1,9 @@
-from graph_builder.frontend.graph import Graph, LayerAttributes
+from graph_builder.frontend.graph.graph import CompositeOperator, OperatorAttribute
 from graph_builder.util import flags
 
-
+#FIXME
 class GraphOptimizer:
-    def __init__(self, graph: Graph):
+    def __init__(self, graph: CompositeOperator):
         self.graph = graph
 
     def optimize(self):
@@ -16,11 +16,11 @@ class GraphOptimizer:
                 cons_first = cons_list[0] if len(cons_list) > 0 else None
                 if prod is not None \
                     and flags.optimize.CONCAT_ELEMENTWISE_OPERATION \
-                    and LayerAttributes.PostElementwise in prod.layer.attributes \
+                    and OperatorAttribute.PostElementwise in prod.layer.attributes \
                     and len(cons_list) == 1 \
-                    and LayerAttributes.Elementwise in cons_first.layer.attributes:
+                    and OperatorAttribute.Elementwise in cons_first.layer.attributes:
                     # linearのうしろにreluをくっつける
-                    prod.layer.append_child_to_tail(cons_first.layer)
+                    prod.layer.append(cons_first.layer)
                     # linearの出力がreluの出力になる
                     prod.tops[0] = cons_first.tops[0]
                     # 後続レイヤーが持たないattributeを消す(これでいいのか？)
@@ -28,13 +28,14 @@ class GraphOptimizer:
                     # reluのノードは消える (同時に、linear-relu間の変数もなくなる)
                     self.graph.nodes.remove(cons_first)
                     break  # グラフが変わったのでvariable_to_nodeをつくりなおす
+
                 if prod is not None \
                     and flags.optimize.CONCAT_CHANNELWISE_OPERATION \
-                    and LayerAttributes.PostChannelwise in prod.layer.attributes \
+                    and OperatorAttribute.PostChannelwise in prod.layer.attributes \
                     and len(cons_list) == 1 \
-                    and LayerAttributes.Channelwise in cons_first.layer.attributes:
+                    and OperatorAttribute.Channelwise in cons_first.layer.attributes:
                     # linearのうしろにbiasをくっつける
-                    prod.layer.append_child_to_tail(cons_first.layer)
+                    prod.layer.append(cons_first.layer)
                     # linearの出力がbiasの出力になる
                     prod.tops[0] = cons_first.tops[0]
                     # 後続レイヤーが持たないattributeを消す(これでいいのか？)

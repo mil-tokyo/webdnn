@@ -7,8 +7,8 @@ import argparse
 import numpy as np
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
-from graph_builder.frontend.graph import LinearLayer, ChannelwiseBiasLayer, ReluLayer, Convolution2DLayer, Variable, \
-    GraphNode, Graph, VariableAttributes
+from graph_builder.frontend.graph.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, Convolution2DOperator, Variable, \
+    VariableAttributes, CompositeOperator, ConstantVariable
 from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
 from graph_builder.util import json
 
@@ -43,79 +43,65 @@ def make_sequential_graph(layers, var_shapes, in_var_name, out_var_name, batch_s
             attrs.add(VariableAttributes.Output)
         nn_vars.append(Variable(name, var_shape, attrs))
 
-    nodes = []
+    ops = set()
     for i, layer in enumerate(layers):
-        nodes.append(GraphNode(layer.name, layer, [nn_vars[i]], [nn_vars[i + 1]]))
+        ops.add(GraphNode(layer.name, layer, [nn_vars[i]], [nn_vars[i + 1]]))
 
-    graph = Graph(nodes, [nn_vars[0]], [nn_vars[-1]], batch_size)
-    return graph
+    return CompositeOperator("graph", ops)
 
 
 def construct_graph_fc(weights, batch_size):
-    var_shapes = []
-    layers = []
-    var_shapes.append((batch_size, 784))
-    layers.append(LinearLayer("l1", {"in_size": 784, "out_size": 100},
-                              {"W": weights["l1/W"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ChannelwiseBiasLayer("bias1", {"out_size": 100},
-                                       {"b": weights["l1/b"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ReluLayer("relu1", {"out_size": 100}))
-    var_shapes.append((batch_size, 100))
+    x = Variable([batch_size, 784])
 
-    layers.append(LinearLayer("l2", {"in_size": 100, "out_size": 100},
-                              {"W": weights["l2/W"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ChannelwiseBiasLayer("bias2", {"out_size": 100},
-                                       {"b": weights["l2/b"]}))
-    var_shapes.append((batch_size, 100))
-    layers.append(ReluLayer("relu2", {"out_size": 100}))
-    var_shapes.append((batch_size, 100))
+    h = LinearOperator("l1", {"out_size": 100})(x, ConstantVariable(weights["l1/W"]))
+    h = ChannelwiseBiasOperator("l1b")(h, ConstantVariable(weights["l1/b"]))
+    h = ReluOperator("l1r")(h)
 
-    layers.append(LinearLayer("l3", {"in_size": 100, "out_size": 10},
-                              {"W": weights["l3/W"]}))
-    var_shapes.append((batch_size, 10))
-    layers.append(ChannelwiseBiasLayer("bias3", {"out_size": 10},
-                                       {"b": weights["l3/b"]}))
-    var_shapes.append((batch_size, 10))
+    h = LinearOperator("l2", {"out_size": 100})(h, ConstantVariable(weights["l2/W"]))
+    h = ChannelwiseBiasOperator("l2b")(h, ConstantVariable(weights["l2/b"]))
+    h = ReluOperator("l2r")(h)
 
-    return make_sequential_graph(layers, var_shapes, "x", "y", batch_size)
+    h = LinearOperator("l3", {"out_size": 100})(h, ConstantVariable(weights["l3/W"]))
+    y = ChannelwiseBiasOperator("l3b")(h, ConstantVariable(weights["l3/b"]))
+
+    graph = CompositeOperator.composite_with_vars("graph", [x], [y])
+    print(graph)
+    return graph
 
 
 def construct_graph_conv(weights, batch_size):
     var_shapes = []
     layers = []
     var_shapes.append((batch_size, 28, 28, 1))  # n, h, w, c
-    layers.append(Convolution2DLayer("conv1",
-                                     {"in_size": 1, "out_size": 32,
-                                      "ksize": (5, 5), "stride": (1, 1), "pad": (0, 0), "cover_all": False},
-                                     {"W": weights["conv1/W"]}))
+    layers.append(Convolution2DOperator("conv1",
+                                        {"in_size": 1, "out_size": 32,
+                                         "ksize": (5, 5), "stride": (1, 1), "pad": (0, 0), "cover_all": False},
+                                        {"W": weights["conv1/W"]}))
     var_shapes.append((batch_size, 24, 24, 32))
-    layers.append(ChannelwiseBiasLayer("bias1", {"out_size": 32},
-                                       {"b": weights["conv1/b"]}))
+    layers.append(ChannelwiseBiasOperator("bias1", {"out_size": 32},
+                                          {"b": weights["conv1/b"]}))
     var_shapes.append((batch_size, 24, 24, 32))
-    layers.append(ReluLayer("relu1", {"out_size": 32}))
+    layers.append(ReluOperator("relu1", {"out_size": 32}))
     var_shapes.append((batch_size, 24, 24, 32))
 
-    layers.append(Convolution2DLayer("conv2",
-                                     {"in_size": 32, "out_size": 32,
-                                      "ksize": (3, 3), "stride": (2, 2), "pad": (1, 1), "cover_all": False},
-                                     {"W": weights["conv2/W"]}))
+    layers.append(Convolution2DOperator("conv2",
+                                        {"in_size": 32, "out_size": 32,
+                                         "ksize": (3, 3), "stride": (2, 2), "pad": (1, 1), "cover_all": False},
+                                        {"W": weights["conv2/W"]}))
     var_shapes.append((batch_size, 12, 12, 32))
-    layers.append(ChannelwiseBiasLayer("bias2", {"out_size": 32},
-                                       {"b": weights["conv2/b"]}))
+    layers.append(ChannelwiseBiasOperator("bias2", {"out_size": 32},
+                                          {"b": weights["conv2/b"]}))
     var_shapes.append((batch_size, 12, 12, 32))
-    layers.append(ReluLayer("relu2", {"out_size": 32}))
+    layers.append(ReluOperator("relu2", {"out_size": 32}))
     var_shapes.append((batch_size, 12, 12, 32))
 
-    layers.append(Convolution2DLayer("conv3",
-                                     {"in_size": 32, "out_size": 10,
-                                      "ksize": (12, 12), "stride": (1, 1), "pad": (0, 0), "cover_all": False},
-                                     {"W": weights["conv3/W"]}))
+    layers.append(Convolution2DOperator("conv3",
+                                        {"in_size": 32, "out_size": 10,
+                                         "ksize": (12, 12), "stride": (1, 1), "pad": (0, 0), "cover_all": False},
+                                        {"W": weights["conv3/W"]}))
     var_shapes.append((batch_size, 1, 1, 10))
-    layers.append(ChannelwiseBiasLayer("bias3", {"out_size": 10},
-                                       {"b": weights["conv3/b"]}))
+    layers.append(ChannelwiseBiasOperator("bias3", {"out_size": 10},
+                                          {"b": weights["conv3/b"]}))
     var_shapes.append((batch_size, 1, 1, 10))
 
     return make_sequential_graph(layers, var_shapes, "x", "y", batch_size)
