@@ -16,7 +16,7 @@ using namespace metal;
 """
 
 
-class GraphDescriptorWebGPU(json.SerializableMixin):
+class GraphDescriptor(json.SerializableMixin):
     kernels: Iterable[Kernel]
     constants_layout: MemoryLayout
     variables_layout: MemoryLayout

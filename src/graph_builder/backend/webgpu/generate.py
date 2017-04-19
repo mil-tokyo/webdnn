@@ -16,13 +16,13 @@ from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.generator.generate_kernel_axiswise_bias import generate_kernel_axiswise_bias
 from graph_builder.backend.webgpu.generator.generate_kernel_linear import generate_kernel_linear
 from graph_builder.backend.webgpu.generator.generate_kernel_relu import generate_kernel_relu
-from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
+from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.graph import Operator, operators as O
 from graph_builder.util import flags
 
 
-def validate_kernel_source(descriptor: GraphDescriptorWebGPU):
+def validate_kernel_source(descriptor: GraphDescriptor):
     # FIXME: WebGPU supports multi shader languages, but this test supposes the language as METAL.
 
     source = descriptor.concat_kernel_sources()
@@ -40,7 +40,7 @@ def validate_kernel_source(descriptor: GraphDescriptorWebGPU):
             exit(result.returncode)
 
 
-def generate(graph: Operator) -> Tuple[GraphDescriptorWebGPU, np.array]:
+def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
@@ -48,7 +48,7 @@ def generate(graph: Operator) -> Tuple[GraphDescriptorWebGPU, np.array]:
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
-    descriptor = GraphDescriptorWebGPU(
+    descriptor = GraphDescriptor(
         kernels=kernels,
         constants_layout=constants_layout,
         variables_layout=variables_layout,
