@@ -128,21 +128,17 @@ class ChainerGraphConverter:
         self._convert_weight_vars(chainer_computational_graph)
         self._convert_input_vars(input_vars)
 
-        print("nodes: {}".format(chainer_computational_graph.nodes))
         pending_functions = [cfunc for cfunc in chainer_computational_graph.nodes if
                              isinstance(cfunc, chainer.Function)]
-        print("pendings: {}".format(pending_functions))
         while len(pending_functions) > 0:
             for cfunc in pending_functions:
                 if all(((id(cvar) in self._cvar_ids) for cvar in cfunc.inputs)):
                     # このレイヤーは入力が揃った
-                    print(cfunc)
                     opr_block = self._construct_operator_block(cfunc)
                     out_nvars = opr_block([self._cvar_to_nvar[id(cvar)] for cvar in cfunc.inputs])
                     # 出力変数を対応づける
                     for out_nvar, out_cvar_wref in zip(out_nvars, cfunc.outputs):
                         out_cvar = out_cvar_wref()
-                        print(out_nvar.shape, out_cvar.shape)
                         assert tuple(out_nvar.shape) == out_cvar.shape
                         self._cvar_to_nvar[id(out_cvar)] = out_nvar
                         self._cvar_ids.append(id(out_cvar))
@@ -163,7 +159,6 @@ class ChainerGraphConverter:
 
     def _convert_input_vars(self, input_vars: Iterable[chainer.Variable]):
         for cvar in input_vars:
-            print("input {}".format(cvar))
             self._convert_var(cvar, attrs={VA.Input})
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
@@ -171,7 +166,6 @@ class ChainerGraphConverter:
         for cvar in chainer_computational_graph.nodes:
             if isinstance(cvar, chainer.Variable):
                 if cvar.name is not None:
-                    print(cvar.name)
                     self._convert_var(cvar)
             elif isinstance(cvar, chainer.functions.BatchNormalization):
                 # TODO: BNのmean, varは名無しだがウェイト
