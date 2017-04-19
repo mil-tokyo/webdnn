@@ -1,6 +1,7 @@
-from typing import Dict, Set, List, Iterable
-from graph_builder.graph import Variable
+from typing import Dict, Iterable
+
 from graph_builder.graph.attribute import Attribute
+from graph_builder.graph.graph import Variable
 from graph_builder.graph.operators import attributes as A
 
 """

@@ -1,28 +1,50 @@
-from typing import Iterable, Set, List
+from typing import Iterable, Set, List, Type
 
+from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.graph import Operator, Variable
 
 
 class VariableAlias(Variable):
     link_to: Variable
-    input_to: Set[Operator]
-    output_from: Operator = None
+    axis_order: Type[Attribute]  # FIXME: Attribute -> AxisOrder
 
     # noinspection PyMissingConstructor
     def __init__(self, var: Variable):
         self.link_to = var
         self.input_to = set()
-
-    def get(self):
-        return self.link_to.get() if isinstance(self.link_to, VariableAlias) else self.link_to
+        self.output_from = None
 
     @property
     def size(self):
-        return self.link_to.size
+        return self.original.size
 
     @property
     def shape(self):
-        return self.link_to.shape
+        return self.original.shape
+
+    @property
+    def ndim(self):
+        return self.original.ndim
+
+    @property
+    def shape_dict(self):
+        return self.original.shape_dict
+
+    def change_axis_order(self, axis_order: Type[Attribute]):
+        return self.original.change_axis_order(axis_order)
+
+    def __repr__(self):
+        return self.original.__repr__()
+
+    def __str__(self):
+        return self.original.__str__()
+
+    @property
+    def original(self):
+        return self.link_to.original if isinstance(self.link_to, VariableAlias) else self.link_to
+
+    def dump(self):
+        return self.original.dump()
 
 
 class Compose(Operator):

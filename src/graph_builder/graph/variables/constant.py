@@ -1,9 +1,9 @@
 from typing import Type
+
 import numpy as np
 
+from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.graph import Variable
-from graph_builder.graph import Attribute
-from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import attributes as VA
 
 

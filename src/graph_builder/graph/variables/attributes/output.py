@@ -1,4 +1,4 @@
-from graph_builder.graph import Attribute
+from graph_builder.graph.attribute import Attribute
 
 
 class Output(Attribute):

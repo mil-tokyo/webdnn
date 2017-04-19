@@ -147,7 +147,8 @@ class Variable(Node):
 
     @property
     def size(self):
-        return np.prod(self.shape)
+        # noinspection PyTypeChecker
+        return int(np.prod(self.shape))
 
     @property
     def ndim(self):
