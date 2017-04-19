@@ -5,7 +5,7 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23
 """
 
-from typing import Dict, Set, List, Iterable
+from typing import Dict, Set, List, Iterable, Type
 import numpy as np
 import chainer
 import chainer.computational_graph
@@ -79,7 +79,7 @@ class LinearBlock(OperatorBlock):
             bias_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
-        return opr_out,
+        return [opr_out]
 
 
 class Convolution2DBlock(OperatorBlock):
@@ -104,7 +104,7 @@ class Convolution2DBlock(OperatorBlock):
             bias_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
-        return opr_out,
+        return [opr_out]
 
 
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
@@ -168,10 +168,12 @@ class ChainerGraphConverter:
                 if cvar.name is not None:
                     self._convert_var(cvar)
             elif isinstance(cvar, chainer.functions.BatchNormalization):
-                # TODO: BNのmean, varは名無しだがウェイト
-                raise NotImplementedError()
+                # BNのmean, varは名無しだがウェイト
+                assert len(cvar.inputs) == 5  # data, gamma, bias, mean, var
+                self._convert_var(cvar.inputs[3], force_constant=True)
+                self._convert_var(cvar.inputs[4], force_constant=True)
 
-    def _convert_var(self, cvar: chainer.Variable, attrs: Iterable[Attribute] = None, force_constant=False):
+    def _convert_var(self, cvar: chainer.Variable, attrs: Iterable[Type[Attribute]] = None, force_constant=False):
         assert id(cvar) not in self._cvar_ids
         ndim = len(cvar.shape)
         if ndim == 4:

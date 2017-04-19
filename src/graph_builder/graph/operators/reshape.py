@@ -25,7 +25,7 @@ class Reshape(Operator):
 
     def __call__(self, x: Variable):
         out_shape = self.parameters["out_shape"]  # type: List[int]
-        y = Variable(out_shape)
+        y = Variable(out_shape, x.axis_order)
         self.append_input("x", x)
         self.append_output("y", y)
         return y
