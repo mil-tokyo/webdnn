@@ -2,6 +2,7 @@ from typing import Dict
 
 from graph_builder.graph.graph import Operator, Variable
 from graph_builder.graph.operators import attributes as A
+from graph_builder.graph.variables import attributes as VA
 
 
 class Deconvolution2D(Operator):
@@ -23,17 +24,26 @@ class Deconvolution2D(Operator):
         assert "ksize" in parameters
         assert "stride" in parameters
         assert "padding" in parameters
-        assert "in_size" in parameters
-        assert "out_size" in parameters
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, w: Variable):
-        N = x.shape[0]
-        H2 = (x.shape[1] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) / self.parameters["stride"][0] + 1
-        W2 = (x.shape[2] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) / self.parameters["stride"][1] + 1
-        C2 = self.parameters["out_size"]
+        x_shape_dict = x.shape_dict
+        w_shape_dict = w.shape_dict
+        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.parameters["ksize"]
+        assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
+        # TODO: Convolution2Dと全く同じだけど本来違うのでは？
+        N = x_shape_dict[A.Axis.N]
+        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
+        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
+        C2 = w_shape_dict[A.Axis.N]
 
-        y = Variable([N, H2, W2, C2])
+        if x.axis_order == VA.OrderNCHW:
+            var_shape = [N, C2, H2, W2]
+        elif x.axis_order == VA.OrderNHWC:
+            var_shape = [N, H2, W2, C2]
+        else:
+            raise NotImplementedError()
+        y = Variable(var_shape, x.axis_order)
         self.append_input("x", x)
         self.append_input("w", w)
         self.append_output("y", y)

@@ -21,6 +21,7 @@ class Concat(Operator):
         :param weights: 
         """
         assert "axis" in parameters
+        assert isinstance(parameters["axis"], A.Axis)
         super().__init__(name, parameters)
 
     def __call__(self, *xs: Variable):
@@ -31,6 +32,6 @@ class Concat(Operator):
             self.append_input(f"x{i}", x)
             y_shape[axis] += x.shape[axis]
 
-        y = Variable(y_shape)
+        y = Variable(y_shape, xs[0].axis_order)
         self.append_output("y", y)
         return y,
