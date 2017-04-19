@@ -10,7 +10,7 @@ class Relu(Operator):
     """
     # ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
+                  A.PostAxiswise,
                   A.Elementwise,
                   A.Channelwise,
                   A.Inplace}
@@ -19,7 +19,7 @@ class Relu(Operator):
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):
-        y = Variable(x.shape)
+        y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_output("y", y)
         return y,

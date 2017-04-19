@@ -9,7 +9,7 @@ class ElementwiseSum(Operator):
     n入力を加算するレイヤー
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
+                  A.PostAxiswise,
                   A.FirstInplace}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):

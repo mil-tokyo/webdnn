@@ -9,7 +9,7 @@ class Deconvolution2D(Operator):
     Deconvolutionレイヤー(bias含まず)
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
+                  A.PostAxiswise,
                   A.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):

@@ -10,7 +10,7 @@ class MaxPooling2D(Operator):
     padding挙動はchainer準拠 (cover_allに注意)
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise}
+                  A.PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
         """

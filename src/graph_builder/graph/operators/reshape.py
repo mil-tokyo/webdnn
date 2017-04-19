@@ -10,7 +10,7 @@ class Reshape(Operator):
     形状変化を表現する便宜上のもので、データ操作はない
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
+                  A.PostAxiswise,
                   A.Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
