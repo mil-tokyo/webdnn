@@ -1,11 +1,12 @@
 from typing import List
 
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.backend.fallback.operators.operator import Operator
+from graph_builder.graph import Operator
+from graph_builder.graph.operators import attributes as A
 
 # x: (batch_size, h, w, in_size), w: (kh, kw, in_size, out_size), y: (batch_size, oh, ow, out_size) C-order
 # EcmaScript3 to support older browsers
-convolution_2d_source = """
+source = """
 convolution_2d: function(input_arrays, output_arrays, param_arrays, option) {
 var x = input_arrays[0];
 var y = output_arrays[0];
@@ -62,44 +63,27 @@ for (var batch = 0; batch < n; batch++) {
 """
 
 
-#  same as Chainer
-def get_conv_outsize(size, k, s, p, cover_all=False, d=1):
-    dk = k + (k - 1) * (d - 1)
-    if cover_all:
-        return (size + p * 2 - dk + s - 1) // s + 1
-    else:
-        return (size + p * 2 - dk) // s + 1
+def convolution_2d(op: Operator) -> List[Kernel]:
+    x = op.inputs["x"]
+    w = op.inputs["w"]
+    y = op.outputs["y"]
 
+    assert x.ndim == 4
 
-class Convolution2D(Operator):
-    name: str = "convolution_2d"
+    kernel = Kernel(
+        {"convolution_2d": source},
+        "convolution_2d",
+        inputs=[x.parameters["name"]],
+        outputs=[y.parameters["name"]],
+        weights=[w.parameters["name"]],
+        call_option={"in_spatial": [x.shape_dict[A.Axis.H], x.shape_dict[A.Axis.W]],
+                     "n": x.shape_dict[A.Axis.N],
+                     "out_size": y.shape_dict[A.Axis.C],
+                     "in_size": x.shape_dict[A.Axis.C],
+                     "out_spatial": [y.shape_dict[A.Axis.H], y.shape_dict[A.Axis.W]],
+                     "pad": op.parameters["pad"],
+                     "stride": op.parameters["stride"],
+                     "ksize": op.parameters["ksize"]}
+    )
 
-    def convert_to_kernels(self,
-                           batch_size: int) -> List[Kernel]:
-        source = convolution_2d_source
-        input_shape = self.inputs[0].shape
-        assert len(input_shape) == 4
-        params = self.layer.parameters
-        out_sp = []
-        for dim in [0, 1]:
-            out_sp.append(get_conv_outsize(input_shape[1 + dim],
-                                           params["ksize"][dim], params["stride"][dim], params["pad"][dim],
-                                           params["cover_all"]))
-
-        kernel = Kernel(
-            {self.name: source},
-            self.name,
-            inputs=[v.name for v in self.inputs],
-            outputs=[v.name for v in self.outputs],
-            weights=[self.layer.name + "/W"],
-            call_option={"in_spatial": input_shape[1:3],
-                         "n": input_shape[0],
-                         "out_size": params["out_size"],
-                         "in_size": params["in_size"],
-                         "out_spatial": out_sp,
-                         "pad": params["pad"],
-                         "stride": params["stride"],
-                         "ksize": params["ksize"]}
-        )
-
-        return [kernel]
+    return [kernel]

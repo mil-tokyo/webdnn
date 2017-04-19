@@ -7,8 +7,10 @@ from graph_builder.graph.attribute import Attribute
 
 class Node:
     attributes: Set[Type[Attribute]] = set()
+    parameters: Dict[str, any]
 
-    def __init__(self):
+    def __init__(self, parameters: Dict[str, any] = None):
+        self.parameters = parameters if parameters is not None else {}
         self.attributes = set(self.attributes)  # copy construction
 
     def __repr__(self):
@@ -30,9 +32,8 @@ class Operator(Node):
                  inputs: Dict[str, "Variable"] = None,
                  outputs: Dict[str, "Variable"] = None):
 
-        super().__init__()
+        super().__init__(parameters)
 
-        parameters = parameters if parameters is not None else {}
         inputs = inputs if inputs is not None else {}
         outputs = outputs if outputs is not None else {}
 

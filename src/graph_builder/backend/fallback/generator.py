@@ -1,43 +1,22 @@
+# -*- coding:utf-8 -*-
+
 """
-Descriptor Generator for WebGPU
+Kernel Builder for Fallback (pure js)
 
 - kernel source generation
 - schedule memory allocation
 """
 
-import os.path as path
-import subprocess
-import tempfile as tmp
 from typing import Tuple, List, Set
 
 import numpy as np
 
-from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
-from graph_builder.backend.webgpu.generator.generate_kernel_axiswise_bias import generate_kernel_axiswise_bias
-from graph_builder.backend.webgpu.generator.generate_kernel_linear import generate_kernel_linear
-from graph_builder.backend.webgpu.generator.generate_kernel_relu import generate_kernel_relu
-from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
-from graph_builder.backend.webgpu.kernel import Kernel
+from graph_builder.backend.fallback import kernels as K
+from graph_builder.backend.fallback.allocator import Allocator, MemoryLayout
+from graph_builder.backend.fallback.graph_descriptor import GraphDescriptor
+from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.graph import Operator, operators as O
 from graph_builder.util import flags
-
-
-def validate_kernel_source(descriptor: GraphDescriptor):
-    # FIXME: WebGPU supports multi shader languages, but this test supposes the language as METAL.
-
-    source = descriptor.concat_kernel_sources()
-
-    with tmp.TemporaryDirectory() as tmpdir:
-        source_path = path.join(tmpdir, "kernel.metal")
-        lib_path = path.join(tmpdir, "kernel.air")
-
-        with open(source_path, "w+") as f:
-            f.write(source)
-
-        result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
-        if result.returncode != 0:
-            print("Generated kernel source is invalid.")
-            exit(result.returncode)
 
 
 def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
@@ -53,14 +32,7 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
         constants_layout=constants_layout,
         variables_layout=variables_layout,
         inputs=graph.inputs,
-        outputs=graph.outputs,
-        batch_size=1)  # FIXME
-
-    if flags.backend.webgpu.VALIDATE_GENERATED_SOURCE:
-        if flags.DEBUG:
-            print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
-
-        validate_kernel_source(descriptor)
+        outputs=graph.outputs)
 
     return descriptor, constants_data
 
@@ -70,16 +42,19 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
         kernels = generate_kernel_compose(op, constants_layout, variables_layout)
 
     elif isinstance(op, O.Linear):
-        kernels = generate_kernel_linear(op, constants_layout, variables_layout)
+        kernels = K.linear(op)
 
     elif isinstance(op, O.AxiswiseBias):
-        kernels = generate_kernel_axiswise_bias(op, constants_layout, variables_layout)
+        kernels = K.axiswise_bias(op)
+
+    elif isinstance(op, O.Convolution2D):
+        kernels = K.convolution_2d(op)
 
     elif isinstance(op, O.Relu):
-        kernels = generate_kernel_relu(op, constants_layout, variables_layout)
+        kernels = K.relu(op)
 
     else:
-        raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
+        raise NotImplementedError(f"{op} is Unknown for Fallback Descriptor Generator")
 
     return kernels
 

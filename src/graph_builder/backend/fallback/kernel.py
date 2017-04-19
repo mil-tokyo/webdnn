@@ -1,8 +1,7 @@
 from typing import Dict, Iterable
 
-import numpy as np
-
 from graph_builder.util import json
+
 
 class KernelExecutionInfo(json.SerializableMixin):
     entry_func_name: str

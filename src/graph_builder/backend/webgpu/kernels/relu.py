@@ -1,8 +1,8 @@
 from typing import List
 
 from graph_builder.backend.webgpu.allocator import MemoryLayout
-from graph_builder.backend.webgpu.generator import util
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
+from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.operators import Relu
 
@@ -29,12 +29,12 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 # noinspection PyUnusedLocal
-def generate_kernel_relu(op: Relu,
-                         constants_layout: MemoryLayout,
-                         variable_layout: MemoryLayout,
-                         metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variable_layout[util.get_input(op, "x")]
-    y = variable_layout[util.get_output(op, "y")]
+def relu(op: Relu,
+         constants_layout: MemoryLayout,
+         variables_layout: MemoryLayout,
+         metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+    x = variables_layout[util.get_input(op, "x")]
+    y = variables_layout[util.get_output(op, "y")]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

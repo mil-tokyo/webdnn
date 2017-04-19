@@ -22,21 +22,18 @@ class GraphDescriptor(json.SerializableMixin):
     variables_layout: MemoryLayout
     inputs: Dict[str, Variable]
     outputs: Dict[str, Variable]
-    batch_size: int
 
     def __init__(self,
                  kernels: Iterable[Kernel],
                  constants_layout: MemoryLayout,
                  variables_layout: MemoryLayout,
                  inputs: Dict[str, Variable],
-                 outputs: Dict[str, Variable],
-                 batch_size: int):
+                 outputs: Dict[str, Variable]):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
         self.inputs = inputs
         self.outputs = outputs
-        self.batch_size = batch_size
 
     def concat_kernel_sources(self):
         sources = OrderedDict()
@@ -59,7 +56,7 @@ class GraphDescriptor(json.SerializableMixin):
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_allocation": self.constants_layout,
             "variable_allocation": self.variables_layout,
-            "inputs": [self.variables_layout[v].name for v in self.inputs.values() if not util.check_attribute_match(v, VA.Constant)],
-            "outputs": [self.variables_layout[v].name for v in self.outputs.values()],
-            "batch_size": self.batch_size
+            "inputs": [v.parameters["name"] for v in self.inputs.values() if not util.check_attribute_match(v, VA.Constant)],
+            "outputs": [v.parameters["name"] for v in self.outputs.values()],
+            "batch_size": 1  # FIXME
         }

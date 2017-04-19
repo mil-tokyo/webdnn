@@ -11,13 +11,10 @@ from graph_builder.util import json
 class Allocation(json.SerializableMixin):
     variable: Variable
     offset: int
-    _GUID: int = 0
 
     def __init__(self,
                  variable: Variable,
                  offset: int):
-        self.name = str(f"v{Allocation._GUID}")
-        Allocation._GUID += 1
         self.variable = variable
         self.offset = offset
 
@@ -27,7 +24,7 @@ class Allocation(json.SerializableMixin):
 
     def _to_serializable_(self):
         return {
-            "name": self.name,
+            "name": self.variable.parameters["name"],
             "offset": self.offset,
             "size": self.size
         }
@@ -43,7 +40,7 @@ class MemoryLayout(json.SerializableMixin):
     def _to_serializable_(self):
         return {
             "total_size": self.size,
-            "allocation": {a.name: a for _, a in self.__dict__.items()}
+            "allocation": {a.variable.parameters["name"]: a for _, a in self.__dict__.items()}
         }
 
     def __getitem__(self, v: Variable):
@@ -73,6 +70,9 @@ class Allocator:
     @classmethod
     def allocate(cls, graph: Operator) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
         variables = util.listup_variables(graph, remove_alias=True)
+        for i, v in enumerate(variables):
+            v.parameters["name"] = f"v{i}"
+
         constants = set(util.filter_nodes(variables, VA.Constant))  # type: Set[Constant]
         variables = variables.difference(constants)
 

@@ -1,8 +1,8 @@
 from typing import List
 
 from graph_builder.backend.webgpu.allocator import MemoryLayout
-from graph_builder.backend.webgpu.generator import util
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
+from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.operators import Linear
 from graph_builder.graph.operators.attributes import Axis
@@ -39,10 +39,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 """
 
 
-def generate_kernel_linear(op: Linear,
-                           constants_layout: MemoryLayout,
-                           variables_layout: MemoryLayout,
-                           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def linear(op: Linear,
+           constants_layout: MemoryLayout,
+           variables_layout: MemoryLayout,
+           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     x = variables_layout[util.get_input(op, "x")]
     w = constants_layout[util.get_input(op, "w")]
     y = variables_layout[util.get_output(op, "y")]

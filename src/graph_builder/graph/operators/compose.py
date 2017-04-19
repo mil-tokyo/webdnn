@@ -40,6 +40,10 @@ class VariableAlias(Variable):
         return self.original.__str__()
 
     @property
+    def parameters(self):
+        return self.original.parameters
+
+    @property
     def original(self):
         return self.link_to.original if isinstance(self.link_to, VariableAlias) else self.link_to
 

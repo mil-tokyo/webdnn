@@ -5,7 +5,8 @@ from typing import Dict
 
 import numpy as np
 
-from graph_builder.backend.webgpu.generate import generate as generate_webgpu_descriptor
+from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
+from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimizer import GeneralOptimizer
 from graph_builder.graph import operators as O
 from graph_builder.graph.graph import Variable
@@ -94,7 +95,7 @@ def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("nn_type", choices=["fc", "conv"])
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu"])
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     args = parser.parse_args()
 
@@ -114,6 +115,9 @@ def main():
 
     if args.backend == "webgpu":
         descriptor, data = generate_webgpu_descriptor(graph)
+
+    elif args.backend == "fallback":
+        descriptor, data = generate_fallback_descriptor(graph)
 
     else:
         raise NotImplementedError()
