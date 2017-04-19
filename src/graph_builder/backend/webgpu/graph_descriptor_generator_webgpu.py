@@ -7,16 +7,18 @@ Kernel Builder for WebGPU
 - schedule memory allocation
 """
 
-import numpy as np
-import tempfile as tmp
 import os.path as path
 import subprocess
+import tempfile as tmp
+
+import numpy as np
+
 from graph_builder.backend.interface.kernel_builder import GraphDescriptorGenerator
 from graph_builder.backend.webgpu.allocator import Allocator
 from graph_builder.backend.webgpu.graph_descriptor_webgpu import GraphDescriptorWebGPU
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operator_builder import OperatorBuilder
-from graph_builder.frontend.graph import Graph
+from graph_builder.frontend.graph import Operator
 from graph_builder.util import flags
 
 
@@ -43,13 +45,19 @@ class GraphDescriptorGeneratorWebGPU(GraphDescriptorGenerator):
     weights_array: np.ndarray
     descriptor: GraphDescriptorWebGPU
 
-    def __init__(self, graph: Graph):
+    def __init__(self, graph: Operator):
         super().__init__(graph)
         self.weights_array = None
         self.descriptor = None
 
     def generate(self) -> GraphDescriptorWebGPU:
-        batch_size = 1
+        graph = self.graph
+
+        # TODO: backend optimization
+        # optimize(self.graph)
+
+        # すでに最適化は完了しているものとして、あとは愚直に生成する
+        variables, constants = Optimizer.util.correct_variables(graph)
 
         weights_layout, self.weights_array = Allocator.allocate_weights(self.graph)
         if flags.DEBUG:

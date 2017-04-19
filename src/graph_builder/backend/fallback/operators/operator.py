@@ -1,8 +1,6 @@
-import hashlib
 from abc import abstractmethod
 from typing import List
 
-from graph_builder.backend.fallback.allocator import MemoryLayout
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.frontend.graph import Operator, Variable
 

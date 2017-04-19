@@ -11,7 +11,7 @@ import numpy as np
 
 from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
 from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
-from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
+from graph_builder.frontend.graph_optimizer import GraphOptimizer
 from graph_builder.frontend.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, \
     Variable, GraphNode, Graph, VariableAttributes
 from graph_builder.util import json

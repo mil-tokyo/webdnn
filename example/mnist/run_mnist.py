@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+import argparse
 import os
 import os.path as path
-import argparse
+
 import numpy as np
-from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
+
 from graph_builder.backend.fallback.graph_descriptor_generator_fallback import GraphDescriptorGeneratorFallback
-from graph_builder.frontend.graph.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, Convolution2DOperator, Variable, \
+from graph_builder.backend.webgpu.graph_descriptor_generator_webgpu import GraphDescriptorGeneratorWebGPU
+from graph_builder.frontend.graph import LinearOperator, ChannelwiseBiasOperator, ReluOperator, Convolution2DOperator, \
+    Variable, \
     VariableAttributes, CompositeOperator, ConstantVariable
-from graph_builder.frontend.optimizer.graph_optimizer import GraphOptimizer
+from graph_builder.frontend.graph_optimizer import GraphOptimizer
 from graph_builder.util import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
@@ -64,7 +67,7 @@ def construct_graph_fc(weights, batch_size):
     h = LinearOperator("l3", {"out_size": 100})(h, ConstantVariable(weights["l3/W"]))
     y = ChannelwiseBiasOperator("l3b")(h, ConstantVariable(weights["l3/b"]))
 
-    graph = CompositeOperator.composite_with_vars("graph", [x], [y])
+    graph = CompositeOperator.compose_with_vars("graph", [x], [y])
     print(graph)
     return graph
 

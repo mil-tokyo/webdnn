@@ -1,7 +1,9 @@
-from graph_builder.frontend.graph.graph import CompositeOperator, OperatorAttribute
+from graph_builder.frontend.graph import CompositeOperator, OperatorAttribute
+
 from graph_builder.util import flags
 
-#FIXME
+
+# FIXME
 class GraphOptimizer:
     def __init__(self, graph: CompositeOperator):
         self.graph = graph
