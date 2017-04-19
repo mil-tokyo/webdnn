@@ -15,4 +15,5 @@ class Constant(Variable):
         self.attributes.add(VA.Constant)
 
     def __repr__(self):
-        return f"<Constant shape={self.shape}, order=\"{self.axis_order.order_chars}\">"
+        order_repr = ''.join(map(lambda e: e.name, self.axis_order.axes))
+        return f"<Constant shape={self.shape}, order=\"{order_repr}\">"

@@ -28,11 +28,11 @@ class Linear(Operator):
 
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
-        assert x_shape_dict["C"] == w_shape_dict["C"]
+        assert x_shape_dict[A.Axis.C] == w_shape_dict[A.Axis.C]
         assert len(x_shape_dict) == len(w_shape_dict)
         if len(x_shape_dict) == 4:
-            assert x_shape_dict["H"] == w_shape_dict["H"]
-            assert x_shape_dict["W"] == w_shape_dict["W"]
-        y = Variable([x_shape_dict["N"], w_shape_dict["N"]], VA.OrderNC)
+            assert x_shape_dict[A.Axis.H] == w_shape_dict[A.Axis.H]
+            assert x_shape_dict[A.Axis.W] == w_shape_dict[A.Axis.W]
+        y = Variable([x_shape_dict[A.Axis.N], w_shape_dict[A.Axis.N]], VA.OrderNC)
         self.append_output("y", y)
         return y,

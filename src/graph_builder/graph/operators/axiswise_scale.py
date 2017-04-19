@@ -15,12 +15,12 @@ class AxiswiseScale(Operator):
                   A.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
-        assert parameters["axis"] in [A.Axis.N, A.Axis.C, A.Axis.H, A.Axis.W]
+        assert isinstance(parameters["axis"], A.Axis)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, s: Variable):
         assert s.ndim == 1
-        assert x.shape_dict[self.parameters["axis"].name] == s.size
+        assert x.shape_dict[self.parameters["axis"]] == s.size
         y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_input("s", s)

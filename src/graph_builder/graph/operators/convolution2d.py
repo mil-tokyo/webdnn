@@ -29,12 +29,12 @@ class Convolution2D(Operator):
     def __call__(self, x: Variable, w: Variable):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
-        assert (w_shape_dict["H"], w_shape_dict["W"]) == self.parameters["ksize"]
-        assert w_shape_dict["C"] == x_shape_dict["C"]
-        N = x_shape_dict["N"]
-        H2 = (x_shape_dict["H"] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict["W"] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
-        C2 = w_shape_dict["N"]
+        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.parameters["ksize"]
+        assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
+        N = x_shape_dict[A.Axis.N]
+        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
+        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
+        C2 = w_shape_dict[A.Axis.N]
 
         if x.axis_order == VA.OrderNCHW:
             var_shape = [N, C2, H2, W2]

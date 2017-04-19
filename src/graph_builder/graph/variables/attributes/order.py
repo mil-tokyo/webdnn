@@ -1,6 +1,7 @@
 from typing import Dict, Set, List, Iterable
 from graph_builder.graph import Variable
 from graph_builder.graph.attribute import Attribute
+from graph_builder.graph.operators import attributes as A
 
 """
 This attribute means data order, not number of dimensions
@@ -17,11 +18,12 @@ class OrderC(AxisOrder):
         Bias Filter
     """
     ndim = 1
-    order_chars = "C"
+    axes = [A.Axis.C]
+    axes_dict = {A.Axis.C: 0}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
 
 class OrderNC(AxisOrder):
@@ -30,11 +32,12 @@ class OrderNC(AxisOrder):
         Fully-Connected Input/Output.
     """
     ndim = 2
-    order_chars = "NC"
+    axes = [A.Axis.N, A.Axis.C]
+    axes_dict = {A.Axis.N: 0, A.Axis.C: 1}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
 
 class OrderCN(AxisOrder):
@@ -43,11 +46,12 @@ class OrderCN(AxisOrder):
         Fully-Connected Filter 
     """
     ndim = 2
-    order_chars = "CN"
+    axes = [A.Axis.C, A.Axis.N]
+    axes_dict = {A.Axis.C: 0, A.Axis.N: 1}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
     @staticmethod
     def convert_from(vars: Iterable[Variable]):
@@ -60,11 +64,12 @@ class OrderNHWC(AxisOrder):
         Convolution2D Input/Output of WebGPU
     """
     ndim = 4
-    order_chars = "NHWC"
+    axes = [A.Axis.N, A.Axis.H, A.Axis.W, A.Axis.C]
+    axes_dict = {A.Axis.N: 0, A.Axis.H: 1, A.Axis.W: 2, A.Axis.C: 3}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
 
 class OrderHWNC(AxisOrder):
@@ -73,11 +78,12 @@ class OrderHWNC(AxisOrder):
         Convolution2D Filter of WebGPU
     """
     ndim = 4
-    order_chars = "HWNC"
+    axes = [A.Axis.H, A.Axis.W, A.Axis.N, A.Axis.C]
+    axes_dict = {A.Axis.H: 0, A.Axis.W: 1, A.Axis.N: 2, A.Axis.C: 3}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
 
 class OrderHWCN(AxisOrder):
@@ -86,11 +92,12 @@ class OrderHWCN(AxisOrder):
         Fully-Connected Filter when Input variable is 4D.
     """
     ndim = 4
-    order_chars = "HWCN"
+    axes = [A.Axis.H, A.Axis.W, A.Axis.C, A.Axis.N]
+    axes_dict = {A.Axis.H: 0, A.Axis.W: 1, A.Axis.C: 2, A.Axis.N: 3}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
 
 
 class OrderNCHW(AxisOrder):
@@ -99,8 +106,9 @@ class OrderNCHW(AxisOrder):
         Chainer
     """
     ndim = 4
-    order_chars = "NCHW"
+    axes = [A.Axis.N, A.Axis.C, A.Axis.H, A.Axis.W]
+    axes_dict = {A.Axis.N: 0, A.Axis.C: 1, A.Axis.H: 2, A.Axis.W: 3}
 
     @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[str, int]:
-        return dict(zip(cls.order_chars, var.shape))
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))

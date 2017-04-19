@@ -133,9 +133,11 @@ class Variable(Node):
     shape: List[int]
     input_to: Set[Operator]
     output_from: Operator = None
-    axis_order: Attribute
+    # axis_order: ???
 
-    def __init__(self, shape: List[int], axis_order: Attribute):
+    def __init__(self, shape: List[int], axis_order):
+        from graph_builder.graph.variables import attributes as VA  # FIXME import order
+        assert issubclass(axis_order, VA.AxisOrder)
         super().__init__()
         self.shape = list(shape)
         self.input_to = set()
@@ -156,7 +158,8 @@ class Variable(Node):
         return self.axis_order.get_shape_dict(self)
 
     def __repr__(self):
-        return f"<Variable shape={self.shape}, order=\"{self.axis_order.order_chars}\">"
+        order_repr = ''.join(map(lambda e: e.name, self.axis_order.axes))
+        return f"<Variable shape={self.shape}, order=\"{order_repr}\">"
 
     def __str__(self):
         return self.__repr__()

@@ -15,12 +15,12 @@ class AxiswiseBias(Operator):
                   A.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
-        assert parameters["axis"] in [A.Axis.N, A.Axis.C, A.Axis.H, A.Axis.W]
+        assert isinstance(parameters["axis"], A.Axis)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, b: Variable):
         assert b.ndim == 1
-        assert x.shape_dict[self.parameters["axis"].name] == b.size
+        assert x.shape_dict[self.parameters["axis"]] == b.size
         y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_input("b", b)

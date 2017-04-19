@@ -64,12 +64,12 @@ class LinearBlock(OperatorBlock):
             # wを4次元に拡張 (NC -> NCHW)
             x_shape_dict = x.shape_dict
             w_shape_dict = w.shape_dict
-            assert x_shape_dict["C"] * x_shape_dict["H"] * x_shape_dict["W"] == w_shape_dict["C"]
+            assert x_shape_dict[A.Axis.C] * x_shape_dict[A.Axis.H] * x_shape_dict[A.Axis.W] == w_shape_dict[A.Axis.C]
             assert w.axis_order is VA.OrderNC
             w.attributes.remove(VA.OrderNC)
             w.attributes.add(VA.OrderNCHW)
             w.axis_order = VA.OrderNCHW
-            w_new_shape = [w_shape_dict["N"], x_shape_dict["C"], x_shape_dict["H"], x_shape_dict["W"]]
+            w_new_shape = [w_shape_dict[A.Axis.N], x_shape_dict[A.Axis.C], x_shape_dict[A.Axis.H], x_shape_dict[A.Axis.W]]
             w.shape = w_new_shape
             w.data = w.data.reshape(w_new_shape)
 
@@ -94,7 +94,7 @@ class Convolution2DBlock(OperatorBlock):
         w = inputs[1]
         w_shape_dict = w.shape_dict
         conv_opr = operators.Convolution2D(generate_unique_name(self.cfunc.label),
-                                           {"ksize": (w_shape_dict["H"], w_shape_dict["W"]),
+                                           {"ksize": (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]),
                                             "stride": (self.cfunc.sy, self.cfunc.sx),
                                             "padding": (self.cfunc.ph, self.cfunc.pw)})
 
