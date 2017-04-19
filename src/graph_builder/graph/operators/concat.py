@@ -10,7 +10,7 @@ class Concat(Operator):
     結合軸はparametersで指定(chainerと同じ挙動)
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise}
+                  A.PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """

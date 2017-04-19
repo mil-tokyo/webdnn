@@ -4,21 +4,24 @@ from graph_builder.graph.graph import Operator, Variable
 from graph_builder.graph.operators import attributes as A
 
 
-class ChannelwiseBias(Operator):
+class AxiswiseBias(Operator):
     """
-    Channelwiseにウェイトを加算するレイヤー
+    Axiswiseにウェイトを加算するレイヤー
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
-                  A.Channelwise,
+                  A.PostAxiswise,
+                  A.Axiswise,
                   A.Inplace,
                   A.HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object] = None):
+    def __init__(self, name: str, parameters: Dict[str, object]):
+        assert parameters["axis"] in [A.Axis.N, A.Axis.C, A.Axis.H, A.Axis.W]
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, b: Variable):
-        y = Variable(x.shape)
+        assert b.ndim == 1
+        assert x.shape_dict[self.parameters["axis"].name] == b.size
+        y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_input("b", b)
         self.append_output("y", y)

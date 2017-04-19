@@ -14,7 +14,7 @@ class ConcatChannelwiseOperation(OptimizeRule):
     def optimize(self, graph: Operator) -> Operator:
         matches = self.optimizer.search_sub_structure([
             A.Channelwise,
-            A.PostChannelwise
+            A.PostAxiswise
         ])
 
         for ops in matches:  # type: Tuple[Operator, Operator]

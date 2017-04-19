@@ -34,15 +34,15 @@ weights = load_mnist_weights_fc(path.join(RESOURCES_DIR, "snapshot_iter_12000"))
 
 x = Variable([15, 784])
 h, = O.Linear("l1", {"out_size": 100})(x, Constant(weights["l1/W"]))
-h, = O.ChannelwiseBias("l1b")(h, Constant(weights["l1/b"]))
+h, = O.AxiswiseBias("l1b")(h, Constant(weights["l1/b"]))
 h, = O.Relu("l1r")(h)
 
 h, = O.Linear("l2", {"out_size": 100})(h, Constant(weights["l2/W"]))
-h, = O.ChannelwiseBias("l2b")(h, Constant(weights["l2/b"]))
+h, = O.AxiswiseBias("l2b")(h, Constant(weights["l2/b"]))
 h, = O.Relu("l2r")(h)
 
 h, = O.Linear("l3", {"out_size": 50})(h, Constant(weights["l3/W"]))
-y, = O.ChannelwiseBias("l3b")(h, Constant(weights["l3/b"]))
+y, = O.AxiswiseBias("l3b")(h, Constant(weights["l3/b"]))
 
 # graph = O.Compose.compose_with_vars("graph", [x], [y])
 x.dump()
@@ -51,7 +51,7 @@ optimizer = Optimizer()
 
 while True:
     for op in x.input_to:
-        ma1 = optimizer.search_sub_structure(op, [A.PostChannelwise, A.Channelwise])
+        ma1 = optimizer.search_sub_structure(op, [A.PostAxiswise, A.Channelwise])
         ma2 = optimizer.search_sub_structure(op, [A.PostElementwise, A.Elementwise])
 
         if len(ma1) == 0 and len(ma2) == 0:

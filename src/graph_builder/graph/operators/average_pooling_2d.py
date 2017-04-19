@@ -11,7 +11,7 @@ class AveragePooling2D(Operator):
     当面はglobal average poolingだけ実装
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise}
+                  A.PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """

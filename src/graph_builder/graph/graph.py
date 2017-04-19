@@ -127,25 +127,36 @@ class Variable(Node):
     レイヤー間で受け渡される変数
     名前で識別される
     現在のところ、float32型(4byte/element)を想定している
-    shapeは、(n, c)または(n, h, w, c) n: バッチサイズ、 c: チャンネルサイズ
-    必ず、最初がバッチサイズ、最後がchannel
+    shapeはタプルで、その順序はAttribute(OrderNC etc)に依存
     """
 
     shape: List[int]
     input_to: Set[Operator]
     output_from: Operator = None
+    axis_order: Attribute
 
-    def __init__(self, shape: List[int]):
+    def __init__(self, shape: List[int], axis_order: Attribute):
         super().__init__()
         self.shape = list(shape)
         self.input_to = set()
+        self.attributes.add(axis_order)
+        self.axis_order = axis_order
+        assert axis_order.ndim == len(self.shape)
 
     @property
     def size(self):
         return np.prod(self.shape)
 
+    @property
+    def ndim(self):
+        return len(self.shape)
+
+    @property
+    def shape_dict(self):
+        return self.axis_order.get_shape_dict(self)
+
     def __repr__(self):
-        return f"<Variable shape={self.shape}>"
+        return f"<Variable shape={self.shape}, order=\"{self.axis_order.order_chars}\">"
 
     def __str__(self):
         return self.__repr__()

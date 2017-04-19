@@ -9,7 +9,7 @@ class Sigmoid(Operator):
     Sigmoidレイヤー
     """
     attributes = {A.PostElementwise,
-                  A.PostChannelwise,
+                  A.PostAxiswise,
                   A.Elementwise,
                   A.Channelwise,
                   A.Inplace}
