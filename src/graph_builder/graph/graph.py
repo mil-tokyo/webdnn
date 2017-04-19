@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, Iterable
+from typing import Dict, Set, List, Iterable, Type
 
 import numpy as np
 
@@ -6,7 +6,7 @@ from graph_builder.graph.attribute import Attribute
 
 
 class Node:
-    attributes: Set[Attribute] = set()
+    attributes: Set[Type[Attribute]] = set()
 
     def __init__(self):
         self.attributes = set(self.attributes)  # copy construction
@@ -20,7 +20,7 @@ class Node:
 
 class Operator(Node):
     name: str
-    attributes: Set[Attribute] = []
+    attributes: Set[Type[Attribute]] = []
     inputs: Dict[str, "Variable"]
     outputs: Dict[str, "Variable"]
 
@@ -133,9 +133,9 @@ class Variable(Node):
     shape: List[int]
     input_to: Set[Operator]
     output_from: Operator = None
-    # axis_order: ???
+    axis_order: Type[Attribute]  # FIXME: Attribute -> AxisOrder
 
-    def __init__(self, shape: List[int], axis_order):
+    def __init__(self, shape: List[int], axis_order: Type[Attribute]):
         from graph_builder.graph.variables import attributes as VA  # FIXME import order
         assert issubclass(axis_order, VA.AxisOrder)
         super().__init__()
