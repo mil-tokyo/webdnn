@@ -27,11 +27,15 @@ async function run() {
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
 
+    let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
         input_views[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
+
+        let start = performance.now();
         await runner.run();
+        total_elapsed_time += performance.now() - start;
 
         let out_vec = output_views[0];
         let pred_label = 0;
@@ -45,6 +49,7 @@ async function run() {
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
     }
+    console.log(`Total Elapsed Time[ms]: ${total_elapsed_time}`);
 }
 
 async function init(backend_name) {
@@ -73,7 +78,7 @@ async function fetchSamples(path) {
     let json = await response.json();
     let samples = [];
     for (let i = 0; i < json.length; i++) {
-        samples.push({ 'x': makeMatFromJson(json[i]['x']), 'y': json[i]['y'] });
+        samples.push({'x': makeMatFromJson(json[i]['x']), 'y': json[i]['y']});
     }
 
     return samples;
