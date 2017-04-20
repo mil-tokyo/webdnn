@@ -28,25 +28,14 @@ class Operator(Node):
 
     def __init__(self,
                  name: str,
-                 parameters: Dict[str, object] = None,
-                 inputs: Dict[str, "Variable"] = None,
-                 outputs: Dict[str, "Variable"] = None):
+                 parameters: Dict[str, object] = None):
 
         super().__init__(parameters)
 
-        inputs = inputs if inputs is not None else {}
-        outputs = outputs if outputs is not None else {}
-
         self.name = name
         self.parameters = parameters
-        self.inputs = inputs
-        self.outputs = outputs
-
-        for name, var in inputs.items():
-            self.append_input(name, var)
-
-        for name, var in outputs.items():
-            self.append_input(name, var)
+        self.inputs = {}
+        self.outputs = {}
 
     def get_input_name(self, var: "Variable"):
         for name, v in self.inputs.items():
@@ -107,20 +96,6 @@ class Operator(Node):
 
     def __call__(self, *args: Iterable["Variable"]) -> Iterable["Variable"]:
         raise NotImplementedError
-
-    def dump(self):
-        queue: List["Operator"] = [self]
-
-        while len(queue) > 0:
-            op = queue.pop(0)
-            print(f"--------------------------------------------------------")
-            print(f"  {op.__class__.__name__}")
-            print(f"      In : {op.inputs}")
-            print(f"      Out: {op.outputs}")
-
-            for out in op.outputs.values():
-                for next_op in out.input_to:
-                    queue.append(next_op)
 
 
 class Variable(Node):
@@ -186,18 +161,3 @@ class Variable(Node):
 
     def __str__(self):
         return self.__repr__()
-
-    def dump(self):
-        queue: List["Operator"] = list(self.input_to)
-
-        while len(queue) > 0:
-            op = queue.pop(0)
-            print(f"--------------------------------------------------------")
-            print(f"  {op.__class__.__name__}")
-            print(f"      In  : {op.inputs}")
-            print(f"      Out : {op.outputs}")
-            print(f"      Attr: {[attr.__name__ for attr in op.attributes]}")
-
-            for out in op.outputs.values():
-                for next_op in out.input_to:
-                    queue.append(next_op)
