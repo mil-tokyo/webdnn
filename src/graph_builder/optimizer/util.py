@@ -109,7 +109,8 @@ def dump(op: Operator):
             continue
 
         for v in op.outputs.values():
-            op_queue.append((op, indent))
+            for next_op in v.input_to:
+                op_queue.append((next_op, indent))
 
         op_checked.add(op)
 
