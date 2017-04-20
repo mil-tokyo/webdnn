@@ -6,6 +6,7 @@ from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.operators import AxiswiseBias
 from graph_builder.graph.operators.attributes import Axis
+from graph_builder.graph.variables import attributes as VA
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -42,7 +43,12 @@ def axiswise_bias(op: AxiswiseBias,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert op.parameters["axis"] == Axis.C
+    assert x.variable.axis_order == VA.OrderNC \
+           or x.variable.axis_order == VA.OrderNHWC \
+           or x.variable.axis_order == VA.OrderHWNC, \
+        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC as data order of input variable. " + \
+        f"Actual data order is {x.variable.axis_order.name}"
+    assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseBias supports only channelwise bias."
 
     metabuffer_injector.register({
         "channelwise_bias_X_offset": x.offset,
