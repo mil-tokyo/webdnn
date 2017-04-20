@@ -33,8 +33,8 @@ def relu(op: Relu,
          constants_layout: MemoryLayout,
          variables_layout: MemoryLayout,
          metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"].name]
-    y = variables_layout[op.outputs["y"].name]
+    x = variables_layout[op.inputs["x"]]
+    y = variables_layout[op.outputs["y"]]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

@@ -45,6 +45,32 @@ def filter_nodes(nodes: Iterable[Node], query: Type[Attribute]) -> List[Node]:
     return [node for node in nodes if check_attribute_match(node, query)]
 
 
+def listup_operator_in_order(graph: Operator) -> List[Operator]:
+    op_queue: List[Operator] = list([graph])
+    op_list: List[Operator] = list()
+    op_checked: Set[Operator] = set()
+
+    while len(op_queue) > 0:
+        op = op_queue.pop(0)
+        if op in op_checked:
+            continue
+
+        op_checked.add(op)
+
+        if isinstance(op, Compose):
+            op = op  # type: Compose
+            op_queue.extend([var.output_from for var in op.outputs_alias])
+            continue
+
+        op_list.insert(0, op)
+
+        for var in op.inputs.values():
+            if var.output_from is not None:
+                op_queue.append(var.output_from)
+
+    return op_list
+
+
 def listup_variables(op: Operator, remove_alias: True) -> Set[Variable]:
     op_queue: List[Operator] = [op]
     variables: Set[Variable] = set(op.outputs.values())
