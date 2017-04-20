@@ -41,6 +41,9 @@ def axiswise_bias(op: AxiswiseBias,
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
+
+    assert op.parameters("axis") == Axis.C
+
     metabuffer_injector.register({
         "channelwise_bias_X_offset": x.offset,
         "channelwise_bias_Y_offset": y.offset,

@@ -21,7 +21,7 @@ class ElementwiseSum(Operator):
 
     def __call__(self, *xs: Variable):
         y = Variable(xs[0].shape, xs[0].axis_order)
-        for x in xs:
-            self.append_input("x", x)
+        for i, x in enumerate(xs):
+            self.append_input(f"x{i}", x)
         self.append_output("y", y)
         return y,
