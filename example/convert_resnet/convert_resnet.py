@@ -109,11 +109,12 @@ def main():
     args = parser.parse_args()
     if args.model == "MLP":
         link = MLP(args.unit, 10)
+        dummy_input = chainer.Variable(np.random.rand(1, 784).astype(np.float32))
     elif args.model == "CNN2":
         link = CNN2(args.unit, 10)
+        dummy_input = chainer.Variable(np.random.rand(1, 1, 28, 28).astype(np.float32))
     chainer.serializers.load_npz(args.model_path, link)
 
-    dummy_input = chainer.Variable(np.random.rand(1, 1, 28, 28).astype(np.float32))
     dummy_output = link(dummy_input)
     chainer_cg = chainer.computational_graph.build_computational_graph([dummy_output])
     converter = ChainerGraphConverter()
