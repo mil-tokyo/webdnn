@@ -17,7 +17,6 @@ from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.graph import Operator, operators as O
-from graph_builder.graph.operators import attributes as A
 from graph_builder.util import flags
 
 
@@ -72,7 +71,7 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
         #     kernels = K.axiswise_composed(op, constants_layout, variables_layout)
         #
         # else:
-        kernels = generate_composit_kernel(op, constants_layout, variables_layout)
+        kernels = generate_composite_kernel(op, constants_layout, variables_layout)
 
     elif isinstance(op, O.Linear):
         kernels = K.linear(op, constants_layout, variables_layout)
@@ -83,13 +82,16 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
     elif isinstance(op, O.Relu):
         kernels = K.relu(op, constants_layout, variables_layout)
 
+    elif isinstance(op, O.Convolution2D):
+        kernels = K.convolution_2d(op, constants_layout, variables_layout)
+
     else:
         raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
 
     return kernels
 
 
-def generate_composit_kernel(op: O.Compose, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_composite_kernel(op: O.Compose, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
     op_queue: List[Operator] = []
     op_checked: Set[Operator] = set()
