@@ -50,12 +50,16 @@ def linear(op: Linear,
 
     assert x.variable.axis_order == VA.OrderNC \
            or x.variable.axis_order == VA.OrderNHWC, \
-        f"[WebGPU] Linear operator supports OrderNC or OrderNHWC as data order of input variable. " + \
-        f"Actual data order is {x.variable.axis_order.name}"
+        f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of input variable. " + \
+        f"Actual data order is {x.variable.axis_order}"
     assert w.variable.axis_order == VA.OrderCN \
            or w.variable.axis_order == VA.OrderHWCN, \
-        f"[WebGPU] Linear operator supports OrderCN or OrderCHWN as data order of filter variable. " + \
-        f"Actual data order is {w.variable.axis_order.name}"
+        f"[WebGPU] Linear operator supports OrderCN or OrderCHWN for data order of filter variable. " + \
+        f"Actual data order is {w.variable.axis_order}"
+    assert y.variable.axis_order == VA.OrderNC \
+           or y.variable.axis_order == VA.OrderNHWC, \
+        f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of output variable. " + \
+        f"Actual data order is {y.variable.axis_order}"
     assert w.variable.ndim == x.variable.ndim, \
         "[WebGPU] Input and Filter variables of Linear operator must be same number of dimension. " + \
         f"Actual number of dimension is: x.ndim={x.variable.ndim}, w.ndim={w.variable.ndim}"
@@ -67,8 +71,8 @@ def linear(op: Linear,
         "linear_Y_offset": y.offset,
         "linear_W_offset": w.offset,
         "linear_M": y.variable.shape_dict[Axis.N],
-        "linear_N": y.variable.shape_dict[Axis.C],
-        "linear_K": x.variable.shape_dict[Axis.C],
+        "linear_N": y.variable.size // y.variable.shape_dict[Axis.N],
+        "linear_K": x.variable.size // x.variable.shape_dict[Axis.N],
     })
 
     source = metabuffer_injector.inject(template)

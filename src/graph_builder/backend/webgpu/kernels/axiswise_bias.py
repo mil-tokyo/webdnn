@@ -46,8 +46,15 @@ def axiswise_bias(op: AxiswiseBias,
     assert x.variable.axis_order == VA.OrderNC \
            or x.variable.axis_order == VA.OrderNHWC \
            or x.variable.axis_order == VA.OrderHWNC, \
-        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC as data order of input variable. " + \
-        f"Actual data order is {x.variable.axis_order.name}"
+        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of input variable. " + \
+        f"Actual data order is {x.variable.axis_order}"
+
+    assert y.variable.axis_order == VA.OrderNC \
+           or y.variable.axis_order == VA.OrderNHWC \
+           or y.variable.axis_order == VA.OrderHWNC, \
+        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of output variable. " + \
+        f"Actual data order is {y.variable.axis_order}"
+
     assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseBias supports only channelwise bias."
 
     metabuffer_injector.register({
