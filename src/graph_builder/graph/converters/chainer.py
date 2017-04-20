@@ -45,8 +45,9 @@ class ReluBlock(OperatorBlock):
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        assert len(inputs) == 1
         opr = operators.Relu(generate_unique_name(self.cfunc.label), {})
-        return opr(*inputs)
+        return opr(inputs[0])
 
 
 class LinearBlock(OperatorBlock):
@@ -69,7 +70,8 @@ class LinearBlock(OperatorBlock):
             w.attributes.remove(VA.OrderNC)
             w.attributes.add(VA.OrderNCHW)
             w.axis_order = VA.OrderNCHW
-            w_new_shape = [w_shape_dict[A.Axis.N], x_shape_dict[A.Axis.C], x_shape_dict[A.Axis.H], x_shape_dict[A.Axis.W]]
+            w_new_shape = [w_shape_dict[A.Axis.N], x_shape_dict[A.Axis.C], x_shape_dict[A.Axis.H],
+                           x_shape_dict[A.Axis.W]]
             w.shape = w_new_shape
             w.data = w.data.reshape(w_new_shape)
 
@@ -107,9 +109,112 @@ class Convolution2DBlock(OperatorBlock):
         return [opr_out]
 
 
+class MaxPooling2DBlock(OperatorBlock):
+    cfunc: chainer.functions.pooling.max_pooling_2d.MaxPooling2D
+
+    def __init__(self, cfunc: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        x = inputs[0]
+        conv_opr = operators.MaxPooling2D(generate_unique_name(self.cfunc.label),
+                                          {"ksize": (self.cfunc.kh, self.cfunc.kw),
+                                           "stride": (self.cfunc.sy, self.cfunc.sx),
+                                           "padding": (self.cfunc.ph, self.cfunc.pw)})
+
+        opr_out, = conv_opr(inputs[0])
+        return [opr_out]
+
+
+class AveragePooling2DBlock(OperatorBlock):
+    cfunc: chainer.functions.pooling.average_pooling_2d.AveragePooling2D
+
+    def __init__(self, cfunc: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        x = inputs[0]
+        conv_opr = operators.AveragePooling2D(generate_unique_name(self.cfunc.label),
+                                              {"ksize": (self.cfunc.kh, self.cfunc.kw),
+                                               "stride": (self.cfunc.sy, self.cfunc.sx),
+                                               "padding": (self.cfunc.ph, self.cfunc.pw)})
+
+        opr_out, = conv_opr(inputs[0])
+        return [opr_out]
+
+
+class BatchNormalizationBlock(OperatorBlock):
+    cfunc: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction
+
+    def __init__(self, cfunc: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        assert len(inputs) == 5
+        x, gamma, beta, mean, variance = inputs
+        # x以外の変数は、加工して新しいConstantとして使う
+        # (x - mean) / sqrt(var + eps) * gamma + beta
+        # gamma_div_std = gamma / sqrt(var + eps)
+        # beta_scaled = beta - mean * gamma_div_std
+        # y = x * gamma_div_std + beta_scaled
+        gamma_div_std = gamma.data / np.sqrt(variance.data + self.cfunc.eps)
+        beta_scaled = beta.data - mean.data * gamma_div_std
+
+        scale_opr = operators.AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
+        scale_out, = scale_opr(x, Constant(gamma_div_std, VA.OrderC))
+
+        offset_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
+        offset_out, = offset_opr(x, Constant(beta_scaled, VA.OrderC))
+
+        return [offset_out]
+
+
+class AddBlock(OperatorBlock):
+    cfunc: chainer.functions.math.basic_math.Add
+
+    def __init__(self, cfunc: chainer.functions.math.basic_math.Add):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        opr = operators.ElementwiseSum(generate_unique_name(self.cfunc.label), {})
+        return list(opr(*inputs))
+
+
+class ReshapeBlock(OperatorBlock):
+    # Currently, only removing HW axis is allowed
+    # NCHW (n,c,1,1) => NC (n,c)
+    cfunc: chainer.functions.array.reshape.Reshape
+
+    def __init__(self, cfunc: chainer.functions.array.reshape.Reshape):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        assert len(inputs) == 1
+        input = inputs[0]
+        assert input.axis_order is VA.OrderNCHW
+        assert input.shape[2] == 1
+        assert input.shape[3] == 1
+        assert tuple(input.shape[0:2]) == self.cfunc.shape
+
+        opr = operators.Reshape(generate_unique_name(self.cfunc.label),
+                                {"out_order": VA.OrderNC, "out_shape": input.shape[0:2]})
+        return list(opr(input))
+
+
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.connection.linear.LinearFunction, LinearBlock),
-                 (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock)]
+                 (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock),
+                 (chainer.functions.pooling.max_pooling_2d.MaxPooling2D, MaxPooling2DBlock),
+                 (chainer.functions.pooling.average_pooling_2d.AveragePooling2D, AveragePooling2DBlock),
+                 (chainer.functions.normalization.batch_normalization.BatchNormalizationFunction,
+                  BatchNormalizationBlock),
+                 (chainer.functions.math.basic_math.Add, AddBlock),
+                 (chainer.functions.array.reshape.Reshape, ReshapeBlock)]
 
 
 class ChainerGraphConverter:
@@ -134,17 +239,20 @@ class ChainerGraphConverter:
             for cfunc in pending_functions:
                 if all(((id(cvar) in self._cvar_ids) for cvar in cfunc.inputs)):
                     # このレイヤーは入力が揃った
+                    print("do", cfunc)
                     opr_block = self._construct_operator_block(cfunc)
                     out_nvars = opr_block([self._cvar_to_nvar[id(cvar)] for cvar in cfunc.inputs])
+                    assert len(out_nvars) == len(cfunc.outputs)
                     # 出力変数を対応づける
                     for out_nvar, out_cvar_wref in zip(out_nvars, cfunc.outputs):
                         out_cvar = out_cvar_wref()
-                        assert tuple(out_nvar.shape) == out_cvar.shape
+                        assert tuple(out_nvar.shape) == out_cvar.shape, str(cfunc)
                         self._cvar_to_nvar[id(out_cvar)] = out_nvar
                         self._cvar_ids.append(id(out_cvar))
                     pending_functions.remove(cfunc)
                     break  # for cfunc in pending_functions
             else:
+                print(pending_functions)
                 raise ValueError("inputs to functions cannot be resolved.")
 
         # 出力変数にAttributeをつける
@@ -167,7 +275,7 @@ class ChainerGraphConverter:
             if isinstance(cvar, chainer.Variable):
                 if cvar.name is not None:
                     self._convert_var(cvar)
-            elif isinstance(cvar, chainer.functions.BatchNormalization):
+            elif isinstance(cvar, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
                 # BNのmean, varは名無しだがウェイト
                 assert len(cvar.inputs) == 5  # data, gamma, bias, mean, var
                 self._convert_var(cvar.inputs[3], force_constant=True)

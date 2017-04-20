@@ -86,4 +86,4 @@ def main():
     graph.dump()
 
 if __name__ == "__main__":
-    main()
+    main_resnet()

@@ -16,7 +16,7 @@ class Convolution2D(Operator):
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
         weights["W"]: (kh, kw, in_size, out_size)
-        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int], cover_all: Boolean=False}
+        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
         :param name: 
         :param parameters: 
         """
@@ -31,8 +31,10 @@ class Convolution2D(Operator):
         assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.parameters["ksize"]
         assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
         N = x_shape_dict[A.Axis.N]
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
+        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // \
+             self.parameters["stride"][0] + 1
+        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // \
+             self.parameters["stride"][1] + 1
         C2 = w_shape_dict[A.Axis.N]
 
         if x.axis_order == VA.OrderNCHW:
