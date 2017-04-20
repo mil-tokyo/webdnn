@@ -10,6 +10,7 @@ import numpy as np
 import chainer
 import chainer.computational_graph
 import chainer.functions as F
+from graph_builder.graph import operators as O
 from graph_builder.graph.graph import Variable, Node, Operator
 import graph_builder.graph.operators as operators
 from graph_builder.graph import Attribute
@@ -167,7 +168,7 @@ class BatchNormalizationBlock(OperatorBlock):
         scale_out, = scale_opr(x, Constant(gamma_div_std, VA.OrderC))
 
         offset_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
-        offset_out, = offset_opr(x, Constant(beta_scaled, VA.OrderC))
+        offset_out, = offset_opr(scale_out, Constant(beta_scaled, VA.OrderC))
 
         return [offset_out]
 
@@ -219,8 +220,8 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
 
 class ChainerGraphConverter:
     def __init__(self):
-        self._cvar_to_nvar = {}
-        self._cvar_ids = []
+        self._cvar_to_nvar = {}  # id(chainer.Variable) => Variable (note: chainerに対応しないVariableも作られる)
+        self._cvar_ids = []  # id(chainer.Variable)
 
     def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
                 input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Node:
@@ -263,7 +264,11 @@ class ChainerGraphConverter:
             nvar.attributes.add(VA.Output)
 
         # 便宜的に、最初の入力変数に対応するNodeを返す (あとでかえるかも)
-        return self._cvar_to_nvar[id(input_vars[0])]
+
+        graph = O.Compose.compose_with_vars("graph",
+                                            [self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
+                                            [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
+        return graph
 
     def _convert_input_vars(self, input_vars: Iterable[chainer.Variable]):
         for cvar in input_vars:

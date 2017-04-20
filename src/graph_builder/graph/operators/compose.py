@@ -30,6 +30,10 @@ class VariableAlias(Variable):
     def shape_dict(self):
         return self.original.shape_dict
 
+    @property
+    def axis_order(self):
+        return self.original.axis_order
+
     def change_axis_order(self, axis_order: Type[Attribute]):
         return self.original.change_axis_order(axis_order)
 
