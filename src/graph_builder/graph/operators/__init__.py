@@ -11,3 +11,4 @@ from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.reshape import Reshape
 from graph_builder.graph.operators.sigmoid import Sigmoid
+from graph_builder.graph.operators.softmax import Softmax
