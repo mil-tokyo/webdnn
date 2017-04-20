@@ -46,31 +46,32 @@ def filter_nodes(nodes: Iterable[Node], query: Type[Attribute]) -> List[Node]:
 
 
 def listup_operator_in_order(graph: Operator) -> List[Operator]:
-    op_queue: List[Operator] = list([graph])
-    op_list: List[Operator] = list()
-    op_checked: Set[Operator] = set()
+    stack: List[Operator] = [graph]
+    result: List[Operator] = []
+    resolved: Set[Operator] = set()
 
-    while len(op_queue) > 0:
-        op = op_queue.pop(0)
-        if op in op_checked:
-            op_list.remove(op)
-            op_list.append(op)
-            continue
+    while len(stack) > 0:
+        op = stack.pop(0)
+        dependents: List[Operator] = []
 
-        op_checked.add(op)
-
+        inputs = list(op.inputs.values())
         if isinstance(op, Compose):
-            op = op  # type: Compose  # FIXME: この書き方、もう少しどうにかならないか
-            op_queue.extend([var.output_from for var in op.outputs_alias])
+            inputs.extend(op.outputs_alias)
+
+        for v in inputs:
+            if v.output_from is not None and v.output_from not in resolved:
+                dependents.append(v.output_from)
+
+        if len(dependents) > 0:
+            stack.insert(0, op)
+            for dependent in dependents:
+                stack.insert(0, dependent)
 
         else:
-            op_list.append(op)
+            result.append(op)
+            resolved.add(op)
 
-            for var in op.inputs.values():
-                if var.output_from is not None:
-                    op_queue.append(var.output_from)
-
-    return list(reversed(op_list))
+    return result
 
 
 def listup_variables(op: Operator, remove_alias: True) -> Set[Variable]:
@@ -99,28 +100,9 @@ def listup_variables(op: Operator, remove_alias: True) -> Set[Variable]:
     return variables
 
 
-def dump(op: Operator):
-    op_checked: Set[Operator] = set()
-    op_queue: List[Tuple[Operator, str]] = [(op, "")]
-
-    while len(op_queue) > 0:
-        op, indent = op_queue.pop(0)
-        if op in op_checked:
-            continue
-
-        for v in op.outputs.values():
-            for next_op in v.input_to:
-                op_queue.append((next_op, indent))
-
-        op_checked.add(op)
-
-        if isinstance(op, Compose):
-            op = op  # type: Compose
-            for v in op.inputs_alias:
-                for op in v.input_to:
-                    print(op)
-                    op_queue.append((op, indent + "  "))
-
+def dump(graph: Operator):
+    indent = ""
+    for op in listup_operator_in_order(graph):
         print(f"---------------------------------------------------------------------------")
         print(f"{indent}{op.__class__.__name__} : {op.name}")
         print(f"{indent}    In  : {op.inputs}")
