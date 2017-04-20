@@ -35,9 +35,9 @@ def axiswise_bias(op: AxiswiseBias,
                   constants_layout: MemoryLayout,
                   variables_layout: MemoryLayout,
                   metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[util.get_input(op, "x")]
-    b = constants_layout[util.get_input(op, "b")]
-    y = variables_layout[util.get_output(op, "y")]
+    x = variables_layout[op.inputs["x"].name]
+    b = constants_layout[op.inputs["b"].name]
+    y = variables_layout[op.outputs["y"].name]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

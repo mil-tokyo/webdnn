@@ -17,6 +17,7 @@ from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.graph import Operator, operators as O
+from graph_builder.graph.operators import attributes as A
 from graph_builder.util import flags
 
 
@@ -64,6 +65,13 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
 
 def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     if isinstance(op, O.Compose):
+        # if A.ElementwiseOperationComposed in op.attributes:
+        #     kernels = K.elemntwise_composed(op, constants_layout, variables_layout)
+        #
+        # elif A.AxiswiseOperationComposed in op.attributes:
+        #     kernels = K.axiswise_composed(op, constants_layout, variables_layout)
+        #
+        # else:
         kernels = generate_composit_kernel(op, constants_layout, variables_layout)
 
     elif isinstance(op, O.Linear):

@@ -5,7 +5,7 @@ from graph_builder.graph.operators import attributes as A
 from graph_builder.optimizer import OptimizeRule, util
 
 
-class ConcatAxiswiseOperation(OptimizeRule):
+class ComposeAxiswiseOperation(OptimizeRule):
     def __call__(self, graph: Operator):
         matches = util.search_sub_structure(graph, [
             A.Axiswise,
@@ -17,6 +17,7 @@ class ConcatAxiswiseOperation(OptimizeRule):
 
         for ops in matches:  # type: Tuple[Operator, Operator]
             composed = O.Compose.compose_ops("channelwise", ops)
+            composed.attributes.add(A.AxiswiseOperationComposed)
 
             if not util.check_attribute_match(ops[0], A.PostAxiswise):
                 composed.attributes.remove(A.PostAxiswise)

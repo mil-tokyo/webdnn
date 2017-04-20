@@ -16,7 +16,6 @@ class Linear(Operator):
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
         """
-        weights["W"]: (in_size, out_size)
         :param name: 
         :param parameters: 
         """

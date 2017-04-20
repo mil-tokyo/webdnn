@@ -147,6 +147,14 @@ class Variable(Node):
         assert axis_order.ndim == len(self.shape)
 
     @property
+    def name(self):
+        return self.parameters["name"] if "name" in self.parameters else ""
+
+    @name.setter
+    def name(self, name: str):
+        self.parameters["name"] = name
+
+    @property
     def size(self):
         # noinspection PyTypeChecker
         return int(np.prod(self.shape))

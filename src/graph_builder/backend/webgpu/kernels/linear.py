@@ -43,9 +43,9 @@ def linear(op: Linear,
            constants_layout: MemoryLayout,
            variables_layout: MemoryLayout,
            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[util.get_input(op, "x")]
-    w = constants_layout[util.get_input(op, "w")]
-    y = variables_layout[util.get_output(op, "y")]
+    x = variables_layout[op.inputs["x"].name]
+    w = constants_layout[op.inputs["w"].name]
+    y = variables_layout[op.outputs["y"].name]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

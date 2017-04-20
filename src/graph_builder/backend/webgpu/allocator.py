@@ -24,7 +24,7 @@ class Allocation(json.SerializableMixin):
 
     def _to_serializable_(self):
         return {
-            "name": self.variable.parameters["name"],
+            "name": self.variable.name,
             "offset": self.offset,
             "size": self.size
         }
@@ -40,7 +40,7 @@ class MemoryLayout(json.SerializableMixin):
     def _to_serializable_(self):
         return {
             "total_size": self.size,
-            "allocation": {a.variable.parameters["name"]: a for _, a in self.__dict__.items()}
+            "allocation": {a.variable.name: a for _, a in self.__dict__.items()}
         }
 
     def __getitem__(self, v: Variable):
@@ -53,7 +53,7 @@ class MemoryLayout(json.SerializableMixin):
         if offset == -1:
             offset = self.size
 
-        self.__dict__[variable] = Allocation(variable, offset)
+        self.__dict__[variable.name] = Allocation(variable, offset)
 
     @property
     def size(self) -> int:
@@ -71,7 +71,7 @@ class Allocator:
     def allocate(cls, graph: Operator) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
         variables = util.listup_variables(graph, remove_alias=True)
         for i, v in enumerate(variables):
-            v.parameters["name"] = f"v{i}"
+            v.name = f"v{i}"
 
         constants = set(util.filter_nodes(variables, VA.Constant))  # type: Set[Constant]
         variables = variables.difference(constants)
@@ -95,7 +95,7 @@ class Allocator:
 
         buffer = np.zeros(layout.size, dtype=np.float32)
         for constant in constants:
-            allocation = layout[constant]
+            allocation = layout[constant.name]
             buffer[allocation.offset:allocation.offset + allocation.size] = constant.data.flatten()
 
         return layout, buffer

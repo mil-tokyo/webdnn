@@ -55,15 +55,15 @@ def load_mnist_weights_conv(filepath: str):
 
 def construct_graph_fc(weights: np.array, batch_size: int = 1):
     x = Variable([batch_size, 784], axis_order=VA.OrderNC)
-    h, = O.Linear("fc1", {"out_size": 100})(x, Constant(weights["l1/W"], VA.OrderCN))
+    h, = O.Linear("fc1")(x, Constant(weights["l1/W"], VA.OrderCN))
     h, = O.AxiswiseBias("bias1", {"axis": A.Axis.C})(h, Constant(weights["l1/b"], VA.OrderC))
     h, = O.Relu("relu1")(h)
 
-    h, = O.Linear("fc2", {"out_size": 100})(h, Constant(weights["l2/W"], VA.OrderCN))
+    h, = O.Linear("fc2")(h, Constant(weights["l2/W"], VA.OrderCN))
     h, = O.AxiswiseBias("bias2", {"axis": A.Axis.C})(h, Constant(weights["l2/b"], VA.OrderC))
     h, = O.Relu("relu2")(h)
 
-    h, = O.Linear("fc3", {"out_size": 50})(h, Constant(weights["l3/W"], VA.OrderCN))
+    h, = O.Linear("fc3")(h, Constant(weights["l3/W"], VA.OrderCN))
     y, = O.AxiswiseBias("bias3", {"axis": A.Axis.C})(h, Constant(weights["l3/b"], VA.OrderC))
 
     graph = O.Compose.compose_with_vars("graph", [x], [y])
