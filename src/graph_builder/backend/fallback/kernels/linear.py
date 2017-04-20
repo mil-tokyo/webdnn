@@ -2,6 +2,7 @@ from typing import List
 import numpy as np
 
 from graph_builder.backend.fallback.kernel import Kernel
+from graph_builder.backend.fallback.kernels.util import calculate_stride
 from graph_builder.graph import Operator
 from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import attributes as VA
@@ -51,21 +52,21 @@ def linear(op: Operator) -> List[Kernel]:
         n = w.shape_dict[A.Axis.N]
         # 各行列操作方向でのstrideを求める
         # 操作軸の番号より右側にある(inner-loopの)次元の要素数の積
-        x_k_stride = int(np.prod(x.shape[x.axis_order.axes_dict[A.Axis.C]+1:]))
-        x_m_stride = int(np.prod(x.shape[x.axis_order.axes_dict[A.Axis.N]+1:]))
-        w_k_stride = int(np.prod(w.shape[w.axis_order.axes_dict[A.Axis.C]+1:]))
-        w_n_stride = int(np.prod(w.shape[w.axis_order.axes_dict[A.Axis.N]+1:]))
+        x_k_stride = calculate_stride(x, A.Axis.C)
+        x_m_stride = calculate_stride(x, A.Axis.N)
+        w_k_stride = calculate_stride(w, A.Axis.C)
+        w_n_stride = calculate_stride(w, A.Axis.N)
     elif x.axis_order.ndim == 4:
         assert w.axis_order.ndim == 4
         # CHWが、連続していてx,wで同順のみサポート(NCHW/NCHW, NHWC/HWCN, ...)
         x_order_wo_n = list(x.axis_order.axes)
         x_order_wo_n.remove(A.Axis.N)  # [A.Axis.C, A.Axis.H, A.Axis.W]
-        x_chw_size = int(np.prod([x.shape_dict[axis] for axis in x_order_wo_n]))
         x_n_size = x.shape_dict[A.Axis.N]
+        x_chw_size = x.size // x_n_size
         w_order_wo_n = list(w.axis_order.axes)
         w_order_wo_n.remove(A.Axis.N)
-        w_chw_size = int(np.prod([w.shape_dict[axis] for axis in x_order_wo_n]))
         w_n_size = w.shape_dict[A.Axis.N]
+        w_chw_size = w.size // w_n_size
 
         assert x_chw_size == w_chw_size
         assert x_order_wo_n == w_order_wo_n
