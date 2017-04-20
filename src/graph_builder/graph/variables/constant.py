@@ -31,7 +31,7 @@ class Constant(Variable):
 
         if len(self.axis_order.axes) == len(axis_order.axes):
             #  新しい軸がもとの軸で何番目かを列挙
-            trans_axes = tuple(current_shape_dict[axis] for axis in axis_order.axes)
+            trans_axes = tuple(self.axis_order.axes_dict[axis] for axis in axis_order.axes)
             self.data = np.transpose(self.data, trans_axes)
         else:
             #  別に実装できないわけではないが手抜き
