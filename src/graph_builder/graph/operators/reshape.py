@@ -13,14 +13,14 @@ class Reshape(Operator):
                   A.PostAxiswise,
                   A.Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object] = None):
+    def __init__(self, name: str, parameters: Dict[str, object]):
         """
-        parameters: {out_shape: Tuple}
+        parameters: {out_shape: Tuple, out_order: VA.Order}
         :param name: 
         :param parameters: 
-        :param weights: 
         """
         assert "out_shape" in parameters
+        assert "out_order" in parameters
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

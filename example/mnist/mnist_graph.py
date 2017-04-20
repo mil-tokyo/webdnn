@@ -47,9 +47,9 @@ def load_mnist_weights_conv(filepath: str):
     snapshot_buffers = np.load(filepath)
     weight_prefix = "updater/model:main/predictor/"
     weights = {}
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "l1"))
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "l2"))
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "l3"))
+    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv1"))
+    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv2"))
+    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv3"))
     return weights
 
 
@@ -73,19 +73,18 @@ def construct_graph_fc(weights: np.array, batch_size: int = 1):
 def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1):
     x = Variable([batch_size, 28, 28, 1], axis_order=VA.OrderNHWC)
 
-    conv1 = O.Convolution2D("conv1", {"in_size": 1, "out_size": 32, "ksize": (5, 5), "stride": (1, 1), "pad": (0, 0), "cover_all": False})
-    h, = conv1(x, Constant(weights["conv1/W"], VA.OrderNCHW))
+    conv1 = O.Convolution2D("conv1", {"ksize": (5, 5), "stride": (1, 1), "padding": (0, 0)})
+    h, = conv1(x, Constant(weights["conv1/W"], VA.OrderHWCN))
     h, = O.AxiswiseBias("bias1", {"axis": A.Axis.C})(h, Constant(weights["conv1/b"], VA.OrderC))
     h, = O.Relu("relu1")(h)
 
-    conv2 = O.Convolution2D("conv2", {"in_size": 32, "out_size": 32, "ksize": (3, 3), "stride": (2, 2), "pad": (1, 1), "cover_all": False})
-    h, = conv2(h, Constant(weights["conv2/W"], VA.OrderNCHW))
+    conv2 = O.Convolution2D("conv2", {"ksize": (3, 3), "stride": (2, 2), "padding": (1, 1)})
+    h, = conv2(h, Constant(weights["conv2/W"], VA.OrderHWCN))
     h, = O.AxiswiseBias("bias2", {"axis": A.Axis.C})(h, Constant(weights["conv2/b"], VA.OrderC))
     h, = O.Relu("relu2")(h)
 
-    conv2 = O.Convolution2D("conv3",
-                            {"in_size": 32, "out_size": 10, "ksize": (12, 12), "stride": (1, 1), "pad": (0, 0), "cover_all": False})
-    h, = conv2(h, Constant(weights["conv3/W"], VA.OrderNCHW))
+    conv2 = O.Convolution2D("conv3", {"ksize": (12, 12), "stride": (1, 1), "padding": (0, 0)})
+    h, = conv2(h, Constant(weights["conv3/W"], VA.OrderHWCN))
     y, = O.AxiswiseBias("bias3", {"axis": A.Axis.C})(h, Constant(weights["conv3/b"], VA.OrderC))
 
     graph = O.Compose.compose_with_vars("graph", [x], [y])

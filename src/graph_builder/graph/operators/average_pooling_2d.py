@@ -16,11 +16,14 @@ class AveragePooling2D(Operator):
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
-        parameters: {out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
+        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
         :param name: 
         :param parameters: 
         :param weights: 
         """
+        assert "ksize" in parameters
+        assert "stride" in parameters
+        assert "padding" in parameters
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

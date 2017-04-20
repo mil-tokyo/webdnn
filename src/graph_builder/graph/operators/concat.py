@@ -14,11 +14,9 @@ class Concat(Operator):
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
-        parameters: {axis: int, n_inputs: int}
-        n_inputs: 入力変数の数
+        parameters: {axis: int}
         :param name: 
         :param parameters: 
-        :param weights: 
         """
         assert "axis" in parameters
         assert isinstance(parameters["axis"], A.Axis)

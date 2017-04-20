@@ -14,8 +14,6 @@ class ElementwiseSum(Operator):
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
         """
-        parameters: {n_inputs: int}
-        n_inputs: 入力変数の数
         :param name: 
         :param parameters: 
         """
