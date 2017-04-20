@@ -14,7 +14,6 @@ from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import Constant, attributes as VA
 from graph_builder.util.json import json
 
-OPTIMIZE = os.environ.get('OPTIMIZE', '1') == '1'
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 RESOURCES_DIR = path.join(path.dirname(__file__), "../../resources/mnist")
 

@@ -1,3 +1,4 @@
+import os
 from os import path
 
 import argparse
@@ -13,6 +14,13 @@ from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import Constant
 from graph_builder.optimizer import Optimizer
 from graph_builder.graph.converters.chainer import ChainerGraphConverter
+from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
+from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
+from graph_builder.frontend.general_optimizer import GeneralOptimizer
+import graph_builder.optimizer.util
+from graph_builder.util.json import json
+
+OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
 class MLP(chainer.Chain):
 
@@ -58,19 +66,46 @@ class CNN2(chainer.Chain):
 
 
 def main_resnet():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--optimize", action="store_true")
+    args = parser.parse_args()
+
     link = chainer.links.model.vision.resnet.ResNet50Layers()
     dummy_input = chainer.Variable(np.random.rand(1, 3, 224, 224).astype(np.float32))#dummy image
     dummy_output = link(dummy_input, layers=['fc6'])['fc6']  # 'prob' is also possible (uses softmax)
     chainer_cg = chainer.computational_graph.build_computational_graph([dummy_output])
     converter = ChainerGraphConverter()
-    graph = converter.convert(chainer_cg, [dummy_input], [dummy_output])
-    graph.dump()
+    graph = converter.convert(chainer_cg, [dummy_input], [dummy_output])  # type: Variable
+    if args.optimize:
+        graph = GeneralOptimizer().optimize(graph)
+
+    if args.backend == "webgpu":
+        descriptor, data = generate_webgpu_descriptor(graph)
+
+    elif args.backend == "fallback":
+        descriptor, data = generate_fallback_descriptor(graph)
+
+    else:
+        raise NotImplementedError()
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(args.backend)), "w") as f:
+        json.dump(descriptor, f, indent=2)
+
+    if args.backend == "webgpu":
+        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(args.backend)), "w") as f:
+            f.write(descriptor.concat_kernel_sources())
+
+    data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)))
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("model")
     parser.add_argument("--unit", type=int)
     parser.add_argument("model_path")
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--optimize", action="store_true")
     args = parser.parse_args()
     if args.model == "MLP":
         link = MLP(args.unit, 10)
@@ -83,7 +118,29 @@ def main():
     chainer_cg = chainer.computational_graph.build_computational_graph([dummy_output])
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [dummy_input], [dummy_output])
-    graph.dump()
+    graph_builder.optimizer.util.dump(graph)
+
+    if args.optimize:
+        graph = GeneralOptimizer().optimize(graph)
+
+    if args.backend == "webgpu":
+        descriptor, data = generate_webgpu_descriptor(graph)
+
+    elif args.backend == "fallback":
+        descriptor, data = generate_fallback_descriptor(graph)
+
+    else:
+        raise NotImplementedError()
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(args.backend)), "w") as f:
+        json.dump(descriptor, f, indent=2)
+
+    if args.backend == "webgpu":
+        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(args.backend)), "w") as f:
+            f.write(descriptor.concat_kernel_sources())
+
+    data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)))
 
 if __name__ == "__main__":
     main()

@@ -28,6 +28,14 @@ class Constant(Variable):
         for axis, size in current_shape_dict.items():
             if axis not in axis_order.axes:
                 assert size == 1
+
+        if len(self.axis_order.axes) == len(axis_order.axes):
+            #  新しい軸がもとの軸で何番目かを列挙
+            trans_axes = tuple(current_shape_dict[axis] for axis in axis_order.axes)
+            self.data = np.transpose(self.data, trans_axes)
+        else:
+            #  別に実装できないわけではないが手抜き
+            raise NotImplementedError()
+
         self.axis_order = axis_order
         self.shape = new_shape
-        raise NotImplementedError()  # TODO: dataのtranspose

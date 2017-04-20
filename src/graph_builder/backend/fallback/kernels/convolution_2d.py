@@ -16,13 +16,13 @@ var in_spatial = option.in_spatial;
 var out_spatial = option.out_spatial;
 var out_size = option.out_size | 0;
 var in_size = option.in_size | 0;
-var pad = option.pad;
+var padding = option.padding;
 var stride = option.stride;
 var ksize = option.ksize;
 
 var get_x = function(n_, y_, x_, c_) {
-  y_ -= pad[0];
-  x_ -= pad[1];
+  y_ -= padding[0];
+  x_ -= padding[1];
   if (y_ < 0 || y_ >= in_spatial[0] || x_ < 0 || x_ >= in_spatial[1]) {
     return 0.0;
   }
@@ -81,7 +81,7 @@ def convolution_2d(op: Operator) -> List[Kernel]:
                      "out_size": y.shape_dict[A.Axis.C],
                      "in_size": x.shape_dict[A.Axis.C],
                      "out_spatial": [y.shape_dict[A.Axis.H], y.shape_dict[A.Axis.W]],
-                     "pad": op.parameters["pad"],
+                     "padding": op.parameters["padding"],
                      "stride": op.parameters["stride"],
                      "ksize": op.parameters["ksize"]}
     )

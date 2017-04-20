@@ -1,5 +1,7 @@
 from typing import List
 
+import numpy as np
+
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.graph import Operator
 
@@ -12,12 +14,12 @@ var x = input_arrays[0];
 var y = output_arrays[0];
 var b = param_arrays[0];
 var n = option.n | 0;
-var c = option.c | 0;
+var axis_stride = option.axis_stride | 0;
+var axis_size = option.axis_size | 0;
 
 for (var i = 0; i < n; i++) {
-  for (var j = 0; j < c; j++) {
-    y[i * c + j] = x[i * c + j] + b[j];
-  }
+    var ch = (i / axis_stride | 0) % axis_size;
+    y[i] = x[i] + b[ch];
 }
 
 },
@@ -26,13 +28,16 @@ for (var i = 0; i < n; i++) {
 
 
 def axiswise_bias(op: Operator) -> List[Kernel]:
+    # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     b = op.inputs["b"]
     y = op.outputs["y"]
 
-    assert x.ndim == 2
-    assert y.ndim == 2
-    assert x.axis_order.axes_dict[op.parameters["axis"]] == 1
+    assert b.ndim == 1
+    axis_pos = x.axis_order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
+    axis_size = x.shape[axis_pos]
+    assert axis_size == b.size
+    axis_stride = int(np.prod(x.shape[axis_pos + 1:]))  # NCHWでaxis=Cなら、size(H)*size(W), np.prod([])==1.0
 
     kernel = Kernel(
         {"axiswise_bias": source},
@@ -40,8 +45,9 @@ def axiswise_bias(op: Operator) -> List[Kernel]:
         inputs=[x.parameters["name"]],
         outputs=[y.parameters["name"]],
         weights=[b.parameters["name"]],
-        call_option={"n": x.shape[0],
-                     "c": x.shape[1]}
+        call_option={"n": x.size,
+                     "axis_stride": axis_stride,
+                     "axis_size": axis_size}
     )
 
     return [kernel]
