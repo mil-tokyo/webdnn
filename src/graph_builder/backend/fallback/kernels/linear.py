@@ -3,6 +3,7 @@ from typing import List
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.graph import Operator
 from graph_builder.graph.operators import attributes as A
+from graph_builder.graph.variables import attributes as VA
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -36,6 +37,9 @@ def linear(op: Operator) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
+
+    assert x.axis_order is VA.OrderNC
+    assert w.axis_order is VA.OrderCN
 
     kernel = Kernel(
         {"linear": source},
