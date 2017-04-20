@@ -30,9 +30,12 @@ def generate_unique_name(prefix):
 class OperatorBlock:
     # Chainerで1つのFunctionが2つのレイヤーに分解されたときに、その間をつなぐために生成されたVariable
     hidden_vars: List[Variable]
+    # 元々のウェイトを扱いやすく変換したConstantを作成した場合に登録
+    hidden_consts: List[Constant]
 
     def __init__(self):
         self.hidden_vars = []
+        self.hidden_consts = []
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         raise NotImplementedError()
@@ -165,10 +168,15 @@ class BatchNormalizationBlock(OperatorBlock):
         beta_scaled = beta.data - mean.data * gamma_div_std
 
         scale_opr = operators.AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
-        scale_out, = scale_opr(x, Constant(gamma_div_std, VA.OrderC))
+        gamma_div_std_const = Constant(gamma_div_std, VA.OrderC)
+        scale_out, = scale_opr(x, gamma_div_std_const)
+        self.hidden_vars.append(scale_out)
+        self.hidden_consts.append(gamma_div_std_const)
 
         offset_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
-        offset_out, = offset_opr(scale_out, Constant(beta_scaled, VA.OrderC))
+        beta_scaled_const = Constant(beta_scaled, VA.OrderC)
+        offset_out, = offset_opr(scale_out, beta_scaled_const)
+        self.hidden_consts.append(beta_scaled_const)
 
         return [offset_out]
 
@@ -222,6 +230,7 @@ class ChainerGraphConverter:
     def __init__(self):
         self._cvar_to_nvar = {}  # id(chainer.Variable) => Variable (note: chainerに対応しないVariableも作られる)
         self._cvar_ids = []  # id(chainer.Variable)
+        self._known_nvars = []  # 存在するVariable(include Constant)
 
     def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
                 input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Node:
@@ -231,6 +240,7 @@ class ChainerGraphConverter:
         # 未処理のchainer.Functionがなくなったら終わり
         self._cvar_to_nvar = {}
         self._cvar_ids = []
+        self._known_nvars = []
         self._convert_weight_vars(chainer_computational_graph)
         self._convert_input_vars(input_vars)
 
@@ -240,16 +250,18 @@ class ChainerGraphConverter:
             for cfunc in pending_functions:
                 if all(((id(cvar) in self._cvar_ids) for cvar in cfunc.inputs)):
                     # このレイヤーは入力が揃った
-                    print("do", cfunc)
                     opr_block = self._construct_operator_block(cfunc)
                     out_nvars = opr_block([self._cvar_to_nvar[id(cvar)] for cvar in cfunc.inputs])
-                    assert len(out_nvars) == len(cfunc.outputs)
+                    assert len(out_nvars) == len(cfunc.outputs), str(cfunc)
+                    self._known_nvars.extend(opr_block.hidden_consts)
+                    self._known_nvars.extend(opr_block.hidden_vars)
                     # 出力変数を対応づける
                     for out_nvar, out_cvar_wref in zip(out_nvars, cfunc.outputs):
                         out_cvar = out_cvar_wref()
                         assert tuple(out_nvar.shape) == out_cvar.shape, str(cfunc)
                         self._cvar_to_nvar[id(out_cvar)] = out_nvar
                         self._cvar_ids.append(id(out_cvar))
+                        self._known_nvars.append(out_nvar)
                     pending_functions.remove(cfunc)
                     break  # for cfunc in pending_functions
             else:
@@ -263,7 +275,8 @@ class ChainerGraphConverter:
             nvar = self._cvar_to_nvar[id(cvar)]
             nvar.attributes.add(VA.Output)
 
-        # 便宜的に、最初の入力変数に対応するNodeを返す (あとでかえるかも)
+        # このフレームワークで標準的なデータオーダーに変更
+        self._transpose_vars(self._known_nvars)
 
         graph = O.Compose.compose_with_vars("graph",
                                             [self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
@@ -310,6 +323,7 @@ class ChainerGraphConverter:
 
         self._cvar_to_nvar[id(cvar)] = nvar
         self._cvar_ids.append(id(cvar))
+        self._known_nvars.append(nvar)
         return nvar
 
     def _construct_operator_block(self, cfunc: chainer.Function) -> OperatorBlock:
@@ -317,3 +331,33 @@ class ChainerGraphConverter:
             if isinstance(cfunc, function_class):
                 return block_class(cfunc)
         raise ValueError("Unknown layer {}".format(type(cfunc)))
+
+    def _transpose_vars(self, nvars: Iterable[Variable]):
+        """
+        変数を、標準的なAxisOrderに変更
+        :param nvars: 
+        :return: 
+        """
+        for nvar in nvars:
+            if isinstance(nvar, Constant):
+                if nvar.ndim == 1:
+                    nvar.change_axis_order(VA.OrderC)
+                elif nvar.ndim == 2:
+                    nvar.change_axis_order(VA.OrderCN)
+                elif nvar.ndim == 4:
+                    assert len(nvar.input_to) == 1
+                    first_input_to = list(nvar.input_to)[0]
+                    if isinstance(first_input_to, operators.Convolution2D):
+                        nvar.change_axis_order(VA.OrderHWNC)
+                    elif isinstance(first_input_to, operators.Linear):
+                        nvar.change_axis_order(VA.OrderHWCN)
+                    else:
+                        # 今の所ないはず
+                        raise ValueError()
+            else:
+                if nvar.ndim == 1:
+                    nvar.change_axis_order(VA.OrderC)
+                elif nvar.ndim == 2:
+                    nvar.change_axis_order(VA.OrderNC)
+                elif nvar.ndim == 4:
+                    nvar.change_axis_order(VA.OrderNHWC)
