@@ -16,10 +16,9 @@ class Convolution2D(Operator):
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
         weights["W"]: (kh, kw, in_size, out_size)
-        parameters: {in_size: int, out_size: int, ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int], cover_all: Boolean=False}
+        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int], cover_all: Boolean=False}
         :param name: 
         :param parameters: 
-        :param weights: 
         """
         assert "ksize" in parameters
         assert "stride" in parameters

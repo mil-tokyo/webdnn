@@ -16,6 +16,10 @@ class Relu(Operator):
                   A.Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
+        """
+        :param name: 
+        :param parameters: 
+        """
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

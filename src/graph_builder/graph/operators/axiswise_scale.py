@@ -15,6 +15,12 @@ class AxiswiseScale(Operator):
                   A.HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
+        """
+        parameters: {axis: A.Axis}
+        :param name: 
+        :param parameters: 
+        """
+        assert "axis" in parameters
         assert isinstance(parameters["axis"], A.Axis)
         super().__init__(name, parameters)
 
