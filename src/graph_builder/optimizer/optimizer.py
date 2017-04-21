@@ -2,6 +2,7 @@ from typing import List
 
 from graph_builder.graph.graph import Operator
 from graph_builder.optimizer.optimize_rule import OptimizeRule
+from graph_builder.util import flags
 
 
 class Optimizer:
@@ -18,6 +19,8 @@ class Optimizer:
             for rule in self.rules:
                 graph, flag_changed = rule(graph)
                 flag_retry |= flag_changed
+                if flags.DEBUG:
+                    print(f"[Optimizer] optimize rule={rule} changed={flag_changed}")
 
         return graph
 

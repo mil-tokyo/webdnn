@@ -27,11 +27,15 @@ async function run() {
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
 
+    let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
         input_views[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
+
+        let start = performance.now();
         await runner.run();
+        total_elapsed_time += performance.now() - start;
 
         let out_vec = output_views[0];
         let pred_label = 0;
@@ -45,6 +49,7 @@ async function run() {
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
     }
+    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time/test_samples.length).toFixed(2)}`);
 }
 
 async function init(backend_name) {
