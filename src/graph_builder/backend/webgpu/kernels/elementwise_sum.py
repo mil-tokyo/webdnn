@@ -4,7 +4,7 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import AxiswiseScale
+from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -27,6 +27,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 """
 
 
+# noinspection PyUnusedLocal
 def elementwise_sum(op: AxiswiseScale,
                     constants_layout: MemoryLayout,
                     variables_layout: MemoryLayout,

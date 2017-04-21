@@ -9,7 +9,7 @@ from graph_builder.backend.fallback.generator import generate as generate_fallba
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimizer import GeneralOptimizer
 from graph_builder.graph import operators as O
-from graph_builder.graph.graph import Variable
+from graph_builder.graph.node import Variable
 from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import Constant, attributes as VA
 from graph_builder.util.json import json

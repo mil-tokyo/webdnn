@@ -3,7 +3,7 @@ from typing import List
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import Flatten
+from graph_builder.graph.operators.flatten import Flatten
 
 
 # template = """
@@ -26,6 +26,8 @@ from graph_builder.graph.operators import Flatten
 
 
 # noinspection PyUnusedLocal
+
+
 def flatten(op: Flatten,
             constants_layout: MemoryLayout,
             variables_layout: MemoryLayout,

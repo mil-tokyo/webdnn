@@ -1,15 +1,16 @@
 from typing import Iterable, Set, List, Type
 
-from graph_builder.graph.attribute import Attribute
-from graph_builder.graph.graph import Operator, Variable
+from graph_builder.graph.interface import IVariable
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
-class VariableAlias(Variable):
-    link_to: Variable
-    axis_order: Type[Attribute]  # FIXME: Attribute -> AxisOrder
+class VariableAlias(IVariable):
+    link_to: IVariable
+    axis_order: Type[AxisOrder]
 
     # noinspection PyMissingConstructor
-    def __init__(self, var: Variable):
+    def __init__(self, var: IVariable):
         self.link_to = var
         self.input_to = set()
         self.output_from = None
@@ -34,7 +35,7 @@ class VariableAlias(Variable):
     def axis_order(self):
         return self.original.axis_order
 
-    def change_axis_order(self, axis_order: Type[Attribute]):
+    def change_axis_order(self, axis_order: Type[AxisOrder]):
         return self.original.change_axis_order(axis_order)
 
     def __repr__(self):
@@ -54,6 +55,13 @@ class VariableAlias(Variable):
     def dump(self):
         return self.original.dump()
 
+    def merge(self, base: IVariable) -> None:
+        self.original.merge(base)
+
+    @property
+    def name(self) -> str:
+        return self.original.name
+
 
 class Compose(Operator):
     input_to: Set[Operator]
@@ -65,19 +73,22 @@ class Compose(Operator):
         self.inputs_alias = set()
         self.outputs_alias = set()
 
+    def __call__(self, *args: Iterable[IVariable]) -> Iterable[IVariable]:
+        raise NotImplementedError
+
     @classmethod
     def compose_ops(cls, name: str, ops: Iterable[Operator]):
         composite = Compose(name)
 
-        inputs_or_hiddens: Set[Variable] = set()
-        outputs_or_hiddens: Set[Variable] = set()
+        inputs_or_hiddens: Set[IVariable] = set()
+        outputs_or_hiddens: Set[IVariable] = set()
 
         for op in ops:
             inputs_or_hiddens.update(op.inputs.values())
             outputs_or_hiddens.update(op.outputs.values())
 
-        inputs: Set[Variable] = inputs_or_hiddens.difference(outputs_or_hiddens)
-        outputs: Set[Variable] = outputs_or_hiddens.difference(inputs_or_hiddens)
+        inputs: Set[IVariable] = inputs_or_hiddens.difference(outputs_or_hiddens)
+        outputs: Set[IVariable] = outputs_or_hiddens.difference(inputs_or_hiddens)
 
         for i, var in enumerate(inputs):
             alias = VariableAlias(var)
@@ -99,10 +110,10 @@ class Compose(Operator):
         return composite
 
     @classmethod
-    def compose_with_vars(cls, name: str, inputs: Iterable[Variable], outputs: Iterable[Variable]) -> "Compose":
+    def compose_with_vars(cls, name: str, inputs: Iterable[IVariable], outputs: Iterable[IVariable]) -> "Compose":
         # グラフを辿って必要なopsを全て取ってくる
         inputs = set(inputs)
-        var_queue: List[Variable] = list(outputs)
+        var_queue: List[IVariable] = list(outputs)
         ops: Set[Operator] = set()
 
         while len(var_queue) > 0:

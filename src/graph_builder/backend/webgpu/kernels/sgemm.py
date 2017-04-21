@@ -4,9 +4,9 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.backend.webgpu.operators import Sgemm
-from graph_builder.graph.operators.attributes import Axis
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.backend.webgpu.operators.sgemm import Sgemm
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -121,9 +121,9 @@ def sgemm(op: Sgemm,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == VA.OrderNHWC
-    assert w.variable.axis_order == VA.OrderHWCN
-    assert y.variable.axis_order == VA.OrderNHWC
+    assert x.variable.axis_order == OrderNHWC
+    assert w.variable.axis_order == OrderHWCN
+    assert y.variable.axis_order == OrderNHWC
 
     M = y.variable.shape_dict[Axis.N] * y.variable.shape_dict[Axis.H] * y.variable.shape_dict[Axis.W]
     N = w.variable.shape_dict[Axis.N]

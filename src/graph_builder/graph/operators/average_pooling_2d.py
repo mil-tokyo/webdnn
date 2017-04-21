@@ -1,8 +1,11 @@
 from typing import Dict
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.order import OrderNCHW, OrderNHWC
 
 
 class AveragePooling2D(Operator):
@@ -11,8 +14,8 @@ class AveragePooling2D(Operator):
     padding挙動はchainer準拠
     当面はglobal average poolingだけ実装
     """
-    attributes = {A.PostElementwise,
-                  A.PostAxiswise}
+    attributes = {PostElementwise,
+                  PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
@@ -28,16 +31,16 @@ class AveragePooling2D(Operator):
 
     def __call__(self, x: Variable):
         x_shape_dict = x.shape_dict
-        N = x_shape_dict[A.Axis.N]
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // \
+        N = x_shape_dict[Axis.N]
+        H2 = (x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // \
              self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // \
+        W2 = (x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // \
              self.parameters["stride"][1] + 1
-        C2 = x_shape_dict[A.Axis.C]
+        C2 = x_shape_dict[Axis.C]
 
-        if x.axis_order == VA.OrderNCHW:
+        if x.axis_order == OrderNCHW:
             var_shape = [N, C2, H2, W2]
-        elif x.axis_order == VA.OrderNHWC:
+        elif x.axis_order == OrderNHWC:
             var_shape = [N, H2, W2, C2]
         else:
             raise NotImplementedError()

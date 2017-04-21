@@ -4,9 +4,9 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import Convolution2D
-from graph_builder.graph.operators.attributes import Axis
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -76,15 +76,15 @@ def convolution_2d(op: Convolution2D,
     w = constants_layout[op.inputs["w"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == VA.OrderNHWC, \
+    assert x.variable.axis_order == OrderNHWC, \
         f"[WebGPU] Convolution2D operator supports only OrderNHWC for data order of input variable. " + \
         f"Actual data order is {x.variable.axis_order}"
 
-    assert w.variable.axis_order == VA.OrderHWCN, \
+    assert w.variable.axis_order == OrderHWCN, \
         f"[WebGPU] Convolution2D operator supports only OrderHWCN for data order of filter variable. " + \
         f"Actual data order is {w.variable.axis_order}"
 
-    assert y.variable.axis_order == VA.OrderNHWC, \
+    assert y.variable.axis_order == OrderNHWC, \
         f"[WebGPU] Convolution2D operator supports only OrderNHWC for data order of output variable. " + \
         f"Actual data order is {y.variable.axis_order}"
 

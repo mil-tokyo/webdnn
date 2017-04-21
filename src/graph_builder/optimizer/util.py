@@ -1,9 +1,10 @@
 from typing import Type, List, Tuple, Set, Iterable
 
-from graph_builder.graph import Attribute, Operator
-from graph_builder.graph.graph import Node, Variable
-from graph_builder.graph.operators import Compose
-from graph_builder.graph.operators.compose import VariableAlias
+from graph_builder.graph.attribute import Attribute
+from graph_builder.graph.node import Node
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.compose import Compose, VariableAlias
+from graph_builder.graph.variable import Variable
 
 
 def check_attribute_match(node: Node, query: Type[Attribute]):
@@ -56,6 +57,7 @@ def listup_operator_in_order(graph: Operator) -> List[Operator]:
 
         inputs = list(op.inputs.values())
         if isinstance(op, Compose):
+            op: Compose
             inputs.extend(op.outputs_alias)
 
         for v in inputs:
@@ -93,7 +95,7 @@ def listup_variables(op: Operator, remove_alias: True) -> Set[Variable]:
                 op_queue.append(var.output_from)
 
         if isinstance(op, Compose):
-            op = op  # type: Compose
+            op: Compose
             for var in op.outputs_alias:  # type: VariableAlias
                 op_queue.append(var.output_from)
 

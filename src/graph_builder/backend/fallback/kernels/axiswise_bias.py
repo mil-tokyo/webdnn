@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.graph import Operator
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -27,7 +27,7 @@ for (var i = 0; i < n; i++) {
 """
 
 
-def axiswise_bias(op: Operator) -> List[Kernel]:
+def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     b = op.inputs["b"]
@@ -37,6 +37,8 @@ def axiswise_bias(op: Operator) -> List[Kernel]:
     axis_pos = x.axis_order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
+
+    # noinspection PyTypeChecker
     axis_stride = int(np.prod(x.shape[axis_pos + 1:]))  # NCHWでaxis=Cなら、size(H)*size(W), np.prod([])==1.0
 
     kernel = Kernel(

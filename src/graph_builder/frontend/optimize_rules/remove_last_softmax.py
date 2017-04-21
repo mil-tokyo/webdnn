@@ -1,7 +1,10 @@
 from typing import List
 
-from graph_builder.graph import Operator, operators as O, Variable
-from graph_builder.optimizer import OptimizeRule
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.compose import Compose
+from graph_builder.graph.operators.softmax import Softmax
+from graph_builder.graph.variable import Variable
+from graph_builder.optimizer.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -20,13 +23,13 @@ class RemoveLastSoftmax(OptimizeRule):
         while len(var_queue) > 0:
             v = var_queue.pop(0)
 
-            if isinstance(v.output_from, O.Compose):
-                composed = v.output_from  # type: O.Compose
+            if isinstance(v.output_from, Compose):
+                composed = v.output_from  # type: Compose
                 var_queue.extend(list(composed.outputs_alias))
                 continue
 
-            elif isinstance(v.output_from, O.Softmax):
-                softmax = v.output_from  # type: O.Softmax
+            elif isinstance(v.output_from, Softmax):
+                softmax = v.output_from  # type: Softmax
                 softmax.remove_self()
                 flag_changed = True
 

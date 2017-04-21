@@ -1,11 +1,9 @@
 from typing import List
 
-import numpy as np
-
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.graph import Operator
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.flatten import Flatten
+from graph_builder.graph.variables.attributes.order import OrderNCHW, OrderNC, OrderNHWC
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -25,18 +23,18 @@ for (var i = 0; i < length; i++) {
 """
 
 
-def flatten(op: Operator) -> List[Kernel]:
+def flatten(op: Flatten) -> List[Kernel]:
     # データ変換がない場合のみ現状サポート
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     y = op.outputs["y"]
 
-    assert set(op.parameters["in_axes"]) == {A.Axis.C, A.Axis.H, A.Axis.W}
-    assert set(op.parameters["out_axes"]) == {A.Axis.C}
-    if x.axis_order is VA.OrderNCHW:
-        assert y.axis_order is VA.OrderNC
-    elif x.axis_order is VA.OrderNHWC:
-        assert y.axis_order is VA.OrderNC
+    assert set(op.parameters["in_axes"]) == {Axis.C, Axis.H, Axis.W}
+    assert set(op.parameters["out_axes"]) == {Axis.C}
+    if x.axis_order is OrderNCHW:
+        assert y.axis_order is OrderNC
+    elif x.axis_order is OrderNHWC:
+        assert y.axis_order is OrderNC
         # H, W == 1
         assert x.shape[1] == 1
         assert x.shape[2] == 1

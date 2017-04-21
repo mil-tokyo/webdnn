@@ -1,8 +1,10 @@
 from typing import Dict, List
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.inplace import Inplace
+from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.variable import Variable
 
 
 class Reshape(Operator):
@@ -10,20 +12,20 @@ class Reshape(Operator):
     入力変数の形を変形するレイヤー
     形状変化を表現する便宜上のもので、データ操作はない
     """
-    attributes = {A.PostElementwise,
-                  A.PostAxiswise,
-                  A.Inplace}
+    attributes = {PostElementwise,
+                  PostAxiswise,
+                  Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
-        parameters: {out_shape: Tuple, out_order: VA.Order}
+        parameters: {out_shape: Tuple, out_order: Order}
         :param name: 
         :param parameters: 
         """
-        raise NotImplementedError()  #入力オーダーの定義がなく、中途半端なので使い方を決めてから再実装
+        raise NotImplementedError()  # 入力オーダーの定義がなく、中途半端なので使い方を決めてから再実装
         assert "out_shape" in parameters
         assert "out_order" in parameters
-        assert issubclass(type(parameters["out_order"]), VA.AxisOrder)
+        assert issubclass(type(parameters["out_order"]), AxisOrder)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

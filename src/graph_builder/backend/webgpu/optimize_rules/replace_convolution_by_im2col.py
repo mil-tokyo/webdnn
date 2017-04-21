@@ -1,7 +1,9 @@
-from graph_builder.backend.webgpu import operators as webgpu_O
-from graph_builder.graph import Operator, operators as O
-from graph_builder.graph.operators import attributes as A
-from graph_builder.optimizer import OptimizeRule, util
+from graph_builder.backend.webgpu.operators.im2col import Im2Col
+from graph_builder.backend.webgpu.operators.sgemm import Sgemm
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.optimizer import util
+from graph_builder.optimizer.optimize_rule import OptimizeRule
 
 
 class ReplaceConvolutionByIm2Col(OptimizeRule):
@@ -12,25 +14,25 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
     def __call__(self, graph: Operator):
         flag_changed = False
         for op in util.listup_operator_in_order(graph):
-            if not isinstance(op, O.Convolution2D):
+            if not isinstance(op, Convolution2D):
                 continue
 
-            conv = op  # type: O.Convolution2D
+            op: Convolution2D
 
-            x = conv.inputs["x"]
-            w = conv.inputs["w"]
-            y = conv.outputs["y"]
+            x = op.inputs["x"]
+            w = op.inputs["w"]
+            y = op.outputs["y"]
 
             flag_changed = True
-            conv.remove_all()
+            op.remove_all()
 
             # connect im2col and sgemm
-            im2col = webgpu_O.Im2Col("im2col", {
-                "ksize": conv.ksize,
-                "stride": conv.stride,
-                "padding": conv.padding,
+            im2col = Im2Col("im2col", {
+                "ksize": op.ksize,
+                "stride": op.stride,
+                "padding": op.padding,
             })
-            sgemm = webgpu_O.Sgemm("sgemm")
+            sgemm = Sgemm("sgemm")
 
             col, = im2col(x)
             new_y, = sgemm(col, w)

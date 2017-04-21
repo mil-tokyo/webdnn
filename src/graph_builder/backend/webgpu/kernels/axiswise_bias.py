@@ -4,9 +4,9 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import AxiswiseBias
-from graph_builder.graph.operators.attributes import Axis
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.variables.attributes.order import OrderHWNC, OrderNHWC, OrderNC
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -43,15 +43,15 @@ def axiswise_bias(op: AxiswiseBias,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == VA.OrderNC \
-           or x.variable.axis_order == VA.OrderNHWC \
-           or x.variable.axis_order == VA.OrderHWNC, \
+    assert x.variable.axis_order == OrderNC \
+           or x.variable.axis_order == OrderNHWC \
+           or x.variable.axis_order == OrderHWNC, \
         f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of input variable. " + \
         f"Actual data order is {x.variable.axis_order}"
 
-    assert y.variable.axis_order == VA.OrderNC \
-           or y.variable.axis_order == VA.OrderNHWC \
-           or y.variable.axis_order == VA.OrderHWNC, \
+    assert y.variable.axis_order == OrderNC \
+           or y.variable.axis_order == OrderNHWC \
+           or y.variable.axis_order == OrderHWNC, \
         f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of output variable. " + \
         f"Actual data order is {y.variable.axis_order}"
 

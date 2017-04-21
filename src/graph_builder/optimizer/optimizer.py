@@ -1,6 +1,6 @@
 from typing import List
 
-from graph_builder.graph.graph import Operator
+from graph_builder.graph.operator import Operator
 from graph_builder.optimizer import util
 from graph_builder.optimizer.optimize_rule import OptimizeRule
 from graph_builder.util import flags

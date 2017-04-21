@@ -2,8 +2,10 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
-from graph_builder.graph.graph import Variable, Operator
-from graph_builder.graph.variables import Constant, attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.constant import Constant as ConstantAttribute
+from graph_builder.graph.variables.constant import Constant
 from graph_builder.optimizer import util
 from graph_builder.util import json
 
@@ -72,7 +74,7 @@ class Allocator:
         variables = util.listup_variables(graph, remove_alias=True)
         for i, v in enumerate(variables):
             v.parameters["name"] = f"v{i}"
-        constants = set(util.filter_nodes(variables, VA.Constant))  # type: Set[Constant]
+        constants = set(util.filter_nodes(variables, ConstantAttribute))  # type: Set[Constant]
         variables = variables.difference(constants)
 
         variables = list(variables)

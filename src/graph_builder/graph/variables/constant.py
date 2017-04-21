@@ -2,25 +2,24 @@ from typing import Type
 
 import numpy as np
 
-from graph_builder.graph.attribute import Attribute
-from graph_builder.graph.graph import Variable
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.constant import Constant as ConstantAttribute
+from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
 class Constant(Variable):
     data: np.array
 
-    def __init__(self, data: np.array, order: Type[Attribute]):
+    def __init__(self, data: np.array, order: Type[AxisOrder]):
         super(Constant, self).__init__(data.shape, order)
         self.data = data
-        self.attributes.add(VA.Constant)
+        self.attributes.add(ConstantAttribute)
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.axis_order.axes))
         return f"<Constant shape={self.shape}, order=\"{order_repr}\">"
 
-    def change_axis_order(self, axis_order: Type[Attribute]):
-        assert issubclass(axis_order, VA.AxisOrder)
+    def change_axis_order(self, axis_order: Type[AxisOrder]):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
         # 増える次元は、サイズ1
         current_shape_dict = self.shape_dict
