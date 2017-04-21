@@ -1,13 +1,18 @@
 from typing import Dict
 
-from graph_builder.graph.operator import Operator
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.have_weights import HaveWeights
+from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 
 
 class Sgemm(Operator):
-    attributes = {}  # FIXME
+    attributes = {PostElementwise,
+                  PostAxiswise,
+                  HaveWeights}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
         super().__init__(name, parameters)
