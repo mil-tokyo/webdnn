@@ -195,7 +195,7 @@ class AddBlock(OperatorBlock):
 
 class ReshapeBlock(OperatorBlock):
     # Currently, only removing HW axis is allowed
-    # NCHW (n,c,1,1) => NC (n,c)
+    # NCHW (n,c,h,w) => NC (n,c*h*w) (assuming c-order)
     cfunc: chainer.functions.array.reshape.Reshape
 
     def __init__(self, cfunc: chainer.functions.array.reshape.Reshape):
@@ -205,13 +205,13 @@ class ReshapeBlock(OperatorBlock):
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         assert len(inputs) == 1
         input = inputs[0]
+        # NCHWをNCにする場合のみ想定
         assert input.axis_order is VA.OrderNCHW
-        assert input.shape[2] == 1
-        assert input.shape[3] == 1
-        assert tuple(input.shape[0:2]) == self.cfunc.shape
+        assert len(self.cfunc.shape) == 2
+        assert self.cfunc.shape[0] == input.shape[0]  # Nは変化しない
 
-        opr = operators.Reshape(generate_unique_name(self.cfunc.label),
-                                {"out_order": VA.OrderNC, "out_shape": input.shape[0:2]})
+        opr = operators.Flatten(generate_unique_name(self.cfunc.label),
+                                {"in_axes": [A.Axis.C, A.Axis.H, A.Axis.W], "out_axes": [A.Axis.C]})
         return list(opr(input))
 
 
