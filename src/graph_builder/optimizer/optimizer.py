@@ -1,6 +1,7 @@
 from typing import List
 
 from graph_builder.graph.graph import Operator
+from graph_builder.optimizer import util
 from graph_builder.optimizer.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
@@ -21,6 +22,8 @@ class Optimizer:
                 flag_retry |= flag_changed
                 if flags.DEBUG:
                     print(f"[Optimizer] optimize rule={rule} changed={flag_changed}")
+                    util.dump(graph)
+                    print()
 
         return graph
 

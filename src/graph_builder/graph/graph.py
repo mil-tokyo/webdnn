@@ -105,7 +105,7 @@ class Operator(Node):
         出力変数を解除する
         """
         name = self.get_output_name(var)
-        var = self.outputs.pop(name)
+        self.outputs.pop(name)
         var.output_from = None
 
     def replace_output(self, v_old: "Variable", v_new: "Variable"):
@@ -132,6 +132,7 @@ class Operator(Node):
         """
         for _, v in list(self.inputs.items()):
             self.remove_input(v)
+
         for _, v in list(self.outputs.items()):
             self.remove_output(v)
 
@@ -208,3 +209,34 @@ class Variable(Node):
 
     def __str__(self):
         return self.__repr__()
+
+    def merge(self, base: "Variable"):
+        """
+        baseへselfをマージする
+        
+        ```
+        X --[OP1]-->tmp
+        
+                    base--[OP2]-->Y
+        ```
+        
+        があったときに `tmp.merge(base)` をすると
+        
+        ```
+        X --[OP1]-->tmp-->[OP2-->Y
+        ```
+        
+        となる
+        :param base: 
+        :return: 
+        """
+        from graph_builder.graph.operators.compose import VariableAlias  # FIXME
+
+        if isinstance(base, VariableAlias):
+            base = base.original
+
+        if base.output_from is not None:
+            raise ValueError(f"[Variabe.merge(base)] Base variable {base} must not has 'output_from' operator.")
+
+        for op in list(base.input_to):  # type: Operator
+            op.replace_input(base, self)

@@ -33,8 +33,8 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             sgemm = webgpu_O.Sgemm("sgemm")
 
             col, = im2col(x)
-            _dummy_y, = sgemm(col, w)
+            new_y, = sgemm(col, w)
 
-            sgemm.replace_output(_dummy_y, y)
+            new_y.merge(y)
 
         return graph, flag_changed
