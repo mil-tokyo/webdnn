@@ -38,11 +38,13 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            let run_entry_date = Date.now();
             let last_progress_date = Date.now();//in milliseconds
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                 let current_date = Date.now();
-                if (current_date - last_progress_date > 1000) {
-                    console.log('Processed ' + i + ' kernels at' + new Date());
+                if (current_date - last_progress_date >= 1000) {
+                    let elapsed_ms = current_date - run_entry_date;
+                    console.log(`Processed ${i}/${this.descriptor.exec_infos.length} kernels in ${elapsed_ms} ms`);
                     last_progress_date = current_date;
                     await this.wait_to_display();
                 }
@@ -52,9 +54,11 @@ namespace WebDNN {
                 let weight_arrays = exec_info.weights.map((name) => this.weightArrays.get(name));
                 this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
             }
+            console.log(`Processed ${this.descriptor.exec_infos.length}/${this.descriptor.exec_infos.length} kernels in ${Date.now() - run_entry_date} ms`);
         }
 
         async wait_to_display() {
+            // let console.log to be displayed, and prevent freeze
             return new Promise(function (resolve, reject) {
                 setTimeout(resolve, 10);
             });

@@ -47,11 +47,23 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
     elif isinstance(op, O.AxiswiseBias):
         kernels = K.axiswise_bias(op)
 
+    elif isinstance(op, O.AxiswiseScale):
+        kernels = K.axiswise_scale(op)
+
     elif isinstance(op, O.Convolution2D):
         kernels = K.convolution_2d(op)
 
     elif isinstance(op, O.MaxPooling2D):
         kernels = K.max_pooling_2d(op)
+
+    elif isinstance(op, O.AveragePooling2D):
+        kernels = K.average_pooling_2d(op)
+
+    elif isinstance(op, O.ElementwiseSum):
+        kernels = K.elementwise_sum(op)
+
+    elif isinstance(op, O.Flatten):
+        kernels = K.flatten(op)
 
     elif isinstance(op, O.Relu):
         kernels = K.relu(op)
