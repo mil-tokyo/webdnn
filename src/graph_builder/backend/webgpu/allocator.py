@@ -185,6 +185,6 @@ class Allocator:
                 if retain_count[v2] == 0:
                     allocation = layout[v2]
                     free_list.append((allocation.offset, allocation.size))
-                    # TODO: Defragmentation
+                    # FIXME: Defragmentation
 
         return layout

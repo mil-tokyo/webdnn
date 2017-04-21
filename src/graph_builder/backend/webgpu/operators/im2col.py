@@ -6,7 +6,7 @@ from graph_builder.graph.variables import attributes as VA
 
 
 class Im2Col(Operator):
-    attributes = {}  # TODO
+    attributes = {}  # FIXME
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
