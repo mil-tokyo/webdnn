@@ -96,10 +96,6 @@ class Compose(Operator):
             var.output_from.replace_output(var, alias)
             composite.append_output(f"out{i}", var)
 
-        # FIXME: これは正しいのか?
-        for op in ops:
-            composite.attributes.update(op.attributes)
-
         return composite
 
     @classmethod
