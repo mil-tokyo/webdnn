@@ -49,7 +49,7 @@ async function run() {
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
     }
-    console.log(`Total Elapsed Time[ms]: ${total_elapsed_time}`);
+    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time/test_samples.length).toFixed(2)}`);
 }
 
 async function init(backend_name) {

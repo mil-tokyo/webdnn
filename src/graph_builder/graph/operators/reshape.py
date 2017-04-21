@@ -22,7 +22,7 @@ class Reshape(Operator):
         """
         assert "out_shape" in parameters
         assert "out_order" in parameters
-        assert issubclass(parameters["out_order"], VA.AxisOrder)
+        assert issubclass(type(parameters["out_order"]), VA.AxisOrder)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

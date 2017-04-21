@@ -1,4 +1,4 @@
-from typing import Dict, Iterable
+from typing import Dict, Iterable, List
 
 from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.graph import Variable
@@ -10,7 +10,9 @@ This attribute means data order, not number of dimensions
 
 
 class AxisOrder(Attribute):
-    pass
+    ndim: int
+    axes: List[A.Axis]
+    axis_dict: Dict[A.Axis, int]
 
 
 class OrderC(AxisOrder):

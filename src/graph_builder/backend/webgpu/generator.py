@@ -65,7 +65,7 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
 def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     if isinstance(op, O.Compose):
         # if A.ElementwiseOperationComposed in op.attributes:
-        #     kernels = K.elemntwise_composed(op, constants_layout, variables_layout)
+        #     kernels = K.elementwise_composed(op, constants_layout, variables_layout)
         #
         # elif A.AxiswiseOperationComposed in op.attributes:
         #     kernels = K.axiswise_composed(op, constants_layout, variables_layout)
@@ -84,6 +84,18 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
 
     elif isinstance(op, O.Convolution2D):
         kernels = K.convolution_2d(op, constants_layout, variables_layout)
+
+    elif isinstance(op, O.MaxPooling2D):
+        kernels = K.max_pooling_2d(op, constants_layout, variables_layout)
+
+    elif isinstance(op, O.AveragePooling2D):
+        kernels = K.average_pooling_2d(op, constants_layout, variables_layout)
+
+    elif isinstance(op, O.AxiswiseScale):
+        kernels = K.axiswise_scale(op, constants_layout, variables_layout)
+
+    elif isinstance(op, O.Reshape):
+        kernels = K.reshape(op, constants_layout, variables_layout)
 
     else:
         raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
