@@ -184,7 +184,26 @@ class Allocator:
 
                 if retain_count[v2] == 0:
                     allocation = layout[v2]
-                    free_list.append((allocation.offset, allocation.size))
-                    # FIXME: Defragmentation
+                    space1 = (allocation.offset, allocation.size)
+                    free_list.append(space1)
+
+                    flag_changed = True
+                    while flag_changed:
+                        flag_changed = False
+                        for space2 in list(free_list):
+
+                            if space2[0] + space2[1] == space1[0]:
+                                free_list.remove(space1)
+                                free_list.remove(space2)
+                                space1 = (space2[0], space2[1] + space1[1])
+                                free_list.append(space1)
+                                flag_changed = True
+
+                            if space2[0] == space1[0] + space1[1]:
+                                free_list.remove(space1)
+                                free_list.remove(space2)
+                                space1 = (space1[0], space2[1] + space1[1])
+                                free_list.append(space1)
+                                flag_changed = True
 
         return layout
