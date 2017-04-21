@@ -2,11 +2,13 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
+from graph_builder.graph import operators as O
 from graph_builder.graph.graph import Variable, Operator
 from graph_builder.graph.operators.compose import VariableAlias
+from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import Constant, attributes as VA
 from graph_builder.optimizer import util
-from graph_builder.util import json, flags
+from graph_builder.util import json
 
 
 class Allocation(json.SerializableMixin):
@@ -108,31 +110,42 @@ class Allocator:
     def allocate_variables(cls, graph: Operator, variables: List[Variable]) -> MemoryLayout:
         layout = MemoryLayout()
 
-        if flags.optimize.MINIMIZE_VARIABLE_ALLOCATION:
-            ops = util.listup_operator_in_order(graph)
+        ops = util.listup_operator_in_order(graph)
 
-            # 計算グラフを辿りながら、release回数をカウントし、必要数releaseされたら解放する
-            released_count: Dict[Variable, int] = {v: 0 for v in variables}
-            free_list: List[Tuple(int, int)] = []  # [(offset, size)]
+        # 計算グラフを辿りながら、release回数をカウントし、必要数releaseされたら解放する
+        release_count: Dict[Variable, int] = {v: 0 for v in variables}
+        retain_count: Dict[Variable, int] = {v: 0 for v in variables}
+        free_list: List[Tuple(int, int)] = []  # [(offset, size)]
 
-            for var in graph.inputs.values():
+        for var in graph.inputs.values():
+            if isinstance(var, VariableAlias):
+                var = var.original
+
+            if isinstance(var, Constant):
+                continue
+
+            layout.append(var)
+
+        for op in ops:
+            for var in op.outputs.values():
                 if isinstance(var, VariableAlias):
                     var = var.original
 
                 if isinstance(var, Constant):
                     continue
 
-                layout.append(var)
+                if var not in layout:
+                    # 新しく割り当てる
 
-            for op in ops:
-                for var in op.outputs.values():
-                    if isinstance(var, VariableAlias):
-                        var = var.original
+                    flag_inplace = util.check_attribute_match(op, A.Inplace) and len(list(op.inputs.values())[0].input_to) == 1
+                    if isinstance(op, O.Reshape) or flag_inplace:
+                        # 入力のメモリをそのまま使う
+                        var_in = list(op.inputs.values())[0]
+                        layout.append(var, layout[var_in].offset)
+                        retain_count[var] = len(var.input_to)
+                        retain_count[var_in] += 1
 
-                    if isinstance(var, Constant):
-                        continue
-
-                    if var not in layout:
+                    else:
                         size = var.size
                         spaces = sorted([space for space in free_list if space[1] >= size], key=lambda x: x[1])
                         if len(spaces) > 0:
@@ -146,25 +159,19 @@ class Allocator:
                         else:
                             # 十分なスペースが無かった
                             layout.append(var)
+                            retain_count[var] = len(var.input_to)
 
-                for var in op.inputs.values():
-                    if isinstance(var, VariableAlias):
-                        var = var.original
+            for var in op.inputs.values():
+                if isinstance(var, VariableAlias):
+                    var = var.original
 
-                    if isinstance(var, Constant):
-                        continue
-
-                    released_count[var] += 1
-                    if released_count[var] == len(var.input_to):
-                        allocation = layout[var]
-                        free_list.append((allocation.offset, allocation.size))
-                        # TODO: Defragmentation
-
-        else:
-            for variable in variables:
-                if variable in layout:
+                if isinstance(var, Constant):
                     continue
 
-                layout.append(variable)
+                release_count[var] += 1
+                if release_count[var] == retain_count[var]:
+                    allocation = layout[var]
+                    free_list.append((allocation.offset, allocation.size))
+                    # TODO: Defragmentation
 
         return layout
