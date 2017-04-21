@@ -8,7 +8,7 @@ Descriptor Generator for WebGPU
 import os.path as path
 import subprocess
 import tempfile as tmp
-from typing import Tuple, List, Set
+from typing import Tuple, List
 
 import numpy as np
 
@@ -68,71 +68,44 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
     return descriptor, constants_data
 
 
-def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
-    if isinstance(op, O.Compose):
-        # if A.ElementwiseOperationComposed in op.attributes:
-        #     kernels = K.elementwise_composed(op, constants_layout, variables_layout)
-        #
-        # elif A.AxiswiseOperationComposed in op.attributes:
-        #     kernels = K.axiswise_composed(op, constants_layout, variables_layout)
-        #
-        # else:
-        kernels = generate_composite_kernel(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.Linear):
-        kernels = K.linear(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.AxiswiseBias):
-        kernels = K.axiswise_bias(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.Relu):
-        kernels = K.relu(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.Convolution2D):
-        kernels = K.convolution_2d(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.MaxPooling2D):
-        kernels = K.max_pooling_2d(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.AveragePooling2D):
-        kernels = K.average_pooling_2d(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.AxiswiseScale):
-        kernels = K.axiswise_scale(op, constants_layout, variables_layout)
-
-    elif isinstance(op, O.Reshape):
-        kernels = K.reshape(op, constants_layout, variables_layout)
-
-    elif isinstance(op, webgpu_O.Sgemm):
-        kernels = K.sgemm(op, constants_layout, variables_layout)
-
-    elif isinstance(op, webgpu_O.Im2Col):
-        kernels = K.im2col(op, constants_layout, variables_layout)
-
-    else:
-        raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
-
-    return kernels
-
-
-def generate_composite_kernel(op: O.Compose, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
-    op_queue: List[Operator] = []
-    op_checked: Set[Operator] = set()
 
-    for var in op.outputs_alias:
-        op_queue.append(var.output_from)
-
-    while len(op_queue) > 0:
-        op = op_queue.pop(0)
-        if op in op_checked:
+    for op in util.listup_operator_in_order(graph):
+        if isinstance(op, O.Compose):
             continue
-        op_checked.add(op)
 
-        sub_kernels = generate_kernels(op, constants_layout, variables_layout)
-        kernels = sub_kernels + kernels
-        for v in op.inputs.values():
-            if v.output_from is not None:
-                op_queue.append(v.output_from)
+        if isinstance(op, O.Linear):
+            kernels += K.linear(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.AxiswiseBias):
+            kernels += K.axiswise_bias(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.Relu):
+            kernels += K.relu(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.Convolution2D):
+            kernels += K.convolution_2d(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.MaxPooling2D):
+            kernels += K.max_pooling_2d(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.AveragePooling2D):
+            kernels += K.average_pooling_2d(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.AxiswiseScale):
+            kernels += K.axiswise_scale(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.Reshape):
+            kernels += K.reshape(op, constants_layout, variables_layout)
+
+        elif isinstance(op, webgpu_O.Sgemm):
+            kernels += K.sgemm(op, constants_layout, variables_layout)
+
+        elif isinstance(op, webgpu_O.Im2Col):
+            kernels += K.im2col(op, constants_layout, variables_layout)
+
+        else:
+            raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
 
     return kernels
