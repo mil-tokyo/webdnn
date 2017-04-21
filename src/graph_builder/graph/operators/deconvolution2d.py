@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 from graph_builder.graph.graph import Operator, Variable
 from graph_builder.graph.operators import attributes as A
@@ -28,12 +28,13 @@ class Deconvolution2D(Operator):
     def __call__(self, x: Variable, w: Variable):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
-        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.parameters["ksize"]
+        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.ksize
         assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
+
         # FIXME: Convolution2Dと全く同じだけど本来違うのでは？
         N = x_shape_dict[A.Axis.N]
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
+        H2 = (x_shape_dict[A.Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
+        W2 = (x_shape_dict[A.Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
         C2 = w_shape_dict[A.Axis.N]
 
         if x.axis_order == VA.OrderNCHW:
@@ -47,3 +48,39 @@ class Deconvolution2D(Operator):
         self.append_input("w", w)
         self.append_output("y", y)
         return y,
+
+    @property
+    def ksize(self) -> Tuple[int, int]:
+        return self.parameters["ksize"]
+
+    @property
+    def stride(self) -> Tuple[int, int]:
+        return self.parameters["stride"]
+
+    @property
+    def padding(self) -> Tuple[int, int]:
+        return self.parameters["padding"]
+
+    @property
+    def KH(self) -> int:
+        return self.ksize[0]
+
+    @property
+    def KW(self) -> int:
+        return self.ksize[1]
+
+    @property
+    def SH(self) -> int:
+        return self.stride[0]
+
+    @property
+    def SW(self) -> int:
+        return self.stride[1]
+
+    @property
+    def PH(self) -> int:
+        return self.padding[0]
+
+    @property
+    def PW(self) -> int:
+        return self.padding[1]

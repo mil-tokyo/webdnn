@@ -29,7 +29,7 @@ class Convolution2D(Operator):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == (self.KH, self.KW)
+        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.ksize
         assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
 
         N = x_shape_dict[A.Axis.N]
@@ -63,24 +63,24 @@ class Convolution2D(Operator):
 
     @property
     def KH(self) -> int:
-        return self.parameters["ksize"][0]
+        return self.ksize[0]
 
     @property
     def KW(self) -> int:
-        return self.parameters["ksize"][1]
+        return self.ksize[1]
 
     @property
     def SH(self) -> int:
-        return self.parameters["stride"][0]
+        return self.stride[0]
 
     @property
     def SW(self) -> int:
-        return self.parameters["stride"][1]
+        return self.stride[1]
 
     @property
     def PH(self) -> int:
-        return self.parameters["padding"][0]
+        return self.padding[0]
 
     @property
     def PW(self) -> int:
-        return self.parameters["padding"][1]
+        return self.padding[1]
