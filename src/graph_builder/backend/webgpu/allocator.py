@@ -137,8 +137,19 @@ class Allocator:
                 if var not in layout:
                     # 新しく割り当てる
 
-                    flag_inplace = util.check_attribute_match(op, A.Inplace) and len(list(op.inputs.values())[0].input_to) == 1
-                    if isinstance(op, O.Reshape) or flag_inplace:
+                    # FIXME:
+                    # X --[Reshape]--> Y --[ReLU]--> Z
+                    # |
+                    # +---[Op]--> W
+                    #
+                    # 上のような状況だと、YはXと同じメモリを使うことになる
+                    # ReLUはInplace指定なため、Yの入力先が自分(ReLU)だけであることを確認した上で、ZをYと同じ位置(=Xと同じ位置)に確保しようとするが
+                    # こうするとOpの演算結果Wがおかしくなる
+                    #
+                    # flag_inplace = util.check_attribute_match(op, A.Inplace) and len(list(op.inputs.values())[0].input_to) == 1
+                    # if isinstance(op, O.Reshape) or flag_inplace:
+
+                    if isinstance(op, O.Reshape):
                         # 入力のメモリをそのまま使う
                         var_in = list(op.inputs.values())[0]
                         layout.append(var, layout[var_in].offset)
