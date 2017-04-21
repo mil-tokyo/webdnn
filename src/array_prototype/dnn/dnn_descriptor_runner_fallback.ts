@@ -38,13 +38,26 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            let last_progress_date = Date.now();//in milliseconds
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
+                let current_date = Date.now();
+                if (current_date - last_progress_date > 1000) {
+                    console.log('Processed ' + i + ' kernels at' + new Date());
+                    last_progress_date = current_date;
+                    await this.wait_to_display();
+                }
                 let exec_info = this.descriptor.exec_infos[i];
                 let input_arrays = exec_info.inputs.map((name) => this.variableArrays.get(name));
                 let output_arrays = exec_info.outputs.map((name) => this.variableArrays.get(name));
                 let weight_arrays = exec_info.weights.map((name) => this.weightArrays.get(name));
                 this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
             }
+        }
+
+        async wait_to_display() {
+            return new Promise(function (resolve, reject) {
+                setTimeout(resolve, 10);
+            });
         }
 
         async getInputViews(): Promise<Float32Array[]> {
