@@ -57,6 +57,5 @@ class GraphDescriptor(json.SerializableMixin):
             "weight_allocation": self.constants_layout,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs.values() if not util.check_attribute_match(v, VA.Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs.values()],
-            "batch_size": 1  # FIXME
+            "outputs": [v.parameters["name"] for v in self.outputs.values()]
         }
