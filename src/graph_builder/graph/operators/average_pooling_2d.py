@@ -29,8 +29,10 @@ class AveragePooling2D(Operator):
     def __call__(self, x: Variable):
         x_shape_dict = x.shape_dict
         N = x_shape_dict[A.Axis.N]
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) / self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) / self.parameters["stride"][1] + 1
+        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // \
+             self.parameters["stride"][0] + 1
+        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // \
+             self.parameters["stride"][1] + 1
         C2 = x_shape_dict[A.Axis.C]
 
         if x.axis_order == VA.OrderNCHW:

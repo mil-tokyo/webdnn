@@ -41,4 +41,5 @@ class Flatten(Operator):
         y = Variable((keep_size, reduction_size), out_axis_order)
         self.append_input("x", x)
         self.append_output("y", y)
+        # ここでは別変数が返るので、データに変更がない場合でもコピーまたは同領域割り当てで最適化が必要
         return y,
