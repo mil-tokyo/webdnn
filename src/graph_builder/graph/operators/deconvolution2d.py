@@ -30,7 +30,7 @@ class Deconvolution2D(Operator):
         w_shape_dict = w.shape_dict
         assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == self.parameters["ksize"]
         assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
-        # TODO: Convolution2Dと全く同じだけど本来違うのでは？
+        # FIXME: Convolution2Dと全く同じだけど本来違うのでは？
         N = x_shape_dict[A.Axis.N]
         H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
         W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
