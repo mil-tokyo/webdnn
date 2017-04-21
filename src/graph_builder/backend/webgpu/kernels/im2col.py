@@ -4,8 +4,8 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.backend.webgpu.operators import Im2Col
-from graph_builder.graph.operators.attributes import Axis
+from graph_builder.backend.webgpu.operators.im2col import Im2Col
+from graph_builder.graph.axis import Axis
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],

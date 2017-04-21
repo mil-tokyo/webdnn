@@ -4,7 +4,7 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import Relu
+from graph_builder.graph.operators.relu import Relu
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],

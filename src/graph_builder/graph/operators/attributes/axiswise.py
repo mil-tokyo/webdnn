@@ -1,13 +1,5 @@
-from enum import Enum, auto
-
 from graph_builder.graph.attribute import Attribute
-
-
-class Axis(Enum):
-    N = auto()
-    C = auto()
-    H = auto()
-    W = auto()
+from graph_builder.graph.axis import Axis
 
 
 class Axiswise(Attribute):

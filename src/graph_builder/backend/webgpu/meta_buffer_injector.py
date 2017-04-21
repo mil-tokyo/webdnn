@@ -10,7 +10,7 @@ class MetaBufferInjector:
     def __init__(self):
         self.data = {}  # type: Dict[str, any]
         self.offset_map = None  # type: Dict[str, int]
-        self.buffer = None  # type: byte
+        self.buffer = None  # type: bytes
         self.arg_name = "meta_buffer"
 
     def register(self, data: Dict[str, any]):

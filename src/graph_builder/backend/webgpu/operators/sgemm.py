@@ -1,8 +1,9 @@
 from typing import Dict
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 
 
 class Sgemm(Operator):
@@ -18,20 +19,20 @@ class Sgemm(Operator):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert x_shape_dict[A.Axis.C] == w_shape_dict[A.Axis.H] * w_shape_dict[A.Axis.W] * w_shape_dict[A.Axis.C]
+        assert x_shape_dict[Axis.C] == w_shape_dict[Axis.H] * w_shape_dict[Axis.W] * w_shape_dict[Axis.C]
 
-        assert x.axis_order == VA.OrderNHWC, \
+        assert x.axis_order == OrderNHWC, \
             "Input variable for WebGPU.Sgemm Operator must be HWCN data order." \
             f"Actual data order is {x.axis_order}"
 
-        w.change_axis_order(VA.OrderHWCN)
+        w.change_axis_order(OrderHWCN)
 
         y = Variable([
-            x_shape_dict[A.Axis.N],
-            x_shape_dict[A.Axis.H],
-            x_shape_dict[A.Axis.W],
-            w_shape_dict[A.Axis.N]
-        ], VA.OrderNHWC)
+            x_shape_dict[Axis.N],
+            x_shape_dict[Axis.H],
+            x_shape_dict[Axis.W],
+            w_shape_dict[Axis.N]
+        ], OrderNHWC)
 
         self.append_output("y", y)
 

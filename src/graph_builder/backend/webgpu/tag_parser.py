@@ -1,5 +1,5 @@
-from typing import List, Tuple, NamedTuple
 import re
+from typing import List, Tuple, NamedTuple
 
 
 class Tag(NamedTuple):

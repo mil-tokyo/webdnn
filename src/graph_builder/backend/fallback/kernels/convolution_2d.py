@@ -1,11 +1,9 @@
-from typing import List, Type
-import numpy as np
+from typing import List
 
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.backend.fallback.kernels.util import calculate_stride
-from graph_builder.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.convolution2d import Convolution2D
 
 # x: (batch_size, h, w, in_size), w: (kh, kw, in_size, out_size), y: (batch_size, oh, ow, out_size) C-order
 # EcmaScript3 to support older browsers
@@ -70,10 +68,10 @@ for (var batch = 0; batch < n; batch++) {
 
 
 def calculate_all_strides(var):
-    return [calculate_stride(var, axis) for axis in [A.Axis.N, A.Axis.H, A.Axis.W, A.Axis.C]]
+    return [calculate_stride(var, axis) for axis in [Axis.N, Axis.H, Axis.W, Axis.C]]
 
 
-def convolution_2d(op: Operator) -> List[Kernel]:
+def convolution_2d(op: Convolution2D) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
@@ -84,17 +82,17 @@ def convolution_2d(op: Operator) -> List[Kernel]:
         inputs=[x.parameters["name"]],
         outputs=[y.parameters["name"]],
         weights=[w.parameters["name"]],
-        call_option={"in_spatial": [x.shape_dict[A.Axis.H], x.shape_dict[A.Axis.W]],
-                     "n": x.shape_dict[A.Axis.N],
-                     "out_size": y.shape_dict[A.Axis.C],
-                     "in_size": x.shape_dict[A.Axis.C],
-                     "out_spatial": [y.shape_dict[A.Axis.H], y.shape_dict[A.Axis.W]],
+        call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
+                     "n": x.shape_dict[Axis.N],
+                     "out_size": y.shape_dict[Axis.C],
+                     "in_size": x.shape_dict[Axis.C],
+                     "out_spatial": [y.shape_dict[Axis.H], y.shape_dict[Axis.W]],
                      "strides_x": calculate_all_strides(x),
                      "strides_w": calculate_all_strides(w),
                      "strides_y": calculate_all_strides(y),
-                     "padding": op.parameters["padding"],
-                     "stride": op.parameters["stride"],
-                     "ksize": op.parameters["ksize"]}
+                     "padding": op.padding,
+                     "stride": op.stride,
+                     "ksize": op.ksize}
     )
 
     return [kernel]

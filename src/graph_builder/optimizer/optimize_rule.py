@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Tuple
 
-from graph_builder.graph import Operator
+from graph_builder.graph.operator import Operator
 
 
 class OptimizeRule:

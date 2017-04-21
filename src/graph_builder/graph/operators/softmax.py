@@ -1,14 +1,15 @@
 from typing import Dict
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.inplace import Inplace
+from graph_builder.graph.variable import Variable
 
 
 class Softmax(Operator):
     """
     Softmaxレイヤー
     """
-    attributes = {A.Inplace}
+    attributes = {Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
         """

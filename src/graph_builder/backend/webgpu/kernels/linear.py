@@ -4,9 +4,9 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.graph.operators import Linear
-from graph_builder.graph.operators.attributes import Axis
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderNHWC, OrderCN, OrderHWCN
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
@@ -48,16 +48,16 @@ def linear(op: Linear,
     w = constants_layout[op.inputs["w"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == VA.OrderNC \
-           or x.variable.axis_order == VA.OrderNHWC, \
+    assert x.variable.axis_order == OrderNC \
+           or x.variable.axis_order == OrderNHWC, \
         f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of input variable. " + \
         f"Actual data order is {x.variable.axis_order}"
-    assert w.variable.axis_order == VA.OrderCN \
-           or w.variable.axis_order == VA.OrderHWCN, \
+    assert w.variable.axis_order == OrderCN \
+           or w.variable.axis_order == OrderHWCN, \
         f"[WebGPU] Linear operator supports OrderCN or OrderCHWN for data order of filter variable. " + \
         f"Actual data order is {w.variable.axis_order}"
-    assert y.variable.axis_order == VA.OrderNC \
-           or y.variable.axis_order == VA.OrderNHWC, \
+    assert y.variable.axis_order == OrderNC \
+           or y.variable.axis_order == OrderNHWC, \
         f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of output variable. " + \
         f"Actual data order is {y.variable.axis_order}"
     assert w.variable.ndim == x.variable.ndim, \

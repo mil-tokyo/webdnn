@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.graph import Operator
+from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -22,7 +22,7 @@ for (var i = 0; i < length; i++) {
 """
 
 
-def elementwise_sum(op: Operator) -> List[Kernel]:
+def elementwise_sum(op: ElementwiseSum) -> List[Kernel]:
     assert len(op.inputs) == 2
     x0 = op.inputs["x0"]
     x1 = op.inputs["x1"]

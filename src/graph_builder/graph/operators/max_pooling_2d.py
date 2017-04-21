@@ -1,8 +1,11 @@
 from typing import Dict
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.order import OrderNCHW, OrderNHWC
 
 
 class MaxPooling2D(Operator):
@@ -10,8 +13,8 @@ class MaxPooling2D(Operator):
     Max pooling (2D) レイヤー
     padding挙動はchainer準拠 (cover_allに注意)
     """
-    attributes = {A.PostElementwise,
-                  A.PostAxiswise}
+    attributes = {PostElementwise,
+                  PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
@@ -28,17 +31,17 @@ class MaxPooling2D(Operator):
 
     def __call__(self, x: Variable):
         x_shape_dict = x.shape_dict
-        N = x_shape_dict[A.Axis.N]
+        N = x_shape_dict[Axis.N]
         # Chainerにおけるcover_all=Trueでサイズを計算するので、Convolution, AveragePoolingと異なる値になる
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.parameters["padding"][0] + self.parameters["stride"][0] -
+        H2 = (x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] + self.parameters["stride"][0] -
               self.parameters["ksize"][0] - 1) // self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.parameters["padding"][1] + self.parameters["stride"][1] -
+        W2 = (x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] + self.parameters["stride"][1] -
               self.parameters["ksize"][1] - 1) // self.parameters["stride"][1] + 1
-        C2 = x_shape_dict[A.Axis.C]
+        C2 = x_shape_dict[Axis.C]
 
-        if x.axis_order == VA.OrderNCHW:
+        if x.axis_order == OrderNCHW:
             var_shape = [N, C2, H2, W2]
-        elif x.axis_order == VA.OrderNHWC:
+        elif x.axis_order == OrderNHWC:
             var_shape = [N, H2, W2, C2]
         else:
             raise NotImplementedError()

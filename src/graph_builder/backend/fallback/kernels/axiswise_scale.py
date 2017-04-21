@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.graph import Operator
+from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -27,7 +27,7 @@ for (var i = 0; i < n; i++) {
 """
 
 
-def axiswise_scale(op: Operator) -> List[Kernel]:
+def axiswise_scale(op: AxiswiseScale) -> List[Kernel]:
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     b = op.inputs["s"]

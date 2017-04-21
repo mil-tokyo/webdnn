@@ -3,8 +3,8 @@ from typing import Iterable, Dict
 
 from graph_builder.backend.fallback.allocator import MemoryLayout
 from graph_builder.backend.fallback.kernel import Kernel
-from graph_builder.graph import Variable
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.optimizer import util
 from graph_builder.util import json
 
@@ -58,6 +58,6 @@ class GraphDescriptor(json.SerializableMixin):
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_allocation": self.constants_layout,
             "variable_allocation": self.variables_layout,
-            "inputs": [v.parameters["name"] for v in self.inputs.values() if not util.check_attribute_match(v, VA.Constant)],
+            "inputs": [v.parameters["name"] for v in self.inputs.values() if not util.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs.values()]
         }

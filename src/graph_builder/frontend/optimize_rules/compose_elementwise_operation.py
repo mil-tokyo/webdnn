@@ -1,25 +1,29 @@
 from typing import Tuple
 
-from graph_builder.graph import Operator, operators as O
-from graph_builder.graph.operators import attributes as A
-from graph_builder.optimizer import OptimizeRule, util
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.elementwise import Elementwise
+from graph_builder.graph.operators.attributes.optimize_hint import ElementwiseOperationComposed
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.operators.compose import Compose
+from graph_builder.optimizer import util
+from graph_builder.optimizer.optimize_rule import OptimizeRule
 
 
 class ComposeElementwiseOperation(OptimizeRule):
     def __call__(self, graph: Operator):
         matches = util.search_sub_structure(graph, [
-            A.Elementwise,
-            A.PostElementwise
+            Elementwise,
+            PostElementwise
         ])
 
         if len(matches) == 0:
             return graph, False
 
         for ops in matches:  # type: Tuple[Operator, Operator]
-            composed = O.Compose.compose_ops("channelwise", ops)
-            composed.attributes.add(A.ElementwiseOperationComposed)
+            composed = Compose.compose_ops("channelwise", ops)
+            composed.attributes.add(ElementwiseOperationComposed)
 
-            if not util.check_attribute_match(ops[0], A.PostElementwise):
-                composed.attributes.remove(A.PostElementwise)
+            if not util.check_attribute_match(ops[0], PostElementwise):
+                composed.attributes.remove(PostElementwise)
 
         return graph, True

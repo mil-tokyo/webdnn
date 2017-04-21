@@ -5,18 +5,30 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23
 """
 
-from typing import Dict, Set, List, Iterable, Type
-import numpy as np
+from typing import List, Iterable, Type
+
 import chainer
 import chainer.computational_graph
-import chainer.functions as F
-from graph_builder.graph import operators as O
-from graph_builder.graph.graph import Variable, Node, Operator
-import graph_builder.graph.operators as operators
-from graph_builder.graph import Attribute
-from graph_builder.graph.operators import attributes as A
-import graph_builder.graph.variables.attributes as VA
-from graph_builder.graph.variables.constant import Constant
+import numpy as np
+
+from graph_builder.graph.attribute import Attribute
+from graph_builder.graph.node import Node
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
+from graph_builder.graph.operators.compose import Compose
+from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
+from graph_builder.graph.operators.flatten import Flatten
+from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
+from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.input import Input
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC
+from graph_builder.graph.variables.attributes.output import Output
+from graph_builder.graph.variables.constant_variable import ConstantVariable
 
 unique_ctr = 0
 
@@ -31,7 +43,7 @@ class OperatorBlock:
     # Chainerで1つのFunctionが2つのレイヤーに分解されたときに、その間をつなぐために生成されたVariable
     hidden_vars: List[Variable]
     # 元々のウェイトを扱いやすく変換したConstantを作成した場合に登録
-    hidden_consts: List[Constant]
+    hidden_consts: List[ConstantVariable]
 
     def __init__(self):
         self.hidden_vars = []
@@ -50,11 +62,12 @@ class ReluBlock(OperatorBlock):
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         assert len(inputs) == 1
-        opr = operators.Relu(generate_unique_name(self.cfunc.label), {})
+        opr = Relu(generate_unique_name(self.cfunc.label), {})
         return opr(inputs[0])
 
 
 class LinearBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.connection.linear.LinearFunction
 
     def __init__(self, cfunc: chainer.functions.Linear):
@@ -62,96 +75,103 @@ class LinearBlock(OperatorBlock):
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        linear_opr = operators.Linear(generate_unique_name(self.cfunc.label), {})
+        # noinspection PyUnresolvedReferences
+        linear_opr = Linear(generate_unique_name(self.cfunc.label), {})
         x = inputs[0]
         w = inputs[1]
         if x.ndim == 4 and w.ndim == 2:
             # wを4次元に拡張 (NC -> NCHW)
             x_shape_dict = x.shape_dict
             w_shape_dict = w.shape_dict
-            assert x_shape_dict[A.Axis.C] * x_shape_dict[A.Axis.H] * x_shape_dict[A.Axis.W] == w_shape_dict[A.Axis.C]
-            assert w.axis_order is VA.OrderNC
-            w.attributes.remove(VA.OrderNC)
-            w.attributes.add(VA.OrderNCHW)
-            w.axis_order = VA.OrderNCHW
-            w_new_shape = [w_shape_dict[A.Axis.N], x_shape_dict[A.Axis.C], x_shape_dict[A.Axis.H],
-                           x_shape_dict[A.Axis.W]]
+            assert x_shape_dict[Axis.C] * x_shape_dict[Axis.H] * x_shape_dict[Axis.W] == w_shape_dict[Axis.C]
+            assert w.axis_order is OrderNC
+            w.attributes.remove(OrderNC)
+            w.attributes.add(OrderNCHW)
+            w.axis_order = OrderNCHW
+            w_new_shape = [w_shape_dict[Axis.N], x_shape_dict[Axis.C], x_shape_dict[Axis.H],
+                           x_shape_dict[Axis.W]]
             w.shape = w_new_shape
             w.data = w.data.reshape(w_new_shape)
 
         opr_out, = linear_opr(inputs[0], inputs[1])
         if len(inputs) == 3:
             # biasあり
-            bias_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
+            # noinspection PyUnresolvedReferences
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
         return [opr_out]
 
 
 class Convolution2DBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.connection.convolution_2d.Convolution2DFunction
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.connection.convolution_2d.Convolution2DFunction):
         super().__init__()
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        x = inputs[0]
         w = inputs[1]
         w_shape_dict = w.shape_dict
-        conv_opr = operators.Convolution2D(generate_unique_name(self.cfunc.label),
-                                           {"ksize": (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]),
-                                            "stride": (self.cfunc.sy, self.cfunc.sx),
-                                            "padding": (self.cfunc.ph, self.cfunc.pw)})
+        conv_opr = Convolution2D(generate_unique_name(self.cfunc.label),
+                                 {"ksize": (w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
+                                  "stride": (self.cfunc.sy, self.cfunc.sx),
+                                  "padding": (self.cfunc.ph, self.cfunc.pw)})
 
         opr_out, = conv_opr(inputs[0], inputs[1])
         if len(inputs) == 3:
             # biasあり
-            bias_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
         return [opr_out]
 
 
 class MaxPooling2DBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.pooling.max_pooling_2d.MaxPooling2D
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
         super().__init__()
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        x = inputs[0]
-        conv_opr = operators.MaxPooling2D(generate_unique_name(self.cfunc.label),
-                                          {"ksize": (self.cfunc.kh, self.cfunc.kw),
-                                           "stride": (self.cfunc.sy, self.cfunc.sx),
-                                           "padding": (self.cfunc.ph, self.cfunc.pw)})
+        conv_opr = MaxPooling2D(generate_unique_name(self.cfunc.label),
+                                {"ksize": (self.cfunc.kh, self.cfunc.kw),
+                                 "stride": (self.cfunc.sy, self.cfunc.sx),
+                                 "padding": (self.cfunc.ph, self.cfunc.pw)})
 
         opr_out, = conv_opr(inputs[0])
         return [opr_out]
 
 
 class AveragePooling2DBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.pooling.average_pooling_2d.AveragePooling2D
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
         super().__init__()
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        x = inputs[0]
-        conv_opr = operators.AveragePooling2D(generate_unique_name(self.cfunc.label),
-                                              {"ksize": (self.cfunc.kh, self.cfunc.kw),
-                                               "stride": (self.cfunc.sy, self.cfunc.sx),
-                                               "padding": (self.cfunc.ph, self.cfunc.pw)})
+        conv_opr = AveragePooling2D(generate_unique_name(self.cfunc.label),
+                                    {"ksize": (self.cfunc.kh, self.cfunc.kw),
+                                     "stride": (self.cfunc.sy, self.cfunc.sx),
+                                     "padding": (self.cfunc.ph, self.cfunc.pw)})
 
         opr_out, = conv_opr(inputs[0])
         return [opr_out]
 
 
 class BatchNormalizationBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
         super().__init__()
         self.cfunc = cfunc
@@ -167,14 +187,14 @@ class BatchNormalizationBlock(OperatorBlock):
         gamma_div_std = gamma.data / np.sqrt(variance.data + self.cfunc.eps)
         beta_scaled = beta.data - mean.data * gamma_div_std
 
-        scale_opr = operators.AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
-        gamma_div_std_const = Constant(gamma_div_std, VA.OrderC)
+        scale_opr = AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+        gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
         scale_out, = scale_opr(x, gamma_div_std_const)
         self.hidden_vars.append(scale_out)
         self.hidden_consts.append(gamma_div_std_const)
 
-        offset_opr = operators.AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": A.Axis.C})
-        beta_scaled_const = Constant(beta_scaled, VA.OrderC)
+        offset_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+        beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
         offset_out, = offset_opr(scale_out, beta_scaled_const)
         self.hidden_consts.append(beta_scaled_const)
 
@@ -182,39 +202,43 @@ class BatchNormalizationBlock(OperatorBlock):
 
 
 class AddBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.math.basic_math.Add
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.math.basic_math.Add):
         super().__init__()
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        opr = operators.ElementwiseSum(generate_unique_name(self.cfunc.label), {})
+        opr = ElementwiseSum(generate_unique_name(self.cfunc.label), {})
         return list(opr(*inputs))
 
 
 class ReshapeBlock(OperatorBlock):
     # Currently, only removing HW axis is allowed
     # NCHW (n,c,h,w) => NC (n,c*h*w) (assuming c-order)
+    # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.array.reshape.Reshape
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, cfunc: chainer.functions.array.reshape.Reshape):
         super().__init__()
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         assert len(inputs) == 1
-        input = inputs[0]
         # NCHWをNCにする場合のみ想定
-        assert input.axis_order is VA.OrderNCHW
+        assert inputs[0].axis_order is OrderNCHW
         assert len(self.cfunc.shape) == 2
-        assert self.cfunc.shape[0] == input.shape[0]  # Nは変化しない
+        assert self.cfunc.shape[0] == inputs[0].shape[0]  # Nは変化しない
 
-        opr = operators.Flatten(generate_unique_name(self.cfunc.label),
-                                {"in_axes": [A.Axis.C, A.Axis.H, A.Axis.W], "out_axes": [A.Axis.C]})
-        return list(opr(input))
+        opr = Flatten(generate_unique_name(self.cfunc.label),
+                      {"in_axes": [Axis.C, Axis.H, Axis.W], "out_axes": [Axis.C]})
+        return list(opr(inputs[0]))
 
 
+# noinspection PyUnresolvedReferences
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.connection.linear.LinearFunction, LinearBlock),
                  (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock),
@@ -273,23 +297,24 @@ class ChainerGraphConverter:
             if id(cvar) not in self._cvar_ids:
                 raise ValueError("Output variable is not generated by graph.")
             nvar = self._cvar_to_nvar[id(cvar)]
-            nvar.attributes.add(VA.Output)
+            nvar.attributes.add(Output)
 
         # このフレームワークで標準的なデータオーダーに変更
         self._transpose_vars(self._known_nvars)
 
-        graph = O.Compose.compose_with_vars("graph",
-                                            [self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
-                                            [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
+        graph = Compose.compose_with_vars("graph",
+                                          [self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
+                                          [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
         return graph
 
     def _convert_input_vars(self, input_vars: Iterable[chainer.Variable]):
         for cvar in input_vars:
-            self._convert_var(cvar, attrs={VA.Input})
+            self._convert_var(cvar, attrs={Input})
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
         # 名前付きの変数を変換
         for cvar in chainer_computational_graph.nodes:
+            # noinspection PyUnresolvedReferences
             if isinstance(cvar, chainer.Variable):
                 if cvar.name is not None:
                     self._convert_var(cvar)
@@ -304,18 +329,18 @@ class ChainerGraphConverter:
         ndim = len(cvar.shape)
         if ndim == 4:
             # both weight and variable
-            order = VA.OrderNCHW
+            order = OrderNCHW
         elif ndim == 2:
             # both weight and variable
-            order = VA.OrderNC
+            order = OrderNC
         elif ndim == 1:
             # both weight and variable
-            order = VA.OrderC
+            order = OrderC
         else:
             raise NotImplementedError()
 
         if cvar.name is not None or force_constant:
-            nvar = Constant(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
+            nvar = ConstantVariable(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
         else:
             nvar = Variable(cvar.shape, order)
         if attrs is not None:
@@ -326,12 +351,14 @@ class ChainerGraphConverter:
         self._known_nvars.append(nvar)
         return nvar
 
+    # noinspection PyMethodMayBeStatic
     def _construct_operator_block(self, cfunc: chainer.Function) -> OperatorBlock:
         for function_class, block_class in BLOCK_CLASSES:
             if isinstance(cfunc, function_class):
                 return block_class(cfunc)
         raise ValueError("Unknown layer {}".format(type(cfunc)))
 
+    # noinspection PyMethodMayBeStatic
     def _transpose_vars(self, nvars: Iterable[Variable]):
         """
         変数を、標準的なAxisOrderに変更
@@ -339,25 +366,25 @@ class ChainerGraphConverter:
         :return: 
         """
         for nvar in nvars:
-            if isinstance(nvar, Constant):
+            if isinstance(nvar, ConstantVariable):
                 if nvar.ndim == 1:
-                    nvar.change_axis_order(VA.OrderC)
+                    nvar.change_axis_order(OrderC)
                 elif nvar.ndim == 2:
-                    nvar.change_axis_order(VA.OrderCN)
+                    nvar.change_axis_order(OrderCN)
                 elif nvar.ndim == 4:
                     assert len(nvar.input_to) == 1
                     first_input_to = list(nvar.input_to)[0]
-                    if isinstance(first_input_to, operators.Convolution2D):
-                        nvar.change_axis_order(VA.OrderHWNC)
-                    elif isinstance(first_input_to, operators.Linear):
-                        nvar.change_axis_order(VA.OrderHWCN)
+                    if isinstance(first_input_to, Convolution2D):
+                        nvar.change_axis_order(OrderHWNC)
+                    elif isinstance(first_input_to, Linear):
+                        nvar.change_axis_order(OrderHWCN)
                     else:
                         # 今の所ないはず
                         raise ValueError()
             else:
                 if nvar.ndim == 1:
-                    nvar.change_axis_order(VA.OrderC)
+                    nvar.change_axis_order(OrderC)
                 elif nvar.ndim == 2:
-                    nvar.change_axis_order(VA.OrderNC)
+                    nvar.change_axis_order(OrderNC)
                 elif nvar.ndim == 4:
-                    nvar.change_axis_order(VA.OrderNHWC)
+                    nvar.change_axis_order(OrderNHWC)

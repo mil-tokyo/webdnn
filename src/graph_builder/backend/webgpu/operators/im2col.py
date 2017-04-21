@@ -1,8 +1,9 @@
 from typing import Dict, Tuple
 
-from graph_builder.graph.graph import Operator, Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 
 class Im2Col(Operator):
@@ -21,13 +22,13 @@ class Im2Col(Operator):
 
     def __call__(self, im: Variable):
         x_shape_dict = im.shape_dict
-        N = x_shape_dict[A.Axis.N]
-        H2 = (x_shape_dict[A.Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
-        W2 = (x_shape_dict[A.Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
-        C1 = x_shape_dict[A.Axis.C]
+        N = x_shape_dict[Axis.N]
+        H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
+        W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
+        C1 = x_shape_dict[Axis.C]
 
         var_shape = [N, H2, W2, self.KH * self.KW * C1]
-        col = Variable(var_shape, VA.OrderNHWC)
+        col = Variable(var_shape, OrderNHWC)
 
         self.append_input("im", im)
         self.append_output("col", col)

@@ -1,7 +1,8 @@
 from typing import Dict, List
 
-from graph_builder.graph.graph import Operator, Variable
+from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators import attributes as A
+from graph_builder.graph.variable import Variable
 
 
 class Concat(Operator):

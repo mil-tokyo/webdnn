@@ -1,11 +1,10 @@
 from typing import List
-import numpy as np
 
 from graph_builder.backend.fallback.kernel import Kernel
 from graph_builder.backend.fallback.kernels.util import calculate_stride
-from graph_builder.graph import Operator
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.variables.attributes.order import OrderNC
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
@@ -39,33 +38,33 @@ for (var i = 0; i < m; i++) {
 """
 
 
-def linear(op: Operator) -> List[Kernel]:
+def linear(op: Linear) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
 
-    assert y.axis_order is VA.OrderNC
+    assert y.axis_order is OrderNC
     if x.axis_order.ndim == 2:
         assert w.axis_order.ndim == 2
-        k = x.shape_dict[A.Axis.C]
-        m = x.shape_dict[A.Axis.N]
-        n = w.shape_dict[A.Axis.N]
+        k = x.shape_dict[Axis.C]
+        m = x.shape_dict[Axis.N]
+        n = w.shape_dict[Axis.N]
         # 各行列操作方向でのstrideを求める
         # 操作軸の番号より右側にある(inner-loopの)次元の要素数の積
-        x_k_stride = calculate_stride(x, A.Axis.C)
-        x_m_stride = calculate_stride(x, A.Axis.N)
-        w_k_stride = calculate_stride(w, A.Axis.C)
-        w_n_stride = calculate_stride(w, A.Axis.N)
+        x_k_stride = calculate_stride(x, Axis.C)
+        x_m_stride = calculate_stride(x, Axis.N)
+        w_k_stride = calculate_stride(w, Axis.C)
+        w_n_stride = calculate_stride(w, Axis.N)
     elif x.axis_order.ndim == 4:
         assert w.axis_order.ndim == 4
         # CHWが、連続していてx,wで同順のみサポート(NCHW/NCHW, NHWC/HWCN, ...)
         x_order_wo_n = list(x.axis_order.axes)
-        x_order_wo_n.remove(A.Axis.N)  # [A.Axis.C, A.Axis.H, A.Axis.W]
-        x_n_size = x.shape_dict[A.Axis.N]
+        x_order_wo_n.remove(Axis.N)  # [Axis.C, Axis.H, Axis.W]
+        x_n_size = x.shape_dict[Axis.N]
         x_chw_size = x.size // x_n_size
         w_order_wo_n = list(w.axis_order.axes)
-        w_order_wo_n.remove(A.Axis.N)
-        w_n_size = w.shape_dict[A.Axis.N]
+        w_order_wo_n.remove(Axis.N)
+        w_n_size = w.shape_dict[Axis.N]
         w_chw_size = w.size // w_n_size
 
         assert x_chw_size == w_chw_size
@@ -73,22 +72,22 @@ def linear(op: Operator) -> List[Kernel]:
         k = x_chw_size
         m = x_n_size
         n = w_n_size
-        if x.axis_order.axes[0] == A.Axis.N:
+        if x.axis_order.axes[0] == Axis.N:
             # N***
             x_k_stride = 1
             x_m_stride = x_chw_size
-        elif x.axis_order.axes[3] == A.Axis.N:
+        elif x.axis_order.axes[3] == Axis.N:
             # ***N
             x_k_stride = x_n_size
             x_m_stride = 1
         else:
             # such as HWNC
             raise ValueError()
-        if w.axis_order.axes[0] == A.Axis.N:
+        if w.axis_order.axes[0] == Axis.N:
             # N***
             w_k_stride = 1
             w_n_stride = w_chw_size
-        elif w.axis_order.axes[3] == A.Axis.N:
+        elif w.axis_order.axes[3] == Axis.N:
             # ***N
             w_k_stride = w_n_size
             w_n_stride = 1

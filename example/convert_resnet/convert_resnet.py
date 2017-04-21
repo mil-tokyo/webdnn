@@ -1,31 +1,26 @@
+import argparse
 import os
 from os import path
 
-import argparse
+import chainer
+import chainer.computational_graph
+import chainer.functions as F
+import chainer.links as L
 import numpy as np
 
-import chainer
-import chainer.links as L
-import chainer.functions as F
-import chainer.computational_graph
-
-from graph_builder.graph import operators as O
-from graph_builder.graph.graph import Variable
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import Constant
-from graph_builder.optimizer import Optimizer
-from graph_builder.graph.converters.chainer import ChainerGraphConverter
+import graph_builder.optimizer.util
 from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimizer import GeneralOptimizer
-import graph_builder.optimizer.util
+from graph_builder.graph.converters.chainer import ChainerGraphConverter
+from graph_builder.graph.variable import Variable
 from graph_builder.util import flags
 from graph_builder.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
-class MLP(chainer.Chain):
 
+class MLP(chainer.Chain):
     def __init__(self, n_units, n_out):
         super(MLP, self).__init__(
             l1=L.Linear(784, n_units),  # n_in -> n_units
@@ -38,6 +33,7 @@ class MLP(chainer.Chain):
         h2 = F.relu(self.l2(h1))
         return self.l3(h2)
 
+
 class CNN(chainer.Chain):
     def __init__(self, n_units, n_out):
         super(CNN, self).__init__(
@@ -47,24 +43,26 @@ class CNN(chainer.Chain):
         )
 
     def __call__(self, x):
-        h = F.relu(self.conv1(x))#(28-5)+1=24
-        h = F.relu(self.conv2(h))#floor((24+1*2-3)/2)+1=12
+        h = F.relu(self.conv1(x))  # (28-5)+1=24
+        h = F.relu(self.conv2(h))  # floor((24+1*2-3)/2)+1=12
         h = self.conv3(h)
         return h
+
 
 class CNN2(chainer.Chain):
     def __init__(self, n_units, n_out):
         super(CNN2, self).__init__(
             conv1=L.Convolution2D(1, n_units, 5),
             conv2=L.Convolution2D(n_units, n_units, 3, pad=1, stride=2),
-            fc3=L.Linear(12**2*n_units, n_out)
+            fc3=L.Linear(12 ** 2 * n_units, n_out)
         )
 
     def __call__(self, x):
-        h = F.relu(self.conv1(x))#(28-5)+1=24
-        h = F.relu(self.conv2(h))#floor((24+1*2-3)/2)+1=12
+        h = F.relu(self.conv1(x))  # (28-5)+1=24
+        h = F.relu(self.conv2(h))  # floor((24+1*2-3)/2)+1=12
         h = self.fc3(h)
         return h
+
 
 class CNN3(chainer.Chain):
     def __init__(self, n_units, n_out):
@@ -76,9 +74,9 @@ class CNN3(chainer.Chain):
         )
 
     def __call__(self, x):
-        h = F.relu(self.bn1(self.conv1(x), test=True))#(28-5)+1=24
+        h = F.relu(self.bn1(self.conv1(x), test=True))  # (28-5)+1=24
         h = F.max_pooling_2d(h, 2, stride=2)
-        h = F.relu(self.conv2(h))#floor((12+1*2-3)/2)+1=6
+        h = F.relu(self.conv2(h))  # floor((12+1*2-3)/2)+1=6
         h = F.average_pooling_2d(h, 6, stride=1)
         h = F.reshape(h, h.data.shape[0:2])
         h = self.fc3(h)
@@ -96,7 +94,7 @@ def main_resnet():
     sample_image = PIL.Image.open("../../resources/imagenet/ILSVRC2012_val_00000001.JPEG")
     if args.model == "vgg16":
         link = chainer.links.model.vision.vgg.VGG16Layers()
-        prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  #BGR, CHW
+        prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  # BGR, CHW
         out_layer_name = "fc8"
     elif args.model == "resnet50":
         link = chainer.links.model.vision.resnet.ResNet50Layers()
@@ -138,6 +136,7 @@ def main_resnet():
             f.write(descriptor.concat_kernel_sources())
 
     data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)))
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -190,6 +189,7 @@ def main():
             f.write(descriptor.concat_kernel_sources())
 
     data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)))
+
 
 if __name__ == "__main__":
     main_resnet()
