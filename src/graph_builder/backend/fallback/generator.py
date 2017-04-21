@@ -50,6 +50,9 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
     elif isinstance(op, O.Convolution2D):
         kernels = K.convolution_2d(op)
 
+    elif isinstance(op, O.MaxPooling2D):
+        kernels = K.max_pooling_2d(op)
+
     elif isinstance(op, O.Relu):
         kernels = K.relu(op)
 
