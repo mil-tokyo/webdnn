@@ -1,16 +1,17 @@
 from abc import ABCMeta
 from typing import List, Type, Dict, Iterable, Set
 
+from graph_builder.graph.variables.attributes.order import AxisOrder
+
 
 class IVariable(metaclass=ABCMeta):
     shape: List[int]
     input_to: Set["IOperator"]
     output_from: "IOperator"
-    axis_order: Type[any]  # FIXME: Type[AxisOrder
+    axis_order: Type[AxisOrder]
 
-    # FIXME: axis_order: Type[AxisOrder] にしたいが、AxisOrder -> variables -> Variable という依存構想があるのでimportできない
     # noinspection PyUnusedLocal
-    def __init__(self, shape: List[int], axis_order: Type[any]):
+    def __init__(self, shape: List[int], axis_order: Type[AxisOrder]):
         raise NotImplementedError
 
     @property
@@ -33,8 +34,7 @@ class IVariable(metaclass=ABCMeta):
     def shape_dict(self):
         raise NotImplementedError
 
-    # FIXME: axis_order: Type[AxisOrder]
-    def change_axis_order(self, axis_order: Type[any]) -> None:
+    def change_axis_order(self, axis_order: Type[AxisOrder]) -> None:
         raise NotImplementedError
 
     def __repr__(self) -> str:

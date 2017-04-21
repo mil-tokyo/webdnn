@@ -4,6 +4,7 @@ import numpy as np
 
 from graph_builder.graph.interface import IVariable, IOperator
 from graph_builder.graph.node import Node
+from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
@@ -46,7 +47,7 @@ class Variable(Node, IVariable):
 
     @property
     def shape_dict(self):
-        return self.axis_order.get_shape_dict(self)
+        return dict(zip(self.axis_order.axes, self.shape))
 
     def change_axis_order(self, axis_order: Type[AxisOrder]):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
@@ -86,8 +87,6 @@ class Variable(Node, IVariable):
         :param base: 
         :return: 
         """
-        from graph_builder.graph.operators.compose import VariableAlias  # FIXME
-
         if isinstance(base, VariableAlias):
             base = base.original
 

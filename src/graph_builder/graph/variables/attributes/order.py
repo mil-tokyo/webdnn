@@ -2,7 +2,6 @@ from typing import Dict, List, ClassVar
 
 from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.axis import Axis
-from graph_builder.graph.interface import IVariable
 
 """
 This attribute means data order, not number of dimensions
@@ -12,11 +11,7 @@ This attribute means data order, not number of dimensions
 class AxisOrder(Attribute):
     ndim: ClassVar[int]
     axes: ClassVar[List[Axis]]
-    axis_dict: ClassVar[Dict[Axis, int]]
-
-    @classmethod
-    def get_shape_dict(cls, var: IVariable) -> Dict[Axis, int]:
-        return dict(zip(cls.axes, var.shape))
+    axes_dict: ClassVar[Dict[Axis, int]]
 
 
 class OrderC(AxisOrder):
