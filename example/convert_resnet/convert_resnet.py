@@ -19,6 +19,7 @@ from graph_builder.backend.fallback.generator import generate as generate_fallba
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimizer import GeneralOptimizer
 import graph_builder.optimizer.util
+from graph_builder.util import flags
 from graph_builder.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
@@ -106,7 +107,10 @@ def main_resnet():
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Variable
-    graph_builder.optimizer.util.dump(graph)
+
+    if flags.DEBUG:
+        graph_builder.optimizer.util.dump(graph)
+
     if args.optimize:
         graph = GeneralOptimizer().optimize(graph)
 

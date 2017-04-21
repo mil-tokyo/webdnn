@@ -5,7 +5,6 @@ import numpy as np
 from graph_builder.graph import operators as O
 from graph_builder.graph.graph import Variable, Operator
 from graph_builder.graph.operators.compose import VariableAlias
-from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import Constant, attributes as VA
 from graph_builder.optimizer import util
 from graph_builder.util import json
@@ -110,11 +109,10 @@ class Allocator:
     def allocate_variables(cls, graph: Operator, variables: List[Variable]) -> MemoryLayout:
         layout = MemoryLayout()
 
-        ops = util.listup_operator_in_order(graph)
-
         # 計算グラフを辿りながら、retain回数をカウントし、ゼロになったら解放する
         retain_count: Dict[Variable, int] = {v: 0 for v in variables}
         free_list: List[Tuple(int, int)] = []  # [(offset, size)]
+        inplace_allocation_dict: Dict[Variable, Variable] = {}
 
         for var in graph.inputs.values():
             if isinstance(var, VariableAlias):
@@ -125,7 +123,7 @@ class Allocator:
 
             layout.append(var)
 
-        for op in ops:
+        for op in util.listup_operator_in_order(graph):
             for var in op.outputs.values():
                 if isinstance(var, VariableAlias):
                     var = var.original
@@ -148,16 +146,17 @@ class Allocator:
                     # flag_inplace = util.check_attribute_match(op, A.Inplace) and len(list(op.inputs.values())[0].input_to) == 1
                     # if isinstance(op, O.Reshape) or flag_inplace:
 
-                    if isinstance(op, O.Reshape):
+                    if isinstance(op, O.Flatten):
                         # 入力のメモリをそのまま使う
                         var_in = list(op.inputs.values())[0]
                         layout.append(var, layout[var_in].offset)
-                        retain_count[var] = len(var.input_to)
-                        retain_count[var_in] += 1
+                        inplace_allocation_dict[var] = var_in
+                        retain_count[var_in] += len(var.input_to)
 
                     else:
                         size = var.size
                         spaces = sorted([space for space in free_list if space[1] >= size], key=lambda x: x[1])
+                        retain_count[var] = len(var.input_to)
                         if len(spaces) > 0:
                             # 十分なスペースがあった
                             space = spaces[0]
@@ -169,7 +168,6 @@ class Allocator:
                         else:
                             # 十分なスペースが無かった
                             layout.append(var)
-                            retain_count[var] = len(var.input_to)
 
             for var in op.inputs.values():
                 if isinstance(var, VariableAlias):
@@ -178,9 +176,14 @@ class Allocator:
                 if isinstance(var, Constant):
                     continue
 
-                retain_count[var] -= 1
-                if retain_count[var] == 0:
-                    allocation = layout[var]
+                v2 = var
+                if v2 in inplace_allocation_dict:
+                    v2 = inplace_allocation_dict[v2]
+
+                retain_count[v2] -= 1
+
+                if retain_count[v2] == 0:
+                    allocation = layout[v2]
                     free_list.append((allocation.offset, allocation.size))
                     # TODO: Defragmentation
 

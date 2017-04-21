@@ -43,7 +43,8 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
 def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
     graph = WebGPUOptimizer().optimize(graph)
-    util.dump(graph)
+    if flags.DEBUG:
+        util.dump(graph)
 
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
@@ -75,7 +76,7 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
         if isinstance(op, O.Compose):
             continue
 
-        if isinstance(op, O.Linear):
+        elif isinstance(op, O.Linear):
             kernels += K.linear(op, constants_layout, variables_layout)
 
         elif isinstance(op, O.AxiswiseBias):
@@ -96,8 +97,11 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
         elif isinstance(op, O.AxiswiseScale):
             kernels += K.axiswise_scale(op, constants_layout, variables_layout)
 
-        elif isinstance(op, O.Reshape):
-            kernels += K.reshape(op, constants_layout, variables_layout)
+        elif isinstance(op, O.ElementwiseSum):
+            kernels += K.elementwise_sum(op, constants_layout, variables_layout)
+
+        elif isinstance(op, O.Flatten):
+            kernels += K.flatten(op, constants_layout, variables_layout)
 
         elif isinstance(op, webgpu_O.Sgemm):
             kernels += K.sgemm(op, constants_layout, variables_layout)
