@@ -5,17 +5,11 @@ from graph_builder.graph.operators import attributes as A
 from graph_builder.graph.variables import attributes as VA
 
 
-class Convolution2D(Operator):
-    """
-    Convolutionレイヤー(bias含まず)
-    """
-    attributes = {A.PostElementwise,
-                  A.PostAxiswise,
-                  A.HaveWeights}
+class Im2Col(Operator):
+    attributes = {}  # TODO
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
-        weights["W"]: (kh, kw, in_size, out_size)
         parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
         :param name: 
         :param parameters: 
@@ -25,29 +19,20 @@ class Convolution2D(Operator):
         assert "padding" in parameters
         super().__init__(name, parameters)
 
-    def __call__(self, x: Variable, w: Variable):
-        x_shape_dict = x.shape_dict
-        w_shape_dict = w.shape_dict
-
-        assert (w_shape_dict[A.Axis.H], w_shape_dict[A.Axis.W]) == (self.KH, self.KW)
-        assert w_shape_dict[A.Axis.C] == x_shape_dict[A.Axis.C]
-
+    def __call__(self, im: Variable):
+        x_shape_dict = im.shape_dict
         N = x_shape_dict[A.Axis.N]
         H2 = (x_shape_dict[A.Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
         W2 = (x_shape_dict[A.Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
-        C2 = w_shape_dict[A.Axis.N]
+        C1 = x_shape_dict[A.Axis.C]
 
-        if x.axis_order == VA.OrderNCHW:
-            var_shape = [N, C2, H2, W2]
-        elif x.axis_order == VA.OrderNHWC:
-            var_shape = [N, H2, W2, C2]
-        else:
-            raise NotImplementedError()
-        y = Variable(var_shape, x.axis_order)
-        self.append_input("x", x)
-        self.append_input("w", w)
-        self.append_output("y", y)
-        return y,
+        var_shape = [N, H2, W2, self.KH * self.KW * C1]
+        col = Variable(var_shape, VA.OrderNHWC)
+
+        self.append_input("im", im)
+        self.append_output("col", col)
+
+        return col,
 
     @property
     def ksize(self) -> Tuple[int, int]:

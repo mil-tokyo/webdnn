@@ -13,10 +13,13 @@ from typing import Tuple, List, Set
 import numpy as np
 
 from graph_builder.backend.webgpu import kernels as K
+from graph_builder.backend.webgpu import operators as webgpu_O
 from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
+from graph_builder.backend.webgpu.webgpu_optimizer import WebGPUOptimizer
 from graph_builder.graph import Operator, operators as O
+from graph_builder.optimizer import util
 from graph_builder.util import flags
 
 
@@ -39,6 +42,9 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
 
 def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
+    graph = WebGPUOptimizer().optimize(graph)
+    util.dump(graph)
+
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
@@ -96,6 +102,12 @@ def generate_kernels(op: Operator, constants_layout: MemoryLayout, variables_lay
 
     elif isinstance(op, O.Reshape):
         kernels = K.reshape(op, constants_layout, variables_layout)
+
+    elif isinstance(op, webgpu_O.Sgemm):
+        kernels = K.sgemm(op, constants_layout, variables_layout)
+
+    elif isinstance(op, webgpu_O.Im2Col):
+        kernels = K.im2col(op, constants_layout, variables_layout)
 
     else:
         raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")

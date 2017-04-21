@@ -14,6 +14,10 @@ class AxisOrder(Attribute):
     axes: List[A.Axis]
     axis_dict: Dict[A.Axis, int]
 
+    @classmethod
+    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
+        return dict(zip(cls.axes, var.shape))
+
 
 class OrderC(AxisOrder):
     """
@@ -23,10 +27,6 @@ class OrderC(AxisOrder):
     ndim = 1
     axes = [A.Axis.C]
     axes_dict = {A.Axis.C: 0}
-
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
 
 
 class OrderNC(AxisOrder):
@@ -38,10 +38,6 @@ class OrderNC(AxisOrder):
     axes = [A.Axis.N, A.Axis.C]
     axes_dict = {A.Axis.N: 0, A.Axis.C: 1}
 
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
-
 
 class OrderCN(AxisOrder):
     """
@@ -51,10 +47,6 @@ class OrderCN(AxisOrder):
     ndim = 2
     axes = [A.Axis.C, A.Axis.N]
     axes_dict = {A.Axis.C: 0, A.Axis.N: 1}
-
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
 
     @staticmethod
     def convert_from(vars: Iterable[Variable]):
@@ -70,10 +62,6 @@ class OrderNHWC(AxisOrder):
     axes = [A.Axis.N, A.Axis.H, A.Axis.W, A.Axis.C]
     axes_dict = {A.Axis.N: 0, A.Axis.H: 1, A.Axis.W: 2, A.Axis.C: 3}
 
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
-
 
 class OrderHWNC(AxisOrder):
     """
@@ -83,10 +71,6 @@ class OrderHWNC(AxisOrder):
     ndim = 4
     axes = [A.Axis.H, A.Axis.W, A.Axis.N, A.Axis.C]
     axes_dict = {A.Axis.H: 0, A.Axis.W: 1, A.Axis.N: 2, A.Axis.C: 3}
-
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
 
 
 class OrderHWCN(AxisOrder):
@@ -98,10 +82,6 @@ class OrderHWCN(AxisOrder):
     axes = [A.Axis.H, A.Axis.W, A.Axis.C, A.Axis.N]
     axes_dict = {A.Axis.H: 0, A.Axis.W: 1, A.Axis.C: 2, A.Axis.N: 3}
 
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))
-
 
 class OrderNCHW(AxisOrder):
     """
@@ -111,7 +91,3 @@ class OrderNCHW(AxisOrder):
     ndim = 4
     axes = [A.Axis.N, A.Axis.C, A.Axis.H, A.Axis.W]
     axes_dict = {A.Axis.N: 0, A.Axis.C: 1, A.Axis.H: 2, A.Axis.W: 3}
-
-    @classmethod
-    def get_shape_dict(cls, var: Variable) -> Dict[A.Axis, int]:
-        return dict(zip(cls.axes, var.shape))

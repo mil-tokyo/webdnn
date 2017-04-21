@@ -58,20 +58,42 @@ class Operator(Node):
             raise KeyError(f"'{name}' is not output of {self}")
 
     def append_input(self, name: str, var: "Variable"):
+        """
+        入力変数を追加する
+        """
         self.inputs[name] = var
         var.input_to.add(self)
 
     def remove_input(self, var: "Variable"):
+        """
+        入力変数を解除する
+        """
         name = self.get_input_name(var)
         self.inputs.pop(name)
         var.input_to.remove(self)
 
     def replace_input(self, v_old: "Variable", v_new: "Variable"):
+        """
+        入力変数を置き換える
+        """
+        assert v_old.ndim == v_new.ndim, \
+            "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
+            f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
+        assert v_old.axis_order == v_new.axis_order, \
+            "[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order." + \
+            f"actual: v_old.axis_order = {v_old.axis_order}, v_new.axis_order = {v_new.axis_order}"
+        assert v_old.shape == v_new.shape, \
+            "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
+            f"actual: v_old.axis_order = {v_old.shape}, v_new.axis_order = {v_new.shape}"
+
         name = self.get_input_name(v_old)
         self.remove_input(v_old)
         self.append_input(name, v_new)
 
     def append_output(self, name: str, var: "Variable"):
+        """
+        出力変数を追加する
+        """
         if var.output_from is not None:
             raise KeyError(f"{var} has been registered as f{var.output_from}'s output already.")
 
@@ -79,14 +101,39 @@ class Operator(Node):
         var.output_from = self
 
     def remove_output(self, var: "Variable"):
+        """
+        出力変数を解除する
+        """
         name = self.get_output_name(var)
         var = self.outputs.pop(name)
         var.output_from = None
 
     def replace_output(self, v_old: "Variable", v_new: "Variable"):
+        """
+        出力変数を置き換える
+        """
+        assert v_old.ndim == v_new.ndim, \
+            "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
+            f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
+        assert v_old.axis_order == v_new.axis_order, \
+            "[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order." + \
+            f"actual: v_old.axis_order = {v_old.axis_order}, v_new.axis_order = {v_new.axis_order}"
+        assert v_old.shape == v_new.shape, \
+            "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
+            f"actual: v_old.axis_order = {v_old.shape}, v_new.axis_order = {v_new.shape}"
+
         name = self.get_output_name(v_old)
         self.remove_output(v_old)
         self.append_output(name, v_new)
+
+    def remove_all(self):
+        """
+        全ての変数の接続を解除する
+        """
+        for _, v in list(self.inputs.items()):
+            self.remove_input(v)
+        for _, v in list(self.outputs.items()):
+            self.remove_output(v)
 
     def __repr__(self):
         return f"""<{self.__class__.__name__} inputs={self.inputs}, outputs={self.outputs}>"""

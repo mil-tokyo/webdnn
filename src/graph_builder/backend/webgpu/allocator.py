@@ -112,8 +112,7 @@ class Allocator:
 
         ops = util.listup_operator_in_order(graph)
 
-        # 計算グラフを辿りながら、release回数をカウントし、必要数releaseされたら解放する
-        release_count: Dict[Variable, int] = {v: 0 for v in variables}
+        # 計算グラフを辿りながら、retain回数をカウントし、ゼロになったら解放する
         retain_count: Dict[Variable, int] = {v: 0 for v in variables}
         free_list: List[Tuple(int, int)] = []  # [(offset, size)]
 
@@ -179,8 +178,8 @@ class Allocator:
                 if isinstance(var, Constant):
                     continue
 
-                release_count[var] += 1
-                if release_count[var] == retain_count[var]:
+                retain_count[var] -= 1
+                if retain_count[var] == 0:
                     allocation = layout[var]
                     free_list.append((allocation.offset, allocation.size))
                     # TODO: Defragmentation
