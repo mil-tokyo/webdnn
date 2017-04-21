@@ -20,6 +20,7 @@ class Reshape(Operator):
         :param name: 
         :param parameters: 
         """
+        raise NotImplementedError()  #入力オーダーの定義がなく、中途半端なので使い方を決めてから再実装
         assert "out_shape" in parameters
         assert "out_order" in parameters
         assert issubclass(type(parameters["out_order"]), VA.AxisOrder)
