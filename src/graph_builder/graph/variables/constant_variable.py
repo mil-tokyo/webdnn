@@ -3,17 +3,17 @@ from typing import Type
 import numpy as np
 
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.constant import Constant as ConstantAttribute
+from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
-class Constant(Variable):
+class ConstantVariable(Variable):
     data: np.array
 
     def __init__(self, data: np.array, order: Type[AxisOrder]):
-        super(Constant, self).__init__(data.shape, order)
+        super(ConstantVariable, self).__init__(data.shape, order)
         self.data = data
-        self.attributes.add(ConstantAttribute)
+        self.attributes.add(Constant)
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.axis_order.axes))

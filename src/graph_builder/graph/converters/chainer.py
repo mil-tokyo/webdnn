@@ -28,7 +28,7 @@ from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.input import Input
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC
 from graph_builder.graph.variables.attributes.output import Output
-from graph_builder.graph.variables.constant import Constant
+from graph_builder.graph.variables.constant_variable import ConstantVariable
 
 unique_ctr = 0
 
@@ -43,7 +43,7 @@ class OperatorBlock:
     # Chainerで1つのFunctionが2つのレイヤーに分解されたときに、その間をつなぐために生成されたVariable
     hidden_vars: List[Variable]
     # 元々のウェイトを扱いやすく変換したConstantを作成した場合に登録
-    hidden_consts: List[Constant]
+    hidden_consts: List[ConstantVariable]
 
     def __init__(self):
         self.hidden_vars = []
@@ -188,13 +188,13 @@ class BatchNormalizationBlock(OperatorBlock):
         beta_scaled = beta.data - mean.data * gamma_div_std
 
         scale_opr = AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
-        gamma_div_std_const = Constant(gamma_div_std, OrderC)
+        gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
         scale_out, = scale_opr(x, gamma_div_std_const)
         self.hidden_vars.append(scale_out)
         self.hidden_consts.append(gamma_div_std_const)
 
         offset_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
-        beta_scaled_const = Constant(beta_scaled, OrderC)
+        beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
         offset_out, = offset_opr(scale_out, beta_scaled_const)
         self.hidden_consts.append(beta_scaled_const)
 
@@ -340,7 +340,7 @@ class ChainerGraphConverter:
             raise NotImplementedError()
 
         if cvar.name is not None or force_constant:
-            nvar = Constant(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
+            nvar = ConstantVariable(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
         else:
             nvar = Variable(cvar.shape, order)
         if attrs is not None:
@@ -366,7 +366,7 @@ class ChainerGraphConverter:
         :return: 
         """
         for nvar in nvars:
-            if isinstance(nvar, Constant):
+            if isinstance(nvar, ConstantVariable):
                 if nvar.ndim == 1:
                     nvar.change_axis_order(OrderC)
                 elif nvar.ndim == 2:

@@ -6,8 +6,8 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.constant import Constant
-from graph_builder.graph.variables.attributes.constant import Constant as ConstantAttribute
+from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.optimizer import util
 from graph_builder.util import json
 
@@ -80,7 +80,7 @@ class Allocator:
         for i, v in enumerate(variables):
             v.name = f"v{i}"
 
-        constants = set(util.filter_nodes(variables, ConstantAttribute))  # type: Set[Constant]
+        constants = set(util.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
         variables = variables.difference(constants)
 
         variables = list(variables)
@@ -91,7 +91,7 @@ class Allocator:
         return variables_layout, constants_layout, data
 
     @classmethod
-    def allocate_constants(cls, constants: List[Constant]) -> Tuple[MemoryLayout, np.ndarray]:
+    def allocate_constants(cls, constants: List[ConstantVariable]) -> Tuple[MemoryLayout, np.ndarray]:
         layout = MemoryLayout()
 
         for constant in constants:
@@ -120,7 +120,7 @@ class Allocator:
             if isinstance(var, VariableAlias):
                 var = var.original
 
-            if isinstance(var, Constant):
+            if isinstance(var, ConstantVariable):
                 continue
 
             layout.append(var)
@@ -130,7 +130,7 @@ class Allocator:
                 if isinstance(var, VariableAlias):
                     var = var.original
 
-                if isinstance(var, Constant):
+                if isinstance(var, ConstantVariable):
                     continue
 
                 if var not in layout:
@@ -175,7 +175,7 @@ class Allocator:
                 if isinstance(var, VariableAlias):
                     var = var.original
 
-                if isinstance(var, Constant):
+                if isinstance(var, ConstantVariable):
                     continue
 
                 v2 = var
