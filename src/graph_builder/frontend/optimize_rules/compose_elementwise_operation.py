@@ -23,7 +23,4 @@ class ComposeElementwiseOperation(OptimizeRule):
             composed = Compose.compose_ops("channelwise", ops)
             composed.attributes.add(ElementwiseOperationComposed)
 
-            if not util.check_attribute_match(ops[0], Elementwise):
-                composed.attributes.remove(Elementwise)
-
         return graph, True

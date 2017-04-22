@@ -133,6 +133,13 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
         elif isinstance(op, Im2Col):
             kernels += im2col(op, constants_layout, variables_layout)
 
+        elif isinstance(op, Operator):
+            if "custom_kernel" in op.parameters:
+                kernels += op.parameters["custom_kernel"](op, constants_layout, variables_layout)
+                continue
+
+            raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
+
         else:
             raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
 
