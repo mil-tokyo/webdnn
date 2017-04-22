@@ -99,7 +99,7 @@ def main_resnet():
     elif args.model == "resnet50":
         link = chainer.links.model.vision.resnet.ResNet50Layers()
         prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
-        out_layer_name = "res2"
+        out_layer_name = "fc6"
     nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
     nn_output = link(nn_input, layers=[out_layer_name])[out_layer_name]  # 'prob' is also possible (uses softmax)
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
@@ -168,6 +168,7 @@ def main():
 
     if args.optimize:
         graph = GeneralOptimizer().optimize(graph)
+    graph_builder.optimizer.util.dump(graph)
 
     if args.backend == "webgpu":
         descriptor, data = generate_webgpu_descriptor(graph)

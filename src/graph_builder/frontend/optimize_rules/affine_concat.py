@@ -1,7 +1,17 @@
 from typing import List
+import numpy as np
 
-from graph_builder.graph import Operator, operators as O, Variable
-from graph_builder.optimizer import OptimizeRule
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.variables.attributes.order import AxisOrder, OrderC
+from graph_builder.graph.operators.compose import Compose, VariableAlias
+from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.optimizer import util
+from graph_builder.optimizer.optimize_rule import OptimizeRule
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_builder.graph.axis import Axis
 from graph_builder.util import flags
 
 
@@ -16,58 +26,119 @@ class AffineConcat(OptimizeRule):
             return graph, False
 
         flag_changed = False
-        touched_operators = set()
-        # 深さ優先探索で、深く進んでいくときに(AxiswiseScale|AxiswiseBias)が連続したのち
-        # (Convolution2D|Linear)が見つかるパターンを探す
-        # 1本道でなければダメ(途中から分岐して別用途に使われていたら最適化不可)
 
-        found_seq = None
-        print('affineconcat')
-        print('outputs:' + str(graph.outputs))
-        for output in graph.outputs.values():
-            opr = output.output_from
-            oprs = []
-            if isinstance(opr, O.Compose):
-                composed = opr  # type: O.Compose
-                oprs = list(opr.outputs_alias)
-            else:
-                oprs = [opr]
-            print('oprs: ' + str(oprs))
-            for opr in oprs:
-                found_seq = self._search(opr, touched_operators, [])
-                if found_seq is not None:
+        while True:
+            flag_changed_in_iter = False
+            ops = util.listup_operator_in_order(graph)
+            current_seq = []
+            for op in ops:
+                if isinstance(op, Convolution2D):
+                    self._start_found(op, current_seq)
+                elif (isinstance(op, AxiswiseScale) or isinstance(op, AxiswiseBias)) and \
+                        op.parameters["axis"] is Axis.C:
+                    self._cont_found(op, current_seq)
+                else:
+                    flag_changed_in_iter = self._non_cont_found(op, current_seq)
+                if flag_changed_in_iter:
                     break
-            if found_seq is not None:
-                break
 
-        print('AffineConcat: found ' + str(found_seq))
+            flag_changed |= flag_changed_in_iter
+            if not flag_changed_in_iter:
+                break
 
         return graph, flag_changed
 
-    def _search(self, target_operator, touched_operators, candidate_sequence):
-        # 開始/継続条件: (AxiswiseScale|AxiswiseBias)であり、自分への入力が他で使われていないこと
-        # 終了条件: (Convolution2D|Linear)であり、シーケンスにAxiswiseScaleが含まれること
-        if target_operator in touched_operators:
-            # 探索済みの部分にぶつかった
-            return None
-        print(target_operator)
-        touched_operators.add(target_operator)
-        if isinstance(target_operator, O.Convolution2D):
-            # sequenceの終端になりうる
-            if len(candidate_sequence) > 0 and any(isinstance(opr, O.AxiswiseScale) for opr in candidate_sequence):
-                # 該当シーケンスが見つかった
-                return candidate_sequence + [target_operator]
-        if isinstance(target_operator, O.AxiswiseScale) or isinstance(target_operator, O.AxiswiseBias):
-            input_var = target_operator.inputs["x"]
-            if len(input_var.input_to) == 1:
-                # 開始/継続条件を満たす
-                print("start cond")
-                return self._search(input_var.output_from, touched_operators, candidate_sequence + [target_operator])
-        # 継続せず、深さ優先探索
-        for input_var in target_operator.inputs.values():
-            if input_var.output_from is not None:
-                seq = self._search(input_var.output_from, touched_operators, [])
-                if seq is not None:
-                    return seq
-        return None
+    def _start_found(self, op: Operator, current_seq: List[Operator]):
+        # シーケンスの開始条件が発生
+        if len(current_seq) > 0:
+            # end of last sequence
+            self._non_cont_found(op, current_seq)
+            current_seq.clear()
+        current_seq.append(op)
 
+    def _cont_found(self, op: Operator, current_seq: List[Operator]):
+        # シーケンスの継続条件が発生
+        if len(current_seq) > 0:
+            current_seq.append(op)
+
+    def _non_cont_found(self, op: Operator, current_seq: List[Operator]):
+        # シーケンスに含まれない要素が発生
+        if len(current_seq) > 0:
+            # check if sequence can be converted
+            if self._check_sequence(current_seq):
+                # グラフ圧縮の実行
+                self._compress_sequence(current_seq)
+                return True
+            current_seq.clear()
+        return False
+
+    def _check_sequence(self, seq: List[Operator]):
+        # 実際にマージ可能かをチェックする
+        # シーケンス内で受け渡される変数が分岐しないことをチェック(1本道)
+        for i in range(len(seq)):
+            op = seq[i]
+            if len(op.outputs) != 1:
+                return False
+            out_var = op.outputs["y"]
+            if i < len(seq) - 1:
+                if len(out_var.input_to) != 1:
+                    return False
+                if list(out_var.input_to)[0] is not seq[i + 1]:
+                    return False
+
+        # Scale*1以上またはBias*2以上があること
+        scale_count = 0
+        bias_count = 0
+        for op in seq:
+            if isinstance(op, AxiswiseScale):
+                scale_count += 1
+            if isinstance(op, AxiswiseBias):
+                bias_count += 1
+        if scale_count <= 0 and bias_count <= 1:
+            return False
+
+        return True
+
+    def _compress_sequence(self, seq: List[Operator]):
+        # Convolution2D|LinearとAxiswiseBiasだけに変更する
+        conv_op = seq[0]
+        conv_out = conv_op.outputs["y"]
+        n_channels = conv_out.shape_dict[Axis.C]
+
+        # scale, biasの集計
+        merged_scale = np.ones((n_channels,), dtype=np.float32)
+        merged_bias = np.zeros((n_channels,), dtype=np.float32)
+        for op in seq[1:]:
+            if isinstance(op, AxiswiseScale):
+                weight_var = op.inputs["s"]
+                if isinstance(weight_var, VariableAlias):
+                    weight_var = weight_var.link_to
+                merged_scale *= weight_var.data
+                merged_bias *= weight_var.data
+            elif isinstance(op, AxiswiseBias):
+                weight_var = op.inputs["b"]
+                if isinstance(weight_var, VariableAlias):
+                    weight_var = weight_var.link_to
+                merged_bias += weight_var.data
+            else:
+                raise NotImplementedError()
+
+        # Conv/Linearの出力チャンネル(N)にscaleをかける
+        conv_weight_var = conv_op.inputs["w"]
+        if isinstance(conv_weight_var, VariableAlias):
+            conv_weight_var = conv_weight_var.link_to
+        out_channel_pos = conv_weight_var.axis_order.axes_dict[Axis.N]
+        broadcast = [None] * conv_weight_var.axis_order.ndim
+        broadcast[out_channel_pos] = slice(None)
+        # HWNCなら、broadcast==[None, None, :, None]
+        conv_weight_var.data *= merged_scale[broadcast]
+
+        # Scale/Biasレイヤーを削除して、新しいBiasレイヤーを元々の出力につなぐ
+        final_out = seq[-1].outputs["y"]
+        for op in seq[1:]:
+            op.remove_all()
+        const_bias = ConstantVariable(merged_bias, OrderC)
+        bias_op = AxiswiseBias(conv_op.name + "_tail_bias", {"axis": Axis.C})
+        bias_op.append_input("x", conv_out)
+        bias_op.append_input("b", const_bias)
+        bias_op.append_output("y", final_out)

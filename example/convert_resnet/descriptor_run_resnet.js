@@ -26,7 +26,7 @@ function load_image() {
 
 async function load_descriptor() {
     let backend_name = $('input[name=backend_name]:checked').val();
-    let response = await fetch(`./output/graph_${backend_name}.json`);
+    let response = await fetch(`./output/graph_${backend_name}.json?t=${Date.now()}`);
     let desc = await response.text();
 
     $('#dnn_pipeline').val(desc);
