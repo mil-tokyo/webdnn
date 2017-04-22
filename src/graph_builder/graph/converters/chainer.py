@@ -71,9 +71,9 @@ class ReluBlock(OperatorBlock):
 
 
 class EluBlock(OperatorBlock):
-    cfunc: chainer.functions.ReLU
+    cfunc: chainer.functions.ELU
 
-    def __init__(self, cfunc: chainer.functions.ReLU):
+    def __init__(self, cfunc: chainer.functions.ELU):
         super().__init__()
         self.cfunc = cfunc
 
@@ -84,9 +84,9 @@ class EluBlock(OperatorBlock):
 
 
 class TanhBlock(OperatorBlock):
-    cfunc: chainer.functions.ReLU
+    cfunc: chainer.functions.Tanh
 
-    def __init__(self, cfunc: chainer.functions.ReLU):
+    def __init__(self, cfunc: chainer.functions.Tanh):
         super().__init__()
         self.cfunc = cfunc
 
@@ -271,6 +271,20 @@ class AddBlock(OperatorBlock):
         return list(opr(*inputs))
 
 
+class AddConstantBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
+    cfunc: chainer.functions.math.basic_math.AddConstant
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, cfunc: chainer.functions.math.basic_math.AddConstant):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        opr = ElementwiseSum(generate_unique_name(self.cfunc.label), {})
+        return list(opr(*inputs))
+
+
 class ReshapeBlock(OperatorBlock):
     # Currently, only removing HW axis is allowed
     # NCHW (n,c,h,w) => NC (n,c*h*w) (assuming c-order)
@@ -306,6 +320,7 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.normalization.batch_normalization.BatchNormalizationFunction,
                   BatchNormalizationBlock),
                  (chainer.functions.math.basic_math.Add, AddBlock),
+                 (chainer.functions.math.basic_math.AddConstant, AddConstantBlock),
                  (chainer.functions.array.reshape.Reshape, ReshapeBlock)]
 
 
