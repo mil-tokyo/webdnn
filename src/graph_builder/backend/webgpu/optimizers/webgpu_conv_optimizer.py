@@ -5,11 +5,11 @@ from graph_builder.backend.webgpu.optimize_rules.sgemm_bias_relu import SgemmBia
 from graph_builder.optimizer.optimizer import Optimizer
 
 
-class WebGPUOptimizer(Optimizer):
+class WebGPUConvOptimizer(Optimizer):
     def __init__(self):
-        super(WebGPUOptimizer, self).__init__()
+        super(WebGPUConvOptimizer, self).__init__()
 
-        self.register_rule(ConvScale())
-        self.register_rule(ReplaceConvolutionByIm2Col())
-        self.register_rule(AdjustConvWeightDataOrder())
-        self.register_rule(SgemmBiasRelu())
+        self.register(ConvScale())
+        self.register(ReplaceConvolutionByIm2Col())
+        self.register(AdjustConvWeightDataOrder())
+        self.register(SgemmBiasRelu())

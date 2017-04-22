@@ -28,7 +28,7 @@ from graph_builder.backend.webgpu.kernels.relu import relu
 from graph_builder.backend.webgpu.kernels.sgemm import sgemm
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
-from graph_builder.backend.webgpu.webgpu_optimizer import WebGPUOptimizer
+from graph_builder.backend.webgpu.optimizers.webgpu_optimizer import WebGPUOptimizer
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.optimize_hint import ElementwiseOperationComposed
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
