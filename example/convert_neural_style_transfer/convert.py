@@ -36,7 +36,7 @@ def generate_graph(model_path: str) -> Operator:
     nn_input = chainer.Variable(np.zeros((1, 3, 512, 512), dtype=np.float32))
 
     # noinspection PyCallingNonCallable
-    nn_output = model(nn_input)
+    nn_output = model(nn_input, test=True)
 
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()

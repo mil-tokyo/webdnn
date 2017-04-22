@@ -12,13 +12,14 @@ import chainer.computational_graph
 import numpy as np
 
 from graph_builder.graph.attribute import Attribute
-from graph_builder.graph.node import Node
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.node import Node
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
@@ -26,7 +27,8 @@ from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.input import Input
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC, OrderCNHW, \
+    AxisOrder
 from graph_builder.graph.variables.attributes.output import Output
 from graph_builder.graph.variables.constant_variable import ConstantVariable
 
@@ -119,6 +121,32 @@ class Convolution2DBlock(OperatorBlock):
                                  {"ksize": (w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
                                   "stride": (self.cfunc.sy, self.cfunc.sx),
                                   "padding": (self.cfunc.ph, self.cfunc.pw)})
+
+        opr_out, = conv_opr(inputs[0], inputs[1])
+        if len(inputs) == 3:
+            # biasあり
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+            self.hidden_vars.append(opr_out)
+            opr_out, = bias_opr(opr_out, inputs[2])
+        return [opr_out]
+
+
+class Deconvolution2DBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
+    cfunc: chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, cfunc: chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        w = inputs[1]
+        w_shape_dict = w.shape_dict
+        conv_opr = Deconvolution2D(generate_unique_name(self.cfunc.label),
+                                   {"ksize": (w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
+                                    "stride": (self.cfunc.sy, self.cfunc.sx),
+                                    "padding": (self.cfunc.ph, self.cfunc.pw)})
 
         opr_out, = conv_opr(inputs[0], inputs[1])
         if len(inputs) == 3:
@@ -242,6 +270,7 @@ class ReshapeBlock(OperatorBlock):
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.connection.linear.LinearFunction, LinearBlock),
                  (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock),
+                 (chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction, Deconvolution2DBlock),
                  (chainer.functions.pooling.max_pooling_2d.MaxPooling2D, MaxPooling2DBlock),
                  (chainer.functions.pooling.average_pooling_2d.AveragePooling2D, AveragePooling2DBlock),
                  (chainer.functions.normalization.batch_normalization.BatchNormalizationFunction,
@@ -313,31 +342,51 @@ class ChainerGraphConverter:
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
         # 名前付きの変数を変換
+
+        # Phase1. 特殊ケースのみ先に処理
         for cvar in chainer_computational_graph.nodes:
             # noinspection PyUnresolvedReferences
-            if isinstance(cvar, chainer.Variable):
-                if cvar.name is not None:
-                    self._convert_var(cvar)
-            elif isinstance(cvar, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
+            if isinstance(cvar, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
                 # BNのmean, varは名無しだがウェイト
                 assert len(cvar.inputs) == 5  # data, gamma, bias, mean, var
                 self._convert_var(cvar.inputs[3], force_constant=True)
                 self._convert_var(cvar.inputs[4], force_constant=True)
 
-    def _convert_var(self, cvar: chainer.Variable, attrs: Iterable[Type[Attribute]] = None, force_constant=False):
+            elif isinstance(cvar, chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
+                # chainerのDeconvolution2DのWは(Cin, Cout, Kh, Kw)のオーダー
+                self._convert_var(cvar.inputs[1], force_constant=True, force_order=OrderCNHW)
+
+        # Phase2. 残りを処理
+        for cvar in chainer_computational_graph.nodes:
+            # noinspection PyUnresolvedReferences
+            if isinstance(cvar, chainer.Variable):
+                if id(cvar) not in self._cvar_ids and cvar.name is not None:
+                    self._convert_var(cvar)
+
+    def _convert_var(self,
+                     cvar: chainer.Variable,
+                     attrs: Iterable[Type[Attribute]] = None,
+                     force_constant=False,
+                     force_order: Type[AxisOrder] = None):
         assert id(cvar) not in self._cvar_ids
         ndim = len(cvar.shape)
-        if ndim == 4:
-            # both weight and variable
-            order = OrderNCHW
-        elif ndim == 2:
-            # both weight and variable
-            order = OrderNC
-        elif ndim == 1:
-            # both weight and variable
-            order = OrderC
+        if force_order:
+            order = force_order
+
         else:
-            raise NotImplementedError()
+            if ndim == 4:
+                # both weight and variable
+                order = OrderNCHW
+            elif ndim == 2:
+                # both weight and variable
+                order = OrderNC
+            elif ndim == 1:
+                # both weight and variable
+                order = OrderC
+            else:
+                raise NotImplementedError()
+
+        assert order.ndim == ndim
 
         if cvar.name is not None or force_constant:
             nvar = ConstantVariable(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
