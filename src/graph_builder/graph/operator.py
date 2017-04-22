@@ -115,6 +115,21 @@ class Operator(Node, IOperator):
         for _, v in list(self.outputs.items()):
             self.remove_output(v)
 
+    def replace(self, new_op: "Operator"):
+        """
+        演算を置き換える
+        """
+        inputs = dict(self.inputs)
+        outputs = dict(self.outputs)
+
+        self.remove_all()
+
+        for name, var in inputs.items():
+            new_op.append_input(name, var)
+
+        for name, var in outputs.items():
+            new_op.append_output(name, var)
+
     def __repr__(self):
         return f"""<{self.__class__.__name__} inputs={self.inputs}, outputs={self.outputs}>"""
 

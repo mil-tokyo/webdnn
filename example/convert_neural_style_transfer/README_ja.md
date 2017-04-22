@@ -21,6 +21,8 @@
     ```bash
     $ python convert.py 
     ```
+
+    `--model` オプションでモデル(画風)の選択ができる。詳しくは `python convert.py -h`
     
-3.  まだ。
+3.  ブラウザを起動して `index.html` へアクセス!
 

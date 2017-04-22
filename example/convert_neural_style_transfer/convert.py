@@ -22,7 +22,7 @@ OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
 class NSTModelPath(Enum):
     starrynight = "../../resources/chainer-fast-neuralstyle-models/models/starrynight.model"
-    scream = "../../resources/chainer-fast-neuralstyle-models/models/scream.model"
+    scream = "../../resources/chainer-fast-neuralstyle-models/models/scream-style.model"
     flur = "../../resources/chainer-fast-neuralstyle-models/models/flur_0.model"
     candy = "../../resources/chainer-fast-neuralstyle-models/models/candy_512_2_49000.model"
     kanagawa = "../../resources/chainer-fast-neuralstyle-models/models/kanagawa.model"
@@ -33,7 +33,7 @@ def generate_graph(model_path: str) -> Operator:
     chainer.serializers.load_npz(model_path, model)
 
     # noinspection PyTypeChecker
-    nn_input = chainer.Variable(np.zeros((1, 3, 512, 512), dtype=np.float32))
+    nn_input = chainer.Variable(np.zeros((1, 3, 384, 512), dtype=np.float32))
 
     # noinspection PyCallingNonCallable
     nn_output = model(nn_input, test=True)
