@@ -1,10 +1,23 @@
-from typing import Type, List, Tuple, Set, Iterable
+from typing import Type, List, Set, Iterable, Union
 
 from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.node import Node
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.compose import Compose, VariableAlias
 from graph_builder.graph.variable import Variable
+
+QueryTarget = Union[Type[Attribute], Type[Operator]]
+
+
+def check_match(node: Node, query: QueryTarget):
+    if issubclass(query, Attribute):
+        return check_attribute_match(node, query)
+
+    elif issubclass(query, Operator):
+        return check_operator_match(node, query)
+
+    else:
+        raise NotImplementedError
 
 
 def check_attribute_match(node: Node, query: Type[Attribute]):
@@ -16,28 +29,23 @@ def check_attribute_match(node: Node, query: Type[Attribute]):
         return False
 
 
-def search_sub_structure(root: Operator, query: List[Type[Attribute]], find_all: bool = False) -> List[List[Operator]]:
-    queue: List[Tuple[List[Operator], Operator, int]] = [([], root, 0)]
+def check_operator_match(node: Node, query: Type[Operator]):
+    return isinstance(node, query)
+
+
+def search_sub_structure(graph: Operator, query: List[QueryTarget]) -> List[List[Operator]]:
     matches: List[List[Operator]] = []
+    ops = listup_operator_in_order(graph)
+    current_matches: List[(int, int)] = [(i, 0) for i, _ in enumerate(ops)]
 
-    while len(queue) > 0:
-        res, op, index = queue.pop()
-        flag_match = check_attribute_match(op, query[index])
-        if flag_match:
-            res.append(op)
-
+    while len(current_matches) > 0:
+        offset, index = current_matches.pop(0)
+        if check_match(ops[offset + index], query[index]):
             if index == len(query) - 1:
-                matches.append(res)
-                flag_match = False
-                if not find_all:
-                    break
+                matches.append(ops[offset:offset + len(query)])
 
-        for var in op.outputs.values():
-            for next_op in var.input_to:
-                if flag_match:
-                    queue.append((list(res), next_op, index + 1))
-
-                queue.append(([], next_op, 0))
+            else:
+                current_matches.append((offset, index + 1))
 
     return matches
 

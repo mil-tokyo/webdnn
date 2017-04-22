@@ -8,6 +8,6 @@ class GeneralOptimizer(Optimizer):
     def __init__(self):
         super(GeneralOptimizer, self).__init__()
 
-        self.register_rule(ComposeAxiswiseOperation())
-        self.register_rule(ComposeElementwiseOperation())
+        # self.register_rule(ComposeAxiswiseOperation())
+        # self.register_rule(ComposeElementwiseOperation())
         self.register_rule(RemoveLastSoftmax())
