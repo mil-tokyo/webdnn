@@ -12,8 +12,8 @@ from graph_builder.optimizer.optimize_rule import OptimizeRule
 class ComposeElementwiseOperation(OptimizeRule):
     def __call__(self, graph: Operator):
         matches = util.search_sub_structure(graph, [
-            Elementwise,
-            PostElementwise
+            PostElementwise,
+            Elementwise
         ])
 
         if len(matches) == 0:
@@ -23,7 +23,7 @@ class ComposeElementwiseOperation(OptimizeRule):
             composed = Compose.compose_ops("channelwise", ops)
             composed.attributes.add(ElementwiseOperationComposed)
 
-            if not util.check_attribute_match(ops[0], PostElementwise):
-                composed.attributes.remove(PostElementwise)
+            if not util.check_attribute_match(ops[0], Elementwise):
+                composed.attributes.remove(Elementwise)
 
         return graph, True
