@@ -168,6 +168,7 @@ def main():
 
     if args.optimize:
         graph = GeneralOptimizer().optimize(graph)
+    graph_builder.optimizer.util.dump(graph)
 
     if args.backend == "webgpu":
         descriptor, data = generate_webgpu_descriptor(graph)
