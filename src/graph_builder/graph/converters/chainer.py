@@ -21,10 +21,12 @@ from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
+from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.operators.tanh import Tanh
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.input import Input
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC, OrderCNHW, \
@@ -65,6 +67,32 @@ class ReluBlock(OperatorBlock):
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         assert len(inputs) == 1
         opr = Relu(generate_unique_name(self.cfunc.label), {})
+        return opr(inputs[0])
+
+
+class EluBlock(OperatorBlock):
+    cfunc: chainer.functions.ReLU
+
+    def __init__(self, cfunc: chainer.functions.ReLU):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        assert len(inputs) == 1
+        opr = Elu(generate_unique_name(self.cfunc.label), {})
+        return opr(inputs[0])
+
+
+class TanhBlock(OperatorBlock):
+    cfunc: chainer.functions.ReLU
+
+    def __init__(self, cfunc: chainer.functions.ReLU):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        assert len(inputs) == 1
+        opr = Tanh(generate_unique_name(self.cfunc.label), {})
         return opr(inputs[0])
 
 
@@ -268,6 +296,8 @@ class ReshapeBlock(OperatorBlock):
 
 # noinspection PyUnresolvedReferences
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
+                 (chainer.functions.ELU, ELUBlock),
+                 (chainer.functions.Tanh, TanhBlock),
                  (chainer.functions.connection.linear.LinearFunction, LinearBlock),
                  (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock),
                  (chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction, Deconvolution2DBlock),
