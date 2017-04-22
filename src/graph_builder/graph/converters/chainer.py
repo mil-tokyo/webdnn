@@ -296,7 +296,7 @@ class ReshapeBlock(OperatorBlock):
 
 # noinspection PyUnresolvedReferences
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
-                 (chainer.functions.ELU, ELUBlock),
+                 (chainer.functions.ELU, EluBlock),
                  (chainer.functions.Tanh, TanhBlock),
                  (chainer.functions.connection.linear.LinearFunction, LinearBlock),
                  (chainer.functions.connection.convolution_2d.Convolution2DFunction, Convolution2DBlock),
