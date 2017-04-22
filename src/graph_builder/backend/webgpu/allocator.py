@@ -3,13 +3,13 @@ from typing import Dict, Tuple, List, Set
 import numpy as np
 
 from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.inplace import Inplace
 from graph_builder.graph.operators.compose import VariableAlias
-from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.graph.variables.attributes.constant import Constant
+from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.optimizer import util
-from graph_builder.util import json
+from graph_builder.util import json, flags
 
 
 class Allocation(json.SerializableMixin):
@@ -114,7 +114,6 @@ class Allocator:
         # 計算グラフを辿りながら、retain回数をカウントし、ゼロになったら解放する
         retain_count: Dict[Variable, int] = {v: 0 for v in variables}
         free_list: List[Tuple(int, int)] = []  # [(offset, size)]
-        inplace_allocation_dict: Dict[Variable, Variable] = {}
 
         for var in graph.inputs.values():
             if isinstance(var, VariableAlias):
@@ -134,28 +133,52 @@ class Allocator:
                     continue
 
                 if var not in layout:
-                    # 新しく割り当てる
+                    flag_allocated = False
 
-                    # FIXME:
-                    # X --[Reshape]--> Y --[ReLU]--> Z
-                    # |
-                    # +---[Op]--> W
-                    #
-                    # 上のような状況だと、YはXと同じメモリを使うことになる
-                    # ReLUはInplace指定なため、Yの入力先が自分(ReLU)だけであることを確認した上で、ZをYと同じ位置(=Xと同じ位置)に確保しようとするが
-                    # こうするとOpの演算結果Wがおかしくなる
-                    #
-                    # flag_inplace = util.check_attribute_match(op, A.Inplace) and len(list(op.inputs.values())[0].input_to) == 1
-                    # if isinstance(op, Reshape) or flag_inplace:
+                    # Supports inplace operation
+                    if not flag_allocated and util.check_attribute_match(op, Inplace):
 
-                    if isinstance(op, Flatten):
-                        # 入力のメモリをそのまま使う
-                        var_in = list(op.inputs.values())[0]
-                        layout.append(var, layout[var_in].offset)
-                        inplace_allocation_dict[var] = var_in
-                        retain_count[var_in] += len(var.input_to)
+                        variable_count = 0
+                        for v0 in op.inputs.values():
+                            if isinstance(v0, VariableAlias):
+                                v0 = v0.original
 
-                    else:
+                            if isinstance(v0, ConstantVariable):
+                                continue
+                            v1 = v0
+                            variable_count += 1
+
+                        if variable_count > 1:
+                            if flags.DEBUG:
+                                print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
+                                      + f"Allocator skipped inplace allocation and allocate other memory. "
+                                      + f"Operator: {op}")
+
+                        else:
+                            var.parameters["inplace_src"] = v1
+
+                            check_queue: List[Variable] = []
+                            flag_safe = True
+                            while len(check_queue) > 0:
+                                v = check_queue.pop(0)
+                                if v.input_to > 1:
+                                    flag_safe = False
+                                    break
+
+                                if "inplace_src" in var.parameters:
+                                    check_queue.append(var.parameters["inplace_src"])
+
+                            if flag_safe:
+                                # 入力のメモリをそのまま使う
+                                v2 = v1
+                                while "inplace_src" in v2.parameters:
+                                    v2 = v2.parameters["inplace_src"]
+
+                                layout.append(var, layout[v2].offset)
+                                retain_count[v2] += len(var.input_to)
+                                flag_allocated = True
+
+                    if not flag_allocated:
                         size = var.size
                         spaces = sorted([space for space in free_list if space[1] >= size], key=lambda x: x[1])
                         retain_count[var] = len(var.input_to)
@@ -166,10 +189,15 @@ class Allocator:
                             layout.append(var, offset=space[0])
                             if space[1] > var.size:
                                 free_list.append((space[0] + var.size, space[1] - var.size))
+                            flag_allocated = True
 
                         else:
                             # 十分なスペースが無かった
                             layout.append(var)
+                            flag_allocated = True
+
+                    if not flag_allocated:
+                        raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
 
             for var in op.inputs.values():
                 if isinstance(var, VariableAlias):
@@ -179,8 +207,8 @@ class Allocator:
                     continue
 
                 v2 = var
-                if v2 in inplace_allocation_dict:
-                    v2 = inplace_allocation_dict[v2]
+                while "inplace_src" in v2.parameters:
+                    v2 = v2.parameters["inplace_src"]
 
                 retain_count[v2] -= 1
 

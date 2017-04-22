@@ -30,6 +30,7 @@ from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.backend.webgpu.webgpu_optimizer import WebGPUOptimizer
 from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.attributes.optimize_hint import ElementwiseOperationComposed
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
@@ -95,6 +96,8 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
 
     for op in util.listup_operator_in_order(graph):
         if isinstance(op, Compose):
+            if util.check_attribute_match(op, ElementwiseOperationComposed):
+                print(op)
             continue
 
         elif isinstance(op, Linear):
