@@ -18,6 +18,8 @@ from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.compose import Compose
+from graph_builder.graph.operators.constant_bias import ConstantBias
+from graph_builder.graph.operators.constant_scale import ConstantScale
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
@@ -281,7 +283,21 @@ class AddConstantBlock(OperatorBlock):
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        opr = ElementwiseSum(generate_unique_name(self.cfunc.label), {})
+        opr = ConstantBias(generate_unique_name(self.cfunc.label), {"value": float(self.cfunc.value)})
+        return list(opr(*inputs))
+
+
+class MulConstantBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
+    cfunc: chainer.functions.math.basic_math.MulConstant
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, cfunc: chainer.functions.math.basic_math.MulConstant):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        opr = ConstantScale(generate_unique_name(self.cfunc.label), {"value": float(self.cfunc.value)})
         return list(opr(*inputs))
 
 
@@ -321,6 +337,7 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                   BatchNormalizationBlock),
                  (chainer.functions.math.basic_math.Add, AddBlock),
                  (chainer.functions.math.basic_math.AddConstant, AddConstantBlock),
+                 (chainer.functions.math.basic_math.MulConstant, MulConstantBlock),
                  (chainer.functions.array.reshape.Reshape, ReshapeBlock)]
 
 
@@ -469,6 +486,8 @@ class ChainerGraphConverter:
                     assert len(nvar.input_to) == 1
                     first_input_to = list(nvar.input_to)[0]
                     if isinstance(first_input_to, Convolution2D):
+                        nvar.change_axis_order(OrderHWNC)
+                    elif isinstance(first_input_to, Deconvolution2D):
                         nvar.change_axis_order(OrderHWNC)
                     elif isinstance(first_input_to, Linear):
                         nvar.change_axis_order(OrderHWCN)
