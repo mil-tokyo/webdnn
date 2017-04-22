@@ -5,7 +5,6 @@ from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
-from graph_builder.graph.axis import Axis
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 
 template = """
@@ -121,21 +120,13 @@ def sgemm(op: Sgemm,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == OrderNHWC
-    assert w.variable.axis_order == OrderHWCN
-    assert y.variable.axis_order == OrderNHWC
-
-    M = y.variable.shape_dict[Axis.N] * y.variable.shape_dict[Axis.H] * y.variable.shape_dict[Axis.W]
-    N = w.variable.shape_dict[Axis.N]
-    K = x.variable.shape_dict[Axis.C]
-
     metabuffer_injector.register({
         "sgemm_A_offset": x.offset,
         "sgemm_B_offset": w.offset,
         "sgemm_C_offset": y.offset,
-        "sgemm_M": M,
-        "sgemm_N": N,
-        "sgemm_K": K
+        "sgemm_M": op.M,
+        "sgemm_N": op.N,
+        "sgemm_K": op.K
     })
 
     source = metabuffer_injector.inject(template)
@@ -145,7 +136,7 @@ def sgemm(op: Sgemm,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize((M + 64 - 1) // 64, (N + 64 - 1) // 64, 1),
+        GPUSize((op.M + 64 - 1) // 64, (op.N + 64 - 1) // 64, 1),
         GPUSize(8, 8, 1),
         metabuffer_injector.generate_buffer()
     )

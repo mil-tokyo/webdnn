@@ -1,7 +1,7 @@
 from typing import Dict, Tuple
 
-from graph_builder.graph.operator import Operator
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.have_weights import HaveWeights
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
@@ -35,10 +35,9 @@ class Deconvolution2D(Operator):
         assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
         assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
 
-        # FIXME: Convolution2Dと全く同じだけど本来違うのでは？
         N = x_shape_dict[Axis.N]
-        H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
-        W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
+        H2 = (x_shape_dict[Axis.H] - 1) * self.SH - 2 * self.PH + self.KH
+        W2 = (x_shape_dict[Axis.W] - 1) * self.SW - 2 * self.PW + self.KW
         C2 = w_shape_dict[Axis.N]
 
         if x.axis_order == OrderNCHW:

@@ -8,7 +8,7 @@ from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 
-class Im2Col(Operator):
+class Col2Im(Operator):
     attributes = {PostElementwise,
                   PostAxiswise}
 
@@ -23,19 +23,21 @@ class Im2Col(Operator):
         assert "padding" in parameters
         super().__init__(name, parameters)
 
-    def __call__(self, im: Variable):
-        N = im.shape_dict[Axis.N]
-        H2 = (im.shape_dict[Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
-        W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
-        C1 = im.shape_dict[Axis.C]
+    def __call__(self, col: Variable):
+        assert col.axis_order == OrderNHWC
 
-        var_shape = [N, H2, W2, self.KH * self.KW * C1]
-        col = Variable(var_shape, OrderNHWC)
+        N = col.shape_dict[Axis.N]
+        H2 = (col.shape_dict[Axis.H] - 1) * self.SH - 2 * self.PH + self.KH
+        W2 = (col.shape_dict[Axis.W] - 1) * self.SW - 2 * self.PW + self.KW
+        C2 = col.shape_dict[Axis.C] // self.KH // self.KW
 
-        self.append_input("im", im)
-        self.append_output("col", col)
+        var_shape = [N, H2, W2, C2]
+        im = Variable(var_shape, OrderNHWC)
 
-        return col,
+        self.append_input("col", col)
+        self.append_output("im", im)
+
+        return im,
 
     @property
     def ksize(self) -> Tuple[int, int]:

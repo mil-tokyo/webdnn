@@ -15,17 +15,23 @@ import numpy as np
 from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
+from graph_builder.backend.webgpu.kernels.affine_transform import affine_transform
 from graph_builder.backend.webgpu.kernels.average_pooling_2d import average_pooling_2d
 from graph_builder.backend.webgpu.kernels.axiswise_bias import axiswise_bias
 from graph_builder.backend.webgpu.kernels.axiswise_scale import axiswise_scale
+from graph_builder.backend.webgpu.kernels.col2im import col2im
 from graph_builder.backend.webgpu.kernels.convolution_2d import convolution_2d
 from graph_builder.backend.webgpu.kernels.elementwise_sum import elementwise_sum
+from graph_builder.backend.webgpu.kernels.elu import elu
 from graph_builder.backend.webgpu.kernels.flatten import flatten
 from graph_builder.backend.webgpu.kernels.im2col import im2col
 from graph_builder.backend.webgpu.kernels.linear import linear
 from graph_builder.backend.webgpu.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webgpu.kernels.relu import relu
 from graph_builder.backend.webgpu.kernels.sgemm import sgemm
+from graph_builder.backend.webgpu.kernels.tanh import tanh
+from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
+from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.backend.webgpu.optimizers.webgpu_optimizer import WebGPUOptimizer
@@ -37,10 +43,12 @@ from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
+from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.operators.tanh import Tanh
 from graph_builder.optimizer import util
 from graph_builder.util import flags
 
@@ -109,6 +117,12 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
         elif isinstance(op, Relu):
             kernels += relu(op, constants_layout, variables_layout)
 
+        elif isinstance(op, Elu):
+            kernels += elu(op, constants_layout, variables_layout)
+
+        elif isinstance(op, Tanh):
+            kernels += tanh(op, constants_layout, variables_layout)
+
         elif isinstance(op, Convolution2D):
             kernels += convolution_2d(op, constants_layout, variables_layout)
 
@@ -132,6 +146,12 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
 
         elif isinstance(op, Im2Col):
             kernels += im2col(op, constants_layout, variables_layout)
+
+        elif isinstance(op, Col2Im):
+            kernels += col2im(op, constants_layout, variables_layout)
+
+        elif isinstance(op, AffineTransform):
+            kernels += affine_transform(op, constants_layout, variables_layout)
 
         elif isinstance(op, Operator):
             if "custom_kernel" in op.parameters:

@@ -82,3 +82,13 @@ class OrderNCHW(AxisOrder):
     ndim = 4
     axes = [Axis.N, Axis.C, Axis.H, Axis.W]
     axes_dict = {Axis.N: 0, Axis.C: 1, Axis.H: 2, Axis.W: 3}
+
+
+class OrderCNHW(AxisOrder):
+    """
+    usage:
+        Chainer Deconvolution2D Filter
+    """
+    ndim = 4
+    axes = [Axis.C, Axis.N, Axis.H, Axis.W]
+    axes_dict = {Axis.N: 1, Axis.C: 0, Axis.H: 2, Axis.W: 3}
