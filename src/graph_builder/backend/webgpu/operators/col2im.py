@@ -5,7 +5,7 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
 
 
 class Col2Im(Operator):

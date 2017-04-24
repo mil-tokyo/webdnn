@@ -3,7 +3,7 @@ from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN, OrderCNHW
 from graph_builder.optimizer import util
 from graph_builder.optimizer.optimize_rule import OptimizeRule
 
@@ -32,19 +32,24 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             w.change_axis_order(OrderHWCN)
             assert old_y.axis_order == OrderNHWC
 
-            im2col = Im2Col("im2col", {
-                "ksize": op.ksize,
-                "stride": op.stride,
-                "padding": op.padding,
-            })
-            col, = im2col(x)
+            if op.ksize[0] > 1 or op.ksize[1] > 1 or op.stride[0] > 1 or op.stride[1] > 1 or op.padding[0] > 0 or op.padding[1] > 0:
+                im2col = Im2Col("im2col", {
+                    "ksize": op.ksize,
+                    "stride": op.stride,
+                    "padding": op.padding,
+                    "out_order": OrderCNHW
+                })
+                col, = im2col(x)
+
+            else:
+                col = x
 
             sgemm = Sgemm("sgemm", {
                 "M": col.shape_dict[Axis.N] * col.shape_dict[Axis.H] * col.shape_dict[Axis.W],
                 "N": w.shape_dict[Axis.N],
                 "K": col.shape_dict[Axis.C],
                 "out_shape": [col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
-                "out_order": OrderNHWC,
+                "out_order": OrderNHWC
             })
             new_y, = sgemm(col, w)
 

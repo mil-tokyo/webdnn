@@ -64,13 +64,8 @@ def average_pooling_2d(op: AveragePooling2D,
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNHWC, \
-        f"[WebGPU] MaxPooling2D operator supports only OrderNHWC for data order of input variable. " + \
-        f"Actual data order is {x.variable.axis_order}"
-
-    assert y.variable.axis_order == OrderNHWC, \
-        f"[WebGPU] MaxPooling2D operator supports only OrderNHWC for data order of output variable. " + \
-        f"Actual data order is {y.variable.axis_order}"
+    assert x.variable.axis_order == OrderNHWC
+    assert y.variable.axis_order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

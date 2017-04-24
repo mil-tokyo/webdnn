@@ -51,7 +51,9 @@ namespace WebDNN {
             //set input to GPU
             //await this.dataMat.syncWriteViews();//not needed for DNNBufferWebGPU
             if (window['PROFILE']) {
-                let results: any = [];
+                let records: any = [];
+                let totalElapsedTime = 0;
+
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                     let exec_info = this.descriptor.exec_infos[i];
 
@@ -64,12 +66,32 @@ namespace WebDNN {
                         true
                     );
                     let elapsedTime = performance.now() - start;
-                    results.push({
+                    records.push({
                         'Kernel': exec_info.entry_func_name,
                         'Elapsed time [ms]': elapsedTime
                     });
+                    totalElapsedTime += elapsedTime;
                 }
-                console.table(results);
+
+                let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                    if (!(record['Kernel'] in summary)) {
+                        summary[record['Kernel']] = {
+                            'Kernel': record['Kernel'],
+                            'Count': 0,
+                            'Elapsed time [ms]': 0,
+                        };
+                    }
+
+                    summary[record['Kernel']]['Count']++;
+                    summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+
+                    return summary;
+                }, {})));
+
+                summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
+
+                console.table(records);
+                console.table(summary);
 
             } else {
                 //execute kernels

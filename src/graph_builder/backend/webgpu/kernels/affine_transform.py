@@ -37,6 +37,7 @@ def affine_transform(op: AffineTransform,
                      metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
+    assert x.variable.shape == y.variable.shape
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

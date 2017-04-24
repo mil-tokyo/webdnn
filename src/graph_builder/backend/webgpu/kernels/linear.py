@@ -48,21 +48,10 @@ def linear(op: Linear,
     w = constants_layout[op.inputs["w"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNC \
-           or x.variable.axis_order == OrderNHWC, \
-        f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of input variable. " + \
-        f"Actual data order is {x.variable.axis_order}"
-    assert w.variable.axis_order == OrderCN \
-           or w.variable.axis_order == OrderHWCN, \
-        f"[WebGPU] Linear operator supports OrderCN or OrderCHWN for data order of filter variable. " + \
-        f"Actual data order is {w.variable.axis_order}"
-    assert y.variable.axis_order == OrderNC \
-           or y.variable.axis_order == OrderNHWC, \
-        f"[WebGPU] Linear operator supports OrderNC or OrderNHWC for data order of output variable. " + \
-        f"Actual data order is {y.variable.axis_order}"
-    assert w.variable.ndim == x.variable.ndim, \
-        "[WebGPU] Input and Filter variables of Linear operator must be same number of dimension. " + \
-        f"Actual number of dimension is: x.ndim={x.variable.ndim}, w.ndim={w.variable.ndim}"
+    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC
+    assert w.variable.axis_order == OrderCN or w.variable.axis_order == OrderHWCN
+    assert y.variable.axis_order == OrderNC or y.variable.axis_order == OrderNHWC
+    assert w.variable.ndim == x.variable.ndim
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

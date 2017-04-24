@@ -6,6 +6,7 @@ from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 # NOTE
 #
@@ -44,13 +45,13 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
         float sum = 0;
         for (int kh = 0; kh < KH; kh++) {
             const int h2 = (h1 + PH - kh) / SH;
-            if ((h1 + PH - KH) % SH != 0 || h2 < 0 || h2 >= H1) continue;
+            if ((h1 + PH - KH) % SH != 0 || h2 < 0 || h2 >= H2) continue;
 
-            for (int kw = 0; kw < KH; kw++) {
+            for (int kw = 0; kw < KW; kw++) {
                 const int w2 = (w1 + PW - kw) / SW;
-                if ((w1 + PW - KW) % SW != 0 || w2 < 0 || w2 >= W1) continue;
+                if ((w1 + PW - KW) % SW != 0 || w2 < 0 || w2 >= W2) continue;
                 
-                sum += col[((((n * H2 + h2) * W2 + w2) * C1 + c1) * KH + kh) * KW + kw];
+                sum += col[((((n * H2 + h2) * W2 + w2) * KH + kh) * KW + kw) * C1 + c1];
             }
         }
         
@@ -67,6 +68,9 @@ def col2im(op: Col2Im,
            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     col = variables_layout[op.inputs["col"]]
     im = variables_layout[op.outputs["im"]]
+
+    assert col.variable.axis_order == OrderNHWC
+    assert im.variable.axis_order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

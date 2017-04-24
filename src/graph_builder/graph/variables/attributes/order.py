@@ -92,3 +92,11 @@ class OrderCNHW(AxisOrder):
     ndim = 4
     axes = [Axis.C, Axis.N, Axis.H, Axis.W]
     axes_dict = {Axis.N: 1, Axis.C: 0, Axis.H: 2, Axis.W: 3}
+
+
+class OrderCHWN(AxisOrder):
+    """
+    """
+    ndim = 4
+    axes = [Axis.C, Axis.H, Axis.W, Axis.N]
+    axes_dict = {Axis.N: 3, Axis.C: 0, Axis.H: 1, Axis.W: 2}
