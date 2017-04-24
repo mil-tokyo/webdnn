@@ -5,16 +5,33 @@
     <title>WebDNN test</title>
     <meta charset="utf-8">
     <script src="../../build/array_prototype/webdnn.js"></script>
+    <script src="webcam.min.js"></script>
     <script src="script.js"></script>
 </head>
 
 <body>
-WebDNN test
-<div>
-    <canvas id="src" width="512" height="384" style="border: 1px solid #000;width:256px;height:192px;"></canvas>
-    <canvas id="result" width="512" height="384" style="border: 1px solid #000;width:256px;height:192px;"></canvas>
-    <button onclick="main(); return false;">RUN</button>
+
+<header style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <h1>Neural Style Transfer</h1>
+    <span id="status">Initializing</span>
+    <button id="toggle" disabled onclick="togglePause(); return false;">Initializing</button>
+</header>
+
+<div style="display: flex; flex-direction: row; align-items: center; justify-content: center;">
+
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div id="camera" style="border: 1px solid #000; width: 512px; height: 384px; margin: 32px;"></div>
+        <h2>Input</h2>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <canvas id="result" width="512" height="384" style="border: 1px solid #000; margin: 32px;"></canvas>
+        <h2>Output</h2>
+    </div>
+
 </div>
+
+<canvas id="snap" width="512" height="384" style="border: 1px solid #000; display: none; margin-right: 32px;"></canvas>
 </body>
 
 </html>
