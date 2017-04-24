@@ -50,24 +50,46 @@ namespace WebDNN {
         async run(): Promise<void> {
             //set input to GPU
             //await this.dataMat.syncWriteViews();//not needed for DNNBufferWebGPU
+            if (window['PROFILE']) {
+                let results: any = [];
+                for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
+                    let exec_info = this.descriptor.exec_infos[i];
 
-            //execute kernels
-            let complete_promise: Promise<void> | null = null;
-            for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
-                let exec_info = this.descriptor.exec_infos[i];
-                let is_last = i == this.descriptor.exec_infos.length - 1;
-                complete_promise = this.webGPUHandler.executeSinglePipelineState(
-                    'descriptor.' + exec_info.entry_func_name,
-                    exec_info.threadgroups_per_grid,
-                    exec_info.threads_per_thread_group,
-                    [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
-                    is_last
-                );
+                    let start = performance.now();
+                    await this.webGPUHandler.executeSinglePipelineState(
+                        'descriptor.' + exec_info.entry_func_name,
+                        exec_info.threadgroups_per_grid,
+                        exec_info.threads_per_thread_group,
+                        [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
+                        true
+                    );
+                    let elapsedTime = performance.now() - start;
+                    results.push({
+                        'Kernel': exec_info.entry_func_name,
+                        'Elapsed time [ms]': elapsedTime
+                    });
+                }
+                console.table(results);
+
+            } else {
+                //execute kernels
+                let complete_promise: Promise<void> | null = null;
+                for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
+                    let exec_info = this.descriptor.exec_infos[i];
+                    let is_last = i == this.descriptor.exec_infos.length - 1;
+                    complete_promise = this.webGPUHandler.executeSinglePipelineState(
+                        'descriptor.' + exec_info.entry_func_name,
+                        exec_info.threadgroups_per_grid,
+                        exec_info.threads_per_thread_group,
+                        [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
+                        is_last
+                    );
+                }
+                await complete_promise!;//wait to finish final kernel
+
+                // get output from GPU
+                //await this.dataMat.syncReadViews();//not needed for DNNBufferWebGPU
             }
-            await complete_promise!;//wait to finish final kernel
-
-            // get output from GPU
-            //await this.dataMat.syncReadViews();//not needed for DNNBufferWebGPU
         }
     }
 
