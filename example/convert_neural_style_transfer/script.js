@@ -1,70 +1,77 @@
 'use strict';
 
 let $ = (q, e) => (e || document).querySelector(q);
-let flagInitialized = false;
 let runner = null;
+let flagPaused = true;
 
 document.addEventListener('DOMContentLoaded', initialize);
 
-async function main() {
-    try {
-        await run();
-    } catch (e) {
-        console.error(e);
+function togglePause() {
+    flagPaused = !flagPaused;
+    if (flagPaused) {
+        setStatus('Paused');
+        $('#toggle').textContent = 'Restart';
+    } else {
+        setStatus('Running');
+        $('#toggle').textContent = 'Pause';
+        mainRoutine();
     }
 }
 
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        let img = new Image();
-
-        img.addEventListener('load', () => {
-            let ctx = $('#src').getContext('2d');
-            ctx.drawImage(img, 0, 0);
-
-            console.log('image loaded');
-            resolve();
-        });
-        img.addEventListener('error', reject);
-
-        img.src = src;
-    })
-}
-
-
 async function initialize() {
-    await WebDNN.init();
+    try {
+        //noinspection ES6ModulesDependencies
+        await WebDNN.init();
 
-    console.log('compile pipeline');
-    let pipelineData = await((await fetch(`./output/graph_webgpu.json?t=${Date.now()}`)).json());
-    runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
-    await runner.compile();
-    console.log('compile pipeline: Done');
+        //noinspection JSUnresolvedFunction
+        let pipelineData = await((await fetch(`./output/graph_webgpu.json?t=${Date.now()}`)).json());
+        runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
+        await runner.compile();
 
-    console.log('load weight');
-    await runner.loadWeights(new Float32Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
-    console.log('load weight: Done');
+        //noinspection JSUnresolvedFunction
+        await runner.loadWeights(new Float32Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
 
-    await loadImage("./image.jpg");
-    flagInitialized = true;
+        Webcam.set({
+            width: 512,
+            height: 384,
+            force_flash: true,
+            image_format: 'jpeg',
+            jpeg_quality: 10
+        });
+        Webcam.on('error', (err) => {
+            throw err;
+        });
+        Webcam.on('live', () => {
+            setStatus('Ready');
+            let toggle = $('#toggle');
+            toggle.textContent = 'Start';
+            toggle.disabled = false;
+        });
+        Webcam.attach('#camera');
+//noinspection ES6ModulesDependencies
+    } catch (err) {
+        console.log(err);
+        setStatus(`Error: ${err.message}`);
+    }
 }
 
-async function run() {
-    if (!flagInitialized) await initialize();
+async function snap() {
+    return new Promise(resolve => Webcam.snap(resolve, $('#snap')));
+}
+
+async function mainRoutine() {
+    if (flagPaused) return;
 
     let inputView = (await runner.getInputViews())[0];
-    inputView.set(getImageData($('#src')));
-
     let outputView = (await runner.getOutputViews())[0];
 
-    console.log('main processing');
-    let start = performance.now();
-    await runner.run();
-    let totalElapsedTime = performance.now() - start;
-    console.log('main processing: Done');
+    await snap();
+    inputView.set(getImageData($('#snap')));
 
+    await runner.run();
     setImageData($('#result'), outputView);
-    console.log(`Total Elapsed Time[ms/image]: ${totalElapsedTime.toFixed(2)}`);
+
+    requestAnimationFrame(mainRoutine);
 }
 
 function setImageData(canvas, data) {
@@ -92,7 +99,7 @@ function getImageData(canvas) {
     let w = canvas.width;
     let imageData = ctx.getImageData(0, 0, w, h);
     let pixelData = imageData.data;
-    let data = new Float32Array(3 * h * w); //h,w,c(bgr)
+    let data = new Float32Array(3 * h * w);
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -103,4 +110,8 @@ function getImageData(canvas) {
     }
 
     return data;
+}
+
+function setStatus(status) {
+    $('#status').textContent = status;
 }

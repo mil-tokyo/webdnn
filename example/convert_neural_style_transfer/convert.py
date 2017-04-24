@@ -6,6 +6,7 @@ from os import path
 import chainer
 import chainer.computational_graph
 import numpy as np
+# noinspection PyUnresolvedReferences
 from model import FastStyleNet
 
 import graph_builder.optimizer.util
@@ -23,7 +24,7 @@ OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 class NSTModelPath(Enum):
     starrynight = "../../resources/chainer-fast-neuralstyle-models/models/starrynight.model"
     scream = "../../resources/chainer-fast-neuralstyle-models/models/scream-style.model"
-    flur = "../../resources/chainer-fast-neuralstyle-models/models/flur_0.model"
+    fur = "../../resources/chainer-fast-neuralstyle-models/models/fur_0.model"
     candy = "../../resources/chainer-fast-neuralstyle-models/models/candy_512_2_49000.model"
     kanagawa = "../../resources/chainer-fast-neuralstyle-models/models/kanagawa.model"
 
@@ -48,7 +49,7 @@ def generate_graph(model_path: str) -> Operator:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default=NSTModelPath.starrynight.name, choices=[v.name for v in NSTModelPath])
+    parser.add_argument("--model", default=NSTModelPath.candy.name, choices=[v.name for v in NSTModelPath])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     args = parser.parse_args()
@@ -56,7 +57,7 @@ def main():
     model_path = NSTModelPath[args.model].value
     if not path.exists(model_path):
         raise FileNotFoundError(f"""Model data ({model_path}) is not found. Please clone 'https://github.com/gafr/chainer-fast-neuralstyle-models' under 
-        the resource directory. Clone command takes about 1 minute, and the repository size is about 200MB.""")
+        the resource directory. Clone command takes about a few minute, and the repository size is about 200MB.""")
 
     graph = generate_graph(model_path)
 
