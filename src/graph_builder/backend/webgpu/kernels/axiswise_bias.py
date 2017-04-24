@@ -1,6 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webgpu.allocator import MemoryLayout
+from graph_builder.backend.webgpu.inline_injector import InlineInjector
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
@@ -26,7 +27,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
         float result = X[gid] + B[c];
         //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
-        Y[gid] = result;
+        Y[gid] = %%INLINE(result)%%;
     }
 }
 """
@@ -65,7 +66,13 @@ def axiswise_bias(op: AxiswiseBias,
         "axiswise_bias_C": y.variable.shape_dict[Axis.C],
     })
 
-    source = metabuffer_injector.inject(template)
+    inline_injector = InlineInjector()
+    if "inline_elementwise" in op.parameters:
+        inline_injector.delegate = op.parameters["inline_elementwise"]
+
+    source = template
+    source = metabuffer_injector.inject(source)
+    source = inline_injector.inject(source)
     func_name = util.add_canonical_suffix("axiswise_bias", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
 
