@@ -38,6 +38,7 @@ def elementwise_sum(op: AxiswiseScale,
     y = variables_layout[op.outputs["y"]]
 
     assert len(op.inputs) == 2, "[WebGPU] ElementwiseSum operator currently supported only 2 inputs."
+    assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

@@ -20,7 +20,6 @@ from graph_builder.backend.webgpu.kernels.average_pooling_2d import average_pool
 from graph_builder.backend.webgpu.kernels.axiswise_bias import axiswise_bias
 from graph_builder.backend.webgpu.kernels.axiswise_scale import axiswise_scale
 from graph_builder.backend.webgpu.kernels.col2im import col2im
-from graph_builder.backend.webgpu.kernels.convolution_2d import convolution_2d
 from graph_builder.backend.webgpu.kernels.elementwise_sum import elementwise_sum
 from graph_builder.backend.webgpu.kernels.elu import elu
 from graph_builder.backend.webgpu.kernels.flatten import flatten

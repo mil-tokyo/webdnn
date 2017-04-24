@@ -22,12 +22,12 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     const int N = %%META_LOAD(axiswise_bias_N)%%;
     const int C = %%META_LOAD(axiswise_bias_C)%%;
   
-    for (int gid = index; gid < N; gid += num_threads) {
+    for (int gid = index; gid < N * C; gid += num_threads) {
         int c = gid % C;
+        int n = gid / C;
 
         float result = X[gid] + B[c];
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
-        Y[gid] = %%INLINE(result)%%;
+        Y[n * C + c] = %%INLINE(result)%%;
     }
 }
 """
@@ -44,17 +44,8 @@ def axiswise_bias(op: AxiswiseBias,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == OrderNC \
-           or x.variable.axis_order == OrderNHWC \
-           or x.variable.axis_order == OrderHWNC, \
-        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of input variable. " + \
-        f"Actual data order is {x.variable.axis_order}"
-
-    assert y.variable.axis_order == OrderNC \
-           or y.variable.axis_order == OrderNHWC \
-           or y.variable.axis_order == OrderHWNC, \
-        f"[WebGPU] AxiswiseBias operator supports OrderNC, OrderNHWC, and OrderHWNC for data order of output variable. " + \
-        f"Actual data order is {y.variable.axis_order}"
+    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC or x.variable.axis_order == OrderHWNC
+    assert y.variable.shape == x.variable.shape
 
     assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseBias supports only channelwise bias."
 
@@ -62,7 +53,7 @@ def axiswise_bias(op: AxiswiseBias,
         "axiswise_bias_X_offset": x.offset,
         "axiswise_bias_Y_offset": y.offset,
         "axiswise_bias_B_offset": b.offset,
-        "axiswise_bias_N": y.variable.size,
+        "axiswise_bias_N": y.variable.size // y.variable.shape_dict[Axis.C],
         "axiswise_bias_C": y.variable.shape_dict[Axis.C],
     })
 

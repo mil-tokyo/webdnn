@@ -21,7 +21,6 @@ class CombineElementwiseOperation(OptimizeRule):
             op2 = match[1]
             x = list(op2.inputs.values())[0]
             y = list(op2.outputs.values())[0]
-            print(op1.__class__.__name__)
 
             if isinstance(op2, Relu):
                 op1.parameters["inline_elementwise"] = lambda exp: f"({exp}>0?{exp}:0)"

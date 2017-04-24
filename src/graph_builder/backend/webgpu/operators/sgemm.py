@@ -21,17 +21,17 @@ class Sgemm(Operator):
 
         super().__init__(name, parameters)
 
-    def __call__(self, x: Variable, w: Variable):
-        self.append_input("x", x)
-        self.append_input("w", w)
+    def __call__(self, A: Variable, B: Variable):
+        self.append_input("A", A)
+        self.append_input("B", B)
 
-        y = Variable(
+        C = Variable(
             self.parameters["out_shape"],
             self.parameters["out_order"]
         )
-        self.append_output("y", y)
+        self.append_output("C", C)
 
-        return y,
+        return C,
 
     @property
     def M(self) -> int:
