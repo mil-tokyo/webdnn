@@ -1,17 +1,17 @@
 from typing import List
+
 import numpy as np
 
-from graph_builder.graph.operator import Operator
-from graph_builder.graph.variables.attributes.order import AxisOrder, OrderC
-from graph_builder.graph.operators.compose import Compose, VariableAlias
-from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.optimizer import util
-from graph_builder.optimizer.optimize_rule import OptimizeRule
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.operator import Operator
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
+from graph_builder.graph.operators.compose import VariableAlias
+from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.variables.attributes.order import OrderC
+from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_builder.optimize_rule import util
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -21,7 +21,7 @@ class AffineConcat(OptimizeRule):
     Scaleを(Convolution2D|Linear)のウェイトに統合し、Biasは最後に1つだけにする
     """
 
-    def __call__(self, graph: Operator):
+    def optimize(self, graph: Operator):
         if not flags.optimize.AFFINE_CONCAT:
             return graph, False
 

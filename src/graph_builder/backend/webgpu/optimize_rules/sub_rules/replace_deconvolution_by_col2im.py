@@ -2,12 +2,10 @@ from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
-from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW, OrderCHWN
-from graph_builder.optimizer import util
-from graph_builder.optimizer.optimize_rule import OptimizeRule
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCHWN
+from graph_builder.optimize_rule import util
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class ReplaceDeconvolutionByCol2Im(OptimizeRule):
@@ -15,7 +13,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
     Deconvolution2Dをsgemm + Col2Imに置換する
     """
 
-    def __call__(self, graph: Operator):
+    def optimize(self, graph: Operator):
         flag_changed = False
         for op in util.listup_operator_in_order(graph):
             if not isinstance(op, Deconvolution2D):

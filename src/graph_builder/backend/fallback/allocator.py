@@ -6,7 +6,7 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimizer import util
+from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
 

@@ -8,24 +8,29 @@ import numpy as np
 
 from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
-from graph_builder.frontend.general_optimizer import GeneralOptimizer
-from graph_builder.graph import Variable, operators as O
-from graph_builder.graph.operators import attributes as A
-from graph_builder.graph.variables import attributes as VA, Constant
+from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
+from graph_builder.graph.axis import Axis
+from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.operators.compose import Compose
+from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.variable import Variable
+from graph_builder.graph.variables.attributes.order import OrderCN, OrderC, OrderNC
+from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.util import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
 
 def main():
-    x = Variable([1, 3], VA.OrderNC)
+    x: Variable = Variable([1, 3], OrderNC)
 
-    h, = O.Linear("fc1")(x, Constant(np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32), VA.OrderCN))
-    h, = O.AxiswiseBias("bias1", {"axis": A.Axis.C})(h, Constant(np.array([1.0, -10.0], dtype=np.float32), VA.OrderC))
-    y, = O.Relu("relu1")(h)
+    h, = Linear("fc1")(x, ConstantVariable(np.array([[2, 3], [5, 7], [1.1, -1.3]], dtype=np.float32), OrderCN))
+    h, = AxiswiseBias("bias1", {"axis": Axis.C})(h, ConstantVariable(np.array([1.0, -10.0], dtype=np.float32), OrderC))
+    y, = Relu("relu1")(h)
 
-    graph = O.Compose.compose_with_vars("graph", [x], [y])
-    graph = GeneralOptimizer().optimize(graph)
+    graph = Compose.compose_with_vars("graph", [x], [y])
+    graph, _ = GeneralOptimizeRule().optimize(graph)
 
     builder_type = "webgpu"
     if builder_type == "webgpu":

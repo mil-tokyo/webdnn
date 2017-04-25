@@ -4,7 +4,7 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.softmax import Softmax
 from graph_builder.graph.variable import Variable
-from graph_builder.optimizer.optimize_rule import OptimizeRule
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -13,7 +13,7 @@ class RemoveLastSoftmax(OptimizeRule):
     最終出力を作る関数がSoftmaxなら、これを削除する
     """
 
-    def __call__(self, graph: Operator):
+    def optimize(self, graph: Operator):
         if not flags.optimize.REMOVE_LAST_SOFTMAX:
             return graph, False
 
