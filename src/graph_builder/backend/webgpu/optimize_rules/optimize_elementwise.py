@@ -6,13 +6,12 @@ from graph_builder.graph.operators.attributes.post_elementwise import PostElemen
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.optimizer import util
-from graph_builder.optimizer.optimize_rule import OptimizeRule
-from graph_builder.optimizer.optimizer import Optimizer
+from graph_builder.optimize_rule import util
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class CombineElementwiseOperation(OptimizeRule):
-    def __call__(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Operator) -> Tuple[Operator, bool]:
         matches = util.search_sub_structure(graph, [PostElementwise, Elementwise])
         flag_changed = False
 
@@ -41,7 +40,7 @@ class CombineElementwiseOperation(OptimizeRule):
         return graph, flag_changed
 
 
-class OptimizeElementwise(Optimizer):
+class OptimizeElementwise(OptimizeRule):
     def __init__(self):
         super(OptimizeElementwise, self).__init__()
 

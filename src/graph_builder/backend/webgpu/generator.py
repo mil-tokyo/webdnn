@@ -33,14 +33,13 @@ from graph_builder.backend.webgpu.operators.affine_transform import AffineTransf
 from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
-from graph_builder.backend.webgpu.optimizers.webgpu_optimizer import WebGPUOptimizer
+from graph_builder.backend.webgpu.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.optimize_hint import ElementwiseOperationComposed
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.compose import Compose
-from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
@@ -48,7 +47,7 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.optimizer import util
+from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
 
@@ -71,7 +70,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
 
 def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
-    graph = WebGPUOptimizer().optimize(graph)
+    graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
 
@@ -121,9 +120,6 @@ def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_
 
         elif isinstance(op, Tanh):
             kernels += tanh(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Convolution2D):
-            kernels += convolution_2d(op, constants_layout, variables_layout)
 
         elif isinstance(op, MaxPooling2D):
             kernels += max_pooling_2d(op, constants_layout, variables_layout)

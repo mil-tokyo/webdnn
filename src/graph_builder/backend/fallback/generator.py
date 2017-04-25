@@ -34,7 +34,7 @@ from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
-from graph_builder.optimizer import util
+from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
 

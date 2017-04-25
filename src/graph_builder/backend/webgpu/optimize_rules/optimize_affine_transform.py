@@ -4,9 +4,8 @@ from graph_builder.backend.webgpu.operators.affine_transform import AffineTransf
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.constant_bias import ConstantBias
 from graph_builder.graph.operators.constant_scale import ConstantScale
-from graph_builder.optimizer import util
-from graph_builder.optimizer.optimize_rule import OptimizeRule
-from graph_builder.optimizer.optimizer import Optimizer
+from graph_builder.optimize_rule import util
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class UpgradeConstantScaleToAffineTransform(OptimizeRule):
@@ -61,7 +60,7 @@ class CombineAffineTransform(OptimizeRule):
         return graph, True
 
 
-class OptimizeAffineTransform(Optimizer):
+class OptimizeAffineTransform(OptimizeRule):
     def __init__(self):
         super(OptimizeAffineTransform, self).__init__()
 

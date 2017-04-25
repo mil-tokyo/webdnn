@@ -4,8 +4,8 @@ from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN, OrderCNHW
-from graph_builder.optimizer import util
-from graph_builder.optimizer.optimize_rule import OptimizeRule
+from graph_builder.optimize_rule import util
+from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class ReplaceConvolutionByIm2Col(OptimizeRule):
@@ -13,7 +13,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
     Convolution2DをIm2Col + sgemmに置換する
     """
 
-    def __call__(self, graph: Operator):
+    def optimize(self, graph: Operator):
         flag_changed = False
         for op in util.listup_operator_in_order(graph):
             if not isinstance(op, Convolution2D):
