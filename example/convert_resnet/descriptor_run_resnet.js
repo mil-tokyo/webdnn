@@ -32,7 +32,12 @@ async function load_descriptor() {
     $('#dnn_pipeline').val(desc);
 }
 
-async function run() {
+let flag_prepared = false;
+let test_samples;
+
+async function prepare_run() {
+    if (flag_prepared) return;
+
     let backend_name = $('input[name=backend_name]:checked').val();
     if (!$M) {
         backend_name = await init(backend_name);
@@ -50,7 +55,14 @@ async function run() {
     } else {
         test_image = await fetchImage('./output/image_nhwc.json');
     }
-    let test_samples = [test_image];
+    test_samples = [test_image];
+
+    flag_prepared = true;
+}
+
+async function run() {
+    await prepare_run();
+
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
 

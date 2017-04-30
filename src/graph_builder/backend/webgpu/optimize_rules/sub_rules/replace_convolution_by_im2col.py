@@ -3,7 +3,7 @@ from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN, OrderCNHW
+from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 from graph_builder.optimize_rule import util
 from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
@@ -37,7 +37,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                     "ksize": op.ksize,
                     "stride": op.stride,
                     "padding": op.padding,
-                    "out_order": OrderCNHW
+                    "out_order": OrderNHWC
                 })
                 col, = im2col(x)
 
@@ -49,7 +49,9 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                 "N": w.shape_dict[Axis.N],
                 "K": col.shape_dict[Axis.C],
                 "out_shape": [col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
-                "out_order": OrderNHWC
+                "out_order": OrderNHWC,
+                "transpose_A": True if col.axis_order == OrderNHWC else False,
+                "transpose_B": True
             })
             new_y, = sgemm(col, w)
 

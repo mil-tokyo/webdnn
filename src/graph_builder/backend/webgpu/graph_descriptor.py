@@ -36,17 +36,26 @@ class GraphDescriptor(json.SerializableMixin):
         self.outputs = outputs
 
     def concat_kernel_sources(self):
-        sources = OrderedDict()
-        sources["header"] = source_header
+        func_sources = OrderedDict()
+        prototype_sources = OrderedDict()
 
         for kernel in self.kernels:
             for func_name, source in kernel.func_sources.items():
-                if func_name in sources:
-                    assert sources[func_name] == source
+                if func_name in func_sources:
+                    assert func_sources[func_name] == source
                 else:
-                    sources[func_name] = source
+                    func_sources[func_name] = source
 
-        combined_source = "\n".join(sources.values())
+            for func_name, source in kernel.prototype_sources.items():
+                if func_name in prototype_sources:
+                    assert prototype_sources[func_name] == source
+                else:
+                    prototype_sources[func_name] = source
+
+        combined_source = \
+            source_header + \
+            "\n".join(prototype_sources.values()) + \
+            "\n".join(func_sources.values())
 
         return combined_source
 

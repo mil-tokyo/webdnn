@@ -18,6 +18,8 @@ class Sgemm(Operator):
         assert "K" in parameters
         assert "out_shape" in parameters
         assert "out_order" in parameters
+        assert "transpose_A" in parameters
+        assert "transpose_B" in parameters
 
         super().__init__(name, parameters)
 
@@ -44,3 +46,11 @@ class Sgemm(Operator):
     @property
     def K(self) -> int:
         return int(self.parameters["K"])
+
+    @property
+    def transpose_A(self) -> bool:
+        return bool(self.parameters["transpose_A"])
+
+    @property
+    def transpose_B(self) -> bool:
+        return bool(self.parameters["transpose_B"])
