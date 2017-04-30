@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.elementwise import Elementwise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
@@ -11,7 +12,7 @@ from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class CombineElementwiseOperation(OptimizeRule):
-    def optimize(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         matches = util.search_sub_structure(graph, [PostElementwise, Elementwise])
         flag_changed = False
 
@@ -35,7 +36,11 @@ class CombineElementwiseOperation(OptimizeRule):
 
             op2.remove_all()
 
-            x.merge(y)
+            if y in graph.outputs:
+                op1.replace_output(x, y)
+            else:
+                x.merge(y)
+
             flag_changed = True
 
         return graph, flag_changed

@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.constant_bias import ConstantBias
 from graph_builder.graph.operators.constant_scale import ConstantScale
 from graph_builder.optimize_rule import util
@@ -9,7 +9,7 @@ from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 
 class UpgradeConstantScaleToAffineTransform(OptimizeRule):
-    def __call__(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         matches = util.search_sub_structure(graph, [ConstantScale])
         if len(matches) == 0:
             return graph, False
@@ -24,7 +24,7 @@ class UpgradeConstantScaleToAffineTransform(OptimizeRule):
 
 
 class UpgradeConstantBiasToAffineTransform(OptimizeRule):
-    def __call__(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         matches = util.search_sub_structure(graph, [ConstantBias])
         if len(matches) == 0:
             return graph, False
@@ -39,7 +39,7 @@ class UpgradeConstantBiasToAffineTransform(OptimizeRule):
 
 
 class CombineAffineTransform(OptimizeRule):
-    def __call__(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         matches = util.search_sub_structure(graph, [AffineTransform, AffineTransform])
         if len(matches) == 0:
             return graph, False

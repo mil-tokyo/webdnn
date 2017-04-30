@@ -23,11 +23,10 @@ from graph_builder.backend.fallback.kernels.flatten import flatten
 from graph_builder.backend.fallback.kernels.linear import linear
 from graph_builder.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.fallback.kernels.relu import relu
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.flatten import Flatten
@@ -38,7 +37,7 @@ from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
 
-def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
+def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
@@ -57,14 +56,10 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
 
 
 # noinspection PyUnusedLocal
-def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
     for op in util.listup_operators(graph):
-        if isinstance(op, Compose):
-            # kernels = generate_kernel_compose(op, constants_layout, variables_layout)
-            continue
-
-        elif isinstance(op, Linear):
+        if isinstance(op, Linear):
             kernels += linear(op)
 
         elif isinstance(op, AxiswiseBias):

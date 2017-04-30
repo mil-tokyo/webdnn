@@ -9,8 +9,8 @@ from graph_builder.backend.fallback.generator import generate as generate_fallba
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.relu import Relu
@@ -70,8 +70,7 @@ def construct_graph_fc(weights: np.array, batch_size: int = 1):
     h, = Linear("fc3")(h, ConstantVariable(weights["l3/W"], OrderCN))
     y, = AxiswiseBias("bias3", {"axis": Axis.C})(h, ConstantVariable(weights["l3/b"], OrderC))
 
-    graph = Compose.compose_with_vars("graph", [x], [y])
-    return graph
+    return Graph([x], [y])
 
 
 def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1):
@@ -91,8 +90,7 @@ def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1):
     h, = conv2(h, ConstantVariable(weights["conv3/W"], OrderHWCN))
     y, = AxiswiseBias("bias3", {"axis": Axis.C})(h, ConstantVariable(weights["conv3/b"], OrderC))
 
-    graph = Compose.compose_with_vars("graph", [x], [y])
-    return graph
+    return Graph([x], [y])
 
 
 def main():

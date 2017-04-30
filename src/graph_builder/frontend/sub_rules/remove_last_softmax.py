@@ -1,9 +1,9 @@
 from typing import List
 
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.softmax import Softmax
-from graph_builder.graph.variable import Variable
+from graph_builder.optimize_rule import util
 from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
@@ -13,24 +13,25 @@ class RemoveLastSoftmax(OptimizeRule):
     最終出力を作る関数がSoftmaxなら、これを削除する
     """
 
-    def optimize(self, graph: Operator):
+    def optimize(self, graph: Graph):
         if not flags.optimize.REMOVE_LAST_SOFTMAX:
             return graph, False
 
         flag_changed = False
-        var_queue: List[Variable] = list(graph.outputs.values())
+        ops: List[Operator] = reversed(util.listup_operators(graph))
 
-        while len(var_queue) > 0:
-            v = var_queue.pop(0)
+        while len(ops) > 0:
+            op = ops.pop(0)
 
-            if isinstance(v.output_from, Compose):
-                composed = v.output_from  # type: Compose
-                var_queue.extend(list(composed.outputs_alias))
-                continue
-
-            elif isinstance(v.output_from, Softmax):
-                softmax = v.output_from  # type: Softmax
-                softmax.remove_self()
+            if isinstance(op, Softmax):
+                op: Softmax
+                x = op.inputs["x"]
+                y = op.outputs["y"]
+                op.remove_self()
+                x.merge(y)
                 flag_changed = True
+
+            else:
+                break
 
         return graph, flag_changed

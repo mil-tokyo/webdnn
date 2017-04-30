@@ -10,8 +10,8 @@ from graph_builder.backend.fallback.generator import generate as generate_fallba
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.variable import Variable
@@ -29,7 +29,7 @@ def main():
     h, = AxiswiseBias("bias1", {"axis": Axis.C})(h, ConstantVariable(np.array([1.0, -10.0], dtype=np.float32), OrderC))
     y, = Relu("relu1")(h)
 
-    graph = Compose.compose_with_vars("graph", [x], [y])
+    graph = Graph([x], [y])
     graph, _ = GeneralOptimizeRule().optimize(graph)
 
     builder_type = "webgpu"

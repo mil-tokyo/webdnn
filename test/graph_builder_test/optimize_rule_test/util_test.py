@@ -1,8 +1,8 @@
 from nose import with_setup
 
 from graph_builder.graph.attribute import Attribute
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNC
 from graph_builder.optimize_rule.util import check_attribute_match, check_match, check_node_type_match, search_sub_structure, filter_nodes, \
@@ -18,6 +18,14 @@ v2 = None
 v3 = None
 
 
+class TestAttribute(Attribute):
+    pass
+
+
+class TestOperator(Operator):
+    pass
+
+
 def setup_graph_sequential():
     """
     generate sequential structure
@@ -31,7 +39,7 @@ def setup_graph_sequential():
     v0 = Variable((1, 1), OrderNC)
     op1 = Operator("op1")
     v1 = Variable((1, 2), OrderNC)
-    op2 = Operator("op2")
+    op2 = TestOperator("op2")
     v2 = Variable((1, 3), OrderNC)
     op3 = Operator("op3")
     v3 = Variable((1, 4), OrderNC)
@@ -43,7 +51,7 @@ def setup_graph_sequential():
     op3.append_input("v2", v2)
     op3.append_output("v3", v3)
 
-    graph = Compose.compose_ops("graph", [op1, op2, op3])
+    graph = Graph([v0], [v3])
 
 
 def setup_graph_residual():
@@ -60,7 +68,7 @@ def setup_graph_residual():
     v0 = Variable((1, 1), OrderNC)
     op1 = Operator("op1")
     v1 = Variable((1, 2), OrderNC)
-    op2 = Operator("op2")
+    op2 = TestOperator("op2")
     v2 = Variable((1, 3), OrderNC)
     op3 = Operator("op3")
     v3 = Variable((1, 4), OrderNC)
@@ -75,44 +83,39 @@ def setup_graph_residual():
     op3.append_input("v2", v2)
     op3.append_output("v3", v3)
 
-    graph = Compose.compose_ops("graph", [op1, op2, op3])
+    graph = Graph([v0], [v3])
 
 
 @with_setup(setup_graph_sequential)
 def test_check_attribute_match():
-    global graph, op1, op2
-
-    class TestAttribute(Attribute):
-        pass
+    global op1, op2
 
     op2.attributes.add(TestAttribute)
 
-    assert not check_attribute_match(graph, TestAttribute)
     assert not check_attribute_match(op1, TestAttribute)
     assert check_attribute_match(op2, TestAttribute)
 
 
 @with_setup(setup_graph_sequential)
 def test_check_node_type_match():
-    global graph, op1
+    global op1, op2
 
-    assert check_node_type_match(graph, Compose)
-    assert not check_node_type_match(op1, Compose)
+    assert not check_node_type_match(op1, TestOperator)
+    assert check_node_type_match(op2, TestOperator)
+    assert check_node_type_match(op2, Operator)
 
 
 @with_setup(setup_graph_sequential)
 def test_check_match():
-    global graph, op1
-
-    class TestAttribute(Attribute):
-        pass
+    global op1, op2
 
     op1.attributes.add(TestAttribute)
 
-    assert not check_match(graph, TestAttribute)
-    assert check_match(graph, Compose)
-    assert not check_match(op1, Compose)
     assert check_match(op1, TestAttribute)
+    assert not check_match(op2, TestAttribute)
+
+    assert not check_match(op1, TestOperator)
+    assert check_match(op2, TestOperator)
 
 
 @with_setup(setup_graph_sequential)
@@ -144,7 +147,7 @@ def test_listup_nodes():
     global graph, op1, op2, op3, v0, v1, v2, v3
     nodes = listup_nodes(graph)
 
-    assert tuple(nodes) == (v0, op1, v1, op2, v2, op3, graph, v3)
+    assert tuple(nodes) == (v0, op1, v1, op2, v2, op3, v3)
 
 
 @with_setup(setup_graph_sequential)
@@ -152,7 +155,7 @@ def test_listup_operators():
     global graph, op1, op2, op3
     ops = listup_operators(graph)
 
-    assert tuple(ops) == (op1, op2, op3, graph)
+    assert tuple(ops) == (op1, op2, op3)
 
 
 @with_setup(setup_graph_sequential)
@@ -168,7 +171,7 @@ def test_listup_nodes_residual():
     global graph, op1, op2, op3, v0, v1, v2, v3
     nodes = listup_nodes(graph)
 
-    assert tuple(nodes) == (v0, op1, v1, op2, v2, op3, graph, v3)
+    assert tuple(nodes) == (v0, op1, v1, op2, v2, op3, v3)
 
 
 @with_setup(setup_graph_residual)
@@ -176,7 +179,7 @@ def test_listup_operators_residual():
     global graph, op1, op2, op3
     ops = listup_operators(graph)
 
-    assert tuple(ops) == (op1, op2, op3, graph)
+    assert tuple(ops) == (op1, op2, op3)
 
 
 @with_setup(setup_graph_residual)

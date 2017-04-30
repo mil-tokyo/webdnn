@@ -13,11 +13,11 @@ import numpy as np
 
 from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.node import Node
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.constant_bias import ConstantBias
 from graph_builder.graph.operators.constant_scale import ConstantScale
 from graph_builder.graph.operators.convolution2d import Convolution2D
@@ -348,7 +348,7 @@ class ChainerGraphConverter:
         self._known_nvars = []  # 存在するVariable(include Constant)
 
     def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
-                input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Node:
+                input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Graph:
         # 戦略
         # 生成済み変数(chainer.Variable)をセットに入れる; 入力変数およびウェイト
         # 生成済み変数だけを入力とし、未処理のchainer.Functionを変換し、生成済み変数セットに追加
@@ -393,10 +393,8 @@ class ChainerGraphConverter:
         # このフレームワークで標準的なデータオーダーに変更
         self._transpose_vars(self._known_nvars)
 
-        graph = Compose.compose_with_vars("graph",
-                                          [self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
-                                          [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
-        return graph
+        return Graph([self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
+                     [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
 
     def _convert_input_vars(self, input_vars: Iterable[chainer.Variable]):
         for cvar in input_vars:

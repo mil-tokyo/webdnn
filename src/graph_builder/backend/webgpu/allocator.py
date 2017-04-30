@@ -2,9 +2,8 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.attributes.inplace import Inplace
-from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
@@ -57,9 +56,6 @@ class MemoryLayout(json.SerializableMixin):
         if offset == -1:
             offset = self.size
 
-        if isinstance(var, VariableAlias):
-            var = var.original
-
         self.__dict__[var.name] = Allocation(var, offset)
 
     @property
@@ -75,8 +71,8 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate(cls, graph: Operator) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
-        variables = util.listup_variables(graph, remove_alias=True)
+    def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
+        variables = set(util.listup_variables(graph))
         for i, v in enumerate(variables):
             v.name = f"v{i}"
 
@@ -108,17 +104,14 @@ class Allocator:
         return layout, buffer
 
     @classmethod
-    def allocate_variables(cls, graph: Operator, variables: List[Variable]) -> MemoryLayout:
+    def allocate_variables(cls, graph: Graph, variables: List[Variable]) -> MemoryLayout:
         layout = MemoryLayout()
 
         # 計算グラフを辿りながら、retain回数をカウントし、ゼロになったら解放する
         retain_count: Dict[Variable, int] = {v: 0 for v in variables}
         free_list: List[Tuple(int, int)] = []  # [(offset, size)]
 
-        for var in graph.inputs.values():
-            if isinstance(var, VariableAlias):
-                var = var.original
-
+        for var in graph.inputs:
             if isinstance(var, ConstantVariable):
                 continue
 
@@ -126,62 +119,41 @@ class Allocator:
 
         for op in util.listup_operators(graph):
             for var in op.outputs.values():
-                if isinstance(var, VariableAlias):
-                    var = var.original
-
                 if isinstance(var, ConstantVariable):
                     continue
 
                 if var not in layout:
+                    # 新規に確保する
                     flag_allocated = False
 
-                    # Supports inplace operation
                     if not flag_allocated and util.check_attribute_match(op, Inplace):
+                        # Inplace処理
 
-                        variable_count = 0
-                        for v0 in op.inputs.values():
-                            if isinstance(v0, VariableAlias):
-                                v0 = v0.original
-
-                            if isinstance(v0, ConstantVariable):
-                                continue
-                            v1 = v0
-                            variable_count += 1
-
-                        if variable_count > 1:
+                        input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
+                        if len(input_variables) > 1:
                             if flags.DEBUG:
                                 print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
                                       + f"Allocator skipped inplace allocation and allocate other memory. "
                                       + f"Operator: {op}")
 
                         else:
-                            var.parameters["inplace_src"] = v1
+                            # 入力のメモリをそのまま使う
+                            v_in = input_variables[0]
+                            while "inplace_src" in v_in.parameters:
+                                v_in = v_in.parameters["inplace_src"]
+                            var.parameters["inplace_src"] = v_in
 
-                            check_queue: List[Variable] = []
-                            flag_safe = True
-                            while len(check_queue) > 0:
-                                v = check_queue.pop(0)
-                                if v.input_to > 1:
-                                    flag_safe = False
-                                    break
-
-                                if "inplace_src" in var.parameters:
-                                    check_queue.append(var.parameters["inplace_src"])
-
-                            if flag_safe:
-                                # 入力のメモリをそのまま使う
-                                v2 = v1
-                                while "inplace_src" in v2.parameters:
-                                    v2 = v2.parameters["inplace_src"]
-
-                                layout.append(var, layout[v2].offset)
-                                retain_count[v2] += len(var.input_to)
-                                flag_allocated = True
+                            layout.append(var, layout[v_in].offset)
+                            retain_count[v_in] += len(var.input_to)
+                            flag_allocated = True
 
                     if not flag_allocated:
+                        # 新しくメモリを確保
+
                         size = var.size
                         spaces = sorted([space for space in free_list if space[1] >= size], key=lambda x: x[1])
                         retain_count[var] = len(var.input_to)
+
                         if len(spaces) > 0:
                             # 十分なスペースがあった
                             space = spaces[0]
@@ -200,23 +172,20 @@ class Allocator:
                         raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
 
             for var in op.inputs.values():
-                if isinstance(var, VariableAlias):
-                    var = var.original
-
                 if isinstance(var, ConstantVariable):
                     continue
 
-                v2 = var
-                while "inplace_src" in v2.parameters:
-                    v2 = v2.parameters["inplace_src"]
+                while "inplace_src" in var.parameters:
+                    var = var.parameters["inplace_src"]
+                retain_count[var] -= 1
 
-                retain_count[v2] -= 1
-
-                if retain_count[v2] == 0:
-                    allocation = layout[v2]
+                if retain_count[var] == 0:
+                    # 解放
+                    allocation = layout[var]
                     space1 = (allocation.offset, allocation.size)
                     free_list.append(space1)
 
+                    # 解放済み領域の結合(デフラグ)
                     flag_changed = True
                     while flag_changed:
                         flag_changed = False

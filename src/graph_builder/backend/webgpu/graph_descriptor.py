@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Iterable, Dict
+from typing import Iterable
 
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
@@ -20,15 +20,15 @@ class GraphDescriptor(json.SerializableMixin):
     kernels: Iterable[Kernel]
     constants_layout: MemoryLayout
     variables_layout: MemoryLayout
-    inputs: Dict[str, Variable]
-    outputs: Dict[str, Variable]
+    inputs: Iterable[Variable]
+    outputs: Iterable[Variable]
 
     def __init__(self,
                  kernels: Iterable[Kernel],
                  constants_layout: MemoryLayout,
                  variables_layout: MemoryLayout,
-                 inputs: Dict[str, Variable],
-                 outputs: Dict[str, Variable]):
+                 inputs: Iterable[Variable],
+                 outputs: Iterable[Variable]):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
@@ -65,6 +65,6 @@ class GraphDescriptor(json.SerializableMixin):
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_allocation": self.constants_layout,
             "variable_allocation": self.variables_layout,
-            "inputs": [v.parameters["name"] for v in self.inputs.values() if not util.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs.values()]
+            "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
+            "outputs": [v.parameters["name"] for v in self.outputs]
         }
