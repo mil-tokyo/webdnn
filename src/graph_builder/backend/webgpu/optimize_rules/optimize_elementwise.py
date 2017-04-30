@@ -34,6 +34,7 @@ class CombineElementwiseOperation(OptimizeRule):
                 continue
 
             op2.remove_all()
+
             x.merge(y)
             flag_changed = True
 

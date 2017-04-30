@@ -124,7 +124,7 @@ class Allocator:
 
             layout.append(var)
 
-        for op in util.listup_operator_in_order(graph):
+        for op in util.listup_operators(graph):
             for var in op.outputs.values():
                 if isinstance(var, VariableAlias):
                     var = var.original

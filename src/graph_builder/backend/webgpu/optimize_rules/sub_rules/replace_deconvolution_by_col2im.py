@@ -15,7 +15,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
 
     def optimize(self, graph: Operator):
         flag_changed = False
-        for op in util.listup_operator_in_order(graph):
+        for op in util.listup_operators(graph):
             if not isinstance(op, Deconvolution2D):
                 continue
 

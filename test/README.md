@@ -1,13 +1,11 @@
-# test
+# Test
 
-- sgemm
+### Python(graph_bulilder)
 
-	sgemmの実行速度(FLOPS)の測定
+- テストフレームワークとして[nose](http://nose.readthedocs.io/en/latest/)を使用
+- テスト追加の際はフォルダ・ファイル名の末尾に `_test` をつけること
+- `pip install nose` でインストールされる `nosetests` コマンドでテストを実行可能。
 
-- resnet50
+### JavaScript
 
-	resnet50の実行速度の検証
-
-- src
-
-	各種テスト用ソース
+- 未定

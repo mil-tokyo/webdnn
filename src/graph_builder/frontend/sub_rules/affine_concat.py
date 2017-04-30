@@ -29,7 +29,7 @@ class AffineConcat(OptimizeRule):
 
         while True:
             flag_changed_in_iter = False
-            ops = util.listup_operator_in_order(graph)
+            ops = util.listup_operators(graph)
             current_seq = []
             for op in ops:
                 if isinstance(op, Convolution2D):

@@ -100,7 +100,7 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
 def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
 
-    for op in util.listup_operator_in_order(graph):
+    for op in util.listup_operators(graph):
         if isinstance(op, Compose):
             if util.check_attribute_match(op, ElementwiseOperationComposed):
                 print(op)

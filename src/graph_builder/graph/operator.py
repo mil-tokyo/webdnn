@@ -7,12 +7,12 @@ from graph_builder.graph.node import Node
 class Operator(Node, IOperator):
     def __init__(self,
                  name: str,
-                 parameters: Dict[str, object] = {}):
+                 parameters: Dict[str, object] = None):
 
         super().__init__(parameters)
 
         self.name: str = name
-        self.parameters: Dict[str, object] = parameters
+        self.parameters: Dict[str, object] = {} if parameters is None else parameters
         self.inputs: Dict[str, IVariable] = {}
         self.outputs: Dict[str, IVariable] = {}
 

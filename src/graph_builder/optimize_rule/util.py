@@ -6,15 +6,15 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.compose import Compose, VariableAlias
 from graph_builder.graph.variable import Variable
 
-QueryTarget = Union[Type[Attribute], Type[Operator]]
+Query = Union[Type[Attribute], Type[Node]]
 
 
-def check_match(node: Node, query: QueryTarget):
+def check_match(node: Node, query: Query):
     if issubclass(query, Attribute):
         return check_attribute_match(node, query)
 
-    elif issubclass(query, Operator):
-        return check_operator_match(node, query)
+    elif issubclass(query, Node):
+        return check_node_type_match(node, query)
 
     else:
         raise NotImplementedError
@@ -29,17 +29,20 @@ def check_attribute_match(node: Node, query: Type[Attribute]):
         return False
 
 
-def check_operator_match(node: Node, query: Type[Operator]):
+def check_node_type_match(node: Node, query: Type[Node]):
     return isinstance(node, query)
 
 
-def search_sub_structure(graph: Operator, query: List[QueryTarget]) -> List[List[Operator]]:
+def search_sub_structure(graph: Operator, query: List[Query]) -> List[List[Operator]]:
     matches: List[List[Operator]] = []
-    ops = listup_operator_in_order(graph)
-    current_matches: List[(int, int)] = [(i, 0) for i, _ in enumerate(ops)]
+    ops = listup_operators(graph)
+    current_matches: List[(int, int)] = [(i, 0) for i in range(len(ops) - len(query))]
 
     while len(current_matches) > 0:
         offset, index = current_matches.pop(0)
+        if offset + index >= len(ops):
+            continue
+
         if check_match(ops[offset + index], query[index]):
             if index == len(query) - 1:
                 matches.append(ops[offset:offset + len(query)])
@@ -50,69 +53,65 @@ def search_sub_structure(graph: Operator, query: List[QueryTarget]) -> List[List
     return matches
 
 
-def filter_nodes(nodes: Iterable[Node], query: Type[Attribute]) -> List[Node]:
-    return [node for node in nodes if check_attribute_match(node, query)]
+def filter_nodes(nodes: Iterable[Node], query: Query) -> List[Node]:
+    return [node for node in nodes if check_match(node, query)]
 
 
-def listup_operator_in_order(graph: Operator) -> List[Operator]:
-    stack: List[Operator] = [graph]
-    result: List[Operator] = []
-    resolved: Set[Operator] = set()
+def listup_nodes(graph: Operator) -> List[Node]:
+    stack: List[Node] = list(graph.outputs.values())
+    result: List[Node] = []
+    resolved: Set[Node] = set()
 
     while len(stack) > 0:
-        op = stack.pop(0)
-        dependents: List[Operator] = []
+        node = stack.pop(0)
+        if node in resolved:
+            continue
 
-        inputs = list(op.inputs.values())
-        if isinstance(op, Compose):
-            op: Compose
-            inputs.extend(op.outputs_alias)
+        if isinstance(node, Operator):
+            if isinstance(node, Compose):
+                node: Compose
+                dependents = list([v.output_from for v in node.outputs_alias])
 
-        for v in inputs:
-            if v.output_from is not None and v.output_from not in resolved:
-                dependents.append(v.output_from)
+            else:
+                dependents = list(node.inputs.values())
 
-        if len(dependents) > 0:
-            stack.insert(0, op)
-            for dependent in dependents:
+        elif isinstance(node, Variable):
+            dependents = [node.output_from]
+
+        elif isinstance(node, VariableAlias):
+            dependents = [node.original]
+
+        else:
+            raise NotImplementedError("Unknown Node")
+
+        unresolved = [d for d in dependents if (d is not None) and (d not in resolved)]
+
+        if len(unresolved) > 0:
+            stack.insert(0, node)
+            for dependent in unresolved:
                 stack.insert(0, dependent)
 
         else:
-            result.append(op)
-            resolved.add(op)
+            if not isinstance(node, VariableAlias):
+                result.append(node)
+            resolved.add(node)
 
     return result
 
 
-def listup_variables(op: Operator, remove_alias: True) -> Set[Variable]:
-    op_queue: List[Operator] = [op]
-    variables: Set[Variable] = set(op.outputs.values())
-    checked_ops: Set[Operator] = set()
+def listup_operators(graph: Operator) -> List[Operator]:
+    ops: List[Operator] = filter_nodes(listup_nodes(graph), Operator)
+    return ops
 
-    while len(op_queue) > 0:
-        op = op_queue.pop(0)
-        if op in checked_ops:
-            continue
-        checked_ops.add(op)
 
-        for var in op.inputs.values():
-            if not remove_alias or not isinstance(var, VariableAlias):
-                variables.add(var)
-
-            if var.output_from is not None:
-                op_queue.append(var.output_from)
-
-        if isinstance(op, Compose):
-            op: Compose
-            for var in op.outputs_alias:  # type: VariableAlias
-                op_queue.append(var.output_from)
-
+def listup_variables(graph: Operator) -> List[Variable]:
+    variables: List[Variable] = filter_nodes(listup_nodes(graph), Variable)
     return variables
 
 
 def dump(graph: Operator):
     indent = ""
-    for op in listup_operator_in_order(graph):
+    for op in listup_operators(graph):
         print(f"---------------------------------------------------------------------------")
         print(f"{indent}{op.__class__.__name__} : {op.name}")
         print(f"{indent}    In  : {op.inputs}")
