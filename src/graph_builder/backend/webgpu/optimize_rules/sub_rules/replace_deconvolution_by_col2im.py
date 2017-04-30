@@ -44,6 +44,8 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
                               w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
                               ],
                 "out_order": OrderNHWC,
+                "transpose_A": True if x.axis_order == OrderNHWC else False,
+                "transpose_B": True
             })
             col, = sgemm(x, w)
 
