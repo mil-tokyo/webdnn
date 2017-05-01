@@ -206,25 +206,22 @@ void sgemm_core(const device float *load_target,
     }
 
     {
-        int m = group_position.x * 64 + m_offset * 8;
-        int n = group_position.y * 64 + n_offset * 8;
+#pragma unroll m_sub
+        for (int m_sub = 0; m_sub < 8; m_sub++)
+        {
+#pragma unroll 2
+            for (int n_sub1 = 0; n_sub1 < 2; n_sub1++)
+            {
+#pragma unroll 4
+                for (int n_sub2 = 0; n_sub2 < 4; n_sub2++)
+                {
+                    const int m = group_position.x * 64 + m_offset * 8 + m_sub;
+                    const int n = group_position.y * 64 + n_offset * 8 + n_sub1 * 4 + n_sub2;
 
-        (m + 0 < M && n < N) ? (*((device float4 *)(&C[(m + 0) * N + n + 0])) = result[0]) : 0;
-        (m + 0 < M && n < N) ? (*((device float4 *)(&C[(m + 0) * N + n + 4])) = result[1]) : 0;
-        (m + 1 < M && n < N) ? (*((device float4 *)(&C[(m + 1) * N + n + 0])) = result[2]) : 0;
-        (m + 1 < M && n < N) ? (*((device float4 *)(&C[(m + 1) * N + n + 4])) = result[3]) : 0;
-        (m + 2 < M && n < N) ? (*((device float4 *)(&C[(m + 2) * N + n + 0])) = result[4]) : 0;
-        (m + 2 < M && n < N) ? (*((device float4 *)(&C[(m + 2) * N + n + 4])) = result[5]) : 0;
-        (m + 3 < M && n < N) ? (*((device float4 *)(&C[(m + 3) * N + n + 0])) = result[6]) : 0;
-        (m + 3 < M && n < N) ? (*((device float4 *)(&C[(m + 3) * N + n + 4])) = result[7]) : 0;
-        (m + 4 < M && n < N) ? (*((device float4 *)(&C[(m + 4) * N + n + 0])) = result[8]) : 0;
-        (m + 4 < M && n < N) ? (*((device float4 *)(&C[(m + 4) * N + n + 4])) = result[9]) : 0;
-        (m + 5 < M && n < N) ? (*((device float4 *)(&C[(m + 5) * N + n + 0])) = result[10]) : 0;
-        (m + 5 < M && n < N) ? (*((device float4 *)(&C[(m + 5) * N + n + 4])) = result[11]) : 0;
-        (m + 6 < M && n < N) ? (*((device float4 *)(&C[(m + 6) * N + n + 0])) = result[12]) : 0;
-        (m + 6 < M && n < N) ? (*((device float4 *)(&C[(m + 6) * N + n + 4])) = result[13]) : 0;
-        (m + 7 < M && n < N) ? (*((device float4 *)(&C[(m + 7) * N + n + 0])) = result[14]) : 0;
-        (m + 7 < M && n < N) ? (*((device float4 *)(&C[(m + 7) * N + n + 4])) = result[15]) : 0;
+                    (m < M && n < N) ? (C[m * N + n ] = result[m_sub * 2 + n_sub1][n_sub2]) : 0;
+                }
+            }
+        }
     }
 }
 """
