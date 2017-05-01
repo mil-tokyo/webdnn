@@ -23,6 +23,7 @@ from graph_builder.backend.fallback.kernels.flatten import flatten
 from graph_builder.backend.fallback.kernels.linear import linear
 from graph_builder.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.fallback.kernels.relu import relu
+from graph_builder.backend.fallback.kernels.local_response_normalization import local_response_normalization
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
@@ -33,6 +34,7 @@ from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
@@ -85,6 +87,9 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
 
         elif isinstance(op, Relu):
             kernels += relu(op)
+
+        elif isinstance(op, LocalResponseNormalization):
+            kernels += local_response_normalization(op)
 
         else:
             raise NotImplementedError(f"{op} is Unknown for Fallback Descriptor Generator")

@@ -29,9 +29,11 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
+from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.input import Input
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, OrderNHWC, OrderCNHW, \
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
+    OrderNHWC, OrderCNHW, \
     AxisOrder
 from graph_builder.graph.variables.attributes.output import Output
 from graph_builder.graph.variables.constant_variable import ConstantVariable
@@ -225,6 +227,26 @@ class AveragePooling2DBlock(OperatorBlock):
         return [opr_out]
 
 
+class LocalResponseNormalizationBlock(OperatorBlock):
+    # noinspection PyUnresolvedReferences
+    cfunc: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, cfunc: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        conv_opr = LocalResponseNormalization(generate_unique_name(self.cfunc.label),
+                                              {"n": self.cfunc.n,
+                                               "k": self.cfunc.k,
+                                               "alpha": self.cfunc.alpha,
+                                               "beta": self.cfunc.beta})
+
+        opr_out, = conv_opr(inputs[0])
+        return [opr_out]
+
+
 class BatchNormalizationBlock(OperatorBlock):
     # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction
@@ -338,7 +360,9 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.math.basic_math.Add, AddBlock),
                  (chainer.functions.math.basic_math.AddConstant, AddConstantBlock),
                  (chainer.functions.math.basic_math.MulConstant, MulConstantBlock),
-                 (chainer.functions.array.reshape.Reshape, ReshapeBlock)]
+                 (chainer.functions.array.reshape.Reshape, ReshapeBlock),
+                 (chainer.functions.normalization.local_response_normalization.LocalResponseNormalization,
+                  LocalResponseNormalizationBlock)]
 
 
 class ChainerGraphConverter:

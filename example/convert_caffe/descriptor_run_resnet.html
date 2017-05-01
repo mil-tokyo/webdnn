@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>WebDNN test</title>
+  <meta charset="utf-8">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="../../build/array_prototype/webdnn.js"></script>
+  <script src="descriptor_run_resnet.js"></script>
+</head>
+
+<body>
+  WebDNN test
+  <form>
+    Image URL: <input type="text" name="image_url" value="../../resources/imagenet/ILSVRC2012_val_00000001.JPEG" size="100"><br>
+    <canvas id="input_image" width="227" height="227"></canvas><br>
+    <button type="button" onclick="load_image(); return false;">Load image</button>
+    <button type="button" onclick="load_descriptor(); return false;">Load descriptor</button><br>
+    Using canvas's image slightly changes the output due to interpolation. (Compared to image_hwcn.json)<br>
+    <button type="button" onclick="run_entry(); return false;">Run</button>
+    <label><input type="radio" name="backend_name" value="webgpu" checked>webgpu</label>
+    <label><input type="radio" name="backend_name" value="fallback">fallback</label><br>
+    <span id="mini_msg"></span>
+    
+    <div>
+      <textarea id="dnn_pipeline"></textarea>
+    </div>
+  </form>
+</body>
+
+</html>
