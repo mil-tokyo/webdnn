@@ -4,7 +4,6 @@ import numpy as np
 
 from graph_builder.graph.interface import IVariable, IOperator
 from graph_builder.graph.node import Node
-from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
@@ -87,11 +86,8 @@ class Variable(Node, IVariable):
         :param base: 
         :return: 
         """
-        if isinstance(base, VariableAlias):
-            base = base.original
-
         if base.output_from is not None:
             raise ValueError(f"[Variable.merge(base)] Base variable {base} must not has 'output_from' operator.")
 
-        for op in list(base.input_to):  # type: IOperator
+        for op in list(base.input_to):
             op.replace_input(base, self)

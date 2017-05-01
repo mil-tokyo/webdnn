@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 
 
 class OptimizeRule:
@@ -9,7 +9,7 @@ class OptimizeRule:
     def __init__(self):
         self.sub_rules = []
 
-    def optimize(self, graph: Operator) -> Tuple[Operator, bool]:
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         """
         graphを変換する
         :param graph: 

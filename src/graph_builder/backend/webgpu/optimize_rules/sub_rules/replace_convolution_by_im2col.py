@@ -1,7 +1,9 @@
+from typing import Tuple
+
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.graph.axis import Axis
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWCN
 from graph_builder.optimize_rule import util
@@ -13,9 +15,9 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
     Convolution2DをIm2Col + sgemmに置換する
     """
 
-    def optimize(self, graph: Operator):
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in util.listup_operator_in_order(graph):
+        for op in util.listup_operators(graph):
             if not isinstance(op, Convolution2D):
                 continue
 

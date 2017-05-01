@@ -34,12 +34,11 @@ from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.backend.webgpu.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators.attributes.optimize_hint import ElementwiseOperationComposed
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.compose import Compose
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
@@ -69,7 +68,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             exit(result.returncode)
 
 
-def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
+def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
     graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
@@ -97,16 +96,11 @@ def generate(graph: Operator) -> Tuple[GraphDescriptor, np.array]:
     return descriptor, constants_data
 
 
-def generate_kernels(graph: Operator, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
 
-    for op in util.listup_operator_in_order(graph):
-        if isinstance(op, Compose):
-            if util.check_attribute_match(op, ElementwiseOperationComposed):
-                print(op)
-            continue
-
-        elif isinstance(op, Linear):
+    for op in util.listup_operators(graph):
+        if isinstance(op, Linear):
             kernels += linear(op, constants_layout, variables_layout)
 
         elif isinstance(op, AxiswiseBias):

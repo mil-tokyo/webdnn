@@ -1,8 +1,6 @@
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.optimize_rule import util
 from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
@@ -12,7 +10,7 @@ class ConvScale(OptimizeRule):
     conv + axiswise_scale をひとまとめにする
     """
 
-    def optimize(self, graph: Operator):
+    def optimize(self, graph: Graph):
         flag_changed = False
 
         for match in util.search_sub_structure(graph, [Convolution2D, AxiswiseScale]):
@@ -23,11 +21,6 @@ class ConvScale(OptimizeRule):
             y1 = conv.outputs["y"]
             s = axiswise_scale.inputs["s"]
             y2 = axiswise_scale.outputs["y"]
-
-            if isinstance(w, VariableAlias):
-                w: ConstantVariable = w.original
-            if isinstance(s, VariableAlias):
-                s: ConstantVariable = s.original
 
             w.data *= s.data[None, None, :, None]
             axiswise_scale.remove_all()

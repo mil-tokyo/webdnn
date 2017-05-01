@@ -7,12 +7,12 @@ from graph_builder.graph.node import Node
 class Operator(Node, IOperator):
     def __init__(self,
                  name: str,
-                 parameters: Dict[str, object] = {}):
+                 parameters: Dict[str, object] = None):
 
         super().__init__(parameters)
 
         self.name: str = name
-        self.parameters: Dict[str, object] = parameters
+        self.parameters: Dict[str, object] = {} if parameters is None else parameters
         self.inputs: Dict[str, IVariable] = {}
         self.outputs: Dict[str, IVariable] = {}
 
@@ -40,6 +40,9 @@ class Operator(Node, IOperator):
         """
         入力変数を追加する
         """
+        # noinspection PyTypeChecker
+        self.append_prev(var)
+
         self.inputs[name] = var
         var.input_to.add(self)
 
@@ -47,6 +50,9 @@ class Operator(Node, IOperator):
         """
         入力変数を解除する
         """
+        # noinspection PyTypeChecker
+        self.remove_prev(var)
+
         name = self.get_input_name(var)
         self.inputs.pop(name)
         var.input_to.remove(self)
@@ -76,6 +82,9 @@ class Operator(Node, IOperator):
         if var.output_from is not None:
             raise KeyError(f"{var} has been registered as f{var.output_from}'s output already.")
 
+        # noinspection PyTypeChecker
+        self.append_next(var)
+
         self.outputs[name] = var
         var.output_from = self
 
@@ -83,6 +92,9 @@ class Operator(Node, IOperator):
         """
         出力変数を解除する
         """
+        # noinspection PyTypeChecker
+        self.remove_next(var)
+
         name = self.get_output_name(var)
         self.outputs.pop(name)
         var.output_from = None

@@ -3,10 +3,10 @@ from typing import List
 import numpy as np
 
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.compose import VariableAlias
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.variables.attributes.order import OrderC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
@@ -21,7 +21,7 @@ class AffineConcat(OptimizeRule):
     Scaleを(Convolution2D|Linear)のウェイトに統合し、Biasは最後に1つだけにする
     """
 
-    def optimize(self, graph: Operator):
+    def optimize(self, graph: Graph):
         if not flags.optimize.AFFINE_CONCAT:
             return graph, False
 
@@ -29,7 +29,7 @@ class AffineConcat(OptimizeRule):
 
         while True:
             flag_changed_in_iter = False
-            ops = util.listup_operator_in_order(graph)
+            ops = util.listup_operators(graph)
             current_seq = []
             for op in ops:
                 if isinstance(op, Convolution2D):
@@ -111,22 +111,16 @@ class AffineConcat(OptimizeRule):
         for op in seq[1:]:
             if isinstance(op, AxiswiseScale):
                 weight_var = op.inputs["s"]
-                if isinstance(weight_var, VariableAlias):
-                    weight_var = weight_var.link_to
                 merged_scale *= weight_var.data
                 merged_bias *= weight_var.data
             elif isinstance(op, AxiswiseBias):
                 weight_var = op.inputs["b"]
-                if isinstance(weight_var, VariableAlias):
-                    weight_var = weight_var.link_to
                 merged_bias += weight_var.data
             else:
                 raise NotImplementedError()
 
         # Conv/Linearの出力チャンネル(N)にscaleをかける
         conv_weight_var = conv_op.inputs["w"]
-        if isinstance(conv_weight_var, VariableAlias):
-            conv_weight_var = conv_weight_var.link_to
         out_channel_pos = conv_weight_var.axis_order.axes_dict[Axis.N]
         broadcast = [None] * conv_weight_var.axis_order.ndim
         broadcast[out_channel_pos] = slice(None)

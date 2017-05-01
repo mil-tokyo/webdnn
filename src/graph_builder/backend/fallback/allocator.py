@@ -2,6 +2,7 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
@@ -70,8 +71,8 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate(cls, graph: Operator) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
-        variables = util.listup_variables(graph, remove_alias=True)
+    def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
+        variables = set(util.listup_variables(graph))
         for i, v in enumerate(variables):
             v.parameters["name"] = f"v{i}"
         constants = set(util.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]

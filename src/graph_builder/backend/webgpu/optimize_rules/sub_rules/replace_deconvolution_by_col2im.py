@@ -1,7 +1,9 @@
+from typing import Tuple
+
 from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.graph.axis import Axis
-from graph_builder.graph.operator import Operator
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCHWN
 from graph_builder.optimize_rule import util
@@ -13,9 +15,9 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
     Deconvolution2Dをsgemm + Col2Imに置換する
     """
 
-    def optimize(self, graph: Operator):
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in util.listup_operator_in_order(graph):
+        for op in util.listup_operators(graph):
             if not isinstance(op, Deconvolution2D):
                 continue
 
@@ -42,6 +44,8 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
                               w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
                               ],
                 "out_order": OrderNHWC,
+                "transpose_A": True if x.axis_order == OrderNHWC else False,
+                "transpose_B": True
             })
             col, = sgemm(x, w)
 
