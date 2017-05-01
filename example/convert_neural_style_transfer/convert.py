@@ -13,6 +13,7 @@ from graph_builder.backend.fallback.generator import generate as generate_fallba
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.converters.chainer import ChainerGraphConverter
+from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.util.json import json
 
@@ -40,9 +41,9 @@ def generate_graph(model_path: str) -> Operator:
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()
 
-    op: Operator = converter.convert(chainer_cg, [nn_input], [nn_output])
+    graph: Graph = converter.convert(chainer_cg, [nn_input], [nn_output])
 
-    return op
+    return graph
 
 
 def main():
