@@ -7,7 +7,7 @@ from graph_builder.graph.node import Node
 class Operator(Node, IOperator):
     def __init__(self,
                  name: str,
-                 parameters: Dict[str, object] = None):
+                 parameters: Dict[str, object] = None) -> "Operator":
 
         super().__init__(parameters)
 
