@@ -1,14 +1,16 @@
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 
 from graph_builder.backend.webgpu.tag_parser import TagParser
 from graph_builder.util import flags
 
+MetaBufferContents = Union[int, float, bytes]
+
 
 class MetaBufferInjector:
     def __init__(self):
-        self.data = {}  # type: Dict[str, any]
+        self.data = {}  # type: Dict[str, MetaBufferContents]
         self.offset_map = None  # type: Dict[str, int]
         self.buffer = None  # type: bytes
         self.arg_name = "meta_buffer"
@@ -49,14 +51,26 @@ class MetaBufferInjector:
             return self.buffer
 
         offset_map = {}
-        offset = 0
-        values = []
+        values = bytes()
         for key, value in self.data.items():
-            values += [value]
-            offset_map[key] = offset
-            offset += 1
+            offset_map[key] = len(values) // 4  # sizeof(int)
+
+            if isinstance(value, int):
+                values += np.array([value], dtype=np.int32).tobytes()
+
+            elif isinstance(value, float):
+                values += np.array([value], dtype=np.float32).tobytes()
+
+            elif isinstance(value, bytes):
+                if len(value) % 4 != 0:
+                    value += bytes(4 - (len(value) % 4))
+                    
+                values += value
+
+            else:
+                raise TypeError("MetaBufferInjector only supports int, float, or bytes contents.")
 
         self.offset_map = offset_map
-        self.buffer = np.array(values, dtype=np.int32).tobytes()
+        self.buffer = values
 
         return self.buffer

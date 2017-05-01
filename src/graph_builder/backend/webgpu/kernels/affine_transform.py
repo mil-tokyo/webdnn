@@ -16,8 +16,8 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     const device float *X = data_buffer + %%META_LOAD(affine_transform_X_offset)%%;
     device float *Y = data_buffer + %%META_LOAD(affine_transform_Y_offset)%%;
 
-    const float scale = %%META_LOAD(affine_transform_scale)%%;
-    const float bias = %%META_LOAD(affine_transform_bias)%%;
+    const float scale = *((const device float *)(& %%META_LOAD(affine_transform_scale)%%));
+    const float bias = *((const device float *)(& %%META_LOAD(affine_transform_bias)%%));
     const int N = %%META_LOAD(affine_transform_N)%%;
 
     for (int gid = index; gid < N; gid += num_threads) {
@@ -45,8 +45,8 @@ def affine_transform(op: AffineTransform,
         "affine_transform_X_offset": x.offset,
         "affine_transform_Y_offset": y.offset,
         "affine_transform_N": y.variable.size,
-        "affine_transform_scale": int(op.scale),  # FIXME
-        "affine_transform_bias": int(op.bias),  # FIXME
+        "affine_transform_scale": op.scale,
+        "affine_transform_bias": op.bias
     })
 
     source = metabuffer_injector.inject(template)
