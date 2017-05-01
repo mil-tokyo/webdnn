@@ -29,6 +29,7 @@ from graph_builder.backend.webgpu.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webgpu.kernels.relu import relu
 from graph_builder.backend.webgpu.kernels.sgemm import sgemm
 from graph_builder.backend.webgpu.kernels.tanh import tanh
+from graph_builder.backend.webgpu.kernels.local_response_normalization import local_response_normalization
 from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
 from graph_builder.backend.webgpu.operators.col2im import Col2Im
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
@@ -46,6 +47,7 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
+from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
@@ -114,6 +116,9 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
 
         elif isinstance(op, Tanh):
             kernels += tanh(op, constants_layout, variables_layout)
+
+        elif isinstance(op, LocalResponseNormalization):
+            kernels += local_response_normalization(op, constants_layout, variables_layout)
 
         elif isinstance(op, MaxPooling2D):
             kernels += max_pooling_2d(op, constants_layout, variables_layout)
