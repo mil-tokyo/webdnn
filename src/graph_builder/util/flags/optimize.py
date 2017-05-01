@@ -1,7 +1,7 @@
-CONCAT_ELEMENTWISE_OPERATION = True
-CONCAT_CHANNELWISE_OPERATION = True
-REMOVE_LAST_SOFTMAX = False
-AFFINE_CONCAT = True
+import os
 
-# When this flag is true, int and float value of meta_buffer is embedded kernel source code as literal.
-EMBED_METABUFFER_VALUE = True
+CONCAT_ELEMENTWISE_OPERATION = os.environ.get("FLAG_CONCAT_ELEMENTWISE_OPERATION", "1") == 1
+CONCAT_CHANNELWISE_OPERATION = os.environ.get("FLAG_CONCAT_CHANNELWISE_OPERATION", "1") == 1
+REMOVE_LAST_SOFTMAX = os.environ.get("FLAG_REMOVE_LAST_SOFTMAX", "1") == 1
+AFFINE_CONCAT = os.environ.get("FLAG_AFFINE_CONCAT", "1") == 1
+EMBED_METABUFFER_VALUE = os.environ.get("FLAG_EMBED_METABUFFER_VALUE", "0") == 1
