@@ -22,9 +22,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     const int W = %%META_LOAD(local_response_normalization_W)%%;
     const int C = %%META_LOAD(local_response_normalization_C)%%;
     const int Phalfn = %%META_LOAD(local_response_normalization_param_half_n)%%;
-    const float Pk = *(const device float *)(& %%META_LOAD(local_response_normalization_param_k))%%;
-    const float Palpha = *(const device float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%);
-    const float Pmbeta = *(const device float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%);
+    const float Pk = *((const device float *)(& %%META_LOAD(local_response_normalization_param_k)%%));
+    const float Palpha = *((const device float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
+    const float Pmbeta = *((const device float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
     
     //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
 
