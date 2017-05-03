@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--model", default=NSTModelPath.candy.name, choices=[v.name for v in NSTModelPath])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
     parser.add_argument("--optimize", action="store_true")
+    parser.add_argument("--encoding")
     args = parser.parse_args()
 
     model_path = NSTModelPath[args.model].value
@@ -64,10 +65,10 @@ def main():
         graph, _ = GeneralOptimizeRule().optimize(graph)
 
     if args.backend == "webgpu":
-        descriptor, data = generate_webgpu_descriptor(graph)
+        descriptor, data = generate_webgpu_descriptor(graph, constant_encoder_name=args.encoding)
 
     elif args.backend == "fallback":
-        descriptor, data = generate_fallback_descriptor(graph)
+        descriptor, data = generate_fallback_descriptor(graph, constant_encoder_name=args.encoding)
 
     else:
         raise NotImplementedError()
@@ -80,8 +81,8 @@ def main():
         with open(path.join(OUTPUT_DIR, f"kernels_{args.backend}.metal"), "w") as f:
             f.write(descriptor.concat_kernel_sources())
 
-    data.tofile(path.join(OUTPUT_DIR, f"weight_{args.backend}.bin"))
-
+    with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:
+        f.write(data)
 
 if __name__ == "__main__":
     main()

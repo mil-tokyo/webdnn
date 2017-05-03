@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--input_name", default="data")
     parser.add_argument("--output_name", default="fc8")
     parser.add_argument("--optimize", action="store_true")
+    parser.add_argument("--encoding")
     args = parser.parse_args()
 
     dummy_input_shape = ast.literal_eval(args.shape)  # (1,3,227,227)
@@ -63,10 +64,10 @@ def main():
 
     sys.stderr.write("Generating descriptors\n")
     if args.backend == "webgpu":
-        descriptor, data = generate_webgpu_descriptor(graph)
+        descriptor, data = generate_webgpu_descriptor(graph, constant_encoder_name=args.encoding)
 
     elif args.backend == "fallback":
-        descriptor, data = generate_fallback_descriptor(graph)
+        descriptor, data = generate_fallback_descriptor(graph, constant_encoder_name=args.encoding)
 
     else:
         raise NotImplementedError()
@@ -87,8 +88,8 @@ def main():
         with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(args.backend)), "w") as f:
             f.write(descriptor.concat_kernel_sources())
 
-    data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)))
-
+    with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:
+        f.write(data)
 
 if __name__ == "__main__":
     main()

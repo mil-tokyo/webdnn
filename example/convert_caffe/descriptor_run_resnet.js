@@ -104,7 +104,7 @@ async function init(backend_name) {
 async function fetchWeights(path) {
     let response = await fetch(path);
     let ab = await response.arrayBuffer();
-    let weights_data = new Float32Array(ab);
+    let weights_data = new Uint8Array(ab);
 
     return weights_data;
 }

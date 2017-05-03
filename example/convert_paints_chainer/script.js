@@ -42,7 +42,7 @@ async function initialize() {
     console.log('compile pipeline: Done');
 
     console.log('load weight');
-    await runner.loadWeights(new Float32Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
+    await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
     console.log('load weight: Done');
 
     await loadImage("./image.jpg");

@@ -37,5 +37,5 @@ async function fetchWeights(path) {
     let response = await fetch(path);
     let ab = await response.arrayBuffer();
 
-    return new Float32Array(ab);
+    return new Uint8Array(ab);
 }

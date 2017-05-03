@@ -29,7 +29,7 @@ async function initialize() {
         await runner.compile();
 
         //noinspection JSUnresolvedFunction
-        await runner.loadWeights(new Float32Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
+        await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
 
         Webcam.set({
             width: 512,

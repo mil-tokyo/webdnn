@@ -32,9 +32,10 @@ namespace WebDNN {
             this.kernelObj = dnn_fallback_kernel;
         }
 
-        async loadWeights(weightsData: Float32Array): Promise<void> {
+        async loadWeights(weightsData: Uint8Array): Promise<void> {
             // when weight format becomes not flat array (such as using quantization), the interface should be changed
-            this.rawWeightArray.set(weightsData);
+            let decoder = get_weight_decoder(this.descriptor.weight_encoding);
+            this.rawWeightArray.set(await decoder.decode(weightsData, this.descriptor.weight_allocation));
         }
 
         async run(): Promise<void> {
@@ -88,7 +89,7 @@ namespace WebDNN {
         };
         inputs: string[];
         outputs: string[];
-        batch_size: number;
+        weight_encoding: string;
     }
 
     export interface DNNDescriptorFallbackExecInfo {
