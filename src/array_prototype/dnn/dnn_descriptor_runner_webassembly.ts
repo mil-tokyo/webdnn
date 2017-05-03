@@ -2,26 +2,43 @@
 /// <reference path="./dnn_descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
 
-declare var Module;
-
 namespace WebDNN {
     export class DNNDescriptorRunnerWebassembly implements DNNDescriptorRunner {
         private inputViews: Float32Array[];
         private outputViews: Float32Array[];
+        private worker: Worker;
 
         constructor(public descriptor: DNNDescriptorWebassembly) {
 
         }
 
-        async compile() {
-            Module._init();
+        compile(): Promise<void> {
+            this.worker = new Worker("./kernels_webassembly.js");
+            let promise = new Promise<void>((resolve, reject) => {
+                this.worker.onmessage = (event) => {
+                    console.log('init_response', event.data);
+                    resolve();
+                };
+
+                this.worker.postMessage({ type: 'init' });
+            });
+
+            return promise;
         }
 
         async loadWeights(weightsData: Uint8Array) {
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-            let weight_offset = Module._get_weight_buffer();
-            let weight_buf = new Float32Array(Module.buffer, weight_offset, this.descriptor.weight_allocation.total_size);
-            weight_buf.set(await decoder.decode(weightsData, this.descriptor.weight_allocation));
+            let weight_data = await decoder.decode(weightsData, this.descriptor.weight_allocation);
+            let promise = new Promise<void>((resolve, reject) => {
+                this.worker.onmessage = (event) => {
+                    console.log('weight_response', event.data);
+                    resolve();
+                };
+
+                this.worker.postMessage({ type: 'weight', data: weight_data });
+            });
+
+            return promise;
         }
 
         async getInputViews(): Promise<Float32Array[]> {
@@ -45,23 +62,30 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
-            //set input to GPU
-            let data_offset = Module._get_data_buffer();
-            let data_buf = new Float32Array(Module.buffer, data_offset, this.descriptor.variable_allocation.total_size);
-            for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
-                data_buf.set(this.inputViews[i], var_alloc.offset);
-            }
+            let promise = new Promise<void>((resolve, reject) => {
+                // TODO: better way not to generate function on every run
+                this.worker.onmessage = (event) => {
+                    console.log('received output');
+                    for (let i = 0; i < event.data.length; i++) {
+                        this.outputViews[i].set(event.data[i]);
+                    }
+                    resolve();
+                };
 
-            //execute kernels
-            Module._run();
+                let inputs: any = [];
+                for (let i = 0; i < this.descriptor.inputs.length; i++) {
+                    let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                    inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i] });
+                }
+                let outputs: any = [];
+                for (let i = 0; i < this.descriptor.outputs.length; i++) {
+                    let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                    outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
+                }
+                this.worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+            });
 
-            // get output from GPU
-            for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
-                let data_buf_view = new Float32Array(data_buf.buffer, data_buf.byteOffset + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
-                this.outputViews[i].set(data_buf_view);
-            }
+            return promise;
         }
     }
 

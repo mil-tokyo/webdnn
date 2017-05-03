@@ -4,14 +4,14 @@ var $M, $Mg;
 var runner;
 
 function run_entry() {
-    run2().then(() => {
+    run().then(() => {
         console.log('run finished');
     }).catch((error) => {
         console.error('run failed ' + error);
     });
 }
 
-async function run2() {
+async function run() {
     let backend_name = $('input[name=backend_name]:checked').val();
     if (!$M) {
         backend_name = await init(backend_name);
