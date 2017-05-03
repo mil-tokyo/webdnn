@@ -10,8 +10,7 @@ import chainer.computational_graph
 import chainer.links.caffe
 import numpy as np
 
-from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
-from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
+from graph_builder.backend.interface.generator import generate_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.converters.chainer import ChainerGraphConverter
 from graph_builder.graph.variable import Variable
@@ -64,16 +63,11 @@ def main():
         graph, _ = GeneralOptimizeRule().optimize(graph)
 
     sys.stderr.write("Generating descriptors\n")
-    if args.backend == "webgpu":
-        descriptor, data = generate_webgpu_descriptor(graph, constant_encoder_name=args.encoding)
-
-    elif args.backend == "fallback":
-        descriptor, data = generate_fallback_descriptor(graph, constant_encoder_name=args.encoding)
-
-    else:
-        raise NotImplementedError()
+    graph_exec_data = generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    graph_exec_data.save(OUTPUT_DIR)
 
     with open(path.join(OUTPUT_DIR, "image_nhwc.json".format()), "w") as f:
         image_nhwc = np.transpose(input_data, (0, 2, 3, 1))
@@ -82,15 +76,6 @@ def main():
     with open(path.join(OUTPUT_DIR, "output.json".format()), "w") as f:
         json.dump(nn_output.data.tolist(), f)
 
-    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(args.backend)), "w") as f:
-        json.dump(descriptor, f, indent=2)
-
-    if args.backend == "webgpu":
-        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(args.backend)), "w") as f:
-            f.write(descriptor.concat_kernel_sources())
-
-    with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:
-        f.write(data)
 
 if __name__ == "__main__":
     main()

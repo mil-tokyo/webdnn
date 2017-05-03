@@ -6,6 +6,7 @@ from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
+from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
 from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
@@ -41,7 +42,7 @@ void run() {
 """
 
 
-class GraphDescriptor(json.SerializableMixin):
+class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     kernels: Iterable[Kernel]
     constants_layout: MemoryLayout
     variables_layout: MemoryLayout
@@ -49,6 +50,7 @@ class GraphDescriptor(json.SerializableMixin):
     outputs: Iterable[Variable]
     constants_encoding: str
     footer_sources: Dict[str, str]
+    emcc_entry_js_path: str
 
     def __init__(self,
                  kernels: Iterable[Kernel],
@@ -64,6 +66,7 @@ class GraphDescriptor(json.SerializableMixin):
         self.outputs = outputs
         self.constants_encoding = constants_encoding
         self.footer_sources = OrderedDict()
+        self.emcc_entry_js_path = "./output/kernels_webassembly.js"
 
     def generate_header_source(self):
         return source_header \
@@ -123,5 +126,5 @@ class GraphDescriptor(json.SerializableMixin):
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
-            "entry_js_path": "./output/kernels_webassembly.js"  # TODO: not set here
+            "entry_js_path": self.emcc_entry_js_path
         }

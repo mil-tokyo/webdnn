@@ -49,8 +49,29 @@ from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
 from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.encoder.constant_encoder import ConstantEncoder
+from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
+from graph_builder.util.json import json
+
+
+class GraphExecutionData(IGraphExecutionData):
+    descriptor: GraphDescriptor
+
+    def __init__(self, descriptor: GraphDescriptor, constants: bytes):
+        self.descriptor = descriptor
+        self.constants = constants
+        self.backend_suffix = "webgpu"
+
+    def save(self, dirname: str):
+        with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
+            json.dump(self.descriptor, f, indent=2)
+
+        with open(path.join(dirname, "kernels_{}.metal".format(self.backend_suffix)), "w") as f:
+            f.write(self.descriptor.concat_kernel_sources())
+
+        with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
+            f.write(self.constants)
 
 
 def validate_kernel_source(descriptor: GraphDescriptor):
@@ -71,7 +92,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             exit(result.returncode)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDescriptor, bytes]:
+def generate(graph: Graph, constant_encoder_name: str = None) -> IGraphExecutionData:
     graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
@@ -101,7 +122,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDesc
 
         validate_kernel_source(descriptor)
 
-    return descriptor, constants_bytes
+    return GraphExecutionData(descriptor, constants_bytes)
 
 
 def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:

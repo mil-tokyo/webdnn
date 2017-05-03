@@ -5,6 +5,7 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
+from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
 from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
@@ -16,7 +17,7 @@ using namespace metal;
 """
 
 
-class GraphDescriptor(json.SerializableMixin):
+class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     kernels: Iterable[Kernel]
     constants_layout: MemoryLayout
     variables_layout: MemoryLayout
