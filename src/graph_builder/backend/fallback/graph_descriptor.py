@@ -23,18 +23,21 @@ class GraphDescriptor(json.SerializableMixin):
     variables_layout: MemoryLayout
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
+    constants_encoding: str
 
     def __init__(self,
                  kernels: Iterable[Kernel],
                  constants_layout: MemoryLayout,
                  variables_layout: MemoryLayout,
                  inputs: Iterable[Variable],
-                 outputs: Iterable[Variable]):
+                 outputs: Iterable[Variable],
+                 constants_encoding: str):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
         self.inputs = inputs
         self.outputs = outputs
+        self.constants_encoding = constants_encoding
 
     def concat_kernel_sources(self):
         sources = OrderedDict()
@@ -57,6 +60,7 @@ class GraphDescriptor(json.SerializableMixin):
             "kernel_source": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_allocation": self.constants_layout,
+            "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs]

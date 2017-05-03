@@ -1,6 +1,7 @@
 /// <reference path="../dnn_buffer_webgpu.ts" />
 /// <reference path="../webgpu_handler.ts" />
 /// <reference path="./dnn_descriptor_runner.ts" />
+///<reference path="../decoder/get_weight_decoder.ts" />
 
 namespace WebDNN {
     export class DNNDescriptorRunnerWebGPU implements DNNDescriptorRunner {
@@ -25,8 +26,9 @@ namespace WebDNN {
             }
         }
 
-        async loadWeights(weightsData: Float32Array) {
-            await this.weightMat.write(weightsData);
+        async loadWeights(weightsData: Uint8Array) {
+            let decoder = get_weight_decoder(this.descriptor.weight_encoding);
+            await this.weightMat.write(await decoder.decode(weightsData, this.descriptor.weight_allocation));
         }
 
         async getInputViews(): Promise<Float32Array[]> {
@@ -128,6 +130,7 @@ namespace WebDNN {
         };
         inputs: string[];
         outputs: string[];
+        weight_encoding: string;
     }
 
     export interface DNNDescriptorWebGPUExecInfos {

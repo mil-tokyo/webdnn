@@ -50,8 +50,8 @@ def main():
         with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(builder_type)), "w") as f:
             f.write(descriptor.concat_kernel_sources())
 
-    data.tofile(path.join(OUTPUT_DIR, "weight_{}.bin".format(builder_type)))
-
+    with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:
+        f.write(data)
 
 if __name__ == "__main__":
     main()

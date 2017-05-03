@@ -48,6 +48,7 @@ from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
 from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
+from graph_builder.encoder.constant_encoder import ConstantEncoder
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
@@ -70,7 +71,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             exit(result.returncode)
 
 
-def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
+def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDescriptor, bytes]:
     graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
@@ -79,6 +80,10 @@ def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
         print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {variables_layout.size} * sizeof(float)")
+    constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+    constants_bytes = constant_encoder.encode(constants_layout, constants_data)
+    if flags.DEBUG:
+        print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
@@ -87,7 +92,8 @@ def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
         constants_layout=constants_layout,
         variables_layout=variables_layout,
         inputs=graph.inputs,
-        outputs=graph.outputs)
+        outputs=graph.outputs,
+        constants_encoding=constant_encoder.name)
 
     if flags.backend.webgpu.VALIDATE_GENERATED_SOURCE:
         if flags.DEBUG:
@@ -95,7 +101,7 @@ def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
 
         validate_kernel_source(descriptor)
 
-    return descriptor, constants_data
+    return descriptor, constants_bytes
 
 
 def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:

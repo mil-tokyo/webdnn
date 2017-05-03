@@ -35,15 +35,20 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
+from graph_builder.encoder.constant_encoder import ConstantEncoder
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 
 
-def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
+def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDescriptor, bytes]:
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
-        print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {variables_layout.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorFallback] constants_layout total size: {constants_data.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
+    constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+    constants_bytes = constant_encoder.encode(constants_layout, constants_data)
+    if flags.DEBUG:
+        print(f"[GraphDescriptorGeneratorFallback] constants encoded size: {len(constants_bytes)}")
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
@@ -52,9 +57,10 @@ def generate(graph: Graph) -> Tuple[GraphDescriptor, np.array]:
         constants_layout=constants_layout,
         variables_layout=variables_layout,
         inputs=graph.inputs,
-        outputs=graph.outputs)
+        outputs=graph.outputs,
+        constants_encoding=constant_encoder.name)
 
-    return descriptor, constants_data
+    return descriptor, constants_bytes
 
 
 # noinspection PyUnusedLocal

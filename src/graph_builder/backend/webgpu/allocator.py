@@ -7,11 +7,12 @@ from graph_builder.graph.operators.attributes.inplace import Inplace
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.optimize_rule import util
 from graph_builder.util import json, flags
 
 
-class Allocation(json.SerializableMixin):
+class Allocation(json.SerializableMixin, IAllocation):
     variable: Variable
     offset: int
 
@@ -33,7 +34,7 @@ class Allocation(json.SerializableMixin):
         }
 
 
-class MemoryLayout(json.SerializableMixin):
+class MemoryLayout(json.SerializableMixin, IMemoryLayout):
     size: int
     __dict__: Dict[str, Allocation]
 
