@@ -13,7 +13,7 @@ namespace WebDNN {
         }
 
         compile(): Promise<void> {
-            this.worker = new Worker("./kernels_webassembly.js");
+            this.worker = new Worker(this.descriptor.entry_js_path);
             let promise = new Promise<void>((resolve, reject) => {
                 this.worker.onmessage = (event) => {
                     console.log('init_response', event.data);
@@ -101,5 +101,6 @@ namespace WebDNN {
         inputs: string[];
         outputs: string[];
         weight_encoding: string;
+        entry_js_path: string;
     }
 }

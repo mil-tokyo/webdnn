@@ -1,5 +1,5 @@
 """
-Descriptor Generator for WebGPU
+Descriptor Generator for WebAssembly
 
 - kernel source generation
 - schedule memory allocation

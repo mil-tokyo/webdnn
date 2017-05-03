@@ -122,5 +122,6 @@ class GraphDescriptor(json.SerializableMixin):
             "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs]
+            "outputs": [v.parameters["name"] for v in self.outputs],
+            "entry_js_path": "./output/kernels_webassembly.js"  # TODO: not set here
         }
