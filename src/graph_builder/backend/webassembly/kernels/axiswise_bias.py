@@ -2,7 +2,7 @@ from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.inline_injector import InlineInjector
-from graph_builder.backend.webassembly.kernel import Kernel, GPUSize
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.axis import Axis
@@ -10,19 +10,15 @@ from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.variables.attributes.order import OrderHWNC, OrderNHWC, OrderNC
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(axiswise_bias_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(axiswise_bias_Y_offset)%%;
-    const device float *B = weight_buffer + %%META_LOAD(axiswise_bias_B_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(axiswise_bias_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(axiswise_bias_Y_offset)%%;
+    const float *B = weight_buffer + %%META_LOAD(axiswise_bias_B_offset)%%;
     const int N = %%META_LOAD(axiswise_bias_N)%%;
     const int C = %%META_LOAD(axiswise_bias_C)%%;
   
-    for (int gid = index; gid < N * C; gid += num_threads) {
+    for (int gid = 0; gid < N * C; gid += 1) {
         int c = gid % C;
         int n = gid / C;
 
@@ -47,7 +43,7 @@ def axiswise_bias(op: AxiswiseBias,
     assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC or x.variable.axis_order == OrderHWNC
     assert y.variable.shape == x.variable.shape
 
-    assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseBias supports only channelwise bias."
+    assert op.parameters["axis"] == Axis.C, "[Webassembly] AxiswiseBias supports only channelwise bias."
 
     metabuffer_injector.register({
         "axiswise_bias_X_offset": x.offset,
@@ -70,8 +66,6 @@ def axiswise_bias(op: AxiswiseBias,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 

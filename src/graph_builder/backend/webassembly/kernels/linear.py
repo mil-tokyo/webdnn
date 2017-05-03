@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import Kernel, GPUSize
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.axis import Axis
@@ -9,22 +9,18 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderNHWC, OrderCN, OrderHWCN
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(linear_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(linear_Y_offset)%%;
-    const device float *W = weight_buffer + %%META_LOAD(linear_W_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(linear_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(linear_Y_offset)%%;
+    const float *W = weight_buffer + %%META_LOAD(linear_W_offset)%%;
     const int M = %%META_LOAD(linear_M)%%;
     const int N = %%META_LOAD(linear_N)%%;
     const int K = %%META_LOAD(linear_K)%%;
     
     //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
   
-    for (int gid = index; gid < M * N; gid += num_threads) {
+    for (int gid = 0; gid < M * N; gid += 1) {
         int n = gid % N;
         int m = gid / N;
 
@@ -71,8 +67,6 @@ def linear(op: Linear,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 

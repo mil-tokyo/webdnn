@@ -133,7 +133,7 @@ class Allocator:
                         input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
                         if len(input_variables) > 1:
                             if flags.DEBUG:
-                                print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
+                                print(f"[WebassemblyAllocator] Inplace operator with ambiguous memory location is detected. "
                                       + f"Allocator skipped inplace allocation and allocate other memory. "
                                       + f"Operator: {op}")
 

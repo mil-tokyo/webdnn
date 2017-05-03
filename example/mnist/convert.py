@@ -7,6 +7,7 @@ import numpy as np
 
 from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
 from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
+from graph_builder.backend.webassembly.generator import generate as generate_webassembly_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
@@ -96,7 +97,7 @@ def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> G
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("nn_type", choices=["fc", "conv"])
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()
@@ -118,6 +119,9 @@ def main():
     if args.backend == "webgpu":
         descriptor, data = generate_webgpu_descriptor(graph, constant_encoder_name=args.encoding)
 
+    elif args.backend == "webassembly":
+        descriptor, data = generate_webassembly_descriptor(graph, constant_encoder_name=args.encoding)
+
     elif args.backend == "fallback":
         descriptor, data = generate_fallback_descriptor(graph, constant_encoder_name=args.encoding)
 
@@ -130,6 +134,10 @@ def main():
 
     if args.backend == "webgpu":
         with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(args.backend)), "w") as f:
+            f.write(descriptor.concat_kernel_sources())
+
+    if args.backend == "webassembly":
+        with open(path.join(OUTPUT_DIR, "kernels_{}.c".format(args.backend)), "w") as f:
             f.write(descriptor.concat_kernel_sources())
 
     with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:

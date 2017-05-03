@@ -6,6 +6,7 @@
   <meta charset="utf-8">
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="../../lib/inflate.min.js"></script>
+  <script src="./kernels_webassembly.js"></script>
   <script src="../../build/array_prototype/webdnn.js"></script>
   <script src="descriptor_run_mnist.js"></script>
 </head>
@@ -15,6 +16,7 @@
   <form>
     <button type="button" onclick="run_entry(); return false;">Run</button>
     <label><input type="radio" name="backend_name" value="webgpu" checked>webgpu</label>
+    <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
     <label><input type="radio" name="backend_name" value="fallback">fallback</label>
     <div>
       <textarea id="dnn_pipeline"></textarea>
