@@ -47,7 +47,8 @@ namespace WebDNN {
                 let src_data_view = new Uint8Array(data.buffer, data.byteOffset + src_offset, body_size);
                 let inflate = new Zlib.Inflate(src_data_view);
                 let decompressed = inflate.decompress();
-                for (let s = 0; s < body_size; s++) {
+                let dec_size = decompressed.length;
+                for (let s = 0; s < dec_size; s++) {
                     dst[dst_offset++] = scaled_table[decompressed[s]];
                 }
                 src_offset += body_size;
