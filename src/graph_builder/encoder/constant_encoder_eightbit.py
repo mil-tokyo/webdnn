@@ -1,3 +1,6 @@
+# algorithm, implementation is based on "8-Bit Approximations for Parallelism in Deep Learning" by Tim Dettmers
+# https://github.com/TimDettmers/clusterNet/blob/master/source/clusterKernels.cu
+
 import zlib
 import numpy as np
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation

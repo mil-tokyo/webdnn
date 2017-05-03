@@ -15,6 +15,7 @@ from graph_builder.backend.webgpu.generator import generate as generate_webgpu_d
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.converters.chainer import ChainerGraphConverter
 from graph_builder.graph.variable import Variable
+from graph_builder.graph.graph import Graph
 from graph_builder.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
@@ -56,7 +57,7 @@ def main():
     nn_output = link(inputs={args.input_name: nn_input}, outputs=[args.output_name], train=False)[0]
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()
-    graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Variable
+    graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Graph
 
     if args.optimize:
         sys.stderr.write("Optimizing graph\n")

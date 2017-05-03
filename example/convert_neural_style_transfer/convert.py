@@ -28,7 +28,7 @@ class NSTModelPath(Enum):
     kanagawa = "../../resources/chainer-fast-neuralstyle-models/models/kanagawa.model"
 
 
-def generate_graph(model_path: str) -> Operator:
+def generate_graph(model_path: str) -> Graph:
     model = FastStyleNet()
     chainer.serializers.load_npz(model_path, model)
 

@@ -4,6 +4,9 @@ from graph_builder.graph.variable import Variable
 
 
 class Graph:
+    inputs: List[Variable]
+    outputs: List[Variable]
+
     def __init__(self,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable]):
