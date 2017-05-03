@@ -8,6 +8,7 @@ Kernel Builder for Fallback (pure js)
 """
 
 from typing import Tuple, List
+import os.path as path
 
 import numpy as np
 
@@ -36,15 +37,34 @@ from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.encoder.constant_encoder import ConstantEncoder
+from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
 from graph_builder.optimize_rule import util
 from graph_builder.util import flags
+from graph_builder.util.json import json
 
 
-def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDescriptor, bytes]:
+class GraphExecutionData(IGraphExecutionData):
+    descriptor: GraphDescriptor
+
+    def __init__(self, descriptor: GraphDescriptor, constants: bytes):
+        self.descriptor = descriptor
+        self.constants = constants
+        self.backend_suffix = "fallback"
+
+    def save(self, dirname: str):
+        with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
+            json.dump(self.descriptor, f, indent=2)
+
+        with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
+            f.write(self.constants)
+
+
+def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorFallback] constants_layout total size: {constants_data.size} * sizeof(float)")
-        print(f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
+        print(
+            f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
     constants_bytes = constant_encoder.encode(constants_layout, constants_data)
     if flags.DEBUG:
@@ -60,7 +80,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> Tuple[GraphDesc
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name)
 
-    return descriptor, constants_bytes
+    return GraphExecutionData(descriptor, constants_bytes)
 
 
 # noinspection PyUnusedLocal

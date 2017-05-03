@@ -6,8 +6,7 @@ import os.path as path
 
 import numpy as np
 
-from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
-from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
+from graph_builder.backend.interface.generator import generate_descriptor
 from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
@@ -33,25 +32,11 @@ def main():
     graph, _ = GeneralOptimizeRule().optimize(graph)
 
     builder_type = "webgpu"
-    if builder_type == "webgpu":
-        descriptor, data = generate_webgpu_descriptor(graph)
-
-    elif builder_type == "fallback":
-        descriptor, data = generate_fallback_descriptor(graph)
-
-    else:
-        raise NotImplementedError()
+    graph_exec_data = generate_descriptor(builder_type, graph)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(path.join(OUTPUT_DIR, "graph_{}.json".format(builder_type)), "w") as f:
-        json.dump(descriptor, f, indent=2)
 
-    if builder_type == "webgpu":
-        with open(path.join(OUTPUT_DIR, "kernels_{}.metal".format(builder_type)), "w") as f:
-            f.write(descriptor.concat_kernel_sources())
-
-    with open(path.join(OUTPUT_DIR, "weight_{}.bin".format(args.backend)), "wb") as f:
-        f.write(data)
+    graph_exec_data.save(OUTPUT_DIR)
 
 if __name__ == "__main__":
     main()

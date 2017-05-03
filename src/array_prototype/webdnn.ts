@@ -1,5 +1,6 @@
 ///<reference path="./gpu_interface.ts" />
 ///<reference path="./gpu_interface_webgpu.ts" />
+///<reference path="./gpu_interface_webassembly.ts" />
 ///<reference path="./gpu_interface_fallback.ts" />
 
 namespace WebDNN {
@@ -18,9 +19,23 @@ namespace WebDNN {
             } catch (e) {
                 console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
             }
-        } else if (backend == 'fallback') {
+        }
+
+        if ((!backend && !backend_loaded) || backend == 'webassembly') {
+            try {
+                let webassemblyif = new GPUInterfaceWebassembly(backendOption);
+                await webassemblyif.init();
+                gpu = webassemblyif;
+                loaded_backend_name = 'webassembly';
+                backend_loaded = true;
+            } catch (e) {
+                console.error('Failed to initialize Webassembly backend; fallback to pure js backend. Error=' + e.toString());
+            }
+        }
+        
+        if (backend == 'fallback') {
             // use fallback backend explicitly
-        } else {
+        } else if (!backend_loaded) {
             console.error('Unknown backend; fallback to pure js backend.');
         }
 

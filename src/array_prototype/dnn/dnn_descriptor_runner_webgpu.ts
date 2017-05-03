@@ -42,7 +42,7 @@ namespace WebDNN {
 
         async getOutputViews(): Promise<Float32Array[]> {
             let views: Float32Array[] = [];
-            for (let i = 0; i < this.descriptor.inputs.length; i++) {
+            for (let i = 0; i < this.descriptor.outputs.length; i++) {
                 let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
                 views.push(<Float32Array>this.dataMat.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
             }
