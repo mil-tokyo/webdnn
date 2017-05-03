@@ -1,5 +1,7 @@
 ///<reference path="./weight_decoder.ts" />
 
+declare var Zlib;
+
 namespace WebDNN {
     export class WeightDecoderEightbit implements WeightDecoder {
         static decode_table = [0.0, 2.750000021e-06, 7.249999726e-06, 1.875000089e-05, 3.624999954e-05, 5.874999624e-05, 8.624999464e-05,
@@ -42,9 +44,13 @@ namespace WebDNN {
                 }
 
                 // do decode
+                let src_data_view = new Uint8Array(data.buffer, data.byteOffset + src_offset, body_size);
+                let inflate = new Zlib.Inflate(src_data_view);
+                let decompressed = inflate.decompress();
                 for (let s = 0; s < body_size; s++) {
-                    dst[dst_offset++] = scaled_table[data[src_offset++]];
+                    dst[dst_offset++] = scaled_table[decompressed[s]];
                 }
+                src_offset += body_size;
             }
             return dst;
         }

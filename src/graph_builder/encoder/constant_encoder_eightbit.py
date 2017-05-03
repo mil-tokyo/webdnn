@@ -1,3 +1,4 @@
+import zlib
 import numpy as np
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.encoder.constant_encoder import ConstantEncoder
@@ -64,7 +65,8 @@ class ConstantEncoderEightbit(ConstantEncoder):
         abs_scaled_data = np.abs(single_data) / maxval
         code = np.searchsorted(threshold_array, abs_scaled_data)
         code += (single_data < 0.0).astype(np.int32) * 128
-        code_bytes = code.astype(np.uint8).tobytes("C")
+        code_raw_bytes = code.astype(np.uint8).tobytes("C")
+        code_bytes = zlib.compress(code_raw_bytes, level=9)
 
         out_data = b""
         out_data += np.array([alloc.offset, len(code_bytes)], dtype=np.int32).tobytes()
