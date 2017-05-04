@@ -18,15 +18,14 @@ class AllocationAnalysisData:
     start: int
     end: int
     offset: int
+    size: int
 
     def __init__(self, variable, start, end=-1, offset=-1):
         self.variable = variable
+        self.size = variable.size
         self.start = start
         self.end = end
         self.offset = offset
-
-    def is_covered(self, other: "AllocationAnalysisData") -> bool:
-        return not (self.start >= other.end or other.start >= self.end)
 
 
 class Allocation(json.SerializableMixin, IAllocation):
@@ -123,42 +122,6 @@ class Allocator:
 
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]) -> MemoryLayout:
-        """
-        alloc   V1( 6block )
-        alloc   V2( 7block )
-        alloc   V3( 7block )
-        release V2
-        alloc   V4(8block)
-
-        について、確保の方法に寄ってメモリプールサイズが異なる
-
-        alloc   V1 :  <-V1->
-        alloc   V2 :  <-V1-><-V2-->
-        alloc   V3 :  <-V1-><-V2--><-V3-->
-        release V2 :  <-V1->.......<-V3-->
-        alloc   V4 :  <-V1->.......<-V3--><-V4--->
-
-        alloc   V1 :  <-V1->
-        alloc   V2 :  <-V1->.......<-V2-->
-        alloc   V3 :  <-V1-><-V3--><-V2-->
-        release V2 :  <-V1-><-V3-->
-        alloc   V4 :  <-V1-><-V3--><-V4--->
-
-        alloc   V1 :  ........<-V1->
-        alloc   V2 :  <-V2-->.<-V1->
-        alloc   V3 :  <-V2-->.<-V1-><-V3-->
-        release V2 :  ........<-V1-><-V3-->
-        alloc   V4 :  <-V4---><-V1-><-V3-->
-
-        alloc   V1 :  ........<-V1->
-        alloc   V2 :  ........<-V1->
-        alloc   V3 :  <-V2-->.<-V1-><-V3-->
-        release V2 :  ........<-V1-><-V3-->
-        alloc   V4 :  <-V4---><-V1-><-V3-->
-
-        最適解は1つとは限らない(その後だれが解放されるのか、による)
-        """
-
         ops = util.listup_operators(graph)
         LIFETIME_FOREVER = len(ops) + 1
         analysis_table: Dict[Variable, AllocationAnalysisData] = {}
@@ -227,44 +190,36 @@ class Allocator:
                     analysis_table[var].end = t + 1
 
         # メモリ共有可能判定
-        analysis_list = list(sorted(sorted(analysis_table.values(), key=lambda x: x.start), key=lambda x: x.variable.size, reverse=True))
-        allocated_items: List[AllocationAnalysisData] = []
-        memory_offset_table = {}
+        analysis_list = sorted(analysis_table.values(), key=lambda x: x.end, reverse=True)
+        analysis_list = sorted(analysis_list, key=lambda x: x.variable.size, reverse=True)
+        analysis_list = list(analysis_list)
+        memory_offset_table: Dict[int, List[AllocationAnalysisData]] = {t: [] for t in range(len(ops) + 1)}
 
-        while len(analysis_list) > 0:
-            item1 = analysis_list.pop(0)
-            combined_items = [item1]
+        for item1 in analysis_list:
+            offset = 0
 
-            for item2 in analysis_list:
-                flag_combindable = True
+            flag_retry = True
+            while flag_retry:
+                flag_retry = False
 
-                for item3 in combined_items:
-                    if item3.is_covered(item2):
-                        flag_combindable = False
+                for t in range(item1.start, item1.end):
+                    for item2 in memory_offset_table[t]:
+                        if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
+                            continue
+
+                        else:
+                            offset = item2.offset + item2.size
+                            flag_retry = True
+                            break
+
+                    if flag_retry:
                         break
 
-                if flag_combindable:
-                    combined_items.append(item2)
+            item1.offset = offset
+            for t in range(item1.start, item1.end):
+                memory_offset_table[t].append(item1)
 
-            for item2 in combined_items:
-                offset = 0
-
-                for t in range(item2.start, item2.end):
-                    if t in memory_offset_table:
-                        offset = max(offset, memory_offset_table[t])
-
-                item2.offset = offset
-
-                for t in range(item2.start, item2.end):
-                    memory_offset_table[t] = offset + item2.variable.size
-
-            for item2 in combined_items[1:]:
-                analysis_list.remove(item2)
-
-            allocated_items += combined_items
-
-        # メモリ配置の確定
-        allocation_dict = {item.variable: item.offset for item in allocated_items}
+        allocation_dict = {item.variable: item.offset for item in analysis_list}
         layout = MemoryLayout()
         for var in variables:
             original_var = var
@@ -273,13 +228,14 @@ class Allocator:
 
             layout.append(original_var, allocation_dict[var])
 
+        # Visualize
         if flags.DEBUG and flags.backend.webgpu.VISUALIZE_MEMORY_ALLOCATION:
-            visualize_allocation(layout.size, allocated_items, variables, ops)
+            visualize_allocation(layout.size, analysis_list, variables, ops)
 
         return layout
 
 
-def visualize_allocation(total_size: int, allocated_items: List[AllocationAnalysisData], variables: List[Variable], ops: List[Operator]):
+def visualize_allocation(total_size: int, analysis_list: List[AllocationAnalysisData], variables: List[Variable], ops: List[Operator]):
     UNIT_HEIGHT = 14
 
     class RenderingInfo:
@@ -324,15 +280,13 @@ lifetime: {self.data.start} - {self.data.end}
     <p>{", ".join(self.names)}</p>
 </div>"""
 
-    allocation_dict = {item.variable: item for item in allocated_items}
+    allocation_dict = {item.variable: item for item in analysis_list}
     rendering_dict: Dict[Variable, RenderingInfo] = {}
 
     html = """<html>
 <head>
     <style>
         html, body {
-            width: 100%;
-            height: 200%;
             margin: 0;
             font-size: 8px;
         }
