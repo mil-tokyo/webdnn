@@ -14,7 +14,7 @@ from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWCN
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWCN, OrderHWNC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
@@ -30,7 +30,7 @@ def convert_fc_weight(buffers, weight_prefix, layer_name):
 
 def convert_conv_weight(buffers, weight_prefix, layer_name):
     w = buffers[weight_prefix + layer_name + "/W"]  # (out_ch, in_ch, kh, kw)
-    w_trans = np.transpose(w, (2, 3, 1, 0))  # (kh, kw, in_ch, out_ch)
+    w_trans = np.transpose(w, (2, 3, 0, 1))  # (kh, kw, out_ch, in_ch)
     b = buffers[weight_prefix + layer_name + "/b"]  # (out_ch, )
     return {layer_name + "/W": w_trans, layer_name + "/b": b}
 
@@ -49,9 +49,9 @@ def load_mnist_weights_conv(filepath: str):
     snapshot_buffers = np.load(filepath)
     weight_prefix = "updater/model:main/predictor/"
     weights = {}
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv1"))
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv2"))
-    weights.update(convert_fc_weight(snapshot_buffers, weight_prefix, "conv3"))
+    weights.update(convert_conv_weight(snapshot_buffers, weight_prefix, "conv1"))
+    weights.update(convert_conv_weight(snapshot_buffers, weight_prefix, "conv2"))
+    weights.update(convert_conv_weight(snapshot_buffers, weight_prefix, "conv3"))
     return weights
 
 
@@ -75,17 +75,17 @@ def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> G
     x: Variable = Variable([batch_size, 28, 28, 1], axis_order=OrderNHWC)
 
     conv1 = Convolution2D("conv1", {"ksize": (5, 5), "stride": (1, 1), "padding": (0, 0)})
-    h, = conv1(x, ConstantVariable(weights["conv1/W"], OrderHWCN))
+    h, = conv1(x, ConstantVariable(weights["conv1/W"], OrderHWNC))
     h, = AxiswiseBias("bias1", {"axis": Axis.C})(h, ConstantVariable(weights["conv1/b"], OrderC))
     h, = Relu("relu1")(h)
 
     conv2 = Convolution2D("conv2", {"ksize": (3, 3), "stride": (2, 2), "padding": (1, 1)})
-    h, = conv2(h, ConstantVariable(weights["conv2/W"], OrderHWCN))
+    h, = conv2(h, ConstantVariable(weights["conv2/W"], OrderHWNC))
     h, = AxiswiseBias("bias2", {"axis": Axis.C})(h, ConstantVariable(weights["conv2/b"], OrderC))
     h, = Relu("relu2")(h)
 
-    conv2 = Convolution2D("conv3", {"ksize": (12, 12), "stride": (1, 1), "padding": (0, 0)})
-    h, = conv2(h, ConstantVariable(weights["conv3/W"], OrderHWCN))
+    conv3 = Convolution2D("conv3", {"ksize": (12, 12), "stride": (1, 1), "padding": (0, 0)})
+    h, = conv3(h, ConstantVariable(weights["conv3/W"], OrderHWNC))
     y, = AxiswiseBias("bias3", {"axis": Axis.C})(h, ConstantVariable(weights["conv3/b"], OrderC))
 
     return Graph([x], [y])
