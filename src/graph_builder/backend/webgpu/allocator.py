@@ -4,6 +4,7 @@ import numpy as np
 
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.graph.graph import Graph
+from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.inplace import Inplace
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
@@ -226,7 +227,7 @@ class Allocator:
                     analysis_table[var].end = t + 1
 
         # メモリ共有可能判定
-        analysis_list = list(sorted(analysis_table.values(), key=lambda x: x.variable.size, reverse=True))
+        analysis_list = list(sorted(sorted(analysis_table.values(), key=lambda x: x.start), key=lambda x: x.variable.size, reverse=True))
         allocated_items: List[AllocationAnalysisData] = []
         memory_offset_table = {}
 
@@ -272,4 +273,124 @@ class Allocator:
 
             layout.append(original_var, allocation_dict[var])
 
+        if flags.DEBUG and flags.backend.webgpu.VISUALIZE_MEMORY_ALLOCATION:
+            visualize_allocation(layout.size, allocated_items, variables, ops)
+
         return layout
+
+
+def visualize_allocation(total_size: int, allocated_items: List[AllocationAnalysisData], variables: List[Variable], ops: List[Operator]):
+    UNIT_HEIGHT = 14
+
+    class RenderingInfo:
+        names: List[str]
+        data: AllocationAnalysisData
+
+        def __init__(self, data: AllocationAnalysisData):
+            self.names = []
+            self.data = data
+
+        @property
+        def offset(self):
+            return self.data.offset
+
+        @property
+        def size(self):
+            return self.data.variable.size
+
+        @property
+        def top(self):
+            return f"{self.data.start * UNIT_HEIGHT}px"
+
+        @property
+        def height(self):
+            return f"{(self.data.end - self.data.start) * UNIT_HEIGHT + 1}px"
+
+        @property
+        def left(self):
+            return f"{self.offset * 100 / total_size}%"
+
+        @property
+        def width(self):
+            return f"calc({self.size * 100 / total_size}% + 1px)"
+
+        def generate_html(self):
+            return f"""<div class="Allocation" style="top: {self.top}; height: {self.height}; left: {self.left}; width: {self.width}" """ \
+                   + f"""title="{", ".join(self.names)}
+size: {self.size}
+offset: {self.offset}
+lifetime: {self.data.start} - {self.data.end} 
+">
+    <p>{", ".join(self.names)}</p>
+</div>"""
+
+    allocation_dict = {item.variable: item for item in allocated_items}
+    rendering_dict: Dict[Variable, RenderingInfo] = {}
+
+    html = """<html>
+<head>
+    <style>
+        html, body {
+            width: 100%;
+            height: 200%;
+            margin: 0;
+            font-size: 8px;
+        }
+
+        body {
+            padding: 32px;
+            box-sizing: border-box;
+        }
+        
+        .MemoryLayout {
+            position: relative;
+            background: #888;
+        }
+        
+        .Allocation {
+            position: absolute;
+            border: 1px solid #000;
+            display: block;
+            padding: 8px;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: #0f0;
+        }
+        
+        p {
+            margin: 0;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<header style="margin-bottom: 32px;">
+    <h1>Memory Allocation Visualization</h1>
+    <p>縦軸：時間経過（上から下へ）</p>
+    <p>横軸：メモリアドレス</p>
+    <p>各要素はカーソルホバーで詳細が見られます。</p>
+</header>
+    <div class="MemoryLayout" style="height: """ + str(UNIT_HEIGHT * (len(ops) + 1) + 1) + """px;">
+"""
+
+    for variable in variables:
+        original_var = variable
+        while "inplace_src" in variable.parameters:
+            variable = variable.parameters["inplace_src"]
+
+        if variable not in rendering_dict:
+            rendering_dict[variable] = RenderingInfo(allocation_dict[variable])
+
+        rendering_dict[variable].names.append(original_var.name)
+
+    for item in rendering_dict.values():
+        html += item.generate_html()
+
+    html += """
+    </div>
+</body>
+</html>
+"""
+
+    with open('memory_visualize.html', "w+") as f:
+        f.write(html)
