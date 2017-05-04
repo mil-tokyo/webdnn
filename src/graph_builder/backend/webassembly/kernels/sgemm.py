@@ -60,15 +60,7 @@ def sgemm(op: Sgemm,
         "sgemm_N": op.N,
         "sgemm_K": op.K
     })
-    print({
-        "sgemm_A_offset": A.offset,
-        "sgemm_B_offset": B.offset,
-        "sgemm_C_offset": C.offset,
-        "sgemm_M": op.M,
-        "sgemm_N": op.N,
-        "sgemm_K": op.K
-    })
-    print(op.transpose_A, op.transpose_B)
+    
     source = generate_template(op.transpose_A, op.transpose_B)
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("sgemm", source)
