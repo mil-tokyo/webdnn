@@ -190,32 +190,39 @@ class Allocator:
                     analysis_table[var].end = t + 1
 
         # メモリ共有可能判定
-        analysis_list = sorted(analysis_table.values(), key=lambda x: x.end, reverse=True)
+        analysis_list = list(analysis_table.values())
         analysis_list = sorted(analysis_list, key=lambda x: x.variable.size, reverse=True)
+        analysis_list = sorted(analysis_list, key=lambda x: x.end)
+        analysis_list = sorted(analysis_list, key=lambda x: x.end - x.start, reverse=True)
         analysis_list = list(analysis_list)
         memory_offset_table: Dict[int, List[AllocationAnalysisData]] = {t: [] for t in range(len(ops) + 1)}
+        queue = list(analysis_list)
 
-        for item1 in analysis_list:
-            offset = 0
+        while len(queue) > 0:
+            for item1 in queue:
+                offset = 0
 
-            flag_retry = True
-            while flag_retry:
-                flag_retry = False
+                flag_retry = True
+                while flag_retry:
+                    flag_retry = False
 
-                for t in range(item1.start, item1.end):
-                    for item2 in memory_offset_table[t]:
-                        if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
-                            continue
+                    for t in range(item1.start, item1.end):
+                        for item2 in memory_offset_table[t]:
+                            if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
+                                continue
 
-                        else:
-                            offset = item2.offset + item2.size
-                            flag_retry = True
+                            else:
+                                offset = item2.offset + item2.size
+                                flag_retry = True
+                                break
+
+                        if flag_retry:
                             break
 
-                    if flag_retry:
-                        break
+                item1.offset = offset
 
-            item1.offset = offset
+            queue = list(sorted(queue, key=lambda x: x.offset))
+            item1 = queue.pop(0)
             for t in range(item1.start, item1.end):
                 memory_offset_table[t].append(item1)
 
@@ -305,7 +312,7 @@ lifetime: {self.data.start} - {self.data.end}
             position: absolute;
             border: 1px solid #000;
             display: block;
-            padding: 8px;
+            padding: 0;
             box-sizing: border-box;
             overflow: hidden;
             background: #0f0;
