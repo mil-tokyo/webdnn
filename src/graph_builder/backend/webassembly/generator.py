@@ -6,6 +6,7 @@ Descriptor Generator for WebAssembly
 """
 
 import os.path as path
+import sys
 import subprocess
 import tempfile as tmp
 from typing import Tuple, List
@@ -25,7 +26,7 @@ from graph_builder.backend.webassembly.kernels.axiswise_bias import axiswise_bia
 # from graph_builder.backend.webassembly.kernels.flatten import flatten
 from graph_builder.backend.webassembly.kernels.im2col import im2col
 from graph_builder.backend.webassembly.kernels.linear import linear
-# from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
+from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webassembly.kernels.relu import relu
 from graph_builder.backend.webassembly.kernels.sgemm import sgemm
 # from graph_builder.backend.webassembly.kernels.tanh import tanh
@@ -44,7 +45,7 @@ from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 # from graph_builder.graph.operators.elu import Elu
 # from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
-# from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
+from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 # from graph_builder.graph.operators.tanh import Tanh
 # from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
@@ -100,6 +101,12 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name)
 
+    # FIXME: 必要メモリサイズを自動でemccに渡す
+    weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
+    required_heap = (int(weight_data_size // 1048576) + 2) * 1048576  # required + at least 1MB
+    sys.stderr.write(f"Compile with\n" +
+                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.c {required_heap}\n")
+
     return GraphExecutionData(descriptor, constants_bytes)
 
 
@@ -125,8 +132,8 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
         # elif isinstance(op, LocalResponseNormalization):
         #     kernels += local_response_normalization(op, constants_layout, variables_layout)
         #
-        # elif isinstance(op, MaxPooling2D):
-        #     kernels += max_pooling_2d(op, constants_layout, variables_layout)
+        elif isinstance(op, MaxPooling2D):
+            kernels += max_pooling_2d(op, constants_layout, variables_layout)
         #
         # elif isinstance(op, AveragePooling2D):
         #     kernels += average_pooling_2d(op, constants_layout, variables_layout)
