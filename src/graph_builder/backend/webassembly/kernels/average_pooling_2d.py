@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import Kernel, GPUSize
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.axis import Axis
@@ -9,14 +9,10 @@ from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(average_pooling_2d_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(average_pooling_2d_Y_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(average_pooling_2d_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(average_pooling_2d_Y_offset)%%;
     const int N = %%META_LOAD(average_pooling_2d_N)%%;
     const int H1 = %%META_LOAD(average_pooling_2d_H1)%%;
     const int W1 = %%META_LOAD(average_pooling_2d_W1)%%;
@@ -29,7 +25,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     
     //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
 
-    for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
+    for (int gid = 0; gid < N * H2 * W2 * C; gid += 1) {
         const int c = gid % C;
         const int w2 = gid / C % W2;
         const int h2 = gid / C / W2 % H2;
@@ -91,8 +87,6 @@ def average_pooling_2d(op: AveragePooling2D,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 
