@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import GPUSize, Kernel
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webassembly.operators.col2im import Col2Im
@@ -14,14 +14,10 @@ from graph_builder.graph.variables.attributes.order import OrderNHWC
 # C2, H2, W2などはすべてDeconvのinput, Convのoutputのサイズを表すために使用
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *col = data_buffer + %%META_LOAD(col2im_col_offset)%%;
-    device float *im = data_buffer + %%META_LOAD(col2im_im_offset)%%;
+    const float *col = data_buffer + %%META_LOAD(col2im_col_offset)%%;
+    float *im = data_buffer + %%META_LOAD(col2im_im_offset)%%;
 
     const int N = %%META_LOAD(col2im_N)%%;
     const int C1 = %%META_LOAD(col2im_C1)%%;
@@ -36,7 +32,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     const int PH = %%META_LOAD(col2im_PH)%%;
     const int PW = %%META_LOAD(col2im_PW)%%;
 
-    for (int gid = index; gid < N*H1*W1*C1; gid += num_threads) {
+    for (int gid = 0; gid < N*H1*W1*C1; gid += 1) {
         const int c1 = gid % C1;
         const int w1 = gid / C1 % W1;
         const int h1 = gid / C1 / W1 % H1;
@@ -99,8 +95,6 @@ def col2im(op: Col2Im,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 

@@ -21,15 +21,16 @@ function togglePause() {
 async function initialize() {
     try {
         //noinspection ES6ModulesDependencies
-        await WebDNN.init();
+        let backend = await WebDNN.init();
+        console.log(`backend: ${backend}`);
 
         //noinspection JSUnresolvedFunction
-        let pipelineData = await((await fetch(`./output/graph_webgpu.json?t=${Date.now()}`)).json());
+        let pipelineData = await((await fetch(`./output/graph_${backend}.json?t=${Date.now()}`)).json());
         runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
         await runner.compile();
 
         //noinspection JSUnresolvedFunction
-        await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
+        await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_${backend}.bin?t=${Date.now()}`)).arrayBuffer())));
 
         Webcam.set({
             width: 512,

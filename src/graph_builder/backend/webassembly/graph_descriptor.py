@@ -12,6 +12,7 @@ from graph_builder.util import json
 
 source_header = """
 #include <stdlib.h>
+#include <math.h>
 
 float weight_buffer[%%WEIGHT_SIZE%%];
 float data_buffer[%%DATA_SIZE%%];

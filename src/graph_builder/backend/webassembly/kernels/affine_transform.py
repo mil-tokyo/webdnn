@@ -7,20 +7,16 @@ from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInj
 from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(affine_transform_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(affine_transform_Y_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(affine_transform_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(affine_transform_Y_offset)%%;
 
-    const float scale = *((const device float *)(& %%META_LOAD(affine_transform_scale)%%));
-    const float bias = *((const device float *)(& %%META_LOAD(affine_transform_bias)%%));
+    const float scale = *((const float *)(& %%META_LOAD(affine_transform_scale)%%));
+    const float bias = *((const float *)(& %%META_LOAD(affine_transform_bias)%%));
     const int N = %%META_LOAD(affine_transform_N)%%;
 
-    for (int gid = index; gid < N; gid += num_threads) {
+    for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
         result = result * scale + bias;
         //Y[gid] = %%ELEMENTWISE_ATTACHABLE(result)%%;
@@ -56,8 +52,6 @@ def affine_transform(op: AffineTransform,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 

@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser()
     # default is Caffenet of Caffe example
     parser.add_argument("caffemodel", default="../../resources/caffemodel/bvlc_reference_caffenet.caffemodel")
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--shape", default="(1,3,227,227)")
     parser.add_argument("--sample_image")
     parser.add_argument("--input_name", default="data")

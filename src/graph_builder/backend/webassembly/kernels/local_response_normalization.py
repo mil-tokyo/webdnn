@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import Kernel, GPUSize
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.axis import Axis
@@ -9,14 +9,10 @@ from graph_builder.graph.operators.local_response_normalization import LocalResp
 from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(local_response_normalization_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(local_response_normalization_Y_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(local_response_normalization_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(local_response_normalization_Y_offset)%%;
     const int N = %%META_LOAD(local_response_normalization_N)%%;
     const int H = %%META_LOAD(local_response_normalization_H)%%;
     const int W = %%META_LOAD(local_response_normalization_W)%%;
@@ -28,7 +24,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     
     //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
 
-    for (int gid = index; gid < N * H * W * C; gid += num_threads) {
+    for (int gid = 0; gid < N * H * W * C; gid += 1) {
         const int c = gid % C;
         const int w = gid / C % W;
         const int h = gid / C / W % H;
@@ -43,7 +39,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
             sq_sum += val * val;
         }
         
-        float scale = powr(sq_sum * Palpha + Pk, Pmbeta);
+        float scale = powf(sq_sum * Palpha + Pk, Pmbeta);
         float v = X[gid] * scale;
         
         //Y[gid] = %%CHANNELWISE_ATTACHABLE(v, n)%%;
@@ -87,8 +83,6 @@ def local_response_normalization(op: LocalResponseNormalization,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 
