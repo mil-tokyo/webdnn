@@ -247,6 +247,9 @@ def sgemm(op: Sgemm,
         "sgemm_K": op.K
     })
 
+    # transpose_X assumes fortran-order data. True means X is C-order, False means Fortran-order.
+    # In default convolution, transpose_A == transpose_B == True.
+    # The order of output matrix C is C-order.
     source = generate_template(op.transpose_A, op.transpose_B)
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("sgemm", source)
