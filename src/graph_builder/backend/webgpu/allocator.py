@@ -2,14 +2,30 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
+from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.attributes.inplace import Inplace
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.optimize_rule import util
 from graph_builder.util import json, flags
+
+
+class AllocationAnalysisData:
+    variable: Variable
+    start: int
+    end: int
+    offset: int
+
+    def __init__(self, variable, start, end=-1, offset=-1):
+        self.variable = variable
+        self.start = start
+        self.end = end
+        self.offset = offset
+
+    def is_covered(self, other: "AllocationAnalysisData") -> bool:
+        return not (self.start >= other.end or other.start >= self.end)
 
 
 class Allocation(json.SerializableMixin, IAllocation):
@@ -106,24 +122,62 @@ class Allocator:
 
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]) -> MemoryLayout:
-        layout = MemoryLayout()
+        """
+        alloc   V1( 6block )
+        alloc   V2( 7block )
+        alloc   V3( 7block )
+        release V2
+        alloc   V4(8block)
 
-        # 計算グラフを辿りながら、retain回数をカウントし、ゼロになったら解放する
+        について、確保の方法に寄ってメモリプールサイズが異なる
+
+        alloc   V1 :  <-V1->
+        alloc   V2 :  <-V1-><-V2-->
+        alloc   V3 :  <-V1-><-V2--><-V3-->
+        release V2 :  <-V1->.......<-V3-->
+        alloc   V4 :  <-V1->.......<-V3--><-V4--->
+
+        alloc   V1 :  <-V1->
+        alloc   V2 :  <-V1->.......<-V2-->
+        alloc   V3 :  <-V1-><-V3--><-V2-->
+        release V2 :  <-V1-><-V3-->
+        alloc   V4 :  <-V1-><-V3--><-V4--->
+
+        alloc   V1 :  ........<-V1->
+        alloc   V2 :  <-V2-->.<-V1->
+        alloc   V3 :  <-V2-->.<-V1-><-V3-->
+        release V2 :  ........<-V1-><-V3-->
+        alloc   V4 :  <-V4---><-V1-><-V3-->
+
+        alloc   V1 :  ........<-V1->
+        alloc   V2 :  ........<-V1->
+        alloc   V3 :  <-V2-->.<-V1-><-V3-->
+        release V2 :  ........<-V1-><-V3-->
+        alloc   V4 :  <-V4---><-V1-><-V3-->
+
+        最適解は1つとは限らない(その後だれが解放されるのか、による)
+        """
+
+        ops = util.listup_operators(graph)
+        LIFETIME_FOREVER = len(ops) + 1
+        analysis_table: Dict[Variable, AllocationAnalysisData] = {}
+
+        # 計算グラフを辿りながら、retain回数をカウントし、生存期間のテーブルを作成する
         retain_count: Dict[Variable, int] = {v: 0 for v in variables}
-        free_list: List[Tuple(int, int)] = []  # [(offset, size)]
+        allocated: Set[Variable] = set()
 
         for var in graph.inputs:
             if isinstance(var, ConstantVariable):
                 continue
 
-            layout.append(var)
+            analysis_table[var] = AllocationAnalysisData(var, 0, LIFETIME_FOREVER)
 
-        for op in util.listup_operators(graph):
+        for t, op in enumerate(ops):
             for var in op.outputs.values():
                 if isinstance(var, ConstantVariable):
                     continue
 
-                if var not in layout:
+                if var not in allocated:
                     # 新規に確保する
                     flag_allocated = False
 
@@ -143,31 +197,18 @@ class Allocator:
                             while "inplace_src" in v_in.parameters:
                                 v_in = v_in.parameters["inplace_src"]
                             var.parameters["inplace_src"] = v_in
-
-                            layout.append(var, layout[v_in].offset)
                             retain_count[v_in] += len(var.input_to)
+
+                            allocated.add(var)
                             flag_allocated = True
 
                     if not flag_allocated:
                         # 新しくメモリを確保
-
-                        size = var.size
-                        spaces = sorted([space for space in free_list if space[1] >= size], key=lambda x: x[1])
+                        analysis_table[var] = AllocationAnalysisData(var, t, LIFETIME_FOREVER)
                         retain_count[var] = len(var.input_to)
 
-                        if len(spaces) > 0:
-                            # 十分なスペースがあった
-                            space = spaces[0]
-                            free_list.remove(space)
-                            layout.append(var, offset=space[0])
-                            if space[1] > var.size:
-                                free_list.append((space[0] + var.size, space[1] - var.size))
-                            flag_allocated = True
-
-                        else:
-                            # 十分なスペースが無かった
-                            layout.append(var)
-                            flag_allocated = True
+                        allocated.add(var)
+                        flag_allocated = True
 
                     if not flag_allocated:
                         raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
@@ -182,28 +223,53 @@ class Allocator:
 
                 if retain_count[var] == 0:
                     # 解放
-                    allocation = layout[var]
-                    space1 = (allocation.offset, allocation.size)
-                    free_list.append(space1)
+                    analysis_table[var].end = t + 1
 
-                    # 解放済み領域の結合(デフラグ)
-                    flag_changed = True
-                    while flag_changed:
-                        flag_changed = False
-                        for space2 in list(free_list):
+        # メモリ共有可能判定
+        analysis_list = list(sorted(analysis_table.values(), key=lambda x: x.variable.size, reverse=True))
+        allocated_items: List[AllocationAnalysisData] = []
+        memory_offset_table = {}
 
-                            if space2[0] + space2[1] == space1[0]:
-                                free_list.remove(space1)
-                                free_list.remove(space2)
-                                space1 = (space2[0], space2[1] + space1[1])
-                                free_list.append(space1)
-                                flag_changed = True
+        while len(analysis_list) > 0:
+            item1 = analysis_list.pop(0)
+            combined_items = [item1]
 
-                            if space2[0] == space1[0] + space1[1]:
-                                free_list.remove(space1)
-                                free_list.remove(space2)
-                                space1 = (space1[0], space2[1] + space1[1])
-                                free_list.append(space1)
-                                flag_changed = True
+            for item2 in analysis_list:
+                flag_combindable = True
+
+                for item3 in combined_items:
+                    if item3.is_covered(item2):
+                        flag_combindable = False
+                        break
+
+                if flag_combindable:
+                    combined_items.append(item2)
+
+            for item2 in combined_items:
+                offset = 0
+
+                for t in range(item2.start, item2.end):
+                    if t in memory_offset_table:
+                        offset = max(offset, memory_offset_table[t])
+
+                item2.offset = offset
+
+                for t in range(item2.start, item2.end):
+                    memory_offset_table[t] = offset + item2.variable.size
+
+            for item2 in combined_items[1:]:
+                analysis_list.remove(item2)
+
+            allocated_items += combined_items
+
+        # メモリ配置の確定
+        allocation_dict = {item.variable: item.offset for item in allocated_items}
+        layout = MemoryLayout()
+        for var in variables:
+            original_var = var
+            while "inplace_src" in var.parameters:
+                var = var.parameters["inplace_src"]
+
+            layout.append(original_var, allocation_dict[var])
 
         return layout
