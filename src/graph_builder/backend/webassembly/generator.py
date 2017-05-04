@@ -23,17 +23,17 @@ from graph_builder.backend.webassembly.kernels.axiswise_bias import axiswise_bia
 # from graph_builder.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 # from graph_builder.backend.webassembly.kernels.elu import elu
 # from graph_builder.backend.webassembly.kernels.flatten import flatten
-# from graph_builder.backend.webassembly.kernels.im2col import im2col
+from graph_builder.backend.webassembly.kernels.im2col import im2col
 from graph_builder.backend.webassembly.kernels.linear import linear
 # from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webassembly.kernels.relu import relu
-# from graph_builder.backend.webassembly.kernels.sgemm import sgemm
+from graph_builder.backend.webassembly.kernels.sgemm import sgemm
 # from graph_builder.backend.webassembly.kernels.tanh import tanh
 # from graph_builder.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 # from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
 # from graph_builder.backend.webassembly.operators.col2im import Col2Im
-# from graph_builder.backend.webassembly.operators.im2col import Im2Col
-# from graph_builder.backend.webassembly.operators.sgemm import Sgemm
+from graph_builder.backend.webassembly.operators.im2col import Im2Col
+from graph_builder.backend.webassembly.operators.sgemm import Sgemm
 from graph_builder.backend.webassembly.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
@@ -140,12 +140,12 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
         # elif isinstance(op, Flatten):
         #     kernels += flatten(op, constants_layout, variables_layout)
         #
-        # elif isinstance(op, Sgemm):
-        #     kernels += sgemm(op, constants_layout, variables_layout)
-        #
-        # elif isinstance(op, Im2Col):
-        #     kernels += im2col(op, constants_layout, variables_layout)
-        #
+        elif isinstance(op, Sgemm):
+            kernels += sgemm(op, constants_layout, variables_layout)
+
+        elif isinstance(op, Im2Col):
+            kernels += im2col(op, constants_layout, variables_layout)
+
         # elif isinstance(op, Col2Im):
         #     kernels += col2im(op, constants_layout, variables_layout)
         #

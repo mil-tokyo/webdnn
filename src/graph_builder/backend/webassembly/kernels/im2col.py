@@ -1,7 +1,7 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import GPUSize, Kernel
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
@@ -9,14 +9,10 @@ from graph_builder.graph.axis import Axis
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
 
 template_NHWC = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
-    device float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
+    const float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
+    float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
 
     const int N = %%META_LOAD(im2col_N)%%;
     const int C1 = %%META_LOAD(im2col_C1)%%;
@@ -31,7 +27,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     const int PH = %%META_LOAD(im2col_PH)%%;
     const int PW = %%META_LOAD(im2col_PW)%%;
 
-    for (int gid = index; gid < N*H2*W2*KH*KW*C1; gid += num_threads) {
+    for (int gid = 0; gid < N*H2*W2*KH*KW*C1; gid += 1) {
         const int c1 = gid % C1;
         const int kw = gid / C1 % KW;
         const int kh = gid / C1 / KW % KH;
@@ -48,14 +44,10 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 """
 
 template_CNHW = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
-    device float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
+    const float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
+    float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
 
     const int N = %%META_LOAD(im2col_N)%%;
     const int C1 = %%META_LOAD(im2col_C1)%%;
@@ -70,7 +62,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     const int PH = %%META_LOAD(im2col_PH)%%;
     const int PW = %%META_LOAD(im2col_PW)%%;
 
-    for (int gid = index; gid < N*H2*W2*KH*KW*C1; gid += num_threads) {
+    for (int gid = 0; gid < N*H2*W2*KH*KW*C1; gid += 1) {
         const int w2 = gid % W2;
         const int h2 = gid / W2 % H2;
         const int  n = gid / W2 / H2 % N;
@@ -126,8 +118,6 @@ def im2col(op: Im2Col,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 
