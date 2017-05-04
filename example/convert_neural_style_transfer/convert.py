@@ -48,7 +48,7 @@ def generate_graph(model_path: str) -> Graph:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=NSTModelPath.candy.name, choices=[v.name for v in NSTModelPath])
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()

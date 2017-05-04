@@ -1,26 +1,22 @@
 from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
-from graph_builder.backend.webassembly.kernel import GPUSize, Kernel
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.operators.tanh import Tanh
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
+    const float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
 
     const int N = %%META_LOAD(relu_N)%%;
   
-    for (int gid = index; gid < N; gid += num_threads) {
+    for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
-        result = tanh(result);      
+        result = tanhf(result);      
         //Y[gid] = %%ELEMENTWISE_ATTACHABLE(result)%%;
         Y[gid] = result;
     }
@@ -53,8 +49,6 @@ def tanh(op: Tanh,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 

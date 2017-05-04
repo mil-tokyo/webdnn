@@ -19,7 +19,7 @@ OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="vgg16", choices=["vgg16", "resnet50"])
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "fallback"])
+    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()

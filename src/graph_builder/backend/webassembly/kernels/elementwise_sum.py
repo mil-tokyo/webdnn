@@ -2,24 +2,20 @@ from typing import List
 
 from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.inline_injector import InlineInjector
-from graph_builder.backend.webassembly.kernel import Kernel, GPUSize
+from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
-                          uint index[[thread_position_in_grid]],
-                          uint num_threads[[threads_per_grid]])
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    const device float *X0 = data_buffer + %%META_LOAD(elementwise_sum_X0_offset)%%;
-    const device float *X1 = data_buffer + %%META_LOAD(elementwise_sum_X1_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(elementwise_sum_Y_offset)%%;
+    const float *X0 = data_buffer + %%META_LOAD(elementwise_sum_X0_offset)%%;
+    const float *X1 = data_buffer + %%META_LOAD(elementwise_sum_X1_offset)%%;
+    float *Y = data_buffer + %%META_LOAD(elementwise_sum_Y_offset)%%;
     const int N = %%META_LOAD(elementwise_sum_N)%%;
   
-    for (int gid = index; gid < N; gid += num_threads) {
+    for (int gid = 0; gid < N; gid += 1) {
         float result = X0[gid] + X1[gid];
         //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
         Y[gid] = %%INLINE(result)%%;
@@ -37,7 +33,7 @@ def elementwise_sum(op: AxiswiseScale,
     x1 = variables_layout[op.inputs["x1"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert len(op.inputs) == 2, "[WebGPU] ElementwiseSum operator currently supported only 2 inputs."
+    assert len(op.inputs) == 2, "[Webassembly] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
     if metabuffer_injector is None:
@@ -63,8 +59,6 @@ def elementwise_sum(op: AxiswiseScale,
     kernel = Kernel(
         {func_name: source},
         func_name,
-        GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
         metabuffer_injector.generate_buffer()
     )
 
