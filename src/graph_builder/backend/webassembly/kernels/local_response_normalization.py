@@ -18,9 +18,9 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     const int W = %%META_LOAD(local_response_normalization_W)%%;
     const int C = %%META_LOAD(local_response_normalization_C)%%;
     const int Phalfn = %%META_LOAD(local_response_normalization_param_half_n)%%;
-    const float Pk = *((const device float *)(& %%META_LOAD(local_response_normalization_param_k)%%));
-    const float Palpha = *((const device float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
-    const float Pmbeta = *((const device float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
+    const float Pk = *((const float *)(& %%META_LOAD(local_response_normalization_param_k)%%));
+    const float Palpha = *((const float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
+    const float Pmbeta = *((const float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
     
     //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
 
@@ -30,8 +30,14 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         const int h = gid / C / W % H;
         const int n = gid / C / W / H;
 
-        int ch_low = max(c - Phalfn, 0);
-        int ch_high = min(c + Phalfn + 1, C);
+        int ch_low = c - Phalfn;
+        if (ch_low < 0) {
+            ch_low = 0;
+        }
+        int ch_high = c + Phalfn + 1;
+        if (ch_high > C) {
+            ch_high = C;
+        }
         
         float sq_sum = 0.0;
         for (; ch_low < ch_high; ch_low++) {
