@@ -8,21 +8,28 @@ from graph_builder.graph.variable import Variable
 
 
 class ElementwiseSum(Operator):
-    """
-    n入力を加算するレイヤー
+    """Calculate elementwise sum of multiple input variables.
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
+
     """
     attributes = {PostElementwise,
                   PostAxiswise,
                   FirstInplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object] = None):
-        """
-        :param name: 
-        :param parameters: 
-        """
+    def __init__(self, name: str, parameters: Dict[str, any] = None):
         super().__init__(name, parameters)
 
     def __call__(self, *xs: Variable):
+        """
+        Args:
+            *xs (:class:`~graph_builder.graph.variable.Variable`): Inputs
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         y = Variable(xs[0].shape, xs[0].axis_order)
         for i, x in enumerate(xs):
             for axis in x.axis_order.axes:

@@ -10,8 +10,12 @@ from graph_builder.graph.variable import Variable
 
 
 class ConstantBias(Operator):
-    """
-    全要素に定数バイアスを加算する
+    """Add scalar bias value for every element in input variable.
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
+
     """
     attributes = {PostElementwise,
                   PostAxiswise,
@@ -19,16 +23,18 @@ class ConstantBias(Operator):
                   Inplace,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        parameters: {value: float}
-        :param name: 
-        :param parameters: 
-        """
+    def __init__(self, name: str, parameters: Dict[str, any]):
         assert "value" in parameters
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_output("y", y)

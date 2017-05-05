@@ -9,20 +9,17 @@ from graph_builder.graph.variables.attributes.order import OrderNCHW
 
 
 class MaxPooling2D(Operator):
-    """
-    Max pooling (2D) レイヤー
-    padding挙動はchainer準拠 (cover_allに注意)
+    """Max pooling 2D operator 
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
+
     """
     attributes = {PostElementwise,
                   PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        weights["W"]: (kh, kw, in_size, out_size)
-        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int], cover_all: Boolean=True}
-        :param name: 
-        :param parameters: 
-        """
         assert "ksize" in parameters
         assert "stride" in parameters
         assert "padding" in parameters
@@ -30,6 +27,13 @@ class MaxPooling2D(Operator):
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         # Chainerにおけるcover_all=Trueでサイズを計算するので、Convolution, AveragePoolingと異なる値になる
@@ -40,7 +44,6 @@ class MaxPooling2D(Operator):
         C2 = x_shape_dict[Axis.C]
 
         y = Variable([N, C2, H2, W2], OrderNCHW)
-        y.change_axis_order(x.axis_order)  # FIXME: need this?
 
         self.append_input("x", x)
         self.append_output("y", y)

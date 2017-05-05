@@ -10,8 +10,12 @@ from graph_builder.graph.variable import Variable
 
 
 class Sigmoid(Operator):
-    """
-    Sigmoidレイヤー
+    """Sigmoid activation 
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
+
     """
     attributes = {PostElementwise,
                   PostAxiswise,
@@ -20,13 +24,16 @@ class Sigmoid(Operator):
                   Inplace}
 
     def __init__(self, name: str, parameters: Dict[str, object] = None):
-        """
-        :param name: 
-        :param parameters: 
-        """
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_output("y", y)

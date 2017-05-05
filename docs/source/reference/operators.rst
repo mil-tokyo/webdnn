@@ -79,10 +79,10 @@ Relu
 .. autoclass:: graph_builder.graph.operators.relu.Relu
    :members:
 
-Reshape
-~~~~~~~
-.. autoclass:: graph_builder.graph.operators.reshape.Reshape
-   :members:
+..  Reshape
+    ~~~~~~~
+        .. autoclass:: graph_builder.graph.operators.reshape.Reshape
+        :members:
 
 Sigmoid
 ~~~~~~~

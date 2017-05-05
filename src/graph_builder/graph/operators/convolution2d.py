@@ -10,24 +10,32 @@ from graph_builder.graph.variables.attributes.order import OrderNCHW
 
 
 class Convolution2D(Operator):
-    """Convolution2D operator
+    """Convolution2D operator.
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, object]): Parameters.
+        parameters (Dict[str, any]): Parameters.
 
     """
     attributes = {PostElementwise,
                   PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
+    def __init__(self, name: str, parameters: Dict[str, any]):
         assert "ksize" in parameters
         assert "stride" in parameters
         assert "padding" in parameters
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, w: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+            w (:class:`~graph_builder.graph.variable.Variable`): Filter
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 

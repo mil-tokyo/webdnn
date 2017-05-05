@@ -8,24 +8,28 @@ from graph_builder.graph.variable import Variable
 
 
 class Concat(Operator):
-    """
-    n入力を連結するレイヤー
-    結合軸はparametersで指定(chainerと同じ挙動)
+    """Concatenate multiple variables into one variable along to specified axis.
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
     """
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        parameters: {axis: int}
-        :param name: 
-        :param parameters: 
-        """
+    def __init__(self, name: str, parameters: Dict[str, any]):
         assert "axis" in parameters
         assert isinstance(parameters["axis"], Axis)
         super().__init__(name, parameters)
 
     def __call__(self, *xs: Variable):
+        """
+        Args:
+            *xs (:class:`~graph_builder.graph.variable.Variable`): Inputs
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         concat_axis = self.parameters["axis"]  # type: int
         axis_index = xs[0].axis_order.axes_dict[concat_axis]
         axes_set = set(xs[0].axis_order.axes)

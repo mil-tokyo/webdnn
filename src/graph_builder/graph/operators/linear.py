@@ -1,7 +1,7 @@
 from typing import Dict
 
-from graph_builder.graph.operator import Operator
 from graph_builder.graph.axis import Axis
+from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.have_weights import HaveWeights
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
@@ -10,22 +10,33 @@ from graph_builder.graph.variables.attributes.order import OrderNC
 
 
 class Linear(Operator):
-    """
-    行列積レイヤー(bias含まず)
-    入力は2次元または4次元, C or CHW方向に内積を取り、wのNが出力次元
+    """Fully connected operator.
+    
+    Output variable is 2D. The first dimension is same size as :obj:~`graph_builder.graph.Axis.N` 
+    of input variable, and the second dimension is same size as :obj:~`graph_builder.graph.Axis.N`
+    of weight variable.
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
+
     """
     attributes = {PostElementwise,
                   PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object] = None):
-        """
-        :param name: 
-        :param parameters: 
-        """
+    def __init__(self, name: str, parameters: Dict[str, any] = None):
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, w: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+            w (:class:`~graph_builder.graph.variable.Variable`): Weight
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         self.append_input("x", x)
         self.append_input("w", w)
 
