@@ -11,7 +11,9 @@
 WebDNN test
 <form>
     <button type="button" onclick="run_entry(); return false;">Run</button>
-    <label><input type="radio" name="backend_name" value="webgpu" checked>webgpu</label>
+    <label><input type="radio" name="backend_name" value="" checked>auto</label>
+    <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
+    <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
     <label><input type="radio" name="backend_name" value="fallback">fallback</label>
     <div>
         <textarea id="dnn_pipeline" rows="40" cols="40"></textarea>

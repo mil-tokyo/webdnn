@@ -17,7 +17,7 @@ namespace WebDNN {
                 loaded_backend_name = 'webgpu';
                 backend_loaded = true;
             } catch (e) {
-                console.error('Failed to initialize WebGPU backend; fallback to pure js backend. Error=' + e.toString());
+                console.error('Failed to initialize WebGPU backend. Error=' + e.toString());
             }
         }
 
@@ -29,14 +29,14 @@ namespace WebDNN {
                 loaded_backend_name = 'webassembly';
                 backend_loaded = true;
             } catch (e) {
-                console.error('Failed to initialize Webassembly backend; fallback to pure js backend. Error=' + e.toString());
+                console.error('Failed to initialize Webassembly backend. Error=' + e.toString());
             }
         }
-        
+
         if (backend == 'fallback') {
             // use fallback backend explicitly
         } else if (!backend_loaded) {
-            console.error('Unknown backend; fallback to pure js backend.');
+            console.error('Unknown backend.');
         }
 
         if (!backend_loaded) {
@@ -45,6 +45,7 @@ namespace WebDNN {
             gpu = gpufbif;
             backend_loaded = true;
         }
+        console.info(`Initialized ${loaded_backend_name} backend.`);
 
         return loaded_backend_name;
     }

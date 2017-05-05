@@ -18,7 +18,8 @@
     <button type="button" onclick="load_image(); return false;">Load image</button><br>
     Using canvas's image slightly changes the output due to interpolation. (Compared to image_hwcn.json)<br>
     <button type="button" onclick="run_entry(); return false;">Run</button>
-    <label><input type="radio" name="backend_name" value="webgpu" checked>webgpu</label>
+    <label><input type="radio" name="backend_name" value="" checked>auto</label>
+    <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
     <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
     <label><input type="radio" name="backend_name" value="fallback">fallback</label><br>
     <span id="mini_msg"></span>
