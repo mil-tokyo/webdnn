@@ -13,12 +13,9 @@ def _convert_to_list(x):
 
 # FIXME 各orderをテストにわけられないか
 def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
-    for order_x in [OrderNHWC,
-                    OrderHWNC,
-                    OrderHWCN,
-                    OrderNCHW,
-                    OrderCNHW,
-                    OrderCHWN]:
+    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+
+    for order_x in orders:
         k = _convert_to_list(k)
 
         op = MaxPooling2D("pool", parameters={

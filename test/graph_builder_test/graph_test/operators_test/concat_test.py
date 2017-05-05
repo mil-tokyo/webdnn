@@ -1,3 +1,4 @@
+import itertools
 from typing import Type
 
 import numpy as np
@@ -10,14 +11,14 @@ from graph_builder.graph.variables.attributes.order import AxisOrder, OrderC, Or
     OrderCHWN, OrderNCHW
 
 
-def main(order1: Type[AxisOrder], order2: Type[AxisOrder]):
+def main(order1: Type[AxisOrder], order2: Type[AxisOrder], concat_axis: Axis):
     default_order = {
         1: OrderC,
         2: OrderNC,
         4: OrderNHWC
     }
 
-    op = Concat("op", {"axis": Axis.C})
+    op = Concat("op", {"axis": concat_axis})
     x1 = Variable(np.arange(order1.ndim) + 1, default_order[order1.ndim])
     x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
 
@@ -26,7 +27,7 @@ def main(order1: Type[AxisOrder], order2: Type[AxisOrder]):
 
     y, = op(x1, x2)
     for axis in y.axis_order.axes:
-        if axis == Axis.C:
+        if axis == concat_axis:
             assert y.shape_dict[axis] == x1.shape_dict[axis] + x2.shape_dict[axis]
 
         else:
@@ -35,29 +36,14 @@ def main(order1: Type[AxisOrder], order2: Type[AxisOrder]):
 
 # FIXME 各orderをテストにわけられないか
 def test_every_order():
-    for order1 in [OrderC,
-                   OrderNC,
-                   OrderCN,
-                   OrderNHWC,
-                   OrderHWNC,
-                   OrderHWCN,
-                   OrderNCHW,
-                   OrderCNHW,
-                   OrderCHWN]:
-        for order2 in [OrderC,
-                       OrderNC,
-                       OrderCN,
-                       OrderNHWC,
-                       OrderHWNC,
-                       OrderHWCN,
-                       OrderNCHW,
-                       OrderCNHW,
-                       OrderCHWN]:
+    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+    axes = [Axis.N, Axis.H, Axis.W, Axis.C]
 
-            if order1.ndim != order2.ndim:
-                continue
+    for order1, order2, axis in itertools.product(orders, orders, axes):
+        if set(order1.axes) != set(order2.axes) or axis not in order1.axes:
+            continue
 
-            main(order1, order2)
+        main(order1, order2, axis)
 
 
 @raises(AssertionError)

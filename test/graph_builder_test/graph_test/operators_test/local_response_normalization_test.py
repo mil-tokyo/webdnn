@@ -8,12 +8,9 @@ from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWNC,
 
 # FIXME 各orderをテストにわけられないか
 def test_every_order():
-    for order in [OrderNHWC,
-                  OrderHWNC,
-                  OrderHWCN,
-                  OrderNCHW,
-                  OrderCNHW,
-                  OrderCHWN]:
+    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+
+    for order in orders:
         op = LocalResponseNormalization("op", parameters={
             "n": 1,
             "k": 2,

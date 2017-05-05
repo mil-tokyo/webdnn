@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 from nose.tools import raises
 
@@ -9,44 +11,28 @@ from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, Orde
 
 # FIXME 各orderをテストにわけられないか
 def test_every_order():
-    for order1 in [OrderC,
-                   OrderNC,
-                   OrderCN,
-                   OrderNHWC,
-                   OrderHWNC,
-                   OrderHWCN,
-                   OrderNCHW,
-                   OrderCNHW,
-                   OrderCHWN]:
-        for order2 in [OrderC,
-                       OrderNC,
-                       OrderCN,
-                       OrderNHWC,
-                       OrderHWNC,
-                       OrderHWCN,
-                       OrderNCHW,
-                       OrderCNHW,
-                       OrderCHWN]:
+    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
-            if order1.ndim != order2.ndim:
-                continue
+    for order1, order2 in itertools.product(orders, orders):
+        if set(order1.axes) != set(order2.axes):
+            continue
 
-            default_order = {
-                1: OrderC,
-                2: OrderNC,
-                4: OrderNHWC
-            }
+        default_order = {
+            1: OrderC,
+            2: OrderNC,
+            4: OrderNHWC
+        }
 
-            op = ElementwiseSum("op")
-            x1 = Variable(np.arange(order1.ndim) + 1, default_order[order2.ndim])
-            x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
+        op = ElementwiseSum("op")
+        x1 = Variable(np.arange(order1.ndim) + 1, default_order[order2.ndim])
+        x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
 
-            x1.change_axis_order(order1)
-            x2.change_axis_order(order2)
+        x1.change_axis_order(order1)
+        x2.change_axis_order(order2)
 
-            y, = op(x1, x2)
-            for axis in order1.axes:
-                assert y.shape_dict[axis] == x1.shape_dict[axis]
+        y, = op(x1, x2)
+        for axis in order1.axes:
+            assert y.shape_dict[axis] == x1.shape_dict[axis]
 
 
 @raises(AssertionError)

@@ -9,15 +9,9 @@ from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, Orde
 
 
 def template_elementwise_operator(OperatorClass: Type[Operator]):
-    for order in [OrderC,
-                  OrderNC,
-                  OrderCN,
-                  OrderNHWC,
-                  OrderHWNC,
-                  OrderHWCN,
-                  OrderNCHW,
-                  OrderCNHW,
-                  OrderCHWN]:
+    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+
+    for order in orders:
         op = OperatorClass("op")
 
         x = Variable(np.arange(order.ndim) + 1, order)
