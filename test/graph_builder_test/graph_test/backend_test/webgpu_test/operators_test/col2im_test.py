@@ -18,7 +18,7 @@ orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 # FIXME 各orderをテストにわけられないか
 def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
     for order_x in orders4:
-        op = Col2Im("deconv", parameters={
+        op = Col2Im("col2im", parameters={
             "ksize": _convert_to_list(k),
             "stride": _convert_to_list(s),
             "padding": _convert_to_list(p)
