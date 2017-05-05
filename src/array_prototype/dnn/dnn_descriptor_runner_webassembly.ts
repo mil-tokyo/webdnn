@@ -7,9 +7,32 @@ namespace WebDNN {
         private inputViews: Float32Array[];
         private outputViews: Float32Array[];
         private worker: Worker;
+        public descriptor: DNNDescriptorWebassembly;
+        public ignoreCache: boolean = false;
+        public backend: string = 'webassembly';
 
-        constructor(public descriptor: DNNDescriptorWebassembly) {
+        constructor() {
 
+        }
+
+        async load(directory: string) {
+            let graph_url = `${directory}/graph_${this.backend}.json`;
+            if (this.ignoreCache) {
+                graph_url += '?t=' + Date.now();
+            }
+            this.descriptor = await (await fetch(graph_url)).json();
+            await this.compile();
+
+            let weight_url = `${directory}/weight_${this.backend}.bin`;
+            if (this.ignoreCache) {
+                weight_url += '?t=' + Date.now();
+            }
+            let weights_data_ab = await (await fetch(weight_url)).arrayBuffer();
+            await this.loadWeights(new Uint8Array(weights_data_ab));
+        }
+
+        setDescriptor(descriptor: DNNDescriptorWebassembly) {
+            this.descriptor = descriptor;
         }
 
         compile(): Promise<void> {

@@ -17,12 +17,10 @@ async function run() {
         backend_name = await init(backend_name);
     }
 
-    let pipeline_data = JSON.parse($('#dnn_pipeline').val());
-    runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
-    await runner.compile();
+    runner = $M.gpu.createDNNDescriptorRunner();
+    runner.ignoreCache = true;
+    await runner.load('./output');
 
-    // use time to avoid cache
-    await runner.loadWeights(await fetchWeights('./output/weight_' + backend_name + '.bin?t=' + Date.now()));
     let test_samples = await fetchSamples('../../resources/mnist/test_samples.json');
     let input_views = await runner.getInputViews();
     let output_views = await runner.getOutputViews();
@@ -58,14 +56,6 @@ async function init(backend_name) {
     console.log(`backend: ${backend}`);
     $Mg = $M.gpu;
     return backend;
-}
-
-async function fetchWeights(path) {
-    let response = await fetch(path);
-    let ab = await response.arrayBuffer();
-    let weights_data = new Uint8Array(ab);
-
-    return weights_data;
 }
 
 function makeMatFromJson(mat_data) {

@@ -23,8 +23,8 @@ namespace WebDNN {
 
         }
 
-        createDNNDescriptorRunner(dnnDescriptor: any): DNNDescriptorRunner {
-            return new DNNDescriptorRunnerWebGPU(dnnDescriptor, this.webgpuHandler);
+        createDNNDescriptorRunner(): DNNDescriptorRunner {
+            return new DNNDescriptorRunnerWebGPU(this.webgpuHandler);
         }
     }
 }
