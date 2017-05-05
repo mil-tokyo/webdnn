@@ -20,23 +20,23 @@ float data_buffer[%%DATA_SIZE%%];
 """
 
 source_init = """
-void init() {
+extern "C" void init() {
     //weight_buffer = (float*)malloc(%%WEIGHT_SIZE%% * sizeof(float));
     //data_buffer = (float*)malloc(%%DATA_SIZE%% * sizeof(float));
 }
 
-float* get_weight_buffer(void) {
+extern "C" float* get_weight_buffer(void) {
     return weight_buffer;
 }
 
-float* get_data_buffer(void) {
+extern "C" float* get_data_buffer(void) {
     return data_buffer;
 }
 
 """
 
 source_exec = """
-void run() {
+extern "C" void run() {
 %%EXEC_LINES%%
 }
 

@@ -41,6 +41,35 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K")
 
 
+# sgemm using eigen
+
+def generate_template_eigen(transpose_A, transpose_B, M, N, K):
+    return """
+#ifndef INCLUDE_EIGEN
+#define INCLUDE_EIGEN
+#include <Eigen/Dense>
+#endif
+
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
+{
+    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
+    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
+    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+
+    Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
+    Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
+
+    c_mat.noalias() = a_mat * b_mat;
+}
+""" \
+        .replace("%%A_MAJOR%%", "RowMajor" if transpose_A else "ColMajor") \
+        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor") \
+        .replace("%%M%%", str(M)) \
+        .replace("%%N%%", str(N)) \
+        .replace("%%K%%", str(K))
+
+
 def sgemm(op: Sgemm,
           constants_layout: MemoryLayout,
           variables_layout: MemoryLayout,
@@ -60,8 +89,26 @@ def sgemm(op: Sgemm,
         "sgemm_N": op.N,
         "sgemm_K": op.K
     })
-    
-    source = generate_template(op.transpose_A, op.transpose_B)
+
+    if op.parameters.get("eigen", False):
+        source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
+
+        metabuffer_injector.register({
+            "sgemm_A_offset": A.offset,
+            "sgemm_B_offset": B.offset,
+            "sgemm_C_offset": C.offset
+        })
+    else:
+        source = generate_template(op.transpose_A, op.transpose_B)
+
+        metabuffer_injector.register({
+            "sgemm_A_offset": A.offset,
+            "sgemm_B_offset": B.offset,
+            "sgemm_C_offset": C.offset,
+            "sgemm_M": op.M,
+            "sgemm_N": op.N,
+            "sgemm_K": op.K
+        })
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("sgemm", source)
     source = source.replace("%%FUNC_NAME%%", func_name)

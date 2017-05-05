@@ -35,7 +35,7 @@ from graph_builder.backend.webassembly.operators.affine_transform import AffineT
 from graph_builder.backend.webassembly.operators.col2im import Col2Im
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
 from graph_builder.backend.webassembly.operators.sgemm import Sgemm
-from graph_builder.backend.webassembly.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
+from graph_builder.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
@@ -68,7 +68,7 @@ class GraphExecutionData(IGraphExecutionData):
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
-        with open(path.join(dirname, "kernels_{}.c".format(self.backend_suffix)), "w") as f:
+        with open(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)), "w") as f:
             f.write(self.descriptor.concat_kernel_sources())
 
         with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
@@ -76,7 +76,7 @@ class GraphExecutionData(IGraphExecutionData):
 
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
-    graph, _ = WebGPUOptimizeRule().optimize(graph)
+    graph, _ = WebassemblyOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
 
@@ -103,9 +103,10 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 
     # FIXME: 必要メモリサイズを自動でemccに渡す
     weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
-    required_heap = (int(weight_data_size // 1048576) + 2) * 1048576  # required + at least 1MB
+    required_heap = (int(weight_data_size // 1048576) + 1 + 16) * 1048576  # required + 16MB
     sys.stderr.write(f"Compile with\n" +
-                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.c {required_heap}\n")
+                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.cpp" +
+                     f" {required_heap}\n")
 
     return GraphExecutionData(descriptor, constants_bytes)
 
