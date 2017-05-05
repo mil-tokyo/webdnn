@@ -2,6 +2,7 @@ from typing import Dict, Tuple, List, Set
 
 import numpy as np
 
+import graph_builder.util.flags.optimize
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
@@ -128,7 +129,7 @@ class Allocator:
         ops = util.listup_operators(graph)
         layout = MemoryLayout()
 
-        if flags.backend.webgpu.OPTIMIZE_MEMORY_ALLOCATION:
+        if graph_builder.util.flags.optimize.OPTIMIZE_MEMORY_ALLOCATION:
             analysis_list = _analyse_variable_lifetime(graph, ops, variables)
 
             _optimize_allocation_offset(analysis_list)
@@ -145,7 +146,7 @@ class Allocator:
             for variable in variables:
                 layout.append(variable)
 
-        if flags.backend.webgpu.VISUALIZE_MEMORY_ALLOCATION:
+        if graph_builder.util.flags.optimize.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(layout, graph, variables, ops)
 
         return layout
@@ -175,7 +176,7 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                 # 新規に確保する
                 flag_allocated = False
 
-                if flags.backend.webgpu.OPTIMIZE_INPLACE_OPERATION \
+                if graph_builder.util.flags.optimize.OPTIMIZE_INPLACE_OPERATION \
                     and not flag_allocated \
                     and util.check_attribute_match(op, Inplace):
 

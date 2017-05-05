@@ -12,6 +12,7 @@ from typing import Tuple, List
 
 import numpy as np
 
+import graph_builder.util.flags.optimize
 from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webgpu.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webgpu.kernel import Kernel
@@ -116,7 +117,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> IGraphExecution
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name)
 
-    if flags.backend.webgpu.VALIDATE_GENERATED_SOURCE:
+    if graph_builder.util.flags.optimize.VALIDATE_GENERATED_SOURCE:
         if flags.DEBUG:
             print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
 

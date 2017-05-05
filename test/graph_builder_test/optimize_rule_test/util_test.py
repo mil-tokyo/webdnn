@@ -129,6 +129,15 @@ def test_search_sub_structure():
 
 
 @with_setup(setup_graph_sequential)
+def test_search_sub_structure_full():
+    global graph, op1, op2, op3
+
+    matches = search_sub_structure(graph, [Operator, Operator, Operator])
+    assert len(matches) == 1
+    assert tuple(matches[0]) == (op1, op2, op3)
+
+
+@with_setup(setup_graph_sequential)
 def test_filter_nodes():
     global graph, op1
 

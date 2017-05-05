@@ -24,6 +24,9 @@ class Sgemm(Operator):
         super().__init__(name, parameters)
 
     def __call__(self, A: Variable, B: Variable):
+        assert A.size == self.M * self.K
+        assert B.size == self.N * self.K
+
         self.append_input("A", A)
         self.append_input("B", B)
 
@@ -33,6 +36,7 @@ class Sgemm(Operator):
         )
         self.append_output("C", C)
 
+        assert C.size == self.M * self.N
         return C,
 
     @property

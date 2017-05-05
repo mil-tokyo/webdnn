@@ -23,13 +23,3 @@ class Softmax(Operator):
         self.append_input("x", x)
         self.append_output("y", y)
         return y,
-
-    def remove_self(self):
-        """
-        最適化のため、自分を削除する
-        """
-        x = self.inputs["x"]
-        y = self.outputs["y"]
-
-        self.remove_output(y)
-        x.output_from.replace_output(x, y)

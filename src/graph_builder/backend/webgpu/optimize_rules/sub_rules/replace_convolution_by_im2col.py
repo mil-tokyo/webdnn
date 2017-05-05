@@ -39,9 +39,9 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                     "ksize": op.ksize,
                     "stride": op.stride,
                     "padding": op.padding,
-                    "out_order": OrderNHWC
                 })
                 col, = im2col(x)
+                col.change_axis_order(OrderNHWC)
 
             else:
                 col = x
