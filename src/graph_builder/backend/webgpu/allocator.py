@@ -63,6 +63,9 @@ class MemoryLayout(json.SerializableMixin, IMemoryLayout):
             "allocation": {a.variable.name: a for _, a in self.__dict__.items()}
         }
 
+    def __len__(self):
+        return len(self.__dict__)
+
     def __getitem__(self, var: Variable):
         return self.__dict__[var.name]
 
@@ -123,127 +126,151 @@ class Allocator:
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]) -> MemoryLayout:
         ops = util.listup_operators(graph)
-        LIFETIME_FOREVER = len(ops) + 1
-        analysis_table: Dict[Variable, AllocationAnalysisData] = {}
+        layout = MemoryLayout()
 
-        # 計算グラフを辿りながら、retain回数をカウントし、生存期間のテーブルを作成する
-        retain_count: Dict[Variable, int] = {v: 0 for v in variables}
-        allocated: Set[Variable] = set()
+        if flags.backend.webgpu.OPTIMIZE_MEMORY_ALLOCATION:
+            analysis_list = _analyse_variable_lifetime(graph, ops, variables)
 
-        for var in graph.inputs:
-            if isinstance(var, ConstantVariable):
-                continue
+            _optimize_allocation_offset(analysis_list)
 
-            analysis_table[var] = AllocationAnalysisData(var, 0, LIFETIME_FOREVER)
-
-        for t, op in enumerate(ops):
-            for var in op.outputs.values():
-                if isinstance(var, ConstantVariable):
-                    continue
-
-                if var not in allocated:
-                    # 新規に確保する
-                    flag_allocated = False
-
-                    if not flag_allocated and util.check_attribute_match(op, Inplace):
-                        # Inplace処理
-
-                        input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
-                        if len(input_variables) > 1:
-                            if flags.DEBUG:
-                                print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
-                                      + f"Allocator skipped inplace allocation and allocate other memory. "
-                                      + f"Operator: {op}")
-
-                        else:
-                            # 入力のメモリをそのまま使う
-                            v_in = input_variables[0]
-                            while "inplace_src" in v_in.parameters:
-                                v_in = v_in.parameters["inplace_src"]
-                            var.parameters["inplace_src"] = v_in
-                            retain_count[v_in] += len(var.input_to)
-
-                            allocated.add(var)
-                            flag_allocated = True
-
-                    if not flag_allocated:
-                        # 新しくメモリを確保
-                        analysis_table[var] = AllocationAnalysisData(var, t, LIFETIME_FOREVER)
-                        retain_count[var] = len(var.input_to)
-
-                        allocated.add(var)
-                        flag_allocated = True
-
-                    if not flag_allocated:
-                        raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
-
-            for var in op.inputs.values():
-                if isinstance(var, ConstantVariable):
-                    continue
-
+            allocation_dict = {item.variable: item.offset for item in analysis_list}
+            for var in variables:
+                original_var = var
                 while "inplace_src" in var.parameters:
                     var = var.parameters["inplace_src"]
-                retain_count[var] -= 1
 
-                if retain_count[var] == 0:
-                    # 解放
-                    analysis_table[var].end = t + 1
+                layout.append(original_var, allocation_dict[var])
 
-        # メモリ共有可能判定
-        analysis_list = list(analysis_table.values())
-        analysis_list = sorted(analysis_list, key=lambda x: x.variable.size, reverse=True)
-        analysis_list = sorted(analysis_list, key=lambda x: x.end)
-        analysis_list = sorted(analysis_list, key=lambda x: x.end - x.start, reverse=True)
-        analysis_list = list(analysis_list)
-        memory_offset_table: Dict[int, List[AllocationAnalysisData]] = {t: [] for t in range(len(ops) + 1)}
-        queue = list(analysis_list)
+        else:
+            for variable in variables:
+                layout.append(variable)
 
-        while len(queue) > 0:
-            for item1 in queue:
-                offset = 0
-
-                flag_retry = True
-                while flag_retry:
-                    flag_retry = False
-
-                    for t in range(item1.start, item1.end):
-                        for item2 in memory_offset_table[t]:
-                            if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
-                                continue
-
-                            else:
-                                offset = item2.offset + item2.size
-                                flag_retry = True
-                                break
-
-                        if flag_retry:
-                            break
-
-                item1.offset = offset
-
-            queue = list(sorted(queue, key=lambda x: x.offset))
-            item1 = queue.pop(0)
-            for t in range(item1.start, item1.end):
-                memory_offset_table[t].append(item1)
-
-        allocation_dict = {item.variable: item.offset for item in analysis_list}
-        layout = MemoryLayout()
-        for var in variables:
-            original_var = var
-            while "inplace_src" in var.parameters:
-                var = var.parameters["inplace_src"]
-
-            layout.append(original_var, allocation_dict[var])
-
-        # Visualize
-        if flags.DEBUG and flags.backend.webgpu.VISUALIZE_MEMORY_ALLOCATION:
-            visualize_allocation(layout.size, analysis_list, variables, ops)
+        if flags.backend.webgpu.VISUALIZE_MEMORY_ALLOCATION:
+            _visualize_allocation(layout, graph, variables, ops)
 
         return layout
 
 
-def visualize_allocation(total_size: int, analysis_list: List[AllocationAnalysisData], variables: List[Variable], ops: List[Operator]):
+def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
+    # 計算グラフを辿りながら、retain回数をカウントし、生存期間のテーブルを作成する
+
+    LIFETIME_FOREVER = len(ops) + 1
+    analysis_table: Dict[Variable, AllocationAnalysisData] = {}
+
+    retain_count: Dict[Variable, int] = {v: 0 for v in variables}
+    allocated: Set[Variable] = set()
+
+    for var in graph.inputs:
+        if isinstance(var, ConstantVariable):
+            continue
+
+        analysis_table[var] = AllocationAnalysisData(var, 0, LIFETIME_FOREVER)
+
+    for t, op in enumerate(ops):
+        for var in op.outputs.values():
+            if isinstance(var, ConstantVariable):
+                continue
+
+            if var not in allocated:
+                # 新規に確保する
+                flag_allocated = False
+
+                if flags.backend.webgpu.OPTIMIZE_INPLACE_OPERATION \
+                    and not flag_allocated \
+                    and util.check_attribute_match(op, Inplace):
+
+                    # Inplace処理
+                    input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
+                    if len(input_variables) > 1:
+                        if flags.DEBUG:
+                            print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
+                                  + f"Allocator skipped inplace allocation and allocate other memory. "
+                                  + f"Operator: {op}")
+
+                    else:
+                        # 入力のメモリをそのまま使う
+                        v_in = input_variables[0]
+                        while "inplace_src" in v_in.parameters:
+                            v_in = v_in.parameters["inplace_src"]
+                        var.parameters["inplace_src"] = v_in
+                        retain_count[v_in] += len(var.input_to)
+
+                        allocated.add(var)
+                        flag_allocated = True
+
+                if not flag_allocated:
+                    # 新しくメモリを確保
+                    analysis_table[var] = AllocationAnalysisData(var, t, LIFETIME_FOREVER)
+                    retain_count[var] = len(var.input_to)
+
+                    allocated.add(var)
+                    flag_allocated = True
+
+                if not flag_allocated:
+                    raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
+
+        for var in op.inputs.values():
+            if isinstance(var, ConstantVariable):
+                continue
+
+            while "inplace_src" in var.parameters:
+                var = var.parameters["inplace_src"]
+            retain_count[var] -= 1
+
+            if retain_count[var] == 0:
+                # 解放はこの層が終わってから！
+                analysis_table[var].end = t + 1
+
+    return [x for x in analysis_table.values()]
+
+
+def _optimize_allocation_offset(analysis_list: List[AllocationAnalysisData]):
+    analysis_list = sorted(analysis_list, key=lambda x: x.variable.size, reverse=True)
+    analysis_list = sorted(analysis_list, key=lambda x: x.end)
+    analysis_list = sorted(analysis_list, key=lambda x: x.end - x.start, reverse=True)
+    analysis_list = list(analysis_list)
+    memory_offset_table: Dict[int, List[AllocationAnalysisData]] = {}
+    queue = list(analysis_list)
+
+    while len(queue) > 0:
+        for item1 in queue:
+            offset = 0
+
+            flag_retry = True
+            while flag_retry:
+                flag_retry = False
+
+                for t in range(item1.start, item1.end):
+                    if t not in memory_offset_table:
+                        continue
+
+                    for item2 in memory_offset_table[t]:
+                        if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
+                            continue
+
+                        else:
+                            offset = item2.offset + item2.size
+                            flag_retry = True
+                            break
+
+                    if flag_retry:
+                        break
+
+            item1.offset = offset
+
+        queue = list(sorted(queue, key=lambda x: x.offset))
+        item1 = queue.pop(0)
+        for t in range(item1.start, item1.end):
+            if t not in memory_offset_table:
+                memory_offset_table[t] = []
+
+            memory_offset_table[t].append(item1)
+
+
+def _visualize_allocation(layout: MemoryLayout, graph: Graph, variables: List[Variable], ops: List[Operator]):
     UNIT_HEIGHT = 14
+    analysis_list = _analyse_variable_lifetime(graph, ops, variables)
+    total_size = layout.size
 
     class RenderingInfo:
         names: List[str]
@@ -255,11 +282,11 @@ def visualize_allocation(total_size: int, analysis_list: List[AllocationAnalysis
 
         @property
         def offset(self):
-            return self.data.offset
+            return layout[self.data.variable].offset
 
         @property
         def size(self):
-            return self.data.variable.size
+            return layout[self.data.variable].size
 
         @property
         def top(self):
@@ -295,19 +322,19 @@ lifetime: {self.data.start} - {self.data.end}
     <style>
         html, body {
             margin: 0;
-            font-size: 8px;
         }
 
         body {
             padding: 32px;
             box-sizing: border-box;
         }
-        
+
         .MemoryLayout {
             position: relative;
             background: #888;
+            font-size: 8px;
         }
-        
+
         .Allocation {
             position: absolute;
             border: 1px solid #000;
@@ -317,7 +344,7 @@ lifetime: {self.data.start} - {self.data.end}
             overflow: hidden;
             background: #0f0;
         }
-        
+
         p {
             margin: 0;
             white-space: nowrap;
@@ -327,9 +354,15 @@ lifetime: {self.data.start} - {self.data.end}
 <body>
 <header style="margin-bottom: 32px;">
     <h1>Memory Allocation Visualization</h1>
-    <p>縦軸：時間経過（上から下へ）</p>
-    <p>横軸：メモリアドレス</p>
-    <p>各要素はカーソルホバーで詳細が見られます。</p>
+    <div style="margin: 32px 0">
+        <p>Total allocation size: """ + str(layout.size * 4) + """[byte]</p>
+        <p># of allocated variables: """ + str(len(layout)) + """</p>
+    </div>
+    <div style="margin: 32px 0">
+        <p>縦軸：時間経過（上から下へ）</p>
+        <p>横軸：メモリアドレス</p>
+        <p>各要素はカーソルホバーで詳細が見られます。</p>
+    </div>
 </header>
     <div class="MemoryLayout" style="height: """ + str(UNIT_HEIGHT * (len(ops) + 1) + 1) + """px;">
 """
