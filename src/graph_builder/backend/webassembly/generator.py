@@ -29,14 +29,13 @@ from graph_builder.backend.webassembly.kernels.linear import linear
 from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webassembly.kernels.relu import relu
 from graph_builder.backend.webassembly.kernels.sgemm import sgemm
-from graph_builder.backend.webassembly.kernels.sgemm_eigen import sgemm_eigen
 from graph_builder.backend.webassembly.kernels.tanh import tanh
 from graph_builder.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
 from graph_builder.backend.webassembly.operators.col2im import Col2Im
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
 from graph_builder.backend.webassembly.operators.sgemm import Sgemm
-from graph_builder.backend.webassembly.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
+from graph_builder.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
@@ -77,7 +76,7 @@ class GraphExecutionData(IGraphExecutionData):
 
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
-    graph, _ = WebGPUOptimizeRule().optimize(graph)
+    graph, _ = WebassemblyOptimizeRule().optimize(graph)
     if flags.DEBUG:
         util.dump(graph)
 
@@ -151,7 +150,7 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
             kernels += flatten(op, constants_layout, variables_layout)
 
         elif isinstance(op, Sgemm):
-            kernels += sgemm_eigen(op, constants_layout, variables_layout)
+            kernels += sgemm(op, constants_layout, variables_layout)
 
         elif isinstance(op, Im2Col):
             kernels += im2col(op, constants_layout, variables_layout)

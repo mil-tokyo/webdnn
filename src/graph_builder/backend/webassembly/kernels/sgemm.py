@@ -41,6 +41,36 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K")
 
 
+# sgemm using eigen
+
+def generate_template_eigen(transpose_A, transpose_B):
+    return """
+#ifndef INCLUDE_EIGEN
+#define INCLUDE_EIGEN
+#include <Eigen/Dense>
+#endif
+
+void %%FUNC_NAME%%(const int * %%META_NAME%%)
+{
+    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
+    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
+    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+
+    const int M = %%META_LOAD(sgemm_M, 1)%%;
+    const int N = %%META_LOAD(sgemm_N, 1)%%;
+    const int K = %%META_LOAD(sgemm_K, 1)%%;
+
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, M, K);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, K, N);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, M, N);
+
+    c_mat.noalias() = a_mat * b_mat;
+}
+""" \
+        .replace("%%A_MAJOR%%", "RowMajor" if transpose_A else "ColMajor") \
+        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
+
+
 def sgemm(op: Sgemm,
           constants_layout: MemoryLayout,
           variables_layout: MemoryLayout,
@@ -60,8 +90,11 @@ def sgemm(op: Sgemm,
         "sgemm_N": op.N,
         "sgemm_K": op.K
     })
-    
-    source = generate_template(op.transpose_A, op.transpose_B)
+
+    if op.parameters.get("eigen", False):
+        source = generate_template_eigen(op.transpose_A, op.transpose_B)
+    else:
+        source = generate_template(op.transpose_A, op.transpose_B)
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("sgemm", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
