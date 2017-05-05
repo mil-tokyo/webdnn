@@ -1,5 +1,6 @@
 from typing import List
 
+from graph_builder.backend.webassembly.inline_injector import InlineInjector
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel, GPUSize
 from graph_builder.backend.webgpu.kernels import util
@@ -7,15 +8,15 @@ from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 
 prototype_sgemm_core = """
-void sgemm_core(const device float*, device float*, 
-                const int, const int, const int,
-                const int, const int,
-                threadgroup float4*, 
-                ushort, ushort2);
+void %%CORE_NAME%%(const device float*, const device float*, device float*, 
+                   const int, const int, const int,
+                   const int, const int,
+                   threadgroup float4*, 
+                   ushort, ushort2);
 """
 
 
-def generate_template(transpose_A, transpose_B):
+def generate_template(transpose_A, transpose_B, with_bias=False):
     return """
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
@@ -23,41 +24,46 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           ushort index[[thread_index_in_threadgroup]],
                           ushort2 group_position[[threadgroup_position_in_grid]])
 {
-    device float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+    device float *C = data_buffer + %%META_LOAD(sgemm_C_offset)%%;
 
     const device float *load_target = (index & 32) 
-        ? (weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%) 
-        : (data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%);
+        ? (weight_buffer + %%META_LOAD(sgemm_B_offset)%%) 
+        : (data_buffer + %%META_LOAD(sgemm_A_offset)%%);
 
-    const int M = %%META_LOAD(sgemm_M, 1)%%;
-    const int N = %%META_LOAD(sgemm_N, 1)%%;
-    const int K = %%META_LOAD(sgemm_K, 1)%%;
+    const int M = %%META_LOAD(sgemm_M)%%;
+    const int N = %%META_LOAD(sgemm_N)%%;
+    const int K = %%META_LOAD(sgemm_K)%%;
+
+    const device float *bias = %%BIAS%%;
 
     threadgroup float4 shared4[32 * 8 * 2];
 
     const int stride_k = (index & 32) ? %%B_STRIDE_K%% : %%A_STRIDE_K%%;
     const int stride_mn = (index & 32) ? %%B_STRIDE_MN%% : %%A_STRIDE_MN%%;
 
-    sgemm_core(load_target, C, M, N, K, stride_k, stride_mn, shared4, index, group_position);
+    %%CORE_NAME%%(load_target, bias, C, M, N, K, stride_k, stride_mn, shared4, index, group_position);
 }
 """ \
         .replace("%%A_STRIDE_K%%", "1" if transpose_A else "M") \
         .replace("%%B_STRIDE_K%%", "N" if transpose_B else "1") \
         .replace("%%A_STRIDE_MN%%", "K" if transpose_A else "1") \
-        .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K")
+        .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K") \
+        .replace("%%BIAS%%", "weight_buffer + %%META_LOAD(sgemm_b_offset)%%" if with_bias else "nullptr")
 
 
-template_sgemm_core = """
-void sgemm_core(const device float *load_target,
-                device float *C,
-                const int M,
-                const int N,
-                const int K,
-                const int stride_k,
-                const int stride_mn,
-                threadgroup float4 *shared4,
-                ushort index,
-                ushort2 group_position) 
+def generate_sgemm_core(with_bias=False):
+    return """
+void %%CORE_NAME%%(const device float *load_target,
+                   const device float *bias,
+                   device float *C,
+                   const int M,
+                   const int N,
+                   const int K,
+                   const int stride_k,
+                   const int stride_mn,
+                   threadgroup float4 *shared4,
+                   ushort index,
+                   ushort2 group_position) 
 {
     const int m_offset = index & 7;
     const int n_offset = index >> 3;
@@ -78,7 +84,7 @@ void sgemm_core(const device float *load_target,
 
     float4 result[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int k = 0;
-    
+
     while (k < K)
     {
         {
@@ -206,7 +212,19 @@ void sgemm_core(const device float *load_target,
     }
 
     {
-#pragma unroll m_sub
+""" + ("""
+        float b[8];
+    #pragma unroll 8
+        for (int n_sub = 0; n_sub < 8; n_sub++)
+        {
+
+            b[n_sub] = (group_position.y * 64 + n_offset * 8 + n_sub < N)
+                ? bias[group_position.y * 64 + n_offset * 8 + n_sub]
+                : 0;
+        }
+""" if with_bias else """
+""") + """
+#pragma unroll 8
         for (int m_sub = 0; m_sub < 8; m_sub++)
         {
 #pragma unroll 2
@@ -217,8 +235,11 @@ void sgemm_core(const device float *load_target,
                 {
                     const int m = group_position.x * 64 + m_offset * 8 + m_sub;
                     const int n = group_position.y * 64 + n_offset * 8 + n_sub1 * 4 + n_sub2;
-
-                    (m < M && n < N) ? (C[m * N + n ] = result[m_sub * 2 + n_sub1][n_sub2]) : 0;
+""" + ("""
+                    (m < M && n < N) ? (C[m * N + n] = %%INLINE(b[n_sub1*4+n_sub2] + result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
+""" if with_bias else """
+                    (m < M && n < N) ? (C[m * N + n] = %%INLINE(result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
+""") + """
                 }
             }
         }
@@ -247,25 +268,43 @@ def sgemm(op: Sgemm,
         "sgemm_K": op.K
     })
 
+    with_bias = "b" in op.inputs
+
+    if with_bias:
+        metabuffer_injector.register({
+            "sgemm_b_offset": constants_layout[op.inputs["b"]].offset
+        })
+
+    inline_injector = InlineInjector()
+    if "inline_elementwise" in op.parameters:
+        inline_injector.delegate = op.parameters["inline_elementwise"]
+
     # transpose_X assumes fortran-order data. True means X is C-order, False means Fortran-order.
     # In default convolution, transpose_A == transpose_B == True.
     # The order of output matrix C is C-order.
-    source = generate_template(op.transpose_A, op.transpose_B)
-    source = metabuffer_injector.inject(source)
-    func_name = util.add_canonical_suffix("sgemm", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    core_source = inline_injector.inject(generate_sgemm_core(with_bias=with_bias))
+    core_name = util.add_canonical_suffix("sgemm_core", core_source)
+    core_source = core_source.replace("%%CORE_NAME%%", core_name)
+    prototype_source = prototype_sgemm_core.replace("%%CORE_NAME%%", core_name)
+
+    func_source = generate_template(op.transpose_A, op.transpose_B, with_bias=with_bias)
+    func_source = metabuffer_injector.inject(func_source)
+    func_source = func_source.replace("%%CORE_NAME%%", core_name)
+    func_name = util.add_canonical_suffix("sgemm", func_source)
+    func_source = func_source.replace("%%FUNC_NAME%%", func_name)
+
 
     kernel = Kernel(
         {
-            func_name: source,
-            "sgemm_core": template_sgemm_core
+            func_name: func_source,
+            core_name: core_source
         },
         func_name,
         GPUSize((op.M + 64 - 1) // 64, (op.N + 64 - 1) // 64, 1),
         GPUSize(64, 1, 1),
         metabuffer_injector.generate_buffer(),
         {
-            "sgemm_core": prototype_sgemm_core
+            core_name: prototype_source
         }
     )
 

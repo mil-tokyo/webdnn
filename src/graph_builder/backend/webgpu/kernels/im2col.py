@@ -57,8 +57,8 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     }
 }
 """ \
-        .replace("%%UNIT_KH%%", "KH" if op.KH < op.SH else "SH") \
-        .replace("%%UNIT_KW%%", "KW" if op.KW < op.SW else "SW")
+        .replace("%%UNIT_KH%%", "SH") \
+        .replace("%%UNIT_KW%%", "SW")
 
 template_CNHW = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
