@@ -16,8 +16,8 @@ namespace WebDNN {
         }
 
 
-        createDNNDescriptorRunner(dnnDescriptor: any): DNNDescriptorRunner {
-            return new DNNDescriptorRunnerWebassembly(dnnDescriptor);
+        createDNNDescriptorRunner(): DNNDescriptorRunner {
+            return new DNNDescriptorRunnerWebassembly();
         }
     }
 }

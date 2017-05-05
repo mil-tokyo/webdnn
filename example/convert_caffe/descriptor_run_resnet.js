@@ -25,14 +25,6 @@ function load_image() {
     img.src = $("input[name=image_url]").val();
 }
 
-async function load_descriptor() {
-    let backend_name = $('input[name=backend_name]:checked').val();
-    let response = await fetch(`./output/graph_${backend_name}.json?t=${Date.now()}`);
-    let desc = await response.text();
-
-    $('#dnn_pipeline').val(desc);
-}
-
 let flag_prepared = false;
 let test_samples;
 
@@ -44,12 +36,10 @@ async function prepare_run() {
         backend_name = await init(backend_name);
     }
 
-    let pipeline_data = JSON.parse($('#dnn_pipeline').val());
-    runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
-    await runner.compile();
+    runner = $M.gpu.createDNNDescriptorRunner();
+    runner.ignoreCache = true;
+    await runner.load('./output');
 
-    // use time to avoid cache
-    await runner.loadWeights(await fetchWeights('./output/weight_' + backend_name + '.bin?t=' + Date.now()));
     let test_image;
     if (is_image_loaded) {
         test_image = getImageData();
@@ -99,14 +89,6 @@ async function init(backend_name) {
     console.log(`backend: ${backend}`);
     $Mg = $M.gpu;
     return backend;
-}
-
-async function fetchWeights(path) {
-    let response = await fetch(path);
-    let ab = await response.arrayBuffer();
-    let weights_data = new Uint8Array(ab);
-
-    return weights_data;
 }
 
 function makeMatFromJson(mat_data) {

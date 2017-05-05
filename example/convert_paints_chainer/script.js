@@ -35,15 +35,9 @@ function loadImage(src) {
 async function initialize() {
     await WebDNN.init();
 
-    console.log('compile pipeline');
-    let pipelineData = await((await fetch(`./output/graph_webgpu.json?t=${Date.now()}`)).json());
-    runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
-    await runner.compile();
-    console.log('compile pipeline: Done');
-
-    console.log('load weight');
-    await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_webgpu.bin?t=${Date.now()}`)).arrayBuffer())));
-    console.log('load weight: Done');
+    runner = WebDNN.gpu.createDNNDescriptorRunner();
+    runner.ignoreCache = true;
+    await runner.load('./output');
 
     await loadImage("./image.jpg");
     flagInitialized = true;

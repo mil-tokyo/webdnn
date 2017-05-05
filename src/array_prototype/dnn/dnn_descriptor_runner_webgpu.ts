@@ -5,12 +5,35 @@
 
 namespace WebDNN {
     export class DNNDescriptorRunnerWebGPU implements DNNDescriptorRunner {
+        private descriptor: DNNDescriptorWebGPU;
         private weightMat: DNNBufferWebGPU;
         private dataMat: DNNBufferWebGPU;
         private metaBufferGPUBuffers: DNNBufferWebGPU[];
+        public ignoreCache: boolean = false;
+        public backend: string = 'webgpu';
 
-        constructor(public descriptor: DNNDescriptorWebGPU, private webGPUHandler: WebGPUHandler) {
+        constructor(private webGPUHandler: WebGPUHandler) {
 
+        }
+
+        async load(directory: string) {
+            let graph_url = `${directory}/graph_${this.backend}.json`;
+            if (this.ignoreCache) {
+                graph_url += '?t=' + Date.now();
+            }
+            this.descriptor = await (await fetch(graph_url)).json();
+            await this.compile();
+
+            let weight_url = `${directory}/weight_${this.backend}.bin`;
+            if (this.ignoreCache) {
+                weight_url += '?t=' + Date.now();
+            }
+            let weights_data_ab = await (await fetch(weight_url)).arrayBuffer();
+            await this.loadWeights(new Uint8Array(weights_data_ab));
+        }
+
+        setDescriptor(descriptor: DNNDescriptorWebGPU) {
+            this.descriptor = descriptor;
         }
 
         async compile() {

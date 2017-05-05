@@ -1,11 +1,34 @@
 namespace WebDNN {
     export class DNNDescriptorRunnerFallback implements DNNDescriptorRunner {
+        public descriptor: DNNDescriptorFallback;
         kernelObj: any;
         rawWeightArray: Float32Array;
         weightArrays: Map<string, Float32Array>;
         variableArrays: Map<string, Float32Array>;
+        public ignoreCache: boolean = false;
+        public backend: string = 'fallback';
 
-        constructor(public descriptor: DNNDescriptorFallback) {
+        constructor() {
+        }
+
+        async load(directory: string) {
+            let graph_url = `${directory}/graph_${this.backend}.json`;
+            if (this.ignoreCache) {
+                graph_url += '?t=' + Date.now();
+            }
+            this.descriptor = await (await fetch(graph_url)).json();
+            await this.compile();
+
+            let weight_url = `${directory}/weight_${this.backend}.bin`;
+            if (this.ignoreCache) {
+                weight_url += '?t=' + Date.now();
+            }
+            let weights_data_ab = await (await fetch(weight_url)).arrayBuffer();
+            await this.loadWeights(new Uint8Array(weights_data_ab));
+        }
+
+        setDescriptor(descriptor: DNNDescriptorFallback) {
+            this.descriptor = descriptor;
         }
 
         async compile(): Promise<void> {

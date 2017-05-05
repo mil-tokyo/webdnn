@@ -25,12 +25,9 @@ async function initialize() {
         console.log(`backend: ${backend}`);
 
         //noinspection JSUnresolvedFunction
-        let pipelineData = await((await fetch(`./output/graph_${backend}.json?t=${Date.now()}`)).json());
-        runner = WebDNN.gpu.createDNNDescriptorRunner(pipelineData);
-        await runner.compile();
-
-        //noinspection JSUnresolvedFunction
-        await runner.loadWeights(new Uint8Array(await ((await fetch(`./output/weight_${backend}.bin?t=${Date.now()}`)).arrayBuffer())));
+        runner = WebDNN.gpu.createDNNDescriptorRunner();
+        runner.ignoreCache = true;
+        await runner.load('./output');
 
         Webcam.set({
             width: 512,
