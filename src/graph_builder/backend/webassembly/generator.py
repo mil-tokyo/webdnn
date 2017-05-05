@@ -74,6 +74,24 @@ class GraphExecutionData(IGraphExecutionData):
         with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
             f.write(self.constants)
 
+        self._compile(dirname)
+
+    def _compile(self, dirname: str):
+        args = ["em++"]
+        args.append(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)))
+        args.append("-O3")
+        args.append("-std=c++11")
+        args.append("-s")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_weight_buffer','_get_data_buffer']")
+        args.append("-s")
+        args.append("WASM=1")
+        args.append("-s")
+        args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
+        args.append("--pre-js")
+        args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
+        args.append("-o")
+        args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
+        subprocess.check_call(args)
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     graph, _ = WebassemblyOptimizeRule().optimize(graph)
@@ -93,20 +111,17 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
+    weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
+    required_heap = (int(weight_data_size // 1048576) + 1 + 16) * 1048576  # required + 16MB
+
     descriptor = GraphDescriptor(
         kernels=kernels,
         constants_layout=constants_layout,
         variables_layout=variables_layout,
         inputs=graph.inputs,
         outputs=graph.outputs,
-        constants_encoding=constant_encoder.name)
-
-    # FIXME: 必要メモリサイズを自動でemccに渡す
-    weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
-    required_heap = (int(weight_data_size // 1048576) + 1 + 16) * 1048576  # required + 16MB
-    sys.stderr.write(f"Compile with\n" +
-                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.cpp" +
-                     f" {required_heap}\n")
+        constants_encoding=constant_encoder.name,
+        required_heap=required_heap)
 
     return GraphExecutionData(descriptor, constants_bytes)
 

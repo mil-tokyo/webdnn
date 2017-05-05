@@ -51,7 +51,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     outputs: Iterable[Variable]
     constants_encoding: str
     footer_sources: Dict[str, str]
-    emcc_entry_js_path: str
+    required_heap: int
 
     def __init__(self,
                  kernels: Iterable[Kernel],
@@ -59,7 +59,8 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                  variables_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
-                 constants_encoding: str):
+                 constants_encoding: str,
+                 required_heap: int):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
@@ -67,7 +68,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         self.outputs = outputs
         self.constants_encoding = constants_encoding
         self.footer_sources = OrderedDict()
-        self.emcc_entry_js_path = "./output/kernels_webassembly.js"
+        self.required_heap = required_heap
 
     def generate_header_source(self):
         return source_header \
@@ -126,6 +127,5 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs],
-            "entry_js_path": self.emcc_entry_js_path
+            "outputs": [v.parameters["name"] for v in self.outputs]
         }
