@@ -9,14 +9,14 @@ from graph_builder.util import flags
 
 class CombineAffineTransform(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.OPTIMIZE_AFFINE_TRANSFORM:
+        if not flags.optimize.COMBINE_AFFINE_TRANSFORM:
             return graph, False
+
+        flag_changed = False
 
         matches = search_sub_structure(graph, [AffineTransform, AffineTransform])
-        if len(matches) == 0:
-            return graph, False
-
-        for match in matches:
+        while len(matches) > 0:
+            match = matches[0]
             a1: AffineTransform = match[0]
             a2: AffineTransform = match[1]
 
@@ -29,4 +29,7 @@ class CombineAffineTransform(OptimizeRule):
             a2.remove_all()
             a1.replace_output(y1, y2)
 
-        return graph, True
+            flag_changed = True
+            matches = search_sub_structure(graph, [AffineTransform, AffineTransform])
+
+        return graph, flag_changed
