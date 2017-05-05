@@ -103,8 +103,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 
     # FIXME: 必要メモリサイズを自動でemccに渡す
     weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
-    required_heap = (int(weight_data_size // 1048576) + 2) * 1048576  # required + at least 1MB
-    required_heap = max(required_heap, 16 * 1048576)
+    required_heap = (int(weight_data_size // 1048576) + 1 + 16) * 1048576  # required + 16MB
     sys.stderr.write(f"Compile with\n" +
                      f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.cpp" +
                      f" {required_heap}\n")
