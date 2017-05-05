@@ -1,3 +1,4 @@
+import itertools
 from collections import Iterable
 from typing import Dict
 
@@ -13,37 +14,27 @@ def _convert_to_list(x):
 
 # FIXME 各orderをテストにわけられないか
 def main(k, s, p, n, h1, w1, c1, c2, expected_shape_dict: Dict[Axis, int]):
-    for order_x in [OrderNHWC,
-                    OrderHWNC,
-                    OrderHWCN,
-                    OrderNCHW,
-                    OrderCNHW,
-                    OrderCHWN]:
-        for order_w in [OrderNHWC,
-                        OrderHWNC,
-                        OrderHWCN,
-                        OrderNCHW,
-                        OrderCNHW,
-                        OrderCHWN]:
+    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
-            k = _convert_to_list(k)
+    for order_x, order_w in itertools.product(orders, orders):
+        k = _convert_to_list(k)
 
-            op = Deconvolution2D("deconv", parameters={
-                "ksize": k,
-                "stride": _convert_to_list(s),
-                "padding": _convert_to_list(p)
-            })
+        op = Deconvolution2D("deconv", parameters={
+            "ksize": k,
+            "stride": _convert_to_list(s),
+            "padding": _convert_to_list(p)
+        })
 
-            x = Variable((n, h1, w1, c1), OrderNHWC)
-            x.change_axis_order(order_x)
+        x = Variable((n, h1, w1, c1), OrderNHWC)
+        x.change_axis_order(order_x)
 
-            w = Variable((c1, k[0], k[1], c2), OrderCHWN)
-            w.change_axis_order(order_w)
+        w = Variable((c1, k[0], k[1], c2), OrderCHWN)
+        w.change_axis_order(order_w)
 
-            y, = op(x, w)
+        y, = op(x, w)
 
-            for axis in y.axis_order.axes:
-                assert y.shape_dict[axis] == expected_shape_dict[axis]
+        for axis in y.axis_order.axes:
+            assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 
 def test_normal():

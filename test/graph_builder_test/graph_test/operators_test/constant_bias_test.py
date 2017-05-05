@@ -8,15 +8,9 @@ from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, Orde
 
 # FIXME 各orderをテストにわけられないか
 def test_every_order():
-    for order in [OrderC,
-                  OrderNC,
-                  OrderCN,
-                  OrderNHWC,
-                  OrderHWNC,
-                  OrderHWCN,
-                  OrderNCHW,
-                  OrderCNHW,
-                  OrderCHWN]:
+    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+
+    for order in orders:
         op = ConstantBias("op", {"value": 1})
 
         x = Variable(np.arange(order.ndim) + 1, order)
