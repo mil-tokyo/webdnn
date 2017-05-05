@@ -146,7 +146,7 @@ class Allocator:
             for variable in variables:
                 layout.append(variable)
 
-        if graph_builder.util.flags.optimize.VISUALIZE_MEMORY_ALLOCATION:
+        if graph_builder.util.flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(layout, graph, variables, ops)
 
         return layout
