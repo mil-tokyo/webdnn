@@ -18,7 +18,7 @@ class RemoveLastSoftmax(OptimizeRule):
             return graph, False
 
         flag_changed = False
-        ops: List[Operator] = reversed(util.listup_operators(graph))
+        ops: List[Operator] = list(reversed(util.listup_operators(graph)))
 
         while len(ops) > 0:
             op = ops.pop(0)
