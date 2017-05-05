@@ -1,4 +1,4 @@
-from typing import List, Set, Type, Iterable
+from typing import Set, Type, Iterable
 
 import numpy as np
 
@@ -18,7 +18,7 @@ class Variable(Node, IVariable):
     def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]):
         super().__init__()
 
-        self.shape: List[int] = list(shape)
+        self.shape = list(shape)
         self.input_to: Set[IOperator] = set()
         self.output_from: IOperator = None
         self.axis_order: Type[AxisOrder] = axis_order

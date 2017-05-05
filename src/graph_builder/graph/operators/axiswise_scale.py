@@ -11,8 +11,13 @@ from graph_builder.graph.variable import Variable
 
 
 class AxiswiseScale(Operator):
-    """
-    Channelwiseにウェイトを乗算するレイヤー
+    """Multiply a scale value along to specified axis.
+
+    This is scale version of :class:`~graph_builder.graph.operators.axiswise_bias.AxiswiseBias`. Please see that.
+
+    Args:
+        name (str): Operator name.
+        parameters (Dict[str, any]): Parameters.
     """
     attributes = {PostElementwise,
                   PostAxiswise,
@@ -20,17 +25,20 @@ class AxiswiseScale(Operator):
                   Inplace,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        parameters: {axis: Axis}
-        :param name: 
-        :param parameters: 
-        """
+    def __init__(self, name: str, parameters: Dict[str, any]):
         assert "axis" in parameters
         assert isinstance(parameters["axis"], Axis)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable, s: Variable):
+        """
+        Args:
+            x (:class:`~graph_builder.graph.variable.Variable`): Input
+            s (:class:`~graph_builder.graph.variable.Variable`): Scale value
+
+        Returns:
+            tuple of :class:`~graph_builder.graph.variable.Variable`: Output
+        """
         assert s.ndim == 1
         assert x.shape_dict[self.parameters["axis"]] == s.size
         y = Variable(x.shape, x.axis_order)

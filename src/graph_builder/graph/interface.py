@@ -49,12 +49,12 @@ class IVariable(metaclass=ABCMeta):
 
 class IOperator(metaclass=ABCMeta):
     name: str
-    parameters: Dict[str, object]
+    parameters: Dict[str, any]
     inputs: Dict[str, IVariable]
     outputs: Dict[str, IVariable]
 
     # noinspection PyUnusedLocal
-    def __init__(self, name: str, parameters: Dict[str, object]):
+    def __init__(self, name: str, parameters: Dict[str, any]):
         raise NotImplementedError
 
     def get_input_name(self, var: IVariable) -> None:
