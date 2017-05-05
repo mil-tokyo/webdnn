@@ -25,10 +25,12 @@ class RemoveLastSoftmax(OptimizeRule):
 
             if isinstance(op, Softmax):
                 op: Softmax
+
                 x = op.inputs["x"]
                 y = op.outputs["y"]
-                op.remove_self()
-                x.merge(y)
+                op.remove_all()
+                x.output_from.replace_output(x, y)
+
                 flag_changed = True
 
             else:
