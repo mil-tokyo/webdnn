@@ -6,7 +6,7 @@ from graph_builder.graph.operators.attributes.have_weights import HaveWeights
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNCHW, OrderNHWC
+from graph_builder.graph.variables.attributes.order import OrderNCHW
 
 
 class Deconvolution2D(Operator):
@@ -40,13 +40,9 @@ class Deconvolution2D(Operator):
         W2 = (x_shape_dict[Axis.W] - 1) * self.SW - 2 * self.PW + self.KW
         C2 = w_shape_dict[Axis.N]
 
-        if x.axis_order == OrderNCHW:
-            var_shape = [N, C2, H2, W2]
-        elif x.axis_order == OrderNHWC:
-            var_shape = [N, H2, W2, C2]
-        else:
-            raise NotImplementedError()
-        y = Variable(var_shape, x.axis_order)
+        y = Variable([N, C2, H2, W2], OrderNCHW)
+        y.change_axis_order(x.axis_order)  # FIXME: need this?
+
         self.append_input("x", x)
         self.append_input("w", w)
         self.append_output("y", y)

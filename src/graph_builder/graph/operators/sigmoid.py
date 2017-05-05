@@ -30,4 +30,4 @@ class Sigmoid(Operator):
         y = Variable(x.shape, x.axis_order)
         self.append_input("x", x)
         self.append_output("y", y)
-        return y
+        return y,

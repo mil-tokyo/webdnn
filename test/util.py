@@ -8,13 +8,7 @@ from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, Orde
     OrderCHWN, OrderNCHW
 
 
-def test_elementwise_operator(OperatorClass: Type[Operator]):
-    """
-    Test template for elementwise operator. This template confirms below thing(s).
-    
-    - Output shape is same as Input shape
-
-    """
+def template_elementwise_operator(OperatorClass: Type[Operator]):
     for order in [OrderC,
                   OrderNC,
                   OrderCN,
