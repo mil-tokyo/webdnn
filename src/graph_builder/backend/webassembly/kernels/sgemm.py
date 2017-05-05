@@ -56,9 +56,12 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
     float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
 
-    Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
-    Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
-    Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
+    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
+    //Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
+    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
 
     c_mat.noalias() = a_mat * b_mat;
 }
