@@ -42,7 +42,7 @@ class Convolution2D(Operator):
         C2 = w_shape_dict[Axis.N]
 
         y = Variable([N, C2, H2, W2], OrderNCHW)
-        y.change_axis_order(x.axis_order)
+        y.change_axis_order(x.axis_order)  # FIXME: need this?
         
         self.append_input("x", x)
         self.append_input("w", w)
