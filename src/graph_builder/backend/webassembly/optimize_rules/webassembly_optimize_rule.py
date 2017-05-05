@@ -2,6 +2,7 @@ from graph_builder.backend.webassembly.optimize_rules.optimize_affine_transform 
 from graph_builder.backend.webassembly.optimize_rules.optimize_convolution2d import OptimizeConvolution2D
 from graph_builder.backend.webassembly.optimize_rules.optimize_deconvolution2d import OptimizeDeconvolution2D
 from graph_builder.backend.webassembly.optimize_rules.optimize_elementwise import OptimizeElementwise
+from graph_builder.backend.webassembly.optimize_rules.optimize_linear import OptimizeLinear
 from graph_builder.backend.webassembly.optimize_rules.optimize_sgemm_eigen import OptimizeSgemmEigen
 from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
@@ -14,4 +15,5 @@ class WebassemblyOptimizeRule(OptimizeRule):
         self.register(OptimizeDeconvolution2D())
         self.register(OptimizeAffineTransform())
         self.register(OptimizeElementwise())
+        self.register(OptimizeLinear())
         self.register(OptimizeSgemmEigen())
