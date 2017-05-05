@@ -11,7 +11,7 @@ from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 class OptimizeLinear(OptimizeRule):
     """
-    LinearをIm2Col + sgemmに置換する
+    Linearをsgemmに置換する
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
