@@ -1,23 +1,25 @@
+import numpy as np
+
 from graph_builder.graph.operators.constant_scale import ConstantScale
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNCHW
+from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+    OrderCHWN, OrderNCHW
 
 
-def test_call_NHWC():
-    op = ConstantScale("op", {"value": 1})
+# FIXME 各orderをテストにわけられないか
+def test_every_order():
+    for order in [OrderC,
+                  OrderNC,
+                  OrderCN,
+                  OrderNHWC,
+                  OrderHWNC,
+                  OrderHWCN,
+                  OrderNCHW,
+                  OrderCNHW,
+                  OrderCHWN]:
+        op = ConstantScale("op", {"value": 1})
 
-    v1 = Variable((2, 3, 4, 5), OrderNHWC)
-    v2, = op(v1)
-
-    assert v2.axis_order == v1.axis_order
-    assert v2.shape == v1.shape
-
-
-def test_call_NCHW():
-    op = ConstantScale("op", {"value": 1})
-
-    v1 = Variable((2, 3, 4, 5), OrderNCHW)
-    v2, = op(v1)
-
-    assert v2.axis_order == v1.axis_order
-    assert v2.shape == v1.shape
+        x = Variable(np.arange(order.ndim) + 1, order)
+        y, = op(x)
+        for axis in y.axis_order.axes:
+            assert y.shape_dict[axis] == x.shape_dict[axis]

@@ -2,7 +2,7 @@ from collections import Iterable
 from typing import Dict
 
 from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
+from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
 
@@ -21,7 +21,7 @@ def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
                     OrderCHWN]:
         k = _convert_to_list(k)
 
-        op = AveragePooling2D("pool", parameters={
+        op = MaxPooling2D("pool", parameters={
             "ksize": k,
             "stride": _convert_to_list(s),
             "padding": _convert_to_list(p)

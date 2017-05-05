@@ -1,46 +1,46 @@
+import numpy as np
 from nose.tools import raises
 
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderC, OrderNCHW
+from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+    OrderCHWN, OrderNCHW
 
 
-def test_call_NHWC():
-    op = AxiswiseBias("op", {"axis": Axis.C})
+# FIXME 各orderをテストにわけられないか
+def test_every_order():
+    for order in [OrderC,
+                  OrderNC,
+                  OrderCN,
+                  OrderNHWC,
+                  OrderHWNC,
+                  OrderHWCN,
+                  OrderNCHW,
+                  OrderCNHW,
+                  OrderCHWN]:
+        for axis in [Axis.C]:
+            default_order = {
+                1: OrderC,
+                2: OrderNC,
+                4: OrderNHWC,
+                Axis.C: OrderC
+            }
 
-    v1 = Variable((2, 3, 4, 5), OrderNHWC)
-    w = Variable((5,), OrderC)
-    v2, = op(v1, w)
+            op = AxiswiseBias("op", {"axis": axis})
+            x = Variable(np.arange(order.ndim) + 1, default_order[order.ndim])
+            w = Variable((x.shape_dict[axis],), default_order[axis])
 
-    assert v2.axis_order == OrderNHWC
-    assert v2.shape == [2, 3, 4, 5]
+            y, = op(x, w)
 
-
-def test_call_NCHW():
-    op = AxiswiseBias("op", {"axis": Axis.C})
-
-    v1 = Variable((2, 3, 4, 5), OrderNCHW)
-    w = Variable((3,), OrderC)
-    v2, = op(v1, w)
-
-    assert v2.axis_order == OrderNCHW
-    assert v2.shape == [2, 3, 4, 5]
+            for axis in y.axis_order.axes:
+                assert y.shape_dict[axis] == x.shape_dict[axis]
 
 
 @raises(AssertionError)
-def test_call_invalid_size():
+def test_invalid_size():
     op = AxiswiseBias("op", {"axis": Axis.C})
 
-    v1 = Variable((2, 3, 4, 5), OrderNHWC)
+    x = Variable((2, 3, 4, 5), OrderNHWC)
     w = Variable((6,), OrderC)
-    v2, = op(v1, w)
-
-
-@raises(AssertionError)
-def test_call_invalid_axis():
-    op = AxiswiseBias("op", {"axis": Axis.N})
-
-    v1 = Variable((2, 3, 4, 5), OrderNHWC)
-    w = Variable((5,), OrderC)
-    v2, = op(v1, w)
+    y, = op(x, w)

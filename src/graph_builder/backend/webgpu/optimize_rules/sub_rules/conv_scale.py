@@ -7,7 +7,7 @@ from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 
 class ConvScale(OptimizeRule):
     """
-    conv + axiswise_scale をひとまとめにする
+    deconv + axiswise_scale をひとまとめにする
     """
 
     def optimize(self, graph: Graph):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from graph_builder.graph.operators.constant_bias import ConstantBias
+from graph_builder.graph.operators.softmax import Softmax
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
@@ -17,7 +17,7 @@ def test_every_order():
                   OrderNCHW,
                   OrderCNHW,
                   OrderCHWN]:
-        op = ConstantBias("op", {"value": 1})
+        op = Softmax("op")
 
         x = Variable(np.arange(order.ndim) + 1, order)
         y, = op(x)
