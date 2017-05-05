@@ -1,7 +1,7 @@
 from graph_builder.graph.operators.elu import Elu
 
-from test.util import test_elementwise_operator
+from test.util import template_elementwise_operator
 
 
 def test_every_order():
-    test_elementwise_operator(Elu)
+    template_elementwise_operator(Elu)

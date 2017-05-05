@@ -8,7 +8,7 @@ from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, Orde
     OrderCHWN, OrderNCHW
 
 
-def test_elementwise_operator(OperatorClass: Type[Operator]):
+def template_elementwise_operator(OperatorClass: Type[Operator]):
     for order in [OrderC,
                   OrderNC,
                   OrderCN,
