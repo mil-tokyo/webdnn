@@ -29,6 +29,7 @@ from graph_builder.backend.webassembly.kernels.linear import linear
 from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webassembly.kernels.relu import relu
 from graph_builder.backend.webassembly.kernels.sgemm import sgemm
+from graph_builder.backend.webassembly.kernels.sgemm_eigen import sgemm_eigen
 from graph_builder.backend.webassembly.kernels.tanh import tanh
 from graph_builder.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
@@ -68,7 +69,7 @@ class GraphExecutionData(IGraphExecutionData):
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
-        with open(path.join(dirname, "kernels_{}.c".format(self.backend_suffix)), "w") as f:
+        with open(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)), "w") as f:
             f.write(self.descriptor.concat_kernel_sources())
 
         with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
@@ -104,8 +105,10 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
     # FIXME: 必要メモリサイズを自動でemccに渡す
     weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
     required_heap = (int(weight_data_size // 1048576) + 2) * 1048576  # required + at least 1MB
+    required_heap = max(required_heap, 16 * 1048576)
     sys.stderr.write(f"Compile with\n" +
-                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.c {required_heap}\n")
+                     f"../../src/graph_builder/scripts/compile_webassembly.sh output/kernels_webassembly.cpp" +
+                     f" {required_heap}\n")
 
     return GraphExecutionData(descriptor, constants_bytes)
 
@@ -148,7 +151,7 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
             kernels += flatten(op, constants_layout, variables_layout)
 
         elif isinstance(op, Sgemm):
-            kernels += sgemm(op, constants_layout, variables_layout)
+            kernels += sgemm_eigen(op, constants_layout, variables_layout)
 
         elif isinstance(op, Im2Col):
             kernels += im2col(op, constants_layout, variables_layout)
