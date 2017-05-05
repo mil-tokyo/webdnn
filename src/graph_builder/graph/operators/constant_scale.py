@@ -26,7 +26,6 @@ class ConstantScale(Operator):
         :param parameters: 
         """
         assert "value" in parameters
-        assert isinstance(parameters["value"], float)
         super().__init__(name, parameters)
 
     def __call__(self, x: Variable):

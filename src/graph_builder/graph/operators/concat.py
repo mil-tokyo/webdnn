@@ -1,7 +1,9 @@
 from typing import Dict, List
 
+from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators import attributes as A
+from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
+from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
 
 
@@ -10,8 +12,8 @@ class Concat(Operator):
     n入力を連結するレイヤー
     結合軸はparametersで指定(chainerと同じ挙動)
     """
-    attributes = {A.PostElementwise,
-                  A.PostAxiswise}
+    attributes = {PostElementwise,
+                  PostAxiswise}
 
     def __init__(self, name: str, parameters: Dict[str, object]):
         """
@@ -20,7 +22,7 @@ class Concat(Operator):
         :param parameters: 
         """
         assert "axis" in parameters
-        assert isinstance(parameters["axis"], A.Axis)
+        assert isinstance(parameters["axis"], Axis)
         super().__init__(name, parameters)
 
     def __call__(self, *xs: Variable):
@@ -31,6 +33,9 @@ class Concat(Operator):
         y_shape[axis_index] = 0
 
         for i, x in enumerate(xs):
+            for other_axis in [other_axis for other_axis in Axis if other_axis != axis]:
+                assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis]
+
             self.append_input(f"x{i}", x)
             y_shape[axis_index] += x.shape_dict[axis]
 

@@ -15,7 +15,7 @@ class Variable(Node, IVariable):
     shapeはタプルで、その順序はAttribute(OrderNC etc)に依存
     """
 
-    def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]):
+    def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]) -> "Variable":
         super().__init__()
 
         self.shape: List[int] = list(shape)

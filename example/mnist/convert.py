@@ -93,7 +93,7 @@ def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> G
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("nn_type", choices=["fc", "conv"])
+    parser.add_argument("nn_type", choices=["fc", "deconv"])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
@@ -103,7 +103,7 @@ def main():
         weights = load_mnist_weights_fc(path.join(RESOURCES_DIR, "snapshot_iter_12000"))
         graph = construct_graph_fc(weights, batch_size=1)
 
-    elif args.nn_type == "conv":
+    elif args.nn_type == "deconv":
         weights = load_mnist_weights_conv(path.join(RESOURCES_DIR, "snapshot_conv"))
         graph = construct_graph_conv(weights, batch_size=1)
 
