@@ -43,7 +43,7 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # sgemm using eigen
 
-def generate_template_eigen(transpose_A, transpose_B):
+def generate_template_eigen(transpose_A, transpose_B, M, N, K):
     return """
 #ifndef INCLUDE_EIGEN
 #define INCLUDE_EIGEN
@@ -56,19 +56,18 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
     float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
 
-    const int M = %%META_LOAD(sgemm_M, 1)%%;
-    const int N = %%META_LOAD(sgemm_N, 1)%%;
-    const int K = %%META_LOAD(sgemm_K, 1)%%;
-
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, M, K);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, K, N);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, M, N);
+    Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
+    Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
 
     c_mat.noalias() = a_mat * b_mat;
 }
 """ \
         .replace("%%A_MAJOR%%", "RowMajor" if transpose_A else "ColMajor") \
-        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
+        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor") \
+        .replace("%%M%%", str(M)) \
+        .replace("%%N%%", str(N)) \
+        .replace("%%K%%", str(K))
 
 
 def sgemm(op: Sgemm,
@@ -92,9 +91,24 @@ def sgemm(op: Sgemm,
     })
 
     if op.parameters.get("eigen", False):
-        source = generate_template_eigen(op.transpose_A, op.transpose_B)
+        source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
+
+        metabuffer_injector.register({
+            "sgemm_A_offset": A.offset,
+            "sgemm_B_offset": B.offset,
+            "sgemm_C_offset": C.offset
+        })
     else:
         source = generate_template(op.transpose_A, op.transpose_B)
+
+        metabuffer_injector.register({
+            "sgemm_A_offset": A.offset,
+            "sgemm_B_offset": B.offset,
+            "sgemm_C_offset": C.offset,
+            "sgemm_M": op.M,
+            "sgemm_N": op.N,
+            "sgemm_K": op.K
+        })
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("sgemm", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
