@@ -5,7 +5,7 @@ from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
+from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 
 class Col2Im(Operator):
@@ -24,15 +24,12 @@ class Col2Im(Operator):
         super().__init__(name, parameters)
 
     def __call__(self, col: Variable):
-        assert col.axis_order == OrderNHWC
-
         N = col.shape_dict[Axis.N]
         H2 = (col.shape_dict[Axis.H] - 1) * self.SH - 2 * self.PH + self.KH
         W2 = (col.shape_dict[Axis.W] - 1) * self.SW - 2 * self.PW + self.KW
         C2 = col.shape_dict[Axis.C] // self.KH // self.KW
 
-        var_shape = [N, H2, W2, C2]
-        im = Variable(var_shape, OrderNHWC)
+        im = Variable([N, H2, W2, C2], OrderNHWC)
 
         self.append_input("col", col)
         self.append_output("im", im)

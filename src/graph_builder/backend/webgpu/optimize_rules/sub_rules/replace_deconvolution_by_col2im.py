@@ -55,6 +55,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
                 "padding": op.padding,
             })
             new_y, = col2im(col)
+            new_y.change_axis_order(old_y.axis_order)
 
             new_y.merge(old_y)
 
