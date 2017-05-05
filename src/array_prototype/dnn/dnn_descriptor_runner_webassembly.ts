@@ -10,6 +10,7 @@ namespace WebDNN {
         public descriptor: DNNDescriptorWebassembly;
         public ignoreCache: boolean = false;
         public backend: string = 'webassembly';
+        private worker_entry_js_path;
 
         constructor() {
 
@@ -21,6 +22,13 @@ namespace WebDNN {
                 graph_url += '?t=' + Date.now();
             }
             this.descriptor = await (await fetch(graph_url)).json();
+
+            let worker_entry_js_path = `${directory}/kernels_${this.backend}.js`;
+            if (this.ignoreCache) {
+                worker_entry_js_path += '?t=' + Date.now();
+            }
+            this.worker_entry_js_path = worker_entry_js_path;
+            
             await this.compile();
 
             let weight_url = `${directory}/weight_${this.backend}.bin`;
@@ -36,7 +44,7 @@ namespace WebDNN {
         }
 
         compile(): Promise<void> {
-            this.worker = new Worker(this.descriptor.entry_js_path);
+            this.worker = new Worker(this.worker_entry_js_path);
             let promise = new Promise<void>((resolve, reject) => {
                 this.worker.onmessage = (event) => {
                     console.log('init_response', event.data);
@@ -124,6 +132,5 @@ namespace WebDNN {
         inputs: string[];
         outputs: string[];
         weight_encoding: string;
-        entry_js_path: string;
     }
 }
