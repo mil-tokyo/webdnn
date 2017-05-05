@@ -6,6 +6,12 @@
 - テスト追加の際はフォルダ・ファイル名の末尾に `_test` をつけること
 - `pip install nose` でインストールされる `nosetests` コマンドでテストを実行可能。
 
+    ```
+    nosetests --with-coverage --cover-tests graph_builder
+    ```
+    
+    ただしカバレッジはそもそもimportしていないファイルについて計算されないので注意
+
 ### JavaScript
 
 - 未定
