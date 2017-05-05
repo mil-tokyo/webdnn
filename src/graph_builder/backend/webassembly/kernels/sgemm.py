@@ -93,7 +93,7 @@ def sgemm(op: Sgemm,
         "sgemm_K": op.K
     })
 
-    if op.parameters.get("eigen", False):
+    if op.parameters["eigen"]:
         source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
 
         metabuffer_injector.register({

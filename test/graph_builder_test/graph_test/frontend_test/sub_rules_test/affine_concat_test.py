@@ -1,6 +1,7 @@
 import itertools
 
 import numpy as np
+from nose import with_setup
 
 from graph_builder.frontend.sub_rules.affine_concat import AffineConcat
 from graph_builder.graph.axis import Axis
@@ -12,10 +13,24 @@ from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWNC, OrderNCHW, OrderCNHW, OrderCHWN, OrderHWCN, OrderC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
 from graph_builder.optimize_rule.util import listup_operators
+from graph_builder.util import flags
+from test.util import FlagManager
 
 orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
 
+class AffineConcatFlagManager(FlagManager):
+    def get(self) -> bool:
+        return flags.optimize.AFFINE_CONCAT
+
+    def set(self, value: bool):
+        flags.optimize.AFFINE_CONCAT = value
+
+
+flag_manager = AffineConcatFlagManager()
+
+
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
@@ -52,6 +67,7 @@ def test_conv_scale():
         assert np.all(np.equal(w.data, w_data_expected))
 
 
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
@@ -88,6 +104,7 @@ def test_conv_bias():
         assert np.all(np.equal(ops[1].inputs["b"].data, b_data_expected))
 
 
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
@@ -128,6 +145,7 @@ def test_conv_scale_scale():
         assert np.all(np.equal(w.data, w_data_expected))
 
 
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
@@ -169,6 +187,7 @@ def test_conv_bias_bias():
         assert np.all(np.equal(ops[1].inputs["b"].data, b_data_expected))
 
 
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
@@ -211,6 +230,7 @@ def test_conv_scale_bias():
         assert np.all(np.equal(ops[1].inputs["b"].data, b_data_expected))
 
 
+@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
         conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})

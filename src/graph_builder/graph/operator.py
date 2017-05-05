@@ -111,7 +111,7 @@ class Operator(Node, IOperator):
             f"actual: v_old.axis_order = {v_old.axis_order}, v_new.axis_order = {v_new.axis_order}"
         assert v_old.shape == v_new.shape, \
             "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
-            f"actual: v_old.axis_order = {v_old.shape}, v_new.axis_order = {v_new.shape}"
+            f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"
 
         name = self.get_output_name(v_old)
         self.remove_output(v_old)

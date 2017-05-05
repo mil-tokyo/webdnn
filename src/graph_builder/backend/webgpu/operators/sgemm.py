@@ -1,5 +1,7 @@
 from typing import Dict
 
+import numpy as np
+
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.have_weights import HaveWeights
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
@@ -12,7 +14,7 @@ class Sgemm(Operator):
                   PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
+    def __init__(self, name: str, parameters: Dict[str, any]):
         assert "M" in parameters
         assert "N" in parameters
         assert "K" in parameters
@@ -20,6 +22,7 @@ class Sgemm(Operator):
         assert "out_order" in parameters
         assert "transpose_A" in parameters
         assert "transpose_B" in parameters
+        assert np.prod(parameters["out_shape"]) == parameters["M"] * parameters["N"]
 
         super().__init__(name, parameters)
 

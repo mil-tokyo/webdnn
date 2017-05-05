@@ -33,7 +33,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             assert x.axis_order == OrderNHWC
             w.change_axis_order(OrderHWCN)
             assert old_y.axis_order == OrderNHWC
-
+            
             if op.ksize[0] > 1 or op.ksize[1] > 1 or op.stride[0] > 1 or op.stride[1] > 1 or op.padding[0] > 0 or op.padding[1] > 0:
                 im2col = Im2Col("im2col", {
                     "ksize": op.ksize,
