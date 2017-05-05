@@ -26,18 +26,20 @@ class Concat(Operator):
         super().__init__(name, parameters)
 
     def __call__(self, *xs: Variable):
-        axis = self.parameters["axis"]  # type: int
-        axis_index = xs[0].axis_order.axes_dict[axis]
+        concat_axis = self.parameters["axis"]  # type: int
+        axis_index = xs[0].axis_order.axes_dict[concat_axis]
+        axes_set = set(xs[0].axis_order.axes)
 
         y_shape = list(xs[0].shape)  # type: List[int]
         y_shape[axis_index] = 0
 
         for i, x in enumerate(xs):
-            for other_axis in [other_axis for other_axis in Axis if other_axis != axis]:
+            assert set(x.axis_order.axes) == axes_set
+            for other_axis in [other_axis for other_axis in axes_set if other_axis != concat_axis]:
                 assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis]
 
             self.append_input(f"x{i}", x)
-            y_shape[axis_index] += x.shape_dict[axis]
+            y_shape[axis_index] += x.shape_dict[concat_axis]
 
         y = Variable(y_shape, xs[0].axis_order)
         self.append_output("y", y)
