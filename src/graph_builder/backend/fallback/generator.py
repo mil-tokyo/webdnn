@@ -25,6 +25,7 @@ from graph_builder.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.fallback.kernels.relu import relu
 from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
 from graph_builder.encoder.constant_encoder import ConstantEncoder
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
@@ -36,7 +37,6 @@ from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
-from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 from graph_builder.util.json import json
 
@@ -84,7 +84,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 # noinspection PyUnusedLocal
 def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
-    for op in util.listup_operators(graph):
+    for op in traverse.listup_operators(graph):
         if isinstance(op, Linear):
             kernels += linear(op)
 

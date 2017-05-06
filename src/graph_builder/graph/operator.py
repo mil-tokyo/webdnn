@@ -4,6 +4,7 @@ from graph_builder.graph.interface import IVariable, IOperator
 from graph_builder.graph.node import Node
 
 
+# FIXME: DOCS
 class Operator(Node, IOperator):
     def __init__(self, name: str):
         super().__init__(name)

@@ -4,9 +4,9 @@ from typing import Iterable
 from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
 from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import Kernel
+from graph_builder.graph import traverse
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
-from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
 source_header = """
@@ -70,6 +70,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "weight_allocation": self.constants_layout,
             "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
-            "inputs": [v.parameters["name"] for v in self.inputs if not util.check_attribute_match(v, Constant)],
+            "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs]
         }

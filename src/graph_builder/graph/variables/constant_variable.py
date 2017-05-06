@@ -7,6 +7,7 @@ from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
+# FIXME: DOCS
 class ConstantVariable(Variable):
     data: np.array
 

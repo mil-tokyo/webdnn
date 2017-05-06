@@ -1,10 +1,10 @@
 from typing import List
 
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.softmax import Softmax
-from graph_builder.optimize_rule import util
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
+from graph_builder.graph.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -18,7 +18,7 @@ class RemoveLastSoftmax(OptimizeRule):
             return graph, False
 
         flag_changed = False
-        ops: List[Operator] = list(reversed(util.listup_operators(graph)))
+        ops: List[Operator] = list(reversed(traverse.listup_operators(graph)))
 
         while len(ops) > 0:
             op = ops.pop(0)

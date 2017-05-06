@@ -1,6 +1,6 @@
 from graph_builder.backend.webgpu.optimize_rules.sub_rules.concat_sgemm_bias import ConcatSgemmBias
 from graph_builder.backend.webgpu.optimize_rules.sub_rules.replace_convolution_by_im2col import ReplaceConvolutionByIm2Col
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
+from graph_builder.graph.optimize_rule import OptimizeRule
 
 
 class OptimizeConvolution2D(OptimizeRule):

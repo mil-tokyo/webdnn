@@ -6,10 +6,10 @@ from graph_builder.backend.webgpu.optimize_rules.sub_rules.concat_sgemm_bias imp
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.traverse import listup_operators
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule.util import listup_operators
 from graph_builder.util import flags
 from test.util import FlagManager
 

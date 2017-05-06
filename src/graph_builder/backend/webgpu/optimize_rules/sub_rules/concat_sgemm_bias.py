@@ -1,12 +1,12 @@
 from typing import Tuple
 
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
+from graph_builder.graph import traverse
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
+from graph_builder.graph.optimize_rule import OptimizeRule
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule import util
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -19,7 +19,7 @@ class ConcatSgemmBias(OptimizeRule):
         if not flags.optimize.CONCAT_SGEMM_BIAS:
             return graph, False
 
-        matches = util.search_sub_structure(graph, [Sgemm, AxiswiseBias])
+        matches = traverse.search_sub_structure(graph, [Sgemm, AxiswiseBias])
         if len(matches) == 0:
             return graph, False
 

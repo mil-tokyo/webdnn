@@ -7,6 +7,7 @@ from graph_builder.graph.node import Node
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
 
+# FIXME: DOCS
 class Variable(Node, IVariable):
     """
     レイヤー間で受け渡される変数

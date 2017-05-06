@@ -3,6 +3,7 @@ from typing import List, Tuple
 from graph_builder.graph.graph import Graph
 
 
+# FIXME: DOCS
 class OptimizeRule:
     sub_rules: List["OptimizeRule"]
 

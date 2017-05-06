@@ -3,11 +3,11 @@ from typing import Dict, Tuple, List, Set
 import numpy as np
 
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
 
@@ -72,10 +72,10 @@ class Allocator:
 
     @classmethod
     def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
-        variables = set(util.listup_variables(graph))
+        variables = set(traverse.listup_variables(graph))
         for i, v in enumerate(variables):
             v.parameters["name"] = f"v{i}"
-        constants = set(util.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
+        constants = set(traverse.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
         variables = variables.difference(constants)
 
         variables = list(variables)

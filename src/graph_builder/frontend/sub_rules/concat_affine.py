@@ -2,16 +2,16 @@ from typing import List
 
 import numpy as np
 
+from graph_builder.graph import traverse
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.optimize_rule import OptimizeRule
 from graph_builder.graph.variables.attributes.order import OrderC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule import util
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
@@ -29,7 +29,7 @@ class ConcatAffine(OptimizeRule):
 
         while True:
             flag_changed_in_iter = False
-            ops = util.listup_operators(graph)
+            ops = traverse.listup_operators(graph)
             current_seq = []
             for op in ops:
                 if isinstance(op, Convolution2D):
