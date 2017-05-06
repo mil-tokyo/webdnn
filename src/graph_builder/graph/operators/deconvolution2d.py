@@ -58,63 +58,36 @@ class Deconvolution2D(Operator):
 
     @property
     def ksize(self) -> Tuple[int, int]:
-        """
-        (Tuple[int, int]): Kernel size. The first element is height, and the second element is width of the kernel.
-        """
         return self.parameters["ksize"]
 
     @property
     def stride(self) -> Tuple[int, int]:
-        """
-        (Tuple[int, int]): Stride size. The first element is height, and the second element is width of the stride.
-        """
         return self.parameters["stride"]
 
     @property
     def padding(self) -> Tuple[int, int]:
-        """
-        (Tuple[int, int]): Padding size. The first element is height, and the second element is width of the padding.
-        """
         return self.parameters["padding"]
 
     @property
     def KH(self) -> int:
-        """
-        (int): Height of the kernel
-        """
         return self.ksize[0]
 
     @property
     def KW(self) -> int:
-        """
-        (int): Width of the kernel
-        """
         return self.ksize[1]
 
     @property
     def SH(self) -> int:
-        """
-        (int): Height of the stride
-        """
         return self.stride[0]
 
     @property
     def SW(self) -> int:
-        """
-        (int): Width of the stride
-        """
         return self.stride[1]
 
     @property
     def PH(self) -> int:
-        """
-        (int): Height of the padding
-        """
         return self.padding[0]
 
     @property
     def PW(self) -> int:
-        """
-        (int): Width of the padding
-        """
         return self.padding[1]

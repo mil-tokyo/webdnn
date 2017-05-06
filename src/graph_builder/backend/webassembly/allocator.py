@@ -4,13 +4,13 @@ import numpy as np
 
 import graph_builder.util.flags.optimize
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.inplace import Inplace
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule import util
 from graph_builder.util import json, flags
 
 
@@ -93,11 +93,11 @@ class Allocator:
 
     @classmethod
     def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
-        variables = set(util.listup_variables(graph))
+        variables = set(traverse.listup_variables(graph))
         for i, v in enumerate(variables):
             v.name = f"v{i}"
 
-        constants = set(util.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
+        constants = set(traverse.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
         variables = variables.difference(constants)
 
         variables = list(variables)
@@ -126,7 +126,7 @@ class Allocator:
 
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]) -> MemoryLayout:
-        ops = util.listup_operators(graph)
+        ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
         if graph_builder.util.flags.optimize.OPTIMIZE_MEMORY_ALLOCATION:
@@ -177,9 +177,9 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                 flag_allocated = False
 
                 if graph_builder.util.flags.optimize.OPTIMIZE_INPLACE_OPERATION:
-                    if not flag_allocated and util.check_attribute_match(op, Inplace):
+                    if not flag_allocated and traverse.check_attribute_match(op, Inplace):
                         # Inplace処理
-                        input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
+                        input_variables = traverse.filter_nodes(op.inputs.values(), Constant, mode_not=True)
                         if len(input_variables) > 1:
                             if flags.DEBUG:
                                 print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "

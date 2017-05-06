@@ -3,7 +3,7 @@
 ## build
 
 ```
-pip install sphinx sphinx_rtd_theme
+pip install sphinx sphinx_rtd_theme recommonmark
 make html
 ```
 

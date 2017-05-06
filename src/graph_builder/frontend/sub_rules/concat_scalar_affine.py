@@ -2,8 +2,8 @@ from typing import Tuple
 
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.scalar_affine import ScalarAffine
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
-from graph_builder.optimize_rule.util import search_sub_structure
+from graph_builder.graph.optimize_rule import OptimizeRule
+from graph_builder.graph.traverse import search_sub_structure
 from graph_builder.util import flags
 
 

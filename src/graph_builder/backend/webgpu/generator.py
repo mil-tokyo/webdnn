@@ -35,6 +35,7 @@ from graph_builder.backend.webgpu.operators.im2col import Im2Col
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
 from graph_builder.backend.webgpu.optimize_rules.webgpu_optimize_rule import WebGPUOptimizeRule
 from graph_builder.encoder.constant_encoder import ConstantEncoder
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
@@ -49,7 +50,6 @@ from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.scalar_affine import ScalarAffine
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.optimize_rule import util
 from graph_builder.util import flags
 from graph_builder.util.json import json
 
@@ -92,10 +92,10 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> IGraphExecutionData:
-    util.dump(graph)
+    traverse.dump(graph)
     graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
-        util.dump(graph)
+        traverse.dump(graph)
 
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
@@ -128,7 +128,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> IGraphExecution
 def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
 
-    for op in util.listup_operators(graph):
+    for op in traverse.listup_operators(graph):
         if isinstance(op, Linear):
             kernels += linear(op, constants_layout, variables_layout)
 

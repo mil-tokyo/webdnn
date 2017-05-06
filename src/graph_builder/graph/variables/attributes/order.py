@@ -8,6 +8,8 @@ This attribute means data order, not number of dimensions
 """
 
 
+# FIXME: DOCS
+# FIXME: Is it need to extend from Attribute?
 class AxisOrder(Attribute):
     ndim: ClassVar[int]
     axes: ClassVar[List[Axis]]

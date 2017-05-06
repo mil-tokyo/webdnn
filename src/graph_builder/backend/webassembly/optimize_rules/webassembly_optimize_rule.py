@@ -3,7 +3,7 @@ from graph_builder.backend.webassembly.optimize_rules.optimize_deconvolution2d i
 from graph_builder.backend.webassembly.optimize_rules.optimize_elementwise import OptimizeElementwise
 from graph_builder.backend.webassembly.optimize_rules.optimize_linear import OptimizeLinear
 from graph_builder.backend.webassembly.optimize_rules.optimize_sgemm_eigen import OptimizeSgemmEigen
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
+from graph_builder.graph.optimize_rule import OptimizeRule
 
 
 class WebassemblyOptimizeRule(OptimizeRule):

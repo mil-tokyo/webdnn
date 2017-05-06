@@ -4,9 +4,9 @@ from graph_builder.frontend.sub_rules.remove_last_softmax import RemoveLastSoftm
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.softmax import Softmax
+from graph_builder.graph.traverse import listup_operators
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderCN, OrderNC
-from graph_builder.optimize_rule.util import listup_operators
 from graph_builder.util import flags
 from test.util import FlagManager
 

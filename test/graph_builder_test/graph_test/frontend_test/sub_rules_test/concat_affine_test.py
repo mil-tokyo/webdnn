@@ -9,10 +9,10 @@ from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
 from graph_builder.graph.operators.convolution2d import Convolution2D
+from graph_builder.graph.traverse import listup_operators
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWNC, OrderNCHW, OrderCNHW, OrderCHWN, OrderHWCN, OrderC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.optimize_rule.util import listup_operators
 from graph_builder.util import flags
 from test.util import FlagManager
 

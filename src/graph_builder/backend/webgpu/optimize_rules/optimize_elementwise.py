@@ -1,18 +1,18 @@
 from typing import Tuple
 
+from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.attributes.elementwise import Elementwise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.optimize_rule import util
-from graph_builder.optimize_rule.optimize_rule import OptimizeRule
+from graph_builder.graph.optimize_rule import OptimizeRule
 
 
 class CombineElementwiseOperation(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        matches = util.search_sub_structure(graph, [PostElementwise, Elementwise])
+        matches = traverse.search_sub_structure(graph, [PostElementwise, Elementwise])
         flag_changed = False
 
         for match in matches:
