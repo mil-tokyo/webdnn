@@ -18,7 +18,7 @@ def main(order1: Type[AxisOrder], order2: Type[AxisOrder], concat_axis: Axis):
         4: OrderNHWC
     }
 
-    op = Concat("op", {"axis": concat_axis})
+    op = Concat(None, axis=concat_axis)
     x1 = Variable(np.arange(order1.ndim) + 1, default_order[order1.ndim])
     x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
 
@@ -48,7 +48,7 @@ def test_every_order():
 
 @raises(AssertionError)
 def test_invalid_size():
-    op = Concat("op", {"axis": Axis.C})
+    op = Concat(None, axis=Axis.C)
 
     v1 = Variable((2, 3, 4, 5), OrderNHWC)
     v2 = Variable((2, 3, 7, 6), OrderNHWC)

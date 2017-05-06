@@ -1,5 +1,5 @@
-from json import dump as original_dump, dumps as original_dumps, JSONEncoder
 from abc import abstractmethod
+from json import dump as original_dump, dumps as original_dumps, JSONEncoder
 
 
 class SerializableMixin:

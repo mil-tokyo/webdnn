@@ -1,6 +1,6 @@
 import numpy as np
 
-from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderHWNC, OrderNHWC, OrderCN, OrderNC, OrderC, OrderCHWN, OrderCNHW, OrderNCHW, \
     OrderHWCN
@@ -11,7 +11,7 @@ def test_every_order():
     orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
     for order in orders:
-        op = AffineTransform("op", {"scale": 1, "bias": 0})
+        op = ScalarAffine(None, scale=1, bias=0)
 
         x = Variable(np.arange(order.ndim) + 1, order)
         y, = op(x)

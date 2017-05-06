@@ -1,7 +1,4 @@
-from typing import Dict
-
 from graph_builder.graph.operator import Operator
-from graph_builder.graph.operators.attributes.first_inplace import FirstInplace
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.variable import Variable
@@ -12,15 +9,12 @@ class ElementwiseSum(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
-
     """
     attributes = {PostElementwise,
-                  PostAxiswise,
-                  FirstInplace}
+                  PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, any] = None):
-        super().__init__(name, parameters)
+    def __init__(self, name: str):
+        super().__init__(name)
 
     def __call__(self, *xs: Variable):
         """

@@ -57,9 +57,9 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def local_response_normalization(op: LocalResponseNormalization,
-                   constants_layout: MemoryLayout,
-                   variables_layout: MemoryLayout,
-                   metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+                                 constants_layout: MemoryLayout,
+                                 variables_layout: MemoryLayout,
+                                 metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 

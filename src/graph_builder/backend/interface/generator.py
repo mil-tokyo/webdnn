@@ -1,8 +1,8 @@
-from graph_builder.graph.graph import Graph
-from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
-from graph_builder.backend.webgpu.generator import generate as generate_webgpu
-from graph_builder.backend.webassembly.generator import generate as generate_webassembly
 from graph_builder.backend.fallback.generator import generate as generate_fallback
+from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
+from graph_builder.backend.webassembly.generator import generate as generate_webassembly
+from graph_builder.backend.webgpu.generator import generate as generate_webgpu
+from graph_builder.graph.graph import Graph
 
 # FIXME: ここでよい？
 

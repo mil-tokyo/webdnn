@@ -5,8 +5,8 @@ from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNC
-from graph_builder.optimize_rule.util import check_attribute_match, check_match, check_node_type_match, search_sub_structure, filter_nodes, \
-    listup_operators, listup_variables, listup_nodes
+from graph_builder.optimize_rule.util import check_attribute_match, check_match, check_node_type_match, search_sub_structure, \
+    filter_nodes, listup_operators, listup_variables, listup_nodes
 
 graph = None
 op1 = None
@@ -140,9 +140,6 @@ def test_search_sub_structure_full():
 @with_setup(setup_graph_sequential)
 def test_filter_nodes():
     global graph, op1
-
-    class TestAttribute(Attribute):
-        pass
 
     op1.attributes.add(TestAttribute)
     op2.attributes.add(TestAttribute)

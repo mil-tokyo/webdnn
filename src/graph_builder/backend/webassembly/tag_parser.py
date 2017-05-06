@@ -1,6 +1,8 @@
 import re
 from typing import List, Tuple, NamedTuple
 
+from typing import Match
+
 
 class Tag(NamedTuple):
     original: str
@@ -18,7 +20,7 @@ class TagParser:
         pos = 0
         result = []
         while True:
-            ma = reg_tag.search(text, pos)
+            ma = reg_tag.search(text, pos)  # type: Match
             if ma is None:
                 break
             pos = ma.end()

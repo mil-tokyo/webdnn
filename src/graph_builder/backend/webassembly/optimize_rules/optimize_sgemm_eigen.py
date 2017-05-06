@@ -15,7 +15,7 @@ class OptimizeSgemmEigen(OptimizeRule):
 
             op: Sgemm
 
-            if not op.parameters["eigen"]:
+            if not op.parameters.get("eigen", False):
                 op.parameters["eigen"] = True
                 flag_changed = True
 

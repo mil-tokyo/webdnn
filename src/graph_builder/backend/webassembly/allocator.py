@@ -176,28 +176,26 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                 # 新規に確保する
                 flag_allocated = False
 
-                if graph_builder.util.flags.optimize.OPTIMIZE_INPLACE_OPERATION \
-                    and not flag_allocated \
-                    and util.check_attribute_match(op, Inplace):
+                if graph_builder.util.flags.optimize.OPTIMIZE_INPLACE_OPERATION:
+                    if not flag_allocated and util.check_attribute_match(op, Inplace):
+                        # Inplace処理
+                        input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
+                        if len(input_variables) > 1:
+                            if flags.DEBUG:
+                                print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
+                                      + f"Allocator skipped inplace allocation and allocate other memory. "
+                                      + f"Operator: {op}")
 
-                    # Inplace処理
-                    input_variables = util.filter_nodes(op.inputs.values(), Constant, mode_not=True)
-                    if len(input_variables) > 1:
-                        if flags.DEBUG:
-                            print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
-                                  + f"Allocator skipped inplace allocation and allocate other memory. "
-                                  + f"Operator: {op}")
+                        else:
+                            # 入力のメモリをそのまま使う
+                            v_in = input_variables[0]
+                            while "inplace_src" in v_in.parameters:
+                                v_in = v_in.parameters["inplace_src"]
+                            var.parameters["inplace_src"] = v_in
+                            retain_count[v_in] += len(var.input_to)
 
-                    else:
-                        # 入力のメモリをそのまま使う
-                        v_in = input_variables[0]
-                        while "inplace_src" in v_in.parameters:
-                            v_in = v_in.parameters["inplace_src"]
-                        var.parameters["inplace_src"] = v_in
-                        retain_count[v_in] += len(var.input_to)
-
-                        allocated.add(var)
-                        flag_allocated = True
+                            allocated.add(var)
+                            flag_allocated = True
 
                 if not flag_allocated:
                     # 新しくメモリを確保
@@ -305,6 +303,7 @@ def _visualize_allocation(layout: MemoryLayout, graph: Graph, variables: List[Va
         def width(self):
             return f"calc({self.size * 100 / total_size}% + 1px)"
 
+        # noinspection PyMethodMayBeStatic
         def generate_html(self):
             return f"""<div class="Allocation" style="top: {self.top}; height: {self.height}; left: {self.left}; width: {self.width}" """ \
                    + f"""title="{", ".join(self.names)}

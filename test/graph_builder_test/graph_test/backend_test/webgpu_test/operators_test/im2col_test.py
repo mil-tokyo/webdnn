@@ -1,4 +1,3 @@
-from collections import Iterable
 from typing import Dict
 
 from graph_builder.backend.webgpu.operators.im2col import Im2Col
@@ -7,22 +6,13 @@ from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderHWNC, OrderNHWC, OrderCHWN, OrderCNHW, OrderNCHW, \
     OrderHWCN
 
-
-def _convert_to_list(x):
-    return x if isinstance(x, Iterable) else (x, x)
-
-
 orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
 
 # FIXME 各orderをテストにわけられないか
 def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
     for order_x in orders4:
-        op = Im2Col("im2col", parameters={
-            "ksize": _convert_to_list(k),
-            "stride": _convert_to_list(s),
-            "padding": _convert_to_list(p)
-        })
+        op = Im2Col("im2col", ksize=k, stride=s, padding=p)
 
         x = Variable((n, h1, w1, c1), OrderNHWC)
         x.change_axis_order(order_x)

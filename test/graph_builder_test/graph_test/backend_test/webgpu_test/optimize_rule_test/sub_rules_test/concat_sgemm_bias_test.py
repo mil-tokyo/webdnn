@@ -27,16 +27,8 @@ flag_manager = ConcatSgemmBiasFlagManager()
 
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_single_bias():
-    sgemm = Sgemm('sgemm', {
-        "M": 5,
-        "N": 5,
-        "K": 5,
-        "out_shape": [5, 5],
-        "out_order": OrderNC,
-        "transpose_A": True,
-        "transpose_B": True,
-    })
-    bias = AxiswiseBias('bias', {"axis": Axis.C})
+    sgemm = Sgemm(None, M=5, N=5, K=5, out_shape=[5, 5], out_order=OrderNC, transpose_A=True, transpose_B=True)
+    bias = AxiswiseBias(None, axis=Axis.C)
 
     x = Variable([5, 5], OrderNC)
 
@@ -68,17 +60,9 @@ def test_single_bias():
 
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_double_bias():
-    sgemm = Sgemm('sgemm', {
-        "M": 5,
-        "N": 5,
-        "K": 5,
-        "out_shape": [5, 5],
-        "out_order": OrderNC,
-        "transpose_A": True,
-        "transpose_B": True,
-    })
-    bias1 = AxiswiseBias('bias1', {"axis": Axis.C})
-    bias2 = AxiswiseBias('bias2', {"axis": Axis.C})
+    sgemm = Sgemm(None, M=5, N=5, K=5, out_shape=[5, 5], out_order=OrderNC, transpose_A=True, transpose_B=True)
+    bias1 = AxiswiseBias(None, axis=Axis.C)
+    bias2 = AxiswiseBias(None, axis=Axis.C)
 
     x = Variable([5, 5], OrderNC)
 

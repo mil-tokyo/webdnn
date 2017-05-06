@@ -1,24 +1,24 @@
 from typing import Tuple
 
-from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
 from graph_builder.graph.graph import Graph
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.optimize_rule.util import search_sub_structure
 from graph_builder.util import flags
 
 
-class CombineAffineTransform(OptimizeRule):
+class ConcatScalarAffine(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.COMBINE_AFFINE_TRANSFORM:
+        if not flags.optimize.CONCAT_SCALAR_AFFINE:
             return graph, False
 
         flag_changed = False
 
-        matches = search_sub_structure(graph, [AffineTransform, AffineTransform])
+        matches = search_sub_structure(graph, [ScalarAffine, ScalarAffine])
         while len(matches) > 0:
             match = matches[0]
-            a1: AffineTransform = match[0]
-            a2: AffineTransform = match[1]
+            a1: ScalarAffine = match[0]
+            a2: ScalarAffine = match[1]
 
             y1 = a1.outputs["y"]
             y2 = a2.outputs["y"]
@@ -30,6 +30,6 @@ class CombineAffineTransform(OptimizeRule):
             a1.replace_output(y1, y2)
 
             flag_changed = True
-            matches = search_sub_structure(graph, [AffineTransform, AffineTransform])
+            matches = search_sub_structure(graph, [ScalarAffine, ScalarAffine])
 
         return graph, flag_changed

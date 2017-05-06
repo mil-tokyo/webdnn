@@ -1,11 +1,10 @@
-from typing import Dict
-
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.operators.util import IntOrTuple, to_tuple
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNCHW
+from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 
 class AveragePooling2D(Operator):
@@ -13,17 +12,18 @@ class AveragePooling2D(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
-
+        ksize (int or tuple of int): Kernel size.
+        stride (int or tuple of int): Stride size.
+        padding (int or tuple of int): Padding size.
     """
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, any]):
-        assert "ksize" in parameters
-        assert "stride" in parameters
-        assert "padding" in parameters
-        super().__init__(name, parameters)
+    def __init__(self, name: str, ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+        super().__init__(name)
+        self.parameters["ksize"] = to_tuple(ksize)
+        self.parameters["stride"] = to_tuple(stride)
+        self.parameters["padding"] = to_tuple(padding)
 
     def __call__(self, x: Variable):
         """
@@ -41,7 +41,7 @@ class AveragePooling2D(Operator):
              self.parameters["stride"][1] + 1
         C2 = x_shape_dict[Axis.C]
 
-        y: Variable = Variable([N, C2, H2, W2], OrderNCHW)
+        y = Variable([N, H2, W2, C2], OrderNHWC)
 
         self.append_input("x", x)
         self.append_output("y", y)

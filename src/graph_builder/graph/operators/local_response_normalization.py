@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Optional
 
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
@@ -6,6 +6,7 @@ from graph_builder.graph.operators.attributes.post_elementwise import PostElemen
 from graph_builder.graph.variable import Variable
 
 
+# FIXME: Improve documentation
 class LocalResponseNormalization(Operator):
     """Operator same as local response normalization layer in Caffe. 
 
@@ -13,18 +14,21 @@ class LocalResponseNormalization(Operator):
     
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
+        n (float): Parameter n.
+        k (float): Parameter k.
+        alpha (float): Parameter alpha.
+        beta (float): Parameter beta.
 
     """
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        assert "n" in parameters
-        assert "k" in parameters
-        assert "alpha" in parameters
-        assert "beta" in parameters
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str], n: float, k: float, alpha: float, beta: float):
+        super().__init__(name)
+        self.parameters["n"] = n
+        self.parameters["k"] = k
+        self.parameters["alpha"] = alpha
+        self.parameters["beta"] = beta
 
     def __call__(self, x: Variable):
         """

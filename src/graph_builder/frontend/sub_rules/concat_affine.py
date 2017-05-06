@@ -15,14 +15,14 @@ from graph_builder.optimize_rule.optimize_rule import OptimizeRule
 from graph_builder.util import flags
 
 
-class AffineConcat(OptimizeRule):
+class ConcatAffine(OptimizeRule):
     """
     (Convolution2D|Linear)(AxiswiseScale|AxiswiseBias)+ という形式に対し、
     Scaleを(Convolution2D|Linear)のウェイトに統合し、Biasは最後に1つだけにする
     """
 
     def optimize(self, graph: Graph):
-        if not flags.optimize.AFFINE_CONCAT:
+        if not flags.optimize.CONCAT_AFFINE:
             return graph, False
 
         flag_changed = False
@@ -38,7 +38,7 @@ class AffineConcat(OptimizeRule):
                         op.parameters["axis"] is Axis.C:
                     self._cont_found(op, current_seq)
                 else:
-                    flag_changed_in_iter = self._non_cont_found(op, current_seq)
+                    flag_changed_in_iter = self._non_cont_found(current_seq)
                 if flag_changed_in_iter:
                     break
 
@@ -52,16 +52,17 @@ class AffineConcat(OptimizeRule):
         # シーケンスの開始条件が発生
         if len(current_seq) > 0:
             # end of last sequence
-            self._non_cont_found(op, current_seq)
+            self._non_cont_found(current_seq)
             current_seq.clear()
         current_seq.append(op)
 
+    # noinspection PyMethodMayBeStatic
     def _cont_found(self, op: Operator, current_seq: List[Operator]):
         # シーケンスの継続条件が発生
         if len(current_seq) > 0:
             current_seq.append(op)
 
-    def _non_cont_found(self, op: Operator, current_seq: List[Operator]):
+    def _non_cont_found(self, current_seq: List[Operator]):
         # シーケンスに含まれない要素が発生
         if len(current_seq) > 0:
             # check if sequence can be converted
@@ -72,6 +73,7 @@ class AffineConcat(OptimizeRule):
             current_seq.clear()
         return False
 
+    # noinspection PyMethodMayBeStatic
     def _check_sequence(self, seq: List[Operator]):
         # 実際にマージ可能かをチェックする
         # シーケンス内で受け渡される変数が分岐しないことをチェック(1本道)
@@ -132,7 +134,7 @@ class AffineConcat(OptimizeRule):
         for op in seq[1:]:
             op.remove_all()
         const_bias = ConstantVariable(merged_bias, OrderC)
-        bias_op = AxiswiseBias(conv_op.name + "_tail_bias", {"axis": Axis.C})
+        bias_op = AxiswiseBias(conv_op.name + "_tail_bias", axis=Axis.C)
         bias_op.append_input("x", conv_out)
         bias_op.append_input("b", const_bias)
         bias_op.append_output("y", final_out)

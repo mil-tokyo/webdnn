@@ -4,7 +4,7 @@ from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
-from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 
 template = """
 void %%FUNC_NAME%%(const int * %%META_NAME%%)
@@ -27,10 +27,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def affine_transform(op: AffineTransform,
-                     constants_layout: MemoryLayout,
-                     variables_layout: MemoryLayout,
-                     metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def scalar_affine(op: ScalarAffine,
+                  constants_layout: MemoryLayout,
+                  variables_layout: MemoryLayout,
+                  metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
     assert x.variable.shape == y.variable.shape
@@ -46,7 +46,7 @@ def affine_transform(op: AffineTransform,
     })
 
     source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("affine_transform", source)
+    func_name = util.add_canonical_suffix("scalar_affine", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
 
     kernel = Kernel(

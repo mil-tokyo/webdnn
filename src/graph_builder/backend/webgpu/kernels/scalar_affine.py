@@ -4,7 +4,7 @@ from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webgpu.kernel import GPUSize, Kernel
 from graph_builder.backend.webgpu.kernels import util
 from graph_builder.backend.webgpu.meta_buffer_injector import MetaBufferInjector
-from graph_builder.backend.webgpu.operators.affine_transform import AffineTransform
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 
 template = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
@@ -31,10 +31,10 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 # noinspection PyUnusedLocal
-def affine_transform(op: AffineTransform,
-                     constants_layout: MemoryLayout,
-                     variables_layout: MemoryLayout,
-                     metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def scalar_affine(op: ScalarAffine,
+                  constants_layout: MemoryLayout,
+                  variables_layout: MemoryLayout,
+                  metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
     assert x.variable.shape == y.variable.shape
@@ -50,7 +50,7 @@ def affine_transform(op: AffineTransform,
     })
 
     source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("affine_transform", source)
+    func_name = util.add_canonical_suffix("scalar_affine", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
 
     kernel = Kernel(

@@ -1,4 +1,5 @@
 import numpy as np
+
 from graph_builder.backend.interface.memory_layout import IMemoryLayout
 
 

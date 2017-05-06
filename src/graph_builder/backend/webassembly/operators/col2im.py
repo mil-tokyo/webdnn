@@ -1,38 +1,31 @@
-from typing import Dict, Tuple
+from typing import Tuple, Optional
 
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_builder.graph.operators.util import IntOrTuple, to_tuple
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
+from graph_builder.graph.variables.attributes.order import OrderNHWC
 
 
 class Col2Im(Operator):
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        parameters: {ksize: Tuple[int, int], stride: Tuple[int, int], pad: Tuple[int, int]}
-        :param name: 
-        :param parameters: 
-        """
-        assert "ksize" in parameters
-        assert "stride" in parameters
-        assert "padding" in parameters
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+        super().__init__(name)
+        self.parameters["ksize"] = to_tuple(ksize)
+        self.parameters["stride"] = to_tuple(stride)
+        self.parameters["padding"] = to_tuple(padding)
 
     def __call__(self, col: Variable):
-        assert col.axis_order == OrderNHWC
-
         N = col.shape_dict[Axis.N]
         H2 = (col.shape_dict[Axis.H] - 1) * self.SH - 2 * self.PH + self.KH
         W2 = (col.shape_dict[Axis.W] - 1) * self.SW - 2 * self.PW + self.KW
         C2 = col.shape_dict[Axis.C] // self.KH // self.KW
 
-        var_shape = [N, H2, W2, C2]
-        im = Variable(var_shape, OrderNHWC)
+        im = Variable([N, H2, W2, C2], OrderNHWC)
 
         self.append_input("col", col)
         self.append_output("im", im)

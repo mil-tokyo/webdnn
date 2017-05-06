@@ -1,6 +1,18 @@
-from typing import Dict, Set, Type
+from typing import Dict, Set, Type, Optional
 
 from graph_builder.graph.attribute import Attribute
+
+_node_serial_counter_dict: Dict[Type["Node"], int] = {}
+
+
+def _generate_name(node: "Node"):
+    klass = node.__class__
+    if klass not in _node_serial_counter_dict:
+        _node_serial_counter_dict[klass] = 0
+
+    name = f"{klass.__name__}{_node_serial_counter_dict[klass]}"
+    _node_serial_counter_dict[klass] += 1
+    return name
 
 
 class Node:
@@ -9,9 +21,12 @@ class Node:
     prevs: Set["Node"]
     nexts: Set["Node"]
 
-    def __init__(self, parameters: Dict[str, any] = None):
-        self.parameters = parameters if parameters is not None else {}
+    def __init__(self, name: Optional[str] = None):
+        if name is None:
+            name = _generate_name(self)
+        self.parameters = {}
         self.attributes = set(self.attributes)  # copy construction
+        self.name = name
         self.prevs = set()
         self.nexts = set()
 
