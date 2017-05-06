@@ -6,17 +6,13 @@ Descriptor Generator for WebAssembly
 """
 
 import os.path as path
-import sys
 import subprocess
-import tempfile as tmp
-from typing import Tuple, List
+from typing import List
 
-import numpy as np
-
+from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
 from graph_builder.backend.webassembly.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webassembly.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webassembly.kernel import Kernel
-from graph_builder.backend.webassembly.kernels.affine_transform import affine_transform
 from graph_builder.backend.webassembly.kernels.average_pooling_2d import average_pooling_2d
 from graph_builder.backend.webassembly.kernels.axiswise_bias import axiswise_bias
 from graph_builder.backend.webassembly.kernels.axiswise_scale import axiswise_scale
@@ -26,16 +22,17 @@ from graph_builder.backend.webassembly.kernels.elu import elu
 from graph_builder.backend.webassembly.kernels.flatten import flatten
 from graph_builder.backend.webassembly.kernels.im2col import im2col
 from graph_builder.backend.webassembly.kernels.linear import linear
+from graph_builder.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 from graph_builder.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from graph_builder.backend.webassembly.kernels.relu import relu
+from graph_builder.backend.webassembly.kernels.scalar_affine import scalar_affine
 from graph_builder.backend.webassembly.kernels.sgemm import sgemm
 from graph_builder.backend.webassembly.kernels.tanh import tanh
-from graph_builder.backend.webassembly.kernels.local_response_normalization import local_response_normalization
-from graph_builder.backend.webassembly.operators.affine_transform import AffineTransform
 from graph_builder.backend.webassembly.operators.col2im import Col2Im
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
 from graph_builder.backend.webassembly.operators.sgemm import Sgemm
 from graph_builder.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
+from graph_builder.encoder.constant_encoder import ConstantEncoder
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
@@ -45,13 +42,12 @@ from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
-from graph_builder.encoder.constant_encoder import ConstantEncoder
 from graph_builder.optimize_rule import util
-from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
 from graph_builder.util import flags
 from graph_builder.util.json import json
 
@@ -77,6 +73,7 @@ class GraphExecutionData(IGraphExecutionData):
         self._compile(dirname)
 
     def _compile(self, dirname: str):
+        # noinspection PyListCreation
         args = ["em++"]
         args.append(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)))
         args.append("-O3")
@@ -92,6 +89,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
         subprocess.check_call(args)
+
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     graph, _ = WebassemblyOptimizeRule().optimize(graph)
@@ -172,8 +170,8 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
         elif isinstance(op, Col2Im):
             kernels += col2im(op, constants_layout, variables_layout)
 
-        elif isinstance(op, AffineTransform):
-            kernels += affine_transform(op, constants_layout, variables_layout)
+        elif isinstance(op, ScalarAffine):
+            kernels += scalar_affine(op, constants_layout, variables_layout)
 
         elif isinstance(op, Operator):
             if "custom_kernel" in op.parameters:

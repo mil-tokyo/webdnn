@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Optional
 
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
@@ -6,19 +6,15 @@ from graph_builder.graph.operators.attributes.post_elementwise import PostElemen
 from graph_builder.graph.variable import Variable
 
 
-class AffineTransform(Operator):
+# FIXME: rename
+class ScalarAffine(Operator):
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, object]):
-        """
-        parameters: {scale: float, bias: float}
-        :param name: 
-        :param parameters: 
-        """
-        assert "scale" in parameters
-        assert "bias" in parameters
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str], scale: float, bias: float):
+        super().__init__(name)
+        self.scale = scale
+        self.bias = bias
 
     def __call__(self, x: Variable):
         y = Variable(x.shape, x.axis_order)

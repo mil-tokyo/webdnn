@@ -1,18 +1,12 @@
-from typing import Dict, Iterable
+from typing import Dict, Tuple
 
 from graph_builder.graph.interface import IVariable, IOperator
 from graph_builder.graph.node import Node
 
 
 class Operator(Node, IOperator):
-    def __init__(self,
-                 name: str,
-                 parameters: Dict[str, any] = None):
-
-        super().__init__(parameters)
-
-        self.name: str = name
-        self.parameters: Dict[str, any] = {} if parameters is None else parameters
+    def __init__(self, name: str):
+        super().__init__(name)
         self.inputs: Dict[str, IVariable] = {}
         self.outputs: Dict[str, IVariable] = {}
 
@@ -148,5 +142,5 @@ class Operator(Node, IOperator):
     def __str__(self):
         return self.__repr__()
 
-    def __call__(self, *args: Iterable[IVariable]) -> Iterable[IVariable]:
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs) -> Tuple[IVariable]:
+        pass

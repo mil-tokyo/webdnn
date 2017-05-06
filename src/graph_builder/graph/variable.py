@@ -1,8 +1,8 @@
-from typing import Set, Type, Iterable
+from typing import Type, Iterable
 
 import numpy as np
 
-from graph_builder.graph.interface import IVariable, IOperator
+from graph_builder.graph.interface import IVariable
 from graph_builder.graph.node import Node
 from graph_builder.graph.variables.attributes.order import AxisOrder
 
@@ -19,9 +19,9 @@ class Variable(Node, IVariable):
         super().__init__()
 
         self.shape = list(shape)
-        self.input_to: Set[IOperator] = set()
-        self.output_from: IOperator = None
-        self.axis_order: Type[AxisOrder] = axis_order
+        self.input_to = set()
+        self.output_from = None
+        self.axis_order = axis_order
 
         self.attributes.add(axis_order)
 

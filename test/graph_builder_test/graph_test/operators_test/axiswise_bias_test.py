@@ -26,7 +26,7 @@ def test_every_order():
         if axis not in order_x.axes:
             continue
 
-        op = AxiswiseBias("op", {"axis": axis})
+        op = AxiswiseBias(None, axis=axis)
         x = Variable(np.arange(order_x.ndim) + 1, default_order[order_x.ndim])
         x.change_axis_order(order_x)
         w = Variable((x.shape_dict[axis],), default_order[axis])
@@ -39,7 +39,7 @@ def test_every_order():
 
 @raises(AssertionError)
 def test_invalid_size():
-    op = AxiswiseBias("op", {"axis": Axis.C})
+    op = AxiswiseBias(None, axis=Axis.C)
 
     x = Variable((2, 3, 4, 5), OrderNHWC)
     w = Variable((6,), OrderC)

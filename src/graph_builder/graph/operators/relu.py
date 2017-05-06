@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Optional
 
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.axiswise import Channelwise
@@ -14,18 +14,17 @@ class Relu(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
 
     """
-    # ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
+    # FIXME: ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
     attributes = {PostElementwise,
                   PostAxiswise,
                   Elementwise,
                   Channelwise,
                   Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, object] = None):
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str]):
+        super().__init__(name)
 
     def __call__(self, x: Variable):
         """

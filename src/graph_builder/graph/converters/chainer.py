@@ -5,7 +5,7 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23
 """
 
-from typing import List, Iterable, Type
+from typing import List, Type, Tuple, Set
 
 import chainer
 import chainer.computational_graph
@@ -14,22 +14,20 @@ import numpy as np
 from graph_builder.graph.attribute import Attribute
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
-from graph_builder.graph.node import Node
 from graph_builder.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.constant_bias import ConstantBias
-from graph_builder.graph.operators.constant_scale import ConstantScale
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.deconvolution2d import Deconvolution2D
 from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
 from graph_builder.graph.operators.elu import Elu
 from graph_builder.graph.operators.flatten import Flatten
 from graph_builder.graph.operators.linear import Linear
+from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.operators.relu import Relu
+from graph_builder.graph.operators.scalar_affine import ScalarAffine
 from graph_builder.graph.operators.tanh import Tanh
-from graph_builder.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.input import Input
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
@@ -57,7 +55,7 @@ class OperatorBlock:
         self.hidden_vars = []
         self.hidden_consts = []
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         raise NotImplementedError()
 
 
@@ -68,9 +66,9 @@ class ReluBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         assert len(inputs) == 1
-        opr = Relu(generate_unique_name(self.cfunc.label), {})
+        opr = Relu(generate_unique_name(self.cfunc.label))
         return opr(inputs[0])
 
 
@@ -81,9 +79,9 @@ class EluBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         assert len(inputs) == 1
-        opr = Elu(generate_unique_name(self.cfunc.label), {})
+        opr = Elu(generate_unique_name(self.cfunc.label))
         return opr(inputs[0])
 
 
@@ -94,9 +92,9 @@ class TanhBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         assert len(inputs) == 1
-        opr = Tanh(generate_unique_name(self.cfunc.label), {})
+        opr = Tanh(generate_unique_name(self.cfunc.label))
         return opr(inputs[0])
 
 
@@ -108,9 +106,9 @@ class LinearBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         # noinspection PyUnresolvedReferences
-        linear_opr = Linear(generate_unique_name(self.cfunc.label), {})
+        linear_opr = Linear(generate_unique_name(self.cfunc.label))
         x = inputs[0]
         w = inputs[1]
         if x.ndim == 4 and w.ndim == 2:
@@ -131,10 +129,10 @@ class LinearBlock(OperatorBlock):
         if len(inputs) == 3:
             # biasあり
             # noinspection PyUnresolvedReferences
-            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), axis=Axis.C)
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
-        return [opr_out]
+        return opr_out,
 
 
 class Convolution2DBlock(OperatorBlock):
@@ -146,21 +144,23 @@ class Convolution2DBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         w = inputs[1]
         w_shape_dict = w.shape_dict
         conv_opr = Convolution2D(generate_unique_name(self.cfunc.label),
-                                 {"ksize": (w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
-                                  "stride": (self.cfunc.sy, self.cfunc.sx),
-                                  "padding": (self.cfunc.ph, self.cfunc.pw)})
+                                 ksize=(w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
+                                 stride=(self.cfunc.sy, self.cfunc.sx),
+                                 padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0], inputs[1])
+        opr_out.change_axis_order(OrderNCHW)
+
         if len(inputs) == 3:
             # biasあり
-            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), axis=Axis.C)
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
-        return [opr_out]
+        return opr_out,
 
 
 class Deconvolution2DBlock(OperatorBlock):
@@ -172,21 +172,23 @@ class Deconvolution2DBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         w = inputs[1]
         w_shape_dict = w.shape_dict
         conv_opr = Deconvolution2D(generate_unique_name(self.cfunc.label),
-                                   {"ksize": (w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
-                                    "stride": (self.cfunc.sy, self.cfunc.sx),
-                                    "padding": (self.cfunc.ph, self.cfunc.pw)})
+                                   ksize=(w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
+                                   stride=(self.cfunc.sy, self.cfunc.sx),
+                                   padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0], inputs[1])
+        opr_out.change_axis_order(OrderNCHW)
+
         if len(inputs) == 3:
             # biasあり
-            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+            bias_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), axis=Axis.C)
             self.hidden_vars.append(opr_out)
             opr_out, = bias_opr(opr_out, inputs[2])
-        return [opr_out]
+        return opr_out,
 
 
 class MaxPooling2DBlock(OperatorBlock):
@@ -198,14 +200,16 @@ class MaxPooling2DBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         conv_opr = MaxPooling2D(generate_unique_name(self.cfunc.label),
-                                {"ksize": (self.cfunc.kh, self.cfunc.kw),
-                                 "stride": (self.cfunc.sy, self.cfunc.sx),
-                                 "padding": (self.cfunc.ph, self.cfunc.pw)})
+                                ksize=(self.cfunc.kh, self.cfunc.kw),
+                                stride=(self.cfunc.sy, self.cfunc.sx),
+                                padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0])
-        return [opr_out]
+        opr_out.change_axis_order(OrderNCHW)
+
+        return opr_out,
 
 
 class AveragePooling2DBlock(OperatorBlock):
@@ -217,14 +221,16 @@ class AveragePooling2DBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         conv_opr = AveragePooling2D(generate_unique_name(self.cfunc.label),
-                                    {"ksize": (self.cfunc.kh, self.cfunc.kw),
-                                     "stride": (self.cfunc.sy, self.cfunc.sx),
-                                     "padding": (self.cfunc.ph, self.cfunc.pw)})
+                                    ksize=(self.cfunc.kh, self.cfunc.kw),
+                                    stride=(self.cfunc.sy, self.cfunc.sx),
+                                    padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0])
-        return [opr_out]
+        opr_out.change_axis_order(OrderNCHW)
+
+        return opr_out,
 
 
 class LocalResponseNormalizationBlock(OperatorBlock):
@@ -236,15 +242,15 @@ class LocalResponseNormalizationBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         conv_opr = LocalResponseNormalization(generate_unique_name(self.cfunc.label),
-                                              {"n": self.cfunc.n,
-                                               "k": self.cfunc.k,
-                                               "alpha": self.cfunc.alpha,
-                                               "beta": self.cfunc.beta})
+                                              n=self.cfunc.n,
+                                              k=self.cfunc.k,
+                                              alpha=self.cfunc.alpha,
+                                              beta=self.cfunc.beta)
 
         opr_out, = conv_opr(inputs[0])
-        return [opr_out]
+        return opr_out,
 
 
 class BatchNormalizationBlock(OperatorBlock):
@@ -256,7 +262,7 @@ class BatchNormalizationBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
         assert len(inputs) == 5
         x, gamma, beta, mean, variance = inputs
         # x以外の変数は、加工して新しいConstantとして使う
@@ -267,18 +273,18 @@ class BatchNormalizationBlock(OperatorBlock):
         gamma_div_std = gamma.data / np.sqrt(variance.data + self.cfunc.eps)
         beta_scaled = beta.data - mean.data * gamma_div_std
 
-        scale_opr = AxiswiseScale(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+        scale_opr = AxiswiseScale(generate_unique_name(self.cfunc.label), axis=Axis.C)
         gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
         scale_out, = scale_opr(x, gamma_div_std_const)
         self.hidden_vars.append(scale_out)
         self.hidden_consts.append(gamma_div_std_const)
 
-        offset_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), {"axis": Axis.C})
+        offset_opr = AxiswiseBias(generate_unique_name(self.cfunc.label), axis=Axis.C)
         beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
         offset_out, = offset_opr(scale_out, beta_scaled_const)
         self.hidden_consts.append(beta_scaled_const)
 
-        return [offset_out]
+        return offset_out,
 
 
 class AddBlock(OperatorBlock):
@@ -291,7 +297,7 @@ class AddBlock(OperatorBlock):
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        opr = ElementwiseSum(generate_unique_name(self.cfunc.label), {})
+        opr = ElementwiseSum(generate_unique_name(self.cfunc.label))
         return list(opr(*inputs))
 
 
@@ -304,9 +310,9 @@ class AddConstantBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        opr = ConstantBias(generate_unique_name(self.cfunc.label), {"value": float(self.cfunc.value)})
-        return list(opr(*inputs))
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
+        opr = ScalarAffine(generate_unique_name(self.cfunc.label), scale=1, bias=float(self.cfunc.value))
+        return opr(*inputs)
 
 
 class MulConstantBlock(OperatorBlock):
@@ -318,9 +324,9 @@ class MulConstantBlock(OperatorBlock):
         super().__init__()
         self.cfunc = cfunc
 
-    def __call__(self, inputs: List[Variable]) -> List[Variable]:
-        opr = ConstantScale(generate_unique_name(self.cfunc.label), {"value": float(self.cfunc.value)})
-        return list(opr(*inputs))
+    def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
+        opr = ScalarAffine(generate_unique_name(self.cfunc.label), scale=float(self.cfunc.value), bias=0)
+        return opr(*inputs)
 
 
 class ReshapeBlock(OperatorBlock):
@@ -341,8 +347,7 @@ class ReshapeBlock(OperatorBlock):
         assert len(self.cfunc.shape) == 2
         assert self.cfunc.shape[0] == inputs[0].shape[0]  # Nは変化しない
 
-        opr = Flatten(generate_unique_name(self.cfunc.label),
-                      {"in_axes": [Axis.C, Axis.H, Axis.W], "out_axes": [Axis.C]})
+        opr = Flatten(generate_unique_name(self.cfunc.label), in_axes={Axis.C, Axis.H, Axis.W}, out_axes={Axis.C})
         return list(opr(inputs[0]))
 
 
@@ -420,7 +425,7 @@ class ChainerGraphConverter:
         return Graph([self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
                      [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
 
-    def _convert_input_vars(self, input_vars: Iterable[chainer.Variable]):
+    def _convert_input_vars(self, input_vars: List[chainer.Variable]):
         for cvar in input_vars:
             self._convert_var(cvar, attrs={Input})
 
@@ -449,7 +454,7 @@ class ChainerGraphConverter:
 
     def _convert_var(self,
                      cvar: chainer.Variable,
-                     attrs: Iterable[Type[Attribute]] = None,
+                     attrs: Set[Type[Attribute]] = None,
                      force_constant=False,
                      force_order: Type[AxisOrder] = None):
         assert id(cvar) not in self._cvar_ids
@@ -492,7 +497,7 @@ class ChainerGraphConverter:
         raise ValueError("Unknown layer {}".format(type(cfunc)))
 
     # noinspection PyMethodMayBeStatic
-    def _transpose_vars(self, nvars: Iterable[Variable]):
+    def _transpose_vars(self, nvars: List[Variable]):
         """
         変数を、標準的なAxisOrderに変更
         :param nvars: 

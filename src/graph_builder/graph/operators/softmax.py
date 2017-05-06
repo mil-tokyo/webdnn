@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Optional
 
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.inplace import Inplace
@@ -10,13 +10,12 @@ class Softmax(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
 
     """
     attributes = {Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, any] = None):
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str]):
+        super().__init__(name)
 
     def __call__(self, x: Variable):
         """

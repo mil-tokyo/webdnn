@@ -1,5 +1,3 @@
-from collections import Iterable
-
 from nose.tools import raises
 
 from graph_builder.backend.webgpu.operators.sgemm import Sgemm
@@ -8,20 +6,8 @@ from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNC
 
 
-def _convert_to_list(x):
-    return x if isinstance(x, Iterable) else (x, x)
-
-
 def test_sgemm():
-    op = Sgemm("sgemm", parameters={
-        "M": 10,
-        "N": 20,
-        "K": 30,
-        "out_shape": [1, 10, 4, 5],
-        "out_order": OrderNHWC,
-        "transpose_A": True,
-        "transpose_B": True
-    })
+    op = Sgemm(None, M=10, N=20, K=30, out_shape=[1, 10, 4, 5], out_order=OrderNHWC, transpose_A=True, transpose_B=True)
 
     x = Variable((10, 30), OrderNC)
     w = Variable((20, 30), OrderNC)
@@ -37,50 +23,26 @@ def test_sgemm():
 
 @raises(AssertionError)
 def test_sgemm_invalid_A_shape():
-    op = Sgemm("sgemm", parameters={
-        "M": 10,
-        "N": 20,
-        "K": 30,
-        "out_shape": [1, 10, 4, 5],
-        "out_order": OrderNHWC,
-        "transpose_A": True,
-        "transpose_B": True
-    })
+    op = Sgemm(None, M=10, N=20, K=30, out_shape=[1, 10, 4, 5], out_order=OrderNHWC, transpose_A=True, transpose_B=True)
 
     x = Variable((20, 30), OrderNC)
     w = Variable((20, 30), OrderNC)
-    y, = op(x, w)
+    op(x, w)
 
 
 @raises(AssertionError)
 def test_sgemm_invalid_B_shape():
-    op = Sgemm("sgemm", parameters={
-        "M": 10,
-        "N": 20,
-        "K": 30,
-        "out_shape": [1, 10, 4, 5],
-        "out_order": OrderNHWC,
-        "transpose_A": True,
-        "transpose_B": True
-    })
+    op = Sgemm(None, M=10, N=20, K=30, out_shape=[1, 10, 4, 5], out_order=OrderNHWC, transpose_A=True, transpose_B=True)
 
     x = Variable((10, 30), OrderNC)
     w = Variable((10, 30), OrderNC)
-    y, = op(x, w)
+    op(x, w)
 
 
 @raises(AssertionError)
 def test_sgemm_invalid_C_shape():
-    op = Sgemm("sgemm", parameters={
-        "M": 10,
-        "N": 20,
-        "K": 30,
-        "out_shape": [1, 2, 3, 4],
-        "out_order": OrderNHWC,
-        "transpose_A": True,
-        "transpose_B": True
-    })
+    op = Sgemm(None, M=10, N=20, K=30, out_shape=[1, 2, 3, 4], out_order=OrderNHWC, transpose_A=True, transpose_B=True)
 
     x = Variable((10, 30), OrderNC)
     w = Variable((20, 30), OrderNC)
-    y, = op(x, w)
+    op(x, w)

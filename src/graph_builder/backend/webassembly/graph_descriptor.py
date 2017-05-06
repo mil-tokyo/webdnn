@@ -1,12 +1,13 @@
 from collections import OrderedDict
-from typing import Iterable, Dict
+from typing import Dict, Iterable
+
 import numpy as np
 
+from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
 from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant
-from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
 from graph_builder.optimize_rule import util
 from graph_builder.util import json
 
@@ -80,6 +81,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             .replace("%%WEIGHT_SIZE%%", str(self.constants_layout.size)) \
             .replace("%%DATA_SIZE%%", str(self.variables_layout.size))
 
+    # noinspection PyMethodMayBeStatic
     def generate_exec_line(self, kernel: Kernel, serial: int):
         line = f"const int meta_buf_{serial}[] = {{"
         # see as int32 and convert to 12345,67890

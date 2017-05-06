@@ -11,12 +11,7 @@ def test_every_order():
     orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
     for order in orders:
-        op = LocalResponseNormalization("op", parameters={
-            "n": 1,
-            "k": 2,
-            "alpha": 0.1,
-            "beta": 0.2
-        })
+        op = LocalResponseNormalization(None, n=1, k=2, alpha=0.1, beta=0.2)
 
         x = Variable(np.arange(order.ndim) + 1, OrderNHWC)
         x.change_axis_order(order)

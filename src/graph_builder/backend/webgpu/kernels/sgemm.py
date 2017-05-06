@@ -293,7 +293,6 @@ def sgemm(op: Sgemm,
     func_name = util.add_canonical_suffix("sgemm", func_source)
     func_source = func_source.replace("%%FUNC_NAME%%", func_name)
 
-
     kernel = Kernel(
         {
             func_name: func_source,

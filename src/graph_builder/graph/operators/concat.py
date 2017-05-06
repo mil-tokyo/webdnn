@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
@@ -12,15 +12,14 @@ class Concat(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
+        axis (:obj:~`graph_builder.graph.axis.Axis`): target axis
     """
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str, parameters: Dict[str, any]):
-        assert "axis" in parameters
-        assert isinstance(parameters["axis"], Axis)
-        super().__init__(name, parameters)
+    def __init__(self, name: str, axis: Axis):
+        super().__init__(name)
+        self.parameters["axis"] = axis
 
     def __call__(self, *xs: Variable):
         """

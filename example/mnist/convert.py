@@ -14,7 +14,7 @@ from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.relu import Relu
 from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWCN, OrderHWNC
+from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWNC
 from graph_builder.graph.variables.constant_variable import ConstantVariable
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
@@ -56,44 +56,44 @@ def load_mnist_weights_conv(filepath: str):
 
 
 def construct_graph_fc(weights: np.array, batch_size: int = 1) -> Graph:
-    x: Variable = Variable([batch_size, 784], axis_order=OrderNC)
-    h, = Linear("fc1")(x, ConstantVariable(weights["l1/W"], OrderCN))
-    h, = AxiswiseBias("bias1", {"axis": Axis.C})(h, ConstantVariable(weights["l1/b"], OrderC))
-    h, = Relu("relu1")(h)
+    x = Variable([batch_size, 784], axis_order=OrderNC)
+    h, = Linear(None)(x, ConstantVariable(weights["l1/W"], OrderCN))
+    h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["l1/b"], OrderC))
+    h, = Relu(None)(h)
 
-    h, = Linear("fc2")(h, ConstantVariable(weights["l2/W"], OrderCN))
-    h, = AxiswiseBias("bias2", {"axis": Axis.C})(h, ConstantVariable(weights["l2/b"], OrderC))
-    h, = Relu("relu2")(h)
+    h, = Linear(None)(h, ConstantVariable(weights["l2/W"], OrderCN))
+    h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["l2/b"], OrderC))
+    h, = Relu(None)(h)
 
-    h, = Linear("fc3")(h, ConstantVariable(weights["l3/W"], OrderCN))
-    y, = AxiswiseBias("bias3", {"axis": Axis.C})(h, ConstantVariable(weights["l3/b"], OrderC))
+    h, = Linear(None)(h, ConstantVariable(weights["l3/W"], OrderCN))
+    y, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["l3/b"], OrderC))
 
     return Graph([x], [y])
 
 
 def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> Graph:
-    x: Variable = Variable([batch_size, 28, 28, 1], axis_order=OrderNHWC)
+    x = Variable([batch_size, 28, 28, 1], axis_order=OrderNHWC)
 
-    conv1 = Convolution2D("conv1", {"ksize": (5, 5), "stride": (1, 1), "padding": (0, 0)})
+    conv1 = Convolution2D(None, ksize=5, stride=1, padding=0)
     h, = conv1(x, ConstantVariable(weights["conv1/W"], OrderHWNC))
-    h, = AxiswiseBias("bias1", {"axis": Axis.C})(h, ConstantVariable(weights["conv1/b"], OrderC))
-    h, = Relu("relu1")(h)
+    h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["conv1/b"], OrderC))
+    h, = Relu(None)(h)
 
-    conv2 = Convolution2D("conv2", {"ksize": (3, 3), "stride": (2, 2), "padding": (1, 1)})
+    conv2 = Convolution2D(None, ksize=3, stride=2, padding=1)
     h, = conv2(h, ConstantVariable(weights["conv2/W"], OrderHWNC))
-    h, = AxiswiseBias("bias2", {"axis": Axis.C})(h, ConstantVariable(weights["conv2/b"], OrderC))
-    h, = Relu("relu2")(h)
+    h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["conv2/b"], OrderC))
+    h, = Relu(None)(h)
 
-    conv3 = Convolution2D("conv3", {"ksize": (12, 12), "stride": (1, 1), "padding": (0, 0)})
+    conv3 = Convolution2D(None, ksize=12, stride=1, padding=0)
     h, = conv3(h, ConstantVariable(weights["conv3/W"], OrderHWNC))
-    y, = AxiswiseBias("bias3", {"axis": Axis.C})(h, ConstantVariable(weights["conv3/b"], OrderC))
+    y, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["conv3/b"], OrderC))
 
     return Graph([x], [y])
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("nn_type", choices=["fc", "deconv"])
+    parser.add_argument("nn_type", choices=["fc", "conv"])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
@@ -103,7 +103,7 @@ def main():
         weights = load_mnist_weights_fc(path.join(RESOURCES_DIR, "snapshot_iter_12000"))
         graph = construct_graph_fc(weights, batch_size=1)
 
-    elif args.nn_type == "deconv":
+    elif args.nn_type == "conv":
         weights = load_mnist_weights_conv(path.join(RESOURCES_DIR, "snapshot_conv"))
         graph = construct_graph_conv(weights, batch_size=1)
 

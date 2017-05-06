@@ -9,7 +9,7 @@ from graph_builder.graph.axis import Axis
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
 
 
-def generate_template_NHWC(op: Im2Col):
+def generate_template_NHWC():
     return """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
@@ -59,6 +59,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 """ \
         .replace("%%UNIT_KH%%", "SH") \
         .replace("%%UNIT_KW%%", "SW")
+
 
 template_CNHW = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
@@ -143,7 +144,7 @@ def im2col(op: Im2Col,
         source = template_CNHW
 
     else:
-        source = generate_template_NHWC(op)
+        source = generate_template_NHWC()
 
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("im2col", source)

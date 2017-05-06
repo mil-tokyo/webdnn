@@ -33,15 +33,14 @@ class OptimizeLinear(OptimizeRule):
             flag_changed = True
             op.remove_all()
 
-            sgemm = Sgemm("sgemm", {
-                "M": old_y.shape_dict[Axis.N],
-                "N": old_y.size // old_y.shape_dict[Axis.N],
-                "K": x.size // x.shape_dict[Axis.N],
-                "out_shape": old_y.shape,
-                "out_order": old_y.axis_order,
-                "transpose_A": True,
-                "transpose_B": True
-            })
+            sgemm = Sgemm(None,
+                          M=old_y.shape_dict[Axis.N],
+                          N=old_y.size // old_y.shape_dict[Axis.N],
+                          K=x.size // x.shape_dict[Axis.N],
+                          out_shape=old_y.shape,
+                          out_order=old_y.axis_order,
+                          transpose_A=True,
+                          transpose_B=True)
             new_y, = sgemm(x, w)
 
             new_y.merge(old_y)

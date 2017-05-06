@@ -2,7 +2,9 @@
 # https://github.com/TimDettmers/clusterNet/blob/master/source/clusterKernels.cu
 
 import zlib
+
 import numpy as np
+
 from graph_builder.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from graph_builder.encoder.constant_encoder import ConstantEncoder
 

@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from graph_builder.graph.graph import Graph
-from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.elementwise import Elementwise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_builder.graph.operators.elu import Elu

@@ -64,7 +64,7 @@ class MetaBufferInjector:
             elif isinstance(value, bytes):
                 if len(value) % 4 != 0:
                     value += bytes(4 - (len(value) % 4))
-                    
+
                 buffer += value
 
             else:

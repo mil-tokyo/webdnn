@@ -1,5 +1,3 @@
-from typing import Dict
-
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.axiswise import Channelwise
 from graph_builder.graph.operators.attributes.elementwise import Elementwise
@@ -16,7 +14,6 @@ class Elu(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
 
     """
     attributes = {PostElementwise,
@@ -25,8 +22,8 @@ class Elu(Operator):
                   Channelwise,
                   Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, any] = None):
-        super().__init__(name, parameters)
+    def __init__(self, name: str):
+        super().__init__(name)
 
     def __call__(self, x: Variable):
         """

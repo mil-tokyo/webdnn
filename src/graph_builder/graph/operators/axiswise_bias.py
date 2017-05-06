@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Optional
 
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operator import Operator
@@ -19,7 +19,7 @@ class AxiswiseBias(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
+        axis (:obj:~`graph_builder.graph.axis.Axis`): target axis
 
     """
     attributes = {PostElementwise,
@@ -28,10 +28,9 @@ class AxiswiseBias(Operator):
                   Inplace,
                   HaveWeights}
 
-    def __init__(self, name: str, parameters: Dict[str, any]):
-        assert "axis" in parameters
-        assert isinstance(parameters["axis"], Axis)
-        super().__init__(name, parameters)
+    def __init__(self, name: Optional[str], axis: Axis):
+        super().__init__(name)
+        self.parameters["axis"] = axis
 
     def __call__(self, x: Variable, b: Variable):
         """

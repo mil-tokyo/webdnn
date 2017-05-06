@@ -34,26 +34,21 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
             w.change_axis_order(OrderCHWN)
             assert old_y.axis_order == OrderNHWC
 
-            sgemm = Sgemm("sgemm_nhwc", {
-                "M": x.shape_dict[Axis.N] * x.shape_dict[Axis.H] * x.shape_dict[Axis.W],
-                "N": w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
-                "K": x.shape_dict[Axis.C],
-                "out_shape": [x.shape_dict[Axis.N],
-                              x.shape_dict[Axis.H],
-                              x.shape_dict[Axis.W],
-                              w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
-                              ],
-                "out_order": OrderNHWC,
-                "transpose_A": True if x.axis_order == OrderNHWC else False,
-                "transpose_B": True
-            })
+            sgemm = Sgemm(None,
+                          M=x.shape_dict[Axis.N] * x.shape_dict[Axis.H] * x.shape_dict[Axis.W],
+                          N=w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
+                          K=x.shape_dict[Axis.C],
+                          out_shape=[x.shape_dict[Axis.N],
+                                     x.shape_dict[Axis.H],
+                                     x.shape_dict[Axis.W],
+                                     w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
+                                     ],
+                          out_order=OrderNHWC,
+                          transpose_A=True if x.axis_order == OrderNHWC else False,
+                          transpose_B=True)
             col, = sgemm(x, w)
 
-            col2im = Col2Im("col2im", {
-                "ksize": op.ksize,
-                "stride": op.stride,
-                "padding": op.padding,
-            })
+            col2im = Col2Im(None, ksize=op.ksize, stride=op.stride, padding=op.padding)
             new_y, = col2im(col)
 
             new_y.merge(old_y)

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Set
 
 import numpy as np
 
@@ -17,7 +17,8 @@ class Flatten(Operator):
 
     Args:
         name (str): Operator name.
-        parameters (Dict[str, any]): Parameters.
+        in_axes (set of :class:~`graph_builder.graph.Axis`): axes which are combined
+        out_axes (set of :class:~`graph_builder.graph.Axis`): axes which in_axes are combined into  
 
     """
 
@@ -30,20 +31,20 @@ class Flatten(Operator):
                   PostAxiswise,
                   Inplace}
 
-    def __init__(self, name: str, parameters: Dict[str, any]):
+    def __init__(self, name: str, in_axes: Set[Axis], out_axes: Set[Axis]):
         # in_axes: [Axis.H, Axis.W, Axis.C], out_axes: [Axis.C]
         # のとき、NHWC入力・NC出力ならデータを操作しないでaxis_order=NCの出力とする。
         # NCHW入力・NC出力なら、入力データをNHWCに並び替えたうえでaxis_order=NCの出力とする。
 
-        assert "in_axes" in parameters
-        assert "out_axes" in parameters
+        super().__init__(name)
 
         # FIXME: 現状はこの組み合わせだけで十分
 
-        assert set(parameters["in_axes"]) == {Axis.C, Axis.H, Axis.W}
-        assert set(parameters["out_axes"]) == {Axis.C}
+        assert in_axes == {Axis.C, Axis.H, Axis.W}
+        assert out_axes == {Axis.C}
 
-        super().__init__(name, parameters)
+        self.parameters["in_axes"] = in_axes
+        self.parameters["out_axes"] = out_axes
 
     def __call__(self, x: Variable):
         """
@@ -55,7 +56,7 @@ class Flatten(Operator):
         """
         out_axis_order = OrderNC  # FIXME: 決め打ちをしない
 
-        reduction_size: int = np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]])
+        reduction_size = np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]])
         keep_size = x.shape_dict[Axis.N]
         y = Variable((keep_size, reduction_size), out_axis_order)
         self.append_input("x", x)

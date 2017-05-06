@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 from nose import with_setup
 
-from graph_builder.frontend.sub_rules.affine_concat import AffineConcat
+from graph_builder.frontend.sub_rules.concat_affine import ConcatAffine
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.graph import Graph
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
@@ -19,22 +19,22 @@ from test.util import FlagManager
 orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
 
-class AffineConcatFlagManager(FlagManager):
+class ConcatAffineFlagManager(FlagManager):
     def get(self) -> bool:
-        return flags.optimize.AFFINE_CONCAT
+        return flags.optimize.CONCAT_AFFINE
 
     def set(self, value: bool):
-        flags.optimize.AFFINE_CONCAT = value
+        flags.optimize.CONCAT_AFFINE = value
 
 
-flag_manager = AffineConcatFlagManager()
+flag_manager = ConcatAffineFlagManager()
 
 
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        scale = AxiswiseScale('scale', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        scale = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -56,22 +56,24 @@ def test_conv_scale():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
+        # noinspection PyTypeChecker
         expander = (None,) * order_w.axes_dict[Axis.N] + (Ellipsis,) + (None,) * (3 - order_w.axes_dict[Axis.N])
         w_data_expected = w_data * s_data[expander]
 
         ops = listup_operators(graph)
         assert len(ops) == 1 and isinstance(ops[0], Convolution2D)
         assert conv.outputs["y"] == y
-        assert np.all(np.equal(w.data, w_data_expected))
+        assert np.all(np.equal(w.data, w_data_expected)) \
+ \
+               @ with_setup(flag_manager.setup, flag_manager.teardown)
 
 
-@with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        bias = AxiswiseBias('bias', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        bias = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -93,7 +95,7 @@ def test_conv_bias():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
         w_data_expected = w_data
         b_data_expected = b_data
@@ -107,9 +109,9 @@ def test_conv_bias():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        scale1 = AxiswiseScale('scale', {'axis': Axis.C})
-        scale2 = AxiswiseScale('scale', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        scale1 = AxiswiseScale(None, axis=Axis.C)
+        scale2 = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -135,8 +137,9 @@ def test_conv_scale_scale():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
+        # noinspection PyTypeChecker
         expander = (None,) * order_w.axes_dict[Axis.N] + (Ellipsis,) + (None,) * (3 - order_w.axes_dict[Axis.N])
         w_data_expected = w_data * s1_data[expander] * s2_data[expander]
 
@@ -148,9 +151,9 @@ def test_conv_scale_scale():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        bias1 = AxiswiseBias('bias', {'axis': Axis.C})
-        bias2 = AxiswiseBias('bias', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        bias1 = AxiswiseBias(None, axis=Axis.C)
+        bias2 = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -176,7 +179,7 @@ def test_conv_bias_bias():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
         w_data_expected = w_data
         b_data_expected = b1_data + b2_data
@@ -190,9 +193,9 @@ def test_conv_bias_bias():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_scale_bias():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        scale = AxiswiseScale('scale', {'axis': Axis.C})
-        bias = AxiswiseBias('bias', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        scale = AxiswiseScale(None, axis=Axis.C)
+        bias = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -218,8 +221,9 @@ def test_conv_scale_bias():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
+        # noinspection PyTypeChecker
         expander = (None,) * order_w.axes_dict[Axis.N] + (Ellipsis,) + (None,) * (3 - order_w.axes_dict[Axis.N])
         w_data_expected = w_data * s_data[expander]
         b_data_expected = b_data
@@ -233,9 +237,9 @@ def test_conv_scale_bias():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_conv_bias_scale():
     for order_x, order_w in itertools.product(orders4, orders4):
-        conv = Convolution2D('conv', {'ksize': (3, 3), 'stride': (1, 1), 'padding': (1, 1)})
-        bias = AxiswiseBias('bias', {'axis': Axis.C})
-        scale = AxiswiseScale('scale', {'axis': Axis.C})
+        conv = Convolution2D(None, ksize=3, stride=1, padding=1)
+        bias = AxiswiseBias(None, axis=Axis.C)
+        scale = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
         x.change_axis_order(order_x)
@@ -261,8 +265,9 @@ def test_conv_bias_scale():
 
         graph = Graph([x], [y])
 
-        graph, _ = AffineConcat().optimize(graph)
+        graph, _ = ConcatAffine().optimize(graph)
 
+        # noinspection PyTypeChecker
         expander = (None,) * order_w.axes_dict[Axis.N] + (Ellipsis,) + (None,) * (3 - order_w.axes_dict[Axis.N])
         w_data_expected = w_data * s_data[expander]
         b_data_expected = b_data * s_data
