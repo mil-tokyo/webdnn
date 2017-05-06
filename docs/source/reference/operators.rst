@@ -24,16 +24,6 @@ Concat
 .. autoclass:: graph_builder.graph.operators.concat.Concat
    :members:
 
-ConstantBias
-~~~~~~~~~~~~
-.. autoclass:: graph_builder.graph.operators.constant_bias.ConstantBias
-   :members:
-
-ConstantScale
-~~~~~~~~~~~~~
-.. autoclass:: graph_builder.graph.operators.constant_scale.ConstantScale
-   :members:
-
 Convolution2D
 ~~~~~~~~~~~~~
 .. autoclass:: graph_builder.graph.operators.convolution2d.Convolution2D
@@ -83,6 +73,11 @@ Relu
     ~~~~~~~
         .. autoclass:: graph_builder.graph.operators.reshape.Reshape
         :members:
+
+ScalarAffine
+~~~~~~~~~~~~
+.. autoclass:: graph_builder.graph.operators.scalar_affine.ScalarAffine
+   :members:
 
 Sigmoid
 ~~~~~~~
