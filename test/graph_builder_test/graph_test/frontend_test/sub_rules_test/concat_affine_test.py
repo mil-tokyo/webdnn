@@ -115,20 +115,17 @@ def test_conv_scale_scale():
         x.change_axis_order(order_x)
 
         w_shape = [4, 3, 3, 5]
-        w_size: int = np.prod(w_shape)
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
         w.change_axis_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
         s1_shape = [h.shape_dict[Axis.C]]
-        s1_size: int = np.prod(s1_shape)
         s1 = ConstantVariable(arange_shaped(s1_shape), OrderC)
         s1_data = s1.data.copy()
         h, = scale1(h, s1)
 
         s2_shape = [h.shape_dict[Axis.C]]
-        s2_size: int = np.prod(s2_shape)
         s2 = ConstantVariable(arange_shaped(s2_shape), OrderC)
         s2_data = s2.data.copy()
         y, = scale2(h, s2)
@@ -157,20 +154,17 @@ def test_conv_bias_bias():
         x.change_axis_order(order_x)
 
         w_shape = [4, 3, 3, 5]
-        w_size: int = np.prod(w_shape)
         w = ConstantVariable(arange_shaped(w_shape).copy(), OrderNHWC)
         w.change_axis_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
         b1_shape = [h.shape_dict[Axis.C]]
-        b1_size: int = np.prod(b1_shape)
         b1 = ConstantVariable(arange_shaped(b1_shape), OrderC)
         b1_data = b1.data.copy()
         h, = bias1(h, b1)
 
         b2_shape = [h.shape_dict[Axis.C]]
-        b2_size: int = np.prod(b2_shape)
         b2 = ConstantVariable(arange_shaped(b2_shape), OrderC)
         b2_data = b2.data.copy()
         y, = bias2(h, b2)
@@ -199,20 +193,17 @@ def test_conv_scale_bias():
         x.change_axis_order(order_x)
 
         w_shape = [4, 3, 3, 5]
-        w_size: int = np.prod(w_shape)
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
         w.change_axis_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
         s_shape = [h.shape_dict[Axis.C]]
-        s_size: int = np.prod(s_shape)
         s = ConstantVariable(arange_shaped(s_shape), OrderC)
         s_data = s.data.copy()
         h, = scale(h, s)
 
         b_shape = [h.shape_dict[Axis.C]]
-        b_size: int = np.prod(b_shape)
         b = ConstantVariable(arange_shaped(b_shape), OrderC)
         b_data = b.data.copy()
         y, = bias(h, b)
@@ -243,20 +234,17 @@ def test_conv_bias_scale():
         x.change_axis_order(order_x)
 
         w_shape = [4, 3, 3, 5]
-        w_size: int = np.prod(w_shape)
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
         w.change_axis_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
         b_shape = [h.shape_dict[Axis.C]]
-        b_size: int = np.prod(b_shape)
         b = ConstantVariable(arange_shaped(b_shape), OrderC)
         b_data = b.data.copy()
         h, = bias(h, b)
 
         s_shape = [h.shape_dict[Axis.C]]
-        s_size: int = np.prod(s_shape)
         s = ConstantVariable(arange_shaped(s_shape), OrderC)
         s_data = s.data.copy()
         y, = scale(h, s)
