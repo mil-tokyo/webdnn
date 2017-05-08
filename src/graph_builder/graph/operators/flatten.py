@@ -56,7 +56,7 @@ class Flatten(Operator):
         """
         out_axis_order = OrderNC  # FIXME: 決め打ちをしない
 
-        reduction_size = np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]])
+        reduction_size = int(np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]]))
         keep_size = x.shape_dict[Axis.N]
         y = Variable((keep_size, reduction_size), out_axis_order)
         self.append_input("x", x)
