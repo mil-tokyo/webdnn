@@ -19,8 +19,7 @@ class Variable(Node, IVariable):
     def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]):
         super().__init__()
 
-        self.shape = list(shape)
-        assert all(isinstance(v, int) for v in self.shape)
+        self.shape = list(int(v) for v in shape)
         self.input_to = set()
         self.output_from = None
         self.axis_order = axis_order
