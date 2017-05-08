@@ -13,13 +13,14 @@ class Variable(Node, IVariable):
     レイヤー間で受け渡される変数
     名前で識別される
     現在のところ、float32型(4byte/element)を想定している
-    shapeはタプルで、その順序はAttribute(OrderNC etc)に依存
+    shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存
     """
 
     def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]):
         super().__init__()
 
         self.shape = list(shape)
+        assert all(isinstance(v, int) for v in self.shape)
         self.input_to = set()
         self.output_from = None
         self.axis_order = axis_order
