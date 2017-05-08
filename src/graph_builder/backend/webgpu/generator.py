@@ -4,7 +4,7 @@ Descriptor Generator for WebGPU
 - kernel source generation
 - schedule memory allocation
 """
-
+import os
 import os.path as path
 import subprocess
 import tempfile as tmp
@@ -63,6 +63,8 @@ class GraphExecutionData(IGraphExecutionData):
         self.backend_suffix = "webgpu"
 
     def save(self, dirname: str):
+        os.makedirs(dirname, exist_ok=True)
+
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
@@ -91,8 +93,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             exit(result.returncode)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None) -> IGraphExecutionData:
-    traverse.dump(graph)
+def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     graph, _ = WebGPUOptimizeRule().optimize(graph)
     if flags.DEBUG:
         traverse.dump(graph)

@@ -376,6 +376,10 @@ class ChainerGraphConverter:
         self._cvar_ids = []  # id(chainer.Variable)
         self._known_nvars = []  # 存在するVariable(include Constant)
 
+    def convert_from_inout_vars(self, inputs: List[chainer.Variable], outputs: List[chainer.Variable]):
+        chainer_graph = chainer.computational_graph.build_computational_graph(outputs)
+        return self.convert(chainer_graph, inputs, outputs)
+
     def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
                 input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Graph:
         # 戦略
