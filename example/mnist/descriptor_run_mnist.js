@@ -1,7 +1,6 @@
 'use strict';
 
-var $M, $Mg;
-var runner;
+var run_if;
 
 function run_entry() {
     run().then(() => {
@@ -12,30 +11,25 @@ function run_entry() {
 }
 
 async function run() {
-    let backend_name = $('input[name=backend_name]:checked').val();
-    if (!$M) {
-        backend_name = await init(backend_name);
+    if (!run_if) {
+        let backend_name = $('input[name=backend_name]:checked').val();
+        run_if = await WebDNN.prepareAll('./output', backend_name);
+        console.info(`Backend: ${run_if.backendName}`);
     }
 
-    runner = $M.gpu.createDNNDescriptorRunner();
-    runner.ignoreCache = true;
-    await runner.load('./output');
-
     let test_samples = await fetchSamples('../../resources/mnist/test_samples.json');
-    let input_views = await runner.getInputViews();
-    let output_views = await runner.getOutputViews();
 
     let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        input_views[0].set(sample.x);
+        run_if.inputViews[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
 
         let start = performance.now();
-        await runner.run();
+        await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = output_views[0];
+        let out_vec = run_if.outputViews[0];
         let pred_label = 0;
         let pred_score = -Infinity;
         for (let j = 0; j < out_vec.length; j++) {
@@ -47,15 +41,7 @@ async function run() {
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
     }
-    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time/test_samples.length).toFixed(2)}`);
-}
-
-async function init(backend_name) {
-    $M = WebDNN;
-    let backend = await $M.init(backend_name);
-    console.log(`backend: ${backend}`);
-    $Mg = $M.gpu;
-    return backend;
+    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
 }
 
 function makeMatFromJson(mat_data) {
