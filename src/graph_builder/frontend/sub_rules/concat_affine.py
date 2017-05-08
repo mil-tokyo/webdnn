@@ -8,6 +8,7 @@ from graph_builder.graph.graph import Graph
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
 from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
+from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.operators.convolution2d import Convolution2D
 from graph_builder.graph.optimize_rule import OptimizeRule
 from graph_builder.graph.variables.attributes.order import OrderC
@@ -32,7 +33,7 @@ class ConcatAffine(OptimizeRule):
             ops = traverse.listup_operators(graph)
             current_seq = []
             for op in ops:
-                if isinstance(op, Convolution2D):
+                if isinstance(op, Convolution2D) or isinstance(op, Linear):
                     self._start_found(op, current_seq)
                 elif (isinstance(op, AxiswiseScale) or isinstance(op, AxiswiseBias)) and \
                         op.parameters["axis"] is Axis.C:
@@ -41,6 +42,9 @@ class ConcatAffine(OptimizeRule):
                     flag_changed_in_iter = self._non_cont_found(current_seq)
                 if flag_changed_in_iter:
                     break
+            else:
+                # conv-scaleで終了した場合にも最適化する
+                flag_changed_in_iter = self._non_cont_found(current_seq)
 
             flag_changed |= flag_changed_in_iter
             if not flag_changed_in_iter:
@@ -110,6 +114,7 @@ class ConcatAffine(OptimizeRule):
         # scale, biasの集計
         merged_scale = np.ones((n_channels,), dtype=np.float32)
         merged_bias = np.zeros((n_channels,), dtype=np.float32)
+        bias_found = False
         for op in seq[1:]:
             if isinstance(op, AxiswiseScale):
                 weight_var = op.inputs["s"]
@@ -118,6 +123,7 @@ class ConcatAffine(OptimizeRule):
             elif isinstance(op, AxiswiseBias):
                 weight_var = op.inputs["b"]
                 merged_bias += weight_var.data
+                bias_found = True
             else:
                 raise NotImplementedError()
 
@@ -129,12 +135,19 @@ class ConcatAffine(OptimizeRule):
         # HWNCなら、broadcast==[None, None, :, None]
         conv_weight_var.data *= merged_scale[broadcast]
 
-        # Scale/Biasレイヤーを削除して、新しいBiasレイヤーを元々の出力につなぐ
         final_out = seq[-1].outputs["y"]
-        for op in seq[1:]:
-            op.remove_all()
-        const_bias = ConstantVariable(merged_bias, OrderC)
-        bias_op = AxiswiseBias(conv_op.name + "_tail_bias", axis=Axis.C)
-        bias_op.append_input("x", conv_out)
-        bias_op.append_input("b", const_bias)
-        bias_op.append_output("y", final_out)
+        if bias_found:
+            # Scale/Biasレイヤーを削除して、新しいBiasレイヤーを元々の出力につなぐ
+            for op in seq[1:]:
+                op.remove_all()
+            const_bias = ConstantVariable(merged_bias, OrderC)
+            bias_op = AxiswiseBias(conv_op.name + "_tail_bias", axis=Axis.C)
+            bias_op.append_input("x", conv_out)
+            bias_op.append_input("b", const_bias)
+            bias_op.append_output("y", final_out)
+        else:
+            # Biasはないので、Convレイヤーの出力がブロック全体の出力になる
+            for op in seq[1:]:
+                op.remove_all()
+            conv_op.remove_output(conv_out)
+            conv_op.append_output("y", final_out)
