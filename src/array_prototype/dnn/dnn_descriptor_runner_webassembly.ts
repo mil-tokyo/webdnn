@@ -28,7 +28,7 @@ namespace WebDNN {
                 worker_entry_js_path += '?t=' + Date.now();
             }
             this.worker_entry_js_path = worker_entry_js_path;
-            
+
             await this.compile();
 
             let weight_url = `${directory}/weight_${this.backend}.bin`;
@@ -47,8 +47,11 @@ namespace WebDNN {
             this.worker = new Worker(this.worker_entry_js_path);
             let promise = new Promise<void>((resolve, reject) => {
                 this.worker.onmessage = (event) => {
-                    console.log('init_response', event.data);
-                    resolve();
+                    if (event.data === 0) {
+                        resolve();
+                    } else {
+                        reject(new Error(event.data));
+                    }
                 };
 
                 this.worker.postMessage({ type: 'init' });
@@ -62,8 +65,11 @@ namespace WebDNN {
             let weight_data = await decoder.decode(weightsData, this.descriptor.weight_allocation);
             let promise = new Promise<void>((resolve, reject) => {
                 this.worker.onmessage = (event) => {
-                    console.log('weight_response', event.data);
-                    resolve();
+                    if (event.data === 0) {
+                        resolve();
+                    } else {
+                        reject(new Error(event.data));
+                    }
                 };
 
                 this.worker.postMessage({ type: 'weight', data: weight_data });
@@ -96,11 +102,14 @@ namespace WebDNN {
             let promise = new Promise<void>((resolve, reject) => {
                 // TODO: better way not to generate function on every run
                 this.worker.onmessage = (event) => {
-                    console.log('received output');
-                    for (let i = 0; i < event.data.length; i++) {
-                        this.outputViews[i].set(event.data[i]);
+                    if (Array.isArray(event.data)) {
+                        for (let i = 0; i < event.data.length; i++) {
+                            this.outputViews[i].set(event.data[i]);
+                        }
+                        resolve();
+                    } else {
+                        reject(new Error(event.data));
                     }
-                    resolve();
                 };
 
                 let inputs: any = [];

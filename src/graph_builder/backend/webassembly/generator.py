@@ -6,6 +6,8 @@ Descriptor Generator for WebAssembly
 """
 
 import os.path as path
+import os
+import sys
 import subprocess
 from typing import List
 
@@ -90,7 +92,12 @@ class GraphExecutionData(IGraphExecutionData):
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
-        subprocess.check_call(args)
+        try:
+            subprocess.check_call(args)
+        except Exception as ex:
+            sys.stderr.write("Executing em++ command failed." +
+                             " Make sure emscripten is properly installed and environment variables are set.\n")
+            raise ex
 
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
