@@ -160,6 +160,7 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 # custom
 napoleon_include_special_with_doc = True
+
 from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 
