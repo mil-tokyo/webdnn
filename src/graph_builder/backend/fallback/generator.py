@@ -6,7 +6,7 @@ Kernel Builder for Fallback (pure js)
 - kernel source generation
 - schedule memory allocation
 """
-
+import os
 import os.path as path
 from typing import List
 
@@ -50,6 +50,8 @@ class GraphExecutionData(IGraphExecutionData):
         self.backend_suffix = "fallback"
 
     def save(self, dirname: str):
+        os.makedirs(dirname, exist_ok=True)
+        
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 

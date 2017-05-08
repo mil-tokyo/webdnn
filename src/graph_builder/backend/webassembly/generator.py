@@ -61,6 +61,8 @@ class GraphExecutionData(IGraphExecutionData):
         self.backend_suffix = "webassembly"
 
     def save(self, dirname: str):
+        os.makedirs(dirname, exist_ok=True)
+
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
