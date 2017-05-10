@@ -4,6 +4,7 @@
 
 ```
 pip install sphinx sphinx_rtd_theme recommonmark
+npm install
 make html
 ```
 
