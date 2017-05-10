@@ -1,0 +1,27 @@
+{
+  "name": "mil-web-dnn",
+  "version": "1.0.0",
+  "description": "Deep Neural Network Execution Framework for Web Browsers",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "example",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
+  },
+  "author": "Masatoshi Hidaka, Yuichiro Kikura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mil-tokyo/mil-web-dnn/issues"
+  },
+  "homepage": "https://github.com/mil-tokyo/mil-web-dnn#readme",
+  "devDependencies": {
+    "typedoc": "^0.6.0"
+  }
+}

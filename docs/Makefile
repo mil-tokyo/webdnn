@@ -18,3 +18,4 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	$(shell npm bin)/typedoc ../src/array_prototype --out build/html/api_reference/array_prototype --mode file -lib "lib.es2017.d.ts,lib.dom.d.ts"
