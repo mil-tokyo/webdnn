@@ -21,6 +21,9 @@ class CombineElementwiseOperation(OptimizeRule):
             x = list(op2.inputs.values())[0]
             y = list(op2.outputs.values())[0]
 
+            if len(x.input_to) > 1:
+                continue
+                
             if isinstance(op2, Relu):
                 op1.parameters["inline_elementwise"] = lambda exp: f"({exp}>0?{exp}:0)"
 
@@ -34,12 +37,7 @@ class CombineElementwiseOperation(OptimizeRule):
                 continue
 
             op2.remove_all()
-
-            if y in graph.outputs:
-                op1.replace_output(x, y)
-            else:
-                x.merge(y)
-
+            op1.replace_output(x, y)
             flag_changed = True
 
         return graph, flag_changed

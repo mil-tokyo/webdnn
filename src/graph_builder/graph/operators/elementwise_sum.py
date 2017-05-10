@@ -1,3 +1,5 @@
+from typing import Optional
+
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.post_axiswise import PostAxiswise
 from graph_builder.graph.operators.attributes.post_elementwise import PostElementwise
@@ -13,7 +15,7 @@ class ElementwiseSum(Operator):
     attributes = {PostElementwise,
                   PostAxiswise}
 
-    def __init__(self, name: str):
+    def __init__(self, name: Optional[str]):
         super().__init__(name)
 
     def __call__(self, *xs: Variable):
@@ -24,10 +26,10 @@ class ElementwiseSum(Operator):
         Returns:
             tuple of :class:`~graph_builder.graph.variable.Variable`: Output
         """
-        y = Variable(xs[0].shape, xs[0].axis_order)
+        y = Variable(xs[0].shape, xs[0].order)
         for i, x in enumerate(xs):
-            for axis in x.axis_order.axes:
-                assert axis in y.axis_order.axes and y.shape_dict[axis] == x.shape_dict[axis]
+            for axis in x.order.axes:
+                assert axis in y.order.axes and y.shape_dict[axis] == x.shape_dict[axis]
 
             self.append_input(f"x{i}", x)
         self.append_output("y", y)

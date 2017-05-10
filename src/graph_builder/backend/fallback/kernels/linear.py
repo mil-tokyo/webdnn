@@ -43,9 +43,9 @@ def linear(op: Linear) -> List[Kernel]:
     w = op.inputs["w"]
     y = op.outputs["y"]
 
-    assert y.axis_order is OrderNC
-    if x.axis_order.ndim == 2:
-        assert w.axis_order.ndim == 2
+    assert y.order is OrderNC
+    if x.order.ndim == 2:
+        assert w.order.ndim == 2
         k = x.shape_dict[Axis.C]
         m = x.shape_dict[Axis.N]
         n = w.shape_dict[Axis.N]
@@ -55,14 +55,14 @@ def linear(op: Linear) -> List[Kernel]:
         x_m_stride = calculate_stride(x, Axis.N)
         w_k_stride = calculate_stride(w, Axis.C)
         w_n_stride = calculate_stride(w, Axis.N)
-    elif x.axis_order.ndim == 4:
-        assert w.axis_order.ndim == 4
+    elif x.order.ndim == 4:
+        assert w.order.ndim == 4
         # CHWが、連続していてx,wで同順のみサポート(NCHW/NCHW, NHWC/HWCN, ...)
-        x_order_wo_n = list(x.axis_order.axes)
+        x_order_wo_n = list(x.order.axes)
         x_order_wo_n.remove(Axis.N)  # [Axis.C, Axis.H, Axis.W]
         x_n_size = x.shape_dict[Axis.N]
         x_chw_size = x.size // x_n_size
-        w_order_wo_n = list(w.axis_order.axes)
+        w_order_wo_n = list(w.order.axes)
         w_order_wo_n.remove(Axis.N)
         w_n_size = w.shape_dict[Axis.N]
         w_chw_size = w.size // w_n_size
@@ -72,22 +72,22 @@ def linear(op: Linear) -> List[Kernel]:
         k = x_chw_size
         m = x_n_size
         n = w_n_size
-        if x.axis_order.axes[0] == Axis.N:
+        if x.order.axes[0] == Axis.N:
             # N***
             x_k_stride = 1
             x_m_stride = x_chw_size
-        elif x.axis_order.axes[3] == Axis.N:
+        elif x.order.axes[3] == Axis.N:
             # ***N
             x_k_stride = x_n_size
             x_m_stride = 1
         else:
             # such as HWNC
             raise ValueError()
-        if w.axis_order.axes[0] == Axis.N:
+        if w.order.axes[0] == Axis.N:
             # N***
             w_k_stride = 1
             w_n_stride = w_chw_size
-        elif w.axis_order.axes[3] == Axis.N:
+        elif w.order.axes[3] == Axis.N:
             # ***N
             w_k_stride = w_n_size
             w_n_stride = 1

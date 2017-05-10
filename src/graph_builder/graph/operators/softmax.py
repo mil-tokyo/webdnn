@@ -25,7 +25,7 @@ class Softmax(Operator):
         Returns:
             tuple of :class:`~graph_builder.graph.variable.Variable`: Output
         """
-        y = Variable(x.shape, x.axis_order)
+        y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_output("y", y)
         return y,

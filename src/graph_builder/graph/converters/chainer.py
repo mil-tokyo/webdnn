@@ -116,10 +116,10 @@ class LinearBlock(OperatorBlock):
             x_shape_dict = x.shape_dict
             w_shape_dict = w.shape_dict
             assert x_shape_dict[Axis.C] * x_shape_dict[Axis.H] * x_shape_dict[Axis.W] == w_shape_dict[Axis.C]
-            assert w.axis_order is OrderNC
+            assert w.order is OrderNC
             w.attributes.remove(OrderNC)
             w.attributes.add(OrderNCHW)
-            w.axis_order = OrderNCHW
+            w.order = OrderNCHW
             w_new_shape = [w_shape_dict[Axis.N], x_shape_dict[Axis.C], x_shape_dict[Axis.H],
                            x_shape_dict[Axis.W]]
             w.shape = w_new_shape
@@ -153,7 +153,7 @@ class Convolution2DBlock(OperatorBlock):
                                  padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0], inputs[1])
-        opr_out.change_axis_order(OrderNCHW)
+        opr_out.change_order(OrderNCHW)
 
         if len(inputs) == 3:
             # biasあり
@@ -181,7 +181,7 @@ class Deconvolution2DBlock(OperatorBlock):
                                    padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0], inputs[1])
-        opr_out.change_axis_order(OrderNCHW)
+        opr_out.change_order(OrderNCHW)
 
         if len(inputs) == 3:
             # biasあり
@@ -207,7 +207,7 @@ class MaxPooling2DBlock(OperatorBlock):
                                 padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0])
-        opr_out.change_axis_order(OrderNCHW)
+        opr_out.change_order(OrderNCHW)
 
         return opr_out,
 
@@ -228,7 +228,7 @@ class AveragePooling2DBlock(OperatorBlock):
                                     padding=(self.cfunc.ph, self.cfunc.pw))
 
         opr_out, = conv_opr(inputs[0])
-        opr_out.change_axis_order(OrderNCHW)
+        opr_out.change_order(OrderNCHW)
 
         return opr_out,
 
@@ -343,7 +343,7 @@ class ReshapeBlock(OperatorBlock):
     def __call__(self, inputs: List[Variable]) -> List[Variable]:
         assert len(inputs) == 1
         # NCHWをNCにする場合のみ想定
-        assert inputs[0].axis_order is OrderNCHW
+        assert inputs[0].order is OrderNCHW
         assert len(self.cfunc.shape) == 2
         assert self.cfunc.shape[0] == inputs[0].shape[0]  # Nは変化しない
 
@@ -510,25 +510,25 @@ class ChainerGraphConverter:
         for nvar in nvars:
             if isinstance(nvar, ConstantVariable):
                 if nvar.ndim == 1:
-                    nvar.change_axis_order(OrderC)
+                    nvar.change_order(OrderC)
                 elif nvar.ndim == 2:
-                    nvar.change_axis_order(OrderCN)
+                    nvar.change_order(OrderCN)
                 elif nvar.ndim == 4:
                     assert len(nvar.input_to) == 1
                     first_input_to = list(nvar.input_to)[0]
                     if isinstance(first_input_to, Convolution2D):
-                        nvar.change_axis_order(OrderHWNC)
+                        nvar.change_order(OrderHWNC)
                     elif isinstance(first_input_to, Deconvolution2D):
-                        nvar.change_axis_order(OrderHWNC)
+                        nvar.change_order(OrderHWNC)
                     elif isinstance(first_input_to, Linear):
-                        nvar.change_axis_order(OrderHWCN)
+                        nvar.change_order(OrderHWCN)
                     else:
                         # 今の所ないはず
                         raise ValueError()
             else:
                 if nvar.ndim == 1:
-                    nvar.change_axis_order(OrderC)
+                    nvar.change_order(OrderC)
                 elif nvar.ndim == 2:
-                    nvar.change_axis_order(OrderNC)
+                    nvar.change_order(OrderNC)
                 elif nvar.ndim == 4:
-                    nvar.change_axis_order(OrderNHWC)
+                    nvar.change_order(OrderNHWC)

@@ -8,10 +8,10 @@ class IVariable(metaclass=ABCMeta):
     shape: List[int]
     input_to: Set["IOperator"]
     output_from: "IOperator"
-    axis_order: Type[AxisOrder]
+    order: Type[AxisOrder]
 
     # noinspection PyUnusedLocal
-    def __init__(self, shape: List[int], axis_order: Type[AxisOrder]):
+    def __init__(self, shape: List[int], order: Type[AxisOrder]):
         raise NotImplementedError
 
     @property
@@ -34,16 +34,13 @@ class IVariable(metaclass=ABCMeta):
     def shape_dict(self):
         raise NotImplementedError
 
-    def change_axis_order(self, axis_order: Type[AxisOrder]) -> None:
+    def change_order(self, order: Type[AxisOrder]) -> None:
         raise NotImplementedError
 
     def __repr__(self) -> str:
         raise NotImplementedError
 
     def __str__(self) -> str:
-        raise NotImplementedError
-
-    def merge(self, base: "IVariable") -> None:
         raise NotImplementedError
 
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
@@ -65,8 +65,8 @@ def col2im(op: Col2Im,
     col = variables_layout[op.inputs["col"]]
     im = variables_layout[op.outputs["im"]]
 
-    assert col.variable.axis_order == OrderNHWC
-    assert im.variable.axis_order == OrderNHWC
+    assert col.variable.order == OrderNHWC
+    assert im.variable.order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

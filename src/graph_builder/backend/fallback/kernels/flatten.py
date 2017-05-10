@@ -31,10 +31,10 @@ def flatten(op: Flatten) -> List[Kernel]:
 
     assert set(op.parameters["in_axes"]) == {Axis.C, Axis.H, Axis.W}
     assert set(op.parameters["out_axes"]) == {Axis.C}
-    if x.axis_order is OrderNCHW:
-        assert y.axis_order is OrderNC
-    elif x.axis_order is OrderNHWC:
-        assert y.axis_order is OrderNC
+    if x.order is OrderNCHW:
+        assert y.order is OrderNC
+    elif x.order is OrderNHWC:
+        assert y.order is OrderNC
         # H, W == 1
         assert x.shape[1] == 1
         assert x.shape[2] == 1

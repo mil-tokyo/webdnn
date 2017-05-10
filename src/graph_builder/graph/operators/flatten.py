@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Optional
 
 import numpy as np
 
@@ -31,10 +31,10 @@ class Flatten(Operator):
                   PostAxiswise,
                   Inplace}
 
-    def __init__(self, name: str, in_axes: Set[Axis], out_axes: Set[Axis]):
+    def __init__(self, name: Optional[str], in_axes: Set[Axis], out_axes: Set[Axis]):
         # in_axes: [Axis.H, Axis.W, Axis.C], out_axes: [Axis.C]
-        # のとき、NHWC入力・NC出力ならデータを操作しないでaxis_order=NCの出力とする。
-        # NCHW入力・NC出力なら、入力データをNHWCに並び替えたうえでaxis_order=NCの出力とする。
+        # のとき、NHWC入力・NC出力ならデータを操作しないでorder=NCの出力とする。
+        # NCHW入力・NC出力なら、入力データをNHWCに並び替えたうえでorder=NCの出力とする。
 
         super().__init__(name)
 
@@ -54,11 +54,11 @@ class Flatten(Operator):
         Returns:
             tuple of :class:`~graph_builder.graph.variable.Variable`: Output
         """
-        out_axis_order = OrderNC  # FIXME: 決め打ちをしない
+        out_order = OrderNC  # FIXME: 決め打ちをしない
 
         reduction_size = int(np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]]))
         keep_size = x.shape_dict[Axis.N]
-        y = Variable((keep_size, reduction_size), out_axis_order)
+        y = Variable((keep_size, reduction_size), out_order)
         self.append_input("x", x)
         self.append_output("y", y)
 

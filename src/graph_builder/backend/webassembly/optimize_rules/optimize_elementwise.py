@@ -34,11 +34,7 @@ class CombineElementwiseOperation(OptimizeRule):
                 continue
 
             op2.remove_all()
-
-            if y in graph.outputs:
-                op1.replace_output(x, y)
-            else:
-                x.merge(y)
+            op1.replace_output(x, y)
 
             flag_changed = True
 

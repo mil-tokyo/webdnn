@@ -69,8 +69,8 @@ def col2im(op: Col2Im,
     col = variables_layout[op.inputs["col"]]
     im = variables_layout[op.outputs["im"]]
 
-    assert col.variable.axis_order == OrderNHWC
-    assert im.variable.axis_order == OrderNHWC
+    assert col.variable.order == OrderNHWC
+    assert im.variable.order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

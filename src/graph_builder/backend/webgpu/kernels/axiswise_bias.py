@@ -44,7 +44,7 @@ def axiswise_bias(op: AxiswiseBias,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC or x.variable.axis_order == OrderHWNC
+    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC or x.variable.order == OrderHWNC
     assert y.variable.shape == x.variable.shape
 
     assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseBias supports only channelwise bias."

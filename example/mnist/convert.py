@@ -56,7 +56,7 @@ def load_mnist_weights_conv(filepath: str):
 
 
 def construct_graph_fc(weights: np.array, batch_size: int = 1) -> Graph:
-    x = Variable([batch_size, 784], axis_order=OrderNC)
+    x = Variable([batch_size, 784], order=OrderNC)
     h, = Linear(None)(x, ConstantVariable(weights["l1/W"], OrderCN))
     h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["l1/b"], OrderC))
     h, = Relu(None)(h)
@@ -72,7 +72,7 @@ def construct_graph_fc(weights: np.array, batch_size: int = 1) -> Graph:
 
 
 def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> Graph:
-    x = Variable([batch_size, 28, 28, 1], axis_order=OrderNHWC)
+    x = Variable([batch_size, 28, 28, 1], order=OrderNHWC)
 
     conv1 = Convolution2D(None, ksize=5, stride=1, padding=0)
     h, = conv1(x, ConstantVariable(weights["conv1/W"], OrderHWNC))

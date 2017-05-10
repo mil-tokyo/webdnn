@@ -24,25 +24,25 @@ class OptimizeLinear(OptimizeRule):
 
             x = op.inputs["x"]
             w = op.inputs["w"]
-            old_y = op.outputs["y"]
-            assert x.axis_order == OrderNC or x.axis_order == OrderNHWC
-            assert w.axis_order == OrderCN or w.axis_order == OrderHWCN
-            assert old_y.axis_order == OrderNC or old_y.axis_order == OrderNHWC
+            y = op.outputs["y"]
+            assert x.order == OrderNC or x.order == OrderNHWC
+            assert w.order == OrderCN or w.order == OrderHWCN
+            assert y.order == OrderNC or y.order == OrderNHWC
             assert w.ndim == x.ndim
 
             flag_changed = True
             op.remove_all()
 
             sgemm = Sgemm(None,
-                          M=old_y.shape_dict[Axis.N],
-                          N=old_y.size // old_y.shape_dict[Axis.N],
+                          M=y.shape_dict[Axis.N],
+                          N=y.size // y.shape_dict[Axis.N],
                           K=x.size // x.shape_dict[Axis.N],
-                          out_shape=old_y.shape,
-                          out_order=old_y.axis_order,
+                          out_shape=y.shape,
+                          out_order=y.order,
                           transpose_A=True,
                           transpose_B=True)
             new_y, = sgemm(x, w)
 
-            new_y.merge(old_y)
+            sgemm.replace_output(new_y, y)
 
         return graph, flag_changed

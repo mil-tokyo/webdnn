@@ -1,9 +1,9 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph.operators.tanh import Tanh
 
 template = """
@@ -32,7 +32,8 @@ def tanh(op: Tanh,
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == y.variable.shape
+    assert x.variable.order == y.variable.order
+    assert x.variable.shape == y.variable.shape
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

@@ -30,14 +30,14 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             flag_changed = True
             op.remove_all()
 
-            assert x.axis_order == OrderNHWC
-            w.change_axis_order(OrderHWCN)
-            assert old_y.axis_order == OrderNHWC
+            assert x.order == OrderNHWC
+            w.change_order(OrderHWCN)
+            assert old_y.order == OrderNHWC
 
             if op.ksize[0] > 1 or op.ksize[1] > 1 or op.stride[0] > 1 or op.stride[1] > 1 or op.padding[0] > 0 or op.padding[1] > 0:
                 im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding)
                 col, = im2col(x)
-                col.change_axis_order(OrderNHWC)
+                col.change_order(OrderNHWC)
 
             else:
                 col = x
@@ -48,10 +48,10 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                           K=col.shape_dict[Axis.C],
                           out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
                           out_order=OrderNHWC,
-                          transpose_A=True if col.axis_order == OrderNHWC else False,
+                          transpose_A=True if col.order == OrderNHWC else False,
                           transpose_B=True)
             new_y, = sgemm(col, w)
 
-            new_y.merge(old_y)
+            sgemm.replace_output(new_y, old_y)
 
         return graph, flag_changed

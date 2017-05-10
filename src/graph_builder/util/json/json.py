@@ -18,8 +18,8 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 def dump(*args, cls=CustomJSONEncoder, **kwargs):
-    original_dump(*args, cls=cls, **kwargs)
+    return original_dump(*args, cls=cls, **kwargs)
 
 
 def dumps(*args, cls=CustomJSONEncoder, **kwargs):
-    original_dumps(*args, cls=cls, **kwargs)
+    return original_dumps(*args, cls=cls, **kwargs)

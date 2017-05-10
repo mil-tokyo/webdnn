@@ -1,6 +1,6 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webassembly.inline_injector import InlineInjector
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util

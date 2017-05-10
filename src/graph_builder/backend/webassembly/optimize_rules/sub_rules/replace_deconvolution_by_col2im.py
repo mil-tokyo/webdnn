@@ -30,9 +30,9 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
             flag_changed = True
             op.remove_all()
 
-            assert old_y.axis_order == OrderNHWC
-            w.change_axis_order(OrderCHWN)
-            assert old_y.axis_order == OrderNHWC
+            assert old_y.order == OrderNHWC
+            w.change_order(OrderCHWN)
+            assert old_y.order == OrderNHWC
 
             sgemm = Sgemm(None,
                           M=x.shape_dict[Axis.N] * x.shape_dict[Axis.H] * x.shape_dict[Axis.W],
@@ -44,13 +44,13 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
                                      w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
                                      ],
                           out_order=OrderNHWC,
-                          transpose_A=True if x.axis_order == OrderNHWC else False,
+                          transpose_A=True if x.order == OrderNHWC else False,
                           transpose_B=True)
             col, = sgemm(x, w)
 
             col2im = Col2Im(None, ksize=op.ksize, stride=op.stride, padding=op.padding)
             new_y, = col2im(col)
 
-            new_y.merge(old_y)
+            col2im.replace_output(new_y, old_y)
 
         return graph, flag_changed

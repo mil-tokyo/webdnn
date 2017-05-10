@@ -34,7 +34,7 @@ def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
     y = op.outputs["y"]
 
     assert b.ndim == 1
-    axis_pos = x.axis_order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
+    axis_pos = x.order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
 

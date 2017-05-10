@@ -1,9 +1,9 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operators.linear import Linear
 from graph_builder.graph.variables.attributes.order import OrderNC, OrderNHWC, OrderCN, OrderHWCN
@@ -44,9 +44,9 @@ def linear(op: Linear,
     w = constants_layout[op.inputs["w"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC
-    assert w.variable.axis_order == OrderCN or w.variable.axis_order == OrderHWCN
-    assert y.variable.axis_order == OrderNC or y.variable.axis_order == OrderNHWC
+    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC
+    assert w.variable.order == OrderCN or w.variable.order == OrderHWCN
+    assert y.variable.order == OrderNC or y.variable.order == OrderNHWC
     assert w.variable.ndim == x.variable.ndim
 
     if metabuffer_injector is None:

@@ -109,8 +109,8 @@ def im2col(op: Im2Col,
     im = variables_layout[op.inputs["im"]]
     col = variables_layout[op.outputs["col"]]
 
-    assert im.variable.axis_order == OrderNHWC
-    assert col.variable.axis_order == OrderNHWC or col.variable.axis_order == OrderCNHW
+    assert im.variable.order == OrderNHWC
+    assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
@@ -140,7 +140,7 @@ def im2col(op: Im2Col,
         "im2col_PW": op.PW,
     })
 
-    if col.variable.axis_order == OrderCNHW:
+    if col.variable.order == OrderCNHW:
         source = template_CNHW
 
     else:

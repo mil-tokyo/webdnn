@@ -5,14 +5,13 @@ Descriptor Generator for WebAssembly
 - schedule memory allocation
 """
 
-import os.path as path
 import os
-import sys
+import os.path as path
 import subprocess
+import sys
 from typing import List
 
 from graph_builder.backend.interface.graph_descriptor import IGraphExecutionData
-from graph_builder.backend.webassembly.allocator import Allocator, MemoryLayout
 from graph_builder.backend.webassembly.graph_descriptor import GraphDescriptor
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels.average_pooling_2d import average_pooling_2d
@@ -34,6 +33,7 @@ from graph_builder.backend.webassembly.operators.col2im import Col2Im
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
 from graph_builder.backend.webassembly.operators.sgemm import Sgemm
 from graph_builder.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
+from graph_builder.backend.webgpu.allocator import Allocator, MemoryLayout
 from graph_builder.encoder.constant_encoder import ConstantEncoder
 from graph_builder.graph import traverse
 from graph_builder.graph.graph import Graph

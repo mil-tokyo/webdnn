@@ -22,7 +22,7 @@ def main(k, s, p, n, h1, w1, c1, c2, expected_shape_dict: Dict[Axis, int]):
 
         y, = op(x, w)
 
-        for axis in y.axis_order.axes:
+        for axis in y.order.axes:
             assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 

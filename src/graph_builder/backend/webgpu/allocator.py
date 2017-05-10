@@ -230,7 +230,7 @@ def _optimize_allocation_offset(analysis_list: List[AllocationAnalysisData]):
     analysis_list = sorted(analysis_list, key=lambda x: x.end)
     analysis_list = sorted(analysis_list, key=lambda x: x.end - x.start, reverse=True)
     analysis_list = list(analysis_list)
-    memory_offset_table: Dict[int, List[AllocationAnalysisData]] = {}
+    memory_offset_table = {}
     queue = list(analysis_list)
 
     while len(queue) > 0:

@@ -1,6 +1,6 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.backend.webassembly.inline_injector import InlineInjector
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
@@ -40,7 +40,7 @@ def axiswise_bias(op: AxiswiseBias,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC or x.variable.axis_order == OrderHWNC
+    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC or x.variable.order == OrderHWNC
     assert y.variable.shape == x.variable.shape
 
     assert op.parameters["axis"] == Axis.C, "[Webassembly] AxiswiseBias supports only channelwise bias."

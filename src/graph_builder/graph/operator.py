@@ -59,12 +59,12 @@ class Operator(Node, IOperator):
         assert v_old.ndim == v_new.ndim, \
             "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
             f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-        assert v_old.axis_order == v_new.axis_order, \
+        assert v_old.order == v_new.order, \
             "[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order." + \
-            f"actual: v_old.axis_order = {v_old.axis_order}, v_new.axis_order = {v_new.axis_order}"
+            f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
         assert v_old.shape == v_new.shape, \
             "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
-            f"actual: v_old.axis_order = {v_old.shape}, v_new.axis_order = {v_new.shape}"
+            f"actual: v_old.order = {v_old.shape}, v_new.order = {v_new.shape}"
 
         name = self.get_input_name(v_old)
         self.remove_input(v_old)
@@ -101,9 +101,9 @@ class Operator(Node, IOperator):
         assert v_old.ndim == v_new.ndim, \
             "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
             f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-        assert v_old.axis_order == v_new.axis_order, \
+        assert v_old.order == v_new.order, \
             "[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order." + \
-            f"actual: v_old.axis_order = {v_old.axis_order}, v_new.axis_order = {v_new.axis_order}"
+            f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
         assert v_old.shape == v_new.shape, \
             "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
             f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from graph_builder.graph.operator import Operator
 from graph_builder.graph.operators.attributes.axiswise import Channelwise
 from graph_builder.graph.operators.attributes.elementwise import Elementwise
@@ -22,7 +24,7 @@ class Elu(Operator):
                   Channelwise,
                   Inplace}
 
-    def __init__(self, name: str):
+    def __init__(self, name: Optional[str]):
         super().__init__(name)
 
     def __call__(self, x: Variable):
@@ -33,7 +35,7 @@ class Elu(Operator):
         Returns:
             tuple of :class:`~graph_builder.graph.variable.Variable`: Output
         """
-        y = Variable(x.shape, x.axis_order)
+        y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_output("y", y)
         return y,

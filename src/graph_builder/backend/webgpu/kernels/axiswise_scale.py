@@ -43,8 +43,8 @@ def axiswise_scale(op: AxiswiseScale,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
 
-    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC or x.variable.axis_order == OrderHWNC
-    assert y.variable.axis_order == OrderNC or y.variable.axis_order == OrderNHWC or y.variable.axis_order == OrderHWNC
+    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC or x.variable.order == OrderHWNC
+    assert y.variable.order == OrderNC or y.variable.order == OrderNHWC or y.variable.order == OrderHWNC
     assert op.parameters["axis"] == Axis.C, "[WebGPU] AxiswiseScale supports only channelwise bias."
 
     metabuffer_injector.register({

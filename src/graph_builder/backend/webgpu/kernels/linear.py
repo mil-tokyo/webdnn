@@ -48,9 +48,9 @@ def linear(op: Linear,
     w = constants_layout[op.inputs["w"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNC or x.variable.axis_order == OrderNHWC
-    assert w.variable.axis_order == OrderCN or w.variable.axis_order == OrderHWCN
-    assert y.variable.axis_order == OrderNC or y.variable.axis_order == OrderNHWC
+    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC
+    assert w.variable.order == OrderCN or w.variable.order == OrderHWCN
+    assert y.variable.order == OrderNC or y.variable.order == OrderNHWC
     assert w.variable.ndim == x.variable.ndim
 
     if metabuffer_injector is None:

@@ -8,7 +8,7 @@ def test_construction():
     v1 = Variable([1, 2, 3, 4], OrderNHWC)
 
     assert v1.shape == [1, 2, 3, 4]
-    assert v1.axis_order == OrderNHWC
+    assert v1.order == OrderNHWC
 
 
 def test_size():

@@ -1,10 +1,10 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from graph_builder.backend.webassembly.operators.im2col import Im2Col
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderCNHW
 
@@ -87,8 +87,8 @@ def im2col(op: Im2Col,
     im = variables_layout[op.inputs["im"]]
     col = variables_layout[op.outputs["col"]]
 
-    assert im.variable.axis_order == OrderNHWC
-    assert col.variable.axis_order == OrderNHWC or col.variable.axis_order == OrderCNHW
+    assert im.variable.order == OrderNHWC
+    assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
@@ -110,7 +110,7 @@ def im2col(op: Im2Col,
         "im2col_PW": op.PW,
     })
 
-    source = template_CNHW if col.variable.axis_order == OrderCNHW else template_NHWC
+    source = template_CNHW if col.variable.order == OrderCNHW else template_NHWC
     source = metabuffer_injector.inject(source)
     func_name = util.add_canonical_suffix("im2col", source)
     source = source.replace("%%FUNC_NAME%%", func_name)

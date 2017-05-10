@@ -36,7 +36,8 @@ def tanh(op: Tanh,
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == y.variable.shape
+    assert x.variable.shape == y.variable.shape
+    assert x.variable.order == y.variable.order
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

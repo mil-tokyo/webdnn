@@ -63,8 +63,8 @@ def max_pooling_2d(op: MaxPooling2D,
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNHWC
-    assert y.variable.axis_order == OrderNHWC
+    assert x.variable.order == OrderNHWC
+    assert y.variable.order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

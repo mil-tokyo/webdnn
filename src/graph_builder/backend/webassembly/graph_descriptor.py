@@ -4,8 +4,8 @@ from typing import Dict, Iterable
 import numpy as np
 
 from graph_builder.backend.interface.graph_descriptor import IGraphDescriptor
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph import traverse
 from graph_builder.graph.variable import Variable
 from graph_builder.graph.variables.attributes.constant import Constant

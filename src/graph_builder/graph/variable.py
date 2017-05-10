@@ -16,17 +16,17 @@ class Variable(Node, IVariable):
     shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存
     """
 
-    def __init__(self, shape: Iterable[int], axis_order: Type[AxisOrder]):
+    def __init__(self, shape: Iterable[int], order: Type[AxisOrder]):
         super().__init__()
 
         self.shape = list(int(v) for v in shape)
         self.input_to = set()
         self.output_from = None
-        self.axis_order = axis_order
+        self.order = order
 
-        self.attributes.add(axis_order)
+        self.attributes.add(order)
 
-        assert self.axis_order.ndim == len(self.shape)
+        assert self.order.ndim == len(self.shape)
 
     @property
     def name(self):
@@ -47,48 +47,22 @@ class Variable(Node, IVariable):
 
     @property
     def shape_dict(self):
-        return dict(zip(self.axis_order.axes, self.shape))
+        return dict(zip(self.order.axes, self.shape))
 
-    def change_axis_order(self, axis_order: Type[AxisOrder]):
+    def change_order(self, order: Type[AxisOrder]):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
         # 増える次元は、サイズ1
         current_shape_dict = self.shape_dict
-        new_shape = [current_shape_dict.get(axis, 1) for axis in axis_order.axes]
+        new_shape = [current_shape_dict.get(axis, 1) for axis in order.axes]
         for axis, size in current_shape_dict.items():
-            if axis not in axis_order.axes:
+            if axis not in order.axes:
                 assert size == 1
-        self.axis_order = axis_order
+        self.order = order
         self.shape = new_shape
 
     def __repr__(self):
-        order_repr = ''.join(map(lambda e: e.name, self.axis_order.axes))
+        order_repr = ''.join(map(lambda e: e.name, self.order.axes))
         return f"<Variable shape={self.shape}, order=\"{order_repr}\">"
 
     def __str__(self):
         return self.__repr__()
-
-    def merge(self, base: "Variable"):
-        """
-        baseへselfをマージする
-
-        ```
-        X --[OP1]-->tmp
-
-                    base--[OP2]-->Y
-        ```
-
-        があったときに `tmp.merge(base)` をすると
-
-        ```
-        X --[OP1]-->tmp-->[OP2-->Y
-        ```
-
-        となる
-        :param base: 
-        :return: 
-        """
-        if base.output_from is not None:
-            raise ValueError(f"[Variable.merge(base)] Base variable {base} must not has 'output_from' operator.")
-
-        for op in list(base.input_to):
-            op.replace_input(base, self)

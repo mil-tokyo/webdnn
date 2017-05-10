@@ -17,7 +17,7 @@ class ScalarAffine(Operator):
         self.bias = bias
 
     def __call__(self, x: Variable):
-        y = Variable(x.shape, x.axis_order)
+        y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_output("y", y)
 

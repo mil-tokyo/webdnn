@@ -129,8 +129,8 @@ class ConcatAffine(OptimizeRule):
 
         # Conv/Linearの出力チャンネル(N)にscaleをかける
         conv_weight_var = conv_op.inputs["w"]
-        out_channel_pos = conv_weight_var.axis_order.axes_dict[Axis.N]
-        broadcast = [None] * conv_weight_var.axis_order.ndim
+        out_channel_pos = conv_weight_var.order.axes_dict[Axis.N]
+        broadcast = [None] * conv_weight_var.order.ndim
         broadcast[out_channel_pos] = slice(None)
         # HWNCなら、broadcast==[None, None, :, None]
         conv_weight_var.data *= merged_scale[broadcast]

@@ -34,7 +34,7 @@ def axiswise_scale(op: AxiswiseScale) -> List[Kernel]:
     y = op.outputs["y"]
 
     assert b.ndim == 1
-    axis_pos = x.axis_order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
+    axis_pos = x.order.axes_dict[op.parameters["axis"]]  # NCHWでaxis=Cなら、1
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
     axis_stride = np.prod(x.shape[axis_pos + 1:])  # NCHWでaxis=Cなら、size(H)*size(W), np.prod([])==1.0

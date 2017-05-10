@@ -1,8 +1,8 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph.operators.flatten import Flatten
 
 

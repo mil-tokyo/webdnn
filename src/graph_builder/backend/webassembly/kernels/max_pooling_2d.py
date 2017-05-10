@@ -1,9 +1,9 @@
 from typing import List
 
-from graph_builder.backend.webassembly.allocator import MemoryLayout
 from graph_builder.backend.webassembly.kernel import Kernel
 from graph_builder.backend.webassembly.kernels import util
 from graph_builder.backend.webassembly.meta_buffer_injector import MetaBufferInjector
+from graph_builder.backend.webgpu.allocator import MemoryLayout
 from graph_builder.graph.axis import Axis
 from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_builder.graph.variables.attributes.order import OrderNHWC
@@ -59,8 +59,8 @@ def max_pooling_2d(op: MaxPooling2D,
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
-    assert x.variable.axis_order == OrderNHWC
-    assert y.variable.axis_order == OrderNHWC
+    assert x.variable.order == OrderNHWC
+    assert y.variable.order == OrderNHWC
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
