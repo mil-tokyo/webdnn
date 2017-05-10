@@ -1,4 +1,4 @@
-# MIL WebDNN Array Prototype
+# MIL WebDNN Descriptor Runner
 
 The library to run DNN on web browsers.
 For most users, only [prepareAll](./modules/webdnn.html#prepareall) 

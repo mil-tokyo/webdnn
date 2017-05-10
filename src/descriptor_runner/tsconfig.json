@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2017",
         "strictNullChecks": true,
-        "outFile": "../../build/array_prototype/webdnn.js",
+        "outFile": "../../build/descriptor_runner/webdnn.js",
         "lib": [
             "es2017",
             "dom"
