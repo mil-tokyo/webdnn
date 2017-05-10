@@ -11,6 +11,7 @@ namespace WebDNN {
         public ignoreCache: boolean = false;
         public backend: string = 'webassembly';
         private worker_entry_js_path;
+        private worker_promise_reject_func: any = null;
 
         constructor() {
 
@@ -23,7 +24,9 @@ namespace WebDNN {
             }
             this.descriptor = await (await fetch(graph_url)).json();
 
-            let worker_entry_js_path = `${directory}/kernels_${this.backend}.js`;
+            // for browsers which does not support wasm, try asm.js code
+            let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
+            let worker_entry_js_path = `${directory}/kernels_${kernel_backend}.js`;
             if (this.ignoreCache) {
                 worker_entry_js_path += '?t=' + Date.now();
             }
@@ -45,16 +48,23 @@ namespace WebDNN {
 
         compile(): Promise<void> {
             this.worker = new Worker(this.worker_entry_js_path);
+            this.worker.onerror = (event) => {
+                console.error('Worker Exception: ' + event.message);
+                if (this.worker_promise_reject_func) {
+                    this.worker_promise_reject_func(event);
+                }
+            };
             let promise = new Promise<void>((resolve, reject) => {
+                this.worker_promise_reject_func = reject;
                 this.worker.onmessage = (event) => {
                     if (event.data === 0) {
                         resolve();
                     } else {
+                        this.worker.terminate();
                         reject(new Error(event.data));
                     }
                 };
-
-                this.worker.postMessage({ type: 'init' });
+                //this.worker.postMessage({ type: 'init' });
             });
 
             return promise;
@@ -64,10 +74,12 @@ namespace WebDNN {
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
             let weight_data = await decoder.decode(weightsData, this.descriptor.weight_allocation);
             let promise = new Promise<void>((resolve, reject) => {
+                this.worker_promise_reject_func = reject;
                 this.worker.onmessage = (event) => {
                     if (event.data === 0) {
                         resolve();
                     } else {
+                        this.worker.terminate();
                         reject(new Error(event.data));
                     }
                 };
@@ -101,6 +113,7 @@ namespace WebDNN {
         async run(): Promise<void> {
             let promise = new Promise<void>((resolve, reject) => {
                 // TODO: better way not to generate function on every run
+                this.worker_promise_reject_func = reject;
                 this.worker.onmessage = (event) => {
                     if (Array.isArray(event.data)) {
                         for (let i = 0; i < event.data.length; i++) {
@@ -108,6 +121,7 @@ namespace WebDNN {
                         }
                         resolve();
                     } else {
+                        this.worker.terminate();
                         reject(new Error(event.data));
                     }
                 };

@@ -7,8 +7,11 @@ namespace WebDNN {
     export class GPUInterfaceWebassembly implements GPUInterface {
 
         constructor(private option?: any) {
+            if (typeof Worker !== 'object') {
+                throw new Error('WebWorker is needed for WebAssembly backend');
+            }
             if (typeof WebAssembly !== 'object') {
-                throw new Error('WebAssembly is not supported on this browser');
+                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
             }
         }
 

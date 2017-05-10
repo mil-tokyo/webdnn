@@ -1,12 +1,16 @@
 /// <reference path="./dnn/dnn_descriptor_runner_webgpu.ts" />
 
+declare var WebGPU;
+
 namespace WebDNN {
     export class GPUInterfaceWebGPU implements GPUInterface {
         webgpuHandler: WebGPUHandler;
         shaderLanguage: string;
 
         constructor(private option?: any) {
-
+            if (typeof WebGPU !== 'object') {
+                throw new Error('WebGPU is not supported on this browser');
+            }
         }
 
         async init() {
