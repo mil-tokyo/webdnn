@@ -1,9 +1,9 @@
 from typing import Dict
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.operators.max_pooling_2d import MaxPooling2D
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
 
 
 # FIXME 各orderをテストにわけられないか
@@ -14,11 +14,11 @@ def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
         op = MaxPooling2D(None, ksize=k, stride=s, padding=p)
 
         x = Variable((n, h1, w1, c1), OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         y, = op(x)
 
-        for axis in y.axis_order.axes:
+        for axis in y.order.axes:
             assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 

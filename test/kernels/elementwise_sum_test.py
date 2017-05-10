@@ -1,9 +1,9 @@
 import numpy as np
 
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.elementwise_sum import ElementwiseSum
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.elementwise_sum import ElementwiseSum
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 from test.util import generate_kernel_test_case
 
 

@@ -2,10 +2,10 @@ import itertools
 
 import numpy as np
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.linear import Linear
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.operators.linear import Linear
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 
 
@@ -26,8 +26,8 @@ def test_every_order():
         x1 = Variable(np.arange(order1.ndim) + 1, default_order[order2.ndim])
         x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
 
-        x1.change_axis_order(order1)
-        x2.change_axis_order(order2)
+        x1.change_order(order1)
+        x2.change_order(order2)
 
         y, = op(x1, x2)
         assert y.shape_dict[Axis.N] == x1.shape_dict[Axis.N]

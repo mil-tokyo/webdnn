@@ -4,10 +4,10 @@ from typing import Type
 import numpy as np
 from nose.tools import raises
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.concat import Concat
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import AxisOrder, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.operators.concat import Concat
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import AxisOrder, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 
 
@@ -22,11 +22,11 @@ def main(order1: Type[AxisOrder], order2: Type[AxisOrder], concat_axis: Axis):
     x1 = Variable(np.arange(order1.ndim) + 1, default_order[order1.ndim])
     x2 = Variable(np.arange(order2.ndim) + 1, default_order[order2.ndim])
 
-    x1.change_axis_order(order1)
-    x2.change_axis_order(order2)
+    x1.change_order(order1)
+    x2.change_order(order2)
 
     y, = op(x1, x2)
-    for axis in y.axis_order.axes:
+    for axis in y.order.axes:
         if axis == concat_axis:
             assert y.shape_dict[axis] == x1.shape_dict[axis] + x2.shape_dict[axis]
 

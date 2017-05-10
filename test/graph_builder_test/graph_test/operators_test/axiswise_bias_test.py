@@ -3,10 +3,10 @@ import itertools
 import numpy as np
 from nose.tools import raises
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderC, OrderNC, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 
 
@@ -28,12 +28,12 @@ def test_every_order():
 
         op = AxiswiseBias(None, axis=axis)
         x = Variable(np.arange(order_x.ndim) + 1, default_order[order_x.ndim])
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
         w = Variable((x.shape_dict[axis],), default_order[axis])
 
         y, = op(x, w)
 
-        for axis in y.axis_order.axes:
+        for axis in y.order.axes:
             assert y.shape_dict[axis] == x.shape_dict[axis]
 
 

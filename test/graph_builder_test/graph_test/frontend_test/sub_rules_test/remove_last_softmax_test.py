@@ -1,13 +1,13 @@
 from nose import with_setup
 
-from graph_builder.frontend.sub_rules.remove_last_softmax import RemoveLastSoftmax
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.linear import Linear
-from graph_builder.graph.operators.softmax import Softmax
-from graph_builder.graph.traverse import listup_operators
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderCN, OrderNC
-from graph_builder.util import flags
+from graph_transpiler.frontend.sub_rules.remove_last_softmax import RemoveLastSoftmax
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.linear import Linear
+from graph_transpiler.graph.operators.softmax import Softmax
+from graph_transpiler.graph.traverse import listup_operators
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderCN, OrderNC
+from graph_transpiler.util import flags
 from test.util import FlagManager
 
 orders2 = [OrderNC, OrderCN]

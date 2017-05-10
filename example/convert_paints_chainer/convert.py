@@ -8,14 +8,14 @@ import chainer.computational_graph
 import numpy as np
 from model import FastStyleNet
 
-import graph_builder.optimizer.util
-from graph_builder.backend.fallback.generator import generate as generate_fallback_descriptor
-from graph_builder.backend.webgpu.generator import generate as generate_webgpu_descriptor
-from graph_builder.frontend.general_optimize_rule import GeneralOptimizer
-from graph_builder.graph.converters.chainer import ChainerGraphConverter
-from graph_builder.graph.operator import Operator
-from graph_builder.util import flags
-from graph_builder.util.json import json
+import graph_transpiler.optimizer.util
+from graph_transpiler.backend.fallback.generator import generate as generate_fallback_descriptor
+from graph_transpiler.backend.webgpu.generator import generate as generate_webgpu_descriptor
+from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizer
+from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
+from graph_transpiler.graph.operator import Operator
+from graph_transpiler.util import flags
+from graph_transpiler.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
@@ -62,7 +62,7 @@ def main():
     graph = generate_graph(model_path)
 
     if flags.DEBUG:
-        graph_builder.optimizer.util.dump(graph)
+        graph_transpiler.optimizer.util.dump(graph)
 
     if args.optimize:
         graph = GeneralOptimizer().optimize(graph)

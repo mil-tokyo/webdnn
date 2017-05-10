@@ -1,10 +1,10 @@
 import numpy as np
 
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.linear import Linear
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderHWCN, OrderNHWC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.linear import Linear
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderCN, OrderHWCN, OrderNHWC
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from test.util import generate_kernel_test_case
 
 

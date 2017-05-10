@@ -9,12 +9,12 @@ import numpy as np
 # noinspection PyUnresolvedReferences
 from model import FastStyleNet
 
-from graph_builder.backend.interface.generator import generate_descriptor
-from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_builder.graph.converters.chainer import ChainerGraphConverter
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operator import Operator
-from graph_builder.util.json import json
+from graph_transpiler.backend.interface.generator import generate_descriptor
+from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
+from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operator import Operator
+from graph_transpiler.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 

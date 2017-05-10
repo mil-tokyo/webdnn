@@ -1,16 +1,16 @@
 import numpy as np
 from nose import with_setup
 
-from graph_builder.backend.webgpu.operators.sgemm import Sgemm
-from graph_builder.backend.webgpu.optimize_rules.sub_rules.concat_sgemm_bias import ConcatSgemmBias
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.traverse import listup_operators
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.util import flags
+from graph_transpiler.backend.webgpu.operators.sgemm import Sgemm
+from graph_transpiler.backend.webgpu.optimize_rules.sub_rules.concat_sgemm_bias import ConcatSgemmBias
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
+from graph_transpiler.graph.traverse import listup_operators
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderC
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.util import flags
 from test.util import FlagManager
 
 

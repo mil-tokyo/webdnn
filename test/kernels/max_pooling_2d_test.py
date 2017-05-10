@@ -2,10 +2,10 @@ import itertools
 
 import numpy as np
 
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.max_pooling_2d import MaxPooling2D
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.max_pooling_2d import MaxPooling2D
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 from test.util import generate_kernel_test_case
 
 

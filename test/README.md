@@ -14,7 +14,7 @@
 - カバレッジも取れる
 
     ```
-    nosetests --with-coverage --cover-tests graph_builder
+    nosetests --with-coverage --cover-tests graph_transpiler
     ```
     
     ただしカバレッジはそもそもimportしていないファイルについて計算されないので注意

@@ -1,6 +1,6 @@
-from graph_builder.graph.operator import Operator
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC
+from graph_transpiler.graph.operator import Operator
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 
 
 def test_get_input_name():

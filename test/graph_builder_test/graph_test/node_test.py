@@ -1,4 +1,4 @@
-from graph_builder.graph.node import Node
+from graph_transpiler.graph.node import Node
 
 
 def test_append_prev():

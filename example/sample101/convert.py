@@ -6,17 +6,17 @@ import os.path as path
 
 import numpy as np
 
-from graph_builder.backend.interface.generator import generate_descriptor
-from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.operators.linear import Linear
-from graph_builder.graph.operators.relu import Relu
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderCN, OrderC, OrderNC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.util import json
+from graph_transpiler.backend.interface.generator import generate_descriptor
+from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
+from graph_transpiler.graph.operators.linear import Linear
+from graph_transpiler.graph.operators.relu import Relu
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderCN, OrderC, OrderNC
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.util import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 

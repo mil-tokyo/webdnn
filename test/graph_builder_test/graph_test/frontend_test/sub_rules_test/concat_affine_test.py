@@ -3,18 +3,18 @@ import itertools
 import numpy as np
 from nose import with_setup
 
-from graph_builder.frontend.sub_rules.concat_affine import ConcatAffine
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.traverse import listup_operators
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderHWNC, OrderNCHW, OrderCNHW, OrderCHWN, \
+from graph_transpiler.frontend.sub_rules.concat_affine import ConcatAffine
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
+from graph_transpiler.graph.operators.axiswise_scale import AxiswiseScale
+from graph_transpiler.graph.operators.convolution2d import Convolution2D
+from graph_transpiler.graph.traverse import listup_operators
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderHWNC, OrderNCHW, OrderCNHW, OrderCHWN, \
     OrderHWCN, OrderC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
-from graph_builder.util import flags
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.util import flags
 from test.util import FlagManager
 
 orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
@@ -40,11 +40,11 @@ def test_conv_scale():
         scale = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
 
         h, = conv(x, w)
@@ -76,11 +76,11 @@ def test_conv_bias():
         bias = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
 
         h, = conv(x, w)
@@ -112,11 +112,11 @@ def test_conv_scale_scale():
         scale2 = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
@@ -151,11 +151,11 @@ def test_conv_bias_bias():
         bias2 = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape).copy(), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
@@ -190,11 +190,11 @@ def test_conv_scale_bias():
         bias = AxiswiseBias(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 
@@ -231,11 +231,11 @@ def test_conv_bias_scale():
         scale = AxiswiseScale(None, axis=Axis.C)
 
         x = Variable([8, 7, 6, 5], OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w_shape = [4, 3, 3, 5]
         w = ConstantVariable(arange_shaped(w_shape), OrderNHWC)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
         w_data = w.data.copy()
         h, = conv(x, w)
 

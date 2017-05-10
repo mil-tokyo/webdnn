@@ -1,11 +1,11 @@
 import numpy as np
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.axiswise_scale import AxiswiseScale
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderNHWC, OrderHWNC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.axiswise_scale import AxiswiseScale
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderC, OrderNC, OrderNHWC, OrderHWNC
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from test.util import generate_kernel_test_case
 
 
