@@ -75,6 +75,7 @@ class GraphExecutionData(IGraphExecutionData):
             f.write(self.constants)
 
         self._compile(dirname)
+        self._compile_fallback_asmjs(dirname)
 
     def _compile(self, dirname: str):
         # noinspection PyListCreation
@@ -92,6 +93,28 @@ class GraphExecutionData(IGraphExecutionData):
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
+        try:
+            subprocess.check_call(args)
+        except Exception as ex:
+            sys.stderr.write("Executing em++ command failed." +
+                             " Make sure emscripten is properly installed and environment variables are set.\n")
+            raise ex
+
+    def _compile_fallback_asmjs(self, dirname: str):
+        # noinspection PyListCreation
+        backend_suffix = "asmjs"
+        args = ["em++"]
+        args.append(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)))
+        args.append("-O3")
+        args.append("-std=c++11")
+        args.append("-s")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_weight_buffer','_get_data_buffer']")
+        args.append("-s")
+        args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
+        args.append("--pre-js")
+        args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
+        args.append("-o")
+        args.append(path.join(dirname, "kernels_{}.js".format(backend_suffix)))
         try:
             subprocess.check_call(args)
         except Exception as ex:
@@ -119,7 +142,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
     weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
-    required_heap = (int(weight_data_size // 1048576) + 1 + 16) * 1048576  # required + 16MB
+    required_heap = (int(weight_data_size // (16 * 1048576)) + 2) * 16 * 1048576  # required + 16MB
 
     descriptor = GraphDescriptor(
         kernels=kernels,

@@ -20,7 +20,7 @@ onmessage = function (event) {
                 }
                 postMessage(outputs);
             } catch (ex) {
-                postMessage(ex.message);
+                postMessage({ 'error': ex });
             }
             break;
         case 'weight':
@@ -30,11 +30,19 @@ onmessage = function (event) {
                 weight_buf.set(event.data.data);
                 postMessage(0);
             } catch (ex) {
-                postMessage(ex.message);
+                postMessage({ 'error': ex });
             }
             break;
-        case 'init':
-            postMessage(0);
+        default:
+            postMessage({ 'error': new Error('Unknown message') });
             break;
     }
 };
+
+Module.quit = function (status, toThrow) {
+    postMessage({ 'error': toThrow, 'status': status });
+};
+
+Module.onRuntimeInitialized = function () {
+    postMessage(0);
+}

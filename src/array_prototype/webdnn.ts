@@ -51,7 +51,7 @@ namespace WebDNN {
         }
 
         givenBackendOptions = backendOptions;
-        tryingBackendOrder = backendOrder.concat(backendOrder, ['fallback']);
+        tryingBackendOrder = backendOrder.concat(['fallback']);
 
         await tryInitNext();
 
