@@ -36,7 +36,7 @@ namespace WebDNN {
             gpu = gpuif;
             loadedBackendName = backend_name;
         } catch (ex) {
-            console.error(`Failed to initialize ${backend_name} backend: ${ex}`);
+            console.warn(`Failed to initialize ${backend_name} backend: ${ex}`);
             return await tryInitNext();
         }
 
