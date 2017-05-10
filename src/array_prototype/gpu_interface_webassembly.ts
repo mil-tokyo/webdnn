@@ -7,7 +7,7 @@ namespace WebDNN {
     export class GPUInterfaceWebassembly implements GPUInterface {
 
         constructor(private option?: any) {
-            if (typeof Worker !== 'object') {
+            if (typeof Worker === 'undefined') {
                 throw new Error('WebWorker is needed for WebAssembly backend');
             }
             if (typeof WebAssembly !== 'object') {
