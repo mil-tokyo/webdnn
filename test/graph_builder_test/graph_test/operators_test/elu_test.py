@@ -1,4 +1,4 @@
-from graph_builder.graph.operators.elu import Elu
+from graph_transpiler.graph.operators.elu import Elu
 
 from test.util import template_elementwise_operator
 

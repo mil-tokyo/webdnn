@@ -4,7 +4,7 @@
 .. toctree::
     :maxdepth: 2
 
-    graph_builder/index
+    graph_transpiler/index
 ```
 
 [Descriptor Runner](../descriptor_runner/)

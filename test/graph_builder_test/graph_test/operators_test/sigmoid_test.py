@@ -1,4 +1,4 @@
-from graph_builder.graph.operators.sigmoid import Sigmoid
+from graph_transpiler.graph.operators.sigmoid import Sigmoid
 from test.util import template_elementwise_operator
 
 

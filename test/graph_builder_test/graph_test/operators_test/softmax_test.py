@@ -1,8 +1,8 @@
 import numpy as np
 
-from graph_builder.graph.operators.softmax import Softmax
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from graph_transpiler.graph.operators.softmax import Softmax
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 
 
@@ -15,5 +15,5 @@ def test_every_order():
 
         x = Variable(np.arange(order.ndim) + 1, order)
         y, = op(x)
-        for axis in y.axis_order.axes:
+        for axis in y.order.axes:
             assert y.shape_dict[axis] == x.shape_dict[axis]

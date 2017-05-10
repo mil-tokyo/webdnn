@@ -5,17 +5,17 @@ from typing import Dict
 
 import numpy as np
 
-from graph_builder.backend.interface.generator import generate_descriptor
-from graph_builder.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.axiswise_bias import AxiswiseBias
-from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.operators.linear import Linear
-from graph_builder.graph.operators.relu import Relu
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWNC
-from graph_builder.graph.variables.constant_variable import ConstantVariable
+from graph_transpiler.backend.interface.generator import generate_descriptor
+from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
+from graph_transpiler.graph.operators.convolution2d import Convolution2D
+from graph_transpiler.graph.operators.linear import Linear
+from graph_transpiler.graph.operators.relu import Relu
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderCN, OrderC, OrderNHWC, OrderHWNC
+from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 RESOURCES_DIR = path.join(path.dirname(__file__), "../../resources/mnist")
@@ -56,7 +56,7 @@ def load_mnist_weights_conv(filepath: str):
 
 
 def construct_graph_fc(weights: np.array, batch_size: int = 1) -> Graph:
-    x = Variable([batch_size, 784], axis_order=OrderNC)
+    x = Variable([batch_size, 784], order=OrderNC)
     h, = Linear(None)(x, ConstantVariable(weights["l1/W"], OrderCN))
     h, = AxiswiseBias(None, axis=Axis.C)(h, ConstantVariable(weights["l1/b"], OrderC))
     h, = Relu(None)(h)
@@ -72,7 +72,7 @@ def construct_graph_fc(weights: np.array, batch_size: int = 1) -> Graph:
 
 
 def construct_graph_conv(weights: Dict[str, np.array], batch_size: int = 1) -> Graph:
-    x = Variable([batch_size, 28, 28, 1], axis_order=OrderNHWC)
+    x = Variable([batch_size, 28, 28, 1], order=OrderNHWC)
 
     conv1 = Convolution2D(None, ksize=5, stride=1, padding=0)
     h, = conv1(x, ConstantVariable(weights["conv1/W"], OrderHWNC))

@@ -1,12 +1,12 @@
 from nose import with_setup
 
-from graph_builder.graph.attribute import Attribute
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operator import Operator
-from graph_builder.graph.traverse import check_attribute_match, check_match, check_node_type_match, search_sub_structure, \
+from graph_transpiler.graph.attribute import Attribute
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operator import Operator
+from graph_transpiler.graph.traverse import check_attribute_match, check_match, check_node_type_match, search_sub_structure, \
     filter_nodes, listup_operators, listup_variables, listup_nodes
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC
 
 graph = None
 op1 = None

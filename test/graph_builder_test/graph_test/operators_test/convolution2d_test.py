@@ -1,10 +1,10 @@
 import itertools
 from typing import Dict
 
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.operators.convolution2d import Convolution2D
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.operators.convolution2d import Convolution2D
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
 
 
 # FIXME 各orderをテストにわけられないか
@@ -15,14 +15,14 @@ def main(k, s, p, n, h1, w1, c1, c2, expected_shape_dict: Dict[Axis, int]):
         op = Convolution2D(None, ksize=k, stride=s, padding=p)
 
         x = Variable((n, h1, w1, c1), OrderNHWC)
-        x.change_axis_order(order_x)
+        x.change_order(order_x)
 
         w = Variable((c1, op.ksize[0], op.ksize[1], c2), OrderCHWN)
-        w.change_axis_order(order_w)
+        w.change_order(order_w)
 
         y, = op(x, w)
 
-        for axis in y.axis_order.axes:
+        for axis in y.order.axes:
             assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 

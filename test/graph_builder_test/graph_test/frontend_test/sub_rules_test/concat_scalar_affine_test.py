@@ -1,12 +1,12 @@
 from nose import with_setup
 
-from graph_builder.frontend.sub_rules.concat_scalar_affine import ConcatScalarAffine
-from graph_builder.graph.graph import Graph
-from graph_builder.graph.operators.scalar_affine import ScalarAffine
-from graph_builder.graph.traverse import listup_operators
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNC
-from graph_builder.util import flags
+from graph_transpiler.frontend.sub_rules.concat_scalar_affine import ConcatScalarAffine
+from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.operators.scalar_affine import ScalarAffine
+from graph_transpiler.graph.traverse import listup_operators
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNC
+from graph_transpiler.util import flags
 from test.util import FlagManager
 
 

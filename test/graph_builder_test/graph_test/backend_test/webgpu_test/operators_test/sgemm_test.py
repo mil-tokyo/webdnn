@@ -1,9 +1,9 @@
 from nose.tools import raises
 
-from graph_builder.backend.webgpu.operators.sgemm import Sgemm
-from graph_builder.graph.axis import Axis
-from graph_builder.graph.variable import Variable
-from graph_builder.graph.variables.attributes.order import OrderNHWC, OrderNC
+from graph_transpiler.backend.webgpu.operators.sgemm import Sgemm
+from graph_transpiler.graph.axis import Axis
+from graph_transpiler.graph.variable import Variable
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderNC
 
 
 def test_sgemm():
@@ -14,7 +14,7 @@ def test_sgemm():
 
     y, = op(x, w)
 
-    assert y.axis_order == OrderNHWC
+    assert y.order == OrderNHWC
     assert y.shape_dict[Axis.N] == 1
     assert y.shape_dict[Axis.H] == 10
     assert y.shape_dict[Axis.W] == 4

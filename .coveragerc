@@ -1,0 +1,10 @@
+[run]
+branch = True
+
+[paths]
+source =
+    src/graph_transpiler/*
+
+[report]
+include =
+    src/graph_transpiler/*
