@@ -58,11 +58,14 @@ namespace WebDNN {
         return loadedBackendName;
     }
 
-    /*
-    Prepare backend interface and load model data at once
-    */
-    export async function prepareAll(directory: string, backend_order?: string | string[], backendOptions?: { [key: string]: any }): Promise<DNNInterface> {
-        await init(backend_order, backendOptions);
+    /**
+     * Prepare backend interface and load model data at once. Internally calls init().
+     * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
+     * @param backendOrder The trying order of backend names to be initialized.
+     * @return Interface to input/output data and run DNN.
+     */
+    export async function prepareAll(directory: string, backendOrder?: string | string[], backendOptions?: { [key: string]: any }): Promise<DNNInterface> {
+        await init(backendOrder, backendOptions);
 
         while (true) {
             try {
@@ -82,10 +85,25 @@ namespace WebDNN {
         }
     }
 
+    /**
+     * Interface to input/output data and run DNN.
+     */
     export interface DNNInterface {
+        /**
+         * The name of backend.
+         */
         backendName: string;
+        /**
+         * The buffers to write input data.
+         */
         inputViews: Float32Array[];
+        /**
+         * The buffers to read output data.
+         */
         outputViews: Float32Array[];
+        /**
+         * Run the DNN.
+         */
         run: () => Promise<void>;
     }
 }
