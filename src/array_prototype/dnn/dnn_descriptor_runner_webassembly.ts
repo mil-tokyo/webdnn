@@ -12,6 +12,7 @@ namespace WebDNN {
         public backend: string = 'webassembly';
         private worker_entry_js_path;
         private worker_promise_reject_func: any = null;
+        private worker_initial_error: any = null;
 
         constructor() {
 
@@ -52,9 +53,16 @@ namespace WebDNN {
                 console.error('Worker Exception: ' + event.message);
                 if (this.worker_promise_reject_func) {
                     this.worker_promise_reject_func(event);
+                } else {
+                    this.worker_initial_error = event;
                 }
             };
             let promise = new Promise<void>((resolve, reject) => {
+                if (this.worker_initial_error) {
+                    // occurs when this.worker_entry_js_path is 404
+                    reject(this.worker_initial_error);
+                    return;
+                }
                 this.worker_promise_reject_func = reject;
                 this.worker.onmessage = (event) => {
                     if (event.data === 0) {
