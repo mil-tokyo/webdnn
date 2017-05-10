@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "strictNullChecks": true,
+        "outFile": "../../build/array_prototype/webdnn.es5.js",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "declaration": true,
+        "sourceMap": true
+    },
+    "files": [
+        "webdnn.ts"
+    ]
+}
