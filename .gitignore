@@ -7,5 +7,7 @@ output
 .DS_Store
 memory_visualize.html
 .coverage
+/dist
+/src/graph_transpiler.egg-info
 example/keras-js/keras-js
 example/keras-js/data
