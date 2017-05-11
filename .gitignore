@@ -7,3 +7,5 @@ output
 .DS_Store
 memory_visualize.html
 .coverage
+example/keras-js/keras-js
+example/keras-js/data
