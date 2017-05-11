@@ -7,6 +7,8 @@ namespace WebDNN {
         variableArrays: Map<string, Float32Array>;
         public ignoreCache: boolean = false;
         public backend: string = 'fallback';
+        private inputViews: Float32Array[];
+        private outputViews: Float32Array[];
 
         constructor() {
         }
@@ -62,6 +64,9 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            if (!this.inputViews || !this.outputViews) {
+                throw new Error('getInputViews and getOutputViews must be called prior to run');
+            }
             let run_entry_date = Date.now();
             let last_progress_date = Date.now();//in milliseconds
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
@@ -89,12 +94,20 @@ namespace WebDNN {
         }
 
         async getInputViews(): Promise<Float32Array[]> {
+            if (this.inputViews) {
+                return this.inputViews;
+            }
             let views = this.descriptor.inputs.map((name) => this.variableArrays.get(name)!);
+            this.inputViews = views;
             return views;
         }
 
         async getOutputViews(): Promise<Float32Array[]> {
+            if (this.outputViews) {
+                return this.outputViews;
+            }
             let views = this.descriptor.outputs.map((name) => this.variableArrays.get(name)!);
+            this.outputViews = views;
             return views;
         }
     }

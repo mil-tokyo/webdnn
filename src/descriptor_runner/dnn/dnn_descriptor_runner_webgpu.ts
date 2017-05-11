@@ -11,6 +11,8 @@ namespace WebDNN {
         private metaBufferGPUBuffers: DNNBufferWebGPU[];
         public ignoreCache: boolean = false;
         public backend: string = 'webgpu';
+        private inputViews: Float32Array[];
+        private outputViews: Float32Array[];
 
         constructor(private webGPUHandler: WebGPUHandler) {
 
@@ -55,24 +57,35 @@ namespace WebDNN {
         }
 
         async getInputViews(): Promise<Float32Array[]> {
+            if (this.inputViews) {
+                return this.inputViews;
+            }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
                 let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
                 views.push(<Float32Array>this.dataMat.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
             }
+            this.inputViews = views;
             return views;
         }
 
         async getOutputViews(): Promise<Float32Array[]> {
+            if (this.outputViews) {
+                return this.outputViews;
+            }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
                 let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
                 views.push(<Float32Array>this.dataMat.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
             }
+            this.outputViews = views;
             return views;
         }
 
         async run(): Promise<void> {
+            if (!this.inputViews || !this.outputViews) {
+                throw new Error('getInputViews and getOutputViews must be called prior to run');
+            }
             //set input to GPU
             //await this.dataMat.syncWriteViews();//not needed for DNNBufferWebGPU
             if (window['PROFILE']) {

@@ -99,6 +99,9 @@ namespace WebDNN {
         }
 
         async getInputViews(): Promise<Float32Array[]> {
+            if (this.inputViews) {
+                return this.inputViews;
+            }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
                 let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
@@ -109,6 +112,9 @@ namespace WebDNN {
         }
 
         async getOutputViews(): Promise<Float32Array[]> {
+            if (this.outputViews) {
+                return this.outputViews;
+            }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
                 let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
@@ -119,6 +125,9 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            if (!this.inputViews || !this.outputViews) {
+                throw new Error('getInputViews and getOutputViews must be called prior to run');
+            }
             let promise = new Promise<void>((resolve, reject) => {
                 // TODO: better way not to generate function on every run
                 this.worker_promise_reject_func = reject;
