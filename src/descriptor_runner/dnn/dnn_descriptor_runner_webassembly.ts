@@ -23,7 +23,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
-            this.descriptor = await (await fetch(graph_url)).json();
+            this.descriptor = await (await WebDNN.fetch(graph_url)).json();
 
             // for browsers which does not support wasm, try asm.js code
             let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
@@ -39,7 +39,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
-            let weights_data_ab = await (await fetch(weight_url)).arrayBuffer();
+            let weights_data_ab = await (await WebDNN.fetch(weight_url)).arrayBuffer();
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
