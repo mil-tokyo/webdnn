@@ -1,6 +1,7 @@
 /// <reference path="../webgpu_handler.ts" />
 /// <reference path="./dnn_descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
+/// <reference path="../fetch.ts" />
 
 namespace WebDNN {
     export class DNNDescriptorRunnerWebassembly implements DNNDescriptorRunner {
@@ -92,7 +93,7 @@ namespace WebDNN {
                     }
                 };
 
-                this.worker.postMessage({ type: 'weight', data: weight_data });
+                this.worker.postMessage({type: 'weight', data: weight_data});
             });
 
             return promise;
@@ -146,14 +147,14 @@ namespace WebDNN {
                 let inputs: any = [];
                 for (let i = 0; i < this.descriptor.inputs.length; i++) {
                     let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
-                    inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i] });
+                    inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i]});
                 }
                 let outputs: any = [];
                 for (let i = 0; i < this.descriptor.outputs.length; i++) {
                     let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
-                    outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
+                    outputs.push({offset: var_alloc.offset, size: var_alloc.size});
                 }
-                this.worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+                this.worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
             });
 
             return promise;

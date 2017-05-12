@@ -1,4 +1,4 @@
-///<reference path="../webdnn_fetch.ts" />
+///<reference path="../fetch.ts" />
 
 namespace WebDNN {
     export class DNNDescriptorRunnerFallback implements DNNDescriptorRunner {

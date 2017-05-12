@@ -1,7 +1,8 @@
 /// <reference path="../dnn_buffer_webgpu.ts" />
 /// <reference path="../webgpu_handler.ts" />
 /// <reference path="./dnn_descriptor_runner.ts" />
-///<reference path="../decoder/get_weight_decoder.ts" />
+/// <reference path="../decoder/get_weight_decoder.ts" />
+/// <reference path="../fetch.ts" />
 
 namespace WebDNN {
     export class DNNDescriptorRunnerWebGPU implements DNNDescriptorRunner {
