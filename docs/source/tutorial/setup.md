@@ -1,3 +1,3 @@
-# Setup
+# Setup Guide
 
 FIXME: DOCS
