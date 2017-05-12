@@ -16,8 +16,7 @@ First, You have to initialize [`DescriptorRunner`](../api_reference/descriptor_r
 and load model data.
 
 ```js
-let runner = await WebDNN.createDNNDescriptorRunner();
-await runner.load('./output');
+let runner = await runner.prepareAll('./output');
 ```
 
 WebDNN automatically select the best backend based on Browser type and 
@@ -26,7 +25,7 @@ compiled model data on the server.
 You can check the backend type
 
 ```js
-console.log(runner.backend);
+console.log(runner.backendName);
 ```
 
 ![backend](../_static/tutorial/check_backend.png)
@@ -34,8 +33,8 @@ console.log(runner.backend);
 Then you can get input and output variable references.
 
 ```js
-let x = (await runner.getInputViews())[0];
-let y = (await runner.getOutputViews())[0];
+let x = runner.inputViews[0];
+let y = runner.outputViews[0];
 ```
 
 That's all for initialization. You only have to do this at once in the application.

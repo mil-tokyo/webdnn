@@ -58,32 +58,42 @@ namespace WebDNN {
         return loadedBackendName;
     }
 
-    export async function createDNNDescriptorRunner() {
-        if (!this.gpu) await this.init();
-
-        return this.gpu.createDNNDescriptorRunner();
+    /**
+     * Prepare backend interface and load model data at once. Internally calls init().
+     * @param backendOrder The trying order of backend names to be initialized.
+     * @param backendOptions Backend options.
+     * @param progressCallback callback which is called to notice the loading is progressing.
+     */
+    export interface InitOption {
+        backendOrder?: string | string[],
+        backendOptions?: { [key: string]: any },
+        progressCallback?: (loaded: number, total: number) => any
     }
 
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
-     * @param backendOrder The trying order of backend names to be initialized.
+     * @param initOption Initialize option
      * @return Interface to input/output data and run DNN.
      */
-    export async function prepareAll(directory: string, backendOrder?: string | string[], backendOptions?: { [key: string]: any }): Promise<DNNInterface> {
-        await init(backendOrder, backendOptions);
+    export async function prepareAll(directory: string, initOption: InitOption = {}): Promise<DNNInterface> {
+        await init(initOption.backendOrder, initOption.backendOptions);
 
         while (true) {
             try {
                 let runner = gpu.createDNNDescriptorRunner();
-                await runner.load(directory);
-                let input_views = await runner.getInputViews();
-                let output_views = await runner.getOutputViews();
+                await runner.load(directory, initOption.progressCallback);
+
+                let inputViews = await runner.getInputViews();
+                let outputViews = await runner.getOutputViews();
 
                 return {
-                    backendName: loadedBackendName, inputViews: input_views,
-                    outputViews: output_views, run: runner.run.bind(runner)
+                    backendName: loadedBackendName,
+                    inputViews: inputViews,
+                    outputViews: outputViews,
+                    run: runner.run.bind(runner)
                 };
+
             } catch (ex) {
                 console.error(`Model loading failed for ${loadedBackendName} backend. Trying next backend. ${ex.message}`);
                 await tryInitNext();
