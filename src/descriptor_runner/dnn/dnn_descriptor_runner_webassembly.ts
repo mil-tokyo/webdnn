@@ -19,7 +19,7 @@ namespace WebDNN {
 
         }
 
-        async load(directory: string) {
+        async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backend}.json`;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
@@ -40,7 +40,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
-            let weights_data_ab = await (await WebDNN.fetch(weight_url)).arrayBuffer();
+            let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
