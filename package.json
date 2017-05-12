@@ -12,10 +12,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
+      "type": "git",
+      "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
   },
-  "author": "Masatoshi Hidaka, Yuichiro Kikura",
+  "author": [{
+    "name": "Masatoshi Hidaka",
+    "email": "hidaka@mi.t.u-tokyo.ac.jp",
+    "url": "https://milhidaka.github.io/"
+  }, {
+    "name": "Yuichiro Kikura",
+    "email": "kikura@mi.t.u-tokyo.ac.jp",
+    "url": "https://github.com/Kiikurage"
+  }],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mil-tokyo/mil-web-dnn/issues"
