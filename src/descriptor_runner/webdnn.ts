@@ -58,6 +58,12 @@ namespace WebDNN {
         return loadedBackendName;
     }
 
+    export async function createDNNDescriptorRunner() {
+        if (!this.gpu) await this.init();
+
+        return this.gpu.createDNNDescriptorRunner();
+    }
+
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
