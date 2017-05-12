@@ -14,7 +14,7 @@ function run_entry() {
 
 function load_image() {
     var img = new Image();
-    img.onload = function () {
+    img.onload = function() {
         var ctx = $('#input_image')[0].getContext('2d');
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, 224, 224);
@@ -37,7 +37,10 @@ async function prepare_run() {
 
     runner = $M.gpu.createDNNDescriptorRunner();
     runner.ignoreCache = true;
-    await runner.load('./output');
+    // await runner.load('./output');
+    await runner.load('./output', (loaded, total) => {
+        console.log(`[WebDNN] loading weight data: ${(loaded * 100 / total).toFixed(2)}%`);
+    });
 
     let test_image;
     if (is_image_loaded) {

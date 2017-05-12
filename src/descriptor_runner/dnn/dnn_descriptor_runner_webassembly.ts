@@ -1,6 +1,7 @@
 /// <reference path="../webgpu_handler.ts" />
 /// <reference path="./dnn_descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
+/// <reference path="../fetch.ts" />
 
 namespace WebDNN {
     export class DNNDescriptorRunnerWebassembly implements DNNDescriptorRunner {
@@ -18,7 +19,7 @@ namespace WebDNN {
 
         }
 
-        async load(directory: string) {
+        async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backend}.json`;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
@@ -39,7 +40,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
-            let weights_data_ab = await (await WebDNN.fetch(weight_url)).arrayBuffer();
+            let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
@@ -92,7 +93,7 @@ namespace WebDNN {
                     }
                 };
 
-                this.worker.postMessage({ type: 'weight', data: weight_data });
+                this.worker.postMessage({type: 'weight', data: weight_data});
             });
 
             return promise;
@@ -146,14 +147,14 @@ namespace WebDNN {
                 let inputs: any = [];
                 for (let i = 0; i < this.descriptor.inputs.length; i++) {
                     let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
-                    inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i] });
+                    inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i]});
                 }
                 let outputs: any = [];
                 for (let i = 0; i < this.descriptor.outputs.length; i++) {
                     let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
-                    outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
+                    outputs.push({offset: var_alloc.offset, size: var_alloc.size});
                 }
-                this.worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+                this.worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
             });
 
             return promise;
