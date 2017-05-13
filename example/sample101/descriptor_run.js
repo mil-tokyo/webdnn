@@ -13,7 +13,7 @@ async function run() {
     }
 
     let pipeline_data = JSON.parse((document.getElementById('dnn_pipeline')).value);
-    runner = $M.gpu.createDNNDescriptorRunner(pipeline_data);
+    runner = $M.gpu.createDescriptorRunner(pipeline_data);
     await runner.compile();
 
     await runner.loadWeights(await fetchWeights('./output/weight.bin'));

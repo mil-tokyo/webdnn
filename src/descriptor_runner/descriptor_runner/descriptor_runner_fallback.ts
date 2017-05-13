@@ -1,8 +1,9 @@
 ///<reference path="../fetch.ts" />
+///<reference path="../graph_descriptor/graph_descriptor_fallback.ts" />
 
 namespace WebDNN {
-    export class DNNDescriptorRunnerFallback implements DNNDescriptorRunner {
-        public descriptor: DNNDescriptorFallback;
+    export class DescriptorRunnerFallback implements DescriptorRunner {
+        public descriptor: GraphDescriptorFallback;
         kernelObj: any;
         rawWeightArray: Float32Array;
         weightArrays: Map<string, Float32Array>;
@@ -31,7 +32,7 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setDescriptor(descriptor: DNNDescriptorFallback) {
+        setDescriptor(descriptor: GraphDescriptorFallback) {
             this.descriptor = descriptor;
         }
 
@@ -112,29 +113,5 @@ namespace WebDNN {
             this.outputViews = views;
             return views;
         }
-    }
-
-    export interface DNNDescriptorFallback {
-        kernel_source: string;
-        exec_infos: DNNDescriptorFallbackExecInfo[];
-        weight_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        inputs: string[];
-        outputs: string[];
-        weight_encoding: string;
-    }
-
-    export interface DNNDescriptorFallbackExecInfo {
-        entry_func_name: string;
-        inputs: string[];
-        outputs: string[];
-        weights: string[];
-        call_option: any;
     }
 }

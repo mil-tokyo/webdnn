@@ -1,25 +1,24 @@
-/// <reference path="./webgpu_handler.ts" />
-/// <reference path="./dnn_buffer_gpu.ts" />
+/// <reference path="../webgpu_handler.ts" />
+/// <reference path="./buffer.ts" />
 
 namespace WebDNN {
-    export class DNNBufferFallback extends DNNBufferGPU {
-        private static webgpuHandler: WebGPUHandler;
+    export class BufferFallback extends Buffer {
         bufferView: Uint8Array;
+        buffer: ArrayBuffer;
 
         constructor(byteLength: number) {
-            super(byteLength);
-            this.backend = 'fallback';
-            this.bufferView = new Uint8Array(byteLength);//can read / write GPU memory
+            super(byteLength, 'fallback');
+            this.bufferView = new Uint8Array(byteLength);
             this.buffer = this.bufferView.buffer;
         }
 
         // async: there may be platforms synchronization is needed before writing
-        async write(src: ArrayBufferView, dst_offset?: number) {
+        write(src: ArrayBufferView, dst_offset?: number) {
             let viewSameType = new (<any>src.constructor)(this.bufferView.buffer);
-            viewSameType.set(src, dst_offset);
+            return Promise.resolve(viewSameType.set(src, dst_offset));
         }
 
-        async read<T extends ArrayBufferView>(dst: T, src_offset: number = 0, length?: number) {
+        read<T extends ArrayBufferView>(dst: T, src_offset: number = 0, length?: number) {
             if (!dst) {
                 throw new Error('dst cannot be null');
             }
@@ -31,7 +30,8 @@ namespace WebDNN {
                 length = viewSameType.length - src_offset;
             }
             (<any>dst).set(viewSameType);
-            return;
+
+            return Promise.resolve();
         }
 
         getWriteView(offset: number, length: number, number_type: any): ArrayBufferView {
@@ -44,12 +44,14 @@ namespace WebDNN {
             return viewSameType;
         }
 
-        async syncWriteViews() {
+        syncWriteViews() {
             // no sync needed
+            return Promise.resolve();
         }
 
-        async syncReadViews() {
+        syncReadViews() {
             // no sync needed
+            return Promise.resolve();
         }
     }
 }

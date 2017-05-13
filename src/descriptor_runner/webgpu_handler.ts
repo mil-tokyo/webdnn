@@ -1,4 +1,5 @@
-/// <reference path="./dnn_buffer_webgpu.ts" />
+/// <reference path="./webgpu.d.ts" />
+/// <reference path="./buffer/buffer_webgpu.ts" />
 
 namespace WebDNN {
     export class WebGPUHandler {
@@ -6,9 +7,6 @@ namespace WebDNN {
         private context: WebGPURenderingContext;
         private commandQueue: WebGPUCommandQueue;
         private pipelineStates: Map<string, WebGPUComputePipelineState>;
-
-        constructor() {
-        }
 
         async init() {
             // asynchronous operation may be added in future
@@ -40,16 +38,18 @@ namespace WebDNN {
         }
 
         getPipelineStateByName(name: string): WebGPUComputePipelineState {
-            let state = this.pipelineStates.get(name);//State | undefined
+            let state = this.pipelineStates.get(name);
             if (!state) {
                 throw TypeError(`Kernel function "${name}" is not loaded.`);
             }
             return state;
         }
 
-        executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (
-                                       WebGPUBuffer
-                                       | DNNBufferWebGPU)[], getCompletedPromise?: boolean): Promise<void> | null {
+        executeSinglePipelineState(name: string,
+                                   threadgroupsPerGrid: WebGPUSize,
+                                   threadsPerThreadgroup: WebGPUSize,
+                                   buffers: (WebGPUBuffer | BufferWebGPU)[],
+                                   getCompletedPromise?: boolean): Promise<void> | null {
             let commandBuffer = this.createCommandBuffer();
             let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
@@ -57,7 +57,7 @@ namespace WebDNN {
             for (let i = 0; i < buffers.length; i++) {
                 let buffer = buffers[i];
                 let wgbuf: WebGPUBuffer;
-                if (buffer instanceof DNNBufferWebGPU) {
+                if (buffer instanceof BufferWebGPU) {
                     wgbuf = buffer.buffer;
                 } else {
                     // cannot perform (buffer instanceof WebGPUBuffer) currently
@@ -97,53 +97,5 @@ namespace WebDNN {
         }
     }
 
-    WebGPUHandler.isBrowserSupported = 'WebGPURenderingContext' in window;
-}
-
-declare interface WebGPURenderingContext {
-    createCommandQueue(): WebGPUCommandQueue;
-    createBuffer(data: ArrayBufferView): WebGPUBuffer;
-    createLibrary(sourceCode: string): WebGPULibrary;
-    createComputePipelineState(function_: WebGPUFunction): WebGPUComputePipelineState;
-}
-
-declare interface WebGPUFunction {
-}
-
-declare interface WebGPULibrary {
-    functionNames: string[];
-    functionWithName(name: string): WebGPUFunction;
-}
-
-declare interface WebGPUBuffer {
-    contents: any;
-}
-
-declare interface WebGPUSize {
-    width: number;
-    height: number;
-    depth: number;
-}
-
-declare interface WebGPUCommandQueue {
-    createCommandBuffer(): WebGPUCommandBuffer;
-}
-
-declare interface WebGPUCommandBuffer {
-    createComputeCommandEncoder(): WebGPUComputeCommandEncoder;
-    commit(): void;
-    completed: Promise<void>;
-}
-
-declare interface WebGPUCommandEncoder {
-    endEncoding(): void;
-}
-
-declare interface WebGPUComputeCommandEncoder extends WebGPUCommandEncoder {
-    setComputePipelineState(state: WebGPUComputePipelineState): void;
-    setBuffer(buffer: WebGPUBuffer, offset: number, index: number): void;
-    dispatch(threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize): void;
-}
-
-declare interface WebGPUComputePipelineState {
+    WebGPUHandler.isBrowserSupported = 'WebGPURenderingContext' in window && 'WebGPUComputeCommandEncoder' in window;
 }

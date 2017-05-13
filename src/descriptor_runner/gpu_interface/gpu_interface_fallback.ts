@@ -1,4 +1,4 @@
-/// <reference path="./dnn/dnn_descriptor_runner_fallback.ts" />
+/// <reference path="../descriptor_runner/descriptor_runner_fallback.ts" />
 
 namespace WebDNN {
     export class GPUInterfaceFallback implements GPUInterface {
@@ -9,8 +9,8 @@ namespace WebDNN {
         async init(option?: any) {
         }
 
-        createDNNDescriptorRunner(): DNNDescriptorRunner {
-            return new DNNDescriptorRunnerFallback();
+        createDescriptorRunner(): DescriptorRunner {
+            return new DescriptorRunnerFallback();
         }
     }
 }
