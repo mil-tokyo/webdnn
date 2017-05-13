@@ -30,7 +30,7 @@ var prepare_run = function () {
 
                     case 7:
 
-                        runner = $M.gpu.createDNNDescriptorRunner();
+                        runner = $M.gpu.createDescriptorRunner();
                         runner.ignoreCache = true;
                         _context.next = 11;
                         return runner.load('./output');

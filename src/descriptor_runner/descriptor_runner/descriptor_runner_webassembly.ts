@@ -1,14 +1,15 @@
 /// <reference path="../webgpu_handler.ts" />
-/// <reference path="./dnn_descriptor_runner.ts" />
+/// <reference path="./descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
 /// <reference path="../fetch.ts" />
+/// <reference path="../graph_descriptor/graph_descriptor_webassembly.ts" />
 
 namespace WebDNN {
-    export class DNNDescriptorRunnerWebassembly implements DNNDescriptorRunner {
+    export class DescriptorRunnerWebassembly implements DescriptorRunner {
         private inputViews: Float32Array[];
         private outputViews: Float32Array[];
         private worker: Worker;
-        public descriptor: DNNDescriptorWebassembly;
+        public descriptor: GraphDescriptorWebassembly;
         public ignoreCache: boolean = false;
         public backend: string = 'webassembly';
         private worker_entry_js_path;
@@ -44,7 +45,7 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setDescriptor(descriptor: DNNDescriptorWebassembly) {
+        setDescriptor(descriptor: GraphDescriptorWebassembly) {
             this.descriptor = descriptor;
         }
 
@@ -159,19 +160,5 @@ namespace WebDNN {
 
             return promise;
         }
-    }
-
-    export interface DNNDescriptorWebassembly {
-        weight_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        inputs: string[];
-        outputs: string[];
-        weight_encoding: string;
     }
 }

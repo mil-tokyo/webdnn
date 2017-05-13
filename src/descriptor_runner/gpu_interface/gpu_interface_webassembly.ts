@@ -1,5 +1,5 @@
 /// <reference path="./gpu_interface.ts" />
-/// <reference path="./dnn/dnn_descriptor_runner_webassembly.ts" />
+/// <reference path="../descriptor_runner/descriptor_runner_webassembly.ts" />
 
 declare var WebAssembly;
 
@@ -19,8 +19,8 @@ namespace WebDNN {
         }
 
 
-        createDNNDescriptorRunner(): DNNDescriptorRunner {
-            return new DNNDescriptorRunnerWebassembly();
+        createDescriptorRunner(): DescriptorRunner {
+            return new DescriptorRunnerWebassembly();
         }
     }
 }

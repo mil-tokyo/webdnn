@@ -35,7 +35,7 @@ function loadImage(src) {
 async function initialize() {
     await WebDNN.init();
 
-    runner = WebDNN.gpu.createDNNDescriptorRunner();
+    runner = WebDNN.gpu.createDescriptorRunner();
     runner.ignoreCache = true;
     await runner.load('./output');
 

@@ -1,7 +1,7 @@
-///<reference path="./gpu_interface.ts" />
-///<reference path="./gpu_interface_webgpu.ts" />
-///<reference path="./gpu_interface_webassembly.ts" />
-///<reference path="./gpu_interface_fallback.ts" />
+///<reference path="./gpu_interface/gpu_interface.ts" />
+///<reference path="./gpu_interface/gpu_interface_webgpu.ts" />
+///<reference path="./gpu_interface/gpu_interface_webassembly.ts" />
+///<reference path="./gpu_interface/gpu_interface_fallback.ts" />
 
 namespace WebDNN {
     export let gpu: GPUInterface;
@@ -74,14 +74,14 @@ namespace WebDNN {
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
      * @param initOption Initialize option
-     * @return Interface to input/output data and run DNN.
+     * @return Interface to input/output data and run the model.
      */
-    export async function prepareAll(directory: string, initOption: InitOption = {}): Promise<DNNInterface> {
+    export async function prepareAll(directory: string, initOption: InitOption = {}): Promise<GraphInterface> {
         await init(initOption.backendOrder, initOption.backendOptions);
 
         while (true) {
             try {
-                let runner = gpu.createDNNDescriptorRunner();
+                let runner = gpu.createDescriptorRunner();
                 await runner.load(directory, initOption.progressCallback);
 
                 let inputViews = await runner.getInputViews();
@@ -102,9 +102,9 @@ namespace WebDNN {
     }
 
     /**
-     * Interface to input/output data and run DNN.
+     * Interface to input/output data and run the model.
      */
-    export interface DNNInterface {
+    export interface GraphInterface {
         /**
          * The name of backend.
          */
@@ -118,7 +118,7 @@ namespace WebDNN {
          */
         outputViews: Float32Array[];
         /**
-         * Run the DNN.
+         * Run the model.
          */
         run: () => Promise<void>;
     }

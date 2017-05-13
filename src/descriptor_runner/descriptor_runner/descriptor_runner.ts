@@ -1,5 +1,10 @@
+/// <reference path="../graph_descriptor/graph_descriptor.ts" />
+
 namespace WebDNN {
-    export interface DNNDescriptorRunner {
+    /**
+     * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     */
+    export interface DescriptorRunner {
         /**
          * Fetch descriptor from specified directory.
          * @param directory directory where descriptor is contained.
@@ -19,7 +24,7 @@ namespace WebDNN {
          * set descriptor.
          * @param descriptor descriptor which will be executed.
          */
-        setDescriptor(descriptor: any): void;
+        setDescriptor(descriptor: GraphDescriptor): void;
 
         /**
          * compile kernels.

@@ -1,15 +1,16 @@
-/// <reference path="../dnn_buffer_webgpu.ts" />
+/// <reference path="../buffer/buffer_webgpu.ts" />
 /// <reference path="../webgpu_handler.ts" />
-/// <reference path="./dnn_descriptor_runner.ts" />
+/// <reference path="./descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
 /// <reference path="../fetch.ts" />
+/// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
 
 namespace WebDNN {
-    export class DNNDescriptorRunnerWebGPU implements DNNDescriptorRunner {
-        private descriptor: DNNDescriptorWebGPU;
-        private weightMat: DNNBufferWebGPU;
-        private dataMat: DNNBufferWebGPU;
-        private metaBufferGPUBuffers: DNNBufferWebGPU[];
+    export class DescriptorRunnerWebGPU implements DescriptorRunner {
+        private descriptor: GraphDescriptorWebGPU;
+        private weightMat: BufferWebGPU;
+        private dataMat: BufferWebGPU;
+        private metaBufferGPUBuffers: BufferWebGPU[];
         public ignoreCache: boolean = false;
         public backend: string = 'webgpu';
         private inputViews: Float32Array[];
@@ -35,18 +36,18 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setDescriptor(descriptor: DNNDescriptorWebGPU) {
+        setDescriptor(descriptor: GraphDescriptorWebGPU) {
             this.descriptor = descriptor;
         }
 
         async compile() {
             this.webGPUHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-            this.weightMat = new DNNBufferWebGPU(this.descriptor.weight_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
-            this.dataMat = new DNNBufferWebGPU(this.descriptor.variable_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
+            this.weightMat = new BufferWebGPU(this.descriptor.weight_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
+            this.dataMat = new BufferWebGPU(this.descriptor.variable_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBufferGPUBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                 let exec_info = this.descriptor.exec_infos[i];
-                let buf = new DNNBufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
+                let buf = new BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
                 await buf.write(new Uint8Array(exec_info.meta_buffer));
                 this.metaBufferGPUBuffers.push(buf);
             }
@@ -152,28 +153,5 @@ namespace WebDNN {
                 //await this.dataMat.syncReadViews();//not needed for DNNBufferWebGPU
             }
         }
-    }
-
-    export interface DNNDescriptorWebGPU {
-        kernel_source: string;
-        exec_infos: DNNDescriptorWebGPUExecInfos[];
-        weight_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        inputs: string[];
-        outputs: string[];
-        weight_encoding: string;
-    }
-
-    export interface DNNDescriptorWebGPUExecInfos {
-        entry_func_name: string;
-        threadgroups_per_grid: WebGPUSize;
-        threads_per_thread_group: WebGPUSize;
-        meta_buffer: number[];
     }
 }

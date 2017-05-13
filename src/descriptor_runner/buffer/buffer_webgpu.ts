@@ -1,23 +1,23 @@
-/// <reference path="./dnn_buffer_gpu.ts" />
+/// <reference path="./buffer.ts" />
 
 namespace WebDNN {
-    export class DNNBufferWebGPU extends DNNBufferGPU {
+    export class BufferWebGPU extends Buffer {
         private static webgpuHandler: WebGPUHandler;
+        buffer: WebGPUBuffer;
         bufferView: Uint8Array;
 
         constructor(byteLength: number) {
-            super(byteLength);
+            super(byteLength, 'webgpu');
             if (byteLength == 0) {
                 byteLength = 4;//0 length buffer causes error
             }
-            this.backend = 'webgpu';
-            this.buffer = DNNBufferWebGPU.webgpuHandler.createBuffer(new Uint8Array(byteLength));
-            this.bufferView = new Uint8Array(this.buffer.contents);//can read / write GPU memory
+            this.buffer = BufferWebGPU.webgpuHandler.createBuffer(new Uint8Array(byteLength));
+            this.bufferView = new Uint8Array(this.buffer.contents);
         }
 
         // async: there may be platforms synchronization is needed before writing
         async write(src: ArrayBufferView, dst_offset?: number): Promise<void> {
-            await DNNBufferWebGPU.webgpuHandler.sync();
+            await BufferWebGPU.webgpuHandler.sync();
             let viewSameType = new (<any>src.constructor)(this.bufferView.buffer);
             viewSameType.set(src, dst_offset);
         }
@@ -26,7 +26,7 @@ namespace WebDNN {
             if (!dst) {
                 throw new Error('dst cannot be null');
             }
-            await DNNBufferWebGPU.webgpuHandler.sync();
+            await BufferWebGPU.webgpuHandler.sync();
             if (this.byteLength === 0) {
                 // nothing to read
                 return;
@@ -62,7 +62,7 @@ namespace WebDNN {
 
         async syncReadViews(): Promise<void> {
             // if the user awaits promise from final kernel execution, this function call is not needed.
-            await DNNBufferWebGPU.webgpuHandler.sync();
+            await BufferWebGPU.webgpuHandler.sync();
         }
     }
 }

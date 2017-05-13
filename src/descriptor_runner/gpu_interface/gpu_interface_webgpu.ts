@@ -1,6 +1,6 @@
-/// <reference path="./dnn/dnn_descriptor_runner_webgpu.ts" />
+/// <reference path="../descriptor_runner/descriptor_runner_webgpu.ts" />
 
-declare var WebGPUComputeCommandEncoder;
+declare let WebGPUComputeCommandEncoder;
 
 namespace WebDNN {
     export class GPUInterfaceWebGPU implements GPUInterface {
@@ -8,7 +8,7 @@ namespace WebDNN {
         shaderLanguage: string;
 
         constructor(private option?: any) {
-            if (typeof WebGPUComputeCommandEncoder !== 'function') {
+            if (!WebGPUHandler.isBrowserSupported) {
                 throw new Error('WebGPU is not supported on this browser');
             }
         }
@@ -18,17 +18,16 @@ namespace WebDNN {
             this.shaderLanguage = 'metal';
             this.webgpuHandler = new WebGPUHandler();
             await this.webgpuHandler.init();
-            DNNBufferWebGPU.init(this.webgpuHandler);
+            BufferWebGPU.init(this.webgpuHandler);
             this.init_basic_kernels();
         }
 
         private init_basic_kernels() {
-            this.webgpuHandler.loadKernel(`kernel void sync(){}`, 'basic');
-
+            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
         }
 
-        createDNNDescriptorRunner(): DNNDescriptorRunner {
-            return new DNNDescriptorRunnerWebGPU(this.webgpuHandler);
+        createDescriptorRunner(): DescriptorRunner {
+            return new DescriptorRunnerWebGPU(this.webgpuHandler);
         }
     }
 }

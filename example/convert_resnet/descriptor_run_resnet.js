@@ -35,7 +35,7 @@ async function prepare_run() {
         backend_name = await init(backend_name);
     }
 
-    runner = $M.gpu.createDNNDescriptorRunner();
+    runner = $M.gpu.createDescriptorRunner();
     runner.ignoreCache = true;
     // await runner.load('./output');
     await runner.load('./output', (loaded, total) => {
