@@ -2,6 +2,7 @@ from typing import Tuple
 
 from graph_transpiler.graph import traverse
 from graph_transpiler.graph.graph import Graph
+from graph_transpiler.graph.node import Node
 from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
 from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.operators.elu import Elu
@@ -12,12 +13,12 @@ from graph_transpiler.graph.optimize_rule import OptimizeRule
 
 class CombineElementwiseOperation(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        matches = traverse.search_sub_structure(graph, [PostElementwise, Elementwise])
+        matches = traverse.search_sub_structure(graph, [PostElementwise, Node, Elementwise])
         flag_changed = False
 
         for match in matches:
             op1 = match[0]
-            op2 = match[1]
+            op2 = match[2]
             x = list(op2.inputs.values())[0]
             y = list(op2.outputs.values())[0]
 

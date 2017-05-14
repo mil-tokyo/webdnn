@@ -1,4 +1,4 @@
-from typing import Type, List, Set, Iterable, Union
+from typing import Type, List, Set, Iterable, Union, Tuple
 
 from graph_transpiler.graph.attribute import Attribute
 from graph_transpiler.graph.graph import Graph
@@ -35,20 +35,19 @@ def check_node_type_match(node: Node, query: Type[Node]):
 
 def search_sub_structure(graph: Graph, query: List[Query]) -> List[List[Operator]]:
     matches: List[List[Operator]] = []
-    ops = listup_operators(graph)
-    current_matches: List[(int, int)] = [(i, 0) for i in range(len(ops) - len(query) + 1)]
+    queue: List[Tuple(Node, int, List[Node])] = [(node, 0, []) for node in listup_nodes(graph)]
 
-    while len(current_matches) > 0:
-        offset, index = current_matches.pop(0)
-        if offset + index >= len(ops):
-            continue
+    while len(queue) > 0:
+        node, index, matched = queue.pop(0)
+        if check_match(node, query[index]):
+            matched.append(node)
 
-        if check_match(ops[offset + index], query[index]):
             if index == len(query) - 1:
-                matches.append(ops[offset:offset + len(query)])
+                matches.append(matched)
 
             else:
-                current_matches.append((offset, index + 1))
+                for next in node.nexts:
+                    queue.append((next, index + 1, list(matched)))
 
     return matches
 
