@@ -2,8 +2,8 @@ from typing import Optional
 
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
+from graph_transpiler.graph.operators.attributes.axiswise import Axiswise
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.operators.util import IntOrTuple, to_tuple
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC
@@ -18,14 +18,14 @@ class AveragePooling2D(Operator):
         stride (int or tuple of int): Stride size.
         padding (int or tuple of int): Padding size.
     """
-    attributes = {PostElementwise,
-                  PostAxiswise}
 
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
+        self.attributes = {PostAxiswise(self, Axis.C),
+                           Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
         """

@@ -1,5 +1,6 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Type, List
 
+from graph_transpiler.graph.attribute import Attribute
 from graph_transpiler.graph.interface import IVariable, IOperator
 from graph_transpiler.graph.node import Node
 
@@ -145,3 +146,6 @@ class Operator(Node, IOperator):
 
     def __call__(self, *args, **kwargs) -> Tuple[IVariable]:
         pass
+
+    def get_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
+        return [attr for attr in self.attributes if isinstance(attr, Attr)]

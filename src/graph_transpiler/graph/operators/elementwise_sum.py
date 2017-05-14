@@ -1,8 +1,8 @@
 from typing import Optional
 
 from graph_transpiler.graph.operator import Operator
-from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
+from graph_transpiler.graph.operators.attributes.inplace import Inplace
 from graph_transpiler.graph.variable import Variable
 
 
@@ -12,11 +12,11 @@ class ElementwiseSum(Operator):
     Args:
         name (str): Operator name.
     """
-    attributes = {PostElementwise,
-                  PostAxiswise}
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
+        self.attributes = {Elementwise(self),
+                           Inplace(self, "x0", "y")}
 
     def __call__(self, *xs: Variable):
         """

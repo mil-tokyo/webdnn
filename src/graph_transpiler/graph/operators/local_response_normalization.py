@@ -1,8 +1,10 @@
 from typing import Optional
 
+from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
+from graph_transpiler.graph.operators.attributes.axiswise import Axiswise
+from graph_transpiler.graph.operators.attributes.inplace import Inplace
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
 
 
@@ -20,8 +22,6 @@ class LocalResponseNormalization(Operator):
         beta (float): Parameter beta.
 
     """
-    attributes = {PostElementwise,
-                  PostAxiswise}
 
     def __init__(self, name: Optional[str], n: float, k: float, alpha: float, beta: float):
         super().__init__(name)
@@ -29,6 +29,9 @@ class LocalResponseNormalization(Operator):
         self.parameters["k"] = k
         self.parameters["alpha"] = alpha
         self.parameters["beta"] = beta
+        self.attributes = {PostAxiswise(self, Axis.C),
+                           Axiswise(self, Axis.C),
+                           Inplace(self, "x", "y")}
 
     def __call__(self, x: Variable):
         """

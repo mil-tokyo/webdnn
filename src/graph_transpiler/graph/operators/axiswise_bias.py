@@ -6,7 +6,6 @@ from graph_transpiler.graph.operators.attributes.axiswise import Axiswise
 from graph_transpiler.graph.operators.attributes.have_weights import HaveWeights
 from graph_transpiler.graph.operators.attributes.inplace import Inplace
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
 
 
@@ -22,15 +21,14 @@ class AxiswiseBias(Operator):
         axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
 
     """
-    attributes = {PostElementwise,
-                  PostAxiswise,
-                  Axiswise,
-                  Inplace,
-                  HaveWeights}
 
     def __init__(self, name: Optional[str], axis: Axis):
         super().__init__(name)
         self.parameters["axis"] = axis
+        self.attributes = {PostAxiswise(self, axis),
+                           Axiswise(self, axis),
+                           Inplace(self, "x", "y"),
+                           HaveWeights(self)}
 
     def __call__(self, x: Variable, b: Variable):
         """

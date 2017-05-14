@@ -6,6 +6,7 @@ from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.graph import Graph
 from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
 from graph_transpiler.graph.optimize_rule import OptimizeRule
+from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from graph_transpiler.util import flags
 
@@ -19,14 +20,14 @@ class ConcatSgemmBias(OptimizeRule):
         if not flags.optimize.CONCAT_SGEMM_BIAS:
             return graph, False
 
-        matches = traverse.search_sub_structure(graph, [Sgemm, AxiswiseBias])
+        matches = traverse.search_sub_structure(graph, [Sgemm, Variable, AxiswiseBias])
         if len(matches) == 0:
             return graph, False
 
         flag_changed = False
         for match in matches:
             sgemm: Sgemm = match[0]
-            axiswise_bias: AxiswiseBias = match[1]
+            axiswise_bias: AxiswiseBias = match[2]
 
             if axiswise_bias.parameters["axis"] != Axis.C:
                 continue

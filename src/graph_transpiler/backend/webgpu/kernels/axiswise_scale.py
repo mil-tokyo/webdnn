@@ -25,7 +25,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         int c = gid % C;
 
         float result = X[gid] * S[c];
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
+
         Y[gid] = result;
     }
 }

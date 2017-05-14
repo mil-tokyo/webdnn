@@ -33,12 +33,12 @@ def test_single_bias():
     x = Variable([5, 5], OrderNC)
 
     w_shape = [5, 5]
-    w_size: int = np.prod(w_shape)
+    w_size = np.prod(w_shape)  # type: int
     w = ConstantVariable(np.arange(w_size).reshape(w_shape), OrderNC)
     w_data = w.data.copy()
 
     b_shape = [5]
-    b_size: int = np.prod(b_shape)
+    b_size = np.prod(b_shape)  # type: int
     b = ConstantVariable(np.arange(b_size).reshape(b_shape), OrderC)
     b_data = b.data.copy()
 
@@ -67,17 +67,17 @@ def test_double_bias():
     x = Variable([5, 5], OrderNC)
 
     w_shape = [5, 5]
-    w_size: int = np.prod(w_shape)
+    w_size = np.prod(w_shape)  # type: int
     w = ConstantVariable(np.arange(w_size).reshape(w_shape), OrderNC)
     w_data = w.data.copy()
 
     b1_shape = [5]
-    b1_size: int = np.prod(b1_shape)
+    b1_size = np.prod(b1_shape)  # type: int
     b1 = ConstantVariable(np.arange(b1_size).reshape(b1_shape), OrderC)
     b1_data = b1.data.copy()
 
     b2_shape = [5]
-    b2_size: int = np.prod(b2_shape)
+    b2_size = np.prod(b2_shape)  # type: int
     b2 = ConstantVariable(np.arange(b2_size).reshape(b2_shape), OrderC)
     b2_data = b2.data.copy()
 

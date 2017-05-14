@@ -25,8 +25,6 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     const float Pk = *((const device float *)(& %%META_LOAD(local_response_normalization_param_k)%%));
     const float Palpha = *((const device float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
     const float Pmbeta = *((const device float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
-    
-    //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
 
     for (int gid = index; gid < N * H * W * C; gid += num_threads) {
         const int c = gid % C;
@@ -46,7 +44,6 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         float scale = powr(sq_sum * Palpha + Pk, Pmbeta);
         float v = X[gid] * scale;
         
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(v, n)%%;
         Y[gid] = v;
     }
 }

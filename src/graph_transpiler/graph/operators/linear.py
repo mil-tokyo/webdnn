@@ -4,7 +4,6 @@ from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.attributes.have_weights import HaveWeights
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.order import OrderNC
 
@@ -20,12 +19,11 @@ class Linear(Operator):
         name (str): Operator name.
 
     """
-    attributes = {PostElementwise,
-                  PostAxiswise,
-                  HaveWeights}
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
+        self.attributes = {PostAxiswise(self, Axis.C),
+                           HaveWeights(self)}
 
     def __call__(self, x: Variable, w: Variable):
         """

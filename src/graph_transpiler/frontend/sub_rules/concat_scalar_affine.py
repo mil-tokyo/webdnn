@@ -1,10 +1,10 @@
 from typing import Tuple
 
 from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.node import Node
 from graph_transpiler.graph.operators.scalar_affine import ScalarAffine
 from graph_transpiler.graph.optimize_rule import OptimizeRule
 from graph_transpiler.graph.traverse import search_sub_structure
+from graph_transpiler.graph.variable import Variable
 from graph_transpiler.util import flags
 
 
@@ -15,7 +15,7 @@ class ConcatScalarAffine(OptimizeRule):
 
         flag_changed = False
 
-        matches = search_sub_structure(graph, [ScalarAffine, Node, ScalarAffine])
+        matches = search_sub_structure(graph, [ScalarAffine, Variable, ScalarAffine])
         while len(matches) > 0:
             match = matches[0]
             a1: ScalarAffine = match[0]
@@ -31,6 +31,6 @@ class ConcatScalarAffine(OptimizeRule):
             a1.replace_output(y1, y2)
 
             flag_changed = True
-            matches = search_sub_structure(graph, [ScalarAffine, Node, ScalarAffine])
+            matches = search_sub_structure(graph, [ScalarAffine, Variable, ScalarAffine])
 
         return graph, flag_changed

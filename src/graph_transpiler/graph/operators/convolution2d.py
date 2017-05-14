@@ -3,8 +3,6 @@ from typing import Tuple, Optional
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.attributes.have_weights import HaveWeights
-from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.operators.util import IntOrTuple, to_tuple
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC
@@ -20,15 +18,13 @@ class Convolution2D(Operator):
         padding (int or tuple of int): Padding size.
 
     """
-    attributes = {PostElementwise,
-                  PostAxiswise,
-                  HaveWeights}
 
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
+        self.attributes = {HaveWeights(self)}
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
         """

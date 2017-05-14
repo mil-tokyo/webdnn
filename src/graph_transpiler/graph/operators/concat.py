@@ -2,8 +2,7 @@ from typing import List
 
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
-from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
+from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
 from graph_transpiler.graph.variable import Variable
 
 
@@ -14,12 +13,11 @@ class Concat(Operator):
         name (str): Operator name.
         axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
     """
-    attributes = {PostElementwise,
-                  PostAxiswise}
 
     def __init__(self, name: str, axis: Axis):
         super().__init__(name)
         self.parameters["axis"] = axis
+        self.attributes = {Elementwise(self)}
 
     def __call__(self, *xs: Variable):
         """

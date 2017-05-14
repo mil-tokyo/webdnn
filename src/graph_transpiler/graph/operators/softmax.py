@@ -12,10 +12,9 @@ class Softmax(Operator):
         name (str): Operator name.
 
     """
-    attributes = {Inplace}
-
     def __init__(self, name: Optional[str]):
         super().__init__(name)
+        self.attributes = {Inplace(self, "x", "y")}
 
     def __call__(self, x: Variable):
         """

@@ -3,15 +3,13 @@ from typing import Tuple, Optional
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.operators.util import IntOrTuple, to_tuple
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 
 
 class Col2Im(Operator):
-    attributes = {PostElementwise,
-                  PostAxiswise}
+    attributes = {PostAxiswise}
 
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)

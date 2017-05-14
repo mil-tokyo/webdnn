@@ -1,6 +1,5 @@
-from typing import Dict, List, ClassVar
+from typing import Dict, List
 
-from graph_transpiler.graph.attribute import Attribute
 from graph_transpiler.graph.axis import Axis
 
 """
@@ -10,95 +9,74 @@ This attribute means data order, not number of dimensions
 
 # FIXME: DOCS
 # FIXME: Is it need to extend from Attribute?
-class AxisOrder(Attribute):
-    ndim: ClassVar[int]
-    axes: ClassVar[List[Axis]]
-    axes_dict: ClassVar[Dict[Axis, int]]
+class Order:
+    ndim: int
+    axes: List[Axis]
+    axes_dict: Dict[Axis, int]
+
+    def __init__(self, axes: List[Axis]):
+        self.ndim = len(axes)
+        self.axes = axes
+        self.axes_dict = {a: i for i, a in enumerate(axes)}
+
+    def __eq__(self, other):
+        if isinstance(other, Order):
+            return self.axes == other.axes
+
+        else:
+            return False
 
 
-class OrderC(AxisOrder):
-    """
-    usage:
-        Bias Filter
-    """
-    ndim = 1
-    axes = [Axis.C]
-    axes_dict = {Axis.C: 0}
+"""
+usage:
+    Bias Filter
+"""
+OrderC = Order([Axis.C])
 
+"""
+usage:
+    Fully-Connected Input/Output.
+"""
+OrderNC = Order([Axis.N, Axis.C])
 
-class OrderNC(AxisOrder):
-    """
-    usage:
-        Fully-Connected Input/Output.
-    """
-    ndim = 2
-    axes = [Axis.N, Axis.C]
-    axes_dict = {Axis.N: 0, Axis.C: 1}
+"""
+usage:
+    Fully-Connected Filter 
+"""
+OrderCN = Order([Axis.C, Axis.N])
 
+"""
+usage:
+    Convolution2D Input/Output of WebGPU
+"""
+OrderNHWC = Order([Axis.N, Axis.H, Axis.W, Axis.C])
 
-class OrderCN(AxisOrder):
-    """
-    usage:
-        Fully-Connected Filter 
-    """
-    ndim = 2
-    axes = [Axis.C, Axis.N]
-    axes_dict = {Axis.C: 0, Axis.N: 1}
+"""
+usage:
+    Convolution2D Filter of WebGPU
+"""
+OrderHWNC = Order([Axis.H, Axis.W, Axis.N, Axis.C])
 
+"""
+usage:
+    Fully-Connected Filter when Input variable is 4D.
+"""
+OrderHWCN = Order([Axis.H, Axis.W, Axis.C, Axis.N])
 
-class OrderNHWC(AxisOrder):
-    """
-    usage:
-        Convolution2D Input/Output of WebGPU
-    """
-    ndim = 4
-    axes = [Axis.N, Axis.H, Axis.W, Axis.C]
-    axes_dict = {Axis.N: 0, Axis.H: 1, Axis.W: 2, Axis.C: 3}
+"""
+usage:
+    Chainer
+"""
+OrderNCHW = Order([Axis.N, Axis.C, Axis.H, Axis.W])
 
+"""
+usage:
+    Chainer Deconvolution2D Filter
+"""
+OrderCNHW = Order([Axis.C, Axis.N, Axis.H, Axis.W])
 
-class OrderHWNC(AxisOrder):
-    """
-    usage:
-        Convolution2D Filter of WebGPU
-    """
-    ndim = 4
-    axes = [Axis.H, Axis.W, Axis.N, Axis.C]
-    axes_dict = {Axis.H: 0, Axis.W: 1, Axis.N: 2, Axis.C: 3}
-
-
-class OrderHWCN(AxisOrder):
-    """
-    usage:
-        Fully-Connected Filter when Input variable is 4D.
-    """
-    ndim = 4
-    axes = [Axis.H, Axis.W, Axis.C, Axis.N]
-    axes_dict = {Axis.H: 0, Axis.W: 1, Axis.C: 2, Axis.N: 3}
-
-
-class OrderNCHW(AxisOrder):
-    """
-    usage:
-        Chainer
-    """
-    ndim = 4
-    axes = [Axis.N, Axis.C, Axis.H, Axis.W]
-    axes_dict = {Axis.N: 0, Axis.C: 1, Axis.H: 2, Axis.W: 3}
-
-
-class OrderCNHW(AxisOrder):
-    """
-    usage:
-        Chainer Deconvolution2D Filter
-    """
-    ndim = 4
-    axes = [Axis.C, Axis.N, Axis.H, Axis.W]
-    axes_dict = {Axis.N: 1, Axis.C: 0, Axis.H: 2, Axis.W: 3}
-
-
-class OrderCHWN(AxisOrder):
-    """
-    """
-    ndim = 4
-    axes = [Axis.C, Axis.H, Axis.W, Axis.N]
-    axes_dict = {Axis.N: 3, Axis.C: 0, Axis.H: 1, Axis.W: 2}
+"""
+usage:
+    Chainer Deconvolution2D Filter
+"""
+OrderCHWN = Order([Axis.C, Axis.H, Axis.W, Axis.N])

@@ -22,7 +22,7 @@ def check_match(node: Node, query: Query):
 
 def check_attribute_match(node: Node, query: Type[Attribute]):
     for attr in node.attributes:
-        if issubclass(attr, query):
+        if isinstance(attr, query):
             return True
 
     else:
@@ -97,4 +97,4 @@ def dump(graph: Graph):
         print(f"{indent}{op.__class__.__name__} : {op.name}")
         print(f"{indent}    In  : {op.inputs}")
         print(f"{indent}    Out : {op.outputs}")
-        print(f"{indent}    Attr: {[attr.__name__ for attr in op.attributes]}")
+        print(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
