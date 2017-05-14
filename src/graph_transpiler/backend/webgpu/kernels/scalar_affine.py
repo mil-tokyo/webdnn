@@ -40,12 +40,13 @@ def scalar_affine(op: ScalarAffine,
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
+
     metabuffer_injector.register({
         "affine_transform_X_offset": x.offset,
         "affine_transform_Y_offset": y.offset,
         "affine_transform_N": y.variable.size,
-        "affine_transform_scale": op.scale,
-        "affine_transform_bias": op.bias
+        "affine_transform_scale": float(op.scale),
+        "affine_transform_bias": float(op.bias)
     })
 
     source = metabuffer_injector.inject(template)
