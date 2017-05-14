@@ -23,7 +23,6 @@ from graph_transpiler.backend.webgpu.kernels.elementwise_sum import elementwise_
 from graph_transpiler.backend.webgpu.kernels.elu import elu
 from graph_transpiler.backend.webgpu.kernels.flatten import flatten
 from graph_transpiler.backend.webgpu.kernels.im2col import im2col
-from graph_transpiler.backend.webgpu.kernels.linear import linear
 from graph_transpiler.backend.webgpu.kernels.local_response_normalization import local_response_normalization
 from graph_transpiler.backend.webgpu.kernels.max_pooling_2d import max_pooling_2d
 from graph_transpiler.backend.webgpu.kernels.relu import relu
@@ -44,7 +43,6 @@ from graph_transpiler.graph.operators.axiswise_scale import AxiswiseScale
 from graph_transpiler.graph.operators.elementwise_sum import ElementwiseSum
 from graph_transpiler.graph.operators.elu import Elu
 from graph_transpiler.graph.operators.flatten import Flatten
-from graph_transpiler.graph.operators.linear import Linear
 from graph_transpiler.graph.operators.local_response_normalization import LocalResponseNormalization
 from graph_transpiler.graph.operators.max_pooling_2d import MaxPooling2D
 from graph_transpiler.graph.operators.relu import Relu
@@ -130,10 +128,7 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
     kernels: List[Kernel] = []
 
     for op in traverse.listup_operators(graph):
-        if isinstance(op, Linear):
-            kernels += linear(op, constants_layout, variables_layout)
-
-        elif isinstance(op, AxiswiseBias):
+        if isinstance(op, AxiswiseBias):
             kernels += axiswise_bias(op, constants_layout, variables_layout)
 
         elif isinstance(op, Relu):

@@ -2,6 +2,7 @@ from typing import List
 
 from graph_transpiler.backend.webassembly.inline_injector import InlineInjector
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
+from graph_transpiler.backend.webgpu.attributes.inline_inject import PostInlineInplace
 from graph_transpiler.backend.webgpu.kernel import Kernel, GPUSize
 from graph_transpiler.backend.webgpu.kernels import util
 from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
@@ -276,8 +277,11 @@ def sgemm(op: Sgemm,
         })
 
     inline_injector = InlineInjector()
-    if "inline_elementwise" in op.parameters:
-        inline_injector.delegate = op.parameters["inline_elementwise"]
+    post_inline_inplace = op.get_attribute(PostInlineInplace)
+    if len(post_inline_inplace) > 0:
+        post_inline_inplace = post_inline_inplace[0]  # type: PostInlineInplace
+        if post_inline_inplace.injected is not None:
+            inline_injector.delegate = post_inline_inplace.injected.injector
 
     # transpose_X assumes fortran-order data. True means X is C-order, False means Fortran-order.
     # In default convolution, transpose_A == transpose_B == True.

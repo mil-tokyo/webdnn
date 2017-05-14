@@ -1,6 +1,7 @@
 from typing import List
 
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
+from graph_transpiler.backend.webgpu.attributes.inline_inject import PostInlineInplace
 from graph_transpiler.backend.webgpu.inline_injector import InlineInjector
 from graph_transpiler.backend.webgpu.kernel import Kernel, GPUSize
 from graph_transpiler.backend.webgpu.kernels import util
@@ -21,7 +22,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
   
     for (int gid = index; gid < N; gid += num_threads) {
         float result = X0[gid] + X1[gid];
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
+
         Y[gid] = %%INLINE(result)%%;
     }
 }
@@ -51,8 +52,11 @@ def elementwise_sum(op: AxiswiseScale,
     })
 
     inline_injector = InlineInjector()
-    if "inline_elementwise" in op.parameters:
-        inline_injector.delegate = op.parameters["inline_elementwise"]
+    post_inline_inplace = op.get_attribute(PostInlineInplace)
+    if len(post_inline_inplace) > 0:
+        post_inline_inplace = post_inline_inplace[0]  # type: PostInlineInplace
+        if post_inline_inplace.injected is not None:
+            inline_injector.delegate = post_inline_inplace.injected.injector
 
     source = template
     source = metabuffer_injector.inject(source)

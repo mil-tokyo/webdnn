@@ -27,7 +27,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         int n = gid / C;
 
         float result = X[gid] + B[c];
-        Y[n * C + c] = %%INLINE(result)%%;
+        Y[n * C + c] = result;
     }
 }
 """
@@ -57,13 +57,8 @@ def axiswise_bias(op: AxiswiseBias,
         "axiswise_bias_C": y.variable.shape_dict[Axis.C],
     })
 
-    inline_injector = InlineInjector()
-    if "inline_elementwise" in op.parameters:
-        inline_injector.delegate = op.parameters["inline_elementwise"]
-
     source = template
     source = metabuffer_injector.inject(source)
-    source = inline_injector.inject(source)
     func_name = util.add_canonical_suffix("axiswise_bias", source)
     source = source.replace("%%FUNC_NAME%%", func_name)
 

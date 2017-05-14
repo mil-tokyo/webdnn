@@ -21,7 +21,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     for (int gid = index; gid < N; gid += num_threads) {
         float result = X[gid];
         result = result < 0.0 ? 0.0 : result;      
-        //Y[gid] = %%ELEMENTWISE_ATTACHABLE(result)%%;
+
         Y[gid] = result;
     }
 }

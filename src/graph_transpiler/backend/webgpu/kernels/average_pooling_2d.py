@@ -27,8 +27,6 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     const int S = %%META_LOAD(average_pooling_2d_S)%%;
     const int P = %%META_LOAD(average_pooling_2d_P)%%;
     
-    //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
-
     for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
         const int c = gid % C;
         const int w2 = gid / C % W2;
@@ -49,7 +47,6 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         }
         v /= K * K;
 
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(v, n)%%;
         Y[gid] = v;
     }
 }
