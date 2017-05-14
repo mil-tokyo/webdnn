@@ -5,13 +5,12 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23
 """
 
-from typing import List, Type, Tuple, Set
+from typing import List, Tuple
 
 import chainer
 import chainer.computational_graph
 import numpy as np
 
-from graph_transpiler.graph.attribute import Attribute
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.graph import Graph
 from graph_transpiler.graph.operators.average_pooling_2d import AveragePooling2D
@@ -32,7 +31,7 @@ from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.input import Input
 from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
     OrderNHWC, OrderCNHW, \
-    AxisOrder
+    Order
 from graph_transpiler.graph.variables.attributes.output import Output
 from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 
@@ -431,7 +430,8 @@ class ChainerGraphConverter:
 
     def _convert_input_vars(self, input_vars: List[chainer.Variable]):
         for cvar in input_vars:
-            self._convert_var(cvar, attrs={Input})
+            nvar = self._convert_var(cvar)
+            nvar.attributes.add(Input(nvar))
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
         # 名前付きの変数を変換
@@ -458,9 +458,8 @@ class ChainerGraphConverter:
 
     def _convert_var(self,
                      cvar: chainer.Variable,
-                     attrs: Set[Type[Attribute]] = None,
                      force_constant=False,
-                     force_order: Type[AxisOrder] = None):
+                     force_order: Order = None):
         assert id(cvar) not in self._cvar_ids
         ndim = len(cvar.shape)
         if force_order:
@@ -485,8 +484,6 @@ class ChainerGraphConverter:
             nvar = ConstantVariable(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
         else:
             nvar = Variable(cvar.shape, order)
-        if attrs is not None:
-            nvar.attributes.update(attrs)
 
         self._cvar_to_nvar[id(cvar)] = nvar
         self._cvar_ids.append(id(cvar))

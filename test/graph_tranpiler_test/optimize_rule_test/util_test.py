@@ -120,21 +120,21 @@ def test_check_match():
 
 @with_setup(setup_graph_sequential)
 def test_search_sub_structure():
-    global graph, op1, op2, op3
+    global graph, op1, op2, op3, v1, v2
 
-    matches = search_sub_structure(graph, [Operator, Operator])
+    matches = search_sub_structure(graph, [Operator, Variable, Operator])
     assert len(matches) == 2
-    assert tuple(matches[0]) == (op1, op2)
-    assert tuple(matches[1]) == (op2, op3)
+    assert tuple(matches[0]) == (op1, v1, op2)
+    assert tuple(matches[1]) == (op2, v2, op3)
 
 
 @with_setup(setup_graph_sequential)
 def test_search_sub_structure_full():
-    global graph, op1, op2, op3
+    global graph, op1, op2, op3, v1, v2
 
-    matches = search_sub_structure(graph, [Operator, Operator, Operator])
+    matches = search_sub_structure(graph, [Operator, Variable, Operator, Variable, Operator])
     assert len(matches) == 1
-    assert tuple(matches[0]) == (op1, op2, op3)
+    assert tuple(matches[0]) == (op1, v1, op2, v2, op3)
 
 
 @with_setup(setup_graph_sequential)

@@ -4,9 +4,8 @@ import numpy as np
 
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operator import Operator
+from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
 from graph_transpiler.graph.operators.attributes.inplace import Inplace
-from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.order import OrderNC
 
@@ -27,10 +26,6 @@ class Flatten(Operator):
     # 入出力変数の形によっては、データそのものを転置する必要がある
     # NCHW -> NCなど
 
-    attributes = {PostElementwise,
-                  PostAxiswise,
-                  Inplace}
-
     def __init__(self, name: Optional[str], in_axes: Set[Axis], out_axes: Set[Axis]):
         # in_axes: [Axis.H, Axis.W, Axis.C], out_axes: [Axis.C]
         # のとき、NHWC入力・NC出力ならデータを操作しないでorder=NCの出力とする。
@@ -45,6 +40,8 @@ class Flatten(Operator):
 
         self.parameters["in_axes"] = in_axes
         self.parameters["out_axes"] = out_axes
+        self.attributes = {Elementwise(self),
+                           Inplace(self, "x", "y")}
 
     def __call__(self, x: Variable):
         """

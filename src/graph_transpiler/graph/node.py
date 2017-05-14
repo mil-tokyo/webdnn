@@ -1,6 +1,6 @@
 from typing import Dict, Set, Type, Optional
 
-from graph_transpiler.graph.attribute import Attribute
+from graph_transpiler.graph.interface import IAttribute, INode
 
 _node_serial_counter_dict: Dict[Type["Node"], int] = {}
 
@@ -15,8 +15,8 @@ def _generate_name(node: "Node"):
     return name
 
 
-class Node:
-    attributes: Set[Type[Attribute]] = set()
+class Node(INode):
+    attributes: Set[IAttribute]
     parameters: Dict[str, any]
     prevs: Set["Node"]
     nexts: Set["Node"]
@@ -25,7 +25,7 @@ class Node:
         if name is None:
             name = _generate_name(self)
         self.parameters = {}
-        self.attributes = set(self.attributes)  # copy construction
+        self.attributes = set()
         self.name = name
         self.prevs = set()
         self.nexts = set()

@@ -7,11 +7,11 @@ from nose.tools import raises
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operators.concat import Concat
 from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import AxisOrder, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from graph_transpiler.graph.variables.attributes.order import Order, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 
 
-def main(order1: Type[AxisOrder], order2: Type[AxisOrder], concat_axis: Axis):
+def main(order1: Type[Order], order2: Type[Order], concat_axis: Axis):
     default_order = {
         1: OrderC,
         2: OrderNC,

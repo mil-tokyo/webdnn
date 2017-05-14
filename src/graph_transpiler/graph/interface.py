@@ -1,17 +1,50 @@
 from abc import ABCMeta
-from typing import List, Type, Dict, Set, Tuple
+from typing import List, Type, Dict, Set, Tuple, Optional
 
-from graph_transpiler.graph.variables.attributes.order import AxisOrder
+from graph_transpiler.graph.variables.attributes.order import Order
 
 
-class IVariable(metaclass=ABCMeta):
+class IAttribute:
+    node: "INode"
+
+
+class INode:
+    attributes: Set[IAttribute]
+    parameters: Dict[str, any]
+    prevs: Set["INode"]
+    nexts: Set["INode"]
+
+    # noinspection PyUnusedLocal
+    def __init__(self, name: Optional[str]):
+        raise NotImplementedError
+
+    def append_prev(self, prev: "INode"):
+        raise NotImplementedError
+
+    def remove_prev(self, prev: "INode"):
+        raise NotImplementedError
+
+    def append_next(self, next: "INode"):
+        raise NotImplementedError
+
+    def remove_next(self, next: "INode"):
+        raise NotImplementedError
+
+    def __repr__(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        raise NotImplementedError
+
+
+class IVariable(INode, metaclass=ABCMeta):
     shape: List[int]
     input_to: Set["IOperator"]
     output_from: "IOperator"
-    order: Type[AxisOrder]
+    order: Order
 
-    # noinspection PyUnusedLocal
-    def __init__(self, shape: List[int], order: Type[AxisOrder]):
+    # noinspection PyUnusedLocal,PyMissingConstructor
+    def __init__(self, shape: List[int], order: Order):
         raise NotImplementedError
 
     @property
@@ -34,7 +67,7 @@ class IVariable(metaclass=ABCMeta):
     def shape_dict(self):
         raise NotImplementedError
 
-    def change_order(self, order: Type[AxisOrder]) -> None:
+    def change_order(self, order: Order) -> None:
         raise NotImplementedError
 
     def __repr__(self) -> str:
@@ -44,7 +77,7 @@ class IVariable(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class IOperator(metaclass=ABCMeta):
+class IOperator(INode, metaclass=ABCMeta):
     inputs: Dict[str, IVariable]
     outputs: Dict[str, IVariable]
 
@@ -82,4 +115,7 @@ class IOperator(metaclass=ABCMeta):
         raise NotImplementedError
 
     def __call__(self, *args, **kwargs) -> Tuple[IVariable]:
+        raise NotImplementedError
+
+    def get_attribute(self, Attr: Type[IAttribute]) -> List[IAttribute]:
         raise NotImplementedError

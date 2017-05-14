@@ -5,17 +5,15 @@ import numpy as np
 from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.attributes.have_weights import HaveWeights
 from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import AxisOrder
+from graph_transpiler.graph.variables.attributes.order import Order
 
 
 class Sgemm(Operator):
-    attributes = {PostElementwise,
-                  PostAxiswise,
+    attributes = {PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: Optional[str], M: int, N: int, K: int, out_shape: Iterable[int], out_order: Type[AxisOrder],
+    def __init__(self, name: Optional[str], M: int, N: int, K: int, out_shape: Iterable[int], out_order: Order,
                  transpose_A: bool, transpose_B: bool):
         super().__init__(name)
 

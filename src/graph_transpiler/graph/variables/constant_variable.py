@@ -1,26 +1,24 @@
-from typing import Type
-
 import numpy as np
 
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.constant import Constant
-from graph_transpiler.graph.variables.attributes.order import AxisOrder
+from graph_transpiler.graph.variables.attributes.order import Order
 
 
 # FIXME: DOCS
 class ConstantVariable(Variable):
     data: np.array
 
-    def __init__(self, data: np.array, order: Type[AxisOrder]):
+    def __init__(self, data: np.array, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
         self.data = data
-        self.attributes.add(Constant)
+        self.attributes = {Constant(self)}
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.order.axes))
         return f"<Constant shape={self.shape}, order=\"{order_repr}\">"
 
-    def change_order(self, order: Type[AxisOrder]):
+    def change_order(self, order: Order):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
         # 増える次元は、サイズ1
         current_shape_dict = self.shape_dict

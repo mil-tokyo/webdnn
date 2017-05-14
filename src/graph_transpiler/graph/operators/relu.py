@@ -1,11 +1,8 @@
 from typing import Optional
 
 from graph_transpiler.graph.operator import Operator
-from graph_transpiler.graph.operators.attributes.axiswise import Channelwise
 from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
 from graph_transpiler.graph.operators.attributes.inplace import Inplace
-from graph_transpiler.graph.operators.attributes.post_axiswise import PostAxiswise
-from graph_transpiler.graph.operators.attributes.post_elementwise import PostElementwise
 from graph_transpiler.graph.variable import Variable
 
 
@@ -16,15 +13,11 @@ class Relu(Operator):
         name (str): Operator name.
 
     """
-    # FIXME: ElementwiseであればChannelwiseだが、このattribute定義がよいのかどうか？
-    attributes = {PostElementwise,
-                  PostAxiswise,
-                  Elementwise,
-                  Channelwise,
-                  Inplace}
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
+        self.attributes = {Elementwise(self),
+                           Inplace(self, "x", "y")}
 
     def __call__(self, x: Variable):
         """

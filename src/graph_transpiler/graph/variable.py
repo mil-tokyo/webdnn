@@ -4,7 +4,7 @@ import numpy as np
 
 from graph_transpiler.graph.interface import IVariable
 from graph_transpiler.graph.node import Node
-from graph_transpiler.graph.variables.attributes.order import AxisOrder
+from graph_transpiler.graph.variables.attributes.order import Order
 
 
 # FIXME: DOCS
@@ -16,15 +16,13 @@ class Variable(Node, IVariable):
     shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存
     """
 
-    def __init__(self, shape: Iterable[int], order: Type[AxisOrder]):
+    def __init__(self, shape: Iterable[int], order: Order):
         super().__init__()
 
         self.shape = list(int(v) for v in shape)
         self.input_to = set()
         self.output_from = None
         self.order = order
-
-        self.attributes.add(order)
 
         assert self.order.ndim == len(self.shape)
 
@@ -49,7 +47,7 @@ class Variable(Node, IVariable):
     def shape_dict(self):
         return dict(zip(self.order.axes, self.shape))
 
-    def change_order(self, order: Type[AxisOrder]):
+    def change_order(self, order: Order):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
         # 増える次元は、サイズ1
         current_shape_dict = self.shape_dict

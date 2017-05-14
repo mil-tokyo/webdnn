@@ -11,7 +11,7 @@ from graph_transpiler.graph.operators.attributes.inplace import Inplace
 from graph_transpiler.graph.variable import Variable
 from graph_transpiler.graph.variables.attributes.constant import Constant
 from graph_transpiler.graph.variables.constant_variable import ConstantVariable
-from graph_transpiler.util import json, flags
+from graph_transpiler.util import json
 
 
 class AllocationAnalysisData:
@@ -181,23 +181,17 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                     and traverse.check_attribute_match(op, Inplace):
 
                     # Inplace処理
-                    input_variables = traverse.filter_nodes(op.inputs.values(), Constant, mode_not=True)
-                    if len(input_variables) > 1:
-                        if flags.DEBUG:
-                            print(f"[WebGPUAllocator] Inplace operator with ambiguous memory location is detected. "
-                                  + f"Allocator skipped inplace allocation and allocate other memory. "
-                                  + f"Operator: {op}")
 
-                    else:
-                        # 入力のメモリをそのまま使う
-                        v_in = input_variables[0]
-                        while "inplace_src" in v_in.parameters:
-                            v_in = v_in.parameters["inplace_src"]
-                        var.parameters["inplace_src"] = v_in
-                        retain_count[v_in] += len(var.input_to)
+                    inplace = op.get_attribute(Inplace)[0]  # type: Inplace
+                    # 入力のメモリをそのまま使う
+                    v_in = inplace.get_input()
+                    while "inplace_src" in v_in.parameters:
+                        v_in = v_in.parameters["inplace_src"]
+                    var.parameters["inplace_src"] = v_in
+                    retain_count[v_in] += len(var.input_to)
 
-                        allocated.add(var)
-                        flag_allocated = True
+                    allocated.add(var)
+                    flag_allocated = True
 
                 if not flag_allocated:
                     # 新しくメモリを確保
