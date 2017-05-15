@@ -49,7 +49,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=NSTModelPath.candy.name, choices=[v.name for v in NSTModelPath])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
-    parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()
 
@@ -59,9 +58,6 @@ def main():
         the resource directory. Clone command takes about a few minute, and the repository size is about 200MB.""")
 
     graph = generate_graph(model_path)
-
-    if args.optimize:
-        graph, _ = GeneralOptimizeRule().optimize(graph)
 
     graph_exec_data = generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding)
 

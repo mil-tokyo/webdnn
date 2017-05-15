@@ -20,7 +20,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="vgg16", choices=["vgg16", "resnet50"])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
-    parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()
 
@@ -41,9 +40,6 @@ def main():
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Graph
-
-    if args.optimize:
-        graph, _ = GeneralOptimizeRule().optimize(graph)
 
     graph_exec_data = generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding)
 

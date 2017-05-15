@@ -50,7 +50,6 @@ def main():
                         help="comma-separated blob name for output (mandatory)")
     parser.add_argument("--out",
                         help="output directory (default: <model>/webdnn_graph_descriptor)")
-    parser.add_argument("--optimize", type=int, default=1)
     parser.add_argument("--encoding", help="name of weight encoder")
     args = parser.parse_args()
 
@@ -67,10 +66,6 @@ def main():
     chainer_cg = chainer.computational_graph.build_computational_graph(output_blobs)
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [input_blob], output_blobs)  # type: Graph
-
-    if args.optimize:
-        sys.stderr.write("Optimizing graph\n")
-        graph, _ = GeneralOptimizeRule().optimize(graph)
 
     if args.out:
         output_dir = args.out

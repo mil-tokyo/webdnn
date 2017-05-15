@@ -29,7 +29,6 @@ def main():
     parser.add_argument("--sample_image")
     parser.add_argument("--input_name", default="data")
     parser.add_argument("--output_name", default="fc8")
-    parser.add_argument("--optimize", action="store_true")
     parser.add_argument("--encoding")
     args = parser.parse_args()
 
@@ -57,10 +56,6 @@ def main():
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Graph
-
-    if args.optimize:
-        sys.stderr.write("Optimizing graph\n")
-        graph, _ = GeneralOptimizeRule().optimize(graph)
 
     sys.stderr.write("Generating descriptors\n")
     graph_exec_data = generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding)

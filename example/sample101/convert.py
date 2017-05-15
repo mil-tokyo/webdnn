@@ -29,7 +29,6 @@ def main():
     y, = Relu("relu1")(h)
 
     graph = Graph([x], [y])
-    graph, _ = GeneralOptimizeRule().optimize(graph)
 
     builder_type = "webgpu"
     graph_exec_data = generate_descriptor(builder_type, graph)
