@@ -27,7 +27,7 @@ def parse_input_blob(args):
         input_blob = chainer.Variable(input_array)
         input_filled = True  # input data is filled with meaningful data
     else:
-        if not args.input_shapes:
+        if not args.input_shape:
             raise ValueError("input_npy or input_shapes must be specified to determine input")
         input_shape = ast.literal_eval(args.input_shape)
         input_blob = chainer.Variable(np.zeros(input_shape, dtype=np.float32))
