@@ -43,7 +43,7 @@ def linear(op: Linear) -> List[Kernel]:
     w = op.inputs["w"]
     y = op.outputs["y"]
 
-    assert y.order is OrderNC
+    assert y.order == OrderNC
     if x.order.ndim == 2:
         assert w.order.ndim == 2
         k = x.shape_dict[Axis.C]
