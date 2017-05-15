@@ -116,8 +116,6 @@ class LinearBlock(OperatorBlock):
             w_shape_dict = w.shape_dict
             assert x_shape_dict[Axis.C] * x_shape_dict[Axis.H] * x_shape_dict[Axis.W] == w_shape_dict[Axis.C]
             assert w.order is OrderNC
-            w.attributes.remove(OrderNC)
-            w.attributes.add(OrderNCHW)
             w.order = OrderNCHW
             w_new_shape = [w_shape_dict[Axis.N], x_shape_dict[Axis.C], x_shape_dict[Axis.H],
                            x_shape_dict[Axis.W]]
