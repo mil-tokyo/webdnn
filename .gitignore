@@ -12,3 +12,4 @@ memory_visualize.html
 example/keras-js/keras-js
 example/keras-js/data
 yarn.lock
+example/convert_caffe/data/

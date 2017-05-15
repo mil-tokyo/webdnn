@@ -1,7 +1,5 @@
 'use strict';
 
-var $M, $Mg;
-var runner;
 var is_image_loaded = false;
 var image_size = 227;
 
@@ -9,6 +7,7 @@ function run_entry() {
     run().then(() => {
         console.log('run finished');
     }).catch((error) => {
+        $('#mini_msg').text('Error: ' + error);
         console.error('run failed ' + error);
     });
 }
@@ -20,54 +19,41 @@ function load_image() {
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, image_size, image_size);
         is_image_loaded = true;
+        $('#run_button').prop('disabled', false);
         $('#mini_msg').text('Image loaded to canvas');
     }
     img.src = $("input[name=image_url]").val();
 }
 
-let flag_prepared = false;
-let test_samples;
+let run_if = null;
 
 async function prepare_run() {
-    if (flag_prepared) return;
-
+    if (run_if) {
+        return;
+    }
     let backend_name = $('input[name=backend_name]:checked').val();
-    if (!$M) {
-        backend_name = await init(backend_name);
-    }
-
-    runner = $M.gpu.createDescriptorRunner();
-    runner.ignoreCache = true;
-    await runner.load('./output');
-
-    let test_image;
-    if (is_image_loaded) {
-        test_image = getImageData();
-    } else {
-        test_image = await fetchImage('./output/image_nhwc.json');
-    }
-    test_samples = [test_image];
-
-    flag_prepared = true;
+    $('#mini_msg').text('Initializing and loading model');
+    run_if = await WebDNN.prepareAll('./output', {backendOrder: backend_name});
 }
 
 async function run() {
     await prepare_run();
 
-    let input_views = await runner.getInputViews();
-    let output_views = await runner.getOutputViews();
-
     let total_elapsed_time = 0;
     let pred_label;
+    let test_image = getImageData();
+    let test_samples = [test_image];
+
+    $('#mini_msg').text('Running model...');
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        input_views[0].set(sample);
+        run_if.inputViews[0].set(sample);
 
         let start = performance.now();
-        await runner.run();
+        await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = output_views[0];
+        let out_vec = run_if.outputViews[0];
         pred_label = 0;
         let pred_score = -Infinity;
         for (let j = 0; j < out_vec.length; j++) {
@@ -80,15 +66,7 @@ async function run() {
         console.log(out_vec);
     }
     console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
-    $('#mini_msg').text(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}`);
-}
-
-async function init(backend_name) {
-    $M = WebDNN;
-    let backend = await $M.init(backend_name);
-    console.log(`backend: ${backend}`);
-    $Mg = $M.gpu;
-    return backend;
+    $('#mini_msg').text(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}, backend=${run_if.backendName}`);
 }
 
 function makeMatFromJson(mat_data) {
