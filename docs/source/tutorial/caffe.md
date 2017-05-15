@@ -5,7 +5,7 @@ into `GraphDescriptor`, and run `GraphDescriptor` on your web page.
 
 ## 1. Convert Caffemodel into GraphDescriptor
 
-WIP
+See jupyter notebook ([caffenet_conversion.ipynb](https://github.com/mil-tokyo/mil-web-dnn/blob/master/example/convert_caffe/caffenet_conversion.ipynb)) to see how to convert model offline.
 
 ## 2. Run on web browser
 
