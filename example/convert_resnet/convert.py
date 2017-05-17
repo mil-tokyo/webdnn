@@ -1,4 +1,9 @@
+"""
+Example of converting ResNet-50 Chainer model
+"""
+
 import argparse
+import sys
 import os
 from os import path
 
@@ -17,6 +22,8 @@ OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
 
 def main():
+    sys.setrecursionlimit(10000)  # workaround for deep copying large graph
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="vgg16", choices=["vgg16", "resnet50"])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
@@ -24,7 +31,6 @@ def main():
     args = parser.parse_args()
 
     sample_image = PIL.Image.open("../../resources/imagenet/ILSVRC2012_val_00000001.JPEG")
-
     if args.model == "vgg16":
         link = chainer.links.model.vision.vgg.VGG16Layers()
         prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  # BGR, CHW
