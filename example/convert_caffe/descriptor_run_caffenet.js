@@ -5,11 +5,14 @@ var image_size = 227;
 
 function run_entry() {
     run().then(() => {
-        console.log('run finished');
+        log('Run finished');
     }).catch((error) => {
-        $('#mini_msg').text('Error: ' + error);
-        console.error('run failed ' + error);
+        log('Error: ' + error);
     });
+}
+
+function log(msg) {
+    $('#messages').append('<br>').append(document.createTextNode(msg));
 }
 
 function load_image() {
@@ -20,7 +23,10 @@ function load_image() {
         ctx.drawImage(img, 0, 0, image_size, image_size);
         is_image_loaded = true;
         $('#run_button').prop('disabled', false);
-        $('#mini_msg').text('Image loaded to canvas');
+        log('Image loaded to canvas');
+    }
+    img.onerror = function () {
+        log('Failed to load image');
     }
     img.src = $("input[name=image_url]").val();
 }
@@ -32,8 +38,9 @@ async function prepare_run() {
         return;
     }
     let backend_name = $('input[name=backend_name]:checked').val();
-    $('#mini_msg').text('Initializing and loading model');
-    run_if = await WebDNN.prepareAll('./output', {backendOrder: backend_name});
+    log('Initializing and loading model');
+    run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
+    log(`Loaded backend: ${run_if.backendName}`);
 }
 
 async function run() {
@@ -44,7 +51,7 @@ async function run() {
     let test_image = getImageData();
     let test_samples = [test_image];
 
-    $('#mini_msg').text('Running model...');
+    log('Running model...');
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
         run_if.inputViews[0].set(sample);
@@ -54,19 +61,15 @@ async function run() {
         total_elapsed_time += performance.now() - start;
 
         let out_vec = run_if.outputViews[0];
-        pred_label = 0;
-        let pred_score = -Infinity;
-        for (let j = 0; j < out_vec.length; j++) {
-            if (out_vec[j] > pred_score) {
-                pred_score = out_vec[j];
-                pred_label = j;
-            }
+        let top_labels = WebDNN.Math.argmax(out_vec, 5);
+        let predicted_str = 'Predicted:';
+        for (let j = 0; j < top_labels.length; j++) {
+            predicted_str += ` ${top_labels[j]}(${imagenet_labels[top_labels[j]]})`;
         }
-        console.log(`predicted: ${pred_label}`);
-        console.log(out_vec);
+        log(predicted_str);
+        console.log('output vector: ', out_vec);
     }
-    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
-    $('#mini_msg').text(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}, backend=${run_if.backendName}`);
+    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, backend=${run_if.backendName}`);
 }
 
 function makeMatFromJson(mat_data) {
