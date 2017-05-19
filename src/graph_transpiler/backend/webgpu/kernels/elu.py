@@ -13,10 +13,10 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
+    const device float *X = data_buffer + %%META_LOAD(elu_X_offset)%%;
+    device float *Y = data_buffer + %%META_LOAD(elu_Y_offset)%%;
 
-    const int N = %%META_LOAD(relu_N)%%;
+    const int N = %%META_LOAD(elu_N)%%;
   
     for (int gid = index; gid < N; gid += num_threads) {
         float result = X[gid];
@@ -41,9 +41,9 @@ def elu(op: Elu,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
     metabuffer_injector.register({
-        "relu_X_offset": x.offset,
-        "relu_Y_offset": y.offset,
-        "relu_N": y.variable.size
+        "elu_X_offset": x.offset,
+        "elu_Y_offset": y.offset,
+        "elu_N": y.variable.size
     })
 
     source = metabuffer_injector.inject(template)

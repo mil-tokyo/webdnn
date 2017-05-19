@@ -10,9 +10,6 @@ from graph_transpiler.graph.variables.attributes.order import Order
 
 
 class Sgemm(Operator):
-    attributes = {PostAxiswise,
-                  HaveWeights}
-
     def __init__(self, name: Optional[str], M: int, N: int, K: int, out_shape: Iterable[int], out_order: Order,
                  transpose_A: bool, transpose_B: bool):
         super().__init__(name)

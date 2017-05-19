@@ -9,8 +9,6 @@ from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 
 
 class Col2Im(Operator):
-    attributes = {PostAxiswise}
-
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)

@@ -94,9 +94,6 @@ class Allocator:
     @classmethod
     def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
         variables = set(traverse.listup_variables(graph))
-        for i, v in enumerate(variables):
-            v.name = f"v{i}"
-
         constants = set(traverse.filter_nodes(variables, Constant))  # type: Set[ConstantVariable]
         variables = variables.difference(constants)
 

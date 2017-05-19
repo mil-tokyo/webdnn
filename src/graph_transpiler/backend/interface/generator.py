@@ -20,7 +20,7 @@ def generate_descriptor(backend: str, graph: Graph, constant_encoder_name: Optio
     if backend not in generators:
         raise NotImplementedError()
 
-    graph = copy.deepcopy(graph)  # FIXME: バックエンドごとの最適化でgraphが変わってしまうので入れてあるが、もっと良い方法があれば変更
+    # graph = copy.deepcopy(graph)  # FIXME: バックエンドごとの最適化でgraphが変わってしまうので入れてあるが、もっと良い方法があれば変更
 
     if flags.optimize.OPTIMIZE:
         graph, _ = GeneralOptimizeRule().optimize(graph)

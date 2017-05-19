@@ -13,16 +13,13 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
+    const device float *X = data_buffer + %%META_LOAD(tanh_X_offset)%%;
+    device float *Y = data_buffer + %%META_LOAD(tanh_Y_offset)%%;
 
-    const int N = %%META_LOAD(relu_N)%%;
+    const int N = %%META_LOAD(tanh_N)%%;
   
     for (int gid = index; gid < N; gid += num_threads) {
-        float result = X[gid];
-        result = tanh(result);      
-
-        Y[gid] = result;
+        Y[gid] = tanh(X[gid]);
     }
 }
 """
@@ -42,9 +39,9 @@ def tanh(op: Tanh,
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()
     metabuffer_injector.register({
-        "relu_X_offset": x.offset,
-        "relu_Y_offset": y.offset,
-        "relu_N": y.variable.size
+        "tanh_X_offset": x.offset,
+        "tanh_Y_offset": y.offset,
+        "tanh_N": y.variable.size
     })
 
     source = metabuffer_injector.inject(template)
