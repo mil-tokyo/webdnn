@@ -1,9 +1,9 @@
 from typing import List
 
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
+from graph_transpiler.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
+from graph_transpiler.backend.webgpu.injectors.meta_injector import MetaInjector
 from graph_transpiler.backend.webgpu.kernel import Kernel, GPUSize
-from graph_transpiler.backend.webgpu.kernels import util
-from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC
@@ -53,21 +53,17 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 """
 
 
-# noinspection PyUnusedLocal
 def average_pooling_2d(op: AveragePooling2D,
                        constants_layout: MemoryLayout,
-                       variables_layout: MemoryLayout,
-                       metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+                       variables_layout: MemoryLayout) -> List[Kernel]:
     x = variables_layout[op.inputs["x"]]
     y = variables_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "average_pooling_2d_X_offset": x.offset,
         "average_pooling_2d_Y_offset": y.offset,
         "average_pooling_2d_N": x.variable.shape_dict[Axis.N],
@@ -81,16 +77,18 @@ def average_pooling_2d(op: AveragePooling2D,
         "average_pooling_2d_P": op.parameters["padding"][0],
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("average_pooling_2d", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
+        {name_injector.name: source},
+        name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        metabuffer_injector.generate_buffer()
+        meta_injector.buffer
     )
 
     return [kernel]

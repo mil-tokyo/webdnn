@@ -36,7 +36,6 @@ from graph_transpiler.backend.webgpu.optimize_rules.webgpu_optimize_rule import 
 from graph_transpiler.encoder.constant_encoder import ConstantEncoder
 from graph_transpiler.graph import traverse
 from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.average_pooling_2d import AveragePooling2D
 from graph_transpiler.graph.operators.axiswise_bias import AxiswiseBias
 from graph_transpiler.graph.operators.axiswise_scale import AxiswiseScale
@@ -98,12 +97,14 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] constants_layout total size: {constants_data.size} * sizeof(float)")
-        print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {variables_layout.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorWebGPU] allocated constant-buffer size: {constants_layout.size * 4} [Byte]")
+
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
     constants_bytes = constant_encoder.encode(constants_layout, constants_data)
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
+        print(f"[GraphDescriptorGeneratorWebGPU]   encoded constant-buffer size: {len(constants_bytes)} [Byte]")
+
+    print(f"[GraphDescriptorGeneratorWebGPU] allocated variable-buffer size: {variables_layout.size * 4} [Byte]")
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 
@@ -169,13 +170,6 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
 
         elif isinstance(op, ScalarAffine):
             kernels += scalar_affine(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Operator):
-            if "custom_kernel" in op.parameters:
-                kernels += op.parameters["custom_kernel"](op, constants_layout, variables_layout)
-                continue
-
-            raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
 
         else:
             raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")

@@ -1,16 +1,14 @@
 from typing import List
 
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
+from graph_transpiler.backend.webgpu.injectors.meta_injector import MetaInjector
+from graph_transpiler.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
 from graph_transpiler.backend.webgpu.kernel import GPUSize, Kernel
-from graph_transpiler.backend.webgpu.kernels import util
-from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_transpiler.backend.webgpu.operators.im2col import Im2Col
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderCNHW
 
-
-def generate_template_NHWC():
-    return """
+template_NHWC = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
                           const device int * %%META_NAME%% [[buffer(2)]],
@@ -43,11 +41,11 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     for (int c1 = index_thread; c1 < C1; c1 += 64) {
         const float v = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n * H1 + h1) * W1 + w1) * C1 + c1];
 
-        for (int kh = (h1 + PH) % %%UNIT_KH%%; kh < KH; kh += SH) {
+        for (int kh = (h1 + PH) % SH; kh < KH; kh += SH) {
             const int h2 = (h1 + PH - kh) / SH;
             if (h2 < 0 || h2 >= H2) continue;
 
-            for (int kw = (w1 + PW) % %%UNIT_KW%%; kw < KW; kw += SW) {
+            for (int kw = (w1 + PW) % SW; kw < KW; kw += SW) {
                 const int w2 = (w1 + PW - kw) / SW;
                 if (w2 < 0 || w2 >= W2) continue;
 
@@ -56,10 +54,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
         }
     }
 }
-""" \
-        .replace("%%UNIT_KH%%", "SH") \
-        .replace("%%UNIT_KW%%", "SW")
-
+"""
 
 template_CNHW = """
 kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
@@ -101,19 +96,14 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 """
 
 
-# noinspection PyUnusedLocal
 def im2col(op: Im2Col,
            constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+           variables_layout: MemoryLayout) -> List[Kernel]:
     im = variables_layout[op.inputs["im"]]
     col = variables_layout[op.outputs["col"]]
 
     assert im.variable.order == OrderNHWC
     assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
-
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
 
     N = im.variable.shape_dict[Axis.N]
     C1 = im.variable.shape_dict[Axis.C]
@@ -123,7 +113,8 @@ def im2col(op: Im2Col,
     H1P = H1 + 2 * op.PH
     W1P = W1 + 2 * op.PW
 
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "im2col_im_offset": im.offset,
         "im2col_col_offset": col.offset,
         "im2col_N": col.variable.shape_dict[Axis.N],
@@ -140,22 +131,18 @@ def im2col(op: Im2Col,
         "im2col_PW": op.PW,
     })
 
-    if col.variable.order == OrderCNHW:
-        source = template_CNHW
+    name_injector = KernelNameInjector(op)
 
-    else:
-        source = generate_template_NHWC()
-
-    source = metabuffer_injector.inject(source)
-    func_name = util.add_canonical_suffix("im2col", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    source = template_CNHW if col.variable.order == OrderCNHW else template_NHWC
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
+        {name_injector.name: source},
+        name_injector.name,
         GPUSize(N * H1P * W1P, 1, 1),
         GPUSize(64, 1, 1),
-        metabuffer_injector.generate_buffer()
+        meta_injector.buffer
     )
 
     return [kernel]

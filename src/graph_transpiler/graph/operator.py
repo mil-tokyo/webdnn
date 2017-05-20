@@ -149,3 +149,6 @@ class Operator(Node, IOperator):
 
     def get_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
         return [attr for attr in self.attributes if isinstance(attr, Attr)]
+
+    def has_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
+        return len(self.get_attribute(Attr)) > 0

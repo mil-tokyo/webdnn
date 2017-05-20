@@ -1,9 +1,9 @@
 from typing import List
 
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
+from graph_transpiler.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
+from graph_transpiler.backend.webgpu.injectors.meta_injector import MetaInjector
 from graph_transpiler.backend.webgpu.kernel import GPUSize, Kernel
-from graph_transpiler.backend.webgpu.kernels import util
-from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_transpiler.backend.webgpu.operators.col2im import Col2Im
 from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.variables.attributes.order import OrderNHWC
@@ -62,21 +62,17 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 """
 
 
-# noinspection PyUnusedLocal
 def col2im(op: Col2Im,
            constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+           variables_layout: MemoryLayout) -> List[Kernel]:
     col = variables_layout[op.inputs["col"]]
     im = variables_layout[op.outputs["im"]]
 
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "col2im_im_offset": im.offset,
         "col2im_col_offset": col.offset,
         "col2im_N": col.variable.shape_dict[Axis.N],
@@ -93,16 +89,18 @@ def col2im(op: Col2Im,
         "col2im_PW": op.PW,
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("col2im", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
+        {name_injector.name: source},
+        name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        metabuffer_injector.generate_buffer()
+        meta_injector.buffer
     )
 
     return [kernel]

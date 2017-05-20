@@ -2,7 +2,6 @@ from typing import List
 
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
 from graph_transpiler.backend.webgpu.kernel import Kernel
-from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_transpiler.graph.operators.flatten import Flatten
 
 
@@ -30,8 +29,7 @@ from graph_transpiler.graph.operators.flatten import Flatten
 
 def flatten(op: Flatten,
             constants_layout: MemoryLayout,
-            variables_layout: MemoryLayout,
-            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+            variables_layout: MemoryLayout) -> List[Kernel]:
     return []
     # x = variables_layout[op.inputs["x"]]
     # y = variables_layout[op.outputs["y"]]

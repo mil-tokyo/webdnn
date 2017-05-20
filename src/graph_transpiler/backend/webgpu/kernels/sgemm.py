@@ -1,24 +1,16 @@
 from typing import List
 
-from graph_transpiler.backend.webassembly.inline_injector import InlineInjector
 from graph_transpiler.backend.webgpu.allocator import MemoryLayout
-from graph_transpiler.backend.webgpu.attributes.inline_inject import PostInlineInplace
+from graph_transpiler.backend.webgpu.injectors.inline_injector import InlineInjector
+from graph_transpiler.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
+from graph_transpiler.backend.webgpu.injectors.meta_injector import MetaInjector
 from graph_transpiler.backend.webgpu.kernel import Kernel, GPUSize
-from graph_transpiler.backend.webgpu.kernels import util
-from graph_transpiler.backend.webgpu.meta_buffer_injector import MetaBufferInjector
 from graph_transpiler.backend.webgpu.operators.sgemm import Sgemm
-
-prototype_sgemm_core = """
-void %%CORE_NAME%%(const device float*, const device float*, device float*, 
-                   const int, const int, const int,
-                   const int, const int,
-                   threadgroup float4*, 
-                   ushort, ushort2);
-"""
 
 
 def generate_template(transpose_A, transpose_B, with_bias=False):
-    return """
+    return ("""
+#define ENABLE_SGEMM_BIAS %%ENABLE_SGEMM_BIAS%%
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
                           const device int * %%META_NAME%% [[buffer(2)]],
@@ -35,37 +27,11 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
     const int N = %%META_LOAD(sgemm_N)%%;
     const int K = %%META_LOAD(sgemm_K)%%;
 
-    const device float *bias = %%BIAS%%;
-
     threadgroup float4 shared4[32 * 8 * 2];
 
     const int stride_k = (index & 32) ? %%B_STRIDE_K%% : %%A_STRIDE_K%%;
     const int stride_mn = (index & 32) ? %%B_STRIDE_MN%% : %%A_STRIDE_MN%%;
 
-    %%CORE_NAME%%(load_target, bias, C, M, N, K, stride_k, stride_mn, shared4, index, group_position);
-}
-""" \
-        .replace("%%A_STRIDE_K%%", "1" if transpose_A else "M") \
-        .replace("%%B_STRIDE_K%%", "N" if transpose_B else "1") \
-        .replace("%%A_STRIDE_MN%%", "K" if transpose_A else "1") \
-        .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K") \
-        .replace("%%BIAS%%", "weight_buffer + %%META_LOAD(sgemm_b_offset)%%" if with_bias else "nullptr")
-
-
-def generate_sgemm_core(with_bias=False):
-    return """
-void %%CORE_NAME%%(const device float *load_target,
-                   const device float *bias,
-                   device float *C,
-                   const int M,
-                   const int N,
-                   const int K,
-                   const int stride_k,
-                   const int stride_mn,
-                   threadgroup float4 *shared4,
-                   ushort index,
-                   ushort2 group_position) 
-{
     const int m_offset = index & 7;
     const int n_offset = index >> 3;
 
@@ -213,18 +179,19 @@ void %%CORE_NAME%%(const device float *load_target,
     }
 
     {
-""" + ("""
+    
+#ifdef ENABLE_SGEMM_BIAS
         float b[8];
-    #pragma unroll 8
+        const device float *bias = weight_buffer + %%META_LOAD(sgemm_b_offset)%%;
+#pragma unroll 8
         for (int n_sub = 0; n_sub < 8; n_sub++)
         {
-
             b[n_sub] = (group_position.y * 64 + n_offset * 8 + n_sub < N)
                 ? bias[group_position.y * 64 + n_offset * 8 + n_sub]
                 : 0;
         }
-""" if with_bias else """
-""") + """
+#endif
+        
 #pragma unroll 8
         for (int m_sub = 0; m_sub < 8; m_sub++)
         {
@@ -236,31 +203,35 @@ void %%CORE_NAME%%(const device float *load_target,
                 {
                     const int m = group_position.x * 64 + m_offset * 8 + m_sub;
                     const int n = group_position.y * 64 + n_offset * 8 + n_sub1 * 4 + n_sub2;
-""" + ("""
+
+#ifdef ENABLE_SGEMM_BIAS
                     (m < M && n < N) ? (C[m * N + n] = %%INLINE(b[n_sub1*4+n_sub2] + result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
-""" if with_bias else """
+#else
                     (m < M && n < N) ? (C[m * N + n] = %%INLINE(result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
-""") + """
+#endif
                 }
             }
         }
     }
 }
-"""
+#undef ENABLE_SGEMM_BIAS
+""") \
+        .replace("%%ENABLE_SGEMM_BIAS%%", "1" if with_bias else "0") \
+        .replace("%%A_STRIDE_K%%", "1" if transpose_A else "M") \
+        .replace("%%B_STRIDE_K%%", "N" if transpose_B else "1") \
+        .replace("%%A_STRIDE_MN%%", "K" if transpose_A else "1") \
+        .replace("%%B_STRIDE_MN%%", "1" if transpose_B else "K")
 
 
 def sgemm(op: Sgemm,
           constants_layout: MemoryLayout,
-          variables_layout: MemoryLayout,
-          metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+          variables_layout: MemoryLayout) -> List[Kernel]:
     A = variables_layout[op.inputs["A"]] if op.inputs["A"] in variables_layout else constants_layout[op.inputs["A"]]
     B = variables_layout[op.inputs["B"]] if op.inputs["B"] in variables_layout else constants_layout[op.inputs["B"]]
     C = variables_layout[op.outputs["C"]]
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "sgemm_A_offset": A.offset,
         "sgemm_B_offset": B.offset,
         "sgemm_C_offset": C.offset,
@@ -270,45 +241,28 @@ def sgemm(op: Sgemm,
     })
 
     with_bias = "b" in op.inputs
-
     if with_bias:
-        metabuffer_injector.register({
+        meta_injector.register({
             "sgemm_b_offset": constants_layout[op.inputs["b"]].offset
         })
 
-    inline_injector = InlineInjector()
-    post_inline_inplace = op.get_attribute(PostInlineInplace)
-    if len(post_inline_inplace) > 0:
-        post_inline_inplace = post_inline_inplace[0]  # type: PostInlineInplace
-        if post_inline_inplace.injected is not None:
-            inline_injector.delegate = post_inline_inplace.injected.injector
+    inline_injector = InlineInjector(op)
+    name_injector = KernelNameInjector(op)
 
     # transpose_X assumes fortran-order data. True means X is C-order, False means Fortran-order.
     # In default convolution, transpose_A == transpose_B == True.
     # The order of output matrix C is C-order.
-    core_source = inline_injector.inject(generate_sgemm_core(with_bias=with_bias))
-    core_name = util.add_canonical_suffix("sgemm_core", core_source)
-    core_source = core_source.replace("%%CORE_NAME%%", core_name)
-    prototype_source = prototype_sgemm_core.replace("%%CORE_NAME%%", core_name)
-
-    func_source = generate_template(op.transpose_A, op.transpose_B, with_bias=with_bias)
-    func_source = metabuffer_injector.inject(func_source)
-    func_source = func_source.replace("%%CORE_NAME%%", core_name)
-    func_name = util.add_canonical_suffix("sgemm", func_source)
-    func_source = func_source.replace("%%FUNC_NAME%%", func_name)
+    source = generate_template(op.transpose_A, op.transpose_B, with_bias=with_bias)
+    source = meta_injector.inject(source)
+    source = inline_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {
-            func_name: func_source,
-            core_name: core_source
-        },
-        func_name,
+        {name_injector.name: source},
+        name_injector.name,
         GPUSize((op.M + 64 - 1) // 64, (op.N + 64 - 1) // 64, 1),
         GPUSize(64, 1, 1),
-        metabuffer_injector.generate_buffer(),
-        {
-            core_name: prototype_source
-        }
+        meta_injector.buffer
     )
 
     return [kernel]

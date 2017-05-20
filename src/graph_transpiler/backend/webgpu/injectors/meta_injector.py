@@ -2,13 +2,13 @@ from typing import Dict, Union
 
 import numpy as np
 
-from graph_transpiler.backend.webgpu.tag_parser import TagParser
+from graph_transpiler.backend.webgpu.injector import Tag, Injector
 from graph_transpiler.util import flags
 
 MetaBufferContent = Union[int, float, bytes]
 
 
-class MetaBufferInjector:
+class MetaInjector(Injector):
     def __init__(self):
         self.data = {}  # type: Dict[str, MetaBufferContent]
         self.offset_map = None  # type: Dict[str, int]
@@ -18,35 +18,32 @@ class MetaBufferInjector:
     def register(self, data: Dict[str, any]):
         self.data.update(data)
 
-    def inject(self, source: str) -> str:
+    def inject_tag(self, tag: Tag):
         if self.offset_map is None:
-            self.generate_buffer()
+            self._generate_buffer()
 
-        for tag in TagParser.parse(source):
-            if tag.name == "META_NAME":  # メタバッファ名の取得
-                source = source[:tag.span[0]] + self.arg_name + source[tag.span[1]:]
+        if tag.name == "META_NAME":  # メタバッファ名の取得
+            return self.arg_name
 
-            elif tag.name == "META_LOAD":  # データの読み込み
-                key = tag.args[0]
-                if key not in self.data:
-                    raise KeyError(f"key '{key}' is not registered in MetaBufferInjector.")
+        elif tag.name == "META_LOAD":  # データの読み込み
+            key = tag.args[0]
+            if key not in self.data:
+                raise KeyError(f"key '{key}' is not registered in MetaBufferInjector.")
 
-                if flags.optimize.EMBED_METABUFFER_VALUE:
-                    value = self.data[key]
-                    if isinstance(value, int) or isinstance(value, float):
-                        value = str(value)
-
-                    else:
-                        value = f"{self.arg_name}[{self.offset_map[key]}]"
+            if flags.optimize.EMBED_METABUFFER_VALUE:
+                if isinstance(self.data[key], int) or isinstance(self.data[key], float):
+                    return str(self.data[key])
 
                 else:
-                    value = f"{self.arg_name}[{self.offset_map[key]}]"
+                    return f"{self.arg_name}[{self.offset_map[key]}]"
 
-                source = source[:tag.span[0]] + value + source[tag.span[1]:]
+            else:
+                return f"{self.arg_name}[{self.offset_map[key]}]"
 
-        return source
+        else:
+            return tag.original
 
-    def generate_buffer(self) -> bytes:
+    def _generate_buffer(self) -> bytes:
         if self.buffer:
             return self.buffer
 

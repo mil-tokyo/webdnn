@@ -40,6 +40,10 @@ class Allocation(json.SerializableMixin, IAllocation):
         self.offset = offset
 
     @property
+    def is_constant(self) -> bool:
+        return isinstance(self.variable, ConstantVariable)
+
+    @property
     def size(self) -> int:
         return self.variable.size
 
@@ -52,7 +56,6 @@ class Allocation(json.SerializableMixin, IAllocation):
 
 
 class MemoryLayout(json.SerializableMixin, IMemoryLayout):
-    size: int
     __dict__: Dict[str, Allocation]
 
     def __init__(self):
