@@ -344,7 +344,7 @@ class ReshapeBlock(OperatorBlock):
         assert len(self.cfunc.shape) == 2
         assert self.cfunc.shape[0] == inputs[0].shape[0]  # Nは変化しない
 
-        opr = Flatten(generate_unique_name(self.cfunc.label), in_axes={Axis.C, Axis.H, Axis.W}, out_axes={Axis.C})
+        opr = Flatten(generate_unique_name(self.cfunc.label), in_axes=[Axis.C, Axis.H, Axis.W], out_axis=Axis.C)
         return list(opr(inputs[0]))
 
 
