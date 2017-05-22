@@ -11,6 +11,7 @@ from graph_transpiler.backend.webgpu.operators.sgemm import Sgemm
 def generate_template(transpose_A, transpose_B, with_bias=False):
     return ("""
 #define ENABLE_SGEMM_BIAS %%ENABLE_SGEMM_BIAS%%
+
 kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
                           device float *data_buffer[[buffer(1)]],
                           const device int * %%META_NAME%% [[buffer(2)]],
@@ -91,7 +92,6 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         threadgroup_barrier(mem_flags::mem_threadgroup);
 
         {
-#pragma unroll 8
             for (int k_sub = 0; k_sub < 8; k_sub++)
             {
                 float4 a00 = shared4[32 * k_sub + read_A_offset4 + 0];
@@ -180,10 +180,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
     {
     
-#ifdef ENABLE_SGEMM_BIAS
+#if ENABLE_SGEMM_BIAS
         float b[8];
         const device float *bias = weight_buffer + %%META_LOAD(sgemm_b_offset)%%;
-#pragma unroll 8
         for (int n_sub = 0; n_sub < 8; n_sub++)
         {
             b[n_sub] = (group_position.y * 64 + n_offset * 8 + n_sub < N)
@@ -192,28 +191,30 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         }
 #endif
         
-#pragma unroll 8
         for (int m_sub = 0; m_sub < 8; m_sub++)
         {
-#pragma unroll 2
             for (int n_sub1 = 0; n_sub1 < 2; n_sub1++)
             {
-#pragma unroll 4
                 for (int n_sub2 = 0; n_sub2 < 4; n_sub2++)
                 {
                     const int m = group_position.x * 64 + m_offset * 8 + m_sub;
                     const int n = group_position.y * 64 + n_offset * 8 + n_sub1 * 4 + n_sub2;
 
-#ifdef ENABLE_SGEMM_BIAS
-                    (m < M && n < N) ? (C[m * N + n] = %%INLINE(b[n_sub1*4+n_sub2] + result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
+#if ENABLE_SGEMM_BIAS
+                    (m < M && n < N) ? 
+                        (C[m * N + n] = %%INLINE(result[m_sub * 2 + n_sub1][n_sub2] + b[n_sub1*4+n_sub2])%%) :
+                        0;
 #else
-                    (m < M && n < N) ? (C[m * N + n] = %%INLINE(result[m_sub * 2 + n_sub1][n_sub2])%%) : 0;
+                    (m < M && n < N) ? 
+                        (C[m * N + n] = %%INLINE(result[m_sub * 2 + n_sub1][n_sub2])%%) : 
+                        0;
 #endif
                 }
             }
         }
     }
 }
+
 #undef ENABLE_SGEMM_BIAS
 """) \
         .replace("%%ENABLE_SGEMM_BIAS%%", "1" if with_bias else "0") \
@@ -230,21 +231,18 @@ def sgemm(op: Sgemm,
     B = variables_layout[op.inputs["B"]] if op.inputs["B"] in variables_layout else constants_layout[op.inputs["B"]]
     C = variables_layout[op.outputs["C"]]
 
+    with_bias = "b" in op.inputs
+
     meta_injector = MetaInjector()
     meta_injector.register({
         "sgemm_A_offset": A.offset,
         "sgemm_B_offset": B.offset,
         "sgemm_C_offset": C.offset,
+        "sgemm_b_offset": constants_layout[op.inputs["b"]].offset if with_bias else 0,
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K
     })
-
-    with_bias = "b" in op.inputs
-    if with_bias:
-        meta_injector.register({
-            "sgemm_b_offset": constants_layout[op.inputs["b"]].offset
-        })
 
     inline_injector = InlineInjector(op)
     name_injector = KernelNameInjector(op)

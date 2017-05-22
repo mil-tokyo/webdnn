@@ -62,6 +62,7 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 """
 
 
+# noinspection PyUnusedLocal
 def col2im(op: Col2Im,
            constants_layout: MemoryLayout,
            variables_layout: MemoryLayout) -> List[Kernel]:

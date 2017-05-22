@@ -96,15 +96,14 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
         traverse.dump(graph)
 
     variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
-    if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] allocated constant-buffer size: {constants_layout.size * 4} [Byte]")
 
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
     constants_bytes = constant_encoder.encode(constants_layout, constants_data)
-    if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU]   encoded constant-buffer size: {len(constants_bytes)} [Byte]")
 
-    print(f"[GraphDescriptorGeneratorWebGPU] allocated variable-buffer size: {variables_layout.size * 4} [Byte]")
+    if flags.DEBUG:
+        print(f"[GraphDescriptorGeneratorWebGPU] allocated constant-buffer size: {constants_layout.size * 4} [Byte]")
+        print(f"[GraphDescriptorGeneratorWebGPU]   encoded constant-buffer size: {len(constants_bytes)} [Byte]")
+        print(f"[GraphDescriptorGeneratorWebGPU] allocated variable-buffer size: {variables_layout.size * 4} [Byte]")
 
     kernels = generate_kernels(graph, constants_layout, variables_layout)
 

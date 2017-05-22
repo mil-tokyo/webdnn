@@ -8,31 +8,52 @@
     <script src="../../build/descriptor_runner/webdnn.js"></script>
     <script src="webcam.min.js"></script>
     <script src="script.js"></script>
+    <style>
+        .Layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .OutputLayer {
+            z-index: 2;
+        }
+        .CameraLayer {
+            z-index: 1;
+        }
+        .UILayer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+        .OutputLayer canvas,
+        .CameraLayer object {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
 
-<header style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    <h1>Neural Style Transfer</h1>
-    <span id="status">Initializing</span>
-    <button id="toggle" disabled onclick="togglePause(); return false;">Initializing</button>
-</header>
-
-<div style="display: flex; flex-direction: row; align-items: center; justify-content: center;">
-
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div id="camera" style="border: 1px solid #000; width: 512px; height: 384px; margin: 32px;"></div>
-        <h2>Input</h2>
-    </div>
-
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <canvas id="result" width="512" height="384" style="border: 1px solid #000; margin: 32px;"></canvas>
-        <h2>Output</h2>
-    </div>
-
+<div class="Layer OutputLayer" onclick="togglePause(); return false;">
+    <canvas id="result" width="192" height="144"></canvas>
 </div>
 
-<canvas id="snap" width="512" height="384" style="border: 1px solid #000; display: none; margin-right: 32px;"></canvas>
-</body>
+<div class="Layer CameraLayer"></div>
 
+<div class="Layer UILayer" onclick="togglePause(); return false;">
+    <span id="status">Initializing</span>
+</div>
+
+<canvas id="snap" width="192" height="144" style="border: 1px solid #000; display: none; margin-right: 32px;"></canvas>
+
+</body>
 </html>

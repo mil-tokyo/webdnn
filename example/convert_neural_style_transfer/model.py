@@ -1,6 +1,9 @@
 """
 This source code is created based on https://github.com/yusuketomoto/chainer-fast-neuralstyle/blob/master/net.py
 
+---------------------------------------------------------------------------------------------------------------------------------------
+https://github.com/yusuketomoto/chainer-fast-neuralstyle
+
 The MIT License (MIT)
 
 Copyright (c) 2016 Yusuke Tomoto
