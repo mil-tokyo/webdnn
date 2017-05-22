@@ -1,19 +1,27 @@
 'use strict';
 
 let $ = (q, e) => (e || document).querySelector(q);
-let runner = null;
+let dnn = null;
 let flagPaused = true;
+let $input, $output;
+let inputView, outputView;
+let ctxIn, ctxOut;
+let h, w;
 
 document.addEventListener('DOMContentLoaded', initialize);
 
 function togglePause() {
     flagPaused = !flagPaused;
+
     if (flagPaused) {
+        $('.OutputLayer').style.display = 'none';
+        $('.UILayer').style.display = '';
         setStatus('Paused');
-        $('#toggle').textContent = 'Restart';
+
     } else {
+        $('.OutputLayer').style.display = '';
+        $('.UILayer').style.display = 'none';
         setStatus('Running');
-        $('#toggle').textContent = 'Pause';
         mainRoutine();
     }
 }
@@ -24,28 +32,31 @@ async function initialize() {
         let backend = await WebDNN.init();
         console.log(`backend: ${backend}`);
 
-        //noinspection JSUnresolvedFunction
-        runner = WebDNN.gpu.createDescriptorRunner();
-        runner.ignoreCache = true;
-        await runner.load('./output');
+        dnn = await WebDNN.prepareAll("./output");
 
         Webcam.set({
-            width: 512,
-            height: 384,
-            force_flash: true,
-            image_format: 'jpeg',
-            jpeg_quality: 10
+            dest_width: 192,
+            dest_height: 144,
+            flip_horiz: true,
+            image_format: 'png'
         });
         Webcam.on('error', (err) => {
             throw err;
         });
         Webcam.on('live', () => {
             setStatus('Ready');
-            let toggle = $('#toggle');
-            toggle.textContent = 'Start';
-            toggle.disabled = false;
         });
-        Webcam.attach('#camera');
+        Webcam.attach('.CameraLayer');
+
+        $input = $('#snap');
+        $output = $('#result');
+        inputView = dnn.inputViews[0];
+        outputView = dnn.outputViews[0];
+        ctxIn = $input.getContext('2d');
+        ctxOut = $output.getContext('2d');
+        h = $output.height;
+        w = $output.width;
+
 //noinspection ES6ModulesDependencies
     } catch (err) {
         console.log(err);
@@ -60,54 +71,40 @@ async function snap() {
 async function mainRoutine() {
     if (flagPaused) return;
 
-    let inputView = (await runner.getInputViews())[0];
-    let outputView = (await runner.getOutputViews())[0];
-
     await snap();
-    inputView.set(getImageData($('#snap')));
+    getImageData();
 
-    await runner.run();
-    setImageData($('#result'), outputView);
+    await dnn.run();
+    setImageData();
 
     requestAnimationFrame(mainRoutine);
 }
 
-function setImageData(canvas, data) {
-    let ctx = canvas.getContext('2d');
-    let h = canvas.height;
-    let w = canvas.width;
-    let imageData = new ImageData(w, h);
-    let pixelData = imageData.data;
+function getImageData() {
+    let pixelData = ctxIn.getImageData(0, 0, w, h).data;
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-            pixelData[(y * w + x) * 4] = data[(y * w + x) * 3];
-            pixelData[(y * w + x) * 4 + 1] = data[(y * w + x) * 3 + 1];
-            pixelData[(y * w + x) * 4 + 2] = data[(y * w + x) * 3 + 2];
-            pixelData[(y * w + x) * 4 + 3] = 255;
+            inputView[(y * w + x) * 3] = pixelData[(y * w + x) * 4];
+            inputView[(y * w + x) * 3 + 1] = pixelData[(y * w + x) * 4 + 1];
+            inputView[(y * w + x) * 3 + 2] = pixelData[(y * w + x) * 4 + 2];
         }
     }
-
-    ctx.putImageData(imageData, 0, 0);
 }
 
-function getImageData(canvas) {
-    let ctx = canvas.getContext('2d');
-    let h = canvas.height;
-    let w = canvas.width;
-    let imageData = ctx.getImageData(0, 0, w, h);
-    let pixelData = imageData.data;
-    let data = new Float32Array(3 * h * w);
+function setImageData() {
+    let imageData = new ImageData(w, h);
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-            data[(y * w + x) * 3] = pixelData[(y * w + x) * 4];
-            data[(y * w + x) * 3 + 1] = pixelData[(y * w + x) * 4 + 1];
-            data[(y * w + x) * 3 + 2] = pixelData[(y * w + x) * 4 + 2];
+            imageData.data[(y * w + x) * 4] = outputView[(y * w + x) * 3];
+            imageData.data[(y * w + x) * 4 + 1] = outputView[(y * w + x) * 3 + 1];
+            imageData.data[(y * w + x) * 4 + 2] = outputView[(y * w + x) * 3 + 2];
+            imageData.data[(y * w + x) * 4 + 3] = 255;
         }
     }
 
-    return data;
+    ctxOut.putImageData(imageData, 0, 0);
 }
 
 function setStatus(status) {

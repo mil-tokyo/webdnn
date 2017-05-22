@@ -88,8 +88,7 @@ namespace WebDNN {
             if (!this.inputViews || !this.outputViews) {
                 throw new Error('getInputViews and getOutputViews must be called prior to run');
             }
-            //set input to GPU
-            //await this.dataMat.syncWriteViews();//not needed for DNNBufferWebGPU
+
             if (window['PROFILE']) {
                 let records: any = [];
                 let totalElapsedTime = 0;
@@ -134,7 +133,6 @@ namespace WebDNN {
                 console.table(summary);
 
             } else {
-                //execute kernels
                 let complete_promise: Promise<void> | null = null;
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                     let exec_info = this.descriptor.exec_infos[i];
@@ -147,10 +145,8 @@ namespace WebDNN {
                         is_last
                     );
                 }
-                await complete_promise!;//wait to finish final kernel
 
-                // get output from GPU
-                //await this.dataMat.syncReadViews();//not needed for DNNBufferWebGPU
+                await complete_promise!;//wait to finish final kernel
             }
         }
     }

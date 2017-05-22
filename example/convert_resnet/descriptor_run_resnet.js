@@ -15,13 +15,13 @@ function run_entry() {
 function load_image() {
     var img = new Image();
     img.onload = function() {
-        var ctx = $('#input_image')[0].getContext('2d');
+        var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, 224, 224);
         is_image_loaded = true;
-        $('#mini_msg').text('Image loaded to canvas');
+        document.getElementById('mini_msg').textContent = 'Image loaded to canvas';
     }
-    img.src = $("input[name=image_url]").val();
+    img.src = document.querySelector("input[name=image_url]").value;
 }
 
 let flag_prepared = false;
@@ -30,7 +30,7 @@ let test_samples;
 async function prepare_run() {
     if (flag_prepared) return;
 
-    let backend_name = $('input[name=backend_name]:checked').val();
+    let backend_name = document.querySelector('input[name=backend_name]:checked').value;
     if (!$M) {
         backend_name = await init(backend_name);
     }
@@ -82,7 +82,7 @@ async function run() {
         console.log(out_vec);
     }
     console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
-    $('#mini_msg').text(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}`);
+    document.getElementById('mini_msg').textContent = `Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}`;
 }
 
 async function init(backend_name) {
@@ -106,7 +106,7 @@ async function fetchImage(path) {
 }
 
 function getImageData() {
-    let ctx = $('#input_image')[0].getContext('2d');
+    let ctx = document.getElementById('input_image').getContext('2d');
     let h = 224;
     let w = 224;
     let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)

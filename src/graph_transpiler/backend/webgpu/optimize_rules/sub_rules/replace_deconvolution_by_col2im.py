@@ -7,7 +7,7 @@ from graph_transpiler.graph.axis import Axis
 from graph_transpiler.graph.graph import Graph
 from graph_transpiler.graph.operators.deconvolution2d import Deconvolution2D
 from graph_transpiler.graph.optimize_rule import OptimizeRule
-from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderCHWN
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderCHWN, OrderCNHW
 
 
 class ReplaceDeconvolutionByCol2Im(OptimizeRule):
@@ -17,12 +17,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.listup_operators(graph):
-            if not isinstance(op, Deconvolution2D):
-                continue
-
-            op: Deconvolution2D
-
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Deconvolution2D):  # type: Deconvolution2D
             x = op.inputs["x"]
             w = op.inputs["w"]
             old_y = op.outputs["y"]
@@ -30,7 +25,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
             flag_changed = True
             op.remove_all()
 
-            assert old_y.order == OrderNHWC
+            assert x.order == OrderNHWC or x.order == OrderCNHW
             w.change_order(OrderCHWN)
             assert old_y.order == OrderNHWC
 
@@ -41,8 +36,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
                           out_shape=[x.shape_dict[Axis.N],
                                      x.shape_dict[Axis.H],
                                      x.shape_dict[Axis.W],
-                                     w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N],
-                                     ],
+                                     w.shape_dict[Axis.H] * w.shape_dict[Axis.W] * w.shape_dict[Axis.N]],
                           out_order=OrderNHWC,
                           transpose_A=True if x.order == OrderNHWC else False,
                           transpose_B=True)

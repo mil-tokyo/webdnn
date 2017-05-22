@@ -60,7 +60,7 @@ class Variable(Node, IVariable):
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.order.axes))
-        return f"<Variable shape={self.shape}, order=\"{order_repr}\">"
+        return f"<Variable {self.name} shape={self.shape}, order=\"{order_repr}\">"
 
     def __str__(self):
         return self.__repr__()

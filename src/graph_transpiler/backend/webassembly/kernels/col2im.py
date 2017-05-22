@@ -41,11 +41,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         float sum = 0;
         for (int kh = 0; kh < KH; kh++) {
             const int h2 = (h1 + PH - kh) / SH;
-            if ((h1 + PH - KH) % SH != 0 || h2 < 0 || h2 >= H2) continue;
+            if ((h1 + PH - kh) % SH != 0 || h2 < 0 || h2 >= H2) continue;
 
             for (int kw = 0; kw < KW; kw++) {
                 const int w2 = (w1 + PW - kw) / SW;
-                if ((w1 + PW - KW) % SW != 0 || w2 < 0 || w2 >= W2) continue;
+                if ((w1 + PW - kw) % SW != 0 || w2 < 0 || w2 >= W2) continue;
                 
                 sum += col[((((n * H2 + h2) * W2 + w2) * KH + kh) * KW + kw) * C1 + c1];
             }

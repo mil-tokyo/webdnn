@@ -26,6 +26,12 @@ class Order:
         else:
             return False
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "".join([axis.name for axis in self.axes])
+
 
 """
 usage:
