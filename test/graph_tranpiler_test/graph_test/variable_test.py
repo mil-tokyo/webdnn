@@ -1,7 +1,8 @@
+from nose.tools import raises
+
 from graph_transpiler.graph.axis import Axis
-from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderHWCN
+from graph_transpiler.graph.variables.attributes.order import OrderNHWC, OrderHWCN, OrderNC, OrderCHWN, OrderCN
 
 
 def test_construction():
@@ -34,13 +35,30 @@ def test_shape_dict():
 
 
 def test_change_order():
-    v1 = Variable([1, 2, 3, 4], OrderNHWC)
-    v1.change_order(OrderHWCN)
+    v = Variable([1, 2, 3, 4], OrderNHWC)
+    v.change_order(OrderHWCN)
 
-    assert v1.ndim == 4
-    assert v1.shape == [2, 3, 4, 1]
-    assert len(v1.shape_dict) == 4
-    assert v1.shape_dict[Axis.N] == 1
-    assert v1.shape_dict[Axis.H] == 2
-    assert v1.shape_dict[Axis.W] == 3
-    assert v1.shape_dict[Axis.C] == 4
+    assert v.order == OrderHWCN
+    assert v.shape == [2, 3, 4, 1]
+
+
+def test_change_order_with_expansion():
+    v = Variable([3, 4], OrderNC)
+    v.change_order(OrderCHWN)
+
+    assert v.order == OrderCHWN
+    assert v.shape == [4, 1, 1, 3]
+
+
+def test_change_order_with_compression():
+    v = Variable([3, 1, 1, 4], OrderNHWC)
+    v.change_order(OrderCN)
+
+    assert v.order == OrderCN
+    assert v.shape == [4, 3]
+
+
+@raises(AssertionError)
+def test_change_order_with_invalid_compression():
+    v = Variable([3, 2, 2, 4], OrderNHWC)
+    v.change_order(OrderCN)

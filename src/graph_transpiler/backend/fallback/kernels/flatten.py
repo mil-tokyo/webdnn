@@ -29,8 +29,8 @@ def flatten(op: Flatten) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 
-    assert set(op.parameters["in_axes"]) == {Axis.C, Axis.H, Axis.W}
-    assert set(op.parameters["out_axes"]) == {Axis.C}
+    assert op.parameters["in_axes"] == [Axis.H, Axis.W, Axis.C]
+    assert op.parameters["out_axis"] == Axis.C
     if x.order == OrderNCHW:
         assert y.order == OrderNC
     elif x.order == OrderNHWC:

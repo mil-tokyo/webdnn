@@ -1,4 +1,4 @@
-from typing import Set, Optional
+from typing import Optional, List
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from graph_transpiler.graph.operator import Operator
 from graph_transpiler.graph.operators.attributes.elementwise import Elementwise
 from graph_transpiler.graph.operators.attributes.inplace import Inplace
 from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNC
+from graph_transpiler.graph.variables.attributes.order import Order
 
 
 # FIXME: improve documentation
@@ -17,7 +17,7 @@ class Flatten(Operator):
     Args:
         name (str): Operator name.
         in_axes (set of :class:~`graph_transpiler.graph.Axis`): axes which are combined
-        out_axes (set of :class:~`graph_transpiler.graph.Axis`): axes which in_axes are combined into  
+        out_axes (set of :class:~`graph_transpiler.graph.Axis`): axes which `in_axes` are combined into  
 
     """
 
@@ -26,20 +26,15 @@ class Flatten(Operator):
     # 入出力変数の形によっては、データそのものを転置する必要がある
     # NCHW -> NCなど
 
-    def __init__(self, name: Optional[str], in_axes: Set[Axis], out_axes: Set[Axis]):
-        # in_axes: [Axis.H, Axis.W, Axis.C], out_axes: [Axis.C]
+    def __init__(self, name: Optional[str], in_axes: List[Axis], out_axis: Axis):
+        # in_axes: [Axis.H, Axis.W, Axis.C], out_axes: Axis.C
         # のとき、NHWC入力・NC出力ならデータを操作しないでorder=NCの出力とする。
         # NCHW入力・NC出力なら、入力データをNHWCに並び替えたうえでorder=NCの出力とする。
 
         super().__init__(name)
 
-        # FIXME: 現状はこの組み合わせだけで十分
-
-        assert in_axes == {Axis.C, Axis.H, Axis.W}
-        assert out_axes == {Axis.C}
-
         self.parameters["in_axes"] = in_axes
-        self.parameters["out_axes"] = out_axes
+        self.parameters["out_axis"] = out_axis
         self.attributes = {Elementwise(self),
                            Inplace(self, "x", "y")}
 
@@ -51,11 +46,22 @@ class Flatten(Operator):
         Returns:
             tuple of :class:`~graph_transpiler.graph.variable.Variable`: Output
         """
-        out_order = OrderNC  # FIXME: 決め打ちをしない
+        out_axes = list(x.order.axes)
+        for axis in self.parameters["in_axes"]:
+            if axis not in out_axes:
+                raise ValueError(f"Axis {axis} is not contained in input variable")
 
-        reduction_size = int(np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]]))
-        keep_size = x.shape_dict[Axis.N]
-        y = Variable((keep_size, reduction_size), out_order)
+            out_axes.remove(axis)
+
+        out_shape = [x.shape_dict[axis] for axis in out_axes]
+
+        if self.parameters["out_axis"] in out_axes:
+            raise ValueError(f"Axis {axis} is duplicated")
+
+        out_axes.append(self.parameters["out_axis"])
+        out_shape.append(int(np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]])))
+
+        y = Variable(out_shape, Order(out_axes))
         self.append_input("x", x)
         self.append_output("y", y)
 
