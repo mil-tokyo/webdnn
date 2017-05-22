@@ -1,11 +1,11 @@
 import numpy as np
 
-from graph_transpiler.backend.webassembly.operators.col2im import Col2Im as WasmCol2Im
-from graph_transpiler.backend.webgpu.operators.col2im import Col2Im as WebGPUCol2Im
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 from test.util import generate_kernel_test_case
+from webdnn.backend.webassembly.operators.col2im import Col2Im as WasmCol2Im
+from webdnn.backend.webgpu.operators.col2im import Col2Im as WebGPUCol2Im
+from webdnn.graph.graph import Graph
+from webdnn.graph.order import OrderNHWC
+from webdnn.graph.variable import Variable
 
 
 def generate_data_311():

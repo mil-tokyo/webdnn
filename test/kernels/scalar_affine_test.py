@@ -1,10 +1,10 @@
 import numpy as np
 
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operators.scalar_affine import ScalarAffine
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNC
 from test.util import generate_kernel_test_case
+from webdnn.graph.graph import Graph
+from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.order import OrderNC
+from webdnn.graph.variable import Variable
 
 
 def test_scalar_affine():

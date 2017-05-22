@@ -1,11 +1,11 @@
 import numpy as np
 
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operators.linear import Linear
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNC, OrderCN, OrderHWCN, OrderNHWC
-from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from test.util import generate_kernel_test_case
+from webdnn.graph.graph import Graph
+from webdnn.graph.operators.linear import Linear
+from webdnn.graph.order import OrderNC, OrderCN, OrderHWCN, OrderNHWC
+from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_NC_CN():

@@ -2,7 +2,7 @@
 
 ## Downloading code
 ```
-git clone https://github.com/mil-tokyo/mil-web-dnn
+git clone https://github.com/mil-tokyo/webdnn
 ```
 
 ## Installing WebGPU environment
@@ -18,11 +18,11 @@ It is supported by most modern browsers.
 This framework requires python3.6+.
 
 ```
-cd mil-web-dnn
+cd webdnn
 python3 setup.py install
 ```
 
-This will install `graph_transpiler` package (not `webdnn`).
+This will install `webdnn`.
 
 If you want to convert models of Caffe or Chainer, install chainer package.
 

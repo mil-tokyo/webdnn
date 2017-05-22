@@ -26,7 +26,7 @@ pretrained in Chainer [#f2]_ into WebDNN execution format.
 3. Convert chainer computation graph to our computation graph format
 
     ```python
-    from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
+    from webdnn.graph.converters.chainer import ChainerGraphConverter
 
     graph = ChainerGraphConverter().convert_from_inout_vars([x], [y])
     ```
@@ -34,7 +34,7 @@ pretrained in Chainer [#f2]_ into WebDNN execution format.
 4. Generate and save execution information.
 
     ```python
-    from graph_transpiler.backend.interface.generator import generate_descriptor
+    from webdnn.backend.interface.generator import generate_descriptor
 
     exec_info = generate_descriptor("webgpu", graph)
     exec_info.save("./output")
