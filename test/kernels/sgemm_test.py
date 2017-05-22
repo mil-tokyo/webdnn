@@ -1,12 +1,12 @@
 import numpy as np
 
-from graph_transpiler.backend.webassembly.operators.sgemm import Sgemm as WasmSgemm
-from graph_transpiler.backend.webgpu.operators.sgemm import Sgemm as WebGPUSgemm
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNC
-from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from test.util import generate_kernel_test_case
+from webdnn.backend.webassembly.operators.sgemm import Sgemm as WasmSgemm
+from webdnn.backend.webgpu.operators.sgemm import Sgemm as WebGPUSgemm
+from webdnn.graph.graph import Graph
+from webdnn.graph.order import OrderNC
+from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_NN():

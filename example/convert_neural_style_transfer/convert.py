@@ -4,11 +4,10 @@ from os import path
 
 import chainer.computational_graph
 import numpy as np
-# noinspection PyUnresolvedReferences
 from model import FastStyleNet
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.converters.chainer import ChainerGraphConverter
 
 
 class NSTModelPath(Enum):

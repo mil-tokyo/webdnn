@@ -1,11 +1,11 @@
 import numpy as np
 
-from graph_transpiler.graph.axis import Axis
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operators.flatten import Flatten
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 from test.util import generate_kernel_test_case
+from webdnn.graph.axis import Axis
+from webdnn.graph.graph import Graph
+from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.order import OrderNHWC
+from webdnn.graph.variable import Variable
 
 
 def test_no_reorder():

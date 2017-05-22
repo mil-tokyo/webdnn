@@ -1,8 +1,8 @@
 import chainer
 import numpy as np
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.converters.chainer import ChainerGraphConverter
 
 #  Load chainer pretrained model
 model = chainer.links.model.vision.resnet.ResNet50Layers()

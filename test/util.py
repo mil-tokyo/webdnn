@@ -7,13 +7,13 @@ from unittest import SkipTest
 
 import numpy as np
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operator import Operator
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.graph import Graph
+from webdnn.graph.operator import Operator
+from webdnn.graph.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
-from graph_transpiler.util.json import json
+from webdnn.graph.variable import Variable
+from webdnn.util.json import json
 
 
 def template_elementwise_operator(OperatorClass: Type[Operator]):

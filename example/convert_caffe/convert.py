@@ -1,8 +1,8 @@
 import argparse
-import os
-from os import path
-import sys
 import ast
+import os
+import sys
+from os import path
 
 import PIL.Image
 import chainer
@@ -10,12 +10,10 @@ import chainer.computational_graph
 import chainer.links.caffe
 import numpy as np
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.util.json import json
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.converters.chainer import ChainerGraphConverter
+from webdnn.graph.graph import Graph
+from webdnn.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
