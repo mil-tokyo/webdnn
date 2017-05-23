@@ -525,3 +525,15 @@ declare namespace WebDNN {
         function argmin(arr: number[], k?: number): number[];
     }
 }
+declare namespace WebDNN {
+    /**
+     * Check backend availability
+     * @returns List of backend availability and default selected backend order
+     */
+    function getBackendAvailability(): {
+        status: {
+            [name: string]: boolean;
+        };
+        defaultOrder: string[];
+    };
+}

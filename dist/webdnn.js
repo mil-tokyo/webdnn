@@ -951,4 +951,33 @@ var WebDNN;
         Math.argmin = argmin;
     })(Math = WebDNN.Math || (WebDNN.Math = {}));
 })(WebDNN || (WebDNN = {}));
+var WebDNN;
+(function (WebDNN) {
+    function getBackendAvailabilityWebGPU() {
+        return 'WebGPUComputeCommandEncoder' in window;
+    }
+    function getBackendAvailabilityWebAssembly() {
+        return 'Worker' in window;
+    }
+    function getBackendAvailabilityFallback() {
+        return true;
+    }
+    /**
+     * Check backend availability
+     * @returns List of backend availability and default selected backend order
+     */
+    function getBackendAvailability() {
+        let status = {
+            'webgpu': getBackendAvailabilityWebGPU(),
+            'webassembly': getBackendAvailabilityWebAssembly(),
+            'fallback': getBackendAvailabilityFallback()
+        };
+        let order = ['webgpu', 'webassembly', 'fallback'].filter(backend => status[backend]);
+        return {
+            status: status,
+            defaultOrder: order
+        };
+    }
+    WebDNN.getBackendAvailability = getBackendAvailability;
+})(WebDNN || (WebDNN = {}));
 //# sourceMappingURL=webdnn.js.map
