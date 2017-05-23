@@ -2,9 +2,8 @@
 <html>
 
 <head>
-  <title>WebDNN test</title>
+  <title>WebDNN mnist example</title>
   <meta charset="utf-8">
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=es6,fetch"></script>
   <script src="../../lib/inflate.min.js"></script>
   <script src="../../build/descriptor_runner/webdnn.es5.js"></script>
@@ -12,14 +11,18 @@
 </head>
 
 <body>
-  WebDNN test (ES5 compliant; works with IE11)
+  WebDNN mnist example (ES5 compliant; works with IE11)
   <form>
     <button type="button" onclick="run(); return false;">Run</button>
-    <label><input type="radio" name="backend_name" value="" checked>auto</label>
-    <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
-    <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
-    <label><input type="radio" name="backend_name" value="fallback">fallback</label>
+    <label><input type="radio" name="backend_name" value="" onclick="reset_backend();" checked>auto</label>
+    <label><input type="radio" name="backend_name" value="webgpu" onclick="reset_backend();">webgpu</label>
+    <label><input type="radio" name="backend_name" value="webassembly" onclick="reset_backend();">webassembly</label>
+    <label><input type="radio" name="backend_name" value="fallback" onclick="reset_backend();">fallback</label>
   </form>
+  <span id="msg_place"></span>
+  <table id="result">
+    <tr><th>Image</th><th>Predicted label</th><th>Ground truth</th></tr>
+  </table>
 </body>
 
 </html>
