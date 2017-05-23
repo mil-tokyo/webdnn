@@ -8,5 +8,6 @@ Contents
     :maxdepth: 2
 
     tutorial/index
+    tips/index
     api_reference/index
 ```
