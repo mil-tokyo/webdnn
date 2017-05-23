@@ -1,12 +1,12 @@
 import numpy as np
 
-from graph_transpiler.graph.axis import Axis
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operators.axiswise_scale import AxiswiseScale
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderC, OrderNC, OrderNHWC, OrderHWNC
-from graph_transpiler.graph.variables.constant_variable import ConstantVariable
 from test.util import generate_kernel_test_case
+from webdnn.graph.axis import Axis
+from webdnn.graph.graph import Graph
+from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.order import OrderC, OrderNC, OrderNHWC, OrderHWNC
+from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_NC():

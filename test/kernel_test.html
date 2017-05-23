@@ -38,14 +38,14 @@
     })();
 
     var assert = (function() {
-        var EPS = 1e-5;
+        var EPS = 1e-4;
 
         function equal(a, b, mes) {
             if (a !== b) throw new Error(mes);
         }
 
         function floatEqual(a, b, mes) {
-            if (Math.abs((a - b) / Math.max(a, b)) > EPS) throw new Error(mes);
+            if (Math.abs(a - b) > Math.max(Math.abs(a), Math.abs(b)) * EPS) throw new Error(mes);
         }
 
         return {
@@ -87,6 +87,7 @@
             console.group(groupName);
 
             var failedResults = [];
+            var i;
 
             for (i = 0; i < results.length; i++) {
                 if (!results[i].result) failedResults.push(results[i]);

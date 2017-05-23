@@ -3,8 +3,8 @@ branch = True
 
 [paths]
 source =
-    src/graph_transpiler/*
+    src/webdnn/*
 
 [report]
 include =
-    src/graph_transpiler/*
+    src/webdnn/*

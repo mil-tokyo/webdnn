@@ -1,22 +1,13 @@
 import argparse
-import os
 from enum import Enum
 from os import path
 
-import chainer
 import chainer.computational_graph
 import numpy as np
-# noinspection PyUnresolvedReferences
 from model import FastStyleNet
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operator import Operator
-from graph_transpiler.util.json import json
-
-OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.converters.chainer import ChainerGraphConverter
 
 
 class NSTModelPath(Enum):
@@ -27,43 +18,33 @@ class NSTModelPath(Enum):
     kanagawa = "../../resources/chainer-fast-neuralstyle-models/models/kanagawa.model"
 
 
-def generate_graph(model_path: str) -> Graph:
-    model = FastStyleNet()
-    chainer.serializers.load_npz(model_path, model)
+parser = argparse.ArgumentParser()
+parser.add_argument("--model", default=NSTModelPath.kanagawa.name, choices=[v.name for v in NSTModelPath])
+parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
+parser.add_argument("--encoding")
+args = parser.parse_args()
 
-    # noinspection PyTypeChecker
-    nn_input = chainer.Variable(np.zeros((1, 3, 384, 512), dtype=np.float32))
+print(f"model: {args.model}")
+print(f"backend: {args.backend}")
+print(f"encoding: {args.encoding}")
 
-    # noinspection PyCallingNonCallable
-    nn_output = model(nn_input, test=True)
+# Load chainer pre-trained model
+model = FastStyleNet()
 
-    chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
-    converter = ChainerGraphConverter()
+model_path = NSTModelPath[args.model].value
+if not path.exists(model_path):
+    raise FileNotFoundError(f"Model data ({model_path}) is not found. Please clone " +
+                            "'https://github.com/gafr/chainer-fast-neuralstyle-models' under the resource directory. " +
+                            "Clone command takes about a few minute, the repository size is about 200MB.")
 
-    graph: Graph = converter.convert(chainer_cg, [nn_input], [nn_output])
+chainer.serializers.load_npz(model_path, model)
 
-    return graph
+# Execute forward propagation to construct computation graph
+x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
+y = model(x, test=True)
 
+# Convert chainer computation graph into IR
+graph = ChainerGraphConverter().convert_from_inout_vars([x], [y])
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default=NSTModelPath.candy.name, choices=[v.name for v in NSTModelPath])
-    parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
-    parser.add_argument("--encoding")
-    args = parser.parse_args()
-
-    model_path = NSTModelPath[args.model].value
-    if not path.exists(model_path):
-        raise FileNotFoundError(f"""Model data ({model_path}) is not found. Please clone 'https://github.com/gafr/chainer-fast-neuralstyle-models' under 
-        the resource directory. Clone command takes about a few minute, and the repository size is about 200MB.""")
-
-    graph = generate_graph(model_path)
-
-    graph_exec_data = generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding)
-
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    graph_exec_data.save(OUTPUT_DIR)
-
-if __name__ == "__main__":
-    main()
+# Generate graph descriptor
+generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding).save(path.join(path.dirname(__file__), "./output"))

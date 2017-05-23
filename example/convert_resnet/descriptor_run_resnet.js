@@ -11,23 +11,25 @@ function run_entry() {
 }
 
 function log(msg) {
-    $('#messages').append('<br>').append(document.createTextNode(msg));
+    let msg_node = document.getElementById('messages');
+    msg_node.appendChild(document.createElement('br'));
+    msg_node.appendChild(document.createTextNode(msg));
 }
 
 function load_image() {
     var img = new Image();
     img.onload = function() {
-        var ctx = $('#input_image')[0].getContext('2d');
+        var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, 224, 224);
         is_image_loaded = true;
-        $('#run_button').prop('disabled', false);
+        document.getElementById('run_button').disabled = false;
         log('Image loaded to canvas');
     }
     img.onerror = function () {
         log('Failed to load image');
     }
-    img.src = $("input[name=image_url]").val();
+    img.src = document.querySelector("input[name=image_url]").value;
 }
 
 let flag_prepared = false;
@@ -37,7 +39,7 @@ let run_if;
 async function prepare_run() {
     if (flag_prepared) return;
 
-    let backend_name = $('input[name=backend_name]:checked').val();
+    let backend_name = document.querySelector('input[name=backend_name]:checked').value;
     log('Initializing and loading model');
     run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
     log(`Loaded backend: ${run_if.backendName}`);
@@ -86,7 +88,7 @@ async function fetchImage(path) {
 }
 
 function getImageData() {
-    let ctx = $('#input_image')[0].getContext('2d');
+    let ctx = document.getElementById('input_image').getContext('2d');
     let h = 224;
     let w = 224;
     let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)

@@ -1,10 +1,10 @@
 import numpy as np
 
-from graph_transpiler.graph.graph import Graph
-from graph_transpiler.graph.operators.tanh import Tanh
-from graph_transpiler.graph.variable import Variable
-from graph_transpiler.graph.variables.attributes.order import OrderNHWC
 from test.util import generate_kernel_test_case
+from webdnn.graph.graph import Graph
+from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.order import OrderNHWC
+from webdnn.graph.variable import Variable
 
 
 def test_general():

@@ -3,20 +3,19 @@ Caffe model converter (via Chainer model)
 """
 
 import argparse
-import os
-from os import path
-import sys
 import ast
+import os
+import sys
+from os import path
 
 import chainer
 import chainer.computational_graph
 import chainer.links.caffe
 import numpy as np
 
-from graph_transpiler.backend.interface.generator import generate_descriptor
-from graph_transpiler.frontend.general_optimize_rule import GeneralOptimizeRule
-from graph_transpiler.graph.converters.chainer import ChainerGraphConverter
-from graph_transpiler.graph.graph import Graph
+from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.converters.chainer import ChainerGraphConverter
+from webdnn.graph.graph import Graph
 
 
 def parse_input_blob(args):
