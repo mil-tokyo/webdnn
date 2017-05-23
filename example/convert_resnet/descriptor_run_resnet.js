@@ -11,44 +11,46 @@ function run_entry() {
 }
 
 function log(msg) {
-	let msg_node = document.getElementById('messages');
-	msg_node.appendChild(document.createElement('br'));
-	msg_node.appendChild(document.createTextNode(msg));
+    let msg_node = document.getElementById('messages');
+    msg_node.appendChild(document.createElement('br'));
+    msg_node.appendChild(document.createTextNode(msg));
 }
 
 function load_image() {
     var img = new Image();
-    img.onload = function() {
+    img.onload = function () {
         var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
-		ctx.drawImage(img, 0, 0, 224, 224);
-		is_image_loaded = true;
-		document.getElementById('run_button').disabled = false;
-		log('Image loaded to canvas');
-	}
-	img.onerror = function () {
-		log('Failed to load image');
-	}
+        ctx.drawImage(img, 0, 0, 224, 224);
+        is_image_loaded = true;
+        document.getElementById('run_button').disabled = false;
+        log('Image loaded to canvas');
+    }
+    img.onerror = function () {
+        log('Failed to load image');
+    }
     img.src = document.querySelector("input[name=image_url]").value;
 }
 
-let flag_prepared = false;
 let test_samples;
-let run_if;
+let run_ifs = {};
 
 async function prepare_run() {
-    if (flag_prepared) return;
-
     let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-    log('Initializing and loading model');
-    run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
-    log(`Loaded backend: ${run_if.backendName}`);
+    if (!(backend_name in run_ifs)) {
+        log('Initializing and loading model');
+        let run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
+        log(`Loaded backend: ${run_if.backendName}`);
 
-    flag_prepared = true;
+        run_ifs[backend_name] = run_if;
+    } else {
+        log('Model is already loaded');
+    }
+    return run_ifs[backend_name];
 }
 
 async function run() {
-    await prepare_run();
+    let run_if = await prepare_run();
 
     let test_image = getImageData();
     let test_samples = [test_image];

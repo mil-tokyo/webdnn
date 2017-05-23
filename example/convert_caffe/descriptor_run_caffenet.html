@@ -4,7 +4,6 @@
 <head>
   <title>Caffenet conversion WebDNN example</title>
   <meta charset="utf-8">
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="../../lib/inflate.min.js"></script>
   <script src="../../build/descriptor_runner/webdnn.js"></script>
   <script src="../data/imagenet_labels.js"></script>
@@ -23,7 +22,7 @@
     <label><input type="radio" name="backend_name" value="" checked>auto</label>
     <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
     <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
-    <label><input type="radio" name="backend_name" value="fallback">fallback</label><br>
+    <label><input type="radio" name="backend_name" value="fallback">fallback (slow; debug only)</label><br>
     <div id="messages"></div>
   </form>
 </body>
