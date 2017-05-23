@@ -5,6 +5,8 @@ namespace WebDNN {
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
      */
     export interface DescriptorRunner {
+        backend: string;
+
         /**
          * Fetch descriptor from specified directory.
          * @param directory directory where descriptor is contained.
