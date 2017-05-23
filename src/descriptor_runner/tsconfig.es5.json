@@ -11,6 +11,8 @@
         "sourceMap": true
     },
     "files": [
-        "webdnn.ts"
+        "webdnn.ts",
+        "math.ts",
+        "get_backend_availability.ts"
     ]
 }

@@ -12,6 +12,7 @@
     },
     "files": [
         "webdnn.ts",
-        "math.ts"
+        "math.ts",
+        "get_backend_availability.ts"
     ]
 }
