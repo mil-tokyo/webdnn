@@ -1,7 +1,6 @@
 'use strict';
 
 var is_image_loaded = false;
-var image_size = 227;
 
 function run_entry() {
     run().then(() => {
@@ -17,10 +16,10 @@ function log(msg) {
 
 function load_image() {
     var img = new Image();
-    img.onload = function () {
-        var ctx = $('#input_image')[0].getContext('2d');
+    img.onload = function() {
+        var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
-        ctx.drawImage(img, 0, 0, image_size, image_size);
+        ctx.drawImage(img, 0, 0, 224, 224);
         is_image_loaded = true;
         $('#run_button').prop('disabled', false);
         log('Image loaded to canvas');
@@ -28,30 +27,32 @@ function load_image() {
     img.onerror = function () {
         log('Failed to load image');
     }
-    img.src = $("input[name=image_url]").val();
+    img.src = document.querySelector("input[name=image_url]").value;
 }
 
-let run_if = null;
+let flag_prepared = false;
+let test_samples;
+let run_if;
 
 async function prepare_run() {
-    if (run_if) {
-        return;
-    }
+    if (flag_prepared) return;
+
     let backend_name = $('input[name=backend_name]:checked').val();
     log('Initializing and loading model');
     run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
     log(`Loaded backend: ${run_if.backendName}`);
+
+    flag_prepared = true;
 }
 
 async function run() {
     await prepare_run();
 
-    let total_elapsed_time = 0;
-    let pred_label;
     let test_image = getImageData();
     let test_samples = [test_image];
 
-    log('Running model...');
+    let total_elapsed_time = 0;
+    let pred_label;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
         run_if.inputViews[0].set(sample);
@@ -69,7 +70,7 @@ async function run() {
         log(predicted_str);
         console.log('output vector: ', out_vec);
     }
-    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, backend=${run_if.backendName}`);
+    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
 }
 
 function makeMatFromJson(mat_data) {
@@ -85,9 +86,9 @@ async function fetchImage(path) {
 }
 
 function getImageData() {
-    let ctx = $('#input_image')[0].getContext('2d');
-    let h = image_size;
-    let w = image_size;
+    let ctx = document.getElementById('input_image').getContext('2d');
+    let h = 224;
+    let w = 224;
     let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)
     let pixeldata = imagedata.data;
     let data = new Float32Array(3 * h * w);//h,w,c(bgr)

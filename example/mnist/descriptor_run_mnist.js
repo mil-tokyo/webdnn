@@ -30,14 +30,16 @@ async function run() {
         total_elapsed_time += performance.now() - start;
 
         let out_vec = run_if.outputViews[0];
-        let pred_label = 0;
+        let pred_label = WebDNN.Math.argmax(out_vec)[0];
+        // equivalent to
+/*        let pred_label = 0;
         let pred_score = -Infinity;
         for (let j = 0; j < out_vec.length; j++) {
             if (out_vec[j] > pred_score) {
                 pred_score = out_vec[j];
                 pred_label = j;
             }
-        }
+        }*/
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
     }
