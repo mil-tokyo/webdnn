@@ -4,7 +4,6 @@
 <head>
   <title>Caffenet conversion WebDNN example</title>
   <meta charset="utf-8">
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="../../lib/inflate.min.js"></script>
   <script src="../../build/descriptor_runner/webdnn.js"></script>
   <script src="../data/imagenet_labels.js"></script>
@@ -15,7 +14,7 @@
   <h1>Caffenet conversion WebDNN example</h1>
   You have to convert caffenet with python script before running this webpage.
   <form>
-    Image URL: <input type="text" name="image_url" value="data/cock.jpg" size="60"><button type="button" onclick="load_image(); return false;">Load image</button><br>
+    Image URL: <input type="text" name="image_url" value="../data/cock.jpg" size="60"><button type="button" onclick="load_image(); return false;">Load image</button><br>
     <canvas id="input_image" width="227" height="227"></canvas><br>
     Using canvas's image for input slightly changes
     the output compared to original model due to interpolation difference.<br>
@@ -23,7 +22,7 @@
     <label><input type="radio" name="backend_name" value="" checked>auto</label>
     <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
     <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
-    <label><input type="radio" name="backend_name" value="fallback">fallback</label><br>
+    <label><input type="radio" name="backend_name" value="fallback">fallback (slow; debug only)</label><br>
     <div id="messages"></div>
   </form>
 </body>

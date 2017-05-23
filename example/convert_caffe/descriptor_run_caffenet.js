@@ -12,39 +12,45 @@ function run_entry() {
 }
 
 function log(msg) {
-    $('#messages').append('<br>').append(document.createTextNode(msg));
+    let msg_node = document.getElementById('messages');
+    msg_node.appendChild(document.createElement('br'));
+    msg_node.appendChild(document.createTextNode(msg));
 }
 
 function load_image() {
     var img = new Image();
     img.onload = function () {
-        var ctx = $('#input_image')[0].getContext('2d');
+        var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, image_size, image_size);
         is_image_loaded = true;
-        $('#run_button').prop('disabled', false);
+        document.getElementById('run_button').disabled = false;
         log('Image loaded to canvas');
     }
     img.onerror = function () {
         log('Failed to load image');
     }
-    img.src = $("input[name=image_url]").val();
+    img.src = document.querySelector("input[name=image_url]").value;
 }
 
-let run_if = null;
+let run_ifs = {};
 
 async function prepare_run() {
-    if (run_if) {
-        return;
+    let backend_name = document.querySelector('input[name=backend_name]:checked').value;
+    if (!(backend_name in run_ifs)) {
+        log('Initializing and loading model');
+        let run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
+        log(`Loaded backend: ${run_if.backendName}`);
+
+        run_ifs[backend_name] = run_if;
+    } else {
+        log('Model is already loaded');
     }
-    let backend_name = $('input[name=backend_name]:checked').val();
-    log('Initializing and loading model');
-    run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
-    log(`Loaded backend: ${run_if.backendName}`);
+    return run_ifs[backend_name];
 }
 
 async function run() {
-    await prepare_run();
+    let run_if = await prepare_run();
 
     let total_elapsed_time = 0;
     let pred_label;
@@ -85,7 +91,7 @@ async function fetchImage(path) {
 }
 
 function getImageData() {
-    let ctx = $('#input_image')[0].getContext('2d');
+    let ctx = document.getElementById('input_image').getContext('2d');
     let h = image_size;
     let w = image_size;
     let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)

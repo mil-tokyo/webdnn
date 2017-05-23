@@ -7,15 +7,12 @@ import sys
 import os
 from os import path
 
-import PIL.Image
 import chainer
 import chainer.computational_graph
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph.converters.chainer import ChainerGraphConverter
-from webdnn.graph.graph import Graph
-from webdnn.util.json import json
 
 OUTPUT_DIR = path.join(path.dirname(__file__), "./output")
 
@@ -29,7 +26,7 @@ def main():
     parser.add_argument("--encoding")
     args = parser.parse_args()
 
-    sample_image = PIL.Image.open("../../resources/imagenet/ILSVRC2012_val_00000001.JPEG")
+    sample_image = np.zeros((224, 224, 3), dtype=np.uint8)#PIL.Image.open("")
     if args.model == "vgg16":
         link = chainer.links.model.vision.vgg.VGG16Layers()
         prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  # BGR, CHW
@@ -51,14 +48,6 @@ def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     graph_exec_data.save(OUTPUT_DIR)
-
-    with open(path.join(OUTPUT_DIR, "image_nhwc.json".format()), "w") as f:
-        image_nhwc = np.transpose(prepared_image, (1, 2, 0))
-        json.dump(image_nhwc.flatten().tolist(), f)
-
-    with open(path.join(OUTPUT_DIR, "fc6.json".format()), "w") as f:
-        json.dump(nn_output.data.tolist(), f)
-
 
 if __name__ == "__main__":
     main()
