@@ -4,7 +4,7 @@ namespace WebDNN {
     }
 
     function getBackendAvailabilityWebAssembly() {
-        return 'WebAssembly' in window;
+        return 'Worker' in window;
     }
 
     function getBackendAvailabilityFallback() {
