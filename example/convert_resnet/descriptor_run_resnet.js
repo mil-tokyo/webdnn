@@ -1,15 +1,17 @@
 'use strict';
 
-var $M, $Mg;
-var runner;
 var is_image_loaded = false;
 
 function run_entry() {
     run().then(() => {
-        console.log('run finished');
+        log('Run finished');
     }).catch((error) => {
-        console.error('run failed ' + error);
+        log('Error: ' + error);
     });
+}
+
+function log(msg) {
+    $('#messages').append('<br>').append(document.createTextNode(msg));
 }
 
 function load_image() {
@@ -19,36 +21,26 @@ function load_image() {
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, 224, 224);
         is_image_loaded = true;
-        document.getElementById('mini_msg').textContent = 'Image loaded to canvas';
+        $('#run_button').prop('disabled', false);
+        log('Image loaded to canvas');
+    }
+    img.onerror = function () {
+        log('Failed to load image');
     }
     img.src = document.querySelector("input[name=image_url]").value;
 }
 
 let flag_prepared = false;
 let test_samples;
+let run_if;
 
 async function prepare_run() {
     if (flag_prepared) return;
 
-    let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-    if (!$M) {
-        backend_name = await init(backend_name);
-    }
-
-    runner = $M.gpu.createDescriptorRunner();
-    runner.ignoreCache = true;
-    // await runner.load('./output');
-    await runner.load('./output', (loaded, total) => {
-        console.log(`[WebDNN] loading weight data: ${(loaded * 100 / total).toFixed(2)}%`);
-    });
-
-    let test_image;
-    if (is_image_loaded) {
-        test_image = getImageData();
-    } else {
-        test_image = await fetchImage('./output/image_nhwc.json');
-    }
-    test_samples = [test_image];
+    let backend_name = $('input[name=backend_name]:checked').val();
+    log('Initializing and loading model');
+    run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
+    log(`Loaded backend: ${run_if.backendName}`);
 
     flag_prepared = true;
 }
@@ -56,41 +48,29 @@ async function prepare_run() {
 async function run() {
     await prepare_run();
 
-    let input_views = await runner.getInputViews();
-    let output_views = await runner.getOutputViews();
+    let test_image = getImageData();
+    let test_samples = [test_image];
 
     let total_elapsed_time = 0;
     let pred_label;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        input_views[0].set(sample);
+        run_if.inputViews[0].set(sample);
 
         let start = performance.now();
-        await runner.run();
+        await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = output_views[0];
-        pred_label = 0;
-        let pred_score = -Infinity;
-        for (let j = 0; j < out_vec.length; j++) {
-            if (out_vec[j] > pred_score) {
-                pred_score = out_vec[j];
-                pred_label = j;
-            }
+        let out_vec = run_if.outputViews[0];
+        let top_labels = WebDNN.Math.argmax(out_vec, 5);
+        let predicted_str = 'Predicted:';
+        for (let j = 0; j < top_labels.length; j++) {
+            predicted_str += ` ${top_labels[j]}(${imagenet_labels[top_labels[j]]})`;
         }
-        console.log(`predicted: ${pred_label}`);
-        console.log(out_vec);
+        log(predicted_str);
+        console.log('output vector: ', out_vec);
     }
-    console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
-    document.getElementById('mini_msg').textContent = `Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, label=${pred_label}`;
-}
-
-async function init(backend_name) {
-    $M = WebDNN;
-    let backend = await $M.init(backend_name);
-    console.log(`backend: ${backend}`);
-    $Mg = $M.gpu;
-    return backend;
+    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
 }
 
 function makeMatFromJson(mat_data) {
