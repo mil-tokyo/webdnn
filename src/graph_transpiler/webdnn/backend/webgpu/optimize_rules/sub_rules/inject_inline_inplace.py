@@ -14,7 +14,7 @@ class InjectInlineInplace(OptimizeRule):
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.INJECT_INLINE_INPLACE:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.INJECT_INLINE_INPLACE):
             return graph, False
 
         matches = traverse.search_sub_structure(graph, [PostInlineInplace, Variable, InlineInplace])

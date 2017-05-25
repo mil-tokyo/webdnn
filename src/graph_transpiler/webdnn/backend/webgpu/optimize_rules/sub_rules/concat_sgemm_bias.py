@@ -17,7 +17,7 @@ class ConcatSgemmBias(OptimizeRule):
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.CONCAT_SGEMM_BIAS:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.CONCAT_SGEMM_BIAS):
             return graph, False
 
         matches = traverse.search_sub_structure(graph, [Sgemm, Variable, AxiswiseBias])

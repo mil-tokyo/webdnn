@@ -1,20 +1,24 @@
-# keras.jsでResNet50 inferenceを行うベンチマークサンプル
+# Benchmark
+
+WebDNNの実行速度測定ベンチマークです。
+比較対象は[Keras.js](https://github.com/transcranial/keras-js)、ベンチマークモデルとしてResNet50を使用します。
 
 ## セットアップ
-kerasのセットアップ、resnet50モデルのダウンロード(100MB)、keras.js形式への変換が必要。
 
-事前にpipで、`tensorflow`, `keras`パッケージのインストールが必要。
-kerasは2.0系だと現状うまくいかない(https://github.com/transcranial/keras-js/issues/49)。`pip install keras==1.2.2`で解決。
+### WebDNNのモデル変換
 
-モデル変換のためのステップ
+ChainerのResNet50モデルを使用する
 
-```
-./step1.sh
-./step2.py
-./step3.sh
+```shell
+$ python ./convert_webdnn.py
 ```
 
-## 実行
-HTTPサーバでプロジェクトのルートディレクトリをホスティングし、index.htmlを開く。
+### Keras.jsのモデル変換
 
-"Load image"ボタン、"Setup"ボタンで準備をして、"inference"ボタンでDNNの計算を1回行い、その結果を表示する。"inference"ボタンは複数回使用可能。
+```shell
+$ ./convert_kerasjs.sh
+```
+
+### 実行
+
+`index.html` へアクセス。コンソール画面を開いた状態で `RUN` ボタンをクリック。
