@@ -11,6 +11,7 @@
         "sourceMap": true
     },
     "files": [
+        "license.ts",
         "webdnn.ts",
         "math.ts",
         "get_backend_availability.ts"
