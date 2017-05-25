@@ -36,6 +36,11 @@ $c-PageHeader-foreground: #fcfcfc;
   @media (max-width: 840px) {
     padding: 8px 16px;
   }
+
+  @media (max-width: 640px) {
+    min-height: 48px;
+    line-height: 48px;
+  }
 }
 
 .PageHeader-Menu {
@@ -51,14 +56,27 @@ $c-PageHeader-foreground: #fcfcfc;
     opacity: 0.6;
     text-decoration: none;
 
-    svg {
-      fill: currentColor;
-      vertical-align: middle;
-      margin-right: 4px;
-    }
-
     &:hover {
       opacity: 1;
     }
   }
+
+  svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
+  @media (max-width: 640px) {
+    a {
+      padding: 0 8px;
+    }
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
 }
+

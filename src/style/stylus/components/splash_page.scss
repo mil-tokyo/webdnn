@@ -45,6 +45,12 @@ $c-SplashPage-foreground: #fcfcfc;
   }
 }
 
+@media (max-width: 640px) {
+  .SplashPage {
+    padding: 32px 16px;
+  }
+}
+
 #splash {
   position: absolute;
   top: 0;

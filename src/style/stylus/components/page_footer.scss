@@ -14,3 +14,11 @@ $c-PageFooter-foreground: #888;
   padding: 32px 64px;
   font-size: 14px;
 }
+
+@media (max-width: 640px) {
+  .PageFooter {
+    font-size: 12px;
+    min-height: 0;
+    padding: 16px;
+  }
+}

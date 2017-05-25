@@ -8,10 +8,16 @@
   }
 
   .Section-Title {
-    font: 300 34px/40px Roboto, sans-serif;
-    font-size: 2rem;
+    font: 300 36px/40px Roboto, sans-serif;
     color: #40474b;
     margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .Section-Title {
+      font-size: 22px;
+      line-height: 26px;
+    }
   }
 }
 
