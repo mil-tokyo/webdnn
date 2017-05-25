@@ -112,7 +112,8 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
         variables_layout=variables_layout,
         inputs=graph.inputs,
         outputs=graph.outputs,
-        constants_encoding=constant_encoder.name)
+        constants_encoding=constant_encoder.name,
+        licenses=graph.licenses)
 
     if flags.optimize.VALIDATE_GENERATED_SOURCE:
         if flags.DEBUG:

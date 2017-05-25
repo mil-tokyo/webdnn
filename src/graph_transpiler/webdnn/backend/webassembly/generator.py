@@ -151,7 +151,8 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
         inputs=graph.inputs,
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name,
-        required_heap=required_heap)
+        required_heap=required_heap,
+        licenses=graph.licenses)
 
     return GraphExecutionData(descriptor, constants_bytes)
 

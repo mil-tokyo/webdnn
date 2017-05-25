@@ -53,6 +53,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     constants_encoding: str
     footer_sources: Dict[str, str]
     required_heap: int
+    licenses: Dict[str, str]
 
     def __init__(self,
                  kernels: Iterable[Kernel],
@@ -61,7 +62,8 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  constants_encoding: str,
-                 required_heap: int):
+                 required_heap: int,
+                 licenses: Dict[str, str]):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
@@ -70,6 +72,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         self.constants_encoding = constants_encoding
         self.footer_sources = OrderedDict()
         self.required_heap = required_heap
+        self.licenses = licenses
 
     def generate_header_source(self):
         return source_header \
@@ -129,5 +132,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs]
+            "outputs": [v.parameters["name"] for v in self.outputs],
+            "licenses": self.licenses
         }

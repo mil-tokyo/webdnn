@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Iterable
+from typing import Iterable, Dict
 
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webgpu.allocator import MemoryLayout
@@ -24,6 +24,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
     constants_encoding: str
+    licenses: Dict[str, str]
 
     def __init__(self,
                  kernels: Iterable[Kernel],
@@ -31,13 +32,15 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                  variables_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
-                 constants_encoding: str):
+                 constants_encoding: str,
+                 licenses: Dict[str, str]):
         self.kernels = kernels
         self.constants_layout = constants_layout
         self.variables_layout = variables_layout
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
+        self.licenses = licenses
 
     def concat_kernel_sources(self):
         func_sources = OrderedDict()
@@ -71,5 +74,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "weight_encoding": self.constants_encoding,
             "variable_allocation": self.variables_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs]
+            "outputs": [v.parameters["name"] for v in self.outputs],
+            "licenses": self.licenses
         }
