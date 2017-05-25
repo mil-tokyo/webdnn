@@ -1,78 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <meta name="theme-color" content="#FF9900">
     <title>Neural Style Transfer - MIL WebDNN</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/manifest.json">
     <script src="./inflate.min.js"></script>
     <script src="./webcam.min.js"></script>
     <script src="./webdnn.js"></script>
 </head>
+
 <body>
 
-<div class="LaunchView" id="launchView">
-    <button id="runAppButton" class="Button-primary">
+    <div class="LaunchView" id="launchView">
+        <button id="runAppButton" class="Button-primary">
         <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z"/>
         </svg>
         <span>Run</span>
     </button>
-</div>
-
-<div class="InitializingView" id="initializingView">
-    <span class="InitializingView-Message">Initializing...</span>
-    <div class="InitializingView-ProgressBar ProgressBar">
-        <div class="ProgressBar-Inner"></div>
     </div>
-</div>
 
-<main class="Flex-flex Flex-column Flex-stretch">
+    <div class="InitializingView" id="initializingView">
+        <span class="InitializingView-Message">Initializing...</span>
+        <div class="InitializingView-ProgressBar ProgressBar">
+            <div class="ProgressBar-Inner"></div>
+        </div>
+    </div>
 
-    <div class="MainContainer">
-        <div class="InputContainer">
-            <div class="InputItemContainer">
-                <div class="Tip">Contents</div>
-                <div class="InputImageContainer" id="contentsContainer">
-                    <div class="CameraContainer" id="cameraContainer"></div>
-                    <div class="SampleContainer" id="sampleContainer">
-                        <canvas id="inputCanvas" width="192" height="144"></canvas>
+    <main class="Flex-flex Flex-column Flex-stretch">
+
+        <div class="MainContainer">
+            <div class="InputContainer">
+                <div class="InputItemContainer">
+                    <div class="Tip">Contents</div>
+                    <div class="InputImageContainer" id="contentsContainer">
+                        <div class="CameraContainer" id="cameraContainer"></div>
+                        <div class="SampleContainer" id="sampleContainer">
+                            <canvas id="inputCanvas" width="192" height="144"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="InputItemContainer">
+                    <div class="Tip">Style</div>
+                    <div class="InputImageContainer">
+                        <img src="/assets/neural_style_transfer-style.jpg">
                     </div>
                 </div>
             </div>
-            <div class="InputItemContainer">
-                <div class="Tip">Style</div>
-                <div class="InputImageContainer">
-                    <img src="/assets/neural_style_transfer-style.jpg">
+
+            <div class="OutputContainer">
+                <div class="Tip">Output</div>
+                <div class="OutputCanvasContainer">
+                    <canvas id="outputCanvas" width="192" height="144"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="OutputContainer">
-            <div class="Tip">Output</div>
-            <div class="OutputCanvasContainer">
-                <canvas id="outputCanvas" width="192" height="144"></canvas>
-            </div>
+        <div class="MessageBar">
+            <span class="Flex-flex" id="message">Initializing</span>
         </div>
-    </div>
-
-    <div class="MessageBar">
-        <span class="Flex-flex" id="message">Initializing</span>
-    </div>
-    <div class="ControlBar">
-        <label class="Flex-column">
+        <div class="ControlBar">
+            <label class="Flex-column">
             <span>Contents Source</span>
             <select id="dataSource">
                 <option value="sample" selected>Sample Image</option>
                 <option value="camera">Web Camera</option>
             </select>
         </label>
-        <span class="Flex-flex"></span>
-        <button class="Button-primary" id="runButton" disabled>Run</button>
-    </div>
-</main>
+            <span class="Flex-flex"></span>
+            <button class="Button-primary" id="runButton" disabled>Run</button>
+        </div>
+    </main>
 
 
 </body>
+
 </html>
