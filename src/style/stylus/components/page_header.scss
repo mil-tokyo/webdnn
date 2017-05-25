@@ -14,7 +14,7 @@ $c-PageHeader-foreground: #fcfcfc;
   box-sizing: border-box;
   background: $c-PageHeader-background;
   color: $c-PageHeader-foreground;
-  padding: 8px 64px;
+  padding: 8px 32px 8px 64px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   z-index: $z-Header;
 
@@ -46,6 +46,7 @@ $c-PageHeader-foreground: #fcfcfc;
   justify-content: flex-end;
 
   a {
+    padding: 0 32px;
     color: #fff;
     opacity: 0.6;
     text-decoration: none;

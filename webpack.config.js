@@ -49,6 +49,12 @@ module.exports = {
 			to: './'
 		}]),
 		new HTMLWebpackPlugin({
+			filename: 'index_ja.html',
+			template: 'src/html/index_ja.html',
+			chunks: ['index'],
+			inlineSource: '.(js|css)$'
+		}),
+		new HTMLWebpackPlugin({
 			filename: 'index.html',
 			template: 'src/html/index.html',
 			chunks: ['index'],
