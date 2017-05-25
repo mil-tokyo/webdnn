@@ -100,14 +100,10 @@ body {
 }
 
 @media (max-width: 727px) {
-  .MainContainer {
-    flex-direction: column;
-    align-items: center;
-  }
   .InputContainer {
     position: relative;
     flex-direction: row;
-    width: 100%;
+    height: auto;
     flex: 1;
   }
   .InputItemContainer {
@@ -133,6 +129,22 @@ body {
 
     canvas {
       margin: 0 auto;
+      height: 100%;
+      width: auto;
+    }
+  }
+}
+
+@media (max-width: 727px) and (orientation: portrait) {
+  .MainContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  .InputContainer {
+    width: 100%;
+  }
+  .OutputCanvasContainer {
+    canvas {
       width: 320px;
       height: auto;
     }

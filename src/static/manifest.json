@@ -1,7 +1,7 @@
 {
 	"short_name": "WebDNN",
 	"name": "MIL WebDNN",
-	"display": "browser",
+	"display": "standalone",
 	"background_color": "#ff9900",
 	"theme_color": "#ff9900",
 	"start_url": "/",

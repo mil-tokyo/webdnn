@@ -1,7 +1,7 @@
 /// <reference path="../libs/webdnn.d.ts" />
-/// <reference path="../libs/webcamjs.d.ts" />
 import "../style/neural_style_transfer.scss";
 import InitializingView from "./modules/initializing_view";
+import WebCam from "./modules/webcam";
 
 const NUM_RANDOM_IMAGE = 6;
 
@@ -12,9 +12,10 @@ enum State {
     ERROR,
 }
 
-type DataSource = 'sample' | 'camera';
+type DataSource = 'sample' | 'photo' | 'video';
 
 const App = new class {
+    runners: { [key: string]: WebDNN.DescriptorRunner };
     runner: WebDNN.DescriptorRunner;
     inputView: Float32Array;
     outputView: Float32Array;
@@ -29,8 +30,27 @@ const App = new class {
     dataSourceSelect: HTMLSelectElement;
     cameraContainer: HTMLDivElement;
     sampleContainer: HTMLDivElement;
+    backendSelect: HTMLSelectElement;
+    webcam: WebCam;
 
     async initialize() {
+        let availability = WebDNN.getBackendAvailability();
+        let select = document.getElementById('backend') as HTMLSelectElement;
+        if (!select) throw Error('#backend is not found.');
+        this.backendSelect = select;
+
+        if (!availability.status['webgpu']) {
+            let option = document.querySelector('option[value="webgpu"]') as HTMLOptionElement;
+            if (option) option.disabled = true;
+            select.value = 'webassembly';
+        }
+        if (!availability.status['webassembly']) {
+            let option = document.querySelector('option[value="webassembly"]') as HTMLOptionElement;
+            if (option) option.disabled = true;
+            throw Error('This browser does not support either WebGPU nor WebAssembly/asm.js backends');
+        }
+        select.addEventListener('change', () => this.onBackendSelectChange());
+
         let runButton = document.getElementById('runButton') as HTMLButtonElement;
         if (!runButton) throw Error('#runButton is not found.');
         this.runButton = runButton;
@@ -61,11 +81,8 @@ const App = new class {
 
         initializingView.updateMessage('Load model data');
 
-        await WebDNN.init();
-        this.runner = WebDNN.gpu.createDescriptorRunner();
-        await this.runner.load('./models/neural_style_transfer', (loaded, total) => initializingView.updateProgress(loaded / total));
-        this.inputView = (await this.runner.getInputViews())[0];
-        this.outputView = (await this.runner.getOutputViews())[0];
+        this.runners = {};
+        await this.initBackendAsync(this.backendSelect.value, (loaded, total) => initializingView.updateProgress(loaded / total));
 
         let inputCanvas = document.getElementById('inputCanvas') as HTMLCanvasElement;
         if (!inputCanvas) throw Error('#inputCanvas is not found');
@@ -84,12 +101,6 @@ const App = new class {
         if (!outputCtx) throw Error('Canvas initialization failed');
         this.outputCtx = outputCtx;
 
-        Webcam.on('error', (err) => {
-            console.error(err);
-            this.setMessage(err);
-            this.setState(State.ERROR);
-        });
-
         await this.updateDataSource();
         initializingView.remove();
     }
@@ -98,14 +109,18 @@ const App = new class {
         this.updateDataSource();
     }
 
-    onPlayButtonClick() {
+    onBackendSelectChange() {
+        this.initBackendAsync(this.backendSelect.value);
+    }
+
+    async onPlayButtonClick() {
         switch (this.state) {
             case State.STAND_BY:
-                this.setState(State.RUNNING);
+                await this.setState(State.RUNNING);
                 break;
 
             case State.RUNNING:
-                this.setState(State.STAND_BY);
+                await this.setState(State.STAND_BY);
                 break;
 
             default:
@@ -113,49 +128,72 @@ const App = new class {
         }
     }
 
+    async initBackendAsync(backend: string, callback?: (loaded: number, total: number) => void) {
+        await this.setState(State.INITIALIZING);
+
+        await WebDNN.init([backend]);
+
+        if (backend in this.runners) {
+            this.runner = this.runners[backend];
+        } else {
+            this.runner = this.runners[backend] = WebDNN.gpu.createDescriptorRunner();
+            await this.runner.load('./models/neural_style_transfer', callback);
+        }
+
+        this.inputView = (await this.runner.getInputViews())[0];
+        this.outputView = (await this.runner.getOutputViews())[0];
+
+        await this.setState(State.STAND_BY);
+    }
+
     async updateDataSource() {
         this.dataSource = this.dataSourceSelect.value as DataSource;
         this.sampleContainer.style.display = this.dataSource == 'sample' ? 'block' : 'none';
-        this.cameraContainer.style.display = this.dataSource == 'camera' ? 'block' : 'none';
+        this.cameraContainer.style.display = (this.dataSource == 'video' || this.dataSource == 'photo') ?
+                                             'block' :
+                                             'none';
 
         switch (this.dataSource) {
-            case 'camera':
-                this.setState(State.INITIALIZING);
+            case 'photo':
+            case 'video':
+                await this.setState(State.INITIALIZING);
                 await this.initializeCamera();
-                this.setState(State.STAND_BY);
+                await this.setState(State.STAND_BY);
                 break;
 
             case 'sample':
-                this.setState(State.INITIALIZING);
+                await this.setState(State.INITIALIZING);
                 this.finalizeCamera();
                 await this.loadSampleImageToPreview();
-                this.setState(State.STAND_BY);
+                await this.setState(State.STAND_BY);
                 break;
         }
     }
 
     initializeCamera() {
         return new Promise(resolve => {
-            let onceCallback = () => {
-                Webcam.off('live', onceCallback);
-                resolve();
-            };
-
-            Webcam.set({
+            this.webcam = new WebCam({
                 width: 192,
                 height: 144,
                 fps: 60,
-                flip_horiz: true,
+                flip_horiz: false,
                 image_format: 'png',
-                force_flash: false
+                force_flash: false,
+                swfURL: '/webcam.swf',
+                unfreeze_snap: this.dataSource == 'video'
             });
-            Webcam.on('live', onceCallback);
-            Webcam.attach('#cameraContainer');
+            this.webcam.on('live', resolve);
+            this.webcam.on('error', (err) => {
+                console.error(err);
+                this.setMessage(err);
+                this.setState(State.ERROR);
+            });
+            this.webcam.attach('#cameraContainer');
         });
     }
 
     finalizeCamera() {
-        Webcam.reset();
+        if (this.webcam) this.webcam.reset();
     }
 
     async loadSampleImageToPreview() {
@@ -192,7 +230,8 @@ const App = new class {
                 this.runButton.disabled = true;
 
                 await this.transfer();
-                if (this.dataSource == 'camera') {
+
+                if (this.dataSource == 'video') {
                     this.setMessage('Running');
                     this.runButton.textContent = 'Stop';
                     this.runButton.disabled = false;
@@ -216,16 +255,25 @@ const App = new class {
         await this.runner.run();
         this.setImageData();
 
-        if (this.dataSource == 'camera') requestAnimationFrame(() => this.transfer());
+        if (this.dataSource == 'video') requestAnimationFrame(() => this.transfer());
     }
 
     async getImageData() {
         let w = this.w;
         let h = this.h;
 
-        if (this.dataSource == 'camera') {
-            await new Promise(resolve => Webcam.snap(resolve, this.inputCanvas));
+        if (this.dataSource == 'photo') {
+            await new Promise(resolve => {
+                this.webcam.freeze();
+                this.webcam.snap(resolve, this.inputCanvas);
+            });
+
+        } else if (this.dataSource == 'video') {
+            await new Promise(resolve => {
+                this.webcam.snap(resolve, this.inputCanvas);
+            });
         }
+
         let pixelData = this.inputCtx.getImageData(0, 0, w, h).data;
 
         for (let y = 0; y < h; y++) {
