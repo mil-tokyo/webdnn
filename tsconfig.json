@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"noImplicitAny": true,
+		"removeComments": true,
+		"strictNullChecks": true,
+		"target": "es5",
+		"inlineSourceMap": false,
+		"sourceMap": false,
+		"lib": [
+			"es6",
+			"dom"
+		]
+	}
+}

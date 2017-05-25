@@ -1,0 +1,57 @@
+.Result {
+  position: relative;
+}
+
+.ResultItem {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.ResultItem-Label {
+  position: relative;
+  width: 180px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  line-height: 30px;
+  height: 30px;
+  border-right: 1px solid #444;
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  will-change: opacity;
+  transition: 200ms ease-in-out;
+}
+
+.ResultItem-Value {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  text-align: left;
+}
+
+.ResultItem-Bar {
+  background: #ff9900;
+  height: 12px;
+  position: relative;
+  margin-right: 8px;
+  width: 0%;
+  opacity: 0;
+  will-change: opacity;
+  transition: 260ms ease-in-out;
+}
+
+.ResultItem-Probability {
+  width: 180px;
+  opacity: 0;
+  will-change: opacity;
+  transition: 200ms ease-in-out;
+}

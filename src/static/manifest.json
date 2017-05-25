@@ -1,0 +1,7 @@
+{
+	"short_name": "WebDNN",
+	"name": "MIL WebDNN",
+	"background_color": "#ff9900",
+	"display": "browser",
+	"start_url": "/"
+}

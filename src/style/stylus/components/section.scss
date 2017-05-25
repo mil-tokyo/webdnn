@@ -1,0 +1,20 @@
+.Section {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 0;
+
+  p {
+    margin: 8px 0;
+  }
+
+  .Section-Title {
+    font: 300 34px/40px Roboto, sans-serif;
+    font-size: 2rem;
+    color: #40474b;
+    margin: 0;
+  }
+}
+
+.Section-Grey {
+  background: #f3f3f3;
+}

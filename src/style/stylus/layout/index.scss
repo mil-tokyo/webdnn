@@ -1,0 +1,23 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.PageHeader {
+  flex: 0 0;
+}
+
+main {
+  flex: 1 1;
+  overflow: auto;
+}
+
+#pipelineImage {
+  min-width: 640px;
+}
+
+#mes-ts {
+  text-align: center;
+}

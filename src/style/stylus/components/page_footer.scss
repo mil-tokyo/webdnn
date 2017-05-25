@@ -1,0 +1,16 @@
+@import "../definitions/z-index";
+
+$c-PageFooter-background: #0d1115;
+$c-PageFooter-foreground: #888;
+
+.PageFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  box-sizing: border-box;
+  background: $c-PageFooter-background;
+  color: $c-PageFooter-foreground;
+  padding: 32px 64px;
+  font-size: 14px;
+}

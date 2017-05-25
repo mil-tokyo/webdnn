@@ -1,0 +1,63 @@
+@import "../definitions/z-index";
+@import "../definitions/color";
+
+$c-PageHeader-background: #0d1115;
+$c-PageHeader-foreground: #fcfcfc;
+
+.PageHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 64px;
+  min-height: 64px;
+  box-sizing: border-box;
+  background: $c-PageHeader-background;
+  color: $c-PageHeader-foreground;
+  padding: 8px 64px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: $z-Header;
+
+  h1 {
+    font-weight: 300;
+    font-size: 1.5em;
+    color: inherit;
+    margin: 0;
+  }
+
+  .MIL_LOGO {
+    color: $c-key;
+  }
+
+  @media (max-width: 1200px) and (min-width: 840px) {
+    padding: 8px 32px;
+  }
+
+  @media (max-width: 840px) {
+    padding: 8px 16px;
+  }
+}
+
+.PageHeader-Menu {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+
+  a {
+    color: #fff;
+    opacity: 0.6;
+    text-decoration: none;
+
+    svg {
+      fill: currentColor;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

@@ -1,0 +1,127 @@
+.TableWrapper {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: auto;
+}
+
+.TableWrapper-Left {
+  left: -1px;
+  background: rgba(0, 0, 0, 0); /* Old browsers */
+  background: -moz-linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+}
+
+.TableWrapper-Right {
+  right: -1px;
+  background: rgba(0, 0, 0, 0); /* Old browsers */
+  background: -moz-linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+}
+
+.Section-Grey {
+  .TableWrapper-Left {
+    background: rgba(0, 0, 0, 0); /* Old browsers */
+    background: -moz-linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+  }
+  .TableWrapper-Right {
+    background: rgba(0, 0, 0, 0); /* Old browsers */
+    background: -moz-linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
+  }
+}
+
+.Compatibility-Table {
+  border-collapse: collapse;
+  margin: 16px auto;
+
+  th {
+    font-weight: 300;
+    color: #444;
+    padding: 12px 16px 6px;
+    background: rgba(#000, 0.1);
+    border-left: 1px solid rgba(#fff, 0.3);
+
+    svg {
+      fill: currentColor;
+    }
+  }
+  td {
+    text-align: center;
+    padding: 8px 16px;
+    border-left: 1px solid rgba(#fff, 0.3);
+    border-bottom: 1px solid rgba(#fff, 0.3);
+  }
+  .Compatibility-Backend {
+    display: block;
+    font-weight: bold;
+  }
+}
+
+.Compatibility-ThisBrowserTable {
+  border-collapse: collapse;
+  margin: 16px auto;
+
+  th {
+    font-weight: 300;
+    padding: 8px 16px;
+    background: rgba(#000, 0.1);
+    color: #444;
+    border-left: 1px solid rgba(#fff, 0.3);
+  }
+  td {
+    width: 200px;
+    line-height: 64px;
+    text-align: center;
+    padding: 8px 16px;
+    border-left: 1px solid rgba(#fff, 0.3);
+    white-space: nowrap;
+  }
+}
+
+.Compatibility-SubsectionTitle {
+  text-align: center;
+  margin: 0;
+}
+
+.Compatibility-webgpu {
+  background: #ff9900;
+  color: #fff;
+}
+
+.Compatibility-webassembly {
+  background: #ffb200;
+  color: #fff;
+}
+
+.Compatibility-fallback {
+  background: #ffcc00;
+  color: #fff;
+}
+
+.Compatibility-checking {
+  background: none;
+  color: #444;
+}
+
+.Compatibility-supported {
+  font-weight: bold;
+}
+
+.Compatibility-not_supported {
+  background: rgba(#000, 0.3);
+  color: #444;
+}
+
+.Compatibility-Browser {
+  display: block;
+}
+
+.Compatibility-Version-Range {
+  display: block;
+}
