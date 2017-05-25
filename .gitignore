@@ -8,7 +8,5 @@ output
 memory_visualize.html
 .coverage
 /src/graph_transpiler/webdnn.egg-info
-example/keras-js/keras-js
-example/keras-js/data
-yarn.lock
+example/benchmark/keras-js
 example/convert_caffe/data/

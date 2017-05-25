@@ -14,7 +14,7 @@ class RemoveLastSoftmax(OptimizeRule):
     """
 
     def optimize(self, graph: Graph):
-        if not flags.optimize.REMOVE_LAST_SOFTMAX:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.REMOVE_LAST_SOFTMAX):
             return graph, False
 
         flag_changed = False

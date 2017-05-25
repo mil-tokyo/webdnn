@@ -128,7 +128,7 @@ class Allocator:
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
-        if flags.optimize.OPTIMIZE_MEMORY_ALLOCATION:
+        if flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION:
             analysis_list = _analyse_variable_lifetime(graph, ops, variables)
 
             _optimize_allocation_offset(analysis_list)
@@ -175,7 +175,7 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                 # 新規に確保する
                 flag_allocated = False
 
-                if flags.optimize.OPTIMIZE_INPLACE_OPERATION \
+                if flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_INPLACE_OPERATION \
                     and not flag_allocated \
                     and traverse.check_attribute_match(op, Inplace):
 
