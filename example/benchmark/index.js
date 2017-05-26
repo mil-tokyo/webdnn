@@ -155,7 +155,7 @@ function run() {
     let webdnnNonOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU)', N, 'webgpu', false);
     let webdnnOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', N, 'webgpu', true);
 
-    let summaryHandler = summary => console.log(`${summary.name} : ${summary.mean.toFixed(2)}+${summary.std.toFixed(2)}ms`);
+    let summaryHandler = summary => console.log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
 
     console.log('Benchmark start');
     Promise.resolve()
