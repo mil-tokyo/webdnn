@@ -13,7 +13,7 @@ class RemoveUnnecessaryFlatten(OptimizeRule):
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.OPTIMIZE_INPLACE_OPERATION:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_INPLACE_OPERATION):
             return graph, False
 
         flag_changed = False

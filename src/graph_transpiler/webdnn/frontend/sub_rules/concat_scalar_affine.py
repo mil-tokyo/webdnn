@@ -10,7 +10,7 @@ from webdnn.util import flags
 
 class ConcatScalarAffine(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not flags.optimize.CONCAT_SCALAR_AFFINE:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.CONCAT_SCALAR_AFFINE):
             return graph, False
 
         flag_changed = False

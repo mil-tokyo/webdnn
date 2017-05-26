@@ -30,7 +30,7 @@ class MetaInjector(Injector):
             if key not in self.data:
                 raise KeyError(f"key '{key}' is not registered in MetaBufferInjector.")
 
-            if flags.optimize.EMBED_METABUFFER_VALUE:
+            if flags.optimize.OPTIMIZE and flags.optimize.EMBED_METABUFFER_VALUE:
                 if isinstance(self.data[key], int) or isinstance(self.data[key], float):
                     return str(self.data[key])
 

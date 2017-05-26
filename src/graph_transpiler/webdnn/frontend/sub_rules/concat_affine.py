@@ -23,7 +23,7 @@ class ConcatAffine(OptimizeRule):
     """
 
     def optimize(self, graph: Graph):
-        if not flags.optimize.CONCAT_AFFINE:
+        if not (flags.optimize.OPTIMIZE and flags.optimize.CONCAT_AFFINE):
             return graph, False
 
         flag_changed = False
