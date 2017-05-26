@@ -16,6 +16,7 @@ from webdnn.graph.graph import Graph
 
 
 def main():
+    sys.setrecursionlimit(10000)  # workaround for deep copying large graph
     parser = argparse.ArgumentParser()
     parser.add_argument("kerasmodel")
     parser.add_argument("--backend", default="webgpu,webassembly,fallback",
