@@ -1,5 +1,19 @@
 'use strict';
 
+function console_log(message) {
+    console.log(message);
+    document.getElementById('message').appendChild(
+        document.createTextNode(message + "\n")
+    );
+}
+
+function console_error(message) {
+    console.error(message);
+    document.getElementById('message').appendChild(
+        document.createTextNode(message + "\n")
+    );
+}
+
 class BaseBenchmark {
     constructor(name, numIteration) {
         this.name = name;
@@ -17,7 +31,7 @@ class BaseBenchmark {
                 this.summary = summary;
 
                 return summary;
-            })
+            });
     }
 
     setupAsync() {
@@ -33,6 +47,7 @@ class BaseBenchmark {
         return this.executeSingleAsync()
             .then(() => {
                 let elapsedTime = performance.now() - tStart;
+                console_log('elapsedTime ' + elapsedTime);
                 this.results.push(elapsedTime);
             })
             .then(() => this.executeAsync());
@@ -66,9 +81,9 @@ class BaseBenchmark {
     }
 
     onExecuteSingle(i) {
-        if ((i + 1) % 10 === 0) {
-            console.log(`${this.name}: ${i + 1}/${this.numIteration}`);
-        }
+        //if ((i + 1) % 10 === 0) {
+            console_log(`${this.name}: ${i + 1}/${this.numIteration}`);
+        //}
     }
 }
 
@@ -155,9 +170,9 @@ function run() {
     let webdnnNonOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU)', N, 'webgpu', false);
     let webdnnOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', N, 'webgpu', true);
 
-    let summaryHandler = summary => console.log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
+    let summaryHandler = summary => console_log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
 
-    console.log('Benchmark start');
+    console_log('Benchmark start');
     Promise.resolve()
         .then(() => kerasCPU.runAsync().then(summaryHandler))
         .then(() => kerasGPU.runAsync().then(summaryHandler))
@@ -165,6 +180,6 @@ function run() {
         .then(() => webdnnOptimizedCPU.runAsync().then(summaryHandler))
         .then(() => webdnnNonOptimizedGPU.runAsync().then(summaryHandler))
         .then(() => webdnnOptimizedGPU.runAsync().then(summaryHandler))
-        .then(() => console.log('Benchmark end'))
-        .catch(err => console.error(err));
+        .then(() => console_log('Benchmark end'))
+        .catch(err => console_error(err));
 }
