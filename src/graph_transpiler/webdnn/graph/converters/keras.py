@@ -42,7 +42,7 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-class SequentialGraphConverter:
+class CommonGraphConverter:
     model_config: Dict[str, object]
     weights: h5py.Group
 
@@ -51,27 +51,7 @@ class SequentialGraphConverter:
         self.weights = weights
 
     def convert(self, input_shapes: List[List[int]]) -> Graph:
-        graph_inputs = []
-        for input_shape in input_shapes:
-            order = None
-            if len(input_shape) == 1:
-                order = OrderC
-            elif len(input_shape) == 2:
-                order = OrderNC
-            elif len(input_shape) == 4:
-                # Assuming data_format == "channels_last":
-                order = OrderNHWC
-            else:
-                raise NotImplementedError("Input shape must be 1,2,4 dimensions")
-            v = Variable(input_shape, order)
-            graph_inputs.append(v)
-
-        current_vars = graph_inputs
-        for layer in self.model_config["config"]:
-            current_vars = self.convert_layer(layer["class_name"], layer["config"], current_vars)
-        graph_outputs = current_vars
-
-        return Graph(graph_inputs, graph_outputs)
+        pass
 
     def convert_layer(self, layer_class_name: str, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
         Variable]:
@@ -82,8 +62,12 @@ class SequentialGraphConverter:
             outputs = self.convert_layer_conv2d(layer_config, inputs)
         elif layer_class_name == "MaxPooling2D":
             outputs = self.convert_layer_maxpooling2d(layer_config, inputs)
+        elif layer_class_name == "GlobalAveragePooling2D":
+            outputs = self.convert_layer_globalaveragepooling2d(layer_config, inputs)
         elif layer_class_name == "Flatten":
             outputs = self.convert_layer_flatten(layer_config, inputs)
+        elif layer_class_name == "Add":
+            outputs = self.convert_layer_add(layer_config, inputs)
         elif layer_class_name == "Dropout":
             warn("Omitting Dropout layer")
             outputs = inputs
@@ -227,6 +211,41 @@ class SequentialGraphConverter:
 
         return [y]
 
+    def convert_layer_globalaveragepooling2d(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
+        Variable]:
+        """
+        Example:
+          {'class_name': 'GlobalAveragePooling2D',
+    'config': {'data_format': 'channels_last',
+     'name': 'global_average_pooling2d_1',
+     'trainable': True},
+    'inbound_nodes': [[['add_2', 0, 0, {}]]],
+    'name': 'global_average_pooling2d_1'},
+
+        :param layer_config: 
+        :param inputs: 
+        :return: 
+        """
+        assert len(inputs) == 1
+        input = inputs[0]
+        name: str = layer_config["name"]
+        ksize: Tuple[int, int] = (input.shape_dict[Axis.H], input.shape_dict[Axis.W])
+
+        average_pooling_2d_opr = AveragePooling2D(name,
+                                                  ksize=ksize,
+                                                  stride=(1, 1),
+                                                  padding=(0, 0))
+        y, = average_pooling_2d_opr(input)
+
+        # データ順序を変えずに2Dにする
+        in_axes = y.order.axes.copy()
+        assert in_axes[0] == Axis.N
+        in_axes.remove(Axis.N)
+        flatten_opr = Flatten(name + "_flatten", in_axes=in_axes, out_axis=Axis.C)
+        y, = flatten_opr(y)
+
+        return [y]
+
     def convert_layer_flatten(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
         """
         Example:
@@ -250,6 +269,105 @@ class SequentialGraphConverter:
 
         return [y]
 
+    def convert_layer_add(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
+        """
+        Example:
+          {'class_name': 'Add',
+    'config': {'name': 'add_1', 'trainable': True},
+    'inbound_nodes': [[['conv2d_2', 0, 0, {}], ['conv2d_3', 0, 0, {}]]],
+    'name': 'add_1'},
+        :param layer_config: 
+        :param inputs: 
+        :return: 
+        """
+        name: str = layer_config["name"]
+
+        sum_opr = ElementwiseSum(name)
+        y, = sum_opr(*inputs)
+
+        return [y]
+
+
+class SequentialGraphConverter(CommonGraphConverter):
+    def __init__(self, model_config: Dict[str, object], weights: h5py.Group):
+        super().__init__(model_config, weights)
+
+    def convert(self, input_shapes: List[List[int]]) -> Graph:
+        graph_inputs = []
+        for input_shape in input_shapes:
+            order = None
+            if len(input_shape) == 1:
+                order = OrderC
+            elif len(input_shape) == 2:
+                order = OrderNC
+            elif len(input_shape) == 4:
+                # Assuming data_format == "channels_last":
+                order = OrderNHWC
+            else:
+                raise NotImplementedError("Input shape must be 1,2,4 dimensions")
+            v = Variable(input_shape, order)
+            graph_inputs.append(v)
+
+        current_vars = graph_inputs
+        for layer in self.model_config["config"]:
+            current_vars = self.convert_layer(layer["class_name"], layer["config"], current_vars)
+        graph_outputs = current_vars
+
+        return Graph(graph_inputs, graph_outputs)
+
+
+class ModelGraphConverter(CommonGraphConverter):
+    def __init__(self, model_config: Dict[str, object], weights: h5py.Group):
+        super().__init__(model_config, weights)
+
+    def convert(self, input_shapes: List[List[int]]) -> Graph:
+        input_layers = self.model_config["config"]["input_layers"]  # [['input_1', 0, 0]]
+        # Variableは(layer_name, 0, 0)という形式のキーで管理
+        var_dict = {}
+
+        graph_inputs = []
+        for input_layer, input_shape in zip(input_layers, input_shapes):
+            order = None
+            if len(input_shape) == 1:
+                order = OrderC
+            elif len(input_shape) == 2:
+                order = OrderNC
+            elif len(input_shape) == 4:
+                # Assuming data_format == "channels_last":
+                order = OrderNHWC
+            else:
+                raise NotImplementedError("Input shape must be 1,2,4 dimensions")
+            v = Variable(input_shape, order)
+
+            graph_inputs.append(v)
+            var_dict[tuple(input_layer)] = v  # key: ('input_1', 0, 0)
+
+        for layer in self.model_config["config"]["layers"]:
+            layer_class_name = layer["class_name"]
+            if layer_class_name == "InputLayer":
+                # 入力を表すダミーレイヤー
+                continue
+            # 入力変数をリストにまとめる
+            input_variables = []
+            assert len(layer["inbound_nodes"]) == 1  # [[var1, var2, ...]]
+            for inbound_node in layer["inbound_nodes"][0]:
+                key = (inbound_node[0], inbound_node[1], inbound_node[2])
+                assert inbound_node[3] == {}
+                input_variables.append(var_dict[key])
+
+            output_variables = self.convert_layer(layer_class_name, layer["config"], input_variables)
+            assert len(output_variables) == 1  # 複数出力の時の表現を認識できない
+            key = (layer["name"], 0, 0)
+            assert key not in var_dict
+            var_dict[key] = output_variables[0]
+
+        output_layers = self.model_config["config"]["output_layers"]
+        graph_outputs = []
+        for output_layer in output_layers:
+            graph_outputs.append(var_dict[tuple(output_layer)])
+
+        return Graph(graph_inputs, graph_outputs)
+
 
 class KerasGraphConverter:
     def __init__(self):
@@ -259,6 +377,8 @@ class KerasGraphConverter:
         model_config = json.loads(model.attrs["model_config"])
         if model_config["class_name"] == "Sequential":
             converter = SequentialGraphConverter(model_config, model["model_weights"])
+        elif model_config["class_name"] == "Model":
+            converter = ModelGraphConverter(model_config, model["model_weights"])
         else:
             raise NotImplementedError("Non-sequential model is currently not implemented")
 

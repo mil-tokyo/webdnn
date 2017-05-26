@@ -2,10 +2,6 @@
 This example is based on keras's mnist_mlp.py and mnist_cnn.py
 
 Trains a simple deep NN on the MNIST dataset.
-
-Gets to 98.40% test accuracy after 20 epochs
-(there is *a lot* of margin for parameter tuning).
-2 seconds per epoch on a K520 GPU.
 """
 
 from __future__ import print_function
@@ -16,13 +12,13 @@ import json
 
 import keras
 from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.models import Sequential, Model
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, Input, add, GlobalAveragePooling2D
 from keras.optimizers import RMSprop
 from keras import backend as K
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", default="fc", choices=["fc", "conv"])
+parser.add_argument("--model", default="fc", choices=["fc", "conv", "residual"])
 parser.add_argument("--out", default="output_mnist")
 args = parser.parse_args()
 
@@ -36,7 +32,7 @@ epochs = 2
 # input image dimensions
 img_rows, img_cols = 28, 28
 
-if args.model == "conv":
+if args.model in ["conv", "residual"]:
     if K.image_data_format() == "channels_first":
         raise NotImplementedError("Currently, WebDNN converter does not data_format==channels_first")
         # x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
@@ -85,6 +81,20 @@ elif args.model == "fc":
     model.add(Dense(512, activation="relu"))
     model.add(Dropout(0.2))
     model.add(Dense(10, activation="softmax"))
+elif args.model == "residual":
+    nn_input = Input(shape=(28, 28, 1))
+    hidden = Conv2D(8, kernel_size=(3, 3), activation="relu")(nn_input)
+    hidden = MaxPooling2D(pool_size=(2, 2))(hidden)
+    hidden_1 = Conv2D(16, kernel_size=(1, 1), activation="relu", padding="same")(hidden)
+    hidden_2 = Conv2D(16, kernel_size=(3, 3), activation="relu", padding="same")(hidden)
+    hidden = add([hidden_1, hidden_2])
+    hidden_1 = hidden
+    hidden_2 = Conv2D(16, kernel_size=(3, 3), activation="relu", padding="same")(hidden)
+    hidden = add([hidden_1, hidden_2])
+    hidden = GlobalAveragePooling2D()(hidden)
+    nn_output = Dense(num_classes, activation="softmax")(hidden)
+
+    model = Model(inputs=[nn_input], outputs=[nn_output])
 else:
     raise NotImplementedError("Unknown model type")
 
