@@ -47,7 +47,6 @@ class BaseBenchmark {
         return this.executeSingleAsync()
             .then(() => {
                 let elapsedTime = performance.now() - tStart;
-                console_log('elapsedTime ' + elapsedTime);
                 this.results.push(elapsedTime);
             })
             .then(() => this.executeAsync());
@@ -62,12 +61,13 @@ class BaseBenchmark {
     }
 
     summarize() {
+        this.results.shift(); // remove first run
         let results = this.results.sort();
         let d = results.reduce((d, v) => {
             d.sum += v;
             d.sum2 += v * v;
             return d;
-        }, {sum: 0, sum2: 0});
+        }, { sum: 0, sum2: 0 });
 
         let mean = d.sum / results.length;
         let std = Math.sqrt((d.sum2 - results.length * mean * mean) / (results.length - 1));
@@ -81,9 +81,7 @@ class BaseBenchmark {
     }
 
     onExecuteSingle(i) {
-        //if ((i + 1) % 10 === 0) {
-            console_log(`${this.name}: ${i + 1}/${this.numIteration}`);
-        //}
+        console_log(`${this.name}: ${i + 1}/${this.numIteration}`);
     }
 }
 
@@ -161,7 +159,7 @@ class WebDNNBenchmark extends BaseBenchmark {
 }
 
 function run() {
-    const N = 10;
+    const N = 10 + 1;
 
     let kerasCPU = new KerasJSBenchmark('Keras.js(CPU)', N, false);
     let kerasGPU = new KerasJSBenchmark('Keras.js(GPU)', N, true);

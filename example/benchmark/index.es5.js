@@ -61,7 +61,6 @@ var BaseBenchmark = function () {
             var tStart = performance.now();
             return this.executeSingleAsync().then(function () {
                 var elapsedTime = performance.now() - tStart;
-                console_log('elapsedTime ' + elapsedTime);
                 _this2.results.push(elapsedTime);
             }).then(function () {
                 return _this2.executeAsync();
@@ -80,6 +79,7 @@ var BaseBenchmark = function () {
     }, {
         key: 'summarize',
         value: function summarize() {
+            this.results.shift(); // remove first run
             var results = this.results.sort();
             var d = results.reduce(function (d, v) {
                 d.sum += v;
@@ -100,9 +100,7 @@ var BaseBenchmark = function () {
     }, {
         key: 'onExecuteSingle',
         value: function onExecuteSingle(i) {
-            //if ((i + 1) % 10 === 0) {
             console_log(this.name + ': ' + (i + 1) + '/' + this.numIteration);
-            //}
         }
     }]);
 
@@ -209,7 +207,7 @@ var WebDNNBenchmark = function (_BaseBenchmark2) {
 }(BaseBenchmark);
 
 function run() {
-    var N = 10;
+    var N = 10 + 1;
 
     var kerasCPU = new KerasJSBenchmark('Keras.js(CPU)', N, false);
     var kerasGPU = new KerasJSBenchmark('Keras.js(GPU)', N, true);
