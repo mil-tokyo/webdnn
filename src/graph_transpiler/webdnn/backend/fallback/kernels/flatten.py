@@ -32,9 +32,6 @@ def flatten(op: Flatten) -> List[Kernel]:
         assert y.order == OrderNC
     elif x.order == OrderNHWC:
         assert y.order == OrderNC
-        # H, W == 1
-        assert x.shape[1] == 1
-        assert x.shape[2] == 1
     else:
         raise AssertionError("Unsupported order")
 
