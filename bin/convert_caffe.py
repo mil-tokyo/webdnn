@@ -34,6 +34,7 @@ def parse_input_blob(args):
 
 
 def main():
+    sys.setrecursionlimit(10000)  # workaround for deep copying large graph
     parser = argparse.ArgumentParser()
     # default is Caffenet of Caffe example
     parser.add_argument("caffemodel")
