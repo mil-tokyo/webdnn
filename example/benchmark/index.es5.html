@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Benchmark</title>
+    <!-- not needed because keras.js polyfills Promise <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.23.0/polyfill.min.js"></script> -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch"></script>
+    <script src="./keras-js/dist/keras.js"></script>
+    <script src="../../build/descriptor_runner/webdnn.es5.js"></script>
+    <script src="index.es5.js"></script>
+</head>
+<body>
+
+<h1>Benchmark (ES5 version)</h1>
+
+<button id="run" onclick="run();return false">run</button> (It will take several minutes)
+
+<div>
+<pre id="message">
+
+</pre>
+</div>
+
+</body>
+</html>
