@@ -38,9 +38,10 @@ img_rows, img_cols = 28, 28
 
 if args.model == "conv":
     if K.image_data_format() == "channels_first":
-        x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-        x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-        input_shape = (1, img_rows, img_cols)
+        raise NotImplementedError("Currently, WebDNN converter does not data_format==channels_first")
+        # x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
+        # x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
+        # input_shape = (1, img_rows, img_cols)
     else:
         x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
         x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)

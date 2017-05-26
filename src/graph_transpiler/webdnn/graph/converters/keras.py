@@ -3,6 +3,10 @@
 """
 Keras model -> Graph object converters
 Assuming Keras 2.0.4
+
+Currently, the system assumes the model is trained with "data_format" == "channels_last".
+If this is not the case, Flatten layer which follows Convolution have to change the order of variable.
+Convolution implementation is currently assuming variable is NHWC.
 """
 
 from typing import List, Tuple, Dict
@@ -38,15 +42,6 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-def get_4d_weight_order_from_data_format(layer_config) -> Order:
-    if layer_config["data_format"] == "channels_first":
-        return OrderCHWN
-    elif layer_config["data_format"] == "channels_last":
-        return OrderHWCN
-    else:
-        raise ValueError("data_format is not channels_first nor channels_last")
-
-
 class SequentialGraphConverter:
     model_config: Dict[str, object]
     weights: h5py.Group
@@ -55,7 +50,7 @@ class SequentialGraphConverter:
         self.model_config = model_config
         self.weights = weights
 
-    def convert(self, input_shapes: List[List[int]], input_data_format: str) -> Graph:
+    def convert(self, input_shapes: List[List[int]]) -> Graph:
         graph_inputs = []
         for input_shape in input_shapes:
             order = None
@@ -64,13 +59,8 @@ class SequentialGraphConverter:
             elif len(input_shape) == 2:
                 order = OrderNC
             elif len(input_shape) == 4:
-                if input_data_format == "channels_first":
-                    order = OrderNCHW
-                elif input_data_format == "channels_last":
-                    order = OrderNHWC
-                else:
-                    warn("input_data_format not set. Assuming channels_first.")
-                    order = OrderNHWC
+                # Assuming data_format == "channels_last":
+                order = OrderNHWC
             else:
                 raise NotImplementedError("Input shape must be 1,2,4 dimensions")
             v = Variable(input_shape, order)
@@ -163,6 +153,7 @@ class SequentialGraphConverter:
         input = inputs[0]
         name: str = layer_config["name"]
         weight_array = self.weights[f"{name}/{name}/kernel:0"].value
+        assert layer_config["data_format"] == "channels_last"
         weight_var = ConstantVariable(weight_array, OrderHWCN)  # order does not depend on data_format
         ksize: Tuple[int, int] = tuple(layer_config["kernel_size"])
         stride: Tuple[int, int] = tuple(layer_config["strides"])
@@ -264,11 +255,11 @@ class KerasGraphConverter:
     def __init__(self):
         pass
 
-    def convert(self, model: h5py.File, input_shapes: List[List[int]], input_data_format: str) -> Graph:
+    def convert(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
         model_config = json.loads(model.attrs["model_config"])
         if model_config["class_name"] == "Sequential":
             converter = SequentialGraphConverter(model_config, model["model_weights"])
         else:
             raise NotImplementedError("Non-sequential model is currently not implemented")
 
-        return converter.convert(input_shapes, input_data_format)
+        return converter.convert(input_shapes)

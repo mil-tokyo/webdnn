@@ -22,7 +22,7 @@ def main():
                         help="comma-separated list of backends")
     parser.add_argument("--input_shape", required=True,
                         help="shape of blobs for inputs (example: '(1,3,224,224)')")
-    parser.add_argument("--input_data_format", choices=["channels_first", "channels_last"])
+    # parser.add_argument("--input_data_format", choices=["channels_first", "channels_last"])
     parser.add_argument("--out",
                         help="output directory (default: <model>/webdnn_graph_descriptor)")
     parser.add_argument("--encoding", help="name of weight encoder")
@@ -33,7 +33,7 @@ def main():
     input_shapes = [input_shape]
     model = h5py.File(args.kerasmodel, "r")
     converter = KerasGraphConverter()
-    graph = converter.convert(model, input_shapes, args.input_data_format)
+    graph = converter.convert(model, input_shapes)
 
     if args.out:
         output_dir = args.out
