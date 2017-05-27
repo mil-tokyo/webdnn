@@ -179,7 +179,7 @@ const App = new class {
                 flip_horiz: false,
                 image_format: 'png',
                 force_flash: false,
-                swfURL: '/webcam.swf',
+                swfURL: '/webdnn/webcam.swf',
                 unfreeze_snap: this.dataSource == 'video'
             });
             this.webcam.on('live', resolve);
