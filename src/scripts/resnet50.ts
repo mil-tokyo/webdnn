@@ -227,8 +227,7 @@ window.addEventListener('DOMContentLoaded', () => {
         let ma = url.match(/([^/]+?.bin)(?:\?.*)?$/);
 
         if (ma) {
-            // return fetch(`https://github.com/mil-tokyo/webdnn-hp/blob/master/src/static/models/resnet50/${ma[1]}?raw=true`);
-            return fetch(`/models/resnet50/${ma[1]}`);
+            return fetch(`https://raw.githubusercontent.com/mil-tokyo/webdnn-hp/master/models/resnet50/${ma[1]}?raw=true`);
         } else {
             return fetch(input, init);
         }

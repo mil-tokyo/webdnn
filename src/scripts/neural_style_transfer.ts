@@ -316,8 +316,7 @@ window.addEventListener('DOMContentLoaded', () => {
         let ma = url.match(/([^/]+?.bin)(?:\?.*)?$/);
 
         if (ma) {
-            // return fetch(`https://github.com/mil-tokyo/webdnn-hp/blob/master/src/static/models/neural_style_transfer/${ma[1]}?raw=true`);
-            return fetch(`/models/neural_style_transfer/${ma[1]}`);
+            return fetch(`https://raw.githubusercontent.com/mil-tokyo/webdnn-hp/master/models/neural_style_transfer/${ma[1]}?raw=true`);
         } else {
             return fetch(input, init);
         }
