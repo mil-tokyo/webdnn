@@ -31,7 +31,7 @@ achieved more than 200x acceleration.
 - Model: Vgg16[[1]](#1), ResNet50[[2]](#2). 
 - Input: (1, 224, 224, 3)
 
-![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/readme/docs/misc/performance.png)
+![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/master/docs/misc/performance.png)
 
 Elapsed time per image are shown in vertical axis as logarithmic scale.
 
