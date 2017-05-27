@@ -6,6 +6,8 @@ import InitializingView from "./modules/initializing_view";
 
 const NUM_RANDOM_IMAGE = 6;
 
+let FLAG_CHROME_ANDROID: boolean = false;
+
 enum State {
     INITIALIZING,
     NO_IMAGE,
@@ -104,6 +106,14 @@ const App = new class {
         let initializingViewBase = document.getElementById('initializingView');
         if (!initializingViewBase) throw Error('#initializingView is not found');
         let initializingView = new InitializingView(initializingViewBase);
+
+        if (FLAG_CHROME_ANDROID) {
+            initializingView.updateMessage('Sorry, but this application can\'t work on Chrome for Android.');
+            return;
+        } else {
+            console.log(navigator.userAgent);
+        }
+
         initializingView.updateMessage('Load label data');
 
         this.labels = Labels;
@@ -222,6 +232,8 @@ const App = new class {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+    FLAG_CHROME_ANDROID = ((/Android(.*)Chrome/).test(navigator.userAgent));
+
     WebDNN.registerTransformDelegate((url: string) => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
@@ -240,3 +252,4 @@ window.addEventListener('DOMContentLoaded', () => {
         runAppButton.addEventListener('click', () => App.initialize());
     }
 });
+
