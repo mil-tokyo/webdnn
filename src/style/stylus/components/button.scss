@@ -5,13 +5,17 @@ $c-example-button-disabled-foreground: rgb(90, 90, 90);
 button, .Button {
   position: relative;
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(#fff, 0.3);
   background: none;
   color: $c-example-button-foreground;
   padding: 0 16px;
-  font: 300 16px/48px sans-serif;
+  font-family: sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 24px;
   height: 48px;
   box-sizing: border-box;
   border-radius: 2px;
@@ -23,6 +27,8 @@ button, .Button {
   text-align: center;
 
   svg {
+    position: relative;
+    display: block;
     fill: none;
     stroke: currentColor;
     margin-right: 8px;
