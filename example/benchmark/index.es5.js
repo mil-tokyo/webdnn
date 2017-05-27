@@ -32,6 +32,19 @@ var BaseBenchmark = function () {
     }
 
     _createClass(BaseBenchmark, [{
+        key: 'getSelectedModel',
+        value: function getSelectedModel() {
+            var model_name_selection = document.forms.benchmark.model_name;
+            var model_name = 'resnet50';
+            for (var i = 0; i < model_name_selection.length; i++) {
+                if (model_name_selection[i].checked) {
+                    model_name = model_name_selection[i].value;
+                }
+            }
+            console_log('Model: ' + model_name);
+            return model_name;
+        }
+    }, {
         key: 'runAsync',
         value: function runAsync(numIteration) {
             var _this = this;
@@ -135,7 +148,7 @@ var KerasJSBenchmark = function (_BaseBenchmark) {
     _createClass(KerasJSBenchmark, [{
         key: 'setupAsync',
         value: function setupAsync() {
-            var prefix = './output/kerasjs/resnet50/model';
+            var prefix = './output/kerasjs/' + this.getSelectedModel() + '/model';
             this.model = new KerasJS.Model({
                 filepaths: {
                     model: prefix + '.json',
@@ -188,7 +201,7 @@ var WebDNNBenchmark = function (_BaseBenchmark2) {
             return WebDNN.init([this.backend]).then(function () {
                 //noinspection ES6ModulesDependencies
                 _this5.runner = WebDNN.gpu.createDescriptorRunner();
-                return _this5.runner.load('./output/webdnn/resnet50/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
+                return _this5.runner.load('./output/webdnn/' + _this5.getSelectedModel() + '/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
             }).then(function () {
                 return _this5.runner.getInputViews();
             }).then(function (xs) {
