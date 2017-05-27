@@ -4,6 +4,7 @@ node_modules
 build
 resources
 output*
+!output.py
 .DS_Store
 memory_visualize.html
 .coverage
