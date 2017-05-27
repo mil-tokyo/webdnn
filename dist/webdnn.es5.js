@@ -498,7 +498,7 @@ var WebDNN;
         }
         DescriptorRunnerWebGPU.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, _a, weight_url, weights_data_ab, _b;
+                var graph_url, graph_fetch, _a, weight_url, weights_data_ab, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
@@ -506,9 +506,14 @@ var WebDNN;
                             if (this.ignoreCache) {
                                 graph_url += '?t=' + Date.now();
                             }
+                            return [4 /*yield*/, WebDNN.fetch(graph_url)];
+                        case 1:
+                            graph_fetch = _c.sent();
+                            if (!graph_fetch.ok) {
+                                throw new Error(graph_url + " cannot be loaded");
+                            }
                             _a = this;
-                            return [4 /*yield*/, WebDNN.fetch(graph_url, progressCallback)];
-                        case 1: return [4 /*yield*/, (_c.sent()).json()];
+                            return [4 /*yield*/, graph_fetch.json()];
                         case 2:
                             _a.descriptor = _c.sent();
                             return [4 /*yield*/, this.compile()];
@@ -737,7 +742,7 @@ var WebDNN;
         }
         DescriptorRunnerWebassembly.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, _a, kernel_backend, worker_entry_js_path, weight_url, weights_data_ab, _b;
+                var graph_url, graph_fetch, _a, kernel_backend, worker_entry_js_path, weight_url, weights_data_ab, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
@@ -745,9 +750,14 @@ var WebDNN;
                             if (this.ignoreCache) {
                                 graph_url += '?t=' + Date.now();
                             }
-                            _a = this;
                             return [4 /*yield*/, WebDNN.fetch(graph_url)];
-                        case 1: return [4 /*yield*/, (_c.sent()).json()];
+                        case 1:
+                            graph_fetch = _c.sent();
+                            if (!graph_fetch.ok) {
+                                throw new Error(graph_url + " cannot be loaded");
+                            }
+                            _a = this;
+                            return [4 /*yield*/, graph_fetch.json()];
                         case 2:
                             _a.descriptor = _c.sent();
                             kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
@@ -957,7 +967,7 @@ var WebDNN;
         }
         DescriptorRunnerFallback.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, _a, weight_url, weights_data_ab, _b;
+                var graph_url, graph_fetch, _a, weight_url, weights_data_ab, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
@@ -965,9 +975,14 @@ var WebDNN;
                             if (this.ignoreCache) {
                                 graph_url += '?t=' + Date.now();
                             }
-                            _a = this;
                             return [4 /*yield*/, WebDNN.fetch(graph_url)];
-                        case 1: return [4 /*yield*/, (_c.sent()).json()];
+                        case 1:
+                            graph_fetch = _c.sent();
+                            if (!graph_fetch.ok) {
+                                throw new Error(graph_url + " cannot be loaded");
+                            }
+                            _a = this;
+                            return [4 /*yield*/, graph_fetch.json()];
                         case 2:
                             _a.descriptor = _c.sent();
                             return [4 /*yield*/, this.compile()];
