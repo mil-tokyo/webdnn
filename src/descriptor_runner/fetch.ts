@@ -1,13 +1,31 @@
 /// <reference path="./util/dispatch_scheduler.ts" />
 
+let transformDelegate: (base: string) => string = url => url;
+
+/**
+ * Fetch delegate function.
+ * Every fetch call in WebDNN is delegated to this function.
+ * As default, `window.fetch` is set.
+ * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+ */
+let fetchDelegate: (input: RequestInfo, init?: RequestInit) => Promise<Response> = window.fetch;
+
 namespace WebDNN {
     /**
-     * Fetch delegate function.
-     * Every fetch call in WebDNN is delegated to this function.
-     * As default, `window.fetch` is set.
-     * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+     * Register delegate function for transform url
+     * @param url url which will be transformed
      */
-    let fetchDelegate: (input: RequestInfo, init?: RequestInit) => Promise<Response> = window.fetch;
+    export function transformUrl(url: string) {
+        return transformDelegate(url);
+    }
+
+    /**
+     * Register delegate function for transform url
+     * @param delegate delegate function
+     */
+    export function registerTransformDelegate(delegate: (base: string) => string) {
+        transformDelegate = delegate;
+    }
 
     /**
      * Register delegate function for fetch
