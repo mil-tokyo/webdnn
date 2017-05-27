@@ -21,7 +21,7 @@ def main():
     sys.setrecursionlimit(10000)  # workaround for deep copying large graph
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="vgg16", choices=["vgg16", "resnet50"])
+    parser.add_argument("--model", default="resnet50", choices=["vgg16", "resnet50"])
     parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])
     parser.add_argument("--encoding")
     args = parser.parse_args()
