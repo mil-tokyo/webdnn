@@ -21,6 +21,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
+            graph_url = transformUrl(graph_url);
             let graph_fetch = await WebDNN.fetch(graph_url);
             if (!graph_fetch.ok) {
                 throw new Error(`${graph_url} cannot be loaded`);
@@ -32,6 +33,7 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = transformUrl(weight_url);
             let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
