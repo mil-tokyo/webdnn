@@ -161,23 +161,23 @@ class WebDNNBenchmark extends BaseBenchmark {
 function run() {
     const N = 10 + 1;
 
+    let webdnnOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', N, 'webgpu', true);
+    let webdnnNonOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU)', N, 'webgpu', false);
+    let webdnnOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', N, 'webassembly', true);
+    let webdnnNonOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly)', N, 'webassembly', false);
     let kerasCPU = new KerasJSBenchmark('Keras.js(CPU)', N, false);
     let kerasGPU = new KerasJSBenchmark('Keras.js(GPU)', N, true);
-    let webdnnNonOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly)', N, 'webassembly', false);
-    let webdnnOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', N, 'webassembly', true);
-    let webdnnNonOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU)', N, 'webgpu', false);
-    let webdnnOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', N, 'webgpu', true);
 
     let summaryHandler = summary => console_log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
 
     console_log('Benchmark start');
     Promise.resolve()
-        .then(() => kerasCPU.runAsync().then(summaryHandler))
-        .then(() => kerasGPU.runAsync().then(summaryHandler))
-        .then(() => webdnnNonOptimizedCPU.runAsync().then(summaryHandler))
-        .then(() => webdnnOptimizedCPU.runAsync().then(summaryHandler))
-        .then(() => webdnnNonOptimizedGPU.runAsync().then(summaryHandler))
         .then(() => webdnnOptimizedGPU.runAsync().then(summaryHandler))
+        .then(() => webdnnNonOptimizedGPU.runAsync().then(summaryHandler))
+        .then(() => webdnnOptimizedCPU.runAsync().then(summaryHandler))
+        .then(() => webdnnNonOptimizedCPU.runAsync().then(summaryHandler))
+        .then(() => kerasGPU.runAsync().then(summaryHandler))
+        .then(() => kerasCPU.runAsync().then(summaryHandler))
         .then(() => console_log('Benchmark end'))
         .catch(err => console_error(err));
 }

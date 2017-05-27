@@ -1,3 +1,4 @@
+import math
 from typing import Dict, Tuple, List, Set
 
 import numpy as np
@@ -250,7 +251,8 @@ def _optimize_allocation_offset(analysis_list: List[AllocationAnalysisData]):
                     if flag_retry:
                         break
 
-            item1.offset = offset
+            # align for 16byte
+            item1.offset = math.ceil(offset / 4) * 4
 
         queue = list(sorted(queue, key=lambda x: x.offset))
         item1 = queue.pop(0)

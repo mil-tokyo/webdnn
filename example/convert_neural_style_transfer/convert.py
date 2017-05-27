@@ -1,4 +1,5 @@
 import argparse
+import sys
 from enum import Enum
 from os import path
 
@@ -18,6 +19,7 @@ class NSTModelPath(Enum):
     kanagawa = "../../resources/chainer-fast-neuralstyle-models/models/kanagawa.model"
 
 
+sys.setrecursionlimit(10000)
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", default=NSTModelPath.kanagawa.name, choices=[v.name for v in NSTModelPath])
 parser.add_argument("--backend", default="webgpu", choices=["webgpu", "webassembly", "fallback"])

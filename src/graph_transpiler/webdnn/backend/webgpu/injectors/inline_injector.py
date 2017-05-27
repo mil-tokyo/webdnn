@@ -11,8 +11,9 @@ _noop = lambda exp: exp
 class InlineInjector(Injector):
     def __init__(self, op: Operator):
         self.delegate = lambda exp: exp  # type: Callable[[str], str]
+        self.has_inline = traverse.check_attribute_match(op, PostInlineInplace)
 
-        if traverse.check_attribute_match(op, PostInlineInplace):
+        if self.has_inline:
             post_inline_inplace = op.get_attribute(PostInlineInplace)[0]  # type: PostInlineInplace
             if post_inline_inplace.injected is not None:
                 self.delegate = post_inline_inplace.injected.injector
