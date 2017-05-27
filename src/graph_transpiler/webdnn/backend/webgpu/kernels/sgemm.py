@@ -52,13 +52,8 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         : (data_buffer + %%META_LOAD(sgemm_A_offset)%%);
 #endif
 
-#if !TRANSPOSE_A || !M_DIVIDABLE_BY_64
     const int M = %%META_LOAD(sgemm_M)%%;
-#endif
-
-#if TRANSPOSE_B
     const int N = %%META_LOAD(sgemm_N)%%;
-#endif
 
     const int K = %%META_LOAD(sgemm_K)%%;
 
