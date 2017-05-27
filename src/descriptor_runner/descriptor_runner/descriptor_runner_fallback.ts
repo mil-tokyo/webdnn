@@ -21,7 +21,11 @@ namespace WebDNN {
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
-            this.descriptor = await (await WebDNN.fetch(graph_url)).json();
+            let graph_fetch = await WebDNN.fetch(graph_url);
+            if (!graph_fetch.ok) {
+                throw new Error(`${graph_url} cannot be loaded`);
+            }
+            this.descriptor = await graph_fetch.json();
             await this.compile();
 
             let weight_url = `${directory}/weight_${this.backend}.bin`;

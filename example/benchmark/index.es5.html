@@ -14,13 +14,22 @@
 
 <h1>Benchmark (ES5 version)</h1>
 
-<button id="run" onclick="run();return false">run</button> (It will take several minutes)
+<form name="benchmark">
+<div id="modelist">
+</div>
+Iterations: <input type="text" name="iterations" size="4" value="3"> + 1 proceeding run <br>
+
+<button type="button" id="run_button" onclick="run();return false" disabled>run</button> (It will take several minutes)
+
+<pre id="environment_note">
+</pre>
 
 <div>
 <pre id="message">
 
 </pre>
 </div>
+</form>
 
 </body>
 </html>

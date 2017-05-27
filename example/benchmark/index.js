@@ -1,5 +1,7 @@
 'use strict';
 
+let benchmarks = [];
+
 function console_log(message) {
     console.log(message);
     document.getElementById('message').appendChild(
@@ -15,13 +17,13 @@ function console_error(message) {
 }
 
 class BaseBenchmark {
-    constructor(name, numIteration) {
+    constructor(name) {
         this.name = name;
-        this.numIteration = numIteration;
         this.summary = null;
     }
 
-    runAsync() {
+    runAsync(numIteration) {
+        this.numIteration = numIteration;
         this.results = [];
         return this.setupAsync()
             .then(() => this.executeAsync())
@@ -49,7 +51,13 @@ class BaseBenchmark {
                 let elapsedTime = performance.now() - tStart;
                 this.results.push(elapsedTime);
             })
-            .then(() => this.executeAsync());
+            .then(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(this.executeAsync());
+                    }, 10);
+                })
+            });
     }
 
     executeSingleAsync() {
@@ -86,8 +94,8 @@ class BaseBenchmark {
 }
 
 class KerasJSBenchmark extends BaseBenchmark {
-    constructor(name, numIteration, flagGPU) {
-        super(name, numIteration);
+    constructor(name, flagGPU) {
+        super(name);
         this.model = null;
         this.flagGPU = flagGPU;
         this.xs = {
@@ -120,8 +128,8 @@ class KerasJSBenchmark extends BaseBenchmark {
 }
 
 class WebDNNBenchmark extends BaseBenchmark {
-    constructor(name, numIteration, backend, flagOptimized) {
-        super(name, numIteration);
+    constructor(name, backend, flagOptimized) {
+        super(name);
         this.runner = null;
         this.x = null;
         this.y = null;
@@ -158,26 +166,53 @@ class WebDNNBenchmark extends BaseBenchmark {
     }
 }
 
-function run() {
-    const N = 10 + 1;
 
-    let webdnnOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', N, 'webgpu', true);
-    let webdnnNonOptimizedGPU = new WebDNNBenchmark('WebDNN(WebGPU)', N, 'webgpu', false);
-    let webdnnOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', N, 'webassembly', true);
-    let webdnnNonOptimizedCPU = new WebDNNBenchmark('WebDNN(WebAssembly)', N, 'webassembly', false);
-    let kerasCPU = new KerasJSBenchmark('Keras.js(CPU)', N, false);
-    let kerasGPU = new KerasJSBenchmark('Keras.js(GPU)', N, true);
+function run() {
+    let numIteration = Number(document.forms.benchmark.iterations.value) + 1;
+    if (isNaN(numIteration)) {
+        numIteration = 5;
+    }
+
+    let mode_selection = document.forms.benchmark.mode_selection;
+    let benchmark_id = 0;
+    for (let i = 0; i < mode_selection.length; i++) {
+        if (mode_selection[i].checked) {
+            benchmark_id = Number(mode_selection[i].value);
+        }
+    }
+    let benchmark = benchmarks[benchmark_id];
 
     let summaryHandler = summary => console_log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
 
-    console_log('Benchmark start');
+    console_log(`Benchmark ${benchmark.name} start`);
     Promise.resolve()
-        .then(() => webdnnOptimizedGPU.runAsync().then(summaryHandler))
-        .then(() => webdnnNonOptimizedGPU.runAsync().then(summaryHandler))
-        .then(() => webdnnOptimizedCPU.runAsync().then(summaryHandler))
-        .then(() => webdnnNonOptimizedCPU.runAsync().then(summaryHandler))
-        .then(() => kerasGPU.runAsync().then(summaryHandler))
-        .then(() => kerasCPU.runAsync().then(summaryHandler))
+        .then(() => benchmark.runAsync(numIteration).then(summaryHandler))
         .then(() => console_log('Benchmark end'))
         .catch(err => console_error(err));
 }
+
+document.addEventListener('DOMContentLoaded', function (event) {
+    benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', 'webgpu', true));
+    benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU)', 'webgpu', false));
+    benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', 'webassembly', true));
+    benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly)', 'webassembly', false));
+    benchmarks.push(new KerasJSBenchmark('Keras.js(CPU)', false));
+    benchmarks.push(new KerasJSBenchmark('Keras.js(GPU)', true));
+
+    let div_modelist = document.getElementById('modelist');
+    for (let i = 0; i < benchmarks.length; i++) {
+        let benchmark = benchmarks[i];
+        div_modelist.innerHTML += `<label><input type="radio" name="mode_selection" value="${i}" ${i == 0 ? 'checked' : ''}>${benchmark.name}</label><br>`
+    }
+
+    let environment_note = "";
+    if (typeof WebGPUComputeCommandEncoder === 'undefined') {
+        environment_note += "This browser does not support WebGPU.\n";
+    }
+    if (typeof WebAssembly === 'undefined') {
+        environment_note += "This browser does not support WebAssembly. WebAssembly backend will run in asm.js mode.\n";
+    }
+    document.getElementById('environment_note').innerHTML = environment_note;
+
+    document.getElementById('run_button').disabled = false;
+});
