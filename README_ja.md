@@ -26,7 +26,7 @@ WebDNNにより、ウェブブラウザ上での実行を前提とした積極�
     - Safari Technology Preview 30
 - 測定内容: 画像識別モデルの一種, ResNet50[[1]](#1)およびVgg16[[2]](#2)を使用。224x224の画像1枚の推論に要する時間を測定。
 
-![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/readme/docs/misc/performance.png)
+![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/master/docs/misc/performance.png)
 
 縦軸は画像1枚あたりの処理時間(対数スケール)を表しています。
 
