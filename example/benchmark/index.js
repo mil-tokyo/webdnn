@@ -11,6 +11,9 @@ function console_log(message) {
 
 function console_error(message) {
     console.error(message);
+    if (message.message) {
+        message = message.message;
+    }
     document.getElementById('message').appendChild(
         document.createTextNode(message + "\n")
     );
