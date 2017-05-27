@@ -14,7 +14,13 @@
 <h1>Benchmark</h1>
 
 <form name="benchmark">
+    <div>
+        Model:
+        <label><input type="radio" name="model_name" value="resnet50" checked>ResNet50</label>
+        <label><input type="radio" name="model_name" value="vgg16">VGG16</label>
+    </div>
 <div id="modelist">
+    Framework and backends:<br>
 </div>
 Iterations: <input type="text" name="iterations" size="4" value="3"> + 1 proceeding run <br>
 

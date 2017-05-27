@@ -25,6 +25,18 @@ class BaseBenchmark {
         this.summary = null;
     }
 
+    getSelectedModel() {
+        let model_name_selection = document.forms.benchmark.model_name;
+        let model_name = 'resnet50';
+        for (let i = 0; i < model_name_selection.length; i++) {
+            if (model_name_selection[i].checked) {
+                model_name = model_name_selection[i].value;
+            }
+        }
+        console_log(`Model: ${model_name}`);
+        return model_name;
+    }
+
     runAsync(numIteration) {
         this.numIteration = numIteration;
         this.results = [];
@@ -107,7 +119,7 @@ class KerasJSBenchmark extends BaseBenchmark {
     }
 
     setupAsync() {
-        let prefix = './output/kerasjs/resnet50/model';
+        let prefix = `./output/kerasjs/${this.getSelectedModel()}/model`;
         this.model = new KerasJS.Model({
             filepaths: {
                 model: `${prefix}.json`,
@@ -146,7 +158,7 @@ class WebDNNBenchmark extends BaseBenchmark {
             .then(() => {
                 //noinspection ES6ModulesDependencies
                 this.runner = WebDNN.gpu.createDescriptorRunner();
-                return this.runner.load(`./output/webdnn/resnet50/${this.flagOptimized ? '' : 'non_'}optimized`);
+                return this.runner.load(`./output/webdnn/${this.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`);
             })
             .then(() => this.runner.getInputViews())
             .then(xs => {
