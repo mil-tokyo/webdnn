@@ -4,14 +4,15 @@
 	"display": "standalone",
 	"background_color": "#ff9900",
 	"theme_color": "#ff9900",
-	"start_url": "/",
-	"icons": [{
-			"src": "/android-chrome-192x192.png",
+	"start_url": "/webdnn",
+	"icons": [
+		{
+			"src": "/webdnn/android-chrome-192x192.png",
 			"sizes": "192x192",
 			"type": "image/png"
 		},
 		{
-			"src": "/android-chrome-512x512.png",
+			"src": "/webdnn/android-chrome-512x512.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		}

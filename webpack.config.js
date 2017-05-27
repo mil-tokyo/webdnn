@@ -14,7 +14,7 @@ module.exports = {
 		'sw': './src/scripts/sw.ts',
 	},
 	output: {
-		path: path.resolve(__dirname, './build'),
+		path: path.resolve(__dirname, './build/webdnn'),
 		filename: '[name].js'
 	},
 	module: {

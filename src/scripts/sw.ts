@@ -8,10 +8,10 @@ declare let toolbox: {
     cacheFirst: any
 };
 
-importScripts('/sw-toolbox.js');
+importScripts('/webdnn/sw-toolbox.js');
 
 toolbox.precache(['/',
-    '/models/resnet50/weight_webassembly.bin',
-    '/models/neural_style_transfer/weight_webassembly.bin',
+    'https://mil-tokyo.github.io/webdnn-data/models/resnet50/weight_webassembly.bin',
+    'https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/weight_webassembly.bin',
 ]);
 toolbox.router.get('/(.*)\.bin', toolbox.cacheFirst);

@@ -5,7 +5,7 @@ WEBDNN := $(abspath ../webdnn)
 WEBDNN_HP :=$(abspath ./)
 
 # directory where the build files will be output to
-WEBDNN_GH := $(abspath ../webdnn-gh-pages)
+WEBDNN_GH := $(abspath ../webdnn-gh-pages/webdnn)
 
 .PHONY: default build build-webpage build-docs build-cp
 
@@ -30,4 +30,4 @@ build-cp:
 	mkdir -p ${WEBDNN_GH}
 	mkdir -p ${WEBDNN_GH}/docs
 	cp -R ${WEBDNN}/docs/build/html/ ${WEBDNN_GH}/docs/
-	cp -R ${WEBDNN_HP}/build/ ${WEBDNN_GH}
+	cp -R ${WEBDNN_HP}/build/webdnn/ ${WEBDNN_GH}

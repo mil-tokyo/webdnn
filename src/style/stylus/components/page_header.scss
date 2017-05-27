@@ -22,7 +22,9 @@ $c-PageHeader-foreground: #fcfcfc;
     font-weight: 300;
     font-size: 1.5em;
     color: inherit;
-    margin: 0;
+    margin: 0 32px 0 0;
+    flex: 0 0;
+    white-space: nowrap;
   }
 
   .MIL_LOGO {
@@ -37,21 +39,48 @@ $c-PageHeader-foreground: #fcfcfc;
     padding: 8px 16px;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     min-height: 48px;
     line-height: 48px;
   }
 }
 
+.PageHeader-ItemContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
 .PageHeader-Menu {
   flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow: auto;
+
+  a {
+    padding: 0 8px;
+    color: #fff;
+    opacity: 0.6;
+    text-decoration: none;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.PageHeader-Link {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
 
   a {
-    padding: 0 32px;
+    padding: 0 8px;
     color: #fff;
     opacity: 0.6;
     text-decoration: none;
@@ -69,10 +98,7 @@ $c-PageHeader-foreground: #fcfcfc;
     margin-right: 4px;
   }
 
-  @media (max-width: 640px) {
-    a {
-      padding: 0 8px;
-    }
+  @media (max-width: 768px) {
     svg {
       width: 28px;
       height: 28px;

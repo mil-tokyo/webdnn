@@ -140,14 +140,16 @@ window.onload = () => {
     };
 
     for (let backend of ['webgpu', 'webassembly', 'fallback']) {
-        for (let node of Array.from(document.querySelectorAll(`.Compatibility-${backend}.Compatibility-checking`)) as HTMLElement[]) {
+        for (let node of Array.from(document.querySelectorAll(`.Compatibility-ThisBrowserTable .Compatibility-${backend}`)) as HTMLElement[]) {
             node.classList.remove('Compatibility-checking');
             let statusNode = node.querySelector('.Compatibility-Status');
 
             if (availability[backend]) {
                 node.classList.add('Compatibility-supported');
+                node.classList.remove('Compatibility-not_supported');
                 if (statusNode) statusNode.textContent = 'Supported';
             } else {
+                node.classList.remove('Compatibility-supported');
                 node.classList.add('Compatibility-not_supported');
                 if (statusNode) statusNode.textContent = 'Not supported';
             }
@@ -159,5 +161,5 @@ window.onload = () => {
         iframes[i].src = '' + iframes[i].dataset['src'];
     }
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/webdnn/sw.js');
 };

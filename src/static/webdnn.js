@@ -1,3 +1,26 @@
+/*
+MIT License
+
+Copyright (c) 2017 Machine Intelligence Laboratory (The University of Tokyo)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 /// <reference path="../graph_descriptor/graph_descriptor.ts" />
 ///<reference path="../descriptor_runner/descriptor_runner.ts" />
 var WebDNN;
@@ -280,15 +303,32 @@ var WebDNN;
     })(util = WebDNN.util || (WebDNN.util = {}));
 })(WebDNN || (WebDNN = {}));
 /// <reference path="./util/dispatch_scheduler.ts" />
+let transformDelegate = url => url;
+/**
+ * Fetch delegate function.
+ * Every fetch call in WebDNN is delegated to this function.
+ * As default, `window.fetch` is set.
+ * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+ */
+let fetchDelegate = window.fetch;
 var WebDNN;
 (function (WebDNN) {
     /**
-     * Fetch delegate function.
-     * Every fetch call in WebDNN is delegated to this function.
-     * As default, `window.fetch` is set.
-     * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+     * Register delegate function for transform url
+     * @param url url which will be transformed
      */
-    let fetchDelegate = window.fetch;
+    function transformUrl(url) {
+        return transformDelegate(url);
+    }
+    WebDNN.transformUrl = transformUrl;
+    /**
+     * Register delegate function for transform url
+     * @param delegate delegate function
+     */
+    function registerTransformDelegate(delegate) {
+        transformDelegate = delegate;
+    }
+    WebDNN.registerTransformDelegate = registerTransformDelegate;
     /**
      * Register delegate function for fetch
      * @param delegate delegate function
@@ -362,12 +402,18 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
-            this.descriptor = await (await WebDNN.fetch(graph_url, progressCallback)).json();
+            graph_url = WebDNN.transformUrl(graph_url);
+            let graph_fetch = await WebDNN.fetch(graph_url);
+            if (!graph_fetch.ok) {
+                throw new Error(`${graph_url} cannot be loaded`);
+            }
+            this.descriptor = await graph_fetch.json();
             await this.compile();
             let weight_url = `${directory}/weight_${this.backend}.bin`;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url, progressCallback), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
@@ -508,19 +554,26 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
-            this.descriptor = await (await WebDNN.fetch(graph_url)).json();
+            graph_url = WebDNN.transformUrl(graph_url);
+            let graph_fetch = await WebDNN.fetch(graph_url);
+            if (!graph_fetch.ok) {
+                throw new Error(`${graph_url} cannot be loaded`);
+            }
+            this.descriptor = await graph_fetch.json();
             // for browsers which does not support wasm, try asm.js code
             let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
             let worker_entry_js_path = `${directory}/kernels_${kernel_backend}.js`;
             if (this.ignoreCache) {
                 worker_entry_js_path += '?t=' + Date.now();
             }
+            worker_entry_js_path = WebDNN.transformUrl(worker_entry_js_path);
             this.worker_entry_js_path = worker_entry_js_path;
             await this.compile();
             let weight_url = `${directory}/weight_${this.backend}.bin`;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
@@ -673,12 +726,18 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
-            this.descriptor = await (await WebDNN.fetch(graph_url)).json();
+            graph_url = WebDNN.transformUrl(graph_url);
+            let graph_fetch = await WebDNN.fetch(graph_url);
+            if (!graph_fetch.ok) {
+                throw new Error(`${graph_url} cannot be loaded`);
+            }
+            this.descriptor = await graph_fetch.json();
             await this.compile();
             let weight_url = `${directory}/weight_${this.backend}.bin`;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
@@ -980,4 +1039,4 @@ var WebDNN;
     }
     WebDNN.getBackendAvailability = getBackendAvailability;
 })(WebDNN || (WebDNN = {}));
-window.WebDNN = WebDNN;
+//# sourceMappingURL=webdnn.js.map

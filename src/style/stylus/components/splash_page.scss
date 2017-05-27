@@ -28,6 +28,7 @@ $c-SplashPage-foreground: #fcfcfc;
     h1 {
       font-size: 28px;
       line-height: 34px;
+      text-align: center;
     }
   }
 
@@ -43,8 +44,22 @@ $c-SplashPage-foreground: #fcfcfc;
       background: rgba(#fff, 0.3);
     }
   }
+
+  canvas {
+    opacity: 1;
+    will-change: opacify;
+    animation: fadeIn 2000ms ease-in-out;
+  }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 @media (max-width: 640px) {
   .SplashPage {
     padding: 32px 16px;

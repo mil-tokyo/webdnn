@@ -3,6 +3,10 @@
   overflow: hidden;
   padding: 16px 0;
 
+  &:nth-child(odd) {
+    background: #f3f3f3;
+  }
+
   p {
     margin: 8px 0;
   }
@@ -19,8 +23,4 @@
       line-height: 26px;
     }
   }
-}
-
-.Section-Grey {
-  background: #f3f3f3;
 }

@@ -222,14 +222,13 @@ const App = new class {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    WebDNN.registerFetchDelegate((input, init) => {
-        let url = ((input instanceof Request) ? input.url : input) as string;
-        let ma = url.match(/([^/]+?.bin)(?:\?.*)?$/);
+    WebDNN.registerTransformDelegate((url: string) => {
+        let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
         if (ma) {
-            return fetch(`https://raw.githubusercontent.com/mil-tokyo/webdnn-data/master/models/resnet50/${ma[1]}?raw=true`);
+            return `https://mil-tokyo.github.io/webdnn-data/models/resnet50/${ma[1]}?raw=true`;
         } else {
-            return fetch(input, init);
+            return url;
         }
     });
 

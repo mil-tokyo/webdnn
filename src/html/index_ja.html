@@ -6,31 +6,39 @@
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <meta name="theme-color" content="#FF9900">
     <title>MIL WebDNN</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="/webdnn/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/webdnn/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/webdnn/favicon-16x16.png">
+    <link rel="manifest" href="/webdnn/manifest.json">
 </head>
 
 <body>
 
 <header class="PageHeader">
     <h1><span class="MIL_LOGO">MIL</span> WebDNN</h1>
-    <p class="PageHeader-Menu">
-        <a href="/"><span>English</span></a>
-        <a href="https://github.com/mil-tokyo/webdnn">
-            <svg viewBox="0 0 16 16"
-                 xmlns="http://www.w3.org/2000/svg"
-                 fill-rule="evenodd"
-                 clip-rule="evenodd"
-                 stroke-linejoin="round"
-                 stroke-miterlimit="1.414">
-                <path d="M8 0C3.58 0 0 3.582 0 8c0 3.535 2.292 6.533 5.47 7.59.4.075.547-.172.547-.385 0-.19-.007-.693-.01-1.36-2.226.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.725-.496.056-.486.056-.486.803.056 1.225.824 1.225.824.714 1.223 1.873.87 2.33.665.072-.517.278-.87.507-1.07-1.777-.2-3.644-.888-3.644-3.953 0-.873.31-1.587.823-2.147-.09-.202-.36-1.015.07-2.117 0 0 .67-.215 2.2.82.64-.178 1.32-.266 2-.27.68.004 1.36.092 2 .27 1.52-1.035 2.19-.82 2.19-.82.43 1.102.16 1.915.08 2.117.51.56.82 1.274.82 2.147 0 3.073-1.87 3.75-3.65 3.947.28.24.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.14.46.55.38C13.71 14.53 16 11.53 16 8c0-4.418-3.582-8-8-8"
-                />
-            </svg>
-            <span class="Mobile-Hide">GitHub</span>
-        </a>
-    </p>
+    <div class="PageHeader-ItemContainer">
+        <p class="PageHeader-Menu Mobile-Hide">
+            <a href="#about">About</a>
+            <a href="#compatibility">Compatibility</a>
+            <a href="#benchmark">Benchmark</a>
+            <a href="#neural-style-transfer">Samples</a>
+        </p>
+        <p class="PageHeader-Link">
+            <a href="/webdnn"><span>English</span></a>
+            <a href="https://github.com/mil-tokyo/webdnn">
+                <svg viewBox="0 0 16 16"
+                     xmlns="http://www.w3.org/2000/svg"
+                     fill-rule="evenodd"
+                     clip-rule="evenodd"
+                     stroke-linejoin="round"
+                     stroke-miterlimit="1.414">
+                    <path d="M8 0C3.58 0 0 3.582 0 8c0 3.535 2.292 6.533 5.47 7.59.4.075.547-.172.547-.385 0-.19-.007-.693-.01-1.36-2.226.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.725-.496.056-.486.056-.486.803.056 1.225.824 1.225.824.714 1.223 1.873.87 2.33.665.072-.517.278-.87.507-1.07-1.777-.2-3.644-.888-3.644-3.953 0-.873.31-1.587.823-2.147-.09-.202-.36-1.015.07-2.117 0 0 .67-.215 2.2.82.64-.178 1.32-.266 2-.27.68.004 1.36.092 2 .27 1.52-1.035 2.19-.82 2.19-.82.43 1.102.16 1.915.08 2.117.51.56.82 1.274.82 2.147 0 3.073-1.87 3.75-3.65 3.947.28.24.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.14.46.55.38C13.71 14.53 16 11.53 16 8c0-4.418-3.582-8-8-8"
+                    />
+                </svg>
+                <!--<span class="Mobile-Hide">GitHub</span>-->
+            </a>
+        </p>
+    </div>
 </header>
 
 <main>
@@ -38,10 +46,10 @@
         <div id="splash"></div>
         <h1>Fastest DNN Execution Framework on Web Browser</h1>
 
-        <a class="Button-primary" href="/docs">Get Started</a>
+        <a class="Button-primary" href="/webdnn/docs">Get Started</a>
     </section>
 
-    <section class="Section">
+    <section class="Section" id="about">
         <div class="Row">
             <div class="Cell">
                 <h2 class="Section-Title">About MIL WebDNN</h2>
@@ -493,33 +501,49 @@
             <div class="Cell-4">
                 <h3 class="Cell-Title">Run Trained DNN Model on Web Browser</h3>
                 <p>
-                    ディープニューラルネットワーク(Deep neural network,
-                    DNN)は近年様々なタスクで著しい成果をあげている一方、計算負荷の高さがアプリケーション応用の際の問題となっています。ハードウェアアクセラレーションによる解決方法では、煩雑な計算環境セットアップ手順やハードウェアの価格等が問題となり、ユーザーエンド端末に同様の環境を構築することは非常に困難です。
+                    近年、ディープニューラルネットワーク(Deep neural network, DNN)が様々なタスクで著しい成果をあげ注目されていますが、
+                    計算負荷の高さがアプリケーション応用の際の問題となっています。
+                    ハードウェアアクセラレーションによる解決方法では、煩雑な計算環境セットアップ手順やハードウェアの価格等が問題となり、
+                    ユーザーエンド端末に同様の環境を構築することは非常に困難です。
                 </p>
                 <p>
-                    WebDNNはこの問題を解決するために作られた、ウェブブラウザを利用したインストールフリーなDNN実行環境です。WebDNNにより、ウェブブラウザ上での実行を前提とした積極的な最適化が学習済みモデルに行われるため、パラメータデータの配信サイズを小さく抑え、高速な実行が可能となります。既存のライブラリと比較して最大200倍の高速化が達成できます。
+                    WebDNNはこの問題を解決するために作られた、ウェブブラウザを利用したインストールフリーなDNN実行環境です。
+                    WebDNNにより、ウェブブラウザ上での実行を前提とした積極的な最適化が学習済みモデルに行われるため、
+                    パラメータデータの配信サイズを小さく抑え、高速な実行が可能となります。既存のライブラリと比較して最大200倍の高速化が達成できます。
                 </p>
             </div>
             <div class="Cell-4">
-                <h3 class="Cell-Title">Inference-phase Specialized Optimization</h3>
+                <h3 class="Cell-Title">Inference-phase-specialized Optimization</h3>
                 <p>
-                    あとで書く
+                    DNNモデル計算グラフの最適化は、高速実行において非常に重要です。DNNの実行は学習フェーズと推論フェーズという、
+                    2種類のフェーズに分けられます。学習フェーズでは学習に必要な中間データを保持しておく必要がありますが、推論フェーズでは
+                    これらのデータを保持しておく必要はありません。このように、推論フェーズに特化することでDNNフレームワークはより積極的な
+                    計算グラフ最適化が可能となります。
+                </p>
+                <p>
+                    WebDNNはユーザーエンドデバイスでの推論フェーズ実行に特化しており、学習済みモデルの積極的な最適化をサポートしています。
+                    また、この最適化パイプラインは既存の様々なDNN学習フレームワークに対応しており、
+                    学習に使用したソースコードを一切変更すること無く利用することができます。
                 </p>
             </div>
             <div class="Cell-4">
                 <h3 class="Cell-Title">Next Generation JavaScript API</h3>
                 <p>
-                    JavaScriptで高速演算を行う上で、インタプリタ処理に起因するオーバーヘッドは深刻な問題となります。WebDNNはWebAssemblyで実装されたCPU演算バックエンドを提供しています。このバックエンドは従来のJavaScriptと比較し、非常に小さなオーバーヘッドで実行することができます。
+                    JavaScriptで高速演算を行う上で、インタプリタ実行に起因するオーバーヘッドは深刻な問題となります。
+                    この問題を解決するために、WebDNNはWebAssemblyで実装されたCPU演算バックエンドを提供しています。
+                    このバックエンドは従来のJavaScriptと比較し、非常に小さなオーバーヘッドで実行することができます。
                 </p>
                 <p>
-                    また、DNNの高速実行のためにはGPUの汎用目的での利用(GPGPU)が主要技術となっていますが、現状のJavaScript用GPUAPIであるWebGLは画像処理用途に特化しており、汎用演算には適していませんでした。WebDNNでは次世代のGPU
-                    API仕様であるWebGPUを利用し、GPUを利用した高速演算が可能となっています。WebGPUは、GPUの汎用計算目的での利用を前提に設計されており、WebGLと比較してオーバーヘッドの少ない処理実行が可能となります。
+                    また、DNNの高速実行のためにはGPUの汎用目的での利用(GPGPU)が一般的となっていますが、
+                    現状のJavaScript用GPU APIであるWebGLは画像処理用途に特化しており、汎用演算には適していませんでした。
+                    WebDNNでは次世代のGPU API仕様であるWebGPUを利用し、GPUを利用した高速演算が可能となっています。
+                    WebGPUは、GPUの汎用計算目的での利用を前提に設計されており、WebGLと比較してオーバーヘッドの少ない処理実行が可能となります。
                 </p>
             </div>
         </div>
     </section>
 
-    <section class="Section Section-Grey">
+    <section class="Section" id="compatibility">
         <div class="Row">
             <div class="Cell">
                 <h2 class="Section-Title">Browser Compatibility</h2>
@@ -651,14 +675,14 @@
                             </th>
                         </tr>
                         <tr>
-                            <td class="Compatibility-webgpu Compatibility-checking">
-                                <span class="Compatibility-Status"></span>
+                            <td class="Compatibility-webgpu Compatibility-not_supported">
+                                <span class="Compatibility-Status">Not supported</span>
                             </td>
-                            <td class="Compatibility-webassembly Compatibility-checking">
-                                <span class="Compatibility-Status"></span>
+                            <td class="Compatibility-webassembly Compatibility-not_supported">
+                                <span class="Compatibility-Status">Not supported</span>
                             </td>
-                            <td class="Compatibility-fallback Compatibility-checking">
-                                <span class="Compatibility-Status"></span>
+                            <td class="Compatibility-fallback Compatibility-not_supported">
+                                <span class="Compatibility-Status">Not supported</span>
                             </td>
                         </tr>
                     </table>
@@ -671,23 +695,102 @@
         </div>
     </section>
 
-    <section class="Section">
+    <section class="Section" id="benchmark">
+        <div class="Row">
+            <div class="Cell-flex">
+                <h2 class="Section-Title">Benchmark</h2>
+            </div>
+            <div class="Row">
+                <div class="Cell-12">
+                    <p>
+                        Results for image classification models
+
+                        We measured execution time for VGG16 and ResNet50. All tests were run on Mac Book Pro early
+                        2015,
+                        Intel Core i5 2.7 GHz CPU, 16 GB Memory, Intel Iris Graphics 6100 GPU. The web browser is Safari
+                        Technology Preview 30.
+                    </p>
+                    <div>
+                        <img class=Benchmark-Figure
+                             src="/webdnn/performance-320x208.png"
+                             srcset="/webdnn/performance-640x416.png 640w,
+                                 /webdnn/performance-920x624.png 920w,
+                                 /webdnn/performance-1280x832.png 1280w">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="Section" id="neural-style-transfer">
         <div class="Row">
             <div class="Cell-flex">
                 <h2 class="Section-Title">Neural Style Transfer</h2>
                 <p>
-                    このサンプルでは、DNNによる画風変換を行います。Neural Style Transfer<a class="ref" href="#ref1">[1]</a>と呼ばれるこのモデルは、コンテンツ画像とスタイル画像という2種類の画像を入力とし、スタイル画像の画風をコンテンツ画像へ適用した、新しい画像を生成します。
+                    このサンプルでは、DNNによる画風変換を行います。Neural Style Transfer
+                    <a class="ref" href="#ref1">[1]</a>と呼ばれるこのモデルは、コンテンツ画像とスタイル画像という2種類の画像を入力とし、
+                    スタイル画像の画風をコンテンツ画像へ適用した、新しい画像を生成します。
                 </p>
                 <p>
-                    このサンプルで使用したモデルは、Chainer<a class="ref" href="#ref2">[2]</a>で実装されており、<a class="ref"
-                                                                                          href="#ref3">[3]</a>で配布されています。また、学習済みモデルのデータは<a
-                        class="ref"
-                        href="#ref4">[4]</a>で配布されています。学習済みモデルは<b>GraphTranspiler</b>によってGraphDescriptorへとトランスパイルされ、<b>DescriptorRunner</b>によって実行されています。<b>すべての演算はウェブブラウザ上で行われており、外部との通信等は一切行っていません。</b>
+                    このサンプルで使用したモデルは、Chainer<a class="ref" href="#ref2">[2]</a>で実装されており、
+                    <a class="ref" href="#ref3">[3]</a>で配布されています。また、学習済みモデルのデータは
+                    <a class="ref" href="#ref4">[4]</a>で配布されています。学習済みモデルは<b>GraphTranspiler</b>
+                    によってGraphDescriptorへとトランスパイルされ、<b>DescriptorRunner</b>によって実行されています。
+                    <b>すべての演算はウェブブラウザ上で行われており、画像の外部への送信等は一切行っていません。</b>
                 </p>
+            </div>
+            <div class="Cell-flex">
+                <iframe class="PlayGround"
+                        width="728"
+                        height="530"
+                        data-src="neural_style_transfer.html"
+                        frameborder="0"
+                        title="Sample: Neural Style Transfer"></iframe>
+                <a class="PlayGround-Link" href="/webdnn/neural_style_transfer.html?run=1" target="_parent">
+                    Open This App
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="Section" id="resnet50">
+        <div class="Row">
+            <div class="Cell-flex">
+                <h2 class="Section-Title">Sample: ResNet50 Image Classification</h2>
+                <p>
+                    このサンプルでは、ResNet50<a class="ref" href="#ref5">[5]</a> という画像識別モデルを実行します。モデルはImageNet
+                    <a class="ref" href="#ref6">[6]</a>データセットで学習されており、オリジナルの学習済みモデルは
+                    <a class="ref" href="#ref7">[7]</a>で配布されています。
+                    <b>すべての演算はウェブブラウザ上で行われており、画像の外部への送信等は一切行っていません。</b>
+                </p>
+            </div>
+            <div class="Cell-flex">
+                <iframe class="PlayGround"
+                        width="728"
+                        height="475"
+                        data-src="resnet50.html"
+                        frameborder="0"
+                        title="Sample: ResNet50 Image Classification"></iframe>
+                <a class="PlayGround-Link" href="/webdnn/resnet50.html?run=1" target="_parent">
+                    Open This App
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="Section" id="references">
+        <div class="Row">
+            <div class="Cell-12">
+                <h2 class="Section-Title">References</h2>
+            </div>
+        </div>
+        <div class="Row">
+            <div class="Cell-12">
                 <ol class="Article-References">
                     <li id="ref1">
-                        L. Gatys, A. Ecker, M. Bethge, <i>"Image Style Transfer Using Convolutional Neural Networks"</i>,
-                        IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+                        J. Johnson, A. Alahi, and L. Fei-Fei. <i>"Perceptual Losses for
+                        Real-time Style Transfer and Single Image Super-Resolution"</i>.
+                        International Conference on Machine Learning (ICML), 2015.
                     </li>
                     <li id="ref2">
                         <a target="_blank" href="https://github.com/pfnet/chainer" rel="noopener">https://github.com/pfnet/chainer</a>
@@ -706,33 +809,6 @@
                             https://github.com/gafr/chainer-fast-neuralstyle-models
                         </a>
                     </li>
-                </ol>
-            </div>
-            <div class="Cell-flex">
-                <iframe class="PlayGround"
-                        width="728"
-                        height="530"
-                        data-src="neural_style_transfer.html"
-                        frameborder="0"
-                        title="Sample: Neural Style Transfer"></iframe>
-                <a class="PlayGround-Link" href="neural_style_transfer.html?run=1" target="_parent">
-                    Open This App
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="Section Section-Grey">
-        <div class="Row">
-            <div class="Cell-flex">
-                <h2 class="Section-Title">ResNet50 Image Classification</h2>
-                <p>
-                    このサンプルでは、ResNet50<a class="ref" href="#ref5">[5]</a> という画像識別モデルを実行します。モデルはImageNet<a class="ref"
-                                                                                                         href="#ref6">[6]</a>データセットで学習されており、オリジナルの学習済みモデルは<a
-                        class="ref"
-                        href="#ref7">[7]</a>で配布されています。<b>すべての演算はウェブブラウザ上で行われており、外部との通信等は一切行っていません。</b>
-                </p>
-                <ol class="Article-References">
                     <li id="ref5" value="5">
                         K. He, X. Zhang, S. Ren, and J. Sun, <i>"Deep Residual Learning for Image Recognition"</i>, IEEE
                         Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
@@ -747,17 +823,6 @@
                         <a target="_blank" href="https://github.com/KaimingHe/deep-residual-networks" rel="noopener">https://github.com/KaimingHe/deep-residual-networks</a>
                     </li>
                 </ol>
-            </div>
-            <div class="Cell-flex">
-                <iframe class="PlayGround"
-                        width="728"
-                        height="475"
-                        data-src="resnet50.html"
-                        frameborder="0"
-                        title="Sample: ResNet50 Image Classification"></iframe>
-                <a class="PlayGround-Link" href="resnet50.html?run=1" target="_parent">
-                    Open This App
-                </a>
             </div>
         </div>
     </section>
