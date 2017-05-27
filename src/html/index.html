@@ -565,8 +565,8 @@
                     </dd>
                     <dt>WebAssembly backend</dt>
                     <dd>Compute on CPU by WebAssembly API. This backend is enough faster than GPU mode of
-                        <a target="_blank" rel="noopener" href="https://github.com/transcranial/keras-js">Keras.js</a>.
-                        By using with asm.js, this backend works most of all modern browsers.
+                        Keras.js<a class="ref" href="#ref1">[1]</a>. By using with asm.js, this backend works most of
+                        all modern browsers.
                     </dd>
                     <dt>Fallback backend</dt>
                     <dd>Compute on CPU by ECMAScript3. This backend is only for backward compatibility, and not so
@@ -707,14 +707,16 @@
         <div class="Row">
             <div class="Cell-12">
                 <p>
-                    We measured execution time for VGG16 and ResNet50. All tests were run on Mac Book Pro early 2015,
-                    Intel Core i5 2.7 GHz CPU, 16 GB Memory, Intel Iris Graphics 6100 GPU. The web browser is Safari
-                    Technology Preview 30.
+                    We measured execution time for VGG16<a class="ref" href="#ref2">[2]</a>
+                    and ResNet50<a class="ref" href="#ref2">[3]</a>. Below figure shows the result compared with
+                    Keras.js. Computation time per image is shown in vertical axis as logarithmic scale.
+                    All tests were run on Mac Book Pro early 2015, Intel Core i5 2.7 GHz CPU, 16 GB Memory, Intel Iris
+                    Graphics 6100 GPU. The web browser is Safari Technology Preview 30.
                 </p>
                 <div>
                     <img class=Benchmark-Figure
-                         src="/webdnn/performance-320x208.png"
-                         srcset="/webdnn/performance-640x416.png 640w,
+                         data-src="/webdnn/performance-320x208.png"
+                         data-srcset="/webdnn/performance-640x416.png 640w,
                                  /webdnn/performance-920x624.png 920w,
                                  /webdnn/performance-1280x832.png 1280w">
                 </div>
@@ -724,17 +726,21 @@
 
     <section class="Section" id="neural-style-transfer">
         <div class="Row">
-            <div class="Cell-flex">
+            <div class="Cell">
                 <h2 class="Section-Title">Neural Style Transfer</h2>
+            </div>
+        </div>
+        <div class="Row">
+            <div class="Cell-flex">
                 <p>
-                    This example run Neural Style Transfer model<a class="ref" href="#ref1">[1]</a>. Neural Style
+                    This example run Neural Style Transfer model<a class="ref" href="#ref4">[4]</a>. Neural Style
                     Transfer
                     model are given 2 input images, one is content image and another is style image. Then this model
                     generate an image based on the style of the style image and the content in the content image.
                 </p>
                 <p>
-                    We use chainer<a class="ref" href="#ref2">[2]</a> implementation provided in
-                    <a class="ref" href="#ref3">[3]</a> and pre-trained model provided in <a class="ref" href="#ref4">[4]</a>.
+                    We use chainer<a class="ref" href="#ref5">[5]</a> implementation provided in
+                    <a class="ref" href="#ref6">[6]</a> and pre-trained model provided in <a class="ref" href="#ref7">[7]</a>.
                     The pre-trained model are transpiled by <b>GraphTranspiler</b> into graph descriptor, and then
                     executed
                     by <b>DescriptorRunner</b>. <b>All computation are done by web browser, not by server.</b>
@@ -756,12 +762,16 @@
 
     <section class="Section" id="resnet50">
         <div class="Row">
-            <div class="Cell-flex">
+            <div class="Cell">
                 <h2 class="Section-Title">ResNet50 Image Classification</h2>
+            </div>
+        </div>
+        <div class="Row">
+            <div class="Cell-flex">
                 <p>
-                    In this example you can run ResNet50<a class="ref" href="#ref5">[5]</a> classification model trained
-                    by ImageNet<a class="ref" href="#ref6">[6]</a>. Original pre-trained model is provided in
-                    <a class="ref" href="#ref7">[7]</a>. <b>All computation are done by web browser, not by server.</b>
+                    In this example you can run ResNet50 classification model trained
+                    by ImageNet<a class="ref" href="#ref8">[8]</a>. Original pre-trained model is provided in
+                    <a class="ref" href="#ref9">[9]</a>. <b>All computation are done by web browser, not by server.</b>
                 </p>
             </div>
             <div class="Cell-flex">
@@ -788,38 +798,45 @@
             <div class="Cell-12">
                 <ol class="Article-References">
                     <li id="ref1">
+                        <a target="_blank" href="https://github.com/transcranial/keras-js" rel="noopener">https://github.com/transcranial/keras-js</a>
+                    </li>
+                    <li id="ref2">
+                        K. Simonyan, and A. Zisserman. <i>"Very Deep Convolutional Networks for Large-Scale Image
+                        Recognition"</i>. the International Conference on Learning Representations (ICLR), 2014.
+                    </li>
+                    <li id="ref3">
+                        K. He, X. Zhang, S. Ren, and J. Sun, <i>"Deep Residual Learning for Image Recognition"</i>, IEEE
+                        Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+                    </li>
+                    <li id="ref4">
                         J. Johnson, A. Alahi, and L. Fei-Fei. <i>"Perceptual Losses for
                         Real-time Style Transfer and Single Image Super-Resolution"</i>.
                         International Conference on Machine Learning (ICML), 2015.
                     </li>
-                    <li id="ref2">
+                    <li id="ref5">
                         <a target="_blank" href="https://github.com/pfnet/chainer" rel="noopener">https://github.com/pfnet/chainer</a>
                     </li>
-                    <li id="ref3">
+                    <li id="ref6">
                         <a target="_blank"
                            href="https://github.com/yusuketomoto/chainer-fast-neuralstyle"
                            rel="noopener">
                             https://github.com/yusuketomoto/chainer-fast-neuralstyle
                         </a>
                     </li>
-                    <li id="ref4">
+                    <li id="ref7">
                         <a target="_blank"
                            href="https://github.com/gafr/chainer-fast-neuralstyle-models"
                            rel="noopener">
                             https://github.com/gafr/chainer-fast-neuralstyle-models
                         </a>
                     </li>
-                    <li id="ref5" value="5">
-                        K. He, X. Zhang, S. Ren, and J. Sun, <i>"Deep Residual Learning for Image Recognition"</i>, IEEE
-                        Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
-                    </li>
-                    <li id="ref6" value="6">
+                    <li id="ref8">
                         J. Deng, W. Dong, R. Socher, L. Li, K. Li and L. Fei-Fei, <i>"ImageNet: A Large-Scale
                         Hierarchical Image Database"</i>, IEEE Conference on Computer Vision and Pattern Recognition
                         (CVPR),
                         2009.
                     </li>
-                    <li id="ref7" value="7">
+                    <li id="ref9">
                         <a target="_blank" href="https://github.com/KaimingHe/deep-residual-networks" rel="noopener">https://github.com/KaimingHe/deep-residual-networks</a>
                     </li>
                 </ol>

@@ -5,6 +5,7 @@
 	"scripts": {},
 	"author": "Kikurage <y.kikura@gmail.com>",
 	"dependencies": {
+		"autoprefixer": "^7.1.1",
 		"awesome-typescript-loader": "^3.1.3",
 		"copy-webpack-plugin": "^4.0.1",
 		"css-loader": "^0.28.1",
@@ -12,9 +13,13 @@
 		"html-webpack-inline-source-plugin": "^0.0.8",
 		"html-webpack-plugin": "^2.28.0",
 		"node-sass": "^4.5.3",
+		"postcss-csso": "^2.0.0",
+		"postcss-loader": "^2.0.5",
 		"sass-loader": "^6.0.5",
 		"style-loader": "^0.17.0",
 		"typescript": "^2.3.2",
+		"uglify-es": "git://github.com/mishoo/UglifyJS2#harmony",
+		"uglifyjs-webpack-plugin": "^0.4.3",
 		"webpack": "^2.4.1"
 	}
 }

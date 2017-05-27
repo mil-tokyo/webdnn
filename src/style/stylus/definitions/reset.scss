@@ -15,17 +15,6 @@ html {
   text-size-adjust: 100%;
 }
 
-@media (max-width: 640px) {
-  html {
-    font-size: 14px;
-    line-height: 20px;
-  }
-
-  .Mobile-Hide {
-    display: none !important;
-  }
-}
-
 body {
   position: relative;
   width: 100%;
@@ -68,3 +57,18 @@ dd {
   margin-left: 0;
   margin-bottom: 8px;
 }
+
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  ol {
+    padding-left: 12px;
+  }
+  .Mobile-Hide {
+    display: none !important;
+  }
+}
+

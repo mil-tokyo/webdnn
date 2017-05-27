@@ -161,5 +161,11 @@ window.onload = () => {
         iframes[i].src = '' + iframes[i].dataset['src'];
     }
 
+    let imgs = document.querySelectorAll('img');
+    for (let i = 0; i < imgs.length; i++) {
+        imgs[i].src = '' + imgs[i].dataset['src'];
+        imgs[i].srcset = '' + imgs[i].dataset['srcset'];
+    }
+
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/webdnn/sw.js');
 };

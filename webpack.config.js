@@ -1,3 +1,4 @@
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const {CheckerPlugin} = require('awesome-typescript-loader');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -5,6 +6,19 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
 
 const path = require('path');
+
+const minifyOption = {
+	collapseBooleanAttributes: true,
+	collapseInlineTagWhitespace: true,
+	collapseWhitespace: true,
+	removeAttributeQuotes: true,
+	removeComments: true,
+	removeEmptyAttributes: true,
+	removeOptionalTags: true,
+	removeRedundantAttributes: true,
+	removeScriptTypeAttributes: true,
+	removeTagWhitespace: true
+};
 
 module.exports = {
 	entry: {
@@ -27,7 +41,7 @@ module.exports = {
 			test: /\.scss?$/,
 			use: ExtractTextPlugin.extract({
 				fallback: 'style-loader',
-				use: ['css-loader', 'sass-loader']
+				use: ['css-loader', 'postcss-loader', 'sass-loader']
 			})
 		}]
 	},
@@ -52,26 +66,31 @@ module.exports = {
 			filename: 'index_ja.html',
 			template: 'src/html/index_ja.html',
 			chunks: ['index'],
-			inlineSource: '.(js|css)$'
+			inlineSource: '.(js|css)$',
+			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'index.html',
 			template: 'src/html/index.html',
 			chunks: ['index'],
-			inlineSource: '.(js|css)$'
+			inlineSource: '.(js|css)$',
+			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'resnet50.html',
 			template: 'src/html/resnet50.html',
 			chunks: ['resnet50'],
-			inlineSource: '.(js|css)$'
+			inlineSource: '.(js|css)$',
+			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'neural_style_transfer.html',
 			template: 'src/html/neural_style_transfer.html',
 			chunks: ['neural_style_transfer'],
-			inlineSource: '.(js|css)$'
+			inlineSource: '.(js|css)$',
+			minify: minifyOption
 		}),
+		new UglifyJSPlugin(),
 		new HtmlWebpackInlineSourcePlugin()
 	]
 };

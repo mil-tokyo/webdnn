@@ -562,7 +562,7 @@
                     </dd>
                     <dt>WebAssembly backend</dt>
                     <dd>すべての演算をCPUで行います。実装にはWebAssemblyを使用し、オーバーヘッドの少ない処理を可能にしています。
-                        このバックエンドは<a target="_blank" rel="noopener" href="https://github.com/transcranial/keras-js">Keras.js</a>の
+                        このバックエンドはKeras.js<a class="ref" href="#ref1">[1]</a>の
                         GPUモードと同等の速度で動作します。また、asm.jsと組み合わせることで、ほぼすべてのモダンなウェブブラウザで動作することができます。
                     </dd>
                     <dt>Fallback backend</dt>
@@ -703,17 +703,15 @@
             <div class="Row">
                 <div class="Cell-12">
                     <p>
-                        Results for image classification models
-
-                        We measured execution time for VGG16 and ResNet50. All tests were run on Mac Book Pro early
-                        2015,
-                        Intel Core i5 2.7 GHz CPU, 16 GB Memory, Intel Iris Graphics 6100 GPU. The web browser is Safari
-                        Technology Preview 30.
+                        画像識別モデルのVGG16<a class="ref" href="#ref2">[2]</a>とResNet50<a class="ref" href="#ref3">[3]</a>
+                        の実行速度を、Keras.jsと比較した結果を示します。縦軸は画像一枚あたりの処理時間（対数スケール）を表しています。
+                        すべての実行はMac Book Pro early 2015, Intel Core i5 2.7 GHz CPU, 16 GB Memory, Intel Iris Graphics
+                        6100 GPUで行い、ウェブブラウザはSafari Technology Preview 30を使用しました。
                     </p>
                     <div>
                         <img class=Benchmark-Figure
-                             src="/webdnn/performance-320x208.png"
-                             srcset="/webdnn/performance-640x416.png 640w,
+                             data-src="/webdnn/performance-320x208.png"
+                             data-srcset="/webdnn/performance-640x416.png 640w,
                                  /webdnn/performance-920x624.png 920w,
                                  /webdnn/performance-1280x832.png 1280w">
                     </div>
@@ -728,13 +726,13 @@
                 <h2 class="Section-Title">Neural Style Transfer</h2>
                 <p>
                     このサンプルでは、DNNによる画風変換を行います。Neural Style Transfer
-                    <a class="ref" href="#ref1">[1]</a>と呼ばれるこのモデルは、コンテンツ画像とスタイル画像という2種類の画像を入力とし、
+                    <a class="ref" href="#ref4">[4]</a>と呼ばれるこのモデルは、コンテンツ画像とスタイル画像という2種類の画像を入力とし、
                     スタイル画像の画風をコンテンツ画像へ適用した、新しい画像を生成します。
                 </p>
                 <p>
-                    このサンプルで使用したモデルは、Chainer<a class="ref" href="#ref2">[2]</a>で実装されており、
-                    <a class="ref" href="#ref3">[3]</a>で配布されています。また、学習済みモデルのデータは
-                    <a class="ref" href="#ref4">[4]</a>で配布されています。学習済みモデルは<b>GraphTranspiler</b>
+                    このサンプルで使用したモデルは、Chainer<a class="ref" href="#ref2">[5]</a>で実装されており、
+                    <a class="ref" href="#ref3">[6]</a>で配布されています。また、学習済みモデルのデータは
+                    <a class="ref" href="#ref4">[7]</a>で配布されています。学習済みモデルは<b>GraphTranspiler</b>
                     によってGraphDescriptorへとトランスパイルされ、<b>DescriptorRunner</b>によって実行されています。
                     <b>すべての演算はウェブブラウザ上で行われており、画像の外部への送信等は一切行っていません。</b>
                 </p>
@@ -758,9 +756,9 @@
             <div class="Cell-flex">
                 <h2 class="Section-Title">Sample: ResNet50 Image Classification</h2>
                 <p>
-                    このサンプルでは、ResNet50<a class="ref" href="#ref5">[5]</a> という画像識別モデルを実行します。モデルはImageNet
-                    <a class="ref" href="#ref6">[6]</a>データセットで学習されており、オリジナルの学習済みモデルは
-                    <a class="ref" href="#ref7">[7]</a>で配布されています。
+                    このサンプルでは、画像識別モデルのResNet50を実行します。モデルはImageNet
+                    <a class="ref" href="#ref8">[8]</a>データセットで学習されており、オリジナルの学習済みモデルは
+                    <a class="ref" href="#ref9">[9]</a>で配布されています。
                     <b>すべての演算はウェブブラウザ上で行われており、画像の外部への送信等は一切行っていません。</b>
                 </p>
             </div>
@@ -788,38 +786,45 @@
             <div class="Cell-12">
                 <ol class="Article-References">
                     <li id="ref1">
+                        <a target="_blank" href="https://github.com/transcranial/keras-js" rel="noopener">https://github.com/transcranial/keras-js</a>
+                    </li>
+                    <li id="ref2">
+                        K. Simonyan, and A. Zisserman. <i>"Very Deep Convolutional Networks for Large-Scale Image
+                        Recognition"</i>. the International Conference on Learning Representations (ICLR), 2014.
+                    </li>
+                    <li id="ref3">
+                        K. He, X. Zhang, S. Ren, and J. Sun, <i>"Deep Residual Learning for Image Recognition"</i>, IEEE
+                        Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+                    </li>
+                    <li id="ref4">
                         J. Johnson, A. Alahi, and L. Fei-Fei. <i>"Perceptual Losses for
                         Real-time Style Transfer and Single Image Super-Resolution"</i>.
                         International Conference on Machine Learning (ICML), 2015.
                     </li>
-                    <li id="ref2">
+                    <li id="ref5">
                         <a target="_blank" href="https://github.com/pfnet/chainer" rel="noopener">https://github.com/pfnet/chainer</a>
                     </li>
-                    <li id="ref3">
+                    <li id="ref6">
                         <a target="_blank"
                            href="https://github.com/yusuketomoto/chainer-fast-neuralstyle"
                            rel="noopener">
                             https://github.com/yusuketomoto/chainer-fast-neuralstyle
                         </a>
                     </li>
-                    <li id="ref4">
+                    <li id="ref7">
                         <a target="_blank"
                            href="https://github.com/gafr/chainer-fast-neuralstyle-models"
                            rel="noopener">
                             https://github.com/gafr/chainer-fast-neuralstyle-models
                         </a>
                     </li>
-                    <li id="ref5" value="5">
-                        K. He, X. Zhang, S. Ren, and J. Sun, <i>"Deep Residual Learning for Image Recognition"</i>, IEEE
-                        Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
-                    </li>
-                    <li id="ref6" value="6">
+                    <li id="ref8">
                         J. Deng, W. Dong, R. Socher, L. Li, K. Li and L. Fei-Fei, <i>"ImageNet: A Large-Scale
                         Hierarchical Image Database"</i>, IEEE Conference on Computer Vision and Pattern Recognition
                         (CVPR),
                         2009.
                     </li>
-                    <li id="ref7" value="7">
+                    <li id="ref9">
                         <a target="_blank" href="https://github.com/KaimingHe/deep-residual-networks" rel="noopener">https://github.com/KaimingHe/deep-residual-networks</a>
                     </li>
                 </ol>
