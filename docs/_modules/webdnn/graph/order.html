@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.graph.order &mdash; MIL WebDNN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 0.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips/index.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.graph.order</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.graph.order</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This attribute means data order, not number of dimensions</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># FIXME: DOCS</span>
+<span class="c1"># FIXME: Is it need to extend from Attribute?</span>
+<div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.order.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">:</span>
+    <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Axis</span><span class="p">]</span>
+    <span class="n">axes_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Axis</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">)}</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Order</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">axis</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">])</span></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Bias Filter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderC</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Fully-Connected Input/Output.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderNC</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Fully-Connected Filter </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderCN</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Convolution2D Input/Output of WebGPU</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderNHWC</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Convolution2D Filter of WebGPU</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderHWNC</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Fully-Connected Filter when Input variable is 4D.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderHWCN</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Chainer</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderNCHW</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Chainer Deconvolution2D Filter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderCNHW</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">usage:</span>
+<span class="sd">    Chainer Deconvolution2D Filter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">OrderCHWN</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

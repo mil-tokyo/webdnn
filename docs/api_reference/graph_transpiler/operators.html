@@ -1,0 +1,909 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Operators &mdash; MIL WebDNN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="MIL WebDNN 0.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Graph Builder" href="index.html"/>
+        <link rel="next" title="Variables" href="variables.html"/>
+        <link rel="prev" title="Base Classes" href="base_classes.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips/index.html">Tips</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Graph Builder</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="base_classes.html">Base Classes</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Operators</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#averagepooling2d">AveragePooling2D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#axiswisebias">AxiswiseBias</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#axiswisescale">AxiswiseScale</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#concat">Concat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#convolution2d">Convolution2D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deconvolution2d">Deconvolution2D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#elementwisesum">ElementwiseSum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#elu">Elu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flatten">Flatten</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#linear">Linear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#localresponsenormalization">LocalResponseNormalization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#maxpooling2d">MaxPooling2D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#relu">Relu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scalaraffine">ScalarAffine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sigmoid">Sigmoid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#softmax">Softmax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tanh">Tanh</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="variables.html">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimize_rules.html">Optimize Rules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="index.html">Graph Builder</a> &raquo;</li>
+        
+      <li>Operators</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_reference/graph_transpiler/operators.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="operators">
+<span id="operators"></span><h1>Operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="averagepooling2d">
+<span id="averagepooling2d"></span><h2>AveragePooling2D<a class="headerlink" href="#averagepooling2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.average_pooling_2d.AveragePooling2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.average_pooling_2d.</code><code class="descname">AveragePooling2D</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], ksize: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], stride: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], padding: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/average_pooling_2d.html#AveragePooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.average_pooling_2d.AveragePooling2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average pooling 2D operator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.average_pooling_2d.AveragePooling2D.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/average_pooling_2d.html#AveragePooling2D.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.average_pooling_2d.AveragePooling2D.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="axiswisebias">
+<span id="axiswisebias"></span><h2>AxiswiseBias<a class="headerlink" href="#axiswisebias" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.axiswise_bias.AxiswiseBias">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.axiswise_bias.</code><code class="descname">AxiswiseBias</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], axis: webdnn.graph.axis.Axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_bias.html#AxiswiseBias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_bias.AxiswiseBias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a bias value along to specified axis.</p>
+<p>In general, after some operators such as <a class="reference internal" href="#webdnn.graph.operators.linear.Linear" title="webdnn.graph.operators.linear.Linear"><code class="xref py py-class docutils literal"><span class="pre">Linear</span></code></a> and
+<a class="reference internal" href="#webdnn.graph.operators.convolution2d.Convolution2D" title="webdnn.graph.operators.convolution2d.Convolution2D"><code class="xref py py-class docutils literal"><span class="pre">Convolution2D</span></code></a>, bias value are added.
+In that case, you should use this operator with axis parameter as <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong></strong><strong>(</strong><strong></strong> (<em>axis</em>) &#8211; obj:~`graph_transpiler.graph.axis.Axis`): target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.axiswise_bias.AxiswiseBias.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em>, <em>b: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_bias.html#AxiswiseBias.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_bias.AxiswiseBias.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</li>
+<li><strong>b</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Bias value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Output</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="axiswisescale">
+<span id="axiswisescale"></span><h2>AxiswiseScale<a class="headerlink" href="#axiswisescale" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.axiswise_scale.AxiswiseScale">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.axiswise_scale.</code><code class="descname">AxiswiseScale</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], axis: webdnn.graph.axis.Axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_scale.html#AxiswiseScale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_scale.AxiswiseScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply a scale value along to specified axis.</p>
+<p>This is scale version of <a class="reference internal" href="#webdnn.graph.operators.axiswise_bias.AxiswiseBias" title="webdnn.graph.operators.axiswise_bias.AxiswiseBias"><code class="xref py py-class docutils literal"><span class="pre">AxiswiseBias</span></code></a>. Please see that.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong></strong><strong>(</strong><strong></strong> (<em>axis</em>) &#8211; obj:~`graph_transpiler.graph.axis.Axis`): target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.axiswise_scale.AxiswiseScale.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em>, <em>s: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_scale.html#AxiswiseScale.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_scale.AxiswiseScale.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</li>
+<li><strong>s</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Scale value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Output</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="concat">
+<span id="concat"></span><h2>Concat<a class="headerlink" href="#concat" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.concat.Concat">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.concat.</code><code class="descname">Concat</code><span class="sig-paren">(</span><em>name: str</em>, <em>axis: webdnn.graph.axis.Axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/concat.html#Concat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.concat.Concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate multiple variables into one variable along to specified axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong></strong><strong>(</strong><strong></strong> (<em>axis</em>) &#8211; obj:~`graph_transpiler.graph.axis.Axis`): target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.concat.Concat.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*xs: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/concat.html#Concat.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.concat.Concat.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*xs</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Inputs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="convolution2d">
+<span id="convolution2d"></span><h2>Convolution2D<a class="headerlink" href="#convolution2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.convolution2d.Convolution2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.convolution2d.</code><code class="descname">Convolution2D</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], ksize: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], stride: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], padding: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/convolution2d.html#Convolution2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.convolution2d.Convolution2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolution2D operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.convolution2d.Convolution2D.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em>, <em>w: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; typing.Tuple[webdnn.graph.variable.Variable]<a class="reference internal" href="../../_modules/webdnn/graph/operators/convolution2d.html#Convolution2D.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.convolution2d.Convolution2D.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</li>
+<li><strong>w</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Filter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Output</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="deconvolution2d">
+<span id="deconvolution2d"></span><h2>Deconvolution2D<a class="headerlink" href="#deconvolution2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.deconvolution2d.Deconvolution2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.deconvolution2d.</code><code class="descname">Deconvolution2D</code><span class="sig-paren">(</span><em>name: str, ksize: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], stride: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], padding: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/deconvolution2d.html#Deconvolution2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.deconvolution2d.Deconvolution2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconvolution2D operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.deconvolution2d.Deconvolution2D.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em>, <em>w: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/deconvolution2d.html#Deconvolution2D.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.deconvolution2d.Deconvolution2D.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</li>
+<li><strong>w</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Filter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Output</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="elementwisesum">
+<span id="elementwisesum"></span><h2>ElementwiseSum<a class="headerlink" href="#elementwisesum" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise_sum.ElementwiseSum">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise_sum.</code><code class="descname">ElementwiseSum</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_sum.html#ElementwiseSum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_sum.ElementwiseSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate elementwise sum of multiple input variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.elementwise_sum.ElementwiseSum.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*xs: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_sum.html#ElementwiseSum.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_sum.ElementwiseSum.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*xs</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Inputs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="elu">
+<span id="elu"></span><h2>Elu<a class="headerlink" href="#elu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elu.Elu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elu.</code><code class="descname">Elu</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elu.html#Elu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elu.Elu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elu activation.</p>
+<p>See: <a class="reference external" href="https://arxiv.org/abs/1511.07289">https://arxiv.org/abs/1511.07289</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.elu.Elu.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elu.html#Elu.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elu.Elu.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="flatten">
+<span id="flatten"></span><h2>Flatten<a class="headerlink" href="#flatten" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.flatten.Flatten">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.flatten.</code><code class="descname">Flatten</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], in_axes: typing.List[webdnn.graph.axis.Axis], out_axis: webdnn.graph.axis.Axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/flatten.html#Flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.flatten.Flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten some axes into one axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong></strong><strong>(</strong><strong>set of</strong> (<em>out_axes</em>) &#8211; class:~`graph_transpiler.graph.Axis`): axes which are combined</li>
+<li><strong></strong><strong>(</strong><strong>set of</strong> &#8211; class:~`graph_transpiler.graph.Axis`): axes which <cite>in_axes</cite> are combined into</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.flatten.Flatten.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/flatten.html#Flatten.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.flatten.Flatten.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="linear">
+<span id="linear"></span><h2>Linear<a class="headerlink" href="#linear" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.linear.Linear">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.linear.</code><code class="descname">Linear</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/linear.html#Linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.linear.Linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully connected operator.</p>
+<p>Output variable is 2D. The first dimension is same size as :obj:~`graph_transpiler.graph.Axis.N`
+of input variable, and the second dimension is same size as :obj:~`graph_transpiler.graph.Axis.N`
+of weight variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.linear.Linear.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em>, <em>w: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/linear.html#Linear.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.linear.Linear.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</li>
+<li><strong>w</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Weight</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Output</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="localresponsenormalization">
+<span id="localresponsenormalization"></span><h2>LocalResponseNormalization<a class="headerlink" href="#localresponsenormalization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.local_response_normalization.LocalResponseNormalization">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.local_response_normalization.</code><code class="descname">LocalResponseNormalization</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], n: float, k: float, alpha: float, beta: float</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/local_response_normalization.html#LocalResponseNormalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator same as local response normalization layer in Caffe.</p>
+<p>see: <a class="reference external" href="http://caffe.berkeleyvision.org/tutorial/layers/lrn.html">http://caffe.berkeleyvision.org/tutorial/layers/lrn.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>n</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Parameter n.</li>
+<li><strong>k</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Parameter k.</li>
+<li><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Parameter alpha.</li>
+<li><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Parameter beta.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.local_response_normalization.LocalResponseNormalization.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/local_response_normalization.html#LocalResponseNormalization.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="maxpooling2d">
+<span id="maxpooling2d"></span><h2>MaxPooling2D<a class="headerlink" href="#maxpooling2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.max_pooling_2d.MaxPooling2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.max_pooling_2d.</code><code class="descname">MaxPooling2D</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], ksize: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], stride: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]], padding: typing.Union[_ForwardRef('IntOrTuple'), int, typing.Tuple[int, int]]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/max_pooling_2d.html#MaxPooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.max_pooling_2d.MaxPooling2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Max pooling 2D operator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.max_pooling_2d.MaxPooling2D.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/max_pooling_2d.html#MaxPooling2D.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.max_pooling_2d.MaxPooling2D.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="relu">
+<span id="relu"></span><h2>Relu<a class="headerlink" href="#relu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.relu.Relu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.relu.</code><code class="descname">Relu</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/relu.html#Relu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.relu.Relu" title="Permalink to this definition">¶</a></dt>
+<dd><p>ReLU activation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.relu.Relu.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/relu.html#Relu.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.relu.Relu.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="scalaraffine">
+<span id="scalaraffine"></span><h2>ScalarAffine<a class="headerlink" href="#scalaraffine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.scalar_affine.ScalarAffine">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.scalar_affine.</code><code class="descname">ScalarAffine</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], scale: float, bias: float</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/scalar_affine.html#ScalarAffine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.scalar_affine.ScalarAffine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sigmoid">
+<span id="sigmoid"></span><h2>Sigmoid<a class="headerlink" href="#sigmoid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.sigmoid.Sigmoid">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.sigmoid.</code><code class="descname">Sigmoid</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/sigmoid.html#Sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.sigmoid.Sigmoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sigmoid activation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.sigmoid.Sigmoid.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/sigmoid.html#Sigmoid.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.sigmoid.Sigmoid.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="softmax">
+<span id="softmax"></span><h2>Softmax<a class="headerlink" href="#softmax" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.softmax.Softmax">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.softmax.</code><code class="descname">Softmax</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/softmax.html#Softmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.softmax.Softmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Softmax operator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.softmax.Softmax.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/softmax.html#Softmax.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.softmax.Softmax.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tanh">
+<span id="tanh"></span><h2>Tanh<a class="headerlink" href="#tanh" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.tanh.Tanh">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.tanh.</code><code class="descname">Tanh</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/tanh.html#Tanh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.tanh.Tanh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tanh activation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operators.tanh.Tanh.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/tanh.html#Tanh.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.tanh.Tanh.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; Input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Output</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of <a class="reference internal" href="base_classes.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="variables.html" class="btn btn-neutral float-right" title="Variables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="base_classes.html" class="btn btn-neutral" title="Base Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

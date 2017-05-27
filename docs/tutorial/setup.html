@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Setup Guide &mdash; MIL WebDNN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 0.1.0 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorial" href="index.html"/>
+        <link rel="next" title="Use with Caffemodel" href="caffe.html"/>
+        <link rel="prev" title="Introduction to WebDNN" href="introduction.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction to WebDNN</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-code">Downloading code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-webgpu-environment">Installing WebGPU environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-python-package">Installing python package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-emscripten-and-eigen">Installing Emscripten and Eigen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-on-python-environment">Notes on python environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caffe.html">Use with Caffemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chainer.html">Use with Chainer Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tips/index.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorial</a> &raquo;</li>
+        
+      <li>Setup Guide</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorial/setup.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="setup-guide">
+<span id="setup-guide"></span><h1>Setup Guide<a class="headerlink" href="#setup-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="downloading-code">
+<span id="downloading-code"></span><h2>Downloading code<a class="headerlink" href="#downloading-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">mil</span><span class="o">-</span><span class="n">tokyo</span><span class="o">/</span><span class="n">webdnn</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-webgpu-environment">
+<span id="installing-webgpu-environment"></span><h2>Installing WebGPU environment<a class="headerlink" href="#installing-webgpu-environment" title="Permalink to this headline">¶</a></h2>
+<p>WebDNN runs fastest on browsers which support WebGPU. Currently, only Safari Technology Preview on macOS supports it.</p>
+<p>https://developer.apple.com/safari/technology-preview/</p>
+<p>If you don&#8217;t have such environment, WebAssembly backend can be used.
+It is supported by most modern browsers.
+(Note: IE and Safari does not support WebAssembly, but asm.js code is automatically generated along with WebAssembly code, and gives similar performance.)</p>
+</div>
+<div class="section" id="installing-python-package">
+<span id="installing-python-package"></span><h2>Installing python package<a class="headerlink" href="#installing-python-package" title="Permalink to this headline">¶</a></h2>
+<p>This framework requires python3.6+.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">webdnn</span>
+<span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This will install <code class="docutils literal"><span class="pre">webdnn</span></code>.</p>
+<p>If you want to convert models of Caffe or Chainer, install chainer package.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">chainer</span>
+</pre></div>
+</div>
+<p>(Currently, tested with <code class="docutils literal"><span class="pre">chainer==1.23</span></code>)</p>
+</div>
+<div class="section" id="installing-emscripten-and-eigen">
+<span id="installing-emscripten-and-eigen"></span><h2>Installing Emscripten and Eigen<a class="headerlink" href="#installing-emscripten-and-eigen" title="Permalink to this headline">¶</a></h2>
+<p>If you want to enable WebAssembly backend, em++ command from <a class="reference external" href="https://github.com/kripken/emscripten">Emscripten</a> is required. You can skip this section if you try WebGPU backend only.</p>
+<p>To setup Emscripten which supports WebAssembly,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">juj</span><span class="o">/</span><span class="n">emsdk</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">emsdk</span>
+<span class="o">./</span><span class="n">emsdk</span> <span class="n">install</span> <span class="n">sdk</span><span class="o">-</span><span class="n">incoming</span><span class="o">-</span><span class="mi">64</span><span class="n">bit</span> <span class="n">binaryen</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mi">64</span><span class="n">bit</span>
+<span class="o">./</span><span class="n">emsdk</span> <span class="n">activate</span> <span class="n">sdk</span><span class="o">-</span><span class="n">incoming</span><span class="o">-</span><span class="mi">64</span><span class="n">bit</span> <span class="n">binaryen</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mi">64</span><span class="n">bit</span>
+</pre></div>
+</div>
+<p>(see also http://webassembly.org/getting-started/developers-guide/ )</p>
+<p>To enable em++ command, you need to type command on the shell.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">./</span><span class="n">emsdk_env</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="http://eigen.tuxfamily.org">Eigen</a> is needed as the library.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">bitbucket</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">eigen</span><span class="o">/</span><span class="n">eigen</span><span class="o">/</span><span class="n">get</span><span class="o">/</span><span class="mf">3.3</span><span class="o">.</span><span class="mf">3.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+<span class="n">tar</span> <span class="n">jxf</span> <span class="mf">3.3</span><span class="o">.</span><span class="mf">3.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+</pre></div>
+</div>
+<p>To enable Eigen to be included on compile, you need to type command on the shell.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>export CPLUS_INCLUDE_PATH=$PWD/eigen-eigen-67e894c6cd8f
+</pre></div>
+</div>
+</div>
+<div class="section" id="notes-on-python-environment">
+<span id="notes-on-python-environment"></span><h2>Notes on python environment<a class="headerlink" href="#notes-on-python-environment" title="Permalink to this headline">¶</a></h2>
+<p>Emscripten requires <code class="docutils literal"><span class="pre">python2</span></code> command, you need to setup python environment which <code class="docutils literal"><span class="pre">python</span></code> (or <code class="docutils literal"><span class="pre">python3</span></code>) is python 3.6+ and <code class="docutils literal"><span class="pre">python2</span></code> is python 2.7. <a class="reference external" href="https://github.com/pyenv/pyenv">pyenv</a> may help to setup such environment (<a class="reference external" href="https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-global-advanced">see also</a>).</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="caffe.html" class="btn btn-neutral float-right" title="Use with Caffemodel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral" title="Introduction to WebDNN" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

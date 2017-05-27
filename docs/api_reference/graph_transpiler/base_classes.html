@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Base Classes &mdash; MIL WebDNN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="MIL WebDNN 0.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Graph Builder" href="index.html"/>
+        <link rel="next" title="Operators" href="operators.html"/>
+        <link rel="prev" title="Graph Builder" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips/index.html">Tips</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Graph Builder</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph">Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#operator">Operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variable">Variable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#attribute">Attribute</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#axis">Axis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#order">Order</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optimizerule">OptimizeRule</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variables.html">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimize_rules.html">Optimize Rules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="index.html">Graph Builder</a> &raquo;</li>
+        
+      <li>Base Classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_reference/graph_transpiler/base_classes.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="base-classes">
+<span id="base-classes"></span><h1>Base Classes<a class="headerlink" href="#base-classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="graph">
+<span id="graph"></span><h2>Graph<a class="headerlink" href="#graph" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.graph.Graph">
+<em class="property">class </em><code class="descclassname">webdnn.graph.graph.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>inputs: typing.Iterable[webdnn.graph.variable.Variable], outputs: typing.Iterable[webdnn.graph.variable.Variable]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/graph.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="operator">
+<span id="operator"></span><h2>Operator<a class="headerlink" href="#operator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operator.Operator">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operator.</code><code class="descname">Operator</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_input">
+<code class="descname">append_input</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>入力変数を追加する</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_output">
+<code class="descname">append_output</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>出力変数を追加する</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_all">
+<code class="descname">remove_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>全ての変数の接続を解除する</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_input">
+<code class="descname">remove_input</code><span class="sig-paren">(</span><em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>入力変数を解除する</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_output">
+<code class="descname">remove_output</code><span class="sig-paren">(</span><em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>出力変数を解除する</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace">
+<code class="descname">replace</code><span class="sig-paren">(</span><em>new_op: webdnn.graph.operator.Operator</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>演算を置き換える</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_input">
+<code class="descname">replace_input</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.interface.IVariable</em>, <em>v_new: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>入力変数を置き換える</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_output">
+<code class="descname">replace_output</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.interface.IVariable</em>, <em>v_new: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>出力変数を置き換える</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="variable">
+<span id="variable"></span><h2>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.variable.Variable">
+<em class="property">class </em><code class="descclassname">webdnn.graph.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>shape: typing.Iterable[int], order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>レイヤー間で受け渡される変数
+名前で識別される
+現在のところ、float32型(4byte/element)を想定している
+shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存</p>
+</dd></dl>
+
+</div>
+<div class="section" id="attribute">
+<span id="attribute"></span><h2>Attribute<a class="headerlink" href="#attribute" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.attribute.Attribute">
+<em class="property">class </em><code class="descclassname">webdnn.graph.attribute.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>node: webdnn.graph.interface.INode</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/attribute.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.attribute.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="axis">
+<span id="axis"></span><h2>Axis<a class="headerlink" href="#axis" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.axis.Axis">
+<em class="property">class </em><code class="descclassname">webdnn.graph.axis.</code><code class="descname">Axis</code><a class="reference internal" href="../../_modules/webdnn/graph/axis.html#Axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.axis.Axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="order">
+<span id="order"></span><h2>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.order.Order">
+<em class="property">class </em><code class="descclassname">webdnn.graph.order.</code><code class="descname">Order</code><span class="sig-paren">(</span><em>axes: typing.List[webdnn.graph.axis.Axis]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="optimizerule">
+<span id="optimizerule"></span><h2>OptimizeRule<a class="headerlink" href="#optimizerule" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule">
+<em class="property">class </em><code class="descclassname">webdnn.graph.optimize_rule.</code><code class="descname">OptimizeRule</code><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>graph: webdnn.graph.graph.Graph</em><span class="sig-paren">)</span> &#x2192; typing.Tuple[webdnn.graph.graph.Graph, bool]<a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>graphを変換する
+:param graph:
+:return: 2要素のタプル。第一要素は変換後のGraph, 第二要素は変換があったかどうかのbool値</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="operators.html" class="btn btn-neutral float-right" title="Operators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Graph Builder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
