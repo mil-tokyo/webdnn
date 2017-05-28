@@ -257,7 +257,25 @@ declare namespace WebDNN {
         }
     }
 }
+declare let transformDelegate: (base: string) => string;
+/**
+ * Fetch delegate function.
+ * Every fetch call in WebDNN is delegated to this function.
+ * As default, `window.fetch` is set.
+ * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+ */
+declare let fetchDelegate: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 declare namespace WebDNN {
+    /**
+     * Register delegate function for transform url
+     * @param url url which will be transformed
+     */
+    function transformUrl(url: string): string;
+    /**
+     * Register delegate function for transform url
+     * @param delegate delegate function
+     */
+    function registerTransformDelegate(delegate: (base: string) => string): void;
     /**
      * Register delegate function for fetch
      * @param delegate delegate function

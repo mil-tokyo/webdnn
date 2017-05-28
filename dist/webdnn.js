@@ -303,15 +303,32 @@ var WebDNN;
     })(util = WebDNN.util || (WebDNN.util = {}));
 })(WebDNN || (WebDNN = {}));
 /// <reference path="./util/dispatch_scheduler.ts" />
+let transformDelegate = url => url;
+/**
+ * Fetch delegate function.
+ * Every fetch call in WebDNN is delegated to this function.
+ * As default, `window.fetch` is set.
+ * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+ */
+let fetchDelegate = window.fetch;
 var WebDNN;
 (function (WebDNN) {
     /**
-     * Fetch delegate function.
-     * Every fetch call in WebDNN is delegated to this function.
-     * As default, `window.fetch` is set.
-     * @type {(input:RequestInfo, init?:RequestInit)=>Promise<Response>}
+     * Register delegate function for transform url
+     * @param url url which will be transformed
      */
-    let fetchDelegate = window.fetch;
+    function transformUrl(url) {
+        return transformDelegate(url);
+    }
+    WebDNN.transformUrl = transformUrl;
+    /**
+     * Register delegate function for transform url
+     * @param delegate delegate function
+     */
+    function registerTransformDelegate(delegate) {
+        transformDelegate = delegate;
+    }
+    WebDNN.registerTransformDelegate = registerTransformDelegate;
     /**
      * Register delegate function for fetch
      * @param delegate delegate function
@@ -385,6 +402,7 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
+            graph_url = WebDNN.transformUrl(graph_url);
             let graph_fetch = await WebDNN.fetch(graph_url);
             if (!graph_fetch.ok) {
                 throw new Error(`${graph_url} cannot be loaded`);
@@ -395,6 +413,7 @@ var WebDNN;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url, progressCallback), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
@@ -535,6 +554,7 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
+            graph_url = WebDNN.transformUrl(graph_url);
             let graph_fetch = await WebDNN.fetch(graph_url);
             if (!graph_fetch.ok) {
                 throw new Error(`${graph_url} cannot be loaded`);
@@ -546,12 +566,14 @@ var WebDNN;
             if (this.ignoreCache) {
                 worker_entry_js_path += '?t=' + Date.now();
             }
+            worker_entry_js_path = WebDNN.transformUrl(worker_entry_js_path);
             this.worker_entry_js_path = worker_entry_js_path;
             await this.compile();
             let weight_url = `${directory}/weight_${this.backend}.bin`;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
@@ -704,6 +726,7 @@ var WebDNN;
             if (this.ignoreCache) {
                 graph_url += '?t=' + Date.now();
             }
+            graph_url = WebDNN.transformUrl(graph_url);
             let graph_fetch = await WebDNN.fetch(graph_url);
             if (!graph_fetch.ok) {
                 throw new Error(`${graph_url} cannot be loaded`);
@@ -714,6 +737,7 @@ var WebDNN;
             if (this.ignoreCache) {
                 weight_url += '?t=' + Date.now();
             }
+            weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
