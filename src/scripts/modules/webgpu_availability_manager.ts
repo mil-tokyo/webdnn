@@ -1,13 +1,7 @@
-// export enum Availability {
-//     Maybe = 0,
-//     Available = 1,
-//     Unavaiable = 2
-// }
-//
 // enum State {
-//     SLEEP,
-//     RUNNING,
-//     DONE
+//     SLEEP = 0,
+//     RUNNING = 1,
+//     DONE = 2
 // }
 //
 // export default class AvailabilityManager {
@@ -27,15 +21,17 @@
 //     }
 //
 //     get availability() {
-//         let value = parseInt(localStorage.getItem(this.key) || '0') as Availability;
+//         let savedState = parseInt(localStorage.getItem(this.key) || '0') as State;
 //
-//         switch (value) {
-//             case Availability.Maybe:
-//                 return Availability.Maybe;
-//             case Availability.Maybe:
-//                 return Availability.Maybe;
-//             case Availability.Maybe:
-//                 return Availability.Maybe;
+//         switch (savedState) {
+//             case State.SLEEP:
+//                 return true;
+//
+//             case State.RUNNING:
+//                 return this.state !== State.SLEEP;
+//
+//             case State.DONE:
+//                 return true;
 //         }
 //
-// }
+//     }
