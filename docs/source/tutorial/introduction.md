@@ -23,5 +23,12 @@ WebDNN uses next generation JavaScript API, WebGPU for GPU execution, and WebAss
 To achieve speedier execution, optimizing the computation graph of DNN models is very important. Execution of DNN consists of two phases, the training phase and the inference phase, and they requires different optimization sterategies. WebDNN focuses on only the inference phase execution on end-user devices and supports aggressive optimization. This optimization pipeline can be applied for models trained with various DNN frameworks. It is not required to edit the training codes.
 
 # Framework structure
+![Pipeline](../_static/tutorial/pipeline.png)
+
 WebDNN consists of two modules - the graph transpiler, which transpiles and optimizes trained model into an executable format on the web browser and the descriptor runner, which executes the converted model on the web browser.
 
+Graph transpiler is the offline module to transpile the model. It is implemented in python (version 3.6) and only application developers need to run it. It outputs the 'graph descriptor' files, which consist of JavaScript and binary weight data.
+
+Descriptor runner is the online module to run the graph descriptor on the web browser of the end-users. It is JavaScript files. Application developers have to use the API provided by the library to supply input to the model and display output.
+
+Setting up the application development environment is described in [setup](../setup.html) page. You can find examples of steps to use models from Caffe, Keras, Chainer in WebDNN in the example directory.
