@@ -26,7 +26,8 @@ achieved more than 200x acceleration.
     - Mac Book Pro early 2015
     - macOS 10.12.4 Sierra
     - Intel Core i5 2.7 GHz CPU
-    - 16 GB Memory, Intel Iris Graphics 6100 GPU
+    - 16 GB Memory
+    - Intel Iris Graphics 6100 GPU
     - Safari Technology Preview 30
 - Model: Vgg16[[1]](#1), ResNet50[[2]](#2). 
 - Input: (1, 224, 224, 3)
@@ -62,26 +63,21 @@ Then, generated files (called as `Descriptor`) can be loaded and executed by Jav
 
 ```js
 let runner;
-let x, y;
 
 async function init() {
     // Initialize descriptor runner
     runner = await WebDNN.prepareAll('./output');
-    
-    // Keep the references to input and output variables of DNN
-    x = runner.inputViews[0];
-    y = runner.outputViews[0];
 }
 
 async function run() {
     // Set the value into input variable.
-    x.set(loadImageData());
+    runner.inputViews[0].set(loadImageData());
     
     // Run
     await runner.run(); 
 
     // Show the result
-    console.log('Output', WebDNN.Math.argmax(y));
+    console.log('Output', WebDNN.Math.argmax(runner.outputViews[0]));
 }
 ```
 
