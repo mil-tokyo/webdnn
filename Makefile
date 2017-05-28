@@ -31,3 +31,4 @@ build-cp:
 	mkdir -p ${WEBDNN_GH}/docs
 	cp -R ${WEBDNN}/docs/build/html/ ${WEBDNN_GH}/docs/
 	cp -R ${WEBDNN_HP}/build/webdnn/ ${WEBDNN_GH}
+	touch ${WEBDNN_GH}/.nojekyll
