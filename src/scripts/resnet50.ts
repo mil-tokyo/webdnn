@@ -128,14 +128,14 @@ const App = new class {
                 case 'running':
                 case 'crashed':
                     availability.status['webgpu'] = false;
+                    availability.defaultOrder.splice(availability.defaultOrder.indexOf('webgpu'), 1);
+                    
                     localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
 
-                    console.warn('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
-                        'Therefore, WebDNN disabled WebGPU backend temporally.');
+                    console.warn('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. Therefore, WebDNN disabled WebGPU backend temporally.');
 
                     if (!localStorage.getItem(KEY_FLAG_WEBGPU_DISABLED_ALERT)) {
-                        alert('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
-                            'Therefore, WebDNN disabled WebGPU backend temporally.');
+                        alert('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. \n\nTherefore, WebDNN disabled WebGPU backend temporally.');
                         localStorage.setItem(KEY_FLAG_WEBGPU_DISABLED_ALERT, '1');
                     }
                     break;
@@ -150,7 +150,7 @@ const App = new class {
         this.labels = Labels;
 
         initializingView.updateMessage('Load model data');
-        await WebDNN.init();
+        await WebDNN.init(availability.defaultOrder);
         this.runner = WebDNN.gpu.createDescriptorRunner();
         await this.runner.load('./models/resnet50', (loaded, total) => initializingView.updateProgress(loaded / total));
         this.inputView = (await this.runner.getInputViews())[0];

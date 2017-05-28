@@ -54,12 +54,10 @@ const App = new class {
                     availability.status['webgpu'] = false;
                     localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
 
-                    console.warn('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
-                        'Therefore, WebDNN disabled WebGPU backend temporally.');
+                    console.warn('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. Therefore, WebDNN disabled WebGPU backend temporally.');
 
                     if (!localStorage.getItem(KEY_FLAG_WEBGPU_DISABLED_ALERT)) {
-                        alert('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
-                            'Therefore, WebDNN disabled WebGPU backend temporally.');
+                        alert('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. \n\nTherefore, WebDNN disabled WebGPU backend temporally.');
                         localStorage.setItem(KEY_FLAG_WEBGPU_DISABLED_ALERT, '1');
                     }
                     break;
