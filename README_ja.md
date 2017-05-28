@@ -22,7 +22,8 @@ WebDNNにより、ウェブブラウザ上での実行を前提とした積極�
     - Mac Book Pro early 2015
     - macOS 10.12.4 Sierra
     - Intel Core i5 2.7 GHz CPU
-    - 16 GB Memory, Intel Iris Graphics 6100 GPU
+    - 16 GB Memory
+    - Intel Iris Graphics 6100 GPU
     - Safari Technology Preview 30
 - 測定内容: 画像識別モデルの一種, ResNet50[[1]](#1)およびVgg16[[2]](#2)を使用。224x224の画像1枚の推論に要する時間を測定。
 
@@ -57,26 +58,21 @@ python ../../bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --ou
 
 ```js
 let runner;
-let x, y;
 
 async function init() {
     // DNNを実行するための "DescriptorRunner" を初期化する
     runner = await WebDNN.prepareAll('./output');
-    
-    // DNNの入出力用の変数への参照を保存しておく
-    x = runner.inputViews[0];
-    y = runner.outputViews[0];
 }
 
 async function run() {
     // 入力変数にデータをセット
-    x.set(loadImageData());
+    runner.inputViews[0].set(loadImageData());
     
     // 実行
     await runner.run(); 
 
     // 結果を確認
-    console.log('Output', WebDNN.Math.argmax(y));
+    console.log('Output', WebDNN.Math.argmax(runner.outputViews[0]));
 }
 ```
 
