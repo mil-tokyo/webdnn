@@ -12,11 +12,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/webdnn/favicon-16x16.png">
     <link rel="manifest" href="/webdnn/manifest.json">
     <meta name="keywords" content="WebDNN, MIL, Machine Intelligence Laboratory, The University of Tokyo">
-    <meta name="description" content="WebDNN is an open source software framework for fast execution of deep neural network (DNN) pre-trained model on web browser.">
+    <meta name="description"
+          content="WebDNN is an open source software framework for fast execution of deep neural network (DNN) pre-trained model on web browser.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mil-tokyo.github.io/webdnn">
     <meta property="og:image" content="/webdnn/android-chrome-192x192.png">
-    <meta property="og:description"content="WebDNN is an open source software framework for fast execution of deep neural network (DNN) pre-trained model on web browser.">
+    <meta property="og:description"
+          content="WebDNN is an open source software framework for fast execution of deep neural network (DNN) pre-trained model on web browser.">
     <meta property="og:title" content="MIL WebDNN">
     <script src="/webdnn/inflate.min.js"></script>
     <script src="/webdnn/webdnn.js"></script>
@@ -24,137 +26,151 @@
 
 <body>
 
-    <input type="file" id="imageInput" style="position: absolute; top: -999px;">
+<input type="file" id="imageInput" style="position: absolute; top: -999px;">
 
-    <div class="LaunchView" id="launchView">
-        <button id="runAppButton" class="Button-primary">
+<div class="LaunchView" id="launchView">
+    <button id="runAppButton" class="Button-primary">
         <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z"/>
         </svg>
         <span>Run</span>
     </button>
+</div>
+
+<div class="InitializingView" id="initializingView">
+    <span class="InitializingView-Message">Initializing...</span>
+    <div class="InitializingView-ProgressBar ProgressBar">
+        <div class="ProgressBar-Inner"></div>
     </div>
+</div>
 
-    <div class="InitializingView" id="initializingView">
-        <span class="InitializingView-Message">Initializing...</span>
-        <div class="InitializingView-ProgressBar ProgressBar">
-            <div class="ProgressBar-Inner"></div>
-        </div>
-    </div>
+<main class="MainContainer">
+    <div class="DataContainer">
+        <div class="InputContainer">
+            <div class="Tip">Input</div>
 
-    <main class="MainContainer">
-        <div class="DataContainer">
-            <div class="InputContainer">
-                <div class="Tip">Input</div>
-
-                <div class="CanvasContainer">
-                    <div class="CanvasContainer-message">
-                        <span class="CanvasContainer-message-large">NO IMAGE LOADED</span>
-                    </div>
-                    <canvas id="canvas" width="224" height="224"></canvas>
+            <div class="CanvasContainer">
+                <div class="CanvasContainer-message">
+                    <span class="CanvasContainer-message-large">NO IMAGE LOADED</span>
                 </div>
-            </div>
-
-            <div class="ResultContainer">
-                <div class="Tip">Result</div>
-                <div class="Result" id="result">
-                    <div class="Result-Probability">
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                        <div class="ResultItem">
-                            <div class="ResultItem-Label">
-                            </div>
-                            <div class="ResultItem-Value">
-                                <div class="ResultItem-Bar"></div>
-                                <span class="ResultItem-Probability"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <canvas id="canvas" width="224" height="224"></canvas>
             </div>
         </div>
-        <div class="MessageView">
-            <span class="Flex-flex" id="message"></span>
-        </div>
-        <div class="Flex-row UIContainer">
-            <label class="Button" for="imageInput">Open local image</label>
-            <button id="loadRandomButton">Load random image</button>
-            <span class="Flex-flex"></span>
-            <button class="Button-primary" id="runButton" disabled>Run</button>
-        </div>
-    </main>
 
+        <div class="ResultContainer">
+            <div class="Tip">Result</div>
+            <div class="Result" id="result">
+                <div class="Result-Probability">
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                    <div class="ResultItem">
+                        <div class="ResultItem-Label">
+                        </div>
+                        <div class="ResultItem-Value">
+                            <div class="ResultItem-Bar"></div>
+                            <span class="ResultItem-Probability"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="MessageView">
+        <span class="Flex-flex" id="message"></span>
+    </div>
+    <div class="Flex-row UIContainer">
+        <label class="Button" for="imageInput">Open local image</label>
+        <button id="loadRandomButton">Load random image</button>
+        <span class="Flex-flex"></span>
+        <button class="Button-primary" id="runButton" disabled>Run</button>
+    </div>
+</main>
+<script>
+	(function (i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function () {
+				(i[r].q = i[r].q || []).push(arguments)
+			}, i[r].l = 1 * new Date();
+		a = s.createElement(o),
+			m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
+	ga('create', 'UA-100057100-1', 'auto');
+	ga('send', 'pageview');
+</script>
 </body>
 
 </html>

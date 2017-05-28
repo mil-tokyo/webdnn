@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mil-tokyo.github.io/webdnn">
     <meta property="og:image" content="/webdnn/android-chrome-192x192.png">
-    <meta property="og:description"content="WebDNN は深層学習モデル(DNN)をウェブブラウザ上で高速実行するためのオープンソースフレームワークです。">
+    <meta property="og:description" content="WebDNN は深層学習モデル(DNN)をウェブブラウザ上で高速実行するためのオープンソースフレームワークです。">
     <meta property="og:title" content="MIL WebDNN">
 </head>
 
@@ -29,7 +29,7 @@
             <a href="#about">About</a>
             <a href="#compatibility">Compatibility</a>
             <a href="#benchmark">Benchmark</a>
-            <a href="#neural-style-transfer">Samples</a>
+            <a href="#neural-style-transfer">Examples</a>
         </p>
         <p class="PageHeader-Link">
             <a href="/webdnn"><span>English</span></a>
@@ -751,7 +751,7 @@
                         height="530"
                         data-src="neural_style_transfer.html"
                         frameborder="0"
-                        title="Sample: Neural Style Transfer"></iframe>
+                        title="Neural Style Transfer"></iframe>
                 <a class="PlayGround-Link" href="/webdnn/neural_style_transfer.html?run=1" target="_parent">
                     Open This App
                 </a>
@@ -762,7 +762,7 @@
     <section class="Section" id="resnet50">
         <div class="Row">
             <div class="Cell-flex">
-                <h2 class="Section-Title">Sample: ResNet50 Image Classification</h2>
+                <h2 class="Section-Title">ResNet50 Image Classification</h2>
                 <p>
                     このサンプルでは、画像識別モデルのResNet50を実行します。モデルはImageNet
                     <a class="ref" href="#ref8">[8]</a>データセットで学習されており、オリジナルの学習済みモデルは
@@ -776,7 +776,7 @@
                         height="475"
                         data-src="resnet50.html"
                         frameborder="0"
-                        title="Sample: ResNet50 Image Classification"></iframe>
+                        title="ResNet50 Image Classification"></iframe>
                 <a class="PlayGround-Link" href="/webdnn/resnet50.html?run=1" target="_parent">
                     Open This App
                 </a>
@@ -847,7 +847,22 @@
         </p>
     </footer>
 </main>
+<script>
+	(function (i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function () {
+				(i[r].q = i[r].q || []).push(arguments)
+			}, i[r].l = 1 * new Date();
+		a = s.createElement(o),
+			m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
+	ga('create', 'UA-100057100-1', 'auto');
+	ga('send', 'pageview');
+</script>
 </body>
 
 </html>
