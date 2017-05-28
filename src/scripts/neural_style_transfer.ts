@@ -3,6 +3,9 @@ import "../style/neural_style_transfer.scss";
 import InitializingView from "./modules/initializing_view";
 import WebCam from "./modules/webcam";
 
+const KEY_WEBGPU_LAST_STATUS = 'webgpu_last_status';
+const KEY_FLAG_WEBGPU_DISABLED_ALERT = 'flag_webgpu_disabled_alert';
+
 const NUM_RANDOM_IMAGE = 6;
 
 enum State {
@@ -32,18 +35,46 @@ const App = new class {
     sampleContainer: HTMLDivElement;
     backendSelect: HTMLSelectElement;
     webcam: WebCam;
+    lastStatus: string = '';
 
     async initialize() {
-        let availability = WebDNN.getBackendAvailability();
         let select = document.getElementById('backend') as HTMLSelectElement;
         if (!select) throw Error('#backend is not found.');
         this.backendSelect = select;
+
+        let availability = WebDNN.getBackendAvailability();
+        if (availability.status['webgpu']) {
+            this.lastStatus = localStorage.getItem(KEY_WEBGPU_LAST_STATUS) || 'none';
+            switch (this.lastStatus) {
+                case 'none':
+                    break;
+
+                case 'running':
+                case 'crashed':
+                    availability.status['webgpu'] = false;
+                    localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
+
+                    console.warn('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
+                        'Therefore, WebDNN disabled WebGPU backend temporally.');
+
+                    if (!localStorage.getItem(KEY_FLAG_WEBGPU_DISABLED_ALERT)) {
+                        alert('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
+                            'Therefore, WebDNN disabled WebGPU backend temporally.');
+                        localStorage.setItem(KEY_FLAG_WEBGPU_DISABLED_ALERT, '1');
+                    }
+                    break;
+
+                case 'completed':
+                    break;
+            }
+        }
 
         if (!availability.status['webgpu']) {
             let option = document.querySelector('option[value="webgpu"]') as HTMLOptionElement;
             if (option) option.disabled = true;
             select.value = 'webassembly';
         }
+
         if (!availability.status['webassembly']) {
             let option = document.querySelector('option[value="webassembly"]') as HTMLOptionElement;
             if (option) option.disabled = true;
@@ -249,10 +280,17 @@ const App = new class {
 
     async transfer() {
         if (this.state !== State.RUNNING) return;
-
         await this.getImageData();
 
+        if (this.runner.backend === 'webgpu' && this.lastStatus === 'none') {
+            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
+            this.lastStatus = 'running';
+        }
         await this.runner.run();
+        if (this.runner.backend === 'webgpu' && this.lastStatus === 'running') {
+            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
+            this.lastStatus = 'completed';
+        }
         this.setImageData();
 
         if (this.dataSource == 'video') requestAnimationFrame(() => this.transfer());

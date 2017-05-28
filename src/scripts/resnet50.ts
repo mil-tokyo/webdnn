@@ -4,6 +4,9 @@ import ImagePicker from "./modules/image_picker";
 import Labels from "./modules/imagenet_labels";
 import InitializingView from "./modules/initializing_view";
 
+const KEY_WEBGPU_LAST_STATUS = 'webgpu_last_status';
+const KEY_FLAG_WEBGPU_DISABLED_ALERT = 'flag_webgpu_disabled_alert';
+
 const NUM_RANDOM_IMAGE = 6;
 
 let FLAG_CHROME_ANDROID: boolean = false;
@@ -46,6 +49,7 @@ const App = new class {
     randomImageIndex: number;
     state: State;
     messageView: HTMLElement;
+    lastStatus: string = '';
 
     async initialize() {
         this.setState(State.INITIALIZING);
@@ -112,6 +116,33 @@ const App = new class {
             return;
         } else {
             console.log(navigator.userAgent);
+        }
+
+        let availability = WebDNN.getBackendAvailability();
+        if (availability.status['webgpu']) {
+            this.lastStatus = localStorage.getItem(KEY_WEBGPU_LAST_STATUS) || 'none';
+            switch (this.lastStatus) {
+                case 'none':
+                    break;
+
+                case 'running':
+                case 'crashed':
+                    availability.status['webgpu'] = false;
+                    localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
+
+                    console.warn('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
+                        'Therefore, WebDNN disabled WebGPU backend temporally.');
+
+                    if (!localStorage.getItem(KEY_FLAG_WEBGPU_DISABLED_ALERT)) {
+                        alert('This browser supports WebGPU. However, WebDNN detected that this browser was crashed at last execution with WebGPU.' +
+                            'Therefore, WebDNN disabled WebGPU backend temporally.');
+                        localStorage.setItem(KEY_FLAG_WEBGPU_DISABLED_ALERT, '1');
+                    }
+                    break;
+
+                case 'completed':
+                    break;
+            }
         }
 
         initializingView.updateMessage('Load label data');
@@ -205,9 +236,17 @@ const App = new class {
         this.setState(State.RUNNING);
         this.setInputImageData();
 
+        if (this.runner.backend === 'webgpu' && this.lastStatus === 'none') {
+            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
+            this.lastStatus = 'running';
+        }
         let start = performance.now();
         await this.runner.run();
         let computationTime = performance.now() - start;
+        if (this.runner.backend === 'webgpu' && this.lastStatus === 'running') {
+            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
+            this.lastStatus = 'completed';
+        }
 
         let output: number[] = [];
         for (let i = 0; i < this.outputView.length; i++) {
