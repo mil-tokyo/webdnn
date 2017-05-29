@@ -1,1 +1,1271 @@
-!function(e){function t(i){if(a[i])return a[i].exports;var n=a[i]={i:i,l:!1,exports:{}};return e[i].call(n.exports,n,n.exports,t),n.l=!0,n.exports}var a={};t.m=e,t.c=a,t.i=function(e){return e},t.d=function(e,a,i){t.o(e,a)||Object.defineProperty(e,a,{configurable:!1,enumerable:!0,get:i})},t.n=function(e){var a=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(a,"a",a),a},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=10)}([function(e,t){!function(e,t,a,i,n,r,s){e.GoogleAnalyticsObject=n,e[n]=e[n]||function(){(e[n].q=e[n].q||[]).push(arguments)},e[n].l=1*new Date,r=t.createElement(a),s=t.getElementsByTagName(a)[0],r.async=1,r.src="https://www.google-analytics.com/analytics.js",s.parentNode.insertBefore(r,s)}(window,document,"script",0,"ga"),ga("create","UA-100057100-1","auto"),ga("send","pageview")},function(e,t,a){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var i=a(2),n=function(){function e(e){this.base=e;var t=e.querySelector(".InitializingView-Message");if(!t)throw Error(".InitializingView-Message not found");this.message=t;var a=e.querySelector(".ProgressBar-Inner");if(!a)throw Error(".ProgressBar-Inner not found");this.progressBar=new i.default(a)}return e.prototype.updateProgress=function(e){this.progressBar.update(e)},e.prototype.updateMessage=function(e){this.message.textContent=e},e.prototype.remove=function(){this.base.parentNode&&this.base.parentNode.removeChild(this.base)},e}();t.default=n},function(e,t,a){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e){this.bar=e}return e.prototype.update=function(e){this.bar.style.width=100*Math.min(Math.max(e,0),1)+"%"},e}();t.default=i},,,function(e,t,a){"use strict";function i(){if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia?o=function(e){return navigator.mediaDevices.getUserMedia(e)}:"mozGetUserMedia"in navigator?o=function(e){return navigator.mozGetUserMedia(e)}:"webkitGetUserMedia"in navigator&&(o=function(e){return navigator.webkitGetUserMedia(e)}),"URL"in window?h=window.URL:"webkitURL"in window?h=window.webkitURL:"mozURL"in window?h=window.mozURL:"msURL"in window&&(h=window.msURL),navigator.userAgent.match(/Firefox\D+(\d+)/)&&parseInt(RegExp.$1,10)<21&&(o=null),"object"==typeof navigator.plugins&&"object"==typeof navigator.plugins[l]&&navigator.plugins[l].description&&"object"==typeof navigator.mimeTypes&&navigator.mimeTypes[u]&&navigator.mimeTypes[u].enabledPlugin)g=!0;else if("ActiveXObject"in window)try{var e=new window.ActiveXObject(c);e&&e.GetVariable("$version")&&(g=!0)}catch(e){}v=!0}function n(e){var t=new DataView(e);if(255!=t.getUint8(0)||216!=t.getUint8(1))return console.log("Not a valid JPEG file"),0;for(var a=2;a<e.byteLength;){if(255!=t.getUint8(a))return console.log("Not a valid marker at offset "+a+", found: "+t.getUint8(a)),0;if(225==t.getUint8(a+1)){a+=4;for(var i="",n=0;n<4;n++)i+=String.fromCharCode(t.getUint8(a+n));if("Exif"!=i)return console.log("Not valid EXIF data found"),0;a+=6;var r=null;if(18761==t.getUint16(a))r=!1;else{if(19789!=t.getUint16(a))return console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)"),0;r=!0}if(42!=t.getUint16(a+2,!r))return console.log("Not valid TIFF data! (no 0x002A)"),0;var s=t.getUint32(a+4,!r);if(s<8)return console.log("Not valid TIFF data! (First offset less than 8)",t.getUint32(a+4,!r)),0;for(var o=a+s,h=t.getUint16(o,!r),l=0;l<h;l++){var c=o+12*l+2;if(274==t.getUint16(c,!r)){var u=t.getUint16(c+2,!r),d=t.getUint32(c+4,!r);if(3!=u&&1!=d)return console.log("Invalid EXIF orientation value type ("+u+") or count ("+d+")"),0;var p=t.getUint16(c+8,!r);return p<1||p>8?(console.log("Invalid EXIF orientation value ("+p+")"),0):p}}}else a+=2+t.getUint16(a+2)}return 0}function r(e,t,a){var i=new Image;i.addEventListener("load",function(){var e=document.createElement("canvas"),n=e.getContext("2d");if(!n)throw Error("null");switch(t<5?(e.width=i.width,e.height=i.height):(e.width=i.height,e.height=i.width),t){case 2:n.transform(-1,0,0,1,i.width,0);break;case 3:n.transform(-1,0,0,-1,i.width,i.height);break;case 4:n.transform(1,0,0,-1,0,i.height);break;case 5:n.transform(0,1,1,0,0,0);break;case 6:n.transform(0,1,-1,0,i.height,0);break;case 7:n.transform(0,-1,-1,0,i.height,i.width);break;case 8:n.transform(0,-1,1,0,0,i.width)}n.drawImage(i,0,0),a.src=e.toDataURL()},!1),i.src=e}var s=this&&this.__extends||function(){var e=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(e,t){e.__proto__=t}||function(e,t){for(var a in t)t.hasOwnProperty(a)&&(e[a]=t[a])};return function(t,a){function i(){this.constructor=t}e(t,a),t.prototype=null===a?Object.create(a):(i.prototype=a.prototype,new i)}}();Object.defineProperty(t,"__esModule",{value:!0});var o,h,l="Shockwave Flash",c="ShockwaveFlash.ShockwaveFlash",u="application/x-shockwave-flash",d=function(e){function t(t){return e.call(this,t)||this}return s(t,e),t}(Error),p=function(e){function t(t){return e.call(this,t)||this}return s(t,e),t}(Error),f=location.protocol.match(/https/i)?"https":"http",m=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!("MSStream"in window),v=!1,g=!1,w={width:0,height:0,dest_width:0,dest_height:0,image_format:"png",jpeg_quality:90,enable_flash:!0,force_flash:!1,flagHorizontalFlip:!1,fps:30,upload_name:"webcam",constraints:null,swfURL:"",noInterfaceFoundText:"No supported webcam interface found.",unfreeze_snap:!0,iosPlaceholderText:"Click here to open camera."},b=function(){function e(e){var t=this;this.previewCanvas=null,this.previewContext=null,this.flagUseUserMedia=!1,this.flagNewUser=!1,this.flagFlashMovieLoaded=!1,this.flagFlashLive=!1,this.video=null,this.container=null,this.peg=null,v||i(),this.params=Object.assign({},w,e),this.hooks={},this.flagUserMedia=!this.params.force_flash&&!!o&&!!window.URL,this.flagUserMedia&&(this.onBeforeUnload=function(){return t.reset()},window.addEventListener("beforeunload",this.onBeforeUnload))}return e.prototype.attach=function(e){var t=this;if("string"==typeof e&&(e=document.querySelector(e)),!e)return this.dispatch("error",new p("Could not locate DOM element to attach to."));this.container=e,this.container.innerHTML="";var a=document.createElement("div");if(e.appendChild(a),this.peg=a,this.params.width||(this.params.width=e.offsetWidth),this.params.height||(this.params.height=e.offsetHeight),!this.params.width||!this.params.height)return this.dispatch("error",new p("No width and/or height for webcam.  Please call set() first, or attach to a visible element."));this.params.dest_width||(this.params.dest_width=this.params.width),this.params.dest_height||(this.params.dest_height=this.params.height),"number"!=typeof this.params.fps&&(this.params.fps=30);var i=this.params.width/this.params.dest_width,s=this.params.height/this.params.dest_height;if(this.flagUserMedia){var l=document.createElement("video");l.setAttribute("autoplay","autoplay"),l.style.width=this.params.dest_width+"px",l.style.height=this.params.dest_height+"px",1==i&&1==s||(this.container.style.overflow="hidden",l.style.transformOrigin="0px 0px",l.style.transform="scaleX("+i+") scaleY("+s+")"),this.container.appendChild(l),this.video=l,o({audio:!1,video:!0}).then(function(e){l.addEventListener("loadedmetadata",function(){t.flagFlashMovieLoaded=!0,t.flagFlashLive=!0,t.dispatch("load"),t.dispatch("live"),t.flip()}),l.src=h.createObjectURL(e)}).catch(function(a){t.params.enable_flash&&g?setTimeout(function(){t.params.force_flash=!0,t.attach(e)},1):t.dispatch("error",a)})}else if(m){var c=document.createElement("div");c.id=this.container.id+"-ios_div",c.className="webcamjs-ios-placeholder",c.style.width=this.params.width+"px",c.style.height=this.params.height+"px",c.style.textAlign="center",c.style.display="table-cell",c.style.verticalAlign="middle",c.style.backgroundRepeat="no-repeat",c.style.backgroundSize="contain",c.style.backgroundPosition="center";var u=document.createElement("span");u.className="webcamjs-ios-text",u.innerHTML=this.params.iosPlaceholderText,c.appendChild(u);var d=document.createElement("img");d.id=this.container.id+"-ios_img",d.style.width=this.params.dest_width+"px",d.style.height=this.params.dest_height+"px",d.style.display="none",c.appendChild(d);var f=document.createElement("input");f.id=this.container.id+"-ios_input",f.setAttribute("type","file"),f.setAttribute("accept","image/*"),f.setAttribute("capture","camera"),f.addEventListener("change",function(e){if(f&&f.files&&f.files.length>0&&0==f.files[0].type.indexOf("image/")){var a=h.createObjectURL(f.files[0]),i=new Image;i.addEventListener("load",function(){var e=document.createElement("canvas");e.width=t.params.dest_width,e.height=t.params.dest_height;var a=e.getContext("2d");if(!a)throw Error("null");var n=Math.min(i.width/t.params.dest_width,i.height/t.params.dest_height),r=t.params.dest_width*n,s=t.params.dest_height*n,o=(i.width-r)/2,h=(i.height-s)/2;a.drawImage(i,o,h,r,s,0,0,t.params.dest_width,t.params.dest_height);var l=e.toDataURL();d.src=l,c.style.backgroundImage="url('"+l+"')"},!1);var s=new FileReader;s.addEventListener("load",function(e){var t=n(s.result);t>1?r(a,t,i):i.src=a},!1);var o=new XMLHttpRequest;o.open("GET",a,!0),o.responseType="blob",o.onload=function(){200!=o.status&&0!==o.status||s.readAsArrayBuffer(o.response)},o.send()}},!1),f.style.display="none",e.appendChild(f),c.addEventListener("click",function(){f.style.display="block",f.focus(),f.click(),f.style.display="none"},!1),e.appendChild(c),this.flagFlashMovieLoaded=!0,this.flagFlashLive=!0}else if(this.params.enable_flash&&g){window.Webcam=this;var v=document.createElement("div");v.innerHTML=this.getSWFHTML(),e.appendChild(v)}else this.dispatch("error",new p(this.params.noInterfaceFoundText));e.style.width=this.params.width+"px",e.style.height=this.params.height+"px"},e.prototype.reset=function(){if(this.flagPreviewIsActive&&this.unfreeze(),this.unflip(),this.flagUseUserMedia&&(this.video=null),this.flagUseUserMedia&&this.flagFlashMovieLoaded&&!m){var e=this.getMovie();e&&"_releaseCamera"in e&&e._releaseCamera()}this.container&&(this.container.innerHTML="",this.container=null),this.flagFlashMovieLoaded=!1,this.flagFlashLive=!1},e.prototype.on=function(e,t){e in this.hooks||(this.hooks[e]=[]),this.hooks[e].push(t)},e.prototype.dispatch=function(e){for(var t=[],a=1;a<arguments.length;a++)t[a-1]=arguments[a];if(!(e in this.hooks)){if("error"!==e)return;throw t[0]}for(var i=this.hooks[e],n=0;n<i.length;n++)i[n].apply(this,t)},e.prototype.getSWFHTML=function(){var e=this,t="";if(!g)return this.dispatch("error",new d("Adobe Flash Player not found. Please install from get.adobe.com/flashplayer and try again.")),"";window.localStorage&&localStorage.getItem("visited")&&(this.flagNewUser=!0,localStorage.setItem("visited","1"));var a=Object.keys(this.params).map(function(t){return t+"="+encodeURIComponent(e.params[t])}).join("&");return t+='<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="'+f+'://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+this.params.width+'" height="'+this.params.height+'" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+this.params.swfURL+'" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="'+a+'" /><embed id="webcam_movie_embed" src="'+this.params.swfURL+'" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="'+this.params.width+'" height="'+this.params.height+'"name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"flashvars="'+a+'"></embed></object>'},e.prototype.getMovie=function(){if(!this.flagFlashMovieLoaded)return this.dispatch("error",new d("Flash Movie is not loaded yet"));var e;return e=document.getElementById("webcam_movie_obj"),e&&e._snap||(e=document.getElementById("webcam_movie_embed")),e||this.dispatch("error",new d("Cannot locate Flash movie in DOM")),e},e.prototype.freeze=function(){var e=this;this.flagPreviewIsActive&&this.unfreeze(),this.unflip();var t=this.params.dest_width,a=this.params.dest_height;this.previewCanvas=document.createElement("canvas"),this.previewCanvas.width=t,this.previewCanvas.height=a,this.previewContext=this.previewCanvas.getContext("2d");var i=this.params.width/this.params.dest_width,n=this.params.height/this.params.dest_height;1==i&&1==n||(this.previewCanvas.style.transformOrigin="0px 0px",this.previewCanvas.style.transform="scaleX("+i+") scaleY("+n+")"),this.snap(function(){e.previewCanvas&&e.container&&(e.previewCanvas.style.position="relative",e.previewCanvas.style.left=e.container.scrollLeft+"px",e.previewCanvas.style.top=e.container.scrollTop+"px",e.container.insertBefore(e.previewCanvas,e.peg),e.container.style.overflow="hidden",e.flagPreviewIsActive=!0)},this.previewCanvas)},e.prototype.unfreeze=function(){this.flagPreviewIsActive&&(this.container&&this.previewCanvas&&this.container.removeChild(this.previewCanvas),this.previewContext=null,this.previewCanvas=null,this.flagPreviewIsActive=!1,this.flip())},e.prototype.flip=function(){this.params.flagHorizontalFlip&&this.container&&(this.container.style.transform="scaleX(-1)")},e.prototype.unflip=function(){this.params.flagHorizontalFlip&&this.container&&(this.container.style.transform="scaleX(1)")},e.prototype.savePreview=function(e,t){if(void 0===e&&(e=null),void 0===t&&(t=null),this.previewCanvas){if(!e)return this.dispatch("error",new p("Please provide a callback function or canvas to snap()"));if(t){var a=t.getContext("2d");a&&a.drawImage(this.previewCanvas,0,0)}e(t?null:this.previewCanvas.toDataURL("image/png",this.params.jpeg_quality/100),this.previewCanvas,this.previewContext),this.params.unfreeze_snap&&this.unfreeze()}},e.prototype.snap=function(e,t){var a=this;if(void 0===e&&(e=null),void 0===t&&(t=null),!this.flagFlashMovieLoaded)return this.dispatch("error",new p("Webcam is not loaded yet"));if(!e)return this.dispatch("error",new p("Please provide a callback function or canvas to snap()"));if(this.flagPreviewIsActive)return this.savePreview(e,t);var i=document.createElement("canvas");i.width=this.params.dest_width,i.height=this.params.dest_height;var n=i.getContext("2d");if(!n)throw Error("Context2D Initialization Failed.");this.params.flagHorizontalFlip&&(n.translate(this.params.dest_width,0),n.scale(-1,1));var r,s=function(){if(r&&r.src&&r.width&&r.height&&n&&n.drawImage(r,0,0,a.params.dest_width,a.params.dest_height),t){var s=t.getContext("2d");if(!s)throw Error("null");s.drawImage(i,0,0)}e(t?null:i.toDataURL("image/png",a.params.jpeg_quality/100),i,n)};if(o){if(!this.video)throw Error("video is null");n.drawImage(this.video,0,0,this.params.dest_width,this.params.dest_height),s()}else if(m){if(!this.container)return;var h=document.getElementById(this.container.id+"-ios_div"),l=document.getElementById(this.container.id+"-ios_input");if(r=document.getElementById(this.container.id+"-ios_img"),!h||!r||!l)throw Error("null");var c=function(){s.call(r),r.removeEventListener("load",c),h.style.backgroundImage="none",r.removeAttribute("src"),l.value=""};l.value?c():(r.addEventListener("load",c),l.style.display="block",l.focus(),l.click(),l.style.display="none")}else r=new Image,r.onload=s,r.src="data:image/png;base64,"+this.getMovie()._snap();return null},e.prototype.flashNotify=function(e,t){switch(e){case"flashLoadComplete":this.flagFlashMovieLoaded=!0,this.dispatch("load");break;case"cameraLive":this.flagFlashLive=!0,this.dispatch("live");break;case"error":this.dispatch("error",new d(t))}},e}();t.default=b},,function(e,t){},,,function(e,t,a){"use strict";var i=this&&this.__awaiter||function(e,t,a,i){return new(a||(a=Promise))(function(n,r){function s(e){try{h(i.next(e))}catch(e){r(e)}}function o(e){try{h(i.throw(e))}catch(e){r(e)}}function h(e){e.done?n(e.value):new a(function(t){t(e.value)}).then(s,o)}h((i=i.apply(e,t||[])).next())})},n=this&&this.__generator||function(e,t){function a(e){return function(t){return i([e,t])}}function i(a){if(n)throw new TypeError("Generator is already executing.");for(;h;)try{if(n=1,r&&(s=r[2&a[0]?"return":a[0]?"throw":"next"])&&!(s=s.call(r,a[1])).done)return s;switch(r=0,s&&(a=[0,s.value]),a[0]){case 0:case 1:s=a;break;case 4:return h.label++,{value:a[1],done:!1};case 5:h.label++,r=a[1],a=[0];continue;case 7:a=h.ops.pop(),h.trys.pop();continue;default:if(s=h.trys,!(s=s.length>0&&s[s.length-1])&&(6===a[0]||2===a[0])){h=0;continue}if(3===a[0]&&(!s||a[1]>s[0]&&a[1]<s[3])){h.label=a[1];break}if(6===a[0]&&h.label<s[1]){h.label=s[1],s=a;break}if(s&&h.label<s[2]){h.label=s[2],h.ops.push(a);break}s[2]&&h.ops.pop(),h.trys.pop();continue}a=t.call(e,h)}catch(e){a=[6,e],r=0}finally{n=s=0}if(5&a[0])throw a[1];return{value:a[0]?a[1]:void 0,done:!0}}var n,r,s,o,h={label:0,sent:function(){if(1&s[0])throw s[1];return s[1]},trys:[],ops:[]};return o={next:a(0),throw:a(1),return:a(2)},"function"==typeof Symbol&&(o[Symbol.iterator]=function(){return this}),o};Object.defineProperty(t,"__esModule",{value:!0}),a(7),a(0);var r,s=a(1),o=a(5);!function(e){e[e.INITIALIZING=0]="INITIALIZING",e[e.STAND_BY=1]="STAND_BY",e[e.RUNNING=2]="RUNNING",e[e.ERROR=3]="ERROR"}(r||(r={}));var h=new(function(){function e(){this.state=r.INITIALIZING,this.lastStatus=""}return e.prototype.initialize=function(){return i(this,void 0,void 0,function(){var e,t,a,a,i,r,o,l,c,u,d,p,f,m,v,g=this;return n(this,function(n){switch(n.label){case 0:if(!(e=document.getElementById("backend")))throw Error("#backend is not found.");if(this.backendSelect=e,t=WebDNN.getBackendAvailability(),t.status.webgpu)switch(this.lastStatus=localStorage.getItem("webgpu_last_status")||"none",this.lastStatus){case"none":break;case"running":case"crashed":t.status.webgpu=!1,localStorage.setItem("webgpu_last_status","crashed"),console.warn("This browser supports WebGPU. However, it was crashed at last execution with WebGPU. Therefore, WebDNN disabled WebGPU backend temporally."),localStorage.getItem("flag_webgpu_disabled_alert")||(alert("This browser supports WebGPU. However, it was crashed at last execution with WebGPU. \n\nTherefore, WebDNN disabled WebGPU backend temporally."),localStorage.setItem("flag_webgpu_disabled_alert","1"))}if(t.status.webgpu||(a=document.querySelector('option[value="webgpu"]'),a&&(a.disabled=!0),e.value="webassembly"),!t.status.webassembly)throw a=document.querySelector('option[value="webassembly"]'),a&&(a.disabled=!0),Error("This browser does not support either WebGPU nor WebAssembly/asm.js backends");if(e.addEventListener("change",function(){return g.onBackendSelectChange()}),!(i=document.getElementById("runButton")))throw Error("#runButton is not found.");if(this.runButton=i,this.runButton.addEventListener("click",function(){return h.onPlayButtonClick()}),r=document.getElementById("launchView"),r&&r.parentNode&&(r.parentNode.removeChild(r),r=null),!(o=document.getElementById("dataSource")))throw Error("#dataSource is not found");if(this.dataSourceSelect=o,o.addEventListener("change",function(){return g.onDataSourceSelectChange()}),!(l=document.getElementById("cameraContainer")))throw Error("#cameraContainer is not found");if(this.cameraContainer=l,!(c=document.getElementById("sampleContainer")))throw Error("#sampleContainer is not found");if(this.sampleContainer=c,!(u=document.getElementById("initializingView")))throw Error("#initializingView is not found");return d=new s.default(u),d.updateMessage("Load model data"),this.runners={},[4,this.initBackendAsync(this.backendSelect.value,function(e,t){return d.updateProgress(e/t)})];case 1:if(n.sent(),!(p=document.getElementById("inputCanvas")))throw Error("#inputCanvas is not found");if(this.inputCanvas=p,this.w=p.width,this.h=p.height,!(f=p.getContext("2d")))throw Error("Canvas initialization failed");if(this.inputCtx=f,!(m=document.getElementById("outputCanvas")))throw Error("#outputCanvas is not found");if(!(v=m.getContext("2d")))throw Error("Canvas initialization failed");return this.outputCtx=v,[4,this.updateDataSource()];case 2:return n.sent(),d.remove(),[2]}})})},e.prototype.onDataSourceSelectChange=function(){this.updateDataSource()},e.prototype.onBackendSelectChange=function(){this.initBackendAsync(this.backendSelect.value)},e.prototype.onPlayButtonClick=function(){return i(this,void 0,void 0,function(){var e;return n(this,function(t){switch(t.label){case 0:switch(e=this.state){case r.STAND_BY:return[3,1];case r.RUNNING:return[3,3]}return[3,5];case 1:return[4,this.setState(r.RUNNING)];case 2:return t.sent(),[3,6];case 3:return[4,this.setState(r.STAND_BY)];case 4:return t.sent(),[3,6];case 5:return[3,6];case 6:return[2]}})})},e.prototype.initBackendAsync=function(e,t){return i(this,void 0,void 0,function(){var a,i;return n(this,function(n){switch(n.label){case 0:return[4,this.setState(r.INITIALIZING)];case 1:return n.sent(),[4,WebDNN.init([e])];case 2:return n.sent(),e in this.runners?(this.runner=this.runners[e],[3,5]):[3,3];case 3:return this.runner=this.runners[e]=WebDNN.gpu.createDescriptorRunner(),[4,this.runner.load("./models/neural_style_transfer",t)];case 4:n.sent(),n.label=5;case 5:return a=this,[4,this.runner.getInputViews()];case 6:return a.inputView=n.sent()[0],i=this,[4,this.runner.getOutputViews()];case 7:return i.outputView=n.sent()[0],[4,this.setState(r.STAND_BY)];case 8:return n.sent(),[2]}})})},e.prototype.updateDataSource=function(){return i(this,void 0,void 0,function(){var e;return n(this,function(t){switch(t.label){case 0:switch(this.dataSource=this.dataSourceSelect.value,this.sampleContainer.style.display="sample"==this.dataSource?"block":"none",this.cameraContainer.style.display="video"==this.dataSource||"photo"==this.dataSource?"block":"none",e=this.dataSource){case"photo":case"video":return[3,1];case"sample":return[3,5]}return[3,9];case 1:return[4,this.setState(r.INITIALIZING)];case 2:return t.sent(),[4,this.initializeCamera()];case 3:return t.sent(),[4,this.setState(r.STAND_BY)];case 4:return t.sent(),[3,9];case 5:return[4,this.setState(r.INITIALIZING)];case 6:return t.sent(),this.finalizeCamera(),[4,this.loadSampleImageToPreview()];case 7:return t.sent(),[4,this.setState(r.STAND_BY)];case 8:return t.sent(),[3,9];case 9:return[2]}})})},e.prototype.initializeCamera=function(){var e=this;return new Promise(function(t){e.webcam=new o.default({width:192,height:144,fps:60,flip_horiz:!1,image_format:"png",force_flash:!1,swfURL:"/webdnn/webcam.swf",unfreeze_snap:"video"==e.dataSource}),e.webcam.on("live",t),e.webcam.on("error",function(t){console.error(t),e.setMessage(t),e.setState(r.ERROR)}),e.webcam.attach("#cameraContainer")})},e.prototype.finalizeCamera=function(){this.webcam&&this.webcam.reset()},e.prototype.loadSampleImageToPreview=function(){return i(this,void 0,void 0,function(){var e,t,a;return n(this,function(i){switch(i.label){case 0:return e=Math.floor(6*Math.random()),t="./assets/images/"+e+".png",a=new Image,[4,new Promise(function(e){a.onload=function(){return e(a)},a.src=t})];case 1:return i.sent(),this.inputCtx.drawImage(a,0,0,a.width,a.height,0,0,this.inputCtx.canvas.width,this.inputCtx.canvas.height),[2]}})})},e.prototype.setState=function(e){return i(this,void 0,void 0,function(){var t,a=this;return n(this,function(i){switch(i.label){case 0:switch(this.state=e,t=e){case r.INITIALIZING:return[3,1];case r.STAND_BY:return[3,2];case r.RUNNING:return[3,3];case r.ERROR:return[3,5]}return[3,6];case 1:return this.setMessage("Initializing..."),this.runButton.textContent="Initializing...",this.runButton.disabled=!0,[3,6];case 2:return this.setMessage("Ready(backend: "+this.runner.backend+")"),this.runButton.textContent="Run",this.runButton.disabled=!1,[3,6];case 3:return this.setMessage("Processing..."),this.runButton.disabled=!0,[4,this.transfer()];case 4:return i.sent(),"video"==this.dataSource?(this.setMessage("Running"),this.runButton.textContent="Stop",this.runButton.disabled=!1):setTimeout(function(){return a.setState(r.STAND_BY)}),[3,6];case 5:return this.runButton.textContent="Error",this.runButton.disabled=!0,[3,6];case 6:return[2]}})})},e.prototype.transfer=function(){return i(this,void 0,void 0,function(){var e=this;return n(this,function(t){switch(t.label){case 0:return this.state!==r.RUNNING?[2]:[4,this.getImageData()];case 1:return t.sent(),"webgpu"===this.runner.backend&&"none"===this.lastStatus&&(localStorage.setItem("webgpu_last_status","running"),this.lastStatus="running"),[4,this.runner.run()];case 2:return t.sent(),"webgpu"===this.runner.backend&&"running"===this.lastStatus&&(localStorage.setItem("webgpu_last_status","completed"),this.lastStatus="completed"),this.setImageData(),"video"==this.dataSource&&requestAnimationFrame(function(){return e.transfer()}),[2]}})})},e.prototype.getImageData=function(){return i(this,void 0,void 0,function(){var e,t,a,i,r,s=this;return n(this,function(n){switch(n.label){case 0:return e=this.w,t=this.h,"photo"!=this.dataSource?[3,2]:[4,new Promise(function(e){s.webcam.freeze(),s.webcam.snap(e,s.inputCanvas)})];case 1:return n.sent(),[3,4];case 2:return"video"!=this.dataSource?[3,4]:[4,new Promise(function(e){s.webcam.snap(e,s.inputCanvas)})];case 3:n.sent(),n.label=4;case 4:for(a=this.inputCtx.getImageData(0,0,e,t).data,i=0;i<t;i++)for(r=0;r<e;r++)this.inputView[3*(i*e+r)]=a[4*(i*e+r)],this.inputView[3*(i*e+r)+1]=a[4*(i*e+r)+1],this.inputView[3*(i*e+r)+2]=a[4*(i*e+r)+2];return[2]}})})},e.prototype.setImageData=function(){for(var e=this.w,t=this.h,a=new ImageData(e,t),i=0;i<t;i++)for(var n=0;n<e;n++)a.data[4*(i*e+n)]=this.outputView[3*(i*e+n)],a.data[4*(i*e+n)+1]=this.outputView[3*(i*e+n)+1],a.data[4*(i*e+n)+2]=this.outputView[3*(i*e+n)+2],a.data[4*(i*e+n)+3]=255;this.outputCtx.putImageData(a,0,0)},e.prototype.setMessage=function(e){var t=document.getElementById("message");t&&(t.textContent=e)},e}());window.addEventListener("DOMContentLoaded",function(){if(WebDNN.registerTransformDelegate(function(e){var t=e.match(/([^\/]+)(?:\?.*)?$/);return t?"https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/"+t[1]+"?raw=true":e}),"?run=1"==location.search)h.initialize();else{var e=document.getElementById("runAppButton");if(!e)throw Error("#runAppButton is not found");e.addEventListener("click",function(){return h.initialize()})}})}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
+
+(function (i, s, o, g, r, a, m) {
+	i['GoogleAnalyticsObject'] = r;
+	i[r] = i[r] || function () {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+	a = s.createElement(o),
+		m = s.getElementsByTagName(o)[0];
+	a.async = 1;
+	a.src = g;
+	m.parentNode.insertBefore(a, m)
+})(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+ga('create', 'UA-100057100-1', 'auto');
+ga('send', 'pageview');
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var progress_bar_1 = __webpack_require__(2);
+var InitializingView = (function () {
+    function InitializingView(base) {
+        this.base = base;
+        var message = base.querySelector('.InitializingView-Message');
+        if (!message)
+            throw Error('.InitializingView-Message not found');
+        this.message = message;
+        var progressBarInner = base.querySelector('.ProgressBar-Inner');
+        if (!progressBarInner)
+            throw Error('.ProgressBar-Inner not found');
+        this.progressBar = new progress_bar_1.default(progressBarInner);
+    }
+    InitializingView.prototype.updateProgress = function (ratio) {
+        this.progressBar.update(ratio);
+    };
+    InitializingView.prototype.updateMessage = function (message) {
+        this.message.textContent = message;
+    };
+    InitializingView.prototype.remove = function () {
+        if (this.base.parentNode) {
+            this.base.parentNode.removeChild(this.base);
+        }
+    };
+    return InitializingView;
+}());
+exports.default = InitializingView;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ProgressBar = (function () {
+    function ProgressBar(bar) {
+        this.bar = bar;
+    }
+    ProgressBar.prototype.update = function (ratio) {
+        this.bar.style.width = Math.min(Math.max(ratio, 0), 1) * 100 + "%";
+    };
+    return ProgressBar;
+}());
+exports.default = ProgressBar;
+
+
+/***/ }),
+/* 3 */,
+/* 4 */,
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SHOCKWAVE_FLASH = 'Shockwave Flash';
+var SHOCKWAVE_FLASH_AX = 'ShockwaveFlash.ShockwaveFlash';
+var FLASH_MIME_TYPE = 'application/x-shockwave-flash';
+var FlashError = (function (_super) {
+    __extends(FlashError, _super);
+    function FlashError(message) {
+        return _super.call(this, message) || this;
+    }
+    return FlashError;
+}(Error));
+var WebcamError = (function (_super) {
+    __extends(WebcamError, _super);
+    function WebcamError(message) {
+        return _super.call(this, message) || this;
+    }
+    return WebcamError;
+}(Error));
+var protocol = location.protocol.match(/https/i) ? 'https' : 'http';
+var flagIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
+var flagWebCamInitialized = false;
+var flagFlashDetected = false;
+var getUserMedia;
+var URL;
+function init() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        getUserMedia = function (constraints) { return navigator.mediaDevices.getUserMedia(constraints); };
+    }
+    else if ('mozGetUserMedia' in navigator) {
+        getUserMedia = function (constraints) { return navigator.mozGetUserMedia(constraints); };
+    }
+    else if ('webkitGetUserMedia' in navigator) {
+        getUserMedia = function (constraints) { return navigator.webkitGetUserMedia(constraints); };
+    }
+    if ('URL' in window) {
+        URL = window.URL;
+    }
+    else if ('webkitURL' in window) {
+        URL = window.webkitURL;
+    }
+    else if ('mozURL' in window) {
+        URL = window.mozURL;
+    }
+    else if ('msURL' in window) {
+        URL = window.msURL;
+    }
+    if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
+        if (parseInt(RegExp.$1, 10) < 21)
+            getUserMedia = null;
+    }
+    if (typeof navigator.plugins === 'object' &&
+        typeof navigator.plugins[SHOCKWAVE_FLASH] === 'object' &&
+        navigator.plugins[SHOCKWAVE_FLASH].description &&
+        typeof navigator.mimeTypes === 'object' &&
+        navigator.mimeTypes[FLASH_MIME_TYPE] &&
+        navigator.mimeTypes[FLASH_MIME_TYPE].enabledPlugin) {
+        flagFlashDetected = true;
+    }
+    else if ('ActiveXObject' in window) {
+        try {
+            var activeX = new window.ActiveXObject(SHOCKWAVE_FLASH_AX);
+            if (activeX && activeX.GetVariable('$version'))
+                flagFlashDetected = true;
+        }
+        catch (e) { }
+    }
+    flagWebCamInitialized = true;
+}
+function exifOrientation(binFile) {
+    var dataView = new DataView(binFile);
+    if ((dataView.getUint8(0) != 0xFF) || (dataView.getUint8(1) != 0xD8)) {
+        console.log('Not a valid JPEG file');
+        return 0;
+    }
+    var offset = 2;
+    var marker = null;
+    while (offset < binFile.byteLength) {
+        if (dataView.getUint8(offset) != 0xFF) {
+            console.log('Not a valid marker at offset ' + offset + ', found: ' + dataView.getUint8(offset));
+            return 0;
+        }
+        marker = dataView.getUint8(offset + 1);
+        if (marker == 225) {
+            offset += 4;
+            var str = "";
+            for (var n = 0; n < 4; n++) {
+                str += String.fromCharCode(dataView.getUint8(offset + n));
+            }
+            if (str != 'Exif') {
+                console.log('Not valid EXIF data found');
+                return 0;
+            }
+            offset += 6;
+            var bigEnd = null;
+            if (dataView.getUint16(offset) == 0x4949) {
+                bigEnd = false;
+            }
+            else if (dataView.getUint16(offset) == 0x4D4D) {
+                bigEnd = true;
+            }
+            else {
+                console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)");
+                return 0;
+            }
+            if (dataView.getUint16(offset + 2, !bigEnd) != 0x002A) {
+                console.log("Not valid TIFF data! (no 0x002A)");
+                return 0;
+            }
+            var firstIFDOffset = dataView.getUint32(offset + 4, !bigEnd);
+            if (firstIFDOffset < 0x00000008) {
+                console.log("Not valid TIFF data! (First offset less than 8)", dataView.getUint32(offset + 4, !bigEnd));
+                return 0;
+            }
+            var dataStart = offset + firstIFDOffset;
+            var entries = dataView.getUint16(dataStart, !bigEnd);
+            for (var i = 0; i < entries; i++) {
+                var entryOffset = dataStart + i * 12 + 2;
+                if (dataView.getUint16(entryOffset, !bigEnd) == 0x0112) {
+                    var valueType = dataView.getUint16(entryOffset + 2, !bigEnd);
+                    var numValues = dataView.getUint32(entryOffset + 4, !bigEnd);
+                    if (valueType != 3 && numValues != 1) {
+                        console.log('Invalid EXIF orientation value type (' + valueType + ') or count (' + numValues + ')');
+                        return 0;
+                    }
+                    var value = dataView.getUint16(entryOffset + 8, !bigEnd);
+                    if (value < 1 || value > 8) {
+                        console.log('Invalid EXIF orientation value (' + value + ')');
+                        return 0;
+                    }
+                    return value;
+                }
+            }
+        }
+        else {
+            offset += 2 + dataView.getUint16(offset + 2);
+        }
+    }
+    return 0;
+}
+function fixOrientation(origObjURL, orientation, targetImg) {
+    var img = new Image();
+    img.addEventListener('load', function () {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        if (!ctx)
+            throw Error('null');
+        if (orientation < 5) {
+            canvas.width = img.width;
+            canvas.height = img.height;
+        }
+        else {
+            canvas.width = img.height;
+            canvas.height = img.width;
+        }
+        switch (orientation) {
+            case 2:
+                ctx.transform(-1, 0, 0, 1, img.width, 0);
+                break;
+            case 3:
+                ctx.transform(-1, 0, 0, -1, img.width, img.height);
+                break;
+            case 4:
+                ctx.transform(1, 0, 0, -1, 0, img.height);
+                break;
+            case 5:
+                ctx.transform(0, 1, 1, 0, 0, 0);
+                break;
+            case 6:
+                ctx.transform(0, 1, -1, 0, img.height, 0);
+                break;
+            case 7:
+                ctx.transform(0, -1, -1, 0, img.height, img.width);
+                break;
+            case 8:
+                ctx.transform(0, -1, 1, 0, 0, img.width);
+                break;
+        }
+        ctx.drawImage(img, 0, 0);
+        targetImg.src = canvas.toDataURL();
+    }, false);
+    img.src = origObjURL;
+}
+var defaultParams = {
+    width: 0,
+    height: 0,
+    dest_width: 0,
+    dest_height: 0,
+    image_format: 'png',
+    jpeg_quality: 90,
+    enable_flash: true,
+    force_flash: false,
+    flagHorizontalFlip: false,
+    fps: 30,
+    upload_name: 'webcam',
+    constraints: null,
+    swfURL: '',
+    noInterfaceFoundText: 'No supported webcam interface found.',
+    unfreeze_snap: true,
+    iosPlaceholderText: 'Click here to open camera.',
+};
+var WebCam = (function () {
+    function WebCam(params) {
+        var _this = this;
+        this.previewCanvas = null;
+        this.previewContext = null;
+        this.flagUseUserMedia = false;
+        this.flagNewUser = false;
+        this.flagFlashMovieLoaded = false;
+        this.flagFlashLive = false;
+        this.video = null;
+        this.container = null;
+        this.peg = null;
+        if (!flagWebCamInitialized)
+            init();
+        this.params = Object.assign({}, defaultParams, params);
+        this.hooks = {};
+        this.flagUserMedia = !this.params.force_flash && !!getUserMedia && !!window.URL;
+        if (this.flagUserMedia) {
+            this.onBeforeUnload = function () { return _this.reset(); };
+            window.addEventListener('beforeunload', this.onBeforeUnload);
+        }
+    }
+    WebCam.prototype.attach = function (container) {
+        var _this = this;
+        if (typeof (container) == 'string') {
+            container = document.querySelector(container);
+        }
+        if (!container) {
+            return this.dispatch('error', new WebcamError("Could not locate DOM element to attach to."));
+        }
+        this.container = container;
+        this.container.innerHTML = '';
+        var peg = document.createElement('div');
+        container.appendChild(peg);
+        this.peg = peg;
+        if (!this.params.width)
+            this.params.width = container.offsetWidth;
+        if (!this.params.height)
+            this.params.height = container.offsetHeight;
+        if (!this.params.width || !this.params.height) {
+            return this.dispatch('error', new WebcamError("No width and/or height for webcam.  Please call set() first, or attach to a visible element."));
+        }
+        if (!this.params.dest_width)
+            this.params.dest_width = this.params.width;
+        if (!this.params.dest_height)
+            this.params.dest_height = this.params.height;
+        if (typeof this.params.fps !== "number")
+            this.params.fps = 30;
+        var scaleX = this.params.width / this.params.dest_width;
+        var scaleY = this.params.height / this.params.dest_height;
+        if (this.flagUserMedia) {
+            var video_1 = document.createElement('video');
+            video_1.setAttribute('autoplay', 'autoplay');
+            video_1.style.width = '' + this.params.dest_width + 'px';
+            video_1.style.height = '' + this.params.dest_height + 'px';
+            if ((scaleX != 1.0) || (scaleY != 1.0)) {
+                this.container.style.overflow = 'hidden';
+                video_1.style.transformOrigin = '0px 0px';
+                video_1.style.transform = 'scaleX(' + scaleX + ') scaleY(' + scaleY + ')';
+            }
+            this.container.appendChild(video_1);
+            this.video = video_1;
+            getUserMedia({
+                "audio": false,
+                "video": true
+            })
+                .then(function (stream) {
+                video_1.addEventListener('loadedmetadata', function () {
+                    _this.flagFlashMovieLoaded = true;
+                    _this.flagFlashLive = true;
+                    _this.dispatch('load');
+                    _this.dispatch('live');
+                    _this.flip();
+                });
+                video_1.src = URL.createObjectURL(stream);
+            })
+                .catch(function (err) {
+                if (_this.params.enable_flash && flagFlashDetected) {
+                    setTimeout(function () {
+                        _this.params.force_flash = true;
+                        _this.attach(container);
+                    }, 1);
+                }
+                else {
+                    _this.dispatch('error', err);
+                }
+            });
+        }
+        else if (flagIOS) {
+            var div_1 = document.createElement('div');
+            div_1.id = this.container.id + '-ios_div';
+            div_1.className = 'webcamjs-ios-placeholder';
+            div_1.style.width = '' + this.params.width + 'px';
+            div_1.style.height = '' + this.params.height + 'px';
+            div_1.style.textAlign = 'center';
+            div_1.style.display = 'table-cell';
+            div_1.style.verticalAlign = 'middle';
+            div_1.style.backgroundRepeat = 'no-repeat';
+            div_1.style.backgroundSize = 'contain';
+            div_1.style.backgroundPosition = 'center';
+            var span = document.createElement('span');
+            span.className = 'webcamjs-ios-text';
+            span.innerHTML = this.params.iosPlaceholderText;
+            div_1.appendChild(span);
+            var img_1 = document.createElement('img');
+            img_1.id = this.container.id + '-ios_img';
+            img_1.style.width = '' + this.params.dest_width + 'px';
+            img_1.style.height = '' + this.params.dest_height + 'px';
+            img_1.style.display = 'none';
+            div_1.appendChild(img_1);
+            var input_1 = document.createElement('input');
+            input_1.id = this.container.id + '-ios_input';
+            input_1.setAttribute('type', 'file');
+            input_1.setAttribute('accept', 'image/*');
+            input_1.setAttribute('capture', 'camera');
+            input_1.addEventListener('change', function (event) {
+                if (!input_1 || !input_1.files)
+                    return;
+                if (input_1.files.length > 0 && input_1.files[0].type.indexOf('image/') == 0) {
+                    var objURL_1 = URL.createObjectURL(input_1.files[0]);
+                    var image_1 = new Image();
+                    image_1.addEventListener('load', function () {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = _this.params.dest_width;
+                        canvas.height = _this.params.dest_height;
+                        var ctx = canvas.getContext('2d');
+                        if (!ctx)
+                            throw Error('null');
+                        var ratio = Math.min(image_1.width / _this.params.dest_width, image_1.height / _this.params.dest_height);
+                        var sw = _this.params.dest_width * ratio;
+                        var sh = _this.params.dest_height * ratio;
+                        var sx = (image_1.width - sw) / 2;
+                        var sy = (image_1.height - sh) / 2;
+                        ctx.drawImage(image_1, sx, sy, sw, sh, 0, 0, _this.params.dest_width, _this.params.dest_height);
+                        var dataURL = canvas.toDataURL();
+                        img_1.src = dataURL;
+                        div_1.style.backgroundImage = "url('" + dataURL + "')";
+                    }, false);
+                    var fileReader_1 = new FileReader();
+                    fileReader_1.addEventListener('load', function (e) {
+                        var orientation = exifOrientation(fileReader_1.result);
+                        if (orientation > 1) {
+                            fixOrientation(objURL_1, orientation, image_1);
+                        }
+                        else {
+                            image_1.src = objURL_1;
+                        }
+                    }, false);
+                    var xhr_1 = new XMLHttpRequest();
+                    xhr_1.open("GET", objURL_1, true);
+                    xhr_1.responseType = "blob";
+                    xhr_1.onload = function () {
+                        if (xhr_1.status == 200 || xhr_1.status === 0) {
+                            fileReader_1.readAsArrayBuffer(xhr_1.response);
+                        }
+                    };
+                    xhr_1.send();
+                }
+            }, false);
+            input_1.style.display = 'none';
+            container.appendChild(input_1);
+            div_1.addEventListener('click', function () {
+                input_1.style.display = 'block';
+                input_1.focus();
+                input_1.click();
+                input_1.style.display = 'none';
+            }, false);
+            container.appendChild(div_1);
+            this.flagFlashMovieLoaded = true;
+            this.flagFlashLive = true;
+        }
+        else if (this.params.enable_flash && flagFlashDetected) {
+            window['Webcam'] = this;
+            var div = document.createElement('div');
+            div.innerHTML = this.getSWFHTML();
+            container.appendChild(div);
+        }
+        else {
+            this.dispatch('error', new WebcamError(this.params.noInterfaceFoundText));
+        }
+        container.style.width = '' + this.params.width + 'px';
+        container.style.height = '' + this.params.height + 'px';
+    };
+    WebCam.prototype.reset = function () {
+        if (this.flagPreviewIsActive)
+            this.unfreeze();
+        this.unflip();
+        if (this.flagUseUserMedia) {
+            this.video = null;
+        }
+        if (this.flagUseUserMedia && this.flagFlashMovieLoaded && !flagIOS) {
+            var movie = this.getMovie();
+            if (movie && '_releaseCamera' in movie)
+                movie._releaseCamera();
+        }
+        if (this.container) {
+            this.container.innerHTML = '';
+            this.container = null;
+        }
+        this.flagFlashMovieLoaded = false;
+        this.flagFlashLive = false;
+    };
+    WebCam.prototype.on = function (type, callback) {
+        if (!(type in this.hooks))
+            this.hooks[type] = [];
+        this.hooks[type].push(callback);
+    };
+    WebCam.prototype.dispatch = function (type) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (type in this.hooks) {
+            var handlers = this.hooks[type];
+            for (var i = 0; i < handlers.length; i++) {
+                handlers[i].apply(this, args);
+            }
+        }
+        else {
+            if (type !== 'error')
+                return;
+            throw args[0];
+        }
+    };
+    WebCam.prototype.getSWFHTML = function () {
+        var _this = this;
+        var html = '';
+        if (!flagFlashDetected) {
+            this.dispatch('error', new FlashError("Adobe Flash Player not found. Please install from get.adobe.com/flashplayer and try again."));
+            return '';
+        }
+        if (window.localStorage && localStorage.getItem('visited')) {
+            this.flagNewUser = true;
+            localStorage.setItem('visited', '1');
+        }
+        var flashVars = Object.keys(this.params)
+            .map(function (key) { return key + "=" + encodeURIComponent(_this.params[key]); })
+            .join('&');
+        html += "<object classid=\"clsid:d27cdb6e-ae6d-11cf-96b8-444553540000\" type=\"application/x-shockwave-flash\" codebase=\"" + protocol + "://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0\" width=\"" + this.params.width + "\" height=\"" + this.params.height + "\" id=\"webcam_movie_obj\" align=\"middle\"><param name=\"wmode\" value=\"opaque\" /><param name=\"allowScriptAccess\" value=\"always\" /><param name=\"allowFullScreen\" value=\"false\" /><param name=\"movie\" value=\"" + this.params.swfURL + "\" /><param name=\"loop\" value=\"false\" /><param name=\"menu\" value=\"false\" /><param name=\"quality\" value=\"best\" /><param name=\"bgcolor\" value=\"#ffffff\" /><param name=\"flashvars\" value=\"" + flashVars + "\" /><embed id=\"webcam_movie_embed\" src=\"" + this.params.swfURL + "\" wmode=\"opaque\" loop=\"false\" menu=\"false\" quality=\"best\" bgcolor=\"#ffffff\" width=\"" + this.params.width + "\" height=\"" + this.params.height + "\"name=\"webcam_movie_embed\" align=\"middle\" allowScriptAccess=\"always\" allowFullScreen=\"false\" type=\"application/x-shockwave-flash\" pluginspage=\"http://www.macromedia.com/go/getflashplayer\"flashvars=\"" + flashVars + "\"></embed></object>";
+        return html;
+    };
+    WebCam.prototype.getMovie = function () {
+        if (!this.flagFlashMovieLoaded)
+            return this.dispatch('error', new FlashError("Flash Movie is not loaded yet"));
+        var movie;
+        movie = document.getElementById('webcam_movie_obj');
+        if (!movie || !movie._snap)
+            movie = document.getElementById('webcam_movie_embed');
+        if (!movie)
+            this.dispatch('error', new FlashError("Cannot locate Flash movie in DOM"));
+        return movie;
+    };
+    WebCam.prototype.freeze = function () {
+        var _this = this;
+        if (this.flagPreviewIsActive)
+            this.unfreeze();
+        this.unflip();
+        var finalWidth = this.params.dest_width;
+        var finalHeight = this.params.dest_height;
+        this.previewCanvas = document.createElement('canvas');
+        this.previewCanvas.width = finalWidth;
+        this.previewCanvas.height = finalHeight;
+        this.previewContext = this.previewCanvas.getContext('2d');
+        var scaleX = this.params.width / this.params.dest_width;
+        var scaleY = this.params.height / this.params.dest_height;
+        if ((scaleX != 1.0) || (scaleY != 1.0)) {
+            this.previewCanvas.style.transformOrigin = '0px 0px';
+            this.previewCanvas.style.transform = 'scaleX(' + scaleX + ') scaleY(' + scaleY + ')';
+        }
+        this.snap(function () {
+            if (!_this.previewCanvas || !_this.container)
+                return;
+            _this.previewCanvas.style.position = 'relative';
+            _this.previewCanvas.style.left = '' + _this.container.scrollLeft + 'px';
+            _this.previewCanvas.style.top = '' + _this.container.scrollTop + 'px';
+            _this.container.insertBefore(_this.previewCanvas, _this.peg);
+            _this.container.style.overflow = 'hidden';
+            _this.flagPreviewIsActive = true;
+        }, this.previewCanvas);
+    };
+    WebCam.prototype.unfreeze = function () {
+        if (!this.flagPreviewIsActive)
+            return;
+        if (this.container && this.previewCanvas)
+            this.container.removeChild(this.previewCanvas);
+        this.previewContext = null;
+        this.previewCanvas = null;
+        this.flagPreviewIsActive = false;
+        this.flip();
+    };
+    WebCam.prototype.flip = function () {
+        if (!this.params.flagHorizontalFlip)
+            return;
+        if (this.container)
+            this.container.style.transform = 'scaleX(-1)';
+    };
+    WebCam.prototype.unflip = function () {
+        if (!this.params.flagHorizontalFlip)
+            return;
+        if (this.container)
+            this.container.style.transform = 'scaleX(1)';
+    };
+    WebCam.prototype.savePreview = function (userCallback, userCanvas) {
+        if (userCallback === void 0) { userCallback = null; }
+        if (userCanvas === void 0) { userCanvas = null; }
+        if (!this.previewCanvas)
+            return;
+        if (!userCallback)
+            return this.dispatch('error', new WebcamError("Please provide a callback function or canvas to snap()"));
+        if (userCanvas) {
+            var userContext = userCanvas.getContext('2d');
+            if (userContext)
+                userContext.drawImage(this.previewCanvas, 0, 0);
+        }
+        userCallback(userCanvas ?
+            null :
+            this.previewCanvas.toDataURL('image/png', this.params.jpeg_quality / 100), this.previewCanvas, this.previewContext);
+        if (this.params.unfreeze_snap)
+            this.unfreeze();
+    };
+    WebCam.prototype.snap = function (userCallback, userCanvas) {
+        var _this = this;
+        if (userCallback === void 0) { userCallback = null; }
+        if (userCanvas === void 0) { userCanvas = null; }
+        if (!this.flagFlashMovieLoaded)
+            return this.dispatch('error', new WebcamError("Webcam is not loaded yet"));
+        if (!userCallback)
+            return this.dispatch('error', new WebcamError("Please provide a callback function or canvas to snap()"));
+        if (this.flagPreviewIsActive)
+            return this.savePreview(userCallback, userCanvas);
+        var canvas = document.createElement('canvas');
+        canvas.width = this.params.dest_width;
+        canvas.height = this.params.dest_height;
+        var context = canvas.getContext('2d');
+        if (!context)
+            throw Error('Context2D Initialization Failed.');
+        if (this.params.flagHorizontalFlip) {
+            context.translate(this.params.dest_width, 0);
+            context.scale(-1, 1);
+        }
+        var image;
+        var onLoadHandler = function () {
+            if (image && image.src && image.width && image.height) {
+                if (context)
+                    context.drawImage(image, 0, 0, _this.params.dest_width, _this.params.dest_height);
+            }
+            if (userCanvas) {
+                var userContext = userCanvas.getContext('2d');
+                if (!userContext)
+                    throw Error('null');
+                userContext.drawImage(canvas, 0, 0);
+            }
+            userCallback(userCanvas ? null : canvas.toDataURL('image/png', _this.params.jpeg_quality / 100), canvas, context);
+        };
+        if (getUserMedia) {
+            if (!this.video)
+                throw Error('video is null');
+            context.drawImage(this.video, 0, 0, this.params.dest_width, this.params.dest_height);
+            onLoadHandler();
+        }
+        else if (flagIOS) {
+            if (!this.container)
+                return;
+            var div_2 = document.getElementById(this.container.id + '-ios_div');
+            var input_2 = document.getElementById(this.container.id + '-ios_input');
+            image = document.getElementById(this.container.id + '-ios_img');
+            if (!div_2 || !image || !input_2)
+                throw Error('null');
+            var onLoadHandlerIOS_1 = function () {
+                onLoadHandler.call(image);
+                image.removeEventListener('load', onLoadHandlerIOS_1);
+                div_2.style.backgroundImage = 'none';
+                image.removeAttribute('src');
+                input_2.value = '';
+            };
+            if (!input_2.value) {
+                image.addEventListener('load', onLoadHandlerIOS_1);
+                input_2.style.display = 'block';
+                input_2.focus();
+                input_2.click();
+                input_2.style.display = 'none';
+            }
+            else {
+                onLoadHandlerIOS_1();
+            }
+        }
+        else {
+            image = new Image();
+            image.onload = onLoadHandler;
+            image.src = 'data:image/png;base64,' + this.getMovie()._snap();
+        }
+        return null;
+    };
+    WebCam.prototype.flashNotify = function (type, message) {
+        switch (type) {
+            case 'flashLoadComplete':
+                this.flagFlashMovieLoaded = true;
+                this.dispatch('load');
+                break;
+            case 'cameraLive':
+                this.flagFlashLive = true;
+                this.dispatch('live');
+                break;
+            case 'error':
+                this.dispatch('error', new FlashError(message));
+                break;
+            default:
+                break;
+        }
+    };
+    return WebCam;
+}());
+exports.default = WebCam;
+
+
+/***/ }),
+/* 6 */,
+/* 7 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 8 */,
+/* 9 */,
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(7);
+__webpack_require__(0);
+var initializing_view_1 = __webpack_require__(1);
+var webcam_1 = __webpack_require__(5);
+var KEY_WEBGPU_LAST_STATUS = 'webgpu_last_status';
+var KEY_FLAG_WEBGPU_DISABLED_ALERT = 'flag_webgpu_disabled_alert';
+var NUM_RANDOM_IMAGE = 6;
+var State;
+(function (State) {
+    State[State["INITIALIZING"] = 0] = "INITIALIZING";
+    State[State["STAND_BY"] = 1] = "STAND_BY";
+    State[State["RUNNING"] = 2] = "RUNNING";
+    State[State["ERROR"] = 3] = "ERROR";
+})(State || (State = {}));
+var App = new (function () {
+    function class_1() {
+        this.state = State.INITIALIZING;
+        this.lastStatus = '';
+    }
+    class_1.prototype.initialize = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var select, availability, option, option, runButton, launchView, dataSourceSelect, cameraContainer, sampleContainer, initializingViewBase, initializingView, inputCanvas, inputCtx, outputCanvas, outputCtx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        select = document.getElementById('backend');
+                        if (!select)
+                            throw Error('#backend is not found.');
+                        this.backendSelect = select;
+                        availability = WebDNN.getBackendAvailability();
+                        if (availability.status['webgpu']) {
+                            this.lastStatus = localStorage.getItem(KEY_WEBGPU_LAST_STATUS) || 'none';
+                            switch (this.lastStatus) {
+                                case 'none':
+                                    break;
+                                case 'running':
+                                case 'crashed':
+                                    availability.status['webgpu'] = false;
+                                    localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
+                                    console.warn('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. Therefore, WebDNN disabled WebGPU backend temporally.');
+                                    if (!localStorage.getItem(KEY_FLAG_WEBGPU_DISABLED_ALERT)) {
+                                        alert('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. \n\nTherefore, WebDNN disabled WebGPU backend temporally.');
+                                        localStorage.setItem(KEY_FLAG_WEBGPU_DISABLED_ALERT, '1');
+                                    }
+                                    break;
+                                case 'completed':
+                                    break;
+                            }
+                        }
+                        if (!availability.status['webgpu']) {
+                            option = document.querySelector('option[value="webgpu"]');
+                            if (option)
+                                option.disabled = true;
+                            select.value = 'webassembly';
+                        }
+                        if (!availability.status['webassembly']) {
+                            option = document.querySelector('option[value="webassembly"]');
+                            if (option)
+                                option.disabled = true;
+                            throw Error('This browser does not support either WebGPU nor WebAssembly/asm.js backends');
+                        }
+                        select.addEventListener('change', function () { return _this.onBackendSelectChange(); });
+                        runButton = document.getElementById('runButton');
+                        if (!runButton)
+                            throw Error('#runButton is not found.');
+                        this.runButton = runButton;
+                        this.runButton.addEventListener('click', function () { return App.onPlayButtonClick(); });
+                        launchView = document.getElementById('launchView');
+                        if (launchView && launchView.parentNode) {
+                            launchView.parentNode.removeChild(launchView);
+                            launchView = null;
+                        }
+                        dataSourceSelect = document.getElementById('dataSource');
+                        if (!dataSourceSelect)
+                            throw Error('#dataSource is not found');
+                        this.dataSourceSelect = dataSourceSelect;
+                        dataSourceSelect.addEventListener('change', function () { return _this.onDataSourceSelectChange(); });
+                        cameraContainer = document.getElementById('cameraContainer');
+                        if (!cameraContainer)
+                            throw Error('#cameraContainer is not found');
+                        this.cameraContainer = cameraContainer;
+                        sampleContainer = document.getElementById('sampleContainer');
+                        if (!sampleContainer)
+                            throw Error('#sampleContainer is not found');
+                        this.sampleContainer = sampleContainer;
+                        initializingViewBase = document.getElementById('initializingView');
+                        if (!initializingViewBase)
+                            throw Error('#initializingView is not found');
+                        initializingView = new initializing_view_1.default(initializingViewBase);
+                        initializingView.updateMessage('Load model data');
+                        this.runners = {};
+                        return [4, this.initBackendAsync(this.backendSelect.value, function (loaded, total) { return initializingView.updateProgress(loaded / total); })];
+                    case 1:
+                        _a.sent();
+                        inputCanvas = document.getElementById('inputCanvas');
+                        if (!inputCanvas)
+                            throw Error('#inputCanvas is not found');
+                        this.inputCanvas = inputCanvas;
+                        this.w = inputCanvas.width;
+                        this.h = inputCanvas.height;
+                        inputCtx = inputCanvas.getContext('2d');
+                        if (!inputCtx)
+                            throw Error('Canvas initialization failed');
+                        this.inputCtx = inputCtx;
+                        outputCanvas = document.getElementById('outputCanvas');
+                        if (!outputCanvas)
+                            throw Error('#outputCanvas is not found');
+                        outputCtx = outputCanvas.getContext('2d');
+                        if (!outputCtx)
+                            throw Error('Canvas initialization failed');
+                        this.outputCtx = outputCtx;
+                        return [4, this.updateDataSource()];
+                    case 2:
+                        _a.sent();
+                        initializingView.remove();
+                        return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.onDataSourceSelectChange = function () {
+        this.updateDataSource();
+    };
+    class_1.prototype.onBackendSelectChange = function () {
+        this.initBackendAsync(this.backendSelect.value);
+    };
+    class_1.prototype.onPlayButtonClick = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this.state;
+                        switch (_a) {
+                            case State.STAND_BY: return [3, 1];
+                            case State.RUNNING: return [3, 3];
+                        }
+                        return [3, 5];
+                    case 1: return [4, this.setState(State.RUNNING)];
+                    case 2:
+                        _b.sent();
+                        return [3, 6];
+                    case 3: return [4, this.setState(State.STAND_BY)];
+                    case 4:
+                        _b.sent();
+                        return [3, 6];
+                    case 5: return [3, 6];
+                    case 6: return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.initBackendAsync = function (backend, callback) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4, this.setState(State.INITIALIZING)];
+                    case 1:
+                        _c.sent();
+                        return [4, WebDNN.init([backend])];
+                    case 2:
+                        _c.sent();
+                        if (!(backend in this.runners)) return [3, 3];
+                        this.runner = this.runners[backend];
+                        return [3, 5];
+                    case 3:
+                        this.runner = this.runners[backend] = WebDNN.gpu.createDescriptorRunner();
+                        return [4, this.runner.load('./models/neural_style_transfer', callback)];
+                    case 4:
+                        _c.sent();
+                        _c.label = 5;
+                    case 5:
+                        _a = this;
+                        return [4, this.runner.getInputViews()];
+                    case 6:
+                        _a.inputView = (_c.sent())[0];
+                        _b = this;
+                        return [4, this.runner.getOutputViews()];
+                    case 7:
+                        _b.outputView = (_c.sent())[0];
+                        return [4, this.setState(State.STAND_BY)];
+                    case 8:
+                        _c.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.updateDataSource = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        this.dataSource = this.dataSourceSelect.value;
+                        this.sampleContainer.style.display = this.dataSource == 'sample' ? 'block' : 'none';
+                        this.cameraContainer.style.display = (this.dataSource == 'video' || this.dataSource == 'photo') ?
+                            'block' :
+                            'none';
+                        _a = this.dataSource;
+                        switch (_a) {
+                            case 'photo': return [3, 1];
+                            case 'video': return [3, 1];
+                            case 'sample': return [3, 5];
+                        }
+                        return [3, 9];
+                    case 1: return [4, this.setState(State.INITIALIZING)];
+                    case 2:
+                        _b.sent();
+                        return [4, this.initializeCamera()];
+                    case 3:
+                        _b.sent();
+                        return [4, this.setState(State.STAND_BY)];
+                    case 4:
+                        _b.sent();
+                        return [3, 9];
+                    case 5: return [4, this.setState(State.INITIALIZING)];
+                    case 6:
+                        _b.sent();
+                        this.finalizeCamera();
+                        return [4, this.loadSampleImageToPreview()];
+                    case 7:
+                        _b.sent();
+                        return [4, this.setState(State.STAND_BY)];
+                    case 8:
+                        _b.sent();
+                        return [3, 9];
+                    case 9: return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.initializeCamera = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            _this.webcam = new webcam_1.default({
+                width: 192,
+                height: 144,
+                fps: 60,
+                flip_horiz: false,
+                image_format: 'png',
+                force_flash: false,
+                swfURL: '/webdnn/webcam.swf',
+                unfreeze_snap: _this.dataSource == 'video'
+            });
+            _this.webcam.on('live', resolve);
+            _this.webcam.on('error', function (err) {
+                console.error(err);
+                _this.setMessage(err);
+                _this.setState(State.ERROR);
+            });
+            _this.webcam.attach('#cameraContainer');
+        });
+    };
+    class_1.prototype.finalizeCamera = function () {
+        if (this.webcam)
+            this.webcam.reset();
+    };
+    class_1.prototype.loadSampleImageToPreview = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var randomImageIndex, url, image;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        randomImageIndex = Math.floor(Math.random() * NUM_RANDOM_IMAGE);
+                        url = "./assets/images/" + randomImageIndex + ".png";
+                        image = new Image();
+                        return [4, new Promise(function (resolve) {
+                                image.onload = function () { return resolve(image); };
+                                image.src = url;
+                            })];
+                    case 1:
+                        _a.sent();
+                        this.inputCtx.drawImage(image, 0, 0, image.width, image.height, 0, 0, this.inputCtx.canvas.width, this.inputCtx.canvas.height);
+                        return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.setState = function (state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        this.state = state;
+                        _a = state;
+                        switch (_a) {
+                            case State.INITIALIZING: return [3, 1];
+                            case State.STAND_BY: return [3, 2];
+                            case State.RUNNING: return [3, 3];
+                            case State.ERROR: return [3, 5];
+                        }
+                        return [3, 6];
+                    case 1:
+                        this.setMessage('Initializing...');
+                        this.runButton.textContent = 'Initializing...';
+                        this.runButton.disabled = true;
+                        return [3, 6];
+                    case 2:
+                        this.setMessage("Ready(backend: " + this.runner.backend + ")");
+                        this.runButton.textContent = 'Run';
+                        this.runButton.disabled = false;
+                        return [3, 6];
+                    case 3:
+                        this.setMessage('Processing...');
+                        this.runButton.disabled = true;
+                        return [4, this.transfer()];
+                    case 4:
+                        _b.sent();
+                        if (this.dataSource == 'video') {
+                            this.setMessage('Running');
+                            this.runButton.textContent = 'Stop';
+                            this.runButton.disabled = false;
+                        }
+                        else {
+                            setTimeout(function () { return _this.setState(State.STAND_BY); });
+                        }
+                        return [3, 6];
+                    case 5:
+                        this.runButton.textContent = 'Error';
+                        this.runButton.disabled = true;
+                        return [3, 6];
+                    case 6: return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.transfer = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.state !== State.RUNNING)
+                            return [2];
+                        return [4, this.getImageData()];
+                    case 1:
+                        _a.sent();
+                        if (this.runner.backend === 'webgpu' && this.lastStatus === 'none') {
+                            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
+                            this.lastStatus = 'running';
+                        }
+                        return [4, this.runner.run()];
+                    case 2:
+                        _a.sent();
+                        if (this.runner.backend === 'webgpu' && this.lastStatus === 'running') {
+                            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
+                            this.lastStatus = 'completed';
+                        }
+                        this.setImageData();
+                        if (this.dataSource == 'video')
+                            requestAnimationFrame(function () { return _this.transfer(); });
+                        return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.getImageData = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var w, h, pixelData, y, x;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        w = this.w;
+                        h = this.h;
+                        if (!(this.dataSource == 'photo')) return [3, 2];
+                        return [4, new Promise(function (resolve) {
+                                _this.webcam.freeze();
+                                _this.webcam.snap(resolve, _this.inputCanvas);
+                            })];
+                    case 1:
+                        _a.sent();
+                        return [3, 4];
+                    case 2:
+                        if (!(this.dataSource == 'video')) return [3, 4];
+                        return [4, new Promise(function (resolve) {
+                                _this.webcam.snap(resolve, _this.inputCanvas);
+                            })];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4:
+                        pixelData = this.inputCtx.getImageData(0, 0, w, h).data;
+                        for (y = 0; y < h; y++) {
+                            for (x = 0; x < w; x++) {
+                                this.inputView[(y * w + x) * 3] = pixelData[(y * w + x) * 4];
+                                this.inputView[(y * w + x) * 3 + 1] = pixelData[(y * w + x) * 4 + 1];
+                                this.inputView[(y * w + x) * 3 + 2] = pixelData[(y * w + x) * 4 + 2];
+                            }
+                        }
+                        return [2];
+                }
+            });
+        });
+    };
+    class_1.prototype.setImageData = function () {
+        var w = this.w;
+        var h = this.h;
+        var imageData = new ImageData(w, h);
+        for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+                imageData.data[(y * w + x) * 4] = this.outputView[(y * w + x) * 3];
+                imageData.data[(y * w + x) * 4 + 1] = this.outputView[(y * w + x) * 3 + 1];
+                imageData.data[(y * w + x) * 4 + 2] = this.outputView[(y * w + x) * 3 + 2];
+                imageData.data[(y * w + x) * 4 + 3] = 255;
+            }
+        }
+        this.outputCtx.putImageData(imageData, 0, 0);
+    };
+    class_1.prototype.setMessage = function (message) {
+        var $message = document.getElementById('message');
+        if (!$message)
+            return;
+        $message.textContent = message;
+    };
+    return class_1;
+}());
+window.onload = function () {
+    WebDNN.registerTransformDelegate(function (url) {
+        var ma = url.match(/([^/]+)(?:\?.*)?$/);
+        if (ma) {
+            return "https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/" + ma[1] + "?raw=true";
+        }
+        else {
+            return url;
+        }
+    });
+    var runAppButton = document.getElementById('runAppButton');
+    if (!runAppButton)
+        throw Error('#runAppButton is not found');
+    runAppButton.addEventListener('click', function () { return App.initialize(); });
+    if (location.search == '?run=1') {
+        App.initialize();
+    }
+};
+
+
+/***/ })
+/******/ ]);
