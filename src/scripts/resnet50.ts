@@ -1,5 +1,6 @@
 /// <reference path="../libs/webdnn.d.ts" />
 import "../style/resnet50.scss";
+import "./modules/analytics.js";
 import ImagePicker from "./modules/image_picker";
 import Labels from "./modules/imagenet_labels";
 import InitializingView from "./modules/initializing_view";
@@ -129,7 +130,7 @@ const App = new class {
                 case 'crashed':
                     availability.status['webgpu'] = false;
                     availability.defaultOrder.splice(availability.defaultOrder.indexOf('webgpu'), 1);
-                    
+
                     localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'crashed');
 
                     console.warn('This browser supports WebGPU. However, it was crashed at last execution with WebGPU. Therefore, WebDNN disabled WebGPU backend temporally.');
@@ -270,7 +271,7 @@ const App = new class {
     }
 };
 
-window.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
     FLAG_CHROME_ANDROID = ((/Android(.*)Chrome/).test(navigator.userAgent));
 
     WebDNN.registerTransformDelegate((url: string) => {
@@ -283,12 +284,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    let runAppButton = document.getElementById('runAppButton');
+    if (!runAppButton) throw Error('#runAppButton is not found');
+    runAppButton.addEventListener('click', () => App.initialize());
+
     if (location.search == '?run=1') {
         App.initialize();
-    } else {
-        let runAppButton = document.getElementById('runAppButton');
-        if (!runAppButton) throw Error('#runAppButton is not found');
-        runAppButton.addEventListener('click', () => App.initialize());
     }
-});
-
+};

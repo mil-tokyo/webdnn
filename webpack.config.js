@@ -1,9 +1,12 @@
+const glob = require('glob');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const {CheckerPlugin} = require('awesome-typescript-loader');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const PurifyCSSPlugin = require('purifycss-webpack');
 
 const path = require('path');
 
@@ -57,40 +60,74 @@ module.exports = {
 			filename: getPath => getPath('[name].css'),
 			allChunks: true
 		}),
+		new PurifyCSSPlugin({
+			paths: {
+				'index': glob.sync(path.join(__dirname, 'src/html/index*.html')),
+				'resnet50': glob.sync(path.join(__dirname, 'src/html/resnet50.html')),
+				'neural_style_transfer': glob.sync(path.join(__dirname, 'src/html/neural_style_transfer.html'))
+			},
+			minimize: true,
+			purifyOptions: {
+				whitelist: ['canvas']
+			}
+		}),
 		new CheckerPlugin(),
-		new CopyWebpackPlugin([{
-			from: './src/static',
-			to: './'
-		}]),
+		// new UglifyJSPlugin(),
 		new HTMLWebpackPlugin({
 			filename: 'index_ja.html',
+			inject: 'head',
 			template: 'src/html/index_ja.html',
 			chunks: ['index'],
-			inlineSource: '.(js|css)$',
+			inlineSource: '.(css)$',
 			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'index.html',
+			inject: 'head',
 			template: 'src/html/index.html',
 			chunks: ['index'],
-			inlineSource: '.(js|css)$',
+			inlineSource: '.(css)$',
 			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'resnet50.html',
+			inject: 'head',
 			template: 'src/html/resnet50.html',
 			chunks: ['resnet50'],
-			inlineSource: '.(js|css)$',
+			inlineSource: '.(css)$',
 			minify: minifyOption
 		}),
 		new HTMLWebpackPlugin({
 			filename: 'neural_style_transfer.html',
+			inject: 'head',
 			template: 'src/html/neural_style_transfer.html',
 			chunks: ['neural_style_transfer'],
-			inlineSource: '.(js|css)$',
+			inlineSource: '.(css)$',
 			minify: minifyOption
 		}),
-		new UglifyJSPlugin(),
-		new HtmlWebpackInlineSourcePlugin()
+		new HTMLWebpackPlugin({
+			filename: 'resnet50.es5.html',
+			inject: 'head',
+			template: 'src/html/resnet50.es5.html',
+			chunks: ['resnet50'],
+			inlineSource: '.(css)$',
+			minify: minifyOption
+		}),
+		new HTMLWebpackPlugin({
+			filename: 'neural_style_transfer.es5.html',
+			inject: 'head',
+			template: 'src/html/neural_style_transfer.es5.html',
+			chunks: ['neural_style_transfer'],
+			inlineSource: '.(css)$',
+			minify: minifyOption
+		}),
+		new HtmlWebpackInlineSourcePlugin(),
+		new ScriptExtHtmlWebpackPlugin({
+			defaultAttribute: 'async'
+		}),
+		new CopyWebpackPlugin([{
+			from: './src/static',
+			to: './'
+		}]),
 	]
 };

@@ -1,5 +1,5 @@
 import "../style/index.scss";
-
+import "./modules/analytics.js";
 const DENSITY = 5000;
 const MIN_VX = 0.1;
 const MIN_VY = 0.1;
@@ -126,12 +126,6 @@ class ParticleGround {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    let splash = document.getElementById('splash');
-    if (!splash) throw Error('#splash is not found.');
-    new ParticleGround(splash);
-});
-
 window.onload = () => {
     let availability: { [key: string]: boolean } = {
         'webgpu': ('WebGPUComputeCommandEncoder' in window),
@@ -140,7 +134,9 @@ window.onload = () => {
     };
 
     for (let backend of ['webgpu', 'webassembly', 'fallback']) {
-        for (let node of Array.from(document.querySelectorAll(`.Compatibility-ThisBrowserTable .Compatibility-${backend}`)) as HTMLElement[]) {
+        let nodes = document.querySelectorAll(`.Compatibility-ThisBrowserTable .Compatibility-${backend}`)
+        for (let i = 0; i < nodes.length; i++) {
+            let node = nodes[i] as HTMLElement;
             node.classList.remove('Compatibility-checking');
             let statusNode = node.querySelector('.Compatibility-Status');
 
@@ -156,16 +152,24 @@ window.onload = () => {
         }
     }
 
-    let iframes = document.querySelectorAll('iframe');
-    for (let i = 0; i < iframes.length; i++) {
-        iframes[i].src = '' + iframes[i].dataset['src'];
+    let IS_ES2017 = true;
+    try {
+        eval('(() => { async function test(){return Promise.resolve());} })();');
+    } catch (e) {
+        IS_ES2017 = false;
     }
 
-    let imgs = document.querySelectorAll('img');
-    for (let i = 0; i < imgs.length; i++) {
-        imgs[i].src = '' + imgs[i].dataset['src'];
-        imgs[i].srcset = '' + imgs[i].dataset['srcset'];
+    let iframes = document.querySelectorAll('iframe');
+    for (let i = 0; i < iframes.length; i++) {
+        let iframe = iframes[i];
+        let baseUrl = iframe.dataset['src'];
+        if (!baseUrl) throw Error('baseUrl is not found');
+        iframe.src = IS_ES2017 ? baseUrl : baseUrl.replace('.html', '.es5.html');
     }
+
+    let splash = document.getElementById('splash');
+    if (!splash) throw Error('#splash is not found.');
+    new ParticleGround(splash);
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/webdnn/sw.js');
 };

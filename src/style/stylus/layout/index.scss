@@ -1,8 +1,5 @@
-html, body {
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  overflow: auto;
+html {
+  background: #0d1115;
 }
 body {
   display: flex;
@@ -26,4 +23,9 @@ main {
 
 #mes-ts {
   text-align: center;
+}
+
+.Anchor {
+  position: absolute;
+  top: -64px;
 }

@@ -1,5 +1,6 @@
 /// <reference path="../libs/webdnn.d.ts" />
 import "../style/neural_style_transfer.scss";
+import "./modules/analytics.js";
 import InitializingView from "./modules/initializing_view";
 import WebCam from "./modules/webcam";
 
@@ -346,7 +347,7 @@ const App = new class {
     }
 };
 
-window.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
     WebDNN.registerTransformDelegate((url: string) => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
@@ -357,11 +358,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    let runAppButton = document.getElementById('runAppButton');
+    if (!runAppButton) throw Error('#runAppButton is not found');
+    runAppButton.addEventListener('click', () => App.initialize());
+
     if (location.search == '?run=1') {
         App.initialize();
-    } else {
-        let runAppButton = document.getElementById('runAppButton');
-        if (!runAppButton) throw Error('#runAppButton is not found');
-        runAppButton.addEventListener('click', () => App.initialize());
     }
-});
+};

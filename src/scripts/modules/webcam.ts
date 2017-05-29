@@ -535,40 +535,7 @@ export default class WebCam {
             .join('&');
 
         // construct object/embed tag
-        html += `<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" 
-                         type="application/x-shockwave-flash"
-                         codebase="${protocol}://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0"
-                         width="${this.params.width}"
-                         height="${this.params.height}"
-                         id="webcam_movie_obj"
-                         align="middle">
-                         <param name="wmode" value="opaque" />
-                         <param name="allowScriptAccess" value="always" />
-                         <param name="allowFullScreen" value="false" />
-                         <param name="movie" value="${this.params.swfURL}" />
-                         <param name="loop" value="false" />
-                         <param name="menu" value="false" />
-                         <param name="quality" value="best" />
-                         <param name="bgcolor" value="#ffffff" />
-                         <param name="flashvars" value="${flashVars}" />
-                         <embed id="webcam_movie_embed"
-                                src="${this.params.swfURL}" 
-                                wmode="opaque" 
-                                loop="false" 
-                                menu="false"
-                                quality="best" 
-                                bgcolor="#ffffff" 
-                                width="${this.params.width}" 
-                                height="${this.params.height}"
-                                name="webcam_movie_embed" 
-                                align="middle" 
-                                allowScriptAccess="always" 
-                                allowFullScreen="false" 
-                                type="application/x-shockwave-flash" 
-                                pluginspage="http://www.macromedia.com/go/getflashplayer"
-                                flashvars="${flashVars}">
-                          </embed>
-                     </object>`;
+        html += `<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" type="application/x-shockwave-flash" codebase="${protocol}://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="${this.params.width}" height="${this.params.height}" id="webcam_movie_obj" align="middle"><param name="wmode" value="opaque" /><param name="allowScriptAccess" value="always" /><param name="allowFullScreen" value="false" /><param name="movie" value="${this.params.swfURL}" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="quality" value="best" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="${flashVars}" /><embed id="webcam_movie_embed" src="${this.params.swfURL}" wmode="opaque" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="${this.params.width}" height="${this.params.height}"name="webcam_movie_embed" align="middle" allowScriptAccess="always" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"flashvars="${flashVars}"></embed></object>`;
 
         return html;
     }
