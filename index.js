@@ -231,6 +231,21 @@ window.onload = function () {
             }
         }
     }
+    var IS_ES2017 = true;
+    try {
+        eval('(() => { async function test(){return Promise.resolve());} })();');
+    }
+    catch (e) {
+        IS_ES2017 = false;
+    }
+    var iframes = document.querySelectorAll('iframe');
+    for (var i = 0; i < iframes.length; i++) {
+        var iframe = iframes[i];
+        var baseUrl = iframe.dataset['src'];
+        if (!baseUrl)
+            throw Error('baseUrl is not found');
+        iframe.src = IS_ES2017 ? baseUrl : baseUrl.replace('.html', '.es5.html');
+    }
     var splash = document.getElementById('splash');
     if (!splash)
         throw Error('#splash is not found.');
