@@ -213,8 +213,9 @@ window.onload = function () {
     };
     for (var _i = 0, _a = ['webgpu', 'webassembly', 'fallback']; _i < _a.length; _i++) {
         var backend = _a[_i];
-        for (var _b = 0, _c = Array.from(document.querySelectorAll(".Compatibility-ThisBrowserTable .Compatibility-" + backend)); _b < _c.length; _b++) {
-            var node = _c[_b];
+        var nodes = document.querySelectorAll(".Compatibility-ThisBrowserTable .Compatibility-" + backend);
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
             node.classList.remove('Compatibility-checking');
             var statusNode = node.querySelector('.Compatibility-Status');
             if (availability[backend]) {
