@@ -23,7 +23,7 @@ def test_major_axis():
 
     generate_kernel_test_case(
         description=f"concat_in_major_axis",
-        backend=["webgpu"],
+        backend=["webgpu", "webassembly"],
         graph=Graph([x1, x2, x3, x4], [y]),
         inputs={
             x1: vx1,

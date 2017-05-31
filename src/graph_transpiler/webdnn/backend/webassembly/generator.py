@@ -18,6 +18,7 @@ from webdnn.backend.webassembly.kernels.average_pooling_2d import average_poolin
 from webdnn.backend.webassembly.kernels.axiswise_bias import axiswise_bias
 from webdnn.backend.webassembly.kernels.axiswise_scale import axiswise_scale
 from webdnn.backend.webassembly.kernels.col2im import col2im
+from webdnn.backend.webassembly.kernels.concat import concat
 from webdnn.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webassembly.kernels.elu import elu
 from webdnn.backend.webassembly.kernels.flatten import flatten
@@ -41,6 +42,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.flatten import Flatten
@@ -205,6 +207,9 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
 
         elif isinstance(op, ScalarAffine):
             kernels += scalar_affine(op, constants_layout, variables_layout)
+
+        elif isinstance(op, Concat):
+            kernels += concat(op, constants_layout, variables_layout)
 
         elif isinstance(op, Operator):
             if "custom_kernel" in op.parameters:
