@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
@@ -14,7 +14,7 @@ class Concat(Operator):
         axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
     """
 
-    def __init__(self, name: str, axis: Axis):
+    def __init__(self, name: Optional[str], axis: Axis):
         super().__init__(name)
         self.parameters["axis"] = axis
         self.attributes = {Elementwise(self)}
@@ -45,3 +45,7 @@ class Concat(Operator):
         y = Variable(y_shape, xs[0].order)
         self.append_output("y", y)
         return y,
+
+    @property
+    def axis(self) -> Axis:
+        return self.parameters["axis"]

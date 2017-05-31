@@ -24,7 +24,7 @@
     - 予め、テスト用のカーネルコードを生成する必要がある
     
         ```
-        nosetests nosetests -w ./test/kernels
+        nosetests -w ./test/kernels
         ```
 
     - `kernel_test.html` を開いて[RUN]を押すと生成されたカーネルコードがテストされる。

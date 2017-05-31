@@ -23,6 +23,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
@@ -70,6 +71,8 @@ class CommonGraphConverter:
             outputs = self.convert_layer_batchnormalization(layer_config, inputs)
         elif layer_class_name == "Flatten":
             outputs = self.convert_layer_flatten(layer_config, inputs)
+        elif layer_class_name == "Concatenate":
+            outputs = self.convert_layer_concatenate(layer_config, inputs)
         elif layer_class_name == "Add":
             outputs = self.convert_layer_add(layer_config, inputs)
         elif layer_class_name == "Activation":
@@ -253,15 +256,20 @@ class CommonGraphConverter:
         input = inputs[0]
         name: str = layer_config["name"]
 
-        assert layer_config["center"] is True
-        assert layer_config["scale"] is True
-
         axis = input.order.axes[layer_config["axis"]]
 
         mean = self.weights[f"{name}/{name}/moving_mean:0"].value
         variance = self.weights[f"{name}/{name}/moving_variance:0"].value
-        gamma = self.weights[f"{name}/{name}/gamma:0"].value
-        beta = self.weights[f"{name}/{name}/beta:0"].value
+
+        if layer_config["scale"]:
+            gamma = self.weights[f"{name}/{name}/gamma:0"].value
+        else:
+            gamma = np.ones_like(variance)
+
+        if layer_config["center"]:
+            beta = self.weights[f"{name}/{name}/beta:0"].value
+        else:
+            beta = np.zeros_like(mean)
 
         # (x - mean) / sqrt(var + eps) * gamma + beta
         # gamma_div_std = gamma / sqrt(var + eps)
@@ -308,8 +316,7 @@ class CommonGraphConverter:
             padding = (ksize[0] // 2, ksize[1] // 2)
         else:
             raise ValueError("Unknown padding")
-        ksize: Tuple[int, int] = (input.shape_dict[Axis.H], input.shape_dict[Axis.W])
-
+        # ksize: Tuple[int, int] = (input.shape_dict[Axis.H], input.shape_dict[Axis.W]) # FIXME: is this need?
         average_pooling_2d_opr = AveragePooling2D(name,
                                                   ksize=ksize,
                                                   stride=stride,
@@ -373,6 +380,23 @@ class CommonGraphConverter:
         in_axes.remove(Axis.N)
         flatten_opr = Flatten(name, in_axes=in_axes, out_axis=Axis.C)
         y, = flatten_opr(input)
+
+        return [y]
+
+    def convert_layer_concatenate(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
+        """
+        Example:
+          {'name': 'mixed0', 'trainable': True, 'axis': 3}
+
+        :param layer_config:
+        :param inputs:
+        :return:
+        """
+        name: str = layer_config["name"]
+
+        axis = inputs[0].order.axes[layer_config["axis"]]
+        concat_opr = Concat(name, axis=axis)
+        y, = concat_opr(*inputs)
 
         return [y]
 
