@@ -17,7 +17,7 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
   
     for (int gid = 0; gid < N; gid += 1) {
         float result = X0[gid] + X1[gid];
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
+
         Y[gid] = %%INLINE(result)%%;
     }
 }
@@ -26,12 +26,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def elementwise_sum(op: AxiswiseScale,
-                    constants_layout: MemoryLayout,
-                    variables_layout: MemoryLayout,
+                    memory_layout: MemoryLayout,
                     metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x0 = variables_layout[op.inputs["x0"]]
-    x1 = variables_layout[op.inputs["x1"]]
-    y = variables_layout[op.outputs["y"]]
+    x0 = memory_layout[op.inputs["x0"]]
+    x1 = memory_layout[op.inputs["x1"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert len(op.inputs) == 2, "[Webassembly] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape

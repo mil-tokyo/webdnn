@@ -59,7 +59,8 @@ namespace WebDNN {
         compile(): Promise<void> {
             this.worker = new Worker(this.worker_entry_js_path);
             this.worker.onerror = (event) => {
-                console.error('Worker Exception: ' + event.message);
+                console.error(event);
+                // console.error('Worker Exception: ' + event.message);
                 if (this.worker_promise_reject_func) {
                     this.worker_promise_reject_func(event);
                 } else {
@@ -77,6 +78,7 @@ namespace WebDNN {
                     if (event.data === 0) {
                         resolve();
                     } else {
+                        console.error(event.data);
                         this.worker.terminate();
                         reject(new Error(event.data));
                     }
@@ -89,13 +91,14 @@ namespace WebDNN {
 
         async loadWeights(weightsData: Uint8Array) {
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-            let weight_data = await decoder.decode(weightsData, this.descriptor.weight_allocation);
+            let weight_data = await decoder.decode(weightsData, this.descriptor.memory_layout);
             let promise = new Promise<void>((resolve, reject) => {
                 this.worker_promise_reject_func = reject;
                 this.worker.onmessage = (event) => {
                     if (event.data === 0) {
                         resolve();
                     } else {
+                        console.log(event.data);
                         this.worker.terminate();
                         reject(new Error(event.data));
                     }
@@ -113,7 +116,7 @@ namespace WebDNN {
             }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
                 views.push(new Float32Array(var_alloc.size));
             }
             this.inputViews = views;
@@ -126,7 +129,7 @@ namespace WebDNN {
             }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
                 views.push(new Float32Array(var_alloc.size));
             }
             this.outputViews = views;
@@ -147,6 +150,7 @@ namespace WebDNN {
                         }
                         resolve();
                     } else {
+                        console.log(event.data);
                         this.worker.terminate();
                         reject(new Error(event.data));
                     }
@@ -154,12 +158,12 @@ namespace WebDNN {
 
                 let inputs: any = [];
                 for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                    let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                    let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
                     inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: this.inputViews[i]});
                 }
                 let outputs: any = [];
                 for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                    let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                    let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
                     outputs.push({offset: var_alloc.offset, size: var_alloc.size});
                 }
                 this.worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});

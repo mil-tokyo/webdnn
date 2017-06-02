@@ -279,7 +279,7 @@ var WebDNN;
     var WeightDecoderRaw = (function () {
         function WeightDecoderRaw() {
         }
-        WeightDecoderRaw.prototype.decode = function (data, weight_allocation) {
+        WeightDecoderRaw.prototype.decode = function (data, memory_layout) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     return [2 /*return*/, new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4)];
@@ -297,11 +297,11 @@ var WebDNN;
     var WeightDecoderEightbit = (function () {
         function WeightDecoderEightbit() {
         }
-        WeightDecoderEightbit.prototype.decode = function (data, weight_allocation) {
+        WeightDecoderEightbit.prototype.decode = function (data, memory_layout) {
             return __awaiter(this, void 0, void 0, function () {
                 var dst, data_view, src_offset, dst_offset, body_size, scale, scaled_table, i, src_data_view, inflate, decompressed, dec_size, s;
                 return __generator(this, function (_a) {
-                    dst = new Float32Array(weight_allocation.total_size);
+                    dst = new Float32Array(memory_layout.total_size);
                     data_view = new DataView(data.buffer, data.byteOffset);
                     src_offset = 0;
                     while (src_offset < data.length) {
@@ -565,8 +565,7 @@ var WebDNN;
                     switch (_a.label) {
                         case 0:
                             this.webGPUHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-                            this.weightMat = new WebDNN.BufferWebGPU(this.descriptor.weight_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
-                            this.dataMat = new WebDNN.BufferWebGPU(this.descriptor.variable_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
+                            this.dataMat = new WebDNN.BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
                             this.metaBufferGPUBuffers = [];
                             i = 0;
                             _a.label = 1;
@@ -587,15 +586,15 @@ var WebDNN;
                 });
             });
         };
-        DescriptorRunnerWebGPU.prototype.loadWeights = function (weightsData) {
+        DescriptorRunnerWebGPU.prototype.loadWeights = function (data) {
             return __awaiter(this, void 0, void 0, function () {
                 var decoder, _a, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
                             decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            _b = (_a = this.weightMat).write;
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
+                            _b = (_a = this.dataMat).write;
+                            return [4 /*yield*/, decoder.decode(data, this.descriptor.memory_layout)];
                         case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
                         case 2:
                             _c.sent();
@@ -613,7 +612,7 @@ var WebDNN;
                     }
                     views = [];
                     for (i = 0; i < this.descriptor.inputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                        var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
                         views.push(this.dataMat.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
                     }
                     this.inputViews = views;
@@ -630,7 +629,7 @@ var WebDNN;
                     }
                     views = [];
                     for (i = 0; i < this.descriptor.outputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                        var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
                         views.push(this.dataMat.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
                     }
                     this.outputViews = views;
@@ -656,7 +655,7 @@ var WebDNN;
                             if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 4];
                             exec_info = this.descriptor.exec_infos[i];
                             start = performance.now();
-                            return [4 /*yield*/, this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]], true)];
+                            return [4 /*yield*/, this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.dataMat, this.metaBufferGPUBuffers[i]], true)];
                         case 2:
                             _a.sent();
                             elapsedTime = performance.now() - start;
@@ -691,7 +690,7 @@ var WebDNN;
                             for (i = 0; i < this.descriptor.exec_infos.length; i++) {
                                 exec_info = this.descriptor.exec_infos[i];
                                 is_last = i == this.descriptor.exec_infos.length - 1;
-                                complete_promise = this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]], is_last);
+                                complete_promise = this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.dataMat, this.metaBufferGPUBuffers[i]], is_last);
                             }
                             return [4 /*yield*/, complete_promise];
                         case 6:
@@ -851,7 +850,7 @@ var WebDNN;
                     switch (_a.label) {
                         case 0:
                             decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
+                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.memory_layout)];
                         case 1:
                             weight_data = _a.sent();
                             promise = new Promise(function (resolve, reject) {
@@ -881,7 +880,7 @@ var WebDNN;
                     }
                     views = [];
                     for (i = 0; i < this.descriptor.inputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                        var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
                         views.push(new Float32Array(var_alloc.size));
                     }
                     this.inputViews = views;
@@ -898,7 +897,7 @@ var WebDNN;
                     }
                     views = [];
                     for (i = 0; i < this.descriptor.outputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                        var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
                         views.push(new Float32Array(var_alloc.size));
                     }
                     this.outputViews = views;
@@ -931,12 +930,12 @@ var WebDNN;
                         };
                         var inputs = [];
                         for (var i = 0; i < _this.descriptor.inputs.length; i++) {
-                            var var_alloc = _this.descriptor.variable_allocation.allocation[_this.descriptor.inputs[i]];
+                            var var_alloc = _this.descriptor.memory_layout.allocations[_this.descriptor.inputs[i]];
                             inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: _this.inputViews[i] });
                         }
                         var outputs = [];
                         for (var i = 0; i < _this.descriptor.outputs.length; i++) {
-                            var var_alloc = _this.descriptor.variable_allocation.allocation[_this.descriptor.outputs[i]];
+                            var var_alloc = _this.descriptor.memory_layout.allocations[_this.descriptor.outputs[i]];
                             outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
                         }
                         _this.worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
@@ -1038,14 +1037,14 @@ var WebDNN;
                 return __generator(this, function (_a) {
                     this.compileKernel();
                     this.rawWeightArray = new Float32Array(this.descriptor.weight_allocation.total_size);
-                    weight_name_alloc = this.descriptor.weight_allocation.allocation;
+                    weight_name_alloc = this.descriptor.weight_allocation.allocations;
                     this.weightArrays = new Map();
                     for (name_2 in weight_name_alloc) {
                         alloc = weight_name_alloc[name_2];
                         this.weightArrays.set(name_2, new Float32Array(this.rawWeightArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
                     }
                     this.variableArrays = new Map();
-                    variable_name_alloc = this.descriptor.variable_allocation.allocation;
+                    variable_name_alloc = this.descriptor.variable_allocation.allocations;
                     for (name_3 in variable_name_alloc) {
                         alloc = variable_name_alloc[name_3];
                         this.variableArrays.set(name_3, new Float32Array(alloc.size));

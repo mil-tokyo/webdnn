@@ -2,11 +2,11 @@
 
 namespace WebDNN {
     export interface WeightDecoder {
-        decode(data: Uint8Array, weight_allocation: WeightAllocation): Promise<Float32Array>;
+        decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
 
-    export interface WeightAllocation {
+    export interface MemoryLayout {
         total_size: number;
-        allocation: { [index: string]: { name: string, offset: number, size: number } }
+        allocations: { [index: string]: { name: string, offset: number, size: number } }
     }
 }

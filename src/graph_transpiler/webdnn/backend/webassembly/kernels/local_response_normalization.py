@@ -22,8 +22,6 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     const float Palpha = *((const float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
     const float Pmbeta = *((const float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
     
-    //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
-
     for (int gid = 0; gid < N * H * W * C; gid += 1) {
         const int c = gid % C;
         const int w = gid / C % W;
@@ -48,7 +46,6 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         float scale = powf(sq_sum * Palpha + Pk, Pmbeta);
         float v = X[gid] * scale;
         
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(v, n)%%;
         Y[gid] = v;
     }
 }
@@ -57,11 +54,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def local_response_normalization(op: LocalResponseNormalization,
-                                 constants_layout: MemoryLayout,
-                                 variables_layout: MemoryLayout,
+                                 memory_layout: MemoryLayout,
                                  metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC

@@ -6,7 +6,7 @@ from webdnn.backend.interface.memory_layout import IMemoryLayout
 class ConstantEncoder:
     name: str
 
-    def encode(self, constant_layout: IMemoryLayout, data: np.ndarray) -> bytes:
+    def encode(self, memory_layout: IMemoryLayout) -> bytes:
         raise NotImplementedError()
 
     @classmethod

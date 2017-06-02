@@ -9,9 +9,8 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.order import OrderNHWC
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -53,10 +52,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def max_pooling_2d(op: MaxPooling2D,
-                   constants_layout: MemoryLayout,
-                   variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                   memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC

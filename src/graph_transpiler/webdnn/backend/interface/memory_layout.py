@@ -1,5 +1,7 @@
 from typing import Dict
 
+import numpy as np
+
 from webdnn.graph.variable import Variable
 
 
@@ -14,7 +16,8 @@ class IAllocation:
 
 class IMemoryLayout:
     size: int
-    __dict__: Dict[str, IAllocation]
+    allocations: Dict[str, IAllocation]
+    data: np.array
 
     @property
     def size(self) -> int:

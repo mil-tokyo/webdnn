@@ -59,11 +59,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def col2im(op: Col2Im,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
+           memory_layout: MemoryLayout,
            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    col = variables_layout[op.inputs["col"]]
-    im = variables_layout[op.outputs["im"]]
+    col = memory_layout[op.inputs["col"]]
+    im = memory_layout[op.outputs["im"]]
 
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC

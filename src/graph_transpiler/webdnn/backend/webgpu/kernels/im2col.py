@@ -11,9 +11,8 @@ from webdnn.graph.order import OrderNHWC, OrderCNHW
 
 def generate_template_NHWC(SH, SW, C1):
     return """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           ushort index_thread[[thread_position_in_threadgroup]],
                           ushort index_group[[threadgroup_position_in_grid]])
 {
@@ -32,7 +31,6 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
     const int C1 = %%META_LOAD(im2col_C1)%%;
 #endif
 
-    // const int N = %%META_LOAD(im2col_N)%%;
     const int H1 = %%META_LOAD(im2col_H1)%%;
     const int W1 = %%META_LOAD(im2col_W1)%%;
     const int H2 = %%META_LOAD(im2col_H2)%%;
@@ -104,9 +102,8 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 template_CNHW = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -144,10 +141,9 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 def im2col(op: Im2Col,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout) -> List[Kernel]:
-    im = variables_layout[op.inputs["im"]]
-    col = variables_layout[op.outputs["col"]]
+           memory_layout: MemoryLayout) -> List[Kernel]:
+    im = memory_layout[op.inputs["im"]]
+    col = memory_layout[op.outputs["col"]]
 
     assert im.variable.order == OrderNHWC
     assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
@@ -164,7 +160,7 @@ def im2col(op: Im2Col,
     meta_injector.register({
         "im2col_im_offset": im.offset,
         "im2col_col_offset": col.offset,
-        "im2col_N": col.variable.shape_dict[Axis.N],
+        "im2col_N": N,
         "im2col_C1": C1,
         "im2col_H1": im.variable.shape_dict[Axis.H],
         "im2col_W1": im.variable.shape_dict[Axis.W],

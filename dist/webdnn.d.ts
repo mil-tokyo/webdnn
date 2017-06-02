@@ -11,11 +11,12 @@ declare namespace WebDNN {
          * output variables' name
          */
         outputs: string[];
+        memory_layout: MemoryLayout;
         /**
          * Allocation information for each variable.
          */
         weight_allocation: {
-            allocation: {
+            allocations: {
                 [name: string]: any;
             };
         };
@@ -23,7 +24,7 @@ declare namespace WebDNN {
          * Allocation information for each variable.
          */
         variable_allocation: {
-            allocation: {
+            allocations: {
                 [name: string]: any;
             };
         };
@@ -204,16 +205,16 @@ interface WebGPUComputePipelineState {
 }
 declare namespace WebDNN {
     class WeightDecoderRaw implements WeightDecoder {
-        decode(data: Uint8Array, weight_allocation: WeightAllocation): Promise<Float32Array>;
+        decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
 }
 declare namespace WebDNN {
     interface WeightDecoder {
-        decode(data: Uint8Array, weight_allocation: WeightAllocation): Promise<Float32Array>;
+        decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
-    interface WeightAllocation {
+    interface MemoryLayout {
         total_size: number;
-        allocation: {
+        allocations: {
             [index: string]: {
                 name: string;
                 offset: number;
@@ -226,7 +227,7 @@ declare var Zlib: any;
 declare namespace WebDNN {
     class WeightDecoderEightbit implements WeightDecoder {
         static decode_table: number[];
-        decode(data: Uint8Array, weight_allocation: WeightAllocation): Promise<Float32Array>;
+        decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
 }
 declare namespace WebDNN {
@@ -298,26 +299,7 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     interface GraphDescriptorWebGPU extends GraphDescriptor {
-        weight_allocation: {
-            total_size: number;
-            allocation: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
+        memory_layout: MemoryLayout;
         kernel_source: string;
         exec_infos: GraphDescriptorWebGPUExecInfos[];
     }
@@ -332,7 +314,6 @@ declare namespace WebDNN {
     class DescriptorRunnerWebGPU implements DescriptorRunner {
         private webGPUHandler;
         private descriptor;
-        private weightMat;
         private dataMat;
         private metaBufferGPUBuffers;
         ignoreCache: boolean;
@@ -343,7 +324,7 @@ declare namespace WebDNN {
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setDescriptor(descriptor: GraphDescriptorWebGPU): void;
         compile(): Promise<void>;
-        loadWeights(weightsData: Uint8Array): Promise<void>;
+        loadWeights(data: Uint8Array): Promise<void>;
         getInputViews(): Promise<Float32Array[]>;
         getOutputViews(): Promise<Float32Array[]>;
         run(): Promise<void>;
@@ -363,26 +344,7 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     interface GraphDescriptorWebassembly extends GraphDescriptor {
-        weight_allocation: {
-            total_size: number;
-            allocation: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
+        memory_layout: MemoryLayout;
     }
 }
 declare namespace WebDNN {
@@ -419,7 +381,7 @@ declare namespace WebDNN {
     interface GraphDescriptorFallback extends GraphDescriptor {
         weight_allocation: {
             total_size: number;
-            allocation: {
+            allocations: {
                 [index: string]: {
                     name: string;
                     offset: number;
@@ -429,7 +391,7 @@ declare namespace WebDNN {
         };
         variable_allocation: {
             total_size: number;
-            allocation: {
+            allocations: {
                 [index: string]: {
                     name: string;
                     offset: number;

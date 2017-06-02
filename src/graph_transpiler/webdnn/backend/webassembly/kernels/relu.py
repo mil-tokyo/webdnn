@@ -16,8 +16,8 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
   
     for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
-        result = result < 0.0 ? 0.0 : result;      
-        //Y[gid] = %%ELEMENTWISE_ATTACHABLE(result)%%;
+        result = result < 0.0 ? 0.0 : result;
+        
         Y[gid] = result;
     }
 }
@@ -26,11 +26,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def relu(op: Relu,
-         constants_layout: MemoryLayout,
-         variables_layout: MemoryLayout,
+         memory_layout: MemoryLayout,
          metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.shape == y.variable.shape
 
