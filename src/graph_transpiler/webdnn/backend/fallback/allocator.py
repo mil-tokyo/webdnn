@@ -34,34 +34,31 @@ class Allocation(json.SerializableMixin, IAllocation):
 
 
 class MemoryLayout(json.SerializableMixin, IMemoryLayout):
-    size: int
-    __dict__: Dict[Variable, Allocation]
-
     def __init__(self):
-        self.__dict__ = {}
+        self.allocations = {}
 
     def _to_serializable_(self):
         return {
             "total_size": self.size,
-            "allocation": {a.variable.parameters["name"]: a for _, a in self.__dict__.items()}
+            "allocations": {a.variable.parameters["name"]: a for _, a in self.allocations.items()}
         }
 
     def __getitem__(self, v: Variable):
-        return self.__dict__[v]
+        return self.allocations[v]
 
     def __contains__(self, v):
-        return v in self.__dict__
+        return v in self.allocations
 
     def append(self, variable: Variable, offset: int = -1):
         if offset == -1:
             offset = self.size
 
-        self.__dict__[variable] = Allocation(variable, offset)
+        self.allocations[variable] = Allocation(variable, offset)
 
     @property
     def size(self) -> int:
         size = 0
-        for v, a in self.__dict__.items():
+        for v, a in self.allocations.items():
             size = max(a.offset, size) + a.size
 
         return size
@@ -71,7 +68,7 @@ class Allocator:
     layout: MemoryLayout
 
     @classmethod
-    def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout, np.array]:
+    def allocate(cls, graph: Graph) -> Tuple[MemoryLayout, MemoryLayout]:
         variables = set(traverse.listup_variables(graph))
         for i, v in enumerate(variables):
             v.parameters["name"] = f"v{i}"
@@ -81,12 +78,12 @@ class Allocator:
         variables = list(variables)
         constants = list(constants)
 
-        constants_layout, data = cls.allocate_constants(constants)
+        constants_layout = cls.allocate_constants(constants)
         variables_layout = cls.allocate_variables(variables)
-        return variables_layout, constants_layout, data
+        return variables_layout, constants_layout
 
     @classmethod
-    def allocate_constants(cls, constants: List[ConstantVariable]) -> Tuple[MemoryLayout, np.ndarray]:
+    def allocate_constants(cls, constants: List[ConstantVariable]) -> MemoryLayout:
         layout = MemoryLayout()
 
         for constant in constants:
@@ -100,7 +97,8 @@ class Allocator:
             allocation = layout[constant]
             buffer[allocation.offset:allocation.offset + allocation.size] = constant.data.flatten()
 
-        return layout, buffer
+        layout.data = buffer
+        return layout
 
     @classmethod
     def allocate_variables(cls, variables: List[Variable]) -> MemoryLayout:

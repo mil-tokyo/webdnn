@@ -8,7 +8,6 @@
 namespace WebDNN {
     export class DescriptorRunnerWebGPU implements DescriptorRunner {
         private descriptor: GraphDescriptorWebGPU;
-        private weightMat: BufferWebGPU;
         private dataMat: BufferWebGPU;
         private metaBufferGPUBuffers: BufferWebGPU[];
         public ignoreCache: boolean = false;
@@ -48,8 +47,7 @@ namespace WebDNN {
 
         async compile() {
             this.webGPUHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-            this.weightMat = new BufferWebGPU(this.descriptor.weight_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
-            this.dataMat = new BufferWebGPU(this.descriptor.variable_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
+            this.dataMat = new BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBufferGPUBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                 let exec_info = this.descriptor.exec_infos[i];
@@ -59,9 +57,9 @@ namespace WebDNN {
             }
         }
 
-        async loadWeights(weightsData: Uint8Array) {
+        async loadWeights(data: Uint8Array) {
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-            await this.weightMat.write(await decoder.decode(weightsData, this.descriptor.weight_allocation));
+            await this.dataMat.write(await decoder.decode(data, this.descriptor.memory_layout));
         }
 
         async getInputViews(): Promise<Float32Array[]> {
@@ -70,7 +68,7 @@ namespace WebDNN {
             }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
                 views.push(<Float32Array>this.dataMat.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
             }
             this.inputViews = views;
@@ -83,7 +81,7 @@ namespace WebDNN {
             }
             let views: Float32Array[] = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
                 views.push(<Float32Array>this.dataMat.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
             }
             this.outputViews = views;
@@ -107,7 +105,7 @@ namespace WebDNN {
                         'descriptor.' + exec_info.entry_func_name,
                         exec_info.threadgroups_per_grid,
                         exec_info.threads_per_thread_group,
-                        [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
+                        [this.dataMat, this.metaBufferGPUBuffers[i]],
                         true
                     );
                     let elapsedTime = performance.now() - start;
@@ -147,7 +145,7 @@ namespace WebDNN {
                         'descriptor.' + exec_info.entry_func_name,
                         exec_info.threadgroups_per_grid,
                         exec_info.threads_per_thread_group,
-                        [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]],
+                        [this.dataMat, this.metaBufferGPUBuffers[i]],
                         is_last
                     );
                 }

@@ -1,7 +1,7 @@
 var Module = {};
 
 // ES6 (let) cannot be used
-onmessage = function (event) {
+onmessage = function(event) {
     switch (event.data.type) {
         case 'run':
             try {
@@ -11,7 +11,9 @@ onmessage = function (event) {
                     var data_buf = new Float32Array(Module.buffer, data_offset + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
                     data_buf.set(var_alloc.data);
                 }
+
                 Module._run();
+
                 var outputs = [];
                 var output_buffers = [];
                 for (var i = 0; i < event.data.outputs.length; i++) {
@@ -24,29 +26,30 @@ onmessage = function (event) {
                 }
                 postMessage(outputs, output_buffers);
             } catch (ex) {
-                postMessage({ 'error': ex });
+                postMessage({'error': ex.message});
             }
             break;
+
         case 'weight':
             try {
-                var weight_offset = Module._get_weight_buffer();
-                var weight_buf = new Float32Array(Module.buffer, weight_offset, event.data.data.length);
+                var weight_buf = new Float32Array(Module.buffer, Module._get_data_buffer(), event.data.data.length);
                 weight_buf.set(event.data.data);
                 postMessage(0);
             } catch (ex) {
-                postMessage({ 'error': ex });
+                postMessage({'error': ex.message});
             }
             break;
+
         default:
-            postMessage({ 'error': new Error('Unknown message') });
+            postMessage({'error': 'Unknown message'});
             break;
     }
 };
 
-Module.quit = function (status, toThrow) {
-    postMessage({ 'error': toThrow, 'status': status });
+Module.quit = function(status, toThrow) {
+    postMessage({'error': toThrow, 'status': status});
 };
 
-Module.onRuntimeInitialized = function () {
+Module.onRuntimeInitialized = function() {
     postMessage(0);
-}
+};

@@ -4,7 +4,6 @@ from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.kernels import util
 from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webgpu.allocator import MemoryLayout
-from webdnn.backend.webgpu.kernel import GPUSize
 from webdnn.graph.operators.flatten import Flatten
 
 template = """
@@ -23,11 +22,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%% )
 
 
 def flatten(op: Flatten,
-            constants_layout: MemoryLayout,
-            variables_layout: MemoryLayout,
+            memory_layout: MemoryLayout,
             metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

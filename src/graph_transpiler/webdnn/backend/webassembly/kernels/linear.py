@@ -13,13 +13,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
     const float *X = data_buffer + %%META_LOAD(linear_X_offset)%%;
     float *Y = data_buffer + %%META_LOAD(linear_Y_offset)%%;
-    const float *W = weight_buffer + %%META_LOAD(linear_W_offset)%%;
+    const float *W = data_buffer + %%META_LOAD(linear_W_offset)%%;
     const int M = %%META_LOAD(linear_M)%%;
     const int N = %%META_LOAD(linear_N)%%;
     const int K = %%META_LOAD(linear_K)%%;
     
-    //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
-  
     for (int gid = 0; gid < M * N; gid += 1) {
         int n = gid % N;
         int m = gid / N;
@@ -29,7 +27,6 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
             sum += X[m * K + k] * W[k * N + n];
         }
 
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(sum, n)%%;
         Y[gid] = sum;
     }
 }
@@ -37,12 +34,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 def linear(op: Linear,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
+           memory_layout: MemoryLayout,
            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    w = constants_layout[op.inputs["w"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    w = memory_layout[op.inputs["w"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNC or x.variable.order == OrderNHWC
     assert w.variable.order == OrderCN or w.variable.order == OrderHWCN

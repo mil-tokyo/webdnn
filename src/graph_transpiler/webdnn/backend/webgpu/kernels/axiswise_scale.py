@@ -10,23 +10,21 @@ from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 
 def axiswise_scale(op: AxiswiseScale,
-                   constants_layout: MemoryLayout,
-                   variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                   memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     if x.variable.order == y.variable.order:
-        return axiswise_scale_same_order(op, constants_layout, variables_layout)
+        return axiswise_scale_same_order(op, memory_layout)
 
     else:
-        return axiswise_scale_general(op, constants_layout, variables_layout)
+        return axiswise_scale_general(op, memory_layout)
 
 
 def generate_template_same_order(D1, D3):
     return """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -34,7 +32,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 #define FLAG_D3_EQUAL_1 %%FLAG_D3_EQUAL_1%%
 
     const device float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
-    const device float *S = weight_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
+    const device float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
     device float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
 
 #if !OPTIMIZE || !FLAG_D1_EQUAL_1
@@ -83,11 +81,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def axiswise_scale_same_order(op: AxiswiseScale,
-                              constants_layout: MemoryLayout,
-                              variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    s = constants_layout[op.inputs["s"]]
-    y = variables_layout[op.outputs["y"]]
+                              memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    s = memory_layout[op.inputs["s"]]
+    y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
     D1 = int(np.prod(x.variable.shape[:target_axis_index]))
@@ -122,14 +119,13 @@ def axiswise_scale_same_order(op: AxiswiseScale,
 
 
 template_general = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
     const device float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
-    const device float *S = weight_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
+    const device float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
     device float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
     const int D = %%META_LOAD(axiswise_scale_D)%%;
     const int d_target = %%META_LOAD(axiswise_scale_d_target)%%;
@@ -167,11 +163,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def axiswise_scale_general(op: AxiswiseScale,
-                           constants_layout: MemoryLayout,
-                           variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    s = constants_layout[op.inputs["s"]]
-    y = variables_layout[op.outputs["y"]]
+                           memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    s = memory_layout[op.inputs["s"]]
+    y = memory_layout[op.outputs["y"]]
 
     x_shape = x.variable.shape
 

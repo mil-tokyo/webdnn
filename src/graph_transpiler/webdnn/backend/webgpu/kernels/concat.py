@@ -9,9 +9,8 @@ from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.graph.operators.concat import Concat
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -57,10 +56,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 # noinspection PyUnusedLocal
 def concat(op: Concat,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout) -> List[Kernel]:
-    xs = [variables_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
-    y = variables_layout[op.outputs["y"]]
+           memory_layout: MemoryLayout) -> List[Kernel]:
+    xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
+    y = memory_layout[op.outputs["y"]]
     target_axis = op.axis
 
     x_offsets = [x.offset for x in xs]

@@ -11,13 +11,13 @@ def generate_template(transpose_A, transpose_B):
     return """
 void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
-    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
-    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+    float *A = data_buffer + %%META_LOAD(sgemm_A_offset)%%;
+    float *B = data_buffer + %%META_LOAD(sgemm_B_offset)%%;
+    float *C = data_buffer + %%META_LOAD(sgemm_C_offset)%%;
 
-    const int M = %%META_LOAD(sgemm_M, 1)%%;
-    const int N = %%META_LOAD(sgemm_N, 1)%%;
-    const int K = %%META_LOAD(sgemm_K, 1)%%;
+    const int M = %%META_LOAD(sgemm_M)%%;
+    const int N = %%META_LOAD(sgemm_N)%%;
+    const int K = %%META_LOAD(sgemm_K)%%;
 
     const int a_stride_k = %%A_STRIDE_K%%;
     const int a_stride_mn = %%A_STRIDE_MN%%;
@@ -52,9 +52,9 @@ def generate_template_eigen(transpose_A, transpose_B, M, N, K):
 
 void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
-    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
-    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
-    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+    float *A = data_buffer + %%META_LOAD(sgemm_A_offset)%%;
+    float *B = data_buffer + %%META_LOAD(sgemm_B_offset)%%;
+    float *C = data_buffer + %%META_LOAD(sgemm_C_offset)%%;
 
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
@@ -74,12 +74,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 def sgemm(op: Sgemm,
-          constants_layout: MemoryLayout,
-          variables_layout: MemoryLayout,
+          memory_layout: MemoryLayout,
           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    A = variables_layout[op.inputs["A"]] if op.inputs["A"] in variables_layout else constants_layout[op.inputs["A"]]
-    B = variables_layout[op.inputs["B"]] if op.inputs["B"] in variables_layout else constants_layout[op.inputs["B"]]
-    C = variables_layout[op.outputs["C"]]
+    A = memory_layout[op.inputs["A"]]
+    B = memory_layout[op.inputs["B"]]
+    C = memory_layout[op.outputs["C"]]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

@@ -2,14 +2,7 @@
 
 namespace WebDNN {
     export interface GraphDescriptorWebGPU extends GraphDescriptor {
-        weight_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
-        variable_allocation: {
-            total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
-        };
+        memory_layout: MemoryLayout;
         kernel_source: string;
         exec_infos: GraphDescriptorWebGPUExecInfos[];
     }
