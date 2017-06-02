@@ -56,7 +56,7 @@ model.save("resnet50.h5")
 Next, convert the model by CLI. In this phase, model is optimized.
 
 ```bash
-python ../../bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
+python ./bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
 ```
 
 Then, generated files (called as `Descriptor`) can be loaded and executed by JavaScript as follows,
