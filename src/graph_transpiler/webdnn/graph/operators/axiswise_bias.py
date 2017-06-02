@@ -46,3 +46,7 @@ class AxiswiseBias(Operator):
         self.append_input("b", b)
         self.append_output("y", y)
         return y,
+
+    @property
+    def axis(self) -> Axis:
+        return self.parameters["axis"]

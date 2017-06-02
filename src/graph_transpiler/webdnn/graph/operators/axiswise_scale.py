@@ -44,3 +44,7 @@ class AxiswiseScale(Operator):
         self.append_input("s", s)
         self.append_output("y", y)
         return y,
+
+    @property
+    def axis(self) -> Axis:
+        return self.parameters["axis"]

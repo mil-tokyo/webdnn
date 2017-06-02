@@ -19,7 +19,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 #define N_DIVIDABLE_BY_4 %%N_DIVIDABLE_BY_4%%
 #define HAS_INLINE %%HAS_INLINE%%
 
-#if N_DIVIDABLE_BY_4
+#if OPTIMIZE && N_DIVIDABLE_BY_4
     #define T_VALUE float4
 #else
     #define T_VALUE float

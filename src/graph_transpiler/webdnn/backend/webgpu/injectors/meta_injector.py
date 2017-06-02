@@ -65,7 +65,8 @@ class MetaInjector(Injector):
                 buffer += value
 
             else:
-                raise TypeError("MetaBufferInjector supports only int, float, and bytes contents.")
+                raise TypeError("MetaBufferInjector supports only int, float, and bytes contents. "
+                                + f"\"{key} is {type(value)}\".")
 
         self.offset_map = offset_map
         self.buffer = buffer
