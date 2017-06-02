@@ -10,9 +10,8 @@ from webdnn.backend.webgpu.operators.sgemm import Sgemm
 
 def generate_template_64(transpose_A, transpose_B, M, N, K, has_inline, with_bias):
     return ("""
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           ushort index[[thread_index_in_threadgroup]],
                           ushort2 group_position[[threadgroup_position_in_grid]])
 {
@@ -44,11 +43,11 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 #if K_DIVIDABLE_BY_8 && M_DIVIDABLE_BY_64  && N_DIVIDABLE_BY_64 && !TRANSPOSE_A && TRANSPOSE_B && OPTIMIZE
     const device float4 *load_target4 = (index & 32) 
-        ? (const device float4 *)(weight_buffer + %%META_LOAD(sgemm_B_offset)%%) 
+        ? (const device float4 *)(data_buffer + %%META_LOAD(sgemm_B_offset)%%) 
         : (const device float4 *)(data_buffer + %%META_LOAD(sgemm_A_offset)%%);
 #else
     const device float *load_target = (index & 32) 
-        ? (weight_buffer + %%META_LOAD(sgemm_B_offset)%%) 
+        ? (data_buffer + %%META_LOAD(sgemm_B_offset)%%) 
         : (data_buffer + %%META_LOAD(sgemm_A_offset)%%);
 #endif
 
@@ -311,7 +310,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 #if OPTIMIZE && N_DIVIDABLE_BY_64
     #if WITH_BIAS
         float4 b[2];
-        const device float4 *bias4 = (const device float4 *)(weight_buffer + %%META_LOAD(sgemm_b_offset)%%);
+        const device float4 *bias4 = (const device float4 *)(data_buffer + %%META_LOAD(sgemm_b_offset)%%);
         b[0] = bias4[group_position.y * 16 + n_offset * 2 + 0];
         b[1] = bias4[group_position.y * 16 + n_offset * 2 + 1];
     #endif
@@ -353,7 +352,7 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         }
 #else
     #if WITH_BIAS
-        const device float *bias = weight_buffer + %%META_LOAD(sgemm_b_offset)%%;
+        const device float *bias = data_buffer + %%META_LOAD(sgemm_b_offset)%%;
         float b[8];
         for (int n_sub = 0; n_sub < 8; n_sub++)
         {
@@ -421,11 +420,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def sgemm(op: Sgemm,
-          constants_layout: MemoryLayout,
-          variables_layout: MemoryLayout) -> List[Kernel]:
-    A = variables_layout[op.inputs["A"]] if op.inputs["A"] in variables_layout else constants_layout[op.inputs["A"]]
-    B = variables_layout[op.inputs["B"]] if op.inputs["B"] in variables_layout else constants_layout[op.inputs["B"]]
-    C = variables_layout[op.outputs["C"]]
+          memory_layout: MemoryLayout) -> List[Kernel]:
+    A = memory_layout[op.inputs["A"]]
+    B = memory_layout[op.inputs["B"]]
+    C = memory_layout[op.outputs["C"]]
 
     with_bias = "b" in op.inputs
 
@@ -434,7 +432,7 @@ def sgemm(op: Sgemm,
         "sgemm_A_offset": A.offset,
         "sgemm_B_offset": B.offset,
         "sgemm_C_offset": C.offset,
-        "sgemm_b_offset": constants_layout[op.inputs["b"]].offset if with_bias else 0,
+        "sgemm_b_offset": memory_layout[op.inputs["b"]].offset if with_bias else 0,
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K

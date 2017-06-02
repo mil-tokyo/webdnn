@@ -23,8 +23,6 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     const int S = %%META_LOAD(average_pooling_2d_S)%%;
     const int P = %%META_LOAD(average_pooling_2d_P)%%;
     
-    //%%INITIALIZER_ATTACHABLE_PLACEHOLDER%%
-
     for (int gid = 0; gid < N * H2 * W2 * C; gid += 1) {
         const int c = gid % C;
         const int w2 = gid / C % W2;
@@ -45,7 +43,6 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         }
         v /= K * K;
 
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(v, n)%%;
         Y[gid] = v;
     }
 }
@@ -54,11 +51,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def average_pooling_2d(op: AveragePooling2D,
-                       constants_layout: MemoryLayout,
-                       variables_layout: MemoryLayout,
+                       memory_layout: MemoryLayout,
                        metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC

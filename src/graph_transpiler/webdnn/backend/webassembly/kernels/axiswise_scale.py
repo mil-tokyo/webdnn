@@ -13,15 +13,14 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 {
     const float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
     float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
-    const float *S = weight_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
+    const float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
     const int N = %%META_LOAD(axiswise_scale_N)%%;
     const int C = %%META_LOAD(axiswise_scale_C)%%;
   
     for (int gid = 0; gid < N; gid += 1) {
         int c = gid % C;
-
         float result = X[gid] * S[c];
-        //Y[gid] = %%CHANNELWISE_ATTACHABLE(result, c)%%;
+
         Y[gid] = result;
     }
 }
@@ -29,12 +28,11 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 def axiswise_scale(op: AxiswiseScale,
-                   constants_layout: MemoryLayout,
-                   variables_layout: MemoryLayout,
+                   memory_layout: MemoryLayout,
                    metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    s = constants_layout[op.inputs["s"]]
-    y = variables_layout[op.outputs["y"]]
+    x = memory_layout[op.inputs["x"]]
+    s = memory_layout[op.inputs["s"]]
+    y = memory_layout[op.outputs["y"]]
 
     if metabuffer_injector is None:
         metabuffer_injector = MetaBufferInjector()

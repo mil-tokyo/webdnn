@@ -96,22 +96,21 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
     if flags.DEBUG:
         traverse.dump(graph)
 
-    variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
+    memory_layout = Allocator.allocate(graph)
+    if flags.DEBUG:
+        print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.size * 4}")
 
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
-    constants_bytes = constant_encoder.encode(constants_layout, constants_data)
+    constants_bytes = constant_encoder.encode(memory_layout)
 
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] allocated constant-buffer size: {constants_layout.size * 4} [Byte]")
-        print(f"[GraphDescriptorGeneratorWebGPU]   encoded constant-buffer size: {len(constants_bytes)} [Byte]")
-        print(f"[GraphDescriptorGeneratorWebGPU] allocated variable-buffer size: {variables_layout.size * 4} [Byte]")
+        print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
 
-    kernels = generate_kernels(graph, constants_layout, variables_layout)
+    kernels = generate_kernels(graph, memory_layout)
 
     descriptor = GraphDescriptor(
         kernels=kernels,
-        constants_layout=constants_layout,
-        variables_layout=variables_layout,
+        memory_layout=memory_layout,
         inputs=graph.inputs,
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name,
@@ -126,54 +125,54 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
     return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_kernels(graph: Graph, memory_layout: MemoryLayout) -> List[Kernel]:
     kernels: List[Kernel] = []
 
     for op in traverse.listup_operators(graph):
         if isinstance(op, AxiswiseBias):
-            kernels += axiswise_bias(op, constants_layout, variables_layout)
+            kernels += axiswise_bias(op, memory_layout)
 
         elif isinstance(op, Relu):
-            kernels += relu(op, constants_layout, variables_layout)
+            kernels += relu(op, memory_layout)
 
         elif isinstance(op, Elu):
-            kernels += elu(op, constants_layout, variables_layout)
+            kernels += elu(op, memory_layout)
 
         elif isinstance(op, Tanh):
-            kernels += tanh(op, constants_layout, variables_layout)
+            kernels += tanh(op, memory_layout)
 
         elif isinstance(op, LocalResponseNormalization):
-            kernels += local_response_normalization(op, constants_layout, variables_layout)
+            kernels += local_response_normalization(op, memory_layout)
 
         elif isinstance(op, MaxPooling2D):
-            kernels += max_pooling_2d(op, constants_layout, variables_layout)
+            kernels += max_pooling_2d(op, memory_layout)
 
         elif isinstance(op, AveragePooling2D):
-            kernels += average_pooling_2d(op, constants_layout, variables_layout)
+            kernels += average_pooling_2d(op, memory_layout)
 
         elif isinstance(op, AxiswiseScale):
-            kernels += axiswise_scale(op, constants_layout, variables_layout)
+            kernels += axiswise_scale(op, memory_layout)
 
         elif isinstance(op, ElementwiseSum):
-            kernels += elementwise_sum(op, constants_layout, variables_layout)
+            kernels += elementwise_sum(op, memory_layout)
 
         elif isinstance(op, Flatten):
-            kernels += flatten(op, constants_layout, variables_layout)
+            kernels += flatten(op, memory_layout)
 
         elif isinstance(op, Sgemm):
-            kernels += sgemm(op, constants_layout, variables_layout)
+            kernels += sgemm(op, memory_layout)
 
         elif isinstance(op, Im2Col):
-            kernels += im2col(op, constants_layout, variables_layout)
+            kernels += im2col(op, memory_layout)
 
         elif isinstance(op, Col2Im):
-            kernels += col2im(op, constants_layout, variables_layout)
+            kernels += col2im(op, memory_layout)
 
         elif isinstance(op, ScalarAffine):
-            kernels += scalar_affine(op, constants_layout, variables_layout)
+            kernels += scalar_affine(op, memory_layout)
 
         elif isinstance(op, Concat):
-            kernels += concat(op, constants_layout, variables_layout)
+            kernels += concat(op, memory_layout)
 
         else:
             raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")

@@ -4,11 +4,11 @@ namespace WebDNN {
     export interface GraphDescriptorFallback extends GraphDescriptor {
         weight_allocation: {
             total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
+            allocations: { [index: string]: { name: string, offset: number, size: number } }
         };
         variable_allocation: {
             total_size: number;
-            allocation: { [index: string]: { name: string, offset: number, size: number } }
+            allocations: { [index: string]: { name: string, offset: number, size: number } }
         };
         kernel_source: string;
         exec_infos: GraphDescriptorFallbackExecInfo[];

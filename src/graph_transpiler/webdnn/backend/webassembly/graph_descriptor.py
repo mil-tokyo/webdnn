@@ -15,19 +15,13 @@ source_header = """
 #include <stdlib.h>
 #include <math.h>
 
-float weight_buffer[%%WEIGHT_SIZE%%];
 float data_buffer[%%DATA_SIZE%%];
 
 """
 
 source_init = """
 extern "C" void init() {
-    //weight_buffer = (float*)malloc(%%WEIGHT_SIZE%% * sizeof(float));
     //data_buffer = (float*)malloc(%%DATA_SIZE%% * sizeof(float));
-}
-
-extern "C" float* get_weight_buffer(void) {
-    return weight_buffer;
 }
 
 extern "C" float* get_data_buffer(void) {
@@ -46,8 +40,7 @@ extern "C" void run() {
 
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     kernels: Iterable[Kernel]
-    constants_layout: MemoryLayout
-    variables_layout: MemoryLayout
+    memory_layout: MemoryLayout
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
     constants_encoding: str
@@ -57,16 +50,14 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def __init__(self,
                  kernels: Iterable[Kernel],
-                 constants_layout: MemoryLayout,
-                 variables_layout: MemoryLayout,
+                 memory_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  constants_encoding: str,
                  required_heap: int,
                  licenses: Dict[str, str]):
         self.kernels = kernels
-        self.constants_layout = constants_layout
-        self.variables_layout = variables_layout
+        self.memory_layout = memory_layout
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
@@ -76,13 +67,11 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def generate_header_source(self):
         return source_header \
-            .replace("%%WEIGHT_SIZE%%", str(self.constants_layout.size)) \
-            .replace("%%DATA_SIZE%%", str(self.variables_layout.size))
+            .replace("%%DATA_SIZE%%", str(self.memory_layout.size))
 
     def generate_init_source(self):
         self.footer_sources["init"] = source_init \
-            .replace("%%WEIGHT_SIZE%%", str(self.constants_layout.size)) \
-            .replace("%%DATA_SIZE%%", str(self.variables_layout.size))
+            .replace("%%DATA_SIZE%%", str(self.memory_layout.size))
 
     # noinspection PyMethodMayBeStatic
     def generate_exec_line(self, kernel: Kernel, serial: int):
@@ -128,9 +117,8 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def _to_serializable_(self):
         return {
-            "weight_allocation": self.constants_layout,
             "weight_encoding": self.constants_encoding,
-            "variable_allocation": self.variables_layout,
+            "memory_layout": self.memory_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "licenses": self.licenses

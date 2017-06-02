@@ -8,5 +8,5 @@ class ConstantEncoderRaw(ConstantEncoder):
     def __init__(self):
         self.name = "raw"
 
-    def encode(self, constant_layout: IMemoryLayout, data: np.ndarray) -> bytes:
-        return data.tobytes("C")
+    def encode(self, memory_layout: IMemoryLayout) -> bytes:
+        return memory_layout.data.tobytes("C")

@@ -7,6 +7,7 @@ import numpy as np
 
 from webdnn.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from webdnn.encoder.constant_encoder import ConstantEncoder
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 tbl_floats = [2.750000021e-06, 7.249999726e-06, 1.875000089e-05, 3.624999954e-05, 5.874999624e-05, 8.624999464e-05,
               1.437500032e-04, 2.312500001e-04, 3.187500115e-04, 4.062500084e-04, 5.187499919e-04, 6.562499912e-04,
@@ -56,10 +57,13 @@ class ConstantEncoderEightbit(ConstantEncoder):
     def __init__(self):
         self.name = "eightbit"
 
-    def encode(self, constant_layout: IMemoryLayout, data: np.ndarray) -> bytes:
+    def encode(self, memory_layout: IMemoryLayout) -> bytes:
         all_code = b""
-        for alloc in constant_layout.__dict__.values():
-            single_data = data[alloc.offset:alloc.offset + alloc.size]
+        for alloc in memory_layout.allocations.values():
+            if not isinstance(alloc.variable, ConstantVariable):
+                continue
+
+            single_data = memory_layout.data[alloc.offset:alloc.offset + alloc.size]
             all_code += self._single_encode(single_data, alloc)
 
         return all_code

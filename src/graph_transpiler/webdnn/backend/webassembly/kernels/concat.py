@@ -53,11 +53,10 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 # noinspection PyUnusedLocal
 def concat(op: Concat,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
+           memory_layout: MemoryLayout,
            metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    xs = [variables_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
-    y = variables_layout[op.outputs["y"]]
+    xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
+    y = memory_layout[op.outputs["y"]]
     target_axis = op.axis
 
     x_offsets = [x.offset for x in xs]

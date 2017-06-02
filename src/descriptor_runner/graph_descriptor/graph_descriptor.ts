@@ -13,18 +13,20 @@ namespace WebDNN {
          */
         outputs: string[];
 
+        memory_layout: MemoryLayout,
+
         /**
          * Allocation information for each variable.
          */
         weight_allocation: {
-            allocation: { [name: string]: any }
+            allocations: { [name: string]: any }
         };
 
         /**
          * Allocation information for each variable.
          */
         variable_allocation: {
-            allocation: { [name: string]: any }
+            allocations: { [name: string]: any }
         };
 
         /**

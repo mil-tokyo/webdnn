@@ -11,22 +11,20 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 
 
 def local_response_normalization(op: LocalResponseNormalization,
-                                 constants_layout: MemoryLayout,
-                                 variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                                 memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     if x.variable.order == y.variable.order:
-        return local_response_normalization_same_order(op, constants_layout, variables_layout)
+        return local_response_normalization_same_order(op, memory_layout)
 
     else:
-        return local_response_normalization_general(op, constants_layout, variables_layout)
+        return local_response_normalization_general(op, memory_layout)
 
 
 template_same_order = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -65,10 +63,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def local_response_normalization_same_order(op: LocalResponseNormalization,
-                                            constants_layout: MemoryLayout,
-                                            variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                                            memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     target_axis = Axis.C  # FIXME
     target_axis_index = x.variable.order.axes_dict[target_axis]
@@ -107,9 +104,8 @@ def local_response_normalization_same_order(op: LocalResponseNormalization,
 
 
 template_general = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -168,10 +164,9 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def local_response_normalization_general(op: LocalResponseNormalization,
-                                         constants_layout: MemoryLayout,
-                                         variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                                         memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     target_axis = Axis.C
 

@@ -10,9 +10,8 @@ from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 def generate_template(N, has_inline):
     return """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -66,11 +65,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def elementwise_sum(op: AxiswiseScale,
-                    constants_layout: MemoryLayout,
-                    variables_layout: MemoryLayout) -> List[Kernel]:
-    x0 = variables_layout[op.inputs["x0"]]
-    x1 = variables_layout[op.inputs["x1"]]
-    y = variables_layout[op.outputs["y"]]
+                    memory_layout: MemoryLayout) -> List[Kernel]:
+    x0 = memory_layout[op.inputs["x0"]]
+    x1 = memory_layout[op.inputs["x1"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert len(op.inputs) == 2, "[WebGPU] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape

@@ -45,7 +45,7 @@ namespace WebDNN {
         async compile(): Promise<void> {
             this.compileKernel();
             this.rawWeightArray = new Float32Array(this.descriptor.weight_allocation.total_size);
-            let weight_name_alloc = this.descriptor.weight_allocation.allocation;
+            let weight_name_alloc = this.descriptor.weight_allocation.allocations;
             this.weightArrays = new Map();
             for (let name in weight_name_alloc) {
                 let alloc = weight_name_alloc[name];
@@ -53,7 +53,7 @@ namespace WebDNN {
             }
 
             this.variableArrays = new Map();
-            let variable_name_alloc = this.descriptor.variable_allocation.allocation;
+            let variable_name_alloc = this.descriptor.variable_allocation.allocations;
             for (let name in variable_name_alloc) {
                 let alloc = variable_name_alloc[name];
                 this.variableArrays.set(name, new Float32Array(alloc.size));

@@ -7,9 +7,8 @@ from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.graph.operators.relu import Relu
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -29,10 +28,9 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 
 def relu(op: Relu,
-         constants_layout: MemoryLayout,
-         variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+         memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.shape == y.variable.shape
 

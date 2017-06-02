@@ -14,9 +14,8 @@ from webdnn.graph.order import OrderNHWC
 # C2, H2, W2などはすべてDeconvのinput, Convのoutputのサイズを表すために使用
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
+                          const device int * %%META_NAME%% [[buffer(1)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -64,10 +63,9 @@ kernel void %%FUNC_NAME%%(const device float *param_buffer[[buffer(0)]],
 
 # noinspection PyUnusedLocal
 def col2im(op: Col2Im,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout) -> List[Kernel]:
-    col = variables_layout[op.inputs["col"]]
-    im = variables_layout[op.outputs["im"]]
+           memory_layout: MemoryLayout) -> List[Kernel]:
+    col = memory_layout[op.inputs["col"]]
+    im = memory_layout[op.outputs["im"]]
 
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC
