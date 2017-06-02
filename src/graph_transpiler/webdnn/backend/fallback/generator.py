@@ -16,6 +16,7 @@ from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.average_pooling_2d import average_pooling_2d
 from webdnn.backend.fallback.kernels.axiswise_bias import axiswise_bias
 from webdnn.backend.fallback.kernels.axiswise_scale import axiswise_scale
+from webdnn.backend.fallback.kernels.concat import concat
 from webdnn.backend.fallback.kernels.convolution_2d import convolution_2d
 from webdnn.backend.fallback.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.fallback.kernels.flatten import flatten
@@ -30,6 +31,7 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.flatten import Flatten
@@ -51,7 +53,7 @@ class GraphExecutionData(IGraphExecutionData):
 
     def save(self, dirname: str):
         os.makedirs(dirname, exist_ok=True)
-        
+
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
@@ -114,6 +116,9 @@ def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_lay
 
         elif isinstance(op, Relu):
             kernels += relu(op)
+
+        elif isinstance(op, Concat):
+            kernels += concat(op)
 
         elif isinstance(op, LocalResponseNormalization):
             kernels += local_response_normalization(op)
