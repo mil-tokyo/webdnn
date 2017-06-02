@@ -51,7 +51,7 @@ model.save("resnet50.h5")
 その際、モデルの最適化が同時に行われます。
 
 ```bash
-python ../../bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
+python ./bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
 ```
 
 生成したDescriptorは、以下のJavaScriptコードで読み込み・実行ができます。
