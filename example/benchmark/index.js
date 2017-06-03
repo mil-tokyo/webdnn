@@ -90,7 +90,7 @@ class BaseBenchmark {
             d.sum += v;
             d.sum2 += v * v;
             return d;
-        }, { sum: 0, sum2: 0 });
+        }, {sum: 0, sum2: 0});
 
         let mean = d.sum / results.length;
         let std = Math.sqrt((d.sum2 - results.length * mean * mean) / (results.length - 1));
@@ -113,13 +113,11 @@ class KerasJSBenchmark extends BaseBenchmark {
         super(name);
         this.model = null;
         this.flagGPU = flagGPU;
-        this.xs = {
-            'input_1': new Float32Array(224 * 224 * 3)
-        };
     }
 
     setupAsync() {
-        let prefix = `./output/kerasjs/${this.getSelectedModel()}/model`;
+        let modelName = this.getSelectedModel();
+        let prefix = `./output/kerasjs/${modelName}/model`;
         this.model = new KerasJS.Model({
             filepaths: {
                 model: `${prefix}.json`,
@@ -128,6 +126,11 @@ class KerasJSBenchmark extends BaseBenchmark {
             },
             gpu: this.flagGPU
         });
+
+        const HW = (modelName === 'inception_v3') ? (299 * 299) : (224 * 224);
+        this.xs = {
+            'input_1': new Float32Array(HW * 3)
+        };
 
         return this.model.ready()
     }
@@ -206,7 +209,7 @@ function run() {
         .catch(err => console_error(err));
 }
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function(event) {
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', 'webgpu', true));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU)', 'webgpu', false));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', 'webassembly', true));
