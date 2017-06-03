@@ -64,9 +64,8 @@ class GraphExecutionData(IGraphExecutionData):
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     variables_layout, constants_layout = Allocator.allocate(graph)
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorFallback] constants_layout total size: {constants_data.size} * sizeof(float)")
-        print(
-            f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorFallback] constants_layout total size: {constants_layout.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
     constants_bytes = constant_encoder.encode(constants_layout)
     if flags.DEBUG:
