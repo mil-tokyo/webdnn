@@ -2,9 +2,9 @@ from typing import List
 
 import numpy as np
 
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.operators.concat import Concat
 
@@ -52,9 +52,7 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def concat(op: Concat,
-           memory_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
     y = memory_layout[op.outputs["y"]]
     target_axis = op.axis
@@ -81,10 +79,8 @@ def concat(op: Concat,
         y_offsets.append(target_axis_offset * y_strides[y.variable.order.axes_dict[target_axis]])
         target_axis_offset += x.variable.shape_dict[target_axis]
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "concat_y_offset": y.offset,
         "concat_D": len(y.variable.shape),
         "concat_N": len(xs),
@@ -94,14 +90,16 @@ def concat(op: Concat,
         "concat_y_offsets": np.array(y_offsets, dtype=np.int32).tobytes(),
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("concat", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]
