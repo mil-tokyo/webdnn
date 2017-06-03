@@ -1,8 +1,8 @@
 from typing import List
 
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
 from webdnn.backend.webgpu.allocator import MemoryLayout
 
@@ -73,17 +73,13 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         .replace("%%K%%", str(K))
 
 
-def sgemm(op: Sgemm,
-          memory_layout: MemoryLayout,
-          metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
     A = memory_layout[op.inputs["A"]]
     B = memory_layout[op.inputs["B"]]
     C = memory_layout[op.outputs["C"]]
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "sgemm_A_offset": A.offset,
         "sgemm_B_offset": B.offset,
         "sgemm_C_offset": C.offset,
@@ -94,16 +90,15 @@ def sgemm(op: Sgemm,
 
     if op.parameters["eigen"]:
         source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
-
-        metabuffer_injector.register({
+        meta_injector.register({
             "sgemm_A_offset": A.offset,
             "sgemm_B_offset": B.offset,
             "sgemm_C_offset": C.offset
         })
+
     else:
         source = generate_template(op.transpose_A, op.transpose_B)
-
-        metabuffer_injector.register({
+        meta_injector.register({
             "sgemm_A_offset": A.offset,
             "sgemm_B_offset": B.offset,
             "sgemm_C_offset": C.offset,
@@ -111,16 +106,16 @@ def sgemm(op: Sgemm,
             "sgemm_N": op.N,
             "sgemm_K": op.K
         })
-    source = metabuffer_injector.inject(source)
-    func_name = util.add_canonical_suffix("sgemm", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+
+    name_injector = KernelNameInjector(op)
+
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {
-            func_name: source
-        },
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]

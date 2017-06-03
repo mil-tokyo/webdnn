@@ -1,8 +1,8 @@
 from typing import List
 
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 
@@ -27,16 +27,13 @@ s
 
 
 # noinspection PyUnusedLocal
-def scalar_affine(op: ScalarAffine,
-                  memory_layout: MemoryLayout,
-                  metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def scalar_affine(op: ScalarAffine, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]
     assert x.variable.shape == y.variable.shape
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "affine_transform_X_offset": x.offset,
         "affine_transform_Y_offset": y.offset,
         "affine_transform_N": y.variable.size,
@@ -44,14 +41,16 @@ def scalar_affine(op: ScalarAffine,
         "affine_transform_bias": op.bias
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("scalar_affine", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]

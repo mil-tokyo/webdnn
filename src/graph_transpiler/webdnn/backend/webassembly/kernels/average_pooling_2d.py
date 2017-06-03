@@ -1,8 +1,8 @@
 from typing import List
 
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -50,19 +50,15 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def average_pooling_2d(op: AveragePooling2D,
-                       memory_layout: MemoryLayout,
-                       metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def average_pooling_2d(op: AveragePooling2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "average_pooling_2d_X_offset": x.offset,
         "average_pooling_2d_Y_offset": y.offset,
         "average_pooling_2d_N": x.variable.shape_dict[Axis.N],
@@ -76,14 +72,16 @@ def average_pooling_2d(op: AveragePooling2D,
         "average_pooling_2d_P": op.parameters["padding"][0],
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("average_pooling_2d", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]
