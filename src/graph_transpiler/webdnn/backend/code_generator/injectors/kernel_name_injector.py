@@ -1,7 +1,7 @@
 import hashlib
 from typing import Union
 
-from webdnn.backend.webgpu.injector import Tag, Injector
+from webdnn.backend.code_generator.injector import Tag, Injector
 from webdnn.graph.operator import Operator
 
 

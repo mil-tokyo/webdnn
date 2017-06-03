@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import numpy as np
 
-from webdnn.backend.webgpu.injector import Tag, Injector
+from webdnn.backend.code_generator.injector import Tag, Injector
 from webdnn.util import flags
 
 MetaBufferContent = Union[int, float, bytes]
