@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>WeightDecoderRaw | mil-web-dnn</title>
+	<title>MemoryLayout | mil-web-dnn</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -59,10 +59,10 @@
 					<a href="../modules/webdnn.html">WebDNN</a>
 				</li>
 				<li>
-					<a href="webdnn.weightdecoderraw.html">WeightDecoderRaw</a>
+					<a href="webdnn.memorylayout.html">MemoryLayout</a>
 				</li>
 			</ul>
-			<h1>Class WeightDecoderRaw</h1>
+			<h1>Interface MemoryLayout</h1>
 		</div>
 	</div>
 </header>
@@ -73,14 +73,8 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">WeightDecoderRaw</span>
+						<span class="target">MemoryLayout</span>
 					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implements</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/webdnn.weightdecoder.html" class="tsd-signature-type">WeightDecoder</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -88,42 +82,55 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Methods</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.weightdecoderraw.html#decode" class="tsd-kind-icon">decode</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.memorylayout.html#allocations" class="tsd-kind-icon">allocations</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.memorylayout.html#total_size" class="tsd-kind-icon">total_<wbr>size</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="decode" class="tsd-anchor"></a>
-					<h3>decode</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">decode<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, memory_layout<span class="tsd-signature-symbol">: </span><a href="../interfaces/webdnn.memorylayout.html" class="tsd-signature-type">MemoryLayout</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/webdnn.weightdecoder.html">WeightDecoder</a>.<a href="../interfaces/webdnn.weightdecoder.html#decode">decode</a></p>
-								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/decoder/weight_decoder_raw.ts#L5">decoder/weight_decoder_raw.ts:5</a></li>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="allocations" class="tsd-anchor"></a>
+					<h3>allocations</h3>
+					<div class="tsd-signature tsd-kind-icon">allocations<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/decoder/weight_decoder.ts#L10">decoder/weight_decoder.ts:10</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>index: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">object</span></h5>
+								<ul class="tsd-parameters">
+									<li class="tsd-parameter">
+										<h5>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+									</li>
+									<li class="tsd-parameter">
+										<h5>offset<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+									</li>
+									<li class="tsd-parameter">
+										<h5>size<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+									</li>
 								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>data: <span class="tsd-signature-type">Uint8Array</span></h5>
-								</li>
-								<li>
-									<h5>memory_layout: <a href="../interfaces/webdnn.memorylayout.html" class="tsd-signature-type">MemoryLayout</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="total_size" class="tsd-anchor"></a>
+					<h3>total_<wbr>size</h3>
+					<div class="tsd-signature tsd-kind-icon">total_<wbr>size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/decoder/weight_decoder.ts#L9">decoder/weight_decoder.ts:9</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 		</div>
@@ -147,73 +154,76 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.buffer.html" class="tsd-kind-icon">Buffer</a>
+						<a href="../classes/webdnn.buffer.html" class="tsd-kind-icon">Buffer</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.bufferfallback.html" class="tsd-kind-icon">Buffer<wbr>Fallback</a>
+						<a href="../classes/webdnn.bufferfallback.html" class="tsd-kind-icon">Buffer<wbr>Fallback</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.bufferwebgpu.html" class="tsd-kind-icon">Buffer<wbr>WebGPU</a>
+						<a href="../classes/webdnn.bufferwebgpu.html" class="tsd-kind-icon">Buffer<wbr>WebGPU</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
-						<a href="webdnn.descriptorrunner.html" class="tsd-kind-icon">Descriptor<wbr>Runner</a>
+						<a href="../classes/webdnn.descriptorrunner.html" class="tsd-kind-icon">Descriptor<wbr>Runner</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.descriptorrunnerfallback.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Fallback</a>
+						<a href="../classes/webdnn.descriptorrunnerfallback.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Fallback</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.descriptorrunnerwebgpu.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>WebGPU</a>
+						<a href="../classes/webdnn.descriptorrunnerwebgpu.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>WebGPU</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.descriptorrunnerwebassembly.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Webassembly</a>
+						<a href="../classes/webdnn.descriptorrunnerwebassembly.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Webassembly</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.webgpuhandler.html" class="tsd-kind-icon">WebGPUHandler</a>
+						<a href="../classes/webdnn.webgpuhandler.html" class="tsd-kind-icon">WebGPUHandler</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.weightdecodereightbit.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Eightbit</a>
+						<a href="../classes/webdnn.weightdecodereightbit.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Eightbit</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="../classes/webdnn.weightdecoderraw.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Raw</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptor.html" class="tsd-kind-icon">Graph<wbr>Descriptor</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptorfallback.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptorfallbackexecinfo.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback<wbr>Exec<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptorwebgpu.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>WebGPU</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptorwebgpuexecinfos.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>WebGPUExec<wbr>Infos</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphdescriptorwebassembly.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Webassembly</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.graphinterface.html" class="tsd-kind-icon">Graph<wbr>Interface</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.initoption.html" class="tsd-kind-icon">Init<wbr>Option</a>
 					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-module">
-						<a href="webdnn.weightdecoderraw.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Raw</a>
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="webdnn.memorylayout.html" class="tsd-kind-icon">Memory<wbr>Layout</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="webdnn.weightdecoderraw.html#decode" class="tsd-kind-icon">decode</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="webdnn.memorylayout.html#allocations" class="tsd-kind-icon">allocations</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="webdnn.memorylayout.html#total_size" class="tsd-kind-icon">total_<wbr>size</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptor.html" class="tsd-kind-icon">Graph<wbr>Descriptor</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptorfallback.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptorfallbackexecinfo.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback<wbr>Exec<wbr>Info</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptorwebgpu.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>WebGPU</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptorwebgpuexecinfos.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>WebGPUExec<wbr>Infos</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphdescriptorwebassembly.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Webassembly</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.graphinterface.html" class="tsd-kind-icon">Graph<wbr>Interface</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.initoption.html" class="tsd-kind-icon">Init<wbr>Option</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.memorylayout.html" class="tsd-kind-icon">Memory<wbr>Layout</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/webdnn.weightdecoder.html" class="tsd-kind-icon">Weight<wbr>Decoder</a>
+						<a href="webdnn.weightdecoder.html" class="tsd-kind-icon">Weight<wbr>Decoder</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-parent-kind-module">
 						<a href="../modules/webdnn.html#debug" class="tsd-kind-icon">DEBUG</a>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>DescriptorRunnerWebassembly | mil-web-dnn</title>
+	<title>DescriptorRunner | mil-web-dnn</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -59,24 +59,45 @@
 					<a href="../modules/webdnn.html">WebDNN</a>
 				</li>
 				<li>
-					<a href="webdnn.descriptorrunnerwebassembly.html">DescriptorRunnerWebassembly</a>
+					<a href="webdnn.descriptorrunner.html">DescriptorRunner</a>
 				</li>
 			</ul>
-			<h1>Class DescriptorRunnerWebassembly</h1>
+			<h1>Class DescriptorRunner&lt;D&gt;</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p><code>DescriptorRunner</code> executes computation based on <code>GraphDescriptor</code>.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-type-parameters">
+				<h3>Type parameters</h3>
+				<ul class="tsd-type-parameters">
+					<li>
+						<h4>D<span class="tsd-signature-symbol">: </span><a href="../interfaces/webdnn.graphdescriptor.html" class="tsd-signature-type">GraphDescriptor</a></h4>
+					</li>
+				</ul>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="webdnn.descriptorrunner.html" class="tsd-signature-type">DescriptorRunner</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/webdnn.graphdescriptorwebassembly.html" class="tsd-signature-type">GraphDescriptorWebassembly</a><span class="tsd-signature-symbol">&gt;</span>
+						<span class="target">DescriptorRunner</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">DescriptorRunnerWebassembly</span>
+								<a href="webdnn.descriptorrunnerfallback.html" class="tsd-signature-type">DescriptorRunnerFallback</a>
+							</li>
+							<li>
+								<a href="webdnn.descriptorrunnerwebassembly.html" class="tsd-signature-type">DescriptorRunnerWebassembly</a>
+							</li>
+							<li>
+								<a href="webdnn.descriptorrunnerwebgpu.html" class="tsd-signature-type">DescriptorRunnerWebGPU</a>
 							</li>
 						</ul>
 					</li>
@@ -89,34 +110,28 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#backendname" class="tsd-kind-icon">backend<wbr>Name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="webdnn.descriptorrunnerwebassembly.html#descriptor" class="tsd-kind-icon">descriptor</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="webdnn.descriptorrunnerwebassembly.html#ignorecache" class="tsd-kind-icon">ignore<wbr>Cache</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#inputviews" class="tsd-kind-icon">input<wbr>Views</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#outputviews" class="tsd-kind-icon">output<wbr>Views</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#worker" class="tsd-kind-icon">worker</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#worker_entry_js_path" class="tsd-kind-icon">worker_<wbr>entry_<wbr>js_<wbr>path</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#worker_initial_error" class="tsd-kind-icon">worker_<wbr>initial_<wbr>error</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunnerwebassembly.html#worker_promise_reject_func" class="tsd-kind-icon">worker_<wbr>promise_<wbr>reject_<wbr>func</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#backendname" class="tsd-kind-icon">backend<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#descriptor" class="tsd-kind-icon">descriptor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#ignorecache" class="tsd-kind-icon">ignore<wbr>Cache</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#compile" class="tsd-kind-icon">compile</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#getinputviews" class="tsd-kind-icon">get<wbr>Input<wbr>Views</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#getoutputviews" class="tsd-kind-icon">get<wbr>Output<wbr>Views</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#init" class="tsd-kind-icon">init</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#load" class="tsd-kind-icon">load</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#loadweights" class="tsd-kind-icon">load<wbr>Weights</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#run" class="tsd-kind-icon">run</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="webdnn.descriptorrunnerwebassembly.html#setdescriptor" class="tsd-kind-icon">set<wbr>Descriptor</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#compile" class="tsd-kind-icon">compile</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#getinputviews" class="tsd-kind-icon">get<wbr>Input<wbr>Views</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#getoutputviews" class="tsd-kind-icon">get<wbr>Output<wbr>Views</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#init" class="tsd-kind-icon">init</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#load" class="tsd-kind-icon">load</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#loadweights" class="tsd-kind-icon">load<wbr>Weights</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#run" class="tsd-kind-icon">run</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="webdnn.descriptorrunner.html#setdescriptor" class="tsd-kind-icon">set<wbr>Descriptor</a></li>
 							</ul>
 						</section>
 					</div>
@@ -124,18 +139,17 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Descriptor<wbr>Runner<wbr>Webassembly<span class="tsd-signature-symbol">(</span>option<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="webdnn.descriptorrunnerwebassembly.html" class="tsd-signature-type">DescriptorRunnerWebassembly</a></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Descriptor<wbr>Runner<span class="tsd-signature-symbol">(</span>option<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="webdnn.descriptorrunner.html" class="tsd-signature-type">DescriptorRunner</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L18">descriptor_runner/descriptor_runner_webassembly.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L10">descriptor_runner/descriptor_runner.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -144,202 +158,169 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> option: <span class="tsd-signature-type">any</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="webdnn.descriptorrunnerwebassembly.html" class="tsd-signature-type">DescriptorRunnerWebassembly</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="webdnn.descriptorrunner.html" class="tsd-signature-type">DescriptorRunner</a></h4>
 						</li>
 					</ul>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="backendname" class="tsd-anchor"></a>
 					<h3>backend<wbr>Name</h3>
-					<div class="tsd-signature tsd-kind-icon">backend<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"webassembly"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;webassembly&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">backend<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#backendname">backendName</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L11">descriptor_runner/descriptor_runner_webassembly.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L8">descriptor_runner/descriptor_runner.ts:8</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="descriptor" class="tsd-anchor"></a>
 					<h3>descriptor</h3>
-					<div class="tsd-signature tsd-kind-icon">descriptor<span class="tsd-signature-symbol">:</span> <a href="../interfaces/webdnn.graphdescriptorwebassembly.html" class="tsd-signature-type">GraphDescriptorWebassembly</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></div>
+					<div class="tsd-signature tsd-kind-icon">descriptor<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">D</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#descriptor">descriptor</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L9">descriptor_runner/descriptor_runner.ts:9</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="ignorecache" class="tsd-anchor"></a>
 					<h3>ignore<wbr>Cache</h3>
 					<div class="tsd-signature tsd-kind-icon">ignore<wbr>Cache<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#ignorecache">ignoreCache</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L10">descriptor_runner/descriptor_runner.ts:10</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="inputviews" class="tsd-anchor"></a>
-					<h3>input<wbr>Views</h3>
-					<div class="tsd-signature tsd-kind-icon">input<wbr>Views<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L13">descriptor_runner/descriptor_runner_webassembly.ts:13</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="outputviews" class="tsd-anchor"></a>
-					<h3>output<wbr>Views</h3>
-					<div class="tsd-signature tsd-kind-icon">output<wbr>Views<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L14">descriptor_runner/descriptor_runner_webassembly.ts:14</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="worker" class="tsd-anchor"></a>
-					<h3>worker</h3>
-					<div class="tsd-signature tsd-kind-icon">worker<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Worker</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L15">descriptor_runner/descriptor_runner_webassembly.ts:15</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="worker_entry_js_path" class="tsd-anchor"></a>
-					<h3>worker_<wbr>entry_<wbr>js_<wbr>path</h3>
-					<div class="tsd-signature tsd-kind-icon">worker_<wbr>entry_<wbr>js_<wbr>path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L16">descriptor_runner/descriptor_runner_webassembly.ts:16</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="worker_initial_error" class="tsd-anchor"></a>
-					<h3>worker_<wbr>initial_<wbr>error</h3>
-					<div class="tsd-signature tsd-kind-icon">worker_<wbr>initial_<wbr>error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L18">descriptor_runner/descriptor_runner_webassembly.ts:18</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="worker_promise_reject_func" class="tsd-anchor"></a>
-					<h3>worker_<wbr>promise_<wbr>reject_<wbr>func</h3>
-					<div class="tsd-signature tsd-kind-icon">worker_<wbr>promise_<wbr>reject_<wbr>func<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L17">descriptor_runner/descriptor_runner_webassembly.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="compile" class="tsd-anchor"></a>
 					<h3>compile</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">compile<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#compile">compile</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L71">descriptor_runner/descriptor_runner_webassembly.ts:71</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L43">descriptor_runner/descriptor_runner.ts:43</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>compile kernels.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getinputviews" class="tsd-anchor"></a>
 					<h3>get<wbr>Input<wbr>Views</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Input<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#getinputviews">getInputViews</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L128">descriptor_runner/descriptor_runner_webassembly.ts:128</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L59">descriptor_runner/descriptor_runner.ts:59</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get input ArrayBufferView object</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getoutputviews" class="tsd-anchor"></a>
 					<h3>get<wbr>Output<wbr>Views</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Output<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#getoutputviews">getOutputViews</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L142">descriptor_runner/descriptor_runner_webassembly.ts:142</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L64">descriptor_runner/descriptor_runner.ts:64</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get output ArrayBufferView object</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Float32Array</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="init" class="tsd-anchor"></a>
 					<h3>init</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#init">init</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L30">descriptor_runner/descriptor_runner_webassembly.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L17">descriptor_runner/descriptor_runner.ts:17</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Initialize this runner</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="load" class="tsd-anchor"></a>
 					<h3>load</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, progressCallback<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#load">load</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L35">descriptor_runner/descriptor_runner_webassembly.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L32">descriptor_runner/descriptor_runner.ts:32</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Fetch descriptor from specified directory.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>directory: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>directory where descriptor is contained.
+										You can also provide URL of other domain like this.</p>
+										<pre><code class="lang-javascript"><span class="hljs-keyword">await</span> runner.load(<span class="hljs-string">'://my.other.domain.com/my_model'</span>);
+</code></pre>
+										<p>However sometimes it can&#39;t because of Cross-Origin-Resource-Security policy.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> progressCallback: <span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>callback which is called to notice the loading is progressing.</p>
+									</div>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
@@ -367,66 +348,84 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="loadweights" class="tsd-anchor"></a>
 					<h3>load<wbr>Weights</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">load<wbr>Weights<span class="tsd-signature-symbol">(</span>weightsData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#loadweights">loadWeights</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L102">descriptor_runner/descriptor_runner_webassembly.ts:102</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L49">descriptor_runner/descriptor_runner.ts:49</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>load weight data</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>weightsData: <span class="tsd-signature-type">Uint8Array</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>weights data</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="run" class="tsd-anchor"></a>
 					<h3>run</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">run<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#run">run</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L156">descriptor_runner/descriptor_runner_webassembly.ts:156</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L54">descriptor_runner/descriptor_runner.ts:54</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Run descriptor. You must call <a href="webdnn.descriptorrunner.html#getinputviews">getInputViews</a> and <a href="webdnn.descriptorrunner.html#getoutputviews">getOutputViews</a> before calling this function.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="setdescriptor" class="tsd-anchor"></a>
 					<h3>set<wbr>Descriptor</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Descriptor<span class="tsd-signature-symbol">(</span>descriptor<span class="tsd-signature-symbol">: </span><a href="../interfaces/webdnn.graphdescriptorwebassembly.html" class="tsd-signature-type">GraphDescriptorWebassembly</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Descriptor<span class="tsd-signature-symbol">(</span>descriptor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">D</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="webdnn.descriptorrunner.html">DescriptorRunner</a>.<a href="webdnn.descriptorrunner.html#setdescriptor">setDescriptor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner_webassembly.ts#L67">descriptor_runner/descriptor_runner_webassembly.ts:67</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L38">descriptor_runner/descriptor_runner.ts:38</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>set descriptor.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>descriptor: <a href="../interfaces/webdnn.graphdescriptorwebassembly.html" class="tsd-signature-type">GraphDescriptorWebassembly</a></h5>
+									<h5>descriptor: <span class="tsd-signature-type">D</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>descriptor which will be executed.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -463,78 +462,60 @@
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="webdnn.bufferwebgpu.html" class="tsd-kind-icon">Buffer<wbr>WebGPU</a>
 					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="webdnn.descriptorrunner.html" class="tsd-kind-icon">Descriptor<wbr>Runner</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#backendname" class="tsd-kind-icon">backend<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#descriptor" class="tsd-kind-icon">descriptor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#ignorecache" class="tsd-kind-icon">ignore<wbr>Cache</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#compile" class="tsd-kind-icon">compile</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#getinputviews" class="tsd-kind-icon">get<wbr>Input<wbr>Views</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#getoutputviews" class="tsd-kind-icon">get<wbr>Output<wbr>Views</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#init" class="tsd-kind-icon">init</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#load" class="tsd-kind-icon">load</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#loadweights" class="tsd-kind-icon">load<wbr>Weights</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#run" class="tsd-kind-icon">run</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="webdnn.descriptorrunner.html#setdescriptor" class="tsd-kind-icon">set<wbr>Descriptor</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="webdnn.descriptorrunnerfallback.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Fallback</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="webdnn.descriptorrunnerwebgpu.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>WebGPU</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-module">
+					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="webdnn.descriptorrunnerwebassembly.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Webassembly</a>
-						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#backendname" class="tsd-kind-icon">backend<wbr>Name</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="webdnn.descriptorrunnerwebassembly.html#descriptor" class="tsd-kind-icon">descriptor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="webdnn.descriptorrunnerwebassembly.html#ignorecache" class="tsd-kind-icon">ignore<wbr>Cache</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#inputviews" class="tsd-kind-icon">input<wbr>Views</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#outputviews" class="tsd-kind-icon">output<wbr>Views</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#worker" class="tsd-kind-icon">worker</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#worker_entry_js_path" class="tsd-kind-icon">worker_<wbr>entry_<wbr>js_<wbr>path</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#worker_initial_error" class="tsd-kind-icon">worker_<wbr>initial_<wbr>error</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="webdnn.descriptorrunnerwebassembly.html#worker_promise_reject_func" class="tsd-kind-icon">worker_<wbr>promise_<wbr>reject_<wbr>func</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#compile" class="tsd-kind-icon">compile</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#getinputviews" class="tsd-kind-icon">get<wbr>Input<wbr>Views</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#getoutputviews" class="tsd-kind-icon">get<wbr>Output<wbr>Views</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#init" class="tsd-kind-icon">init</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#load" class="tsd-kind-icon">load</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#loadweights" class="tsd-kind-icon">load<wbr>Weights</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#run" class="tsd-kind-icon">run</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="webdnn.descriptorrunnerwebassembly.html#setdescriptor" class="tsd-kind-icon">set<wbr>Descriptor</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="webdnn.webgpuhandler.html" class="tsd-kind-icon">WebGPUHandler</a>
 					</li>

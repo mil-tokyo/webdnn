@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>WebGPUCommandBuffer | mil-web-dnn</title>
+	<title>HTMLCanvasElement | mil-web-dnn</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="webgpucommandbuffer.html">WebGPUCommandBuffer</a>
+					<a href="htmlcanvaselement.html">HTMLCanvasElement</a>
 				</li>
 			</ul>
-			<h1>Interface WebGPUCommandBuffer</h1>
+			<h1>Interface HTMLCanvasElement</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +70,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">WebGPUCommandBuffer</span>
+						<span class="target">HTMLCanvasElement</span>
 					</li>
 				</ul>
 			</section>
@@ -79,67 +79,39 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section tsd-is-not-exported">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="webgpucommandbuffer.html#completed" class="tsd-kind-icon">completed</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-not-exported">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="webgpucommandbuffer.html#commit" class="tsd-kind-icon">commit</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="webgpucommandbuffer.html#createcomputecommandencoder" class="tsd-kind-icon">create<wbr>Compute<wbr>Command<wbr>Encoder</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported"><a href="htmlcanvaselement.html#getcontext" class="tsd-kind-icon">get<wbr>Context</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="completed" class="tsd-anchor"></a>
-					<h3>completed</h3>
-					<div class="tsd-signature tsd-kind-icon">completed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/webgpu_handler.ts#L136">webgpu_handler.ts:136</a></li>
-						</ul>
-					</aside>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="commit" class="tsd-anchor"></a>
-					<h3>commit</h3>
+					<a name="getcontext" class="tsd-anchor"></a>
+					<h3>get<wbr>Context</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">commit<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Context<span class="tsd-signature-symbol">(</span>contextId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">"webgpu"</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="webgpurenderingcontext.html" class="tsd-signature-type">WebGPURenderingContext</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/webgpu_handler.ts#L135">webgpu_handler.ts:135</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/webgpu_handler.ts#L153">webgpu_handler.ts:153</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="createcomputecommandencoder" class="tsd-anchor"></a>
-					<h3>create<wbr>Compute<wbr>Command<wbr>Encoder</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Compute<wbr>Command<wbr>Encoder<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="webgpucomputecommandencoder.html" class="tsd-signature-type">WebGPUComputeCommandEncoder</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/webgpu_handler.ts#L134">webgpu_handler.ts:134</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="webgpucomputecommandencoder.html" class="tsd-signature-type">WebGPUComputeCommandEncoder</a></h4>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>contextId: <span class="tsd-signature-type">"webgpu"</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="webgpurenderingcontext.html" class="tsd-signature-type">WebGPURenderingContext</a>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-type">null</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -155,30 +127,24 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-interface tsd-is-not-exported">
-						<a href="htmlcanvaselement.html" class="tsd-kind-icon">HTMLCanvas<wbr>Element</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-is-not-exported">
-						<a href="webgpubuffer.html" class="tsd-kind-icon">WebGPUBuffer</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-is-not-exported">
-						<a href="webgpucommandbuffer.html" class="tsd-kind-icon">WebGPUCommand<wbr>Buffer</a>
+						<a href="htmlcanvaselement.html" class="tsd-kind-icon">HTMLCanvas<wbr>Element</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="webgpucommandbuffer.html#completed" class="tsd-kind-icon">completed</a>
-							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="webgpucommandbuffer.html#commit" class="tsd-kind-icon">commit</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="webgpucommandbuffer.html#createcomputecommandencoder" class="tsd-kind-icon">create<wbr>Compute<wbr>Command<wbr>Encoder</a>
+								<a href="htmlcanvaselement.html#getcontext" class="tsd-kind-icon">get<wbr>Context</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="webgpubuffer.html" class="tsd-kind-icon">WebGPUBuffer</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="webgpucommandbuffer.html" class="tsd-kind-icon">WebGPUCommand<wbr>Buffer</a>
+					</li>
 					<li class=" tsd-kind-interface tsd-is-not-exported">
 						<a href="webgpucommandencoder.html" class="tsd-kind-icon">WebGPUCommand<wbr>Encoder</a>
 					</li>
