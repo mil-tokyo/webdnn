@@ -188,7 +188,7 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                     flag_allocated = True
 
                 if not flag_allocated:
-                    raise ValueError("[WebGPUAllocator] Memory Allocation Failed.")
+                    raise ValueError("[Allocator] Memory Allocation Failed.")
 
         for var in op.inputs.values():
             while "inplace_src" in var.parameters:

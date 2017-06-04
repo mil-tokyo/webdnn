@@ -9,6 +9,8 @@
     "test": "test"
   },
   "scripts": {
+    "test": "nosetests",
+    "test-kernel": "nosetests -w ./test/kernels",
     "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;"
   },
   "repository": {

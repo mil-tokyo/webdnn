@@ -10,8 +10,8 @@ import subprocess
 import tempfile as tmp
 from typing import List
 
+from webdnn.backend.code_generator.allocator import Allocator, MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
-from webdnn.backend.webgpu.allocator import Allocator, MemoryLayout
 from webdnn.backend.webgpu.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
 from webdnn.backend.webgpu.kernels.average_pooling_2d import average_pooling_2d

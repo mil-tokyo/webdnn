@@ -2,10 +2,10 @@ from typing import List
 
 import numpy as np
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.operators.concat import Concat
 
 template = """

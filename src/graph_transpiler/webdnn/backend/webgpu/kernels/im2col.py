@@ -1,8 +1,8 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.backend.webgpu.operators.im2col import Im2Col
 from webdnn.graph.axis import Axis

@@ -3,9 +3,9 @@ from typing import Dict, Iterable
 
 import numpy as np
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant

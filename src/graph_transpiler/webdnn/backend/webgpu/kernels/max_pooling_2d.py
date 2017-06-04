@@ -1,8 +1,8 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
