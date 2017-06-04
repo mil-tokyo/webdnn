@@ -502,7 +502,7 @@ var WebDNN;
                 throw new Error('Meta buffer is not initialized');
             let dataBuffer = this.dataBuffer;
             let metaBuffers = this.metaBuffers;
-            if (window['PROFILE']) {
+            if (WebDNN.DEBUG) {
                 let records = [];
                 let totalElapsedTime = 0;
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
@@ -924,6 +924,7 @@ var WebDNN;
         'fallback': WebDNN.GPUInterfaceFallback,
     };
     WebDNN.backendName = 'none';
+    WebDNN.DEBUG = false;
     async function initBackend(backendName, option) {
         if (!(backendName in WebDNN.backends))
             throw new Error(`Unknown backend: "${backendName}"`);

@@ -690,7 +690,7 @@ var WebDNN;
                                 throw new Error('Meta buffer is not initialized');
                             dataBuffer = this.dataBuffer;
                             metaBuffers = this.metaBuffers;
-                            if (!window['PROFILE']) return [3 /*break*/, 5];
+                            if (!WebDNN.DEBUG) return [3 /*break*/, 5];
                             records = [];
                             totalElapsedTime_1 = 0;
                             i = 0;
@@ -1284,6 +1284,7 @@ var WebDNN;
         'fallback': WebDNN.GPUInterfaceFallback,
     };
     WebDNN.backendName = 'none';
+    WebDNN.DEBUG = false;
     function initBackend(backendName, option) {
         return __awaiter(this, void 0, void 0, function () {
             var gpu, ex_1;

@@ -105,7 +105,7 @@ namespace WebDNN {
             let dataBuffer = this.dataBuffer;
             let metaBuffers = this.metaBuffers;
 
-            if (window['PROFILE']) {
+            if (WebDNN.DEBUG) {
                 let records: any = [];
                 let totalElapsedTime = 0;
 

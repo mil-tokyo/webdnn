@@ -444,6 +444,7 @@ declare namespace WebDNN {
     };
     let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>> | null;
     let backendName: string;
+    let DEBUG: boolean;
     function init(backendOrder?: string | string[], backendOptions?: {
         [key: string]: any;
     }): Promise<string>;

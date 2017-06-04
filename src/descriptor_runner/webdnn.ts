@@ -12,6 +12,7 @@ namespace WebDNN {
 
     export let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>> | null;
     export let backendName: string = 'none';
+    export let DEBUG: boolean = false;
 
     async function initBackend(backendName: string, option?: any) {
         if (!(backendName in backends)) throw new Error(`Unknown backend: "${backendName}"`);
