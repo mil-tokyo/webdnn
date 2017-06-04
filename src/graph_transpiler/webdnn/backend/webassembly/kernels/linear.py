@@ -1,9 +1,9 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.order import OrderNC, OrderNHWC, OrderCN, OrderHWCN
@@ -33,9 +33,7 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 """
 
 
-def linear(op: Linear,
-           memory_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     w = memory_layout[op.inputs["w"]]
     y = memory_layout[op.outputs["y"]]
@@ -45,9 +43,8 @@ def linear(op: Linear,
     assert y.variable.order == OrderNC or y.variable.order == OrderNHWC
     assert w.variable.ndim == x.variable.ndim
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "linear_X_offset": x.offset,
         "linear_Y_offset": y.offset,
         "linear_W_offset": w.offset,
@@ -56,14 +53,16 @@ def linear(op: Linear,
         "linear_K": x.variable.size // x.variable.shape_dict[Axis.N],
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("linear", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]

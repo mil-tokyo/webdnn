@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from typing import Iterable, Dict
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.backend.webgpu.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable

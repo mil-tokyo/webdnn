@@ -1,7 +1,7 @@
 from typing import Callable
 
+from webdnn.backend.code_generator.injector import Injector, Tag
 from webdnn.backend.webgpu.attributes.inline_inject import PostInlineInplace
-from webdnn.backend.webgpu.injector import Injector, Tag
 from webdnn.graph import traverse
 from webdnn.graph.operator import Operator
 

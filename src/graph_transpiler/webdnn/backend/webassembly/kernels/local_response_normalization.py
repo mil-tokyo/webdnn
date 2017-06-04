@@ -1,9 +1,9 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.order import OrderNHWC
@@ -53,19 +53,15 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def local_response_normalization(op: LocalResponseNormalization,
-                                 memory_layout: MemoryLayout,
-                                 metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def local_response_normalization(op: LocalResponseNormalization, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "local_response_normalization_X_offset": x.offset,
         "local_response_normalization_Y_offset": y.offset,
         "local_response_normalization_N": x.variable.shape_dict[Axis.N],
@@ -78,14 +74,16 @@ def local_response_normalization(op: LocalResponseNormalization,
         "local_response_normalization_param_minus_beta": float(-op.parameters["beta"])
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("local_response_normalization", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]

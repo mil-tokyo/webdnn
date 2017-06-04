@@ -11,6 +11,7 @@ import subprocess
 import sys
 from typing import List
 
+from webdnn.backend.code_generator.allocator import Allocator, MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webassembly.graph_descriptor import GraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
@@ -34,7 +35,6 @@ from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.backend.webassembly.operators.im2col import Im2Col
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
 from webdnn.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
-from webdnn.backend.webgpu.allocator import Allocator, MemoryLayout
 from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph

@@ -1,10 +1,10 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webassembly.operators.col2im import Col2Im
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC
 
@@ -58,19 +58,15 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def col2im(op: Col2Im,
-           memory_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def col2im(op: Col2Im, memory_layout: MemoryLayout) -> List[Kernel]:
     col = memory_layout[op.inputs["col"]]
     im = memory_layout[op.outputs["im"]]
 
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "col2im_im_offset": im.offset,
         "col2im_col_offset": col.offset,
         "col2im_N": col.variable.shape_dict[Axis.N],
@@ -87,14 +83,16 @@ def col2im(op: Col2Im,
         "col2im_PW": op.PW,
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("col2im", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]

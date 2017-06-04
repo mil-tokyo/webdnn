@@ -1,10 +1,9 @@
 from typing import List
 
-from webdnn.backend.webgpu.allocator import MemoryLayout
-from webdnn.backend.webassembly.inline_injector import InlineInjector
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 template = """
@@ -18,16 +17,14 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     for (int gid = 0; gid < N; gid += 1) {
         float result = X0[gid] + X1[gid];
 
-        Y[gid] = %%INLINE(result)%%;
+        Y[gid] = result;
     }
 }
 """
 
 
 # noinspection PyUnusedLocal
-def elementwise_sum(op: AxiswiseScale,
-                    memory_layout: MemoryLayout,
-                    metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
+def elementwise_sum(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kernel]:
     x0 = memory_layout[op.inputs["x0"]]
     x1 = memory_layout[op.inputs["x1"]]
     y = memory_layout[op.outputs["y"]]
@@ -35,30 +32,24 @@ def elementwise_sum(op: AxiswiseScale,
     assert len(op.inputs) == 2, "[Webassembly] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
+    meta_injector = MetaInjector()
+    meta_injector.register({
         "elementwise_sum_X0_offset": x0.offset,
         "elementwise_sum_X1_offset": x1.offset,
         "elementwise_sum_Y_offset": y.offset,
         "elementwise_sum_N": y.variable.size
     })
 
-    inline_injector = InlineInjector()
-    if "inline_elementwise" in op.parameters:
-        inline_injector.delegate = op.parameters["inline_elementwise"]
+    name_injector = KernelNameInjector(op)
 
     source = template
-    source = metabuffer_injector.inject(source)
-    source = inline_injector.inject(source)
-    func_name = util.add_canonical_suffix("elementwise_sum", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    source = meta_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        meta_injector.buffer
     )
 
     return [kernel]
