@@ -9,6 +9,13 @@ namespace WebDNN {
         descriptor: D | null = null;
         ignoreCache: boolean = false;
 
+        constructor(option?: any) {}
+
+        /**
+         * Initialize this runner
+         */
+        abstract init(): Promise<void>;
+
         /**
          * Fetch descriptor from specified directory.
          * @param directory directory where descriptor is contained.

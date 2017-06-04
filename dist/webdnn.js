@@ -28,20 +28,12 @@ var WebDNN;
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
      */
     class DescriptorRunner {
-        constructor() {
+        constructor(option) {
             this.descriptor = null;
             this.ignoreCache = false;
         }
     }
     WebDNN.DescriptorRunner = DescriptorRunner;
-})(WebDNN || (WebDNN = {}));
-///<reference path="../descriptor_runner/descriptor_runner.ts" />
-var WebDNN;
-(function (WebDNN) {
-    class GPUInterface {
-        constructor(option) { }
-    }
-    WebDNN.GPUInterface = GPUInterface;
 })(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {
@@ -117,12 +109,13 @@ var WebDNN;
 (function (WebDNN) {
     class WebGPUHandler {
         async init() {
-            // asynchronous operation may be added in future
-            if (!WebGPUHandler.isBrowserSupported) {
+            if (!WebGPUHandler.isBrowserSupported)
                 throw new Error('This browser does not support WebGPU');
-            }
-            this.context = document.createElement('canvas').getContext('webgpu'); //force cast
-            this.commandQueue = this.context.createCommandQueue();
+            let context = document.createElement('canvas').getContext('webgpu');
+            if (!context)
+                throw new Error('WebGPURenderingContext initialization failed');
+            this.context = context;
+            this.commandQueue = context.createCommandQueue();
             this.pipelineStates = new Map();
         }
         createBuffer(arrayBuffer) {
@@ -412,10 +405,23 @@ var WebDNN;
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerWebGPU extends WebDNN.DescriptorRunner {
-        constructor(gpuHandler) {
-            super();
-            this.gpuHandler = gpuHandler;
+        constructor(option) {
+            super(option);
             this.backendName = 'webgpu';
+            if (!WebDNN.WebGPUHandler.isBrowserSupported) {
+                throw new Error('WebGPU is not supported on this browser');
+            }
+        }
+        async init() {
+            // initialize webgpu, build kernels
+            this.shaderLanguage = 'metal';
+            this.webgpuHandler = new WebDNN.WebGPUHandler();
+            await this.webgpuHandler.init();
+            WebDNN.BufferWebGPU.init(this.webgpuHandler);
+            this.init_basic_kernels();
+        }
+        init_basic_kernels() {
+            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
         }
         async load(directory, progressCallback) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
@@ -443,7 +449,7 @@ var WebDNN;
         async compile() {
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
-            this.gpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
+            this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
             this.dataBuffer = new WebDNN.BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
@@ -508,7 +514,7 @@ var WebDNN;
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                     let exec_info = this.descriptor.exec_infos[i];
                     let start = performance.now();
-                    await this.gpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], true);
+                    await this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], true);
                     let elapsedTime = performance.now() - start;
                     records.push({
                         'Kernel': exec_info.entry_func_name,
@@ -537,41 +543,13 @@ var WebDNN;
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                     let exec_info = this.descriptor.exec_infos[i];
                     let is_last = i == this.descriptor.exec_infos.length - 1;
-                    complete_promise = this.gpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], is_last);
+                    complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], is_last);
                 }
                 await complete_promise; //wait to finish final kernel
             }
         }
     }
     WebDNN.DescriptorRunnerWebGPU = DescriptorRunnerWebGPU;
-})(WebDNN || (WebDNN = {}));
-/// <reference path="../descriptor_runner/descriptor_runner_webgpu.ts" />
-var WebDNN;
-(function (WebDNN) {
-    class GPUInterfaceWebGPU extends WebDNN.GPUInterface {
-        constructor(option) {
-            super(option);
-            this.backendName = 'webgpu';
-            if (!WebDNN.WebGPUHandler.isBrowserSupported) {
-                throw new Error('WebGPU is not supported on this browser');
-            }
-        }
-        async init() {
-            // initialize webgpu, build kernels
-            this.shaderLanguage = 'metal';
-            this.webgpuHandler = new WebDNN.WebGPUHandler();
-            await this.webgpuHandler.init();
-            WebDNN.BufferWebGPU.init(this.webgpuHandler);
-            this.init_basic_kernels();
-        }
-        init_basic_kernels() {
-            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
-        }
-        createDescriptorRunner() {
-            return new WebDNN.DescriptorRunnerWebGPU(this.webgpuHandler);
-        }
-    }
-    WebDNN.GPUInterfaceWebGPU = GPUInterfaceWebGPU;
 })(WebDNN || (WebDNN = {}));
 /// <reference path="./graph_descriptor.ts" />
 /// <reference path="../webgpu_handler.ts" />
@@ -582,11 +560,21 @@ var WebDNN;
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerWebassembly extends WebDNN.DescriptorRunner {
-        constructor() {
-            super(...arguments);
+        constructor(option) {
+            super();
             this.backendName = 'webassembly';
             this.worker_promise_reject_func = null;
             this.worker_initial_error = null;
+            if (typeof Worker === 'undefined') {
+                throw new Error('WebWorker is needed for WebAssembly backend');
+            }
+            if (typeof WebAssembly !== 'object') {
+                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
+            }
+        }
+        init() {
+            //nothing to do
+            return Promise.resolve();
         }
         async load(directory, progressCallback) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
@@ -744,29 +732,6 @@ var WebDNN;
     }
     WebDNN.DescriptorRunnerWebassembly = DescriptorRunnerWebassembly;
 })(WebDNN || (WebDNN = {}));
-/// <reference path="./gpu_interface.ts" />
-/// <reference path="../descriptor_runner/descriptor_runner_webassembly.ts" />
-var WebDNN;
-(function (WebDNN) {
-    class GPUInterfaceWebassembly extends WebDNN.GPUInterface {
-        constructor(option) {
-            super();
-            this.backendName = 'webassembly';
-            if (typeof Worker === 'undefined') {
-                throw new Error('WebWorker is needed for WebAssembly backend');
-            }
-            if (typeof WebAssembly !== 'object') {
-                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
-            }
-        }
-        async init() {
-        }
-        createDescriptorRunner() {
-            return new WebDNN.DescriptorRunnerWebassembly();
-        }
-    }
-    WebDNN.GPUInterfaceWebassembly = GPUInterfaceWebassembly;
-})(WebDNN || (WebDNN = {}));
 /// <reference path="./graph_descriptor.ts" />
 ///<reference path="../fetch.ts" />
 ///<reference path="../graph_descriptor/graph_descriptor_fallback.ts" />
@@ -776,6 +741,10 @@ var WebDNN;
         constructor() {
             super(...arguments);
             this.backendName = 'fallback';
+        }
+        init() {
+            //nothing to do
+            return Promise.resolve();
         }
         async load(directory, progressCallback) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
@@ -896,48 +865,32 @@ var WebDNN;
     }
     WebDNN.DescriptorRunnerFallback = DescriptorRunnerFallback;
 })(WebDNN || (WebDNN = {}));
-/// <reference path="../descriptor_runner/descriptor_runner_fallback.ts" />
-var WebDNN;
-(function (WebDNN) {
-    class GPUInterfaceFallback extends WebDNN.GPUInterface {
-        constructor() {
-            super(...arguments);
-            this.backendName = 'fallback';
-        }
-        async init(option) {
-        }
-        createDescriptorRunner() {
-            return new WebDNN.DescriptorRunnerFallback();
-        }
-    }
-    WebDNN.GPUInterfaceFallback = GPUInterfaceFallback;
-})(WebDNN || (WebDNN = {}));
-///<reference path="./gpu_interface/gpu_interface.ts" />
-///<reference path="./gpu_interface/gpu_interface_webgpu.ts" />
-///<reference path="./gpu_interface/gpu_interface_webassembly.ts" />
-///<reference path="./gpu_interface/gpu_interface_fallback.ts" />
+///<reference path="./descriptor_runner/descriptor_runner.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webgpu.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webassembly.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_fallback.ts" />
 var WebDNN;
 (function (WebDNN) {
     WebDNN.backends = {
-        'webgpu': WebDNN.GPUInterfaceWebGPU,
-        'webassembly': WebDNN.GPUInterfaceWebassembly,
-        'fallback': WebDNN.GPUInterfaceFallback,
+        'webgpu': WebDNN.DescriptorRunnerWebGPU,
+        'webassembly': WebDNN.DescriptorRunnerWebassembly,
+        'fallback': WebDNN.DescriptorRunnerFallback,
     };
     WebDNN.backendName = 'none';
     WebDNN.DEBUG = false;
     async function initBackend(backendName, option) {
         if (!(backendName in WebDNN.backends))
             throw new Error(`Unknown backend: "${backendName}"`);
-        let gpu;
+        let runner;
         try {
-            gpu = new WebDNN.backends[backendName](option);
-            await gpu.init();
+            runner = new WebDNN.backends[backendName](option);
+            await runner.init();
         }
         catch (ex) {
             console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
             return false;
         }
-        WebDNN.gpu = gpu;
+        WebDNN.runner = runner;
         WebDNN.backendName = backendName;
         return true;
     }
@@ -981,20 +934,21 @@ var WebDNN;
             let backendName = backendOrder.shift();
             if (!(await initBackend(backendName, backendOptions[backendName])))
                 continue;
-            let runner = WebDNN.gpu.createDescriptorRunner();
+            if (!WebDNN.runner)
+                continue;
             try {
-                await runner.load(directory, initOption.progressCallback);
+                await WebDNN.runner.load(directory, initOption.progressCallback);
             }
             catch (ex) {
                 console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
             }
-            let inputViews = await runner.getInputViews();
-            let outputViews = await runner.getOutputViews();
+            let inputViews = await WebDNN.runner.getInputViews();
+            let outputViews = await WebDNN.runner.getOutputViews();
             return {
                 backendName: backendName,
                 inputViews: inputViews,
                 outputViews: outputViews,
-                run: runner.run.bind(runner)
+                run: WebDNN.runner.run.bind(WebDNN.runner)
             };
         }
         throw new Error('No backend is available');

@@ -9,13 +9,32 @@ namespace WebDNN {
     export class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName = 'webgpu';
 
+        webgpuHandler: WebGPUHandler;
+        shaderLanguage: string;
         dataBuffer: BufferWebGPU | null;
         metaBuffers: BufferWebGPU[] | null;
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;
 
-        constructor(private gpuHandler: WebGPUHandler) {
-            super();
+        constructor(option?: any) {
+            super(option);
+            if (!WebGPUHandler.isBrowserSupported) {
+                throw new Error('WebGPU is not supported on this browser');
+            }
+        }
+
+        async init() {
+            // initialize webgpu, build kernels
+            this.shaderLanguage = 'metal';
+            this.webgpuHandler = new WebGPUHandler();
+            await this.webgpuHandler.init();
+            BufferWebGPU.init(this.webgpuHandler);
+
+            this.init_basic_kernels();
+        }
+
+        private init_basic_kernels() {
+            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
         }
 
         async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
@@ -47,7 +66,7 @@ namespace WebDNN {
         async compile() {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
 
-            this.gpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
+            this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
             this.dataBuffer = new BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
@@ -113,7 +132,7 @@ namespace WebDNN {
                     let exec_info = this.descriptor.exec_infos[i];
 
                     let start = performance.now();
-                    await this.gpuHandler.executeSinglePipelineState(
+                    await this.webgpuHandler.executeSinglePipelineState(
                         'descriptor.' + exec_info.entry_func_name,
                         exec_info.threadgroups_per_grid,
                         exec_info.threads_per_thread_group,
@@ -153,7 +172,7 @@ namespace WebDNN {
                 for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                     let exec_info = this.descriptor.exec_infos[i];
                     let is_last = i == this.descriptor.exec_infos.length - 1;
-                    complete_promise = this.gpuHandler.executeSinglePipelineState(
+                    complete_promise = this.webgpuHandler.executeSinglePipelineState(
                         'descriptor.' + exec_info.entry_func_name,
                         exec_info.threadgroups_per_grid,
                         exec_info.threads_per_thread_group,

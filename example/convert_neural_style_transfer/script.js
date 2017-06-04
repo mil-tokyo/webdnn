@@ -28,7 +28,7 @@ function togglePause() {
 
 async function initialize() {
     try {
-        //noinspection ES6ModulesDependencies
+        //noinspection ES6ModulesDependenciesw
         let backend = await WebDNN.init();
         console.log(`backend: ${backend}`);
 

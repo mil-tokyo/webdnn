@@ -162,8 +162,6 @@
         }
 
         function initializeWebDNNAsync(testCase) {
-            var runner;
-
             return WebDNN.init(testCase.backend)
                 .then(function(initializedBackend) {
                     assert.equal(
@@ -173,11 +171,8 @@
                     );
                 })
                 .then(function() {
-                    runner = WebDNN.gpu.createDescriptorRunner();
-                    runner.ignoreCache = true;
-                })
-                .then(function() {
-                    return runner;
+                    WebDNN.runner.ignoreCache = true;
+                    return WebDNN.runner;
                 });
         }
 

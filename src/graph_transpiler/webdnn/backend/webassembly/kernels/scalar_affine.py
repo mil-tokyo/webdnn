@@ -19,7 +19,7 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
     for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
         result = result * scale + bias;
-s
+
         Y[gid] = result;
     }
 }
