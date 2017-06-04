@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WASM gemm benchmark</title>
+    <script src="gemm.js"></script>
+    <script src="gemm_bench.js"></script>
+  </head>
+  <body>
+    <form id="bench_setting">
+      mode: <input type="text" name="mode" value="0">
+      M: <input type="text" name="m" value="512">
+      N: <input type="text" name="n" value="512">
+      K: <input type="text" name="k" value="512">
+      times: <input type="text" name="times" value="10">
+      <button type="button" onclick="run_bench();">Run</button>
+    </form>
+  </body>
+</html>
