@@ -6,6 +6,7 @@
 
     ./introduction
     ./setup
+    ./keras
     ./caffe
     ./chainer
 ```

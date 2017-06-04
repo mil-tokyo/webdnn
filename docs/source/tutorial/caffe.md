@@ -16,7 +16,7 @@ First, You have to initialize [`DescriptorRunner`](../api_reference/descriptor_r
 and load model data.
 
 ```js
-let runner = await runner.prepareAll('./output');
+let runner = await WebDNN.prepareAll('./output');
 ```
 
 WebDNN automatically select the best backend based on Browser type and 
