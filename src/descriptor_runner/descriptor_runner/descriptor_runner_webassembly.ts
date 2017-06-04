@@ -4,6 +4,8 @@
 /// <reference path="../fetch.ts" />
 /// <reference path="../graph_descriptor/graph_descriptor_webassembly.ts" />
 
+declare let WebAssembly;
+
 namespace WebDNN {
     export class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
         readonly backendName = 'webassembly';
@@ -14,6 +16,21 @@ namespace WebDNN {
         worker_entry_js_path;
         worker_promise_reject_func: any = null;
         worker_initial_error: any = null;
+
+        constructor(option?: any) {
+            super();
+            if (typeof Worker === 'undefined') {
+                throw new Error('WebWorker is needed for WebAssembly backend');
+            }
+            if (typeof WebAssembly !== 'object') {
+                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
+            }
+        }
+
+        init(): Promise<void> {
+            //nothing to do
+            return Promise.resolve();
+        }
 
         async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;

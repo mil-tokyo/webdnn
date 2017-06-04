@@ -42,6 +42,11 @@ declare namespace WebDNN {
         readonly backendName: string;
         descriptor: D | null;
         ignoreCache: boolean;
+        constructor(option?: any);
+        /**
+         * Initialize this runner
+         */
+        abstract init(): Promise<void>;
         /**
          * Fetch descriptor from specified directory.
          * @param directory directory where descriptor is contained.
@@ -82,14 +87,6 @@ declare namespace WebDNN {
          * Get output ArrayBufferView object
          */
         abstract getOutputViews(): Promise<Float32Array[]>;
-    }
-}
-declare namespace WebDNN {
-    abstract class GPUInterface<D extends GraphDescriptor, R extends DescriptorRunner<D>> {
-        readonly backendName: string;
-        constructor(option?: any);
-        abstract init(): Promise<void>;
-        abstract createDescriptorRunner(): R;
     }
 }
 declare namespace WebDNN {
@@ -207,6 +204,9 @@ interface WebGPUComputeCommandEncoder extends WebGPUCommandEncoder {
 }
 interface WebGPUComputePipelineState {
 }
+interface HTMLCanvasElement {
+    getContext(contextId: "webgpu"): WebGPURenderingContext | null;
+}
 declare namespace WebDNN {
     class WeightDecoderRaw implements WeightDecoder {
         decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
@@ -316,13 +316,16 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
-        private gpuHandler;
         readonly backendName: string;
+        webgpuHandler: WebGPUHandler;
+        shaderLanguage: string;
         dataBuffer: BufferWebGPU | null;
         metaBuffers: BufferWebGPU[] | null;
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;
-        constructor(gpuHandler: WebGPUHandler);
+        constructor(option?: any);
+        init(): Promise<void>;
+        private init_basic_kernels();
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setDescriptor(descriptor: GraphDescriptorWebGPU): void;
         compile(): Promise<void>;
@@ -332,23 +335,12 @@ declare namespace WebDNN {
         run(): Promise<void>;
     }
 }
-declare let WebGPUComputeCommandEncoder: any;
-declare namespace WebDNN {
-    class GPUInterfaceWebGPU extends GPUInterface<GraphDescriptorWebGPU, DescriptorRunnerWebGPU> {
-        readonly backendName: string;
-        webgpuHandler: WebGPUHandler;
-        shaderLanguage: string;
-        constructor(option?: any);
-        init(): Promise<void>;
-        private init_basic_kernels();
-        createDescriptorRunner(): DescriptorRunnerWebGPU;
-    }
-}
 declare namespace WebDNN {
     interface GraphDescriptorWebassembly extends GraphDescriptor {
         memory_layout: MemoryLayout;
     }
 }
+declare let WebAssembly: any;
 declare namespace WebDNN {
     class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
         readonly backendName: string;
@@ -358,6 +350,8 @@ declare namespace WebDNN {
         worker_entry_js_path: any;
         worker_promise_reject_func: any;
         worker_initial_error: any;
+        constructor(option?: any);
+        init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setDescriptor(descriptor: GraphDescriptorWebassembly): void;
         compile(): Promise<void>;
@@ -365,15 +359,6 @@ declare namespace WebDNN {
         getInputViews(): Promise<Float32Array[]>;
         getOutputViews(): Promise<Float32Array[]>;
         run(): Promise<void>;
-    }
-}
-declare let WebAssembly: any;
-declare namespace WebDNN {
-    class GPUInterfaceWebassembly extends GPUInterface<GraphDescriptorWebassembly, DescriptorRunnerWebassembly> {
-        readonly backendName: string;
-        constructor(option?: any);
-        init(): Promise<void>;
-        createDescriptorRunner(): DescriptorRunnerWebassembly;
     }
 }
 declare namespace WebDNN {
@@ -418,6 +403,7 @@ declare namespace WebDNN {
         variableArrays: Map<string, Float32Array> | null;
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;
+        init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setDescriptor(descriptor: GraphDescriptorFallback): void;
         compile(): Promise<void>;
@@ -430,19 +416,12 @@ declare namespace WebDNN {
     }
 }
 declare namespace WebDNN {
-    class GPUInterfaceFallback extends GPUInterface<GraphDescriptorFallback, DescriptorRunnerFallback> {
-        readonly backendName: string;
-        init(option?: any): Promise<void>;
-        createDescriptorRunner(): DescriptorRunnerFallback;
-    }
-}
-declare namespace WebDNN {
     const backends: {
-        'webgpu': typeof GPUInterfaceWebGPU;
-        'webassembly': typeof GPUInterfaceWebassembly;
-        'fallback': typeof GPUInterfaceFallback;
+        'webgpu': typeof DescriptorRunnerWebGPU;
+        'webassembly': typeof DescriptorRunnerWebassembly;
+        'fallback': typeof DescriptorRunnerFallback;
     };
-    let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>> | null;
+    let runner: DescriptorRunner<GraphDescriptor> | null;
     let backendName: string;
     let DEBUG: boolean;
     function init(backendOrder?: string | string[], backendOptions?: {

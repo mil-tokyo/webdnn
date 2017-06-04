@@ -12,6 +12,11 @@ namespace WebDNN {
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;
 
+        init(): Promise<void> {
+            //nothing to do
+            return Promise.resolve();
+        }
+
         async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
             if (this.ignoreCache) {
@@ -121,7 +126,7 @@ namespace WebDNN {
             let variableArrays = this.variableArrays;
             let views = this.descriptor.inputs.map((name) => variableArrays.get(name)!);
             this.inputViews = views;
-            
+
             return views;
         }
 

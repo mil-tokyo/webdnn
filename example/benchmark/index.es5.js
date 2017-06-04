@@ -240,13 +240,12 @@ var WebDNNBenchmark = function(_BaseBenchmark2) {
             //noinspection ES6ModulesDependencies
             return WebDNN.init([this.backend]).then(function() {
                 //noinspection ES6ModulesDependencies
-                _this5.runner = WebDNN.gpu.createDescriptorRunner();
-                return _this5.runner.load('./output/webdnn/' + _this5.getSelectedModel() + '/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
+                return WebDNN.runner.load('./output/webdnn/' + _this5.getSelectedModel() + '/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
             }).then(function() {
-                return _this5.runner.getInputViews();
+                return WebDNN.runner.getInputViews();
             }).then(function(xs) {
                 _this5.x = xs[0];
-                return _this5.runner.getOutputViews();
+                return WebDNN.runner.getOutputViews();
             }).then(function(ys) {
                 _this5.y = ys[0];
             });
@@ -254,12 +253,11 @@ var WebDNNBenchmark = function(_BaseBenchmark2) {
     }, {
         key: 'executeSingleAsync',
         value: function executeSingleAsync() {
-            return this.runner.run();
+            return WebDNN.runner.run();
         }
     }, {
         key: 'finalizeAsync',
         value: function finalizeAsync() {
-            this.runner = null;
             this.x = null;
             this.y = null;
         }

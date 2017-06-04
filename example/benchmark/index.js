@@ -148,7 +148,6 @@ class KerasJSBenchmark extends BaseBenchmark {
 class WebDNNBenchmark extends BaseBenchmark {
     constructor(name, backend, flagOptimized) {
         super(name);
-        this.runner = null;
         this.x = null;
         this.y = null;
         this.backend = backend;
@@ -160,13 +159,12 @@ class WebDNNBenchmark extends BaseBenchmark {
         return WebDNN.init([this.backend])
             .then(() => {
                 //noinspection ES6ModulesDependencies
-                this.runner = WebDNN.gpu.createDescriptorRunner();
-                return this.runner.load(`./output/webdnn/${this.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`);
+                return WebDNN.runner.load(`./output/webdnn/${this.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`);
             })
-            .then(() => this.runner.getInputViews())
+            .then(() => WebDNN.runner.getInputViews())
             .then(xs => {
                 this.x = xs[0];
-                return this.runner.getOutputViews();
+                return WebDNN.runner.getOutputViews();
             })
             .then(ys => {
                 this.y = ys[0];
@@ -174,11 +172,10 @@ class WebDNNBenchmark extends BaseBenchmark {
     }
 
     executeSingleAsync() {
-        return this.runner.run()
+        return WebDNN.runner.run()
     }
 
     finalizeAsync() {
-        this.runner = null;
         this.x = null;
         this.y = null;
     }

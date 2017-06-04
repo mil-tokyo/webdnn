@@ -1,33 +1,33 @@
-///<reference path="./gpu_interface/gpu_interface.ts" />
-///<reference path="./gpu_interface/gpu_interface_webgpu.ts" />
-///<reference path="./gpu_interface/gpu_interface_webassembly.ts" />
-///<reference path="./gpu_interface/gpu_interface_fallback.ts" />
+///<reference path="./descriptor_runner/descriptor_runner.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webgpu.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webassembly.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_fallback.ts" />
 
 namespace WebDNN {
     export const backends = {
-        'webgpu': GPUInterfaceWebGPU,
-        'webassembly': GPUInterfaceWebassembly,
-        'fallback': GPUInterfaceFallback,
+        'webgpu': DescriptorRunnerWebGPU,
+        'webassembly': DescriptorRunnerWebassembly,
+        'fallback': DescriptorRunnerFallback,
     };
 
-    export let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>> | null;
+    export let runner: DescriptorRunner<GraphDescriptor> | null;
     export let backendName: string = 'none';
     export let DEBUG: boolean = false;
 
     async function initBackend(backendName: string, option?: any) {
         if (!(backendName in backends)) throw new Error(`Unknown backend: "${backendName}"`);
 
-        let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>>;
+        let runner: DescriptorRunner<GraphDescriptor>;
 
         try {
-            gpu = new backends[backendName](option);
-            await gpu.init();
+            runner = new backends[backendName](option);
+            await runner.init();
         } catch (ex) {
             console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
             return false;
         }
 
-        WebDNN.gpu = gpu;
+        WebDNN.runner = runner;
         WebDNN.backendName = backendName;
 
         return true;
@@ -85,8 +85,7 @@ namespace WebDNN {
         while (backendOrder.length > 0) {
             let backendName = backendOrder.shift()!;
             if (!(await initBackend(backendName, backendOptions[backendName]))) continue;
-
-            let runner = gpu!.createDescriptorRunner();
+            if (!runner) continue;
 
             try {
                 await runner.load(directory, initOption.progressCallback);
