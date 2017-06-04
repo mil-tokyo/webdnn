@@ -29,8 +29,8 @@ achieved more than 200x acceleration.
     - 16 GB Memory
     - Intel Iris Graphics 6100 GPU
     - Safari Technology Preview 30
-- Model: Vgg16[[1]](#1), ResNet50[[2]](#2). 
-- Input: (1, 224, 224, 3)
+- Model: VGG16[[1]](#1), Inception-v3[[4]](#4), and ResNet50[[2]](#2). 
+- Input Shape: `(1, 299, 299, 3)` for Inception-v3, `(1, 224, 224, 3)` for others.
 
 ![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/master/docs/misc/performance.png)
 
@@ -97,3 +97,5 @@ Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.ht
     Learning for Image Recognition. In Proceedings of the Conference on Computer Vision and Pattern Recognition (CVPR). 
     [https://github.com/KaimingHe/deep-residual-networks](https://github.com/KaimingHe/deep-residual-networks)
 - <i id=3></i>[3] [Applications - Keras Documentation](https://keras.io/ja/applications/#resnet50)
+- <i id=4></i>[4] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jon Shlens, and Zbigniew Wojna. 2016.
+    Rethinking the Inception Architecture for Computer Vision. In Proceedings of the Conference on Computer Vision and Pattern Recognition (CVPR).

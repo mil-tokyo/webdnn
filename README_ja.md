@@ -25,7 +25,7 @@ WebDNNにより、ウェブブラウザ上での実行を前提とした積極�
     - 16 GB Memory
     - Intel Iris Graphics 6100 GPU
     - Safari Technology Preview 30
-- 測定内容: 画像識別モデルの一種, ResNet50[[1]](#1)およびVgg16[[2]](#2)を使用。224x224の画像1枚の推論に要する時間を測定。
+- 測定内容: 画像識別モデルの一種, Vgg16[[2]](#2), Inception-v3[[4]](#4), ResNet50[[1]](#1)を使用。224x224(Inception-v3のみ299x299)の画像1枚の推論に要する時間を測定。
 
 ![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/master/docs/misc/performance.png)
 
@@ -91,3 +91,5 @@ async function run() {
 - <i id=2></i>[2] Karen Simonyan and Andrew Zisserman. 2014. Very Deep Convolutional Networks for Large-Scale Image Recognition. 
     In Proceedings of the International Conference on Learning Representations (ICLR).
 - <i id=3></i>[3] [Applications - Keras Documentation](https://keras.io/ja/applications/#resnet50)
+- <i id=4></i>[4] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jon Shlens, and Zbigniew Wojna. 2016.
+    Rethinking the Inception Architecture for Computer Vision. In Proceedings of the Conference on Computer Vision and Pattern Recognition (CVPR).
