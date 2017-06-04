@@ -4,43 +4,32 @@
 ///<reference path="./gpu_interface/gpu_interface_fallback.ts" />
 
 namespace WebDNN {
-    export let gpu: GPUInterface;
+    export const backends = {
+        'webgpu': GPUInterfaceWebGPU,
+        'webassembly': GPUInterfaceWebassembly,
+        'fallback': GPUInterfaceFallback,
+    };
 
-    let givenBackendOptions: { [key: string]: any };
-    let tryingBackendOrder: string[];
-    let loadedBackendName: string;
+    export let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>> | null;
+    export let backendName: string = 'none';
 
-    async function tryInitNext(): Promise<string> {
-        let backend_name = tryingBackendOrder.shift();
-        if (!backend_name) {
-            throw new Error('No backend is available');
-        }
+    async function initBackend(backendName: string, option?: any) {
+        if (!(backendName in backends)) throw new Error(`Unknown backend: "${backendName}"`);
 
-        let option = givenBackendOptions[backend_name];
-        let gpuif: GPUInterface;
+        let gpu: GPUInterface<GraphDescriptor, DescriptorRunner<GraphDescriptor>>;
+
         try {
-            switch (backend_name) {
-                case 'webgpu':
-                    gpuif = new GPUInterfaceWebGPU(option);
-                    break;
-                case 'webassembly':
-                    gpuif = new GPUInterfaceWebassembly(option);
-                    break;
-                case 'fallback':
-                    gpuif = new GPUInterfaceFallback(option);
-                    break;
-                default:
-                    throw new Error('Unknown backend ' + backend_name);
-            }
-            await gpuif.init();
-            gpu = gpuif;
-            loadedBackendName = backend_name;
+            gpu = new backends[backendName](option);
+            await gpu.init();
         } catch (ex) {
-            console.warn(`Failed to initialize ${backend_name} backend: ${ex}`);
-            return await tryInitNext();
+            console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
+            return false;
         }
 
-        return loadedBackendName;
+        WebDNN.gpu = gpu;
+        WebDNN.backendName = backendName;
+
+        return true;
     }
 
     export async function init(backendOrder?: string | string[], backendOptions: { [key: string]: any } = {}): Promise<string> {
@@ -50,12 +39,16 @@ namespace WebDNN {
             backendOrder = [backendOrder];
         }
 
-        givenBackendOptions = backendOptions;
-        tryingBackendOrder = backendOrder.concat(['fallback']);
+        backendOrder = backendOrder.slice();
+        if (backendOrder.indexOf('fallback') === -1) backendOrder.concat(['fallback']);
 
-        await tryInitNext();
+        while (backendOrder.length > 0) {
+            let backendName = backendOrder.shift()!;
 
-        return loadedBackendName;
+            if (await initBackend(backendName, backendOptions[backendName])) return WebDNN.backendName;
+        }
+
+        throw new Error('No backend is available');
     }
 
     /**
@@ -77,28 +70,41 @@ namespace WebDNN {
      * @return Interface to input/output data and run the model.
      */
     export async function prepareAll(directory: string, initOption: InitOption = {}): Promise<GraphInterface> {
-        await init(initOption.backendOrder, initOption.backendOptions);
-
-        while (true) {
-            try {
-                let runner = gpu.createDescriptorRunner();
-                await runner.load(directory, initOption.progressCallback);
-
-                let inputViews = await runner.getInputViews();
-                let outputViews = await runner.getOutputViews();
-
-                return {
-                    backendName: loadedBackendName,
-                    inputViews: inputViews,
-                    outputViews: outputViews,
-                    run: runner.run.bind(runner)
-                };
-
-            } catch (ex) {
-                console.error(`Model loading failed for ${loadedBackendName} backend. Trying next backend. ${ex.message}`);
-                await tryInitNext();
-            }
+        let backendOrder = initOption.backendOrder;
+        if (!backendOrder) {
+            backendOrder = ['webgpu', 'webassembly'];
+        } else if (typeof backendOrder === 'string') {
+            backendOrder = [backendOrder];
         }
+        backendOrder = backendOrder.slice();
+        if (backendOrder.indexOf('fallback') === -1) backendOrder.concat(['fallback']);
+
+        let backendOptions = initOption.backendOptions || {};
+
+        while (backendOrder.length > 0) {
+            let backendName = backendOrder.shift()!;
+            if (!(await initBackend(backendName, backendOptions[backendName]))) continue;
+
+            let runner = gpu!.createDescriptorRunner();
+
+            try {
+                await runner.load(directory, initOption.progressCallback);
+            } catch (ex) {
+                console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
+            }
+
+            let inputViews = await runner.getInputViews();
+            let outputViews = await runner.getOutputViews();
+
+            return {
+                backendName: backendName,
+                inputViews: inputViews,
+                outputViews: outputViews,
+                run: runner.run.bind(runner)
+            };
+        }
+
+        throw new Error('No backend is available');
     }
 
     /**

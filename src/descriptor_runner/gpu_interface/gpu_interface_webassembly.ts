@@ -1,12 +1,14 @@
 /// <reference path="./gpu_interface.ts" />
 /// <reference path="../descriptor_runner/descriptor_runner_webassembly.ts" />
 
-declare var WebAssembly;
+declare let WebAssembly;
 
 namespace WebDNN {
-    export class GPUInterfaceWebassembly implements GPUInterface {
+    export class GPUInterfaceWebassembly extends GPUInterface<GraphDescriptorWebassembly, DescriptorRunnerWebassembly> {
+        readonly backendName = 'webassembly';
 
-        constructor(private option?: any) {
+        constructor(option?: any) {
+            super();
             if (typeof Worker === 'undefined') {
                 throw new Error('WebWorker is needed for WebAssembly backend');
             }
@@ -18,8 +20,7 @@ namespace WebDNN {
         async init() {
         }
 
-
-        createDescriptorRunner(): DescriptorRunner {
+        createDescriptorRunner() {
             return new DescriptorRunnerWebassembly();
         }
     }

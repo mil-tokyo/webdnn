@@ -4,8 +4,10 @@ namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
      */
-    export interface DescriptorRunner {
-        backend: string;
+    export abstract class DescriptorRunner<D extends GraphDescriptor> {
+        readonly backendName: string;
+        descriptor: D | null = null;
+        ignoreCache: boolean = false;
 
         /**
          * Fetch descriptor from specified directory.
@@ -20,38 +22,38 @@ namespace WebDNN {
          *
          * @param progressCallback callback which is called to notice the loading is progressing.
          */
-        load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+        abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
         /**
          * set descriptor.
          * @param descriptor descriptor which will be executed.
          */
-        setDescriptor(descriptor: GraphDescriptor): void;
+        abstract setDescriptor(descriptor: D): void;
 
         /**
          * compile kernels.
          */
-        compile(): Promise<void>;
+        abstract compile(): Promise<void>;
 
         /**
          * load weight data
          * @param weightsData weights data
          */
-        loadWeights(weightsData: Uint8Array): Promise<void>;
+        abstract loadWeights(weightsData: Uint8Array): Promise<void>;
 
         /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
-        run(): Promise<void>;
+        abstract run(): Promise<void>;
 
         /**
          * Get input ArrayBufferView object
          */
-        getInputViews(): Promise<Float32Array[]>;
+        abstract getInputViews(): Promise<Float32Array[]>;
 
         /**
          * Get output ArrayBufferView object
          */
-        getOutputViews(): Promise<Float32Array[]>;
+        abstract getOutputViews(): Promise<Float32Array[]>;
     }
 }
