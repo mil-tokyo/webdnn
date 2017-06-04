@@ -1,15 +1,13 @@
 /// <reference path="../descriptor_runner/descriptor_runner_fallback.ts" />
 
 namespace WebDNN {
-    export class GPUInterfaceFallback implements GPUInterface {
-        constructor(private option?: any) {
-
-        }
+    export class GPUInterfaceFallback extends GPUInterface<GraphDescriptorFallback, DescriptorRunnerFallback> {
+        readonly backendName = 'fallback';
 
         async init(option?: any) {
         }
 
-        createDescriptorRunner(): DescriptorRunner {
+        createDescriptorRunner() {
             return new DescriptorRunnerFallback();
         }
     }

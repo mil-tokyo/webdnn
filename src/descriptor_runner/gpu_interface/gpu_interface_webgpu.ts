@@ -3,11 +3,14 @@
 declare let WebGPUComputeCommandEncoder;
 
 namespace WebDNN {
-    export class GPUInterfaceWebGPU implements GPUInterface {
+    export class GPUInterfaceWebGPU extends GPUInterface<GraphDescriptorWebGPU, DescriptorRunnerWebGPU> {
+        readonly backendName = 'webgpu';
+
         webgpuHandler: WebGPUHandler;
         shaderLanguage: string;
 
-        constructor(private option?: any) {
+        constructor(option?: any) {
+            super(option);
             if (!WebGPUHandler.isBrowserSupported) {
                 throw new Error('WebGPU is not supported on this browser');
             }
@@ -26,7 +29,7 @@ namespace WebDNN {
             this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
         }
 
-        createDescriptorRunner(): DescriptorRunner {
+        createDescriptorRunner() {
             return new DescriptorRunnerWebGPU(this.webgpuHandler);
         }
     }
