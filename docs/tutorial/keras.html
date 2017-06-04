@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Use with Caffemodel &mdash; MIL WebDNN 1.0.0 documentation</title>
+  <title>Use with Keras Model &mdash; MIL WebDNN 1.0.0 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="MIL WebDNN 1.0.0 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="index.html"/>
-        <link rel="next" title="Use with Chainer Model" href="chainer.html"/>
-        <link rel="prev" title="Use with Keras Model" href="keras.html"/> 
+        <link rel="next" title="Use with Caffemodel" href="caffe.html"/>
+        <link rel="prev" title="Setup Guide" href="setup.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -99,12 +99,8 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction to WebDNN</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#framework-structure">Framework structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup Guide</a></li>
-<li class="toctree-l2"><a class="reference internal" href="keras.html">Use with Keras Model</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Use with Caffemodel</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#convert-caffemodel-into-graphdescriptor">1. Convert Caffemodel into GraphDescriptor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run-on-web-browser">2. Run on web browser</a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Use with Keras Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caffe.html">Use with Caffemodel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="chainer.html">Use with Chainer Model</a></li>
 </ul>
 </li>
@@ -156,13 +152,13 @@
         
           <li><a href="index.html">Tutorial</a> &raquo;</li>
         
-      <li>Use with Caffemodel</li>
+      <li>Use with Keras Model</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tutorial/caffe.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tutorial/keras.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -175,18 +171,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="use-with-caffemodel">
-<span id="use-with-caffemodel"></span><h1>Use with Caffemodel<a class="headerlink" href="#use-with-caffemodel" title="Permalink to this headline">¶</a></h1>
-<p>In this section, you will learn about how to convert your caffemodel
-into <code class="docutils literal"><span class="pre">GraphDescriptor</span></code>, and run <code class="docutils literal"><span class="pre">GraphDescriptor</span></code> on your web page.</p>
-<div class="section" id="convert-caffemodel-into-graphdescriptor">
-<span id="convert-caffemodel-into-graphdescriptor"></span><h2>1. Convert Caffemodel into GraphDescriptor<a class="headerlink" href="#convert-caffemodel-into-graphdescriptor" title="Permalink to this headline">¶</a></h2>
-<p>See jupyter notebook (<a class="reference external" href="https://github.com/mil-tokyo/mil-web-dnn/blob/master/example/convert_caffe/caffenet_conversion.ipynb">caffenet_conversion.ipynb</a>) to see how to convert model offline.</p>
+  <div class="section" id="use-with-keras-model">
+<span id="use-with-keras-model"></span><h1>Use with Keras Model<a class="headerlink" href="#use-with-keras-model" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we&#8217;ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model 
+pretrained in Keras <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
+<ol>
+<li><p class="first">Export Keras pretrained model</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">keras.applications</span> <span class="kn">import</span> <span class="n">resnet50</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span><span class="n">include_top</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;resnet50.h5&quot;</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="run-on-web-browser">
-<span id="run-on-web-browser"></span><h2>2. Run on web browser<a class="headerlink" href="#run-on-web-browser" title="Permalink to this headline">¶</a></h2>
-<p>In this section, I&#8217;ll describe how to run generated descriptor on web browser.
-you can view complete codes (HTML and JS file) in <code class="docutils literal"><span class="pre">/example/convert_caffe</span></code>.</p>
+</li>
+<li><p class="first">Convert Keras model to our computation graph format</p>
+<div class="highlight-sh"><div class="highlight"><pre><span></span>python bin/convert_keras.py resnet50.h5 --input_shape <span class="s1">&#39;(1,224,224,3)&#39;</span> --out output
+</pre></div>
+</div>
+<p>At least you need to specify the model file and the shape of input array.</p>
+<p>Now you have the &#8220;graph descriptor&#8221; to execute on the web browsers in output directory.</p>
+</li>
+<li><p class="first">Run on web browser</p>
+<p>This document illustrates the essence of running the &#8220;graph descriptor&#8221; to execute on the web browsers.
+In <code class="docutils literal"><span class="pre">convert_keras</span></code> example directory, the complete codes for training and converting a Keras model and running it on the web browsers can be found.</p>
 <p>First, You have to initialize <a class="reference external" href="../api_reference/descriptor_runner/interfaces/webdnn.dnndescriptorrunner.html"><code class="docutils literal"><span class="pre">DescriptorRunner</span></code></a>
 and load model data.</p>
 <div class="highlight-js"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nx">prepareAll</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">);</span>
@@ -206,7 +212,7 @@ compiled model data on the server.</p>
 </div>
 <p>That&#8217;s all for initialization. You only have to do this at once in the application.</p>
 <p>Let&#8217;s classify this image.</p>
-<p><img alt="sample image" src="../_images/sample_image.jpeg" /></p>
+<p><img alt="sample image" src="../_images/sample_image2.jpeg" /></p>
 <p>First, set input data.</p>
 <div class="highlight-js"><div class="highlight"><pre><span></span><span class="c1">// loadImageData() returns image data as Float32Array</span>
 <span class="nx">x</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">loadImageData</span><span class="p">());</span>
@@ -222,9 +228,26 @@ compiled model data on the server.</p>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Predicted Label&#39;</span><span class="p">,</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nb">Math</span><span class="p">.</span><span class="nx">argmax</span><span class="p">(</span><span class="nx">y</span><span class="p">));</span>
 </pre></div>
 </div>
-<p><img alt="result" src="../_images/result.png" /></p>
-<p>Congratulation! <code class="docutils literal"><span class="pre">LabelID:230</span></code> is <code class="docutils literal"><span class="pre">&quot;Shetland</span> <span class="pre">sheepdog&quot;</span></code> in ImageNet. It looks work well.</p>
-</div>
+<p><img alt="result" src="../_images/result_keras.png" /></p>
+<p>Congratulation! <code class="docutils literal"><span class="pre">LabelID:779</span></code> is <code class="docutils literal"><span class="pre">&quot;School</span> <span class="pre">bus&quot;</span></code> in ImageNet. It looks work well.</p>
+</li>
+</ol>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="11">
+<li>He, X. Zhang, S. Ren, and J. Sun, &#8220;Deep Residual Learning for Image Recognition&#8221;, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><a class="reference external" href="https://keras.io/applications/#resnet50">https://keras.io/applications/#resnet50</a></td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -237,10 +260,10 @@ compiled model data on the server.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="chainer.html" class="btn btn-neutral float-right" title="Use with Chainer Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="caffe.html" class="btn btn-neutral float-right" title="Use with Caffemodel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="keras.html" class="btn btn-neutral" title="Use with Keras Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="setup.html" class="btn btn-neutral" title="Setup Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
