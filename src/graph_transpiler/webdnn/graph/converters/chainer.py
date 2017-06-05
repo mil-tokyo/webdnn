@@ -2,7 +2,7 @@
 
 """
 Chainer Link -> Graph object converters
-Assuming Chainer 1.23
+Assuming Chainer 2.0
 """
 
 from typing import List, Tuple
@@ -101,7 +101,7 @@ class LinearBlock(OperatorBlock):
     # noinspection PyUnresolvedReferences
     cfunc: chainer.functions.connection.linear.LinearFunction
 
-    def __init__(self, cfunc: chainer.functions.Linear):
+    def __init__(self, cfunc: chainer.functions.connection.linear.LinearFunction):
         super().__init__()
         self.cfunc = cfunc
 
@@ -260,15 +260,23 @@ class BatchNormalizationBlock(OperatorBlock):
         self.cfunc = cfunc
 
     def __call__(self, inputs: List[Variable]) -> Tuple[Variable]:
-        assert len(inputs) == 5
-        x, gamma, beta, mean, variance = inputs
+        if len(inputs) == 5:
+            x, gamma, beta, mean, variance = inputs
+            variance_data = variance.data
+            mean_data = mean.data
+        elif len(inputs) == 3:
+            x, gamma, beta = inputs
+            variance_data = self.cfunc.running_var
+            mean_data = self.cfunc.running_mean
+        else:
+            raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
         # x以外の変数は、加工して新しいConstantとして使う
         # (x - mean) / sqrt(var + eps) * gamma + beta
         # gamma_div_std = gamma / sqrt(var + eps)
         # beta_scaled = beta - mean * gamma_div_std
         # y = x * gamma_div_std + beta_scaled
-        gamma_div_std = gamma.data / np.sqrt(variance.data + self.cfunc.eps)
-        beta_scaled = beta.data - mean.data * gamma_div_std
+        gamma_div_std = gamma.data / np.sqrt(variance_data + self.cfunc.eps)
+        beta_scaled = beta.data - mean_data * gamma_div_std
 
         scale_opr = AxiswiseScale(generate_unique_name(self.cfunc.label), axis=Axis.C)
         gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
@@ -369,8 +377,8 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
 
 class ChainerGraphConverter:
     def __init__(self):
-        self._cvar_to_nvar = {}  # id(chainer.Variable) => Variable (note: chainerに対応しないVariableも作られる)
-        self._cvar_ids = []  # id(chainer.Variable)
+        self._cvar_to_nvar = {}  # id(chainer.variable.VariableNode) => Variable (note: chainerに対応しないVariableも作られる)
+        self._cvar_ids = []  # id(chainer.variable.VariableNode)
         self._known_nvars = []  # 存在するVariable(include Constant)
 
     def convert_from_inout_vars(self, inputs: List[chainer.Variable], outputs: List[chainer.Variable]):
@@ -387,6 +395,9 @@ class ChainerGraphConverter:
         self._cvar_ids = []
         self._known_nvars = []
         self._convert_weight_vars(chainer_computational_graph)
+        # Variable | VariableNodeをVariableNodeに変換
+        input_vars = [v.node if isinstance(v, chainer.Variable) else v for v in input_vars]
+        output_vars = [v.node if isinstance(v, chainer.Variable) else v for v in output_vars]
         self._convert_input_vars(input_vars)
 
         pending_functions = [cfunc for cfunc in chainer_computational_graph.nodes if
@@ -426,7 +437,7 @@ class ChainerGraphConverter:
         return Graph([self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
                      [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
 
-    def _convert_input_vars(self, input_vars: List[chainer.Variable]):
+    def _convert_input_vars(self, input_vars: List[chainer.variable.VariableNode]):
         for cvar in input_vars:
             nvar = self._convert_var(cvar)
             nvar.attributes.add(Input(nvar))
@@ -439,9 +450,9 @@ class ChainerGraphConverter:
             # noinspection PyUnresolvedReferences
             if isinstance(cvar, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
                 # BNのmean, varは名無しだがウェイト
-                assert len(cvar.inputs) == 5  # data, gamma, bias, mean, var
-                self._convert_var(cvar.inputs[3], force_constant=True)
-                self._convert_var(cvar.inputs[4], force_constant=True)
+                if len(cvar.inputs) == 5:  # data, gamma, bias, mean, var
+                    self._convert_var(cvar.inputs[3], force_constant=True)
+                    self._convert_var(cvar.inputs[4], force_constant=True)
 
             elif isinstance(cvar, chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
                 # chainerのDeconvolution2DのWは(Cin, Cout, Kh, Kw)のオーダー
@@ -450,12 +461,12 @@ class ChainerGraphConverter:
         # Phase2. 残りを処理
         for cvar in chainer_computational_graph.nodes:
             # noinspection PyUnresolvedReferences
-            if isinstance(cvar, chainer.Variable):
+            if isinstance(cvar, chainer.variable.VariableNode):
                 if id(cvar) not in self._cvar_ids and cvar.name is not None:
                     self._convert_var(cvar)
 
     def _convert_var(self,
-                     cvar: chainer.Variable,
+                     cvar: chainer.variable.VariableNode,
                      force_constant=False,
                      force_order: Order = None):
         assert id(cvar) not in self._cvar_ids
