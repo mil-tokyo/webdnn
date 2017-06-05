@@ -61,8 +61,13 @@ def main():
     link = chainer.links.caffe.CaffeFunction(args.caffemodel)
 
     sys.stderr.write("Generating feedforward graph\n")
-    output_blobs = list(
-        link(inputs={args.input_name: input_blob}, outputs=output_names, train=False))  # list of Variable
+    if chainer.__version__ >= "2.":
+        chainer.using_config("train", False)
+        output_blobs = list(
+            link(inputs={args.input_name: input_blob}, outputs=output_names))  # list of Variable
+    else:
+        output_blobs = list(
+            link(inputs={args.input_name: input_blob}, outputs=output_names, train=False))  # list of Variable
     chainer_cg = chainer.computational_graph.build_computational_graph(output_blobs)
     converter = ChainerGraphConverter()
     graph = converter.convert(chainer_cg, [input_blob], output_blobs)  # type: Graph

@@ -2,7 +2,7 @@
 
 """
 Chainer Link -> Graph object converters
-Assuming Chainer 2.0
+Assuming Chainer 1.23 or 2.0
 """
 
 from typing import List, Tuple
@@ -34,6 +34,13 @@ from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
+
+if chainer.__version__ >= "2.":
+    chainer_v2 = True
+    VariableNode = chainer.variable.VariableNode
+else:
+    chainer_v2 = False
+    VariableNode = chainer.variable.Variable
 
 unique_ctr = 0
 
@@ -356,6 +363,22 @@ class ReshapeBlock(OperatorBlock):
         return list(opr(inputs[0]))
 
 
+class DropoutBlock(OperatorBlock):
+    """
+    Doing nothing (test-purpose)
+    """
+    # noinspection PyUnresolvedReferences
+    cfunc: chainer.functions.noise.dropout.Dropout
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, cfunc: chainer.functions.noise.dropout.Dropout):
+        super().__init__()
+        self.cfunc = cfunc
+
+    def __call__(self, inputs: List[Variable]) -> List[Variable]:
+        return inputs
+
+
 # noinspection PyUnresolvedReferences
 BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.ELU, EluBlock),
@@ -372,13 +395,14 @@ BLOCK_CLASSES = [(chainer.functions.ReLU, ReluBlock),
                  (chainer.functions.math.basic_math.MulConstant, MulConstantBlock),
                  (chainer.functions.array.reshape.Reshape, ReshapeBlock),
                  (chainer.functions.normalization.local_response_normalization.LocalResponseNormalization,
-                  LocalResponseNormalizationBlock)]
+                  LocalResponseNormalizationBlock),
+                 (chainer.functions.noise.dropout.Dropout, DropoutBlock)]
 
 
 class ChainerGraphConverter:
     def __init__(self):
-        self._cvar_to_nvar = {}  # id(chainer.variable.VariableNode) => Variable (note: chainerに対応しないVariableも作られる)
-        self._cvar_ids = []  # id(chainer.variable.VariableNode)
+        self._cvar_to_nvar = {}  # id(VariableNode) => Variable (note: chainerに対応しないVariableも作られる)
+        self._cvar_ids = []  # id(VariableNode)
         self._known_nvars = []  # 存在するVariable(include Constant)
 
     def convert_from_inout_vars(self, inputs: List[chainer.Variable], outputs: List[chainer.Variable]):
@@ -396,8 +420,9 @@ class ChainerGraphConverter:
         self._known_nvars = []
         self._convert_weight_vars(chainer_computational_graph)
         # Variable | VariableNodeをVariableNodeに変換
-        input_vars = [v.node if isinstance(v, chainer.Variable) else v for v in input_vars]
-        output_vars = [v.node if isinstance(v, chainer.Variable) else v for v in output_vars]
+        if chainer_v2:
+            input_vars = [v.node if isinstance(v, chainer.Variable) else v for v in input_vars]
+            output_vars = [v.node if isinstance(v, chainer.Variable) else v for v in output_vars]
         self._convert_input_vars(input_vars)
 
         pending_functions = [cfunc for cfunc in chainer_computational_graph.nodes if
@@ -437,7 +462,7 @@ class ChainerGraphConverter:
         return Graph([self._cvar_to_nvar[id(cvar)] for cvar in input_vars],
                      [self._cvar_to_nvar[id(cvar)] for cvar in output_vars])
 
-    def _convert_input_vars(self, input_vars: List[chainer.variable.VariableNode]):
+    def _convert_input_vars(self, input_vars: List[VariableNode]):
         for cvar in input_vars:
             nvar = self._convert_var(cvar)
             nvar.attributes.add(Input(nvar))
@@ -461,12 +486,12 @@ class ChainerGraphConverter:
         # Phase2. 残りを処理
         for cvar in chainer_computational_graph.nodes:
             # noinspection PyUnresolvedReferences
-            if isinstance(cvar, chainer.variable.VariableNode):
+            if isinstance(cvar, VariableNode):
                 if id(cvar) not in self._cvar_ids and cvar.name is not None:
                     self._convert_var(cvar)
 
     def _convert_var(self,
-                     cvar: chainer.variable.VariableNode,
+                     cvar: VariableNode,
                      force_constant=False,
                      force_order: Order = None):
         assert id(cvar) not in self._cvar_ids
