@@ -363,26 +363,7 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     interface GraphDescriptorFallback extends GraphDescriptor {
-        weight_allocation: {
-            total_size: number;
-            allocations: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
-        variable_allocation: {
-            total_size: number;
-            allocations: {
-                [index: string]: {
-                    name: string;
-                    offset: number;
-                    size: number;
-                };
-            };
-        };
+        memory_layout: MemoryLayout;
         kernel_source: string;
         exec_infos: GraphDescriptorFallbackExecInfo[];
     }
@@ -398,8 +379,7 @@ declare namespace WebDNN {
     class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
         readonly backendName: string;
         kernelObj: any;
-        rawWeightArray: Float32Array | null;
-        weightArrays: Map<string, Float32Array> | null;
+        rawArray: Float32Array | null;
         variableArrays: Map<string, Float32Array> | null;
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;

@@ -1060,24 +1060,17 @@ var WebDNN;
         };
         DescriptorRunnerFallback.prototype.compile = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var descriptor, weight_name_alloc, name_2, alloc, variable_name_alloc, name_3, alloc;
+                var descriptor, name_2, alloc;
                 return __generator(this, function (_a) {
                     if (!this.descriptor)
                         throw new Error('Descriptor is not loaded');
                     descriptor = this.descriptor;
                     this.compileKernel();
-                    this.rawWeightArray = new Float32Array(descriptor.weight_allocation.total_size);
-                    weight_name_alloc = descriptor.weight_allocation.allocations;
-                    this.weightArrays = new Map();
-                    for (name_2 in weight_name_alloc) {
-                        alloc = weight_name_alloc[name_2];
-                        this.weightArrays.set(name_2, new Float32Array(this.rawWeightArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-                    }
+                    this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
                     this.variableArrays = new Map();
-                    variable_name_alloc = descriptor.variable_allocation.allocations;
-                    for (name_3 in variable_name_alloc) {
-                        alloc = variable_name_alloc[name_3];
-                        this.variableArrays.set(name_3, new Float32Array(alloc.size));
+                    for (name_2 in descriptor.memory_layout.allocations) {
+                        alloc = descriptor.memory_layout.allocations[name_2];
+                        this.variableArrays.set(name_2, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
                     }
                     return [2 /*return*/];
                 });
@@ -1098,11 +1091,11 @@ var WebDNN;
                         case 0:
                             if (!this.descriptor)
                                 throw new Error('Descriptor is not loaded');
-                            if (!this.rawWeightArray)
-                                throw new Error('Weight array is not loaded');
+                            if (!this.rawArray)
+                                throw new Error('Raw array is not loaded');
                             decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            _b = (_a = this.rawWeightArray).set;
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
+                            _b = (_a = this.rawArray).set;
+                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.memory_layout)];
                         case 1:
                             _b.apply(_a, [_c.sent()]);
                             return [2 /*return*/];
@@ -1112,19 +1105,18 @@ var WebDNN;
         };
         DescriptorRunnerFallback.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var descriptor, variableArrays, weightArrays, run_entry_date, last_progress_date, i, current_date, elapsed_ms, exec_info, input_arrays, output_arrays, weight_arrays;
+                var descriptor, variableArrays, run_entry_date, last_progress_date, i, current_date, elapsed_ms, exec_info, input_arrays, output_arrays;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             if (!this.descriptor)
                                 throw new Error('Descriptor is not loaded');
-                            if (!this.variableArrays || !this.weightArrays)
+                            if (!this.variableArrays)
                                 throw new Error('Variable map is not initialized');
                             if (!this.inputViews || !this.outputViews)
                                 throw new Error('getInputViews and getOutputViews must be called prior to run');
                             descriptor = this.descriptor;
                             variableArrays = this.variableArrays;
-                            weightArrays = this.weightArrays;
                             run_entry_date = Date.now();
                             last_progress_date = Date.now();
                             i = 0;
@@ -1144,8 +1136,7 @@ var WebDNN;
                             exec_info = this.descriptor.exec_infos[i];
                             input_arrays = exec_info.inputs.map(function (name) { return variableArrays.get(name); });
                             output_arrays = exec_info.outputs.map(function (name) { return variableArrays.get(name); });
-                            weight_arrays = exec_info.weights.map(function (name) { return weightArrays.get(name); });
-                            this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
+                            this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, exec_info.call_option);
                             _a.label = 4;
                         case 4:
                             i++;
@@ -1161,7 +1152,7 @@ var WebDNN;
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     // let console.log to be displayed, and prevent freeze
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
+                    return [2 /*return*/, new Promise(function (resolve) {
                             setTimeout(resolve, 10);
                         })];
                 });

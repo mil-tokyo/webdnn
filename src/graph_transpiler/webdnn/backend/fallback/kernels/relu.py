@@ -7,7 +7,7 @@ from webdnn.graph.operators.relu import Relu
 # EcmaScript3 to support older browsers
 
 source = """
-relu: function(input_arrays, output_arrays, param_arrays, option) {
+relu: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
 var y = output_arrays[0];
 var length = option.length | 0;
@@ -29,9 +29,8 @@ def relu(op: Relu) -> List[Kernel]:
     kernel = Kernel(
         {"relu": source},
         "relu",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=[x],
+        outputs=[y],
         call_option={"length": x.size}
     )
 

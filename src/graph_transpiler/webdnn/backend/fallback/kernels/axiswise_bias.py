@@ -9,10 +9,10 @@ from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 # EcmaScript3 to support older browsers
 
 source = """
-axiswise_bias: function(input_arrays, output_arrays, param_arrays, option) {
+axiswise_bias: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
+var b = input_arrays[1];
 var y = output_arrays[0];
-var b = param_arrays[0];
 var n = option.n | 0;
 var axis_stride = option.axis_stride | 0;
 var axis_size = option.axis_size | 0;
@@ -44,9 +44,8 @@ def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
     kernel = Kernel(
         {"axiswise_bias": source},
         "axiswise_bias",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[b.parameters["name"]],
+        inputs=[x, b],
+        outputs=[y],
         call_option={"n": x.size,
                      "axis_stride": axis_stride,
                      "axis_size": axis_size}

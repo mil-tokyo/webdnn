@@ -10,7 +10,7 @@ import os
 import os.path as path
 from typing import List
 
-from webdnn.backend.fallback.allocator import Allocator, MemoryLayout
+from webdnn.backend.code_generator.allocator import Allocator
 from webdnn.backend.fallback.graph_descriptor import GraphDescriptor
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.average_pooling_2d import average_pooling_2d
@@ -62,21 +62,19 @@ class GraphExecutionData(IGraphExecutionData):
 
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
-    variables_layout, constants_layout = Allocator.allocate(graph)
+    memory_layout = Allocator.allocate(graph)
     if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorFallback] constants_layout total size: {constants_layout.size} * sizeof(float)")
-        print(f"[GraphDescriptorGeneratorFallback] variables_layout total size: {variables_layout.size} * sizeof(float)")
+        print(f"[GraphDescriptorGeneratorFallback] memory_layout total size: {memory_layout.size * 4}")
+
     constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
-    constants_bytes = constant_encoder.encode(constants_layout)
+    constants_bytes = constant_encoder.encode(memory_layout)
+
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorFallback] constants encoded size: {len(constants_bytes)}")
 
-    kernels = generate_kernels(graph, constants_layout, variables_layout)
-
     descriptor = GraphDescriptor(
-        kernels=kernels,
-        constants_layout=constants_layout,
-        variables_layout=variables_layout,
+        kernels=generate_kernels(graph),
+        memory_layout=memory_layout,
         inputs=graph.inputs,
         outputs=graph.outputs,
         constants_encoding=constant_encoder.name,
@@ -86,7 +84,7 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
 
 
 # noinspection PyUnusedLocal
-def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
+def generate_kernels(graph: Graph) -> List[Kernel]:
     kernels: List[Kernel] = []
     for op in traverse.listup_operators(graph):
         if isinstance(op, Linear):

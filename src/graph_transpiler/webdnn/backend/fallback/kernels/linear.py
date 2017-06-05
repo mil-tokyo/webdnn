@@ -10,10 +10,10 @@ from webdnn.graph.order import OrderNC
 # EcmaScript3 to support older browsers
 
 source = """
-linear: function(input_arrays, output_arrays, param_arrays, option) {
+linear: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
+var w = input_arrays[1];
 var y = output_arrays[0];
-var w = param_arrays[0];
 var m = option.m | 0;
 var n = option.n | 0;
 var k = option.k | 0;
@@ -101,9 +101,8 @@ def linear(op: Linear) -> List[Kernel]:
     kernel = Kernel(
         {"linear": source},
         "linear",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[w.parameters["name"]],
+        inputs=[x, w],
+        outputs=[y],
         call_option={"m": m,
                      "n": n,
                      "k": k,

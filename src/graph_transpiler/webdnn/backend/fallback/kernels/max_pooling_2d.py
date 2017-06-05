@@ -9,7 +9,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 # EcmaScript3 to support older browsers
 
 source = """
-max_pooling_2d: function(input_arrays, output_arrays, param_arrays, option) {
+max_pooling_2d: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
 var y = output_arrays[0];
 var n = option.n | 0;
@@ -73,9 +73,8 @@ def max_pooling_2d(op: MaxPooling2D) -> List[Kernel]:
     kernel = Kernel(
         {"max_pooling_2d": source},
         "max_pooling_2d",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=[x],
+        outputs=[y],
         call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],
