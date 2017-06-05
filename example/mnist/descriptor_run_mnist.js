@@ -1,6 +1,7 @@
 'use strict';
 
 let run_if = null;
+let test_samples = null;
 
 function msg(s) {
     document.getElementById('msg_place').textContent = s;
@@ -24,12 +25,13 @@ function reset_backend() {
 async function run() {
     if (!run_if) {
         let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-        run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
-        msg(`Backend: ${run_if.backendName}`);
-        console.info(`Backend: ${run_if.backendName}`);
+        let framework_name = document.querySelector('input[name=framework_name]:checked').value;
+        run_if = await WebDNN.prepareAll(`./output_${framework_name}`, { backendOrder: backend_name });
+        msg(`Backend: ${run_if.backendName}, model converted from ${framework_name}`);
+        console.info(`Backend: ${run_if.backendName}, model converted from ${framework_name}`);
+        test_samples = await fetchSamples(`./output_${framework_name}/test_samples.json`);
     }
 
-    let test_samples = await fetchSamples('./output/test_samples.json');
     let output_table = document.getElementById('result');
     resetOutputTable(output_table);
 
@@ -63,6 +65,9 @@ async function run() {
 
 async function fetchSamples(path) {
     let response = await fetch(path);
+    if (!response.ok) {
+        throw new Error('Failed to load test samples');
+    }
     let json = await response.json();
     let samples = [];
     for (let i = 0; i < json.length; i++) {

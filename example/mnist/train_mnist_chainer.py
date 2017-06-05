@@ -76,7 +76,7 @@ def main():
                         help='Frequency of taking a snapshot')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='output',
+    parser.add_argument('--out', '-o', default='output_chainer',
                         help='Directory to output the graph descriptor and sample test data')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')

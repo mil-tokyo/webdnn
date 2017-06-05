@@ -37,16 +37,18 @@ let run_ifs = {};
 
 async function prepare_run() {
     let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-    if (!(backend_name in run_ifs)) {
+    let framework_name = document.querySelector('input[name=framework_name]:checked').value;
+    let backend_key = backend_name + framework_name;
+    if (!(backend_key in run_ifs)) {
         log('Initializing and loading model');
-        let run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
-        log(`Loaded backend: ${run_if.backendName}`);
+        let run_if = await WebDNN.prepareAll(`./output_${framework_name}`, { backendOrder: backend_name });
+        log(`Loaded backend: ${run_if.backendName}, model converted from ${framework_name}`);
 
-        run_ifs[backend_name] = run_if;
+        run_ifs[backend_key] = run_if;
     } else {
         log('Model is already loaded');
     }
-    return run_ifs[backend_name];
+    return run_ifs[backend_key];
 }
 
 async function run() {

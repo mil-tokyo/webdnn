@@ -2,38 +2,40 @@
 
 var prepare_run = function () {
     var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
-        var backend_name, run_if;
+        var backend_name, framework_name, backend_key, run_if;
         return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
                         backend_name = document.querySelector('input[name=backend_name]:checked').value;
+                        framework_name = document.querySelector('input[name=framework_name]:checked').value;
+                        backend_key = backend_name + framework_name;
 
-                        if (backend_name in run_ifs) {
-                            _context.next = 10;
+                        if (backend_key in run_ifs) {
+                            _context.next = 12;
                             break;
                         }
 
                         log('Initializing and loading model');
-                        _context.next = 5;
-                        return WebDNN.prepareAll('./output', { backendOrder: backend_name });
+                        _context.next = 7;
+                        return WebDNN.prepareAll('./output_' + framework_name, { backendOrder: backend_name });
 
-                    case 5:
+                    case 7:
                         run_if = _context.sent;
 
-                        log('Loaded backend: ' + run_if.backendName);
+                        log('Loaded backend: ' + run_if.backendName + ', model converted from ' + framework_name);
 
-                        run_ifs[backend_name] = run_if;
-                        _context.next = 11;
+                        run_ifs[backend_key] = run_if;
+                        _context.next = 13;
                         break;
 
-                    case 10:
+                    case 12:
                         log('Model is already loaded');
 
-                    case 11:
-                        return _context.abrupt('return', run_ifs[backend_name]);
+                    case 13:
+                        return _context.abrupt('return', run_ifs[backend_key]);
 
-                    case 12:
+                    case 14:
                     case 'end':
                         return _context.stop();
                 }

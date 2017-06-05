@@ -12,11 +12,15 @@
 <body>
   WebDNN mnist example
   <form>
-    <button type="button" onclick="run_entry(); return false;">Run</button>
+    <button type="button" onclick="run_entry(); return false;">Run</button><br>
+    Backend:
     <label><input type="radio" name="backend_name" value="" onclick="reset_backend();" checked>auto</label>
     <label><input type="radio" name="backend_name" value="webgpu" onclick="reset_backend();">webgpu</label>
     <label><input type="radio" name="backend_name" value="webassembly" onclick="reset_backend();">webassembly</label>
-    <label><input type="radio" name="backend_name" value="fallback" onclick="reset_backend();">fallback</label>
+    <label><input type="radio" name="backend_name" value="fallback" onclick="reset_backend();">fallback</label><br>
+    Framework for model:
+    <label><input type="radio" name="framework_name" value="keras" onclick="reset_backend();" checked>Keras</label>
+    <label><input type="radio" name="framework_name" value="chainer" onclick="reset_backend();">Chainer</label>
   </form>
   <span id="msg_place"></span>
   <table id="result">
