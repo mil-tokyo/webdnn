@@ -104,22 +104,17 @@ class Allocator:
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
-        if flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION:
-            analysis_list = _analyse_variable_lifetime(graph, ops, variables)
+        analysis_list = _analyse_variable_lifetime(graph, ops, variables)
 
-            _optimize_allocation_offset(analysis_list)
+        _optimize_allocation_offset(analysis_list)
 
-            allocation_dict = {item.variable: item.offset for item in analysis_list}
-            for var in variables:
-                original_var = var
-                while "inplace_src" in var.parameters:
-                    var = var.parameters["inplace_src"]
+        allocation_dict = {item.variable: item.offset for item in analysis_list}
+        for var in variables:
+            original_var = var
+            while "inplace_src" in var.parameters:
+                var = var.parameters["inplace_src"]
 
-                layout.append(original_var, allocation_dict[var])
-
-        else:
-            for variable in variables:
-                layout.append(variable)
+            layout.append(original_var, allocation_dict[var])
 
         data = np.zeros(layout.size, dtype=np.float32)
         constant_size = 0
@@ -211,7 +206,14 @@ def _optimize_allocation_offset(analysis_list: List[AllocationAnalysisData]):
     memory_offset_table = {}
     queue = list(analysis_list)
 
+    max_queue_length = len(queue)
+    next_debug_time = int(len(queue) // 20) * 20
     while len(queue) > 0:
+        if flags.DEBUG:
+            if len(queue) <= next_debug_time:
+                print(f"[Allocator] # of unresolved variables: {len(queue)}/{max_queue_length}")
+                next_debug_time -= 20
+
         for item1 in queue:
             offset = 0
 
