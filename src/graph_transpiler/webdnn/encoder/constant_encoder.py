@@ -11,6 +11,7 @@ class ConstantEncoder:
 
     @classmethod
     def get_encoder(cls, name: str = None) -> "ConstantEncoder":
+        #FIXME
         from webdnn.encoder.constant_encoder_raw import ConstantEncoderRaw
         from webdnn.encoder.constant_encoder_eightbit import ConstantEncoderEightbit
         if name is None or name == "raw":

@@ -7,7 +7,7 @@ from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 # EcmaScript3 to support older browsers
 
 source = """
-elementwise_sum: function(input_arrays, output_arrays, param_arrays, option) {
+elementwise_sum: function(input_arrays, output_arrays, option) {
 var x0 = input_arrays[0];
 var x1 = input_arrays[1];
 var y = output_arrays[0];
@@ -33,9 +33,8 @@ def elementwise_sum(op: ElementwiseSum) -> List[Kernel]:
     kernel = Kernel(
         {"elementwise_sum": source},
         "elementwise_sum",
-        inputs=[x0.parameters["name"], x1.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=[x0, x1],
+        outputs=[y],
         call_option={"length": x0.size}
     )
 

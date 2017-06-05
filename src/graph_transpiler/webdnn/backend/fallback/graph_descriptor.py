@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import Iterable, Dict
 
-from webdnn.backend.fallback.allocator import MemoryLayout
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.graph import traverse
@@ -20,8 +20,7 @@ source_footer = """
 
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     kernels: Iterable[Kernel]
-    constants_layout: MemoryLayout
-    variables_layout: MemoryLayout
+    memory_layout: MemoryLayout
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
     constants_encoding: str
@@ -29,15 +28,13 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def __init__(self,
                  kernels: Iterable[Kernel],
-                 constants_layout: MemoryLayout,
-                 variables_layout: MemoryLayout,
+                 memory_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  constants_encoding: str,
                  licenses: Dict[str, str]):
         self.kernels = kernels
-        self.constants_layout = constants_layout
-        self.variables_layout = variables_layout
+        self.memory_layout = memory_layout
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
@@ -63,9 +60,8 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         return {
             "kernel_source": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
-            "weight_allocation": self.constants_layout,
             "weight_encoding": self.constants_encoding,
-            "variable_allocation": self.variables_layout,
+            "memory_layout": self.memory_layout,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "licenses": self.licenses

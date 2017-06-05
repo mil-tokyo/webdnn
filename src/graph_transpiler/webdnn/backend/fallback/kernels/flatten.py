@@ -8,7 +8,7 @@ from webdnn.graph.order import OrderNCHW, OrderNC, OrderNHWC
 # EcmaScript3 to support older browsers
 
 source = """
-flatten: function(input_arrays, output_arrays, param_arrays, option) {
+flatten: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
 var y = output_arrays[0];
 var length = option.length | 0;
@@ -38,9 +38,8 @@ def flatten(op: Flatten) -> List[Kernel]:
     kernel = Kernel(
         {"flatten": source},
         "flatten",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=[x],
+        outputs=[y],
         call_option={"length": x.size}
     )
 

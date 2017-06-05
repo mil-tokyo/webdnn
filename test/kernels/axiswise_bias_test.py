@@ -6,7 +6,6 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.order import OrderC, OrderNHWC, OrderNCHW, OrderCNHW
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_minor_axis():
@@ -15,14 +14,14 @@ def test_minor_axis():
     vy = vx + vb[None, None, None, :]
 
     x = Variable(vx.shape, order=OrderNHWC)
-    b = ConstantVariable(vb, order=OrderC)
+    b = Variable(vb.shape, order=OrderC)
     y, = AxiswiseBias(None, axis=Axis.C)(x, b)
 
     generate_kernel_test_case(
         description=f"AxiswiseBias for minor axis",
         backend=["webgpu", "webassembly", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, b], [y]),
+        inputs={x: vx, b: vb},
         expected={y: vy}
     )
 
@@ -33,14 +32,14 @@ def test_middle_axis():
     vy = vx + vb[None, :, None, None]
 
     x = Variable(vx.shape, order=OrderNCHW)
-    b = ConstantVariable(vb, order=OrderC)
+    b = Variable(vb.shape, order=OrderC)
     y, = AxiswiseBias(None, axis=Axis.C)(x, b)
 
     generate_kernel_test_case(
         description=f"AxiswiseBias for middle axis",
         backend=["webgpu", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, b], [y]),
+        inputs={x: vx, b: vb},
         expected={y: vy}
     )
 
@@ -51,14 +50,14 @@ def test_major_axis():
     vy = vx + vb[:, None, None, None]
 
     x = Variable(vx.shape, order=OrderCNHW)
-    b = ConstantVariable(vb, order=OrderC)
+    b = Variable(vb.shape, order=OrderC)
     y, = AxiswiseBias(None, axis=Axis.C)(x, b)
 
     generate_kernel_test_case(
         description=f"AxiswiseBias for major axis",
         backend=["webgpu", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, b], [y]),
+        inputs={x: vx, b: vb},
         expected={y: vy}
     )
 
@@ -69,7 +68,7 @@ def test_mix_order():
     vy = vx + vb[:, None, None, None]
 
     x = Variable(vx.shape, order=OrderCNHW)
-    b = ConstantVariable(vb, order=OrderC)
+    b = Variable(vb.shape, order=OrderC)
     y, = AxiswiseBias(None, axis=Axis.C)(x, b)
 
     x.change_order(OrderNHWC)
@@ -78,7 +77,7 @@ def test_mix_order():
     generate_kernel_test_case(
         description=f"AxiswiseBias for mix order",
         backend=["webgpu"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, b], [y]),
+        inputs={x: vx, b: vb},
         expected={y: vy}
     )

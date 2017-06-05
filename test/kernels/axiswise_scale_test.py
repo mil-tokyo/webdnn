@@ -4,9 +4,8 @@ from test.util import generate_kernel_test_case
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
-from webdnn.graph.order import OrderC, OrderNHWC, OrderCNHW, OrderNCHW
+from webdnn.graph.order import OrderC, OrderNHWC, OrderNCHW, OrderCNHW
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_minor_axis():
@@ -15,14 +14,14 @@ def test_minor_axis():
     vy = vx * vs[None, None, None, :]
 
     x = Variable(vx.shape, order=OrderNHWC)
-    s = ConstantVariable(vs, order=OrderC)
+    s = Variable(vs.shape, order=OrderC)
     y, = AxiswiseScale(None, axis=Axis.C)(x, s)
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for minor axis",
         backend=["webgpu", "webassembly", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, s], [y]),
+        inputs={x: vx, s: vs},
         expected={y: vy}
     )
 
@@ -33,14 +32,14 @@ def test_middle_axis():
     vy = vx * vs[None, :, None, None]
 
     x = Variable(vx.shape, order=OrderNCHW)
-    s = ConstantVariable(vs, order=OrderC)
+    s = Variable(vs.shape, order=OrderC)
     y, = AxiswiseScale(None, axis=Axis.C)(x, s)
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for middle axis",
         backend=["webgpu", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, s], [y]),
+        inputs={x: vx, s: vs},
         expected={y: vy}
     )
 
@@ -51,14 +50,14 @@ def test_major_axis():
     vy = vx * vs[:, None, None, None]
 
     x = Variable(vx.shape, order=OrderCNHW)
-    s = ConstantVariable(vs, order=OrderC)
+    s = Variable(vs.shape, order=OrderC)
     y, = AxiswiseScale(None, axis=Axis.C)(x, s)
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for major axis",
         backend=["webgpu", "fallback"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, s], [y]),
+        inputs={x: vx, s: vs},
         expected={y: vy}
     )
 
@@ -69,7 +68,7 @@ def test_mix_order():
     vy = vx * vs[:, None, None, None]
 
     x = Variable(vx.shape, order=OrderCNHW)
-    s = ConstantVariable(vs, order=OrderC)
+    s = Variable(vs.shape, order=OrderC)
     y, = AxiswiseScale(None, axis=Axis.C)(x, s)
 
     x.change_order(OrderNHWC)
@@ -78,7 +77,7 @@ def test_mix_order():
     generate_kernel_test_case(
         description=f"AxiswiseScale for mix order",
         backend=["webgpu"],
-        graph=Graph([x], [y]),
-        inputs={x: vx},
+        graph=Graph([x, s], [y]),
+        inputs={x: vx, s: vs},
         expected={y: vy}
     )

@@ -6,8 +6,7 @@ namespace WebDNN {
         readonly backendName = 'fallback';
 
         kernelObj: any;
-        rawWeightArray: Float32Array | null;
-        weightArrays: Map<string, Float32Array> | null;
+        rawArray: Float32Array | null;
         variableArrays: Map<string, Float32Array> | null;
         inputViews: Float32Array[] | null;
         outputViews: Float32Array[] | null;
@@ -49,19 +48,12 @@ namespace WebDNN {
             let descriptor = this.descriptor;
 
             this.compileKernel();
-            this.rawWeightArray = new Float32Array(descriptor.weight_allocation.total_size);
-            let weight_name_alloc = descriptor.weight_allocation.allocations;
-            this.weightArrays = new Map();
-            for (let name in weight_name_alloc) {
-                let alloc = weight_name_alloc[name];
-                this.weightArrays.set(name, new Float32Array(this.rawWeightArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-            }
-
+            this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
             this.variableArrays = new Map();
-            let variable_name_alloc = descriptor.variable_allocation.allocations;
-            for (let name in variable_name_alloc) {
-                let alloc = variable_name_alloc[name];
-                this.variableArrays.set(name, new Float32Array(alloc.size));
+
+            for (let name in descriptor.memory_layout.allocations) {
+                let alloc = descriptor.memory_layout.allocations[name];
+                this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
             }
         }
 
@@ -76,21 +68,20 @@ namespace WebDNN {
 
         async loadWeights(weightsData: Uint8Array): Promise<void> {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.rawWeightArray) throw new Error('Weight array is not loaded');
+            if (!this.rawArray) throw new Error('Raw array is not loaded');
 
             // when weight format becomes not flat array (such as using quantization), the interface should be changed
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-            this.rawWeightArray.set(await decoder.decode(weightsData, this.descriptor.weight_allocation));
+            this.rawArray.set(await decoder.decode(weightsData, this.descriptor.memory_layout));
         }
 
         async run(): Promise<void> {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays || !this.weightArrays) throw new Error('Variable map is not initialized');
+            if (!this.variableArrays) throw new Error('Variable map is not initialized');
             if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
 
             let descriptor = this.descriptor;
             let variableArrays = this.variableArrays;
-            let weightArrays = this.weightArrays;
 
             let run_entry_date = Date.now();
             let last_progress_date = Date.now();//in milliseconds
@@ -105,15 +96,14 @@ namespace WebDNN {
                 let exec_info = this.descriptor.exec_infos[i];
                 let input_arrays = exec_info.inputs.map((name) => variableArrays.get(name));
                 let output_arrays = exec_info.outputs.map((name) => variableArrays.get(name));
-                let weight_arrays = exec_info.weights.map((name) => weightArrays.get(name));
-                this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
+                this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, exec_info.call_option);
             }
             console.log(`Processed ${this.descriptor.exec_infos.length}/${this.descriptor.exec_infos.length} kernels in ${Date.now() - run_entry_date} ms`);
         }
 
         async wait_to_display() {
             // let console.log to be displayed, and prevent freeze
-            return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve) {
                 setTimeout(resolve, 10);
             });
         }

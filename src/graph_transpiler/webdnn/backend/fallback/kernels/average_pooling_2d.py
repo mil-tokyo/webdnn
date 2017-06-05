@@ -8,7 +8,7 @@ from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 # x: (batch_size, h, w, in_size), w: (kh, kw, in_size, out_size), y: (batch_size, oh, ow, out_size) C-order
 # EcmaScript3 to support older browsers
 source = """
-average_pooling_2d: function(input_arrays, output_arrays, param_arrays, option) {
+average_pooling_2d: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
 var y = output_arrays[0];
 var n = option.n | 0;
@@ -69,9 +69,8 @@ def average_pooling_2d(op: AveragePooling2D) -> List[Kernel]:
     kernel = Kernel(
         {"average_pooling_2d": source},
         "average_pooling_2d",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=[x],
+        outputs=[y],
         call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],
