@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--model", default="resnet50", choices=["resnet50"])
     parser.add_argument('--out', '-o', default='output_keras',
                         help='Directory to output the graph descriptor')
+    parser.add_argument("--encoding", help="name of weight encoder")
 
     args = parser.parse_args()
 
@@ -29,6 +30,8 @@ def main():
     print("Converting model into WebDNN format (graph descriptor)")
     # only for demo purpose, maybe not safe
     convert_keras_command = f"python ../../bin/convert_keras.py {args.out}/resnet50.h5 --input_shape '(1,224,224,3)' --out {args.out}"
+    if args.encoding:
+        convert_keras_command += f" --encoding {args.encoding}"
     print("$ " + convert_keras_command)
 
     subprocess.check_call(convert_keras_command, shell=True)
