@@ -10,7 +10,8 @@ from webdnn.graph.variable import Variable
 
 # FIXME: Improve documentation
 class LocalResponseNormalization(Operator):
-    """Operator same as local response normalization layer in Caffe. 
+    """Operator same as local response normalization layer in Caffe.
+    Only cross channel mode is supported; normalization is done for channel axis.
 
     see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html
     
