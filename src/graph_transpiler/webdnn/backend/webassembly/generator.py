@@ -9,6 +9,7 @@ import os
 import os.path as path
 import subprocess
 import sys
+import platform
 from typing import List
 
 from webdnn.backend.code_generator.allocator import Allocator, MemoryLayout
@@ -63,6 +64,7 @@ class GraphExecutionData(IGraphExecutionData):
         self.descriptor = descriptor
         self.constants = constants
         self.backend_suffix = "webassembly"
+        self.platform_windows = platform.system() == "Windows"  # workaround for PATH problem
 
     def save(self, dirname: str):
         os.makedirs(dirname, exist_ok=True)
@@ -96,7 +98,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
         try:
-            subprocess.check_call(args)
+            subprocess.check_call(args, shell=self.platform_windows)
         except Exception as ex:
             sys.stderr.write("Executing em++ command failed." +
                              " Make sure emscripten is properly installed and environment variables are set.\n")
@@ -118,7 +120,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(backend_suffix)))
         try:
-            subprocess.check_call(args)
+            subprocess.check_call(args, shell=self.platform_windows)
         except Exception as ex:
             sys.stderr.write("Executing em++ command failed." +
                              " Make sure emscripten is properly installed and environment variables are set.\n")
