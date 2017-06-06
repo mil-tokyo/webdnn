@@ -85,11 +85,13 @@ def validate_kernel_source(descriptor: GraphDescriptor):
         with open(source_path, "w+") as f:
             f.write(source)
 
-        result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
-        if result.returncode != 0:
-            print("Generated kernel source is invalid.")
-            exit(result.returncode)
-
+        try:
+            result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
+            if result.returncode != 0:
+                print("Generated kernel source is invalid.")
+                exit(result.returncode)
+        except Exception as ex:
+            print(f"WebGPU kernel source validation does not work: {ex}")
 
 def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
     graph, _ = WebGPUOptimizeRule().optimize(graph)
