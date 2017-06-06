@@ -1,5 +1,5 @@
 import math
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -11,21 +11,6 @@ from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
-
-
-class AllocationAnalysisData:
-    variable: Variable
-    start: int
-    end: int
-    offset: int
-    size: int
-
-    def __init__(self, variable, start, end=-1, offset=-1):
-        self.variable = variable
-        self.size = variable.size
-        self.start = start
-        self.end = end
-        self.offset = offset
 
 
 class Allocation(json.SerializableMixin, IAllocation):
@@ -104,17 +89,10 @@ class Allocator:
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
-        analysis_list = _analyse_variable_lifetime(graph, ops, variables)
-
-        _optimize_allocation_offset(analysis_list)
-
-        allocation_dict = {item.variable: item.offset for item in analysis_list}
-        for var in variables:
-            original_var = var
-            while "inplace_src" in var.parameters:
-                var = var.parameters["inplace_src"]
-
-            layout.append(original_var, allocation_dict[var])
+        lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
+        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, int]
+        for variable, offset in offsets.items():
+            layout.append(variable, offset)
 
         data = np.zeros(layout.size, dtype=np.float32)
         constant_size = 0
@@ -128,46 +106,42 @@ class Allocator:
         layout.data = data[:constant_size]
 
         if flags.VISUALIZE_MEMORY_ALLOCATION:
-            _visualize_allocation(layout, graph, variables, ops)
+            _visualize_allocation(ops, variables, layout, lifetime, offsets)
 
         return layout
 
 
-def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
-    # 計算グラフを辿りながら、retain回数をカウントし、生存期間のテーブルを作成する
-
+def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
     LIFETIME_FOREVER = len(ops) + 1
-    analysis_table: Dict[Variable, AllocationAnalysisData] = {}
 
-    retain_count: Dict[Variable, int] = {v: 0 for v in variables}
-    allocated: Set[Variable] = set()
+    lifetime = {}  # type: Dict[Variable, Tuple[int, int]]
+    retain_count = {v: 0 for v in variables}  # type: Dict[Variable, int]
+    allocated = set()  # type: Set[Variable]
 
     for var in variables:
         if isinstance(var, ConstantVariable):
-            analysis_table[var] = AllocationAnalysisData(var, 0, LIFETIME_FOREVER)
+            lifetime[var] = (0, LIFETIME_FOREVER)
             allocated.add(var)
 
     for var in graph.inputs:
-        analysis_table[var] = AllocationAnalysisData(var, 0, LIFETIME_FOREVER)
+        lifetime[var] = (0, LIFETIME_FOREVER)
         allocated.add(var)
 
     for t, op in enumerate(ops):
         for var in op.outputs.values():
             if var not in allocated:
-                # 新規に確保する
                 flag_allocated = False
 
                 if flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_INPLACE_OPERATION \
                     and not flag_allocated \
                     and traverse.check_attribute_match(op, Inplace):
 
-                    # Inplace処理
-
+                    # Inplace optimization
                     inplace = op.get_attribute(Inplace)[0]  # type: Inplace
-                    # 入力のメモリをそのまま使う
-                    v_in = inplace.get_input()
+                    v_in = inplace.get_input()  # Use memory allocated for input variable
                     while "inplace_src" in v_in.parameters:
                         v_in = v_in.parameters["inplace_src"]
+
                     var.parameters["inplace_src"] = v_in
                     retain_count[v_in] += len(var.input_to)
 
@@ -175,8 +149,7 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
                     flag_allocated = True
 
                 if not flag_allocated:
-                    # 新しくメモリを確保
-                    analysis_table[var] = AllocationAnalysisData(var, t, LIFETIME_FOREVER)
+                    lifetime[var] = (t, LIFETIME_FOREVER)
                     retain_count[var] = len(var.input_to)
 
                     allocated.add(var)
@@ -191,92 +164,119 @@ def _analyse_variable_lifetime(graph: Graph, ops: List[Operator], variables: Lis
             retain_count[var] -= 1
 
             if retain_count[var] == 0:
-                # 解放はこの層が終わってから
-                analysis_table[var].end = t + 1
+                # `t + 1` means that `var` will be released AFTER `op` will be finished.
+                lifetime[var] = (lifetime[var][0], t + 1)
 
-    return [x for x in analysis_table.values()]
+    return lifetime
 
 
-def _optimize_allocation_offset(analysis_list: List[AllocationAnalysisData]):
-    analysis_list = sorted(analysis_list, key=lambda x: x.variable.size, reverse=True)
-    analysis_list = sorted(analysis_list, key=lambda x: x.end)
-    analysis_list = sorted(analysis_list, key=lambda x: x.end - x.start, reverse=True)
-    analysis_list = sorted(analysis_list, key=lambda x: isinstance(x.variable, ConstantVariable), reverse=True)
-    analysis_list = list(analysis_list)
-    memory_offset_table = {}
-    queue = list(analysis_list)
+def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable, Tuple[int, int]]):
+    """
+    heuristic-based optimization
 
-    max_queue_length = len(queue)
-    next_debug_time = int(len(queue) // 20) * 20
+        1. allocate constant variables first
+        2. allocate variables which lives longer first
+        3. allocate variables which released earlier first
+        4. allocate larger variables first
+    """
+
+    queue = filter(lambda x: x in lifetime, variables)
+    queue = sorted(queue, key=lambda x: x.size, reverse=True)
+    queue = sorted(queue, key=lambda x: lifetime[x][1])
+    queue = sorted(queue, key=lambda x: lifetime[x][1] - lifetime[x][0], reverse=True)
+    queue = sorted(queue, key=lambda x: isinstance(x, ConstantVariable), reverse=True)
+    queue = list(queue)
+
+    allocated_range = {}  # type: Dict[int, List[Tuple[int, int]]]
+    workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
+    result = {}  # type: Dict[Variable, int]
+
     while len(queue) > 0:
-        if flags.DEBUG:
-            if len(queue) <= next_debug_time:
-                print(f"[Allocator] # of unresolved variables: {len(queue)}/{max_queue_length}")
-                next_debug_time -= 20
+        min_offset = 999999999999
+        min_offset_v = None
 
-        for item1 in queue:
-            offset = 0
+        # find space
+        for v1 in queue:
+            info1 = workspace[v1]
+            offset1, start1, end1 = info1
 
             flag_retry = True
             while flag_retry:
                 flag_retry = False
 
-                for t in range(item1.start, item1.end):
-                    if t not in memory_offset_table:
+                for t in range(start1, end1):
+                    if t not in allocated_range:
                         continue
 
-                    for item2 in memory_offset_table[t]:
-                        if item2.offset + item2.size <= offset or offset + item1.size <= item2.offset:
+                    for offset2, size2 in allocated_range[t]:
+                        if offset2 + size2 <= offset1 or offset1 + v1.size <= offset2:
                             continue
 
                         else:
-                            offset = item2.offset + item2.size
+                            # align for 16byte
+                            offset1 = math.ceil((offset2 + size2) / 4) * 4
                             flag_retry = True
                             break
 
                     if flag_retry:
                         break
 
-            # align for 16byte
-            item1.offset = math.ceil(offset / 4) * 4
+            info1[0] = offset1
+            if offset1 < min_offset:
+                min_offset = offset1
+                min_offset_v = v1
 
-        queue = list(sorted(queue, key=lambda x: x.offset))
-        item1 = queue.pop(0)
-        for t in range(item1.start, item1.end):
-            if t not in memory_offset_table:
-                memory_offset_table[t] = []
+        queue.remove(min_offset_v)
+        _, start1, end1 = workspace[min_offset_v]
 
-            memory_offset_table[t].append(item1)
+        result[min_offset_v] = min_offset
+        for t in range(start1, end1):
+            if t not in allocated_range:
+                allocated_range[t] = []
+
+            allocated_range[t].append((min_offset, min_offset_v.size))
+
+    for v1 in variables:
+        v2 = v1
+        while "inplace_src" in v2.parameters:
+            v2 = v2.parameters["inplace_src"]
+
+        result[v1] = result[v2]
+
+    return result
 
 
-def _visualize_allocation(layout: MemoryLayout, graph: Graph, variables: List[Variable], ops: List[Operator]):
+def _visualize_allocation(ops: List[Operator],
+                          variables: List[Variable],
+                          layout: MemoryLayout,
+                          lifetime: Dict[Variable, Tuple[int, int]],
+                          offsets: Dict[Variable, int]):
     UNIT_HEIGHT = 14
-    analysis_list = _analyse_variable_lifetime(graph, ops, variables)
     total_size = layout.size
 
     class RenderingInfo:
         names: List[str]
-        data: AllocationAnalysisData
+        v1: Variable
+        offset: int
+        lifetime: Tuple[int, int]
 
-        def __init__(self, data: AllocationAnalysisData):
+        def __init__(self, variable: Variable, offset: int, lifetime: Tuple[int, int]):
             self.names = []
-            self.data = data
-
-        @property
-        def offset(self):
-            return layout[self.data.variable].offset
+            self.variable = variable
+            self.offset = offset
+            self.lifetime = lifetime
 
         @property
         def size(self):
-            return layout[self.data.variable].size
+            return self.variable.size
 
         @property
         def top(self):
-            return f"{self.data.start * UNIT_HEIGHT}px"
+            return f"{self.lifetime[0] * UNIT_HEIGHT}px"
 
         @property
         def height(self):
-            return f"{(self.data.end - self.data.start) * UNIT_HEIGHT + 1}px"
+            return f"{(self.lifetime[1] - self.lifetime[0]) * UNIT_HEIGHT + 1}px"
 
         @property
         def left(self):
@@ -288,16 +288,15 @@ def _visualize_allocation(layout: MemoryLayout, graph: Graph, variables: List[Va
 
         # noinspection PyMethodMayBeStatic
         def generate_html(self):
-            return f"""<div class="Allocation {"Constant" if isinstance(self.data.variable, ConstantVariable) else ""}"
+            return f"""<div class="Allocation {"Constant" if isinstance(self.variable, ConstantVariable) else ""}"
 style="top: {self.top}; height: {self.height}; left: {self.left}; width: {self.width}" title="{", ".join(self.names)}
 size: {self.size}
 offset: {self.offset}
-lifetime: {self.data.start} - {self.data.end} 
+lifetime: {self.lifetime[0]} - {self.lifetime[1]} 
 ">
     <p>{", ".join(self.names)}</p>
 </div>"""
 
-    allocation_dict = {item.variable: item for item in analysis_list}
     rendering_dict: Dict[Variable, RenderingInfo] = {}
 
     html = """<html>
@@ -352,15 +351,15 @@ lifetime: {self.data.start} - {self.data.end}
     <div class="MemoryLayout" style="height: """ + str(UNIT_HEIGHT * (len(ops) + 1) + 1) + """px;">
 """
 
-    for variable in variables:
-        original_var = variable
-        while "inplace_src" in variable.parameters:
-            variable = variable.parameters["inplace_src"]
+    for v1 in variables:
+        v2 = v1
+        while "inplace_src" in v2.parameters:
+            v2 = v2.parameters["inplace_src"]
 
-        if variable not in rendering_dict:
-            rendering_dict[variable] = RenderingInfo(allocation_dict[variable])
+        if v2 not in rendering_dict:
+            rendering_dict[v2] = RenderingInfo(v2, offsets[v2], lifetime[v2])
 
-        rendering_dict[variable].names.append(original_var.name)
+        rendering_dict[v2].names.append(v1.name)
 
     for item in rendering_dict.values():
         html += item.generate_html()
