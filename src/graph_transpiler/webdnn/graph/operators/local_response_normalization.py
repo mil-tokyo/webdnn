@@ -31,8 +31,7 @@ class LocalResponseNormalization(Operator):
         self.parameters["alpha"] = alpha
         self.parameters["beta"] = beta
         self.attributes = {PostAxiswise(self, Axis.C),
-                           Axiswise(self, Axis.C),
-                           Inplace(self, "x", "y")}
+                           Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
         """
