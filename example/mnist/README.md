@@ -26,6 +26,19 @@ In fact, the script contains two steps:
     The "input_shape" option is the shape of input array. First "1" is the batch size, and the following numbers are the shape of a sample.
     For convolution model, it changes to `(1,28,28,1)` where `(batchsize, height, width, channel)`. This order depends on the training backend setting (data_format). Currently, WebDNN converter supports only when `data_format==channels_last`.
 
+## PyTorch
+
+To run this example, you need to install Chainer.
+```
+pip install pytorch
+pip install torchvision
+```
+
+Train and convert MNIST classification model
+```
+python train_mnist_pytorch.py
+```
+
 ## Chainer
 
 To run this example, you need to install Chainer.
