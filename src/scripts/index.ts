@@ -154,7 +154,7 @@ window.onload = () => {
 
     let IS_ES2017 = true;
     try {
-        eval('(() => { async function test(){return Promise.resolve());} })();');
+        eval('(() => { async function test(){return Promise.resolve()} })();');
     } catch (e) {
         IS_ES2017 = false;
     }

@@ -3,6 +3,9 @@ import "../style/neural_style_transfer.scss";
 import "./modules/analytics.js";
 import InitializingView from "./modules/initializing_view";
 import WebCam from "./modules/webcam";
+import GraphDescriptor = WebDNN.GraphDescriptor;
+
+declare function ga(...args: any[]): void
 
 const KEY_WEBGPU_LAST_STATUS = 'webgpu_last_status';
 const KEY_FLAG_WEBGPU_DISABLED_ALERT = 'flag_webgpu_disabled_alert';
@@ -19,8 +22,8 @@ enum State {
 type DataSource = 'sample' | 'photo' | 'video';
 
 const App = new class {
-    runners: { [key: string]: WebDNN.DescriptorRunner };
-    runner: WebDNN.DescriptorRunner;
+    runners: { [key: string]: WebDNN.DescriptorRunner<GraphDescriptor> };
+    runner: WebDNN.DescriptorRunner<GraphDescriptor>;
     inputView: Float32Array;
     outputView: Float32Array;
     inputCanvas: HTMLCanvasElement;
@@ -39,6 +42,8 @@ const App = new class {
     lastStatus: string = '';
 
     async initialize() {
+        ga('send', 'event', 'NeuralStyleTransfer', 'launch');
+
         let select = document.getElementById('backend') as HTMLSelectElement;
         if (!select) throw Error('#backend is not found.');
         this.backendSelect = select;
@@ -161,13 +166,15 @@ const App = new class {
     async initBackendAsync(backend: string, callback?: (loaded: number, total: number) => void) {
         await this.setState(State.INITIALIZING);
 
-        await WebDNN.init([backend]);
-
         if (backend in this.runners) {
             this.runner = this.runners[backend];
         } else {
-            this.runner = this.runners[backend] = WebDNN.gpu.createDescriptorRunner();
+            await WebDNN.init([backend]);
+            this.runner = this.runners[backend] = WebDNN.runner!;
+            let start = performance.now();
             await this.runner.load('./models/neural_style_transfer', callback);
+            let loadingTime = performance.now() - start;
+            ga('send', 'event', 'NeuralStyleTransfer', 'play', `loading_time-${backend}`, Math.round(loadingTime));
         }
 
         this.inputView = (await this.runner.getInputViews())[0];
@@ -187,7 +194,7 @@ const App = new class {
             case 'photo':
             case 'video':
                 await this.setState(State.INITIALIZING);
-                await this.initializeCamera();
+                await this.initializeCameraAsync();
                 await this.setState(State.STAND_BY);
                 break;
 
@@ -200,26 +207,24 @@ const App = new class {
         }
     }
 
-    initializeCamera() {
-        return new Promise(resolve => {
-            this.webcam = new WebCam({
-                width: 192,
-                height: 144,
-                fps: 60,
-                flip_horiz: false,
-                image_format: 'png',
-                force_flash: false,
-                swfURL: '/webdnn/webcam.swf',
-                unfreeze_snap: this.dataSource == 'video'
-            });
-            this.webcam.on('live', resolve);
-            this.webcam.on('error', (err) => {
-                console.error(err);
-                this.setMessage(err);
-                this.setState(State.ERROR);
-            });
-            this.webcam.attach('#cameraContainer');
+    async initializeCameraAsync() {
+        this.webcam = new WebCam({
+            width: 192,
+            height: 144,
+            fps: 60,
+            flip_horiz: false,
+            imageFormat: 'png',
+            flagForceFlash: false,
+            swfURL: '/webdnn/webcam.swf',
+            flagUnfreezeSnap: this.dataSource == 'video'
         });
+        try {
+            await this.webcam.attachAsync('#cameraContainer');
+        } catch (err) {
+            console.error(err);
+            this.setMessage(err);
+            this.setState(State.ERROR);
+        }
     }
 
     finalizeCamera() {
@@ -250,7 +255,7 @@ const App = new class {
                 break;
 
             case State.STAND_BY:
-                this.setMessage(`Ready(backend: ${this.runner.backend})`);
+                this.setMessage(`Ready(backend: ${this.runner.backendName})`);
                 this.runButton.textContent = 'Run';
                 this.runButton.disabled = false;
                 break;
@@ -281,18 +286,29 @@ const App = new class {
         if (this.state !== State.RUNNING) return;
         await this.getImageData();
 
-        if (this.runner.backend === 'webgpu' && this.lastStatus === 'none') {
-            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
-            this.lastStatus = 'running';
-        }
-        await this.runner.run();
-        if (this.runner.backend === 'webgpu' && this.lastStatus === 'running') {
-            localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
-            this.lastStatus = 'completed';
-        }
-        this.setImageData();
+        if (this.dataSource == 'video') {
+            await this.runner.run();
+            this.setImageData();
 
-        if (this.dataSource == 'video') requestAnimationFrame(() => this.transfer());
+            requestAnimationFrame(() => this.transfer());
+        } else {
+            if (this.runner.backendName === 'webgpu' && this.lastStatus === 'none') {
+                localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
+                this.lastStatus = 'running';
+            }
+            let start = performance.now();
+            await this.runner.run();
+            let computationTime = performance.now() - start;
+            if (this.runner.backendName === 'webgpu' && this.lastStatus === 'running') {
+                localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
+                this.lastStatus = 'completed';
+            }
+            this.setImageData();
+
+            try {
+                ga('send', 'event', 'NeuralStyleTransfer', 'play', 'computation_time', Math.round(computationTime));
+            } catch (e) {}
+        }
     }
 
     async getImageData() {
@@ -300,15 +316,11 @@ const App = new class {
         let h = this.h;
 
         if (this.dataSource == 'photo') {
-            await new Promise(resolve => {
-                this.webcam.freeze();
-                this.webcam.snap(resolve, this.inputCanvas);
-            });
+            await this.webcam.freezeAsync();
+            await this.webcam.snapAsync(this.inputCanvas);
 
         } else if (this.dataSource == 'video') {
-            await new Promise(resolve => {
-                this.webcam.snap(resolve, this.inputCanvas);
-            });
+            await this.webcam.snapAsync(this.inputCanvas);
         }
 
         let pixelData = this.inputCtx.getImageData(0, 0, w, h).data;
@@ -352,7 +364,7 @@ window.onload = () => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
         if (ma) {
-            return `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true`;
+            return `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true&v=2`;
         } else {
             return url;
         }
@@ -365,4 +377,11 @@ window.onload = () => {
     if (location.search == '?run=1') {
         App.initialize();
     }
+};
+
+window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
+    ga('send', 'exception', {
+        'exDescription': message,
+        'exFatal': false
+    });
 };

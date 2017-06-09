@@ -4,6 +4,9 @@ import "./modules/analytics.js";
 import ImagePicker from "./modules/image_picker";
 import Labels from "./modules/imagenet_labels";
 import InitializingView from "./modules/initializing_view";
+import GraphDescriptor = WebDNN.GraphDescriptor;
+
+declare function ga(...args: any[]): void
 
 const KEY_WEBGPU_LAST_STATUS = 'webgpu_last_status';
 const KEY_FLAG_WEBGPU_DISABLED_ALERT = 'flag_webgpu_disabled_alert';
@@ -39,7 +42,7 @@ function softMax(arr: number[]) {
 const App = new class {
     picker: ImagePicker;
     context: CanvasRenderingContext2D;
-    runner: WebDNN.DescriptorRunner;
+    runner: WebDNN.DescriptorRunner<GraphDescriptor>;
     inputView: Float32Array;
     outputView: Float32Array;
     runButton: HTMLButtonElement;
@@ -53,6 +56,8 @@ const App = new class {
     lastStatus: string = '';
 
     async initialize() {
+        ga('send', 'event', 'ResNet50', 'launch');
+
         this.setState(State.INITIALIZING);
         this.randomImageIndex = Math.floor(Math.random() * NUM_RANDOM_IMAGE);
 
@@ -152,8 +157,11 @@ const App = new class {
 
         initializingView.updateMessage('Load model data');
         await WebDNN.init(availability.defaultOrder);
-        this.runner = WebDNN.gpu.createDescriptorRunner();
+        this.runner = WebDNN.runner!;
+        let start = performance.now();
         await this.runner.load('./models/resnet50', (loaded, total) => initializingView.updateProgress(loaded / total));
+        let loadingTime = performance.now() - start;
+        ga('send', 'event', 'ResNet50', 'play', `loading_time-${WebDNN.backendName}`, Math.round(loadingTime));
         this.inputView = (await this.runner.getInputViews())[0];
         this.outputView = (await this.runner.getOutputViews())[0];
 
@@ -188,7 +196,7 @@ const App = new class {
                 break;
 
             case State.STAND_BY:
-                this.setMessage(`Ready(backend: ${this.runner.backend})`);
+                this.setMessage(`Ready(backend: ${this.runner.backendName})`);
                 if (this.runButton) {
                     this.runButton.textContent = 'Run';
                     this.runButton.disabled = false;
@@ -237,14 +245,14 @@ const App = new class {
         this.setState(State.RUNNING);
         this.setInputImageData();
 
-        if (this.runner.backend === 'webgpu' && this.lastStatus === 'none') {
+        if (this.runner.backendName === 'webgpu' && this.lastStatus === 'none') {
             localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'running');
             this.lastStatus = 'running';
         }
         let start = performance.now();
         await this.runner.run();
         let computationTime = performance.now() - start;
-        if (this.runner.backend === 'webgpu' && this.lastStatus === 'running') {
+        if (this.runner.backendName === 'webgpu' && this.lastStatus === 'running') {
             localStorage.setItem(KEY_WEBGPU_LAST_STATUS, 'completed');
             this.lastStatus = 'completed';
         }
@@ -268,6 +276,10 @@ const App = new class {
 
         this.setState(State.STAND_BY);
         this.setMessage(`Computation Time: ${computationTime.toFixed(2)} [ms]`);
+
+        try {
+            ga('send', 'event', 'ResNet50', 'play', 'computation_time', Math.round(computationTime));
+        } catch (e) {}
     }
 };
 
@@ -278,7 +290,7 @@ window.onload = () => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
         if (ma) {
-            return `https://mil-tokyo.github.io/webdnn-data/models/resnet50/${ma[1]}?raw=true`;
+            return `https://mil-tokyo.github.io/webdnn-data/models/resnet50/${ma[1]}?raw=true&v=2`;
         } else {
             return url;
         }
@@ -291,4 +303,8 @@ window.onload = () => {
     if (location.search == '?run=1') {
         App.initialize();
     }
+};
+
+window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?:Error) => {
+    ga('send', 'exception', { 'exDescription': message, 'exFatal': false });
 };
