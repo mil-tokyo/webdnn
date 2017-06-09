@@ -1,4 +1,6 @@
-# Setup Guide
+# Setup Guide (for Mac / Linux)
+
+For Windows users, jump to [setup_windows](../setup_windows.html)
 
 ## Downloading code
 ```
@@ -30,7 +32,7 @@ If you want to convert models of Caffe or Chainer, install chainer package.
 pip install chainer
 ```
 
-(Currently, tested with `chainer==1.23`)
+(Currently, tested with `chainer==2.0` and  `chainer==1.23`)
 
 ## Installing Emscripten and Eigen
 If you want to enable WebAssembly backend, em++ command from [Emscripten](https://github.com/kripken/emscripten) is required. You can skip this section if you try WebGPU backend only.

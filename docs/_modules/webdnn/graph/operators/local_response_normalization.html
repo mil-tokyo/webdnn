@@ -172,7 +172,8 @@
 
 <span class="c1"># FIXME: Improve documentation</span>
 <div class="viewcode-block" id="LocalResponseNormalization"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization">[docs]</a><span class="k">class</span> <span class="nc">LocalResponseNormalization</span><span class="p">(</span><span class="n">Operator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Operator same as local response normalization layer in Caffe. </span>
+    <span class="sd">&quot;&quot;&quot;Operator same as local response normalization layer in Caffe.</span>
+<span class="sd">    Only cross channel mode is supported; normalization is done for channel axis.</span>
 
 <span class="sd">    see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html</span>
 <span class="sd">    </span>
@@ -192,8 +193,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">alpha</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">beta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="n">PostAxiswise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">),</span>
-                           <span class="n">Axiswise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">),</span>
-                           <span class="n">Inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)}</span>
+                           <span class="n">Axiswise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">)}</span>
 
 <div class="viewcode-block" id="LocalResponseNormalization.__call__"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

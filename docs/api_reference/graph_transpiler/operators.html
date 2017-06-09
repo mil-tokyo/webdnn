@@ -613,7 +613,8 @@ of weight variable.</p>
 <dl class="class">
 <dt id="webdnn.graph.operators.local_response_normalization.LocalResponseNormalization">
 <em class="property">class </em><code class="descclassname">webdnn.graph.operators.local_response_normalization.</code><code class="descname">LocalResponseNormalization</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType], n: float, k: float, alpha: float, beta: float</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/local_response_normalization.html#LocalResponseNormalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Operator same as local response normalization layer in Caffe.</p>
+<dd><p>Operator same as local response normalization layer in Caffe.
+Only cross channel mode is supported; normalization is done for channel axis.</p>
 <p>see: <a class="reference external" href="http://caffe.berkeleyvision.org/tutorial/layers/lrn.html">http://caffe.berkeleyvision.org/tutorial/layers/lrn.html</a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

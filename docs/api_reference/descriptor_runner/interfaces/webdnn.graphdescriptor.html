@@ -105,8 +105,6 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#inputs" class="tsd-kind-icon">inputs</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#memory_layout" class="tsd-kind-icon">memory_<wbr>layout</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#outputs" class="tsd-kind-icon">outputs</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#variable_allocation" class="tsd-kind-icon">variable_<wbr>allocation</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#weight_allocation" class="tsd-kind-icon">weight_<wbr>allocation</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptor.html#weight_encoding" class="tsd-kind-icon">weight_<wbr>encoding</a></li>
 							</ul>
 						</section>
@@ -121,7 +119,7 @@
 					<div class="tsd-signature tsd-kind-icon">inputs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L9">graph_descriptor/graph_descriptor.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L9">graph_descriptor/graph_descriptor.ts:9</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -136,7 +134,7 @@
 					<div class="tsd-signature tsd-kind-icon">memory_<wbr>layout<span class="tsd-signature-symbol">:</span> <a href="webdnn.memorylayout.html" class="tsd-signature-type">MemoryLayout</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L16">graph_descriptor/graph_descriptor.ts:16</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L16">graph_descriptor/graph_descriptor.ts:16</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -146,7 +144,7 @@
 					<div class="tsd-signature tsd-kind-icon">outputs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L14">graph_descriptor/graph_descriptor.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L14">graph_descriptor/graph_descriptor.ts:14</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -156,68 +154,12 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="variable_allocation" class="tsd-anchor"></a>
-					<h3>variable_<wbr>allocation</h3>
-					<div class="tsd-signature tsd-kind-icon">variable_<wbr>allocation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L28">graph_descriptor/graph_descriptor.ts:28</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Allocation information for each variable.</p>
-						</div>
-					</div>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>allocations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></h5>
-								<ul class="tsd-parameters">
-									<li class="tsd-parameter-index-signature">
-										<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></h5>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="weight_allocation" class="tsd-anchor"></a>
-					<h3>weight_<wbr>allocation</h3>
-					<div class="tsd-signature tsd-kind-icon">weight_<wbr>allocation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L21">graph_descriptor/graph_descriptor.ts:21</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Allocation information for each variable.</p>
-						</div>
-					</div>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>allocations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></h5>
-								<ul class="tsd-parameters">
-									<li class="tsd-parameter-index-signature">
-										<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></h5>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="weight_encoding" class="tsd-anchor"></a>
 					<h3>weight_<wbr>encoding</h3>
 					<div class="tsd-signature tsd-kind-icon">weight_<wbr>encoding<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/74a584f/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L35">graph_descriptor/graph_descriptor.ts:35</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L21">graph_descriptor/graph_descriptor.ts:21</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -290,12 +232,6 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="webdnn.graphdescriptor.html#outputs" class="tsd-kind-icon">outputs</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="webdnn.graphdescriptor.html#variable_allocation" class="tsd-kind-icon">variable_<wbr>allocation</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="webdnn.graphdescriptor.html#weight_allocation" class="tsd-kind-icon">weight_<wbr>allocation</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="webdnn.graphdescriptor.html#weight_encoding" class="tsd-kind-icon">weight_<wbr>encoding</a>
