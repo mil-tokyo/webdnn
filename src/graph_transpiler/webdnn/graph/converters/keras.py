@@ -138,6 +138,7 @@ class KerasConverter(Converter[KerasOperator, object]):
 
 @KerasConverter.register_handler("Dense")
 def _convert_dense(converter: KerasConverter, operator: KerasOperator):
+    assert len(operator.inputs) == 1
     x = converter.get_variable(operator.inputs[0])
     w = converter.create_constant_variable(operator, "kernel:0", OrderCN)
     linear_opr = Linear(None)
@@ -170,3 +171,134 @@ def _convert_dropout(converter: KerasConverter, operator: KerasOperator):
     warn("omitting dropout")
 
     converter.set_variable(operator.outputs[0], x)
+
+
+@KerasConverter.register_handler("Conv2D")
+def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+       {'class_name': 'Conv2D',
+'config': {'activation': 'relu',
+'activity_regularizer': None,
+'bias_constraint': None,
+'bias_initializer': {'class_name': 'Zeros', 'config': {}},
+'bias_regularizer': None,
+'data_format': 'channels_last',
+'dilation_rate': [1, 1],
+'filters': 64,
+'kernel_constraint': None,
+'kernel_initializer': {'class_name': 'VarianceScaling',
+ 'config': {'distribution': 'uniform',
+  'mode': 'fan_avg',
+  'scale': 1.0,
+  'seed': None}},
+'kernel_regularizer': None,
+'kernel_size': [3, 3],
+'name': 'conv2d_2',
+'padding': 'valid',
+'strides': [1, 1],
+'trainable': True,
+'use_bias': True}},
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    assert operator.specific_config["data_format"] == "channels_last"
+    w = converter.create_constant_variable(operator, "kernel:0", OrderHWCN)  # order does not depend on data_format
+    ksize: Tuple[int, int] = tuple(operator.specific_config["kernel_size"])
+    stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    padding_keras: str = operator.specific_config["padding"]  # valid or same
+    if isinstance(padding_keras, tuple):
+        # preprocess_zeropadding2d
+        padding = padding_keras
+    elif padding_keras == "valid":
+        padding = (0, 0)
+    elif padding_keras == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+    else:
+        raise ValueError("Unknown padding")
+
+    conv2d_opr = Convolution2D(None,
+                               ksize=ksize,
+                               stride=stride,
+                               padding=padding)
+    y, = conv2d_opr(x, w)
+
+    if operator.specific_config["use_bias"]:
+        bias = converter.create_constant_variable(operator, "bias:0", OrderC)
+        bias_opr = AxiswiseBias(None, Axis.C)
+        y, = bias_opr(y, bias)
+
+    act_opr: Operator = None
+    activation_type: str = operator.specific_config["activation"]
+    if activation_type == "relu":
+        act_opr = Relu(None)
+    elif activation_type == "softmax":
+        warn("omitting softmax activation")
+    else:
+        raise NotImplementedError(f"Unknown activation {activation_type}")
+
+    if act_opr is not None:
+        y, = act_opr(y)
+
+    converter.set_variable(operator.outputs[0], y)
+
+
+@KerasConverter.register_handler("MaxPooling2D")
+def _convert_max_pooling2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+          {'class_name': 'MaxPooling2D',
+   'config': {'data_format': 'channels_last',
+    'name': 'max_pooling2d_1',
+    'padding': 'valid',
+    'pool_size': [2, 2],
+    'strides': [2, 2],
+    'trainable': True}},
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
+    stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    padding_keras: str = operator.specific_config["padding"]  # valid or same
+    if isinstance(padding_keras, tuple):
+        # preprocess_zeropadding2d
+        padding = padding_keras
+    elif padding_keras == "valid":
+        padding = (0, 0)
+    elif padding_keras == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+    else:
+        raise ValueError("Unknown padding")
+
+    max_pooling_2d_opr = MaxPooling2D(None,
+                                      ksize=ksize,
+                                      stride=stride,
+                                      padding=padding)
+    y, = max_pooling_2d_opr(x)
+
+    converter.set_variable(operator.outputs[0], y)
+
+
+@KerasConverter.register_handler("Flatten")
+def _convert_flatten(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+      {'class_name': 'Flatten',
+'config': {'name': 'flatten_1', 'trainable': True}},
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    in_axes = x.order.axes.copy()
+    assert in_axes[0] == Axis.N
+    in_axes.remove(Axis.N)
+    flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
+    y, = flatten_opr(x)
+
+    converter.set_variable(operator.outputs[0], y)
