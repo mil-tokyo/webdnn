@@ -26,8 +26,9 @@ class Converter(Generic[T_OP, T_VA]):
 
     _handler_map = {}  # type: Dict[Type[T_OP], ConvertHandler]
     _converted_variables = {}  # type: Dict[T_VA, Variable]
+    _operator_matcher = isinstance
 
-    ConvertHandler = Callable[["Converter", T_OP, Iterable[T_VA], Iterable[T_VA]], Operator]
+    ConvertHandler = Callable[["Converter", T_OP], Operator]
 
     @abstractmethod
     def convert_core(self, *args, **kwargs) -> Graph:
@@ -114,15 +115,15 @@ class Converter(Generic[T_OP, T_VA]):
         self._converted_variables = {}
         return self.convert_core(*args, **kwargs)
 
-    def convert_operator(self, operator: T_OP, inputs: Iterable[T_VA], outputs: Iterable[T_VA]):
+    def convert_operator(self, operator: T_OP):
         matched_classes = []  # type: List[str]
         for klass in self._handler_map.keys():
-            if not isinstance(operator, klass):
+            if not self._operator_matcher(operator, klass):
                 continue
 
-            matched_classes.append(klass.__name__)
+            matched_classes.append(str(klass))
             if len(matched_classes) == 1:
-                self._handler_map[klass](self, operator, inputs, outputs)
+                self._handler_map[klass](self, operator)
 
         if len(matched_classes) == 0:
             raise NotImplementedError(f"Operator '{operator.__class__.__name__}' is not handled any converter handlers.")

@@ -11,7 +11,7 @@ from os import path
 import h5py
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.keras import KerasGraphConverter
+from webdnn.graph.converters.keras import KerasConverter
 from webdnn.graph.graph import Graph
 
 
@@ -33,7 +33,7 @@ def main():
     input_shape = ast.literal_eval(args.input_shape)
     input_shapes = [input_shape]
     model = h5py.File(args.kerasmodel, "r")
-    converter = KerasGraphConverter()
+    converter = KerasConverter()
     graph = converter.convert(model, input_shapes)
 
     if args.out:
