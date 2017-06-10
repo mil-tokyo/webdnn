@@ -3,6 +3,7 @@ from typing import List, Optional
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 
 
@@ -27,11 +28,11 @@ class Concat(Operator):
         Returns:
             tuple of :class:`~webdnn.graph.variable.Variable`: Output
         """
-        concat_axis = self.parameters["axis"]  # type: int
+        concat_axis = self.parameters["axis"]  # type: Axis
         axis_index = xs[0].order.axes_dict[concat_axis]
         axes_set = set(xs[0].order.axes)
 
-        y_shape = list(xs[0].shape)  # type: List[int]
+        y_shape = list(xs[0].shape)  # type: List[PlaceHolder]
         y_shape[axis_index] = 0
 
         for i, x in enumerate(xs):

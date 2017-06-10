@@ -4,9 +4,9 @@ import numpy as np
 
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
+from webdnn.graph.place_holder import PlaceHolder
 
 source = """
 axiswise_bias: function(input_arrays, output_arrays, option) {
@@ -38,8 +38,7 @@ def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
 
-    # noinspection PyTypeChecker
-    axis_stride = int(np.prod(x.shape[axis_pos + 1:]))  # NCHWでaxis=Cなら、size(H)*size(W), np.prod([])==1.0
+    axis_stride = np.product(x.shape[axis_pos + 1:])  # NCHWでaxis=Cなら、size(H)*size(W), np.product([])==1.0
 
     kernel = Kernel(
         {"axiswise_bias": source},

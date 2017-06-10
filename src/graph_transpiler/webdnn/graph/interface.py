@@ -1,7 +1,9 @@
 from abc import ABCMeta
-from typing import List, Type, Dict, Set, Tuple, Optional
+from typing import List, Type, Dict, Set, Tuple, Optional, Union
 
+from webdnn.graph.axis import Axis
 from webdnn.graph.order import Order
+from webdnn.graph.place_holder import PlaceHolder
 
 
 class IAttribute:
@@ -38,13 +40,13 @@ class INode:
 
 
 class IVariable(INode, metaclass=ABCMeta):
-    shape: List[int]
+    shape: List[Union[int, PlaceHolder]]
     input_to: Set["IOperator"]
     output_from: "IOperator"
     order: Order
 
     # noinspection PyUnusedLocal,PyMissingConstructor
-    def __init__(self, shape: List[int], order: Order):
+    def __init__(self, shape: List[Union[int, PlaceHolder]], order: Order):
         raise NotImplementedError
 
     @property
@@ -56,7 +58,7 @@ class IVariable(INode, metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def size(self) -> int:
+    def size(self) -> Union[int, PlaceHolder]:
         raise NotImplementedError
 
     @property
@@ -64,7 +66,7 @@ class IVariable(INode, metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def shape_dict(self):
+    def shape_dict(self) -> Dict[Axis, Union[int, PlaceHolder]]:
         raise NotImplementedError
 
     def change_order(self, order: Order) -> None:

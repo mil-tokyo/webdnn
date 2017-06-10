@@ -1,6 +1,7 @@
 import numpy as np
 
 from webdnn.graph.order import Order
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
 
@@ -22,7 +23,7 @@ class ConstantVariable(Variable):
         # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
         # 増える次元は、サイズ1
         current_shape_dict = self.shape_dict
-        new_shape = [current_shape_dict.get(axis, 1) for axis in order.axes]
+        new_shape = [current_shape_dict.get(axis, PlaceHolder(1)) for axis in order.axes]
         for axis, size in current_shape_dict.items():
             if axis not in order.axes:
                 assert size == 1

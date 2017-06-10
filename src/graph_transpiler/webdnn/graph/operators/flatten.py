@@ -59,7 +59,7 @@ class Flatten(Operator):
             raise ValueError(f"Axis {axis} is duplicated")
 
         out_axes.append(self.parameters["out_axis"])
-        out_shape.append(int(np.prod([x.shape_dict[axis] for axis in self.parameters["in_axes"]])))
+        out_shape.append(np.product([x.shape_dict[axis] for axis in self.parameters["in_axes"]]))
 
         y = Variable(out_shape, Order(out_axes))
         self.append_input("x", x)

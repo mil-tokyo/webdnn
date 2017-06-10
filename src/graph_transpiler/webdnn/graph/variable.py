@@ -1,13 +1,15 @@
-from typing import Iterable
+from typing import Iterable, Union, Dict
 
 import numpy as np
 
+from webdnn.graph.axis import Axis
 from webdnn.graph.interface import IVariable
 from webdnn.graph.node import Node
 from webdnn.graph.order import Order
-
-
 # FIXME: DOCS
+from webdnn.graph.place_holder import PlaceHolder
+
+
 class Variable(Node, IVariable):
     """
     レイヤー間で受け渡される変数
@@ -16,10 +18,10 @@ class Variable(Node, IVariable):
     shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存
     """
 
-    def __init__(self, shape: Iterable[int], order: Order):
+    def __init__(self, shape: Iterable[Union[int, PlaceHolder]], order: Order):
         super().__init__()
 
-        self.shape = list(int(v) for v in shape)
+        self.shape = list(shape)
         self.input_to = set()
         self.output_from = None
         self.order = order
@@ -35,16 +37,15 @@ class Variable(Node, IVariable):
         self.parameters["name"] = name
 
     @property
-    def size(self):
-        # noinspection PyTypeChecker
-        return int(np.prod(self.shape))
+    def size(self) -> Union[int, PlaceHolder]:
+        return np.product(self.shape)
 
     @property
     def ndim(self):
         return len(self.shape)
 
     @property
-    def shape_dict(self):
+    def shape_dict(self) -> Dict[Axis, Union[int, PlaceHolder]]:
         return dict(zip(self.order.axes, self.shape))
 
     def change_order(self, order: Order):

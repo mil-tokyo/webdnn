@@ -11,5 +11,4 @@ def calculate_stride(var: Variable, axis: Axis):
     :param axis: 
     :return: 
     """
-    # noinspection PyTypeChecker
-    return int(np.prod(var.shape[var.order.axes_dict[axis] + 1:]))
+    return np.product(var.shape[var.order.axes_dict[axis] + 1:])

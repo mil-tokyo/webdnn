@@ -104,6 +104,14 @@ class PlaceHolder(json.SerializableMixin):
             return x
 
         if x.is_resolved:
+            return x.value if x.is_resolved else x
+
+    @staticmethod
+    def force_int(x: Union[int, "PlaceHolder"]):
+        if isinstance(x, int):
+            return x
+
+        if x.is_resolved:
             return x.value
 
         raise ValueError(f"{x} is not resolved.")
@@ -329,7 +337,7 @@ class PlaceHolder(json.SerializableMixin):
         return PlaceHolder(Dependency(PlaceHolderOperator.Mod, (other, self)))
 
     def __int__(self):
-        return PlaceHolder.to_int(self)
+        return PlaceHolder.force_int(self)
 
     def __eq__(self, other: Union[int, "PlaceHolder"]) -> bool:
         if not self.is_resolved:

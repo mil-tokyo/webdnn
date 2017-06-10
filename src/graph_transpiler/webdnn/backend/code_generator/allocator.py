@@ -1,5 +1,4 @@
-import math
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
 
@@ -8,6 +7,7 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
@@ -15,11 +15,11 @@ from webdnn.util import json, flags
 
 class Allocation(json.SerializableMixin, IAllocation):
     variable: Variable
-    offset: int
+    offset: Union[int, PlaceHolder]
 
     def __init__(self,
                  variable: Variable,
-                 offset: int):
+                 offset: Union[int, PlaceHolder]):
         self.variable = variable
         self.offset = offset
 
@@ -28,7 +28,7 @@ class Allocation(json.SerializableMixin, IAllocation):
         return isinstance(self.variable, ConstantVariable)
 
     @property
-    def size(self) -> int:
+    def size(self) -> Union[int, PlaceHolder]:
         return self.variable.size
 
     def _to_serializable_(self):
@@ -58,14 +58,14 @@ class MemoryLayout(json.SerializableMixin, IMemoryLayout):
     def __contains__(self, var: Variable):
         return var.name in self.allocations
 
-    def append(self, var: Variable, offset: int = -1):
+    def append(self, var: Variable, offset: Union[int, PlaceHolder] = -1):
         if offset == -1:
             offset = self.size
 
         self.allocations[var.name] = Allocation(var, offset)
 
     @property
-    def size(self) -> int:
+    def size(self) -> Union[int, PlaceHolder]:
         size = 0
         for a in self.allocations.values():
             size = max(a.offset + a.size, size)
@@ -90,7 +90,7 @@ class Allocator:
         layout = MemoryLayout()
 
         lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, int]
+        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
         for variable, offset in offsets.items():
             layout.append(variable, offset)
 
@@ -187,7 +187,7 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
     queue = sorted(queue, key=lambda x: isinstance(x, ConstantVariable), reverse=True)
     queue = list(queue)
 
-    allocated_range = {}  # type: Dict[int, List[Tuple[int, int]]]
+    allocated_range = {}  # type: Dict[int, List[Tuple[Union[int, PlaceHolder], Union[int, PlaceHolder]]]]
     workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
     result = {}  # type: Dict[Variable, int]
 
@@ -214,7 +214,7 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
 
                         else:
                             # align for 16byte
-                            offset1 = math.ceil((offset2 + size2) / 4) * 4
+                            offset1 = ((offset2 + size2 + 4 - 1) // 4) * 4
                             flag_retry = True
                             break
 
@@ -250,7 +250,7 @@ def _visualize_allocation(ops: List[Operator],
                           variables: List[Variable],
                           layout: MemoryLayout,
                           lifetime: Dict[Variable, Tuple[int, int]],
-                          offsets: Dict[Variable, int]):
+                          offsets: Dict[Variable, Union[int, PlaceHolder]]):
     UNIT_HEIGHT = 14
     total_size = layout.size
 

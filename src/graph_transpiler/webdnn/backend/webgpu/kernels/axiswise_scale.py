@@ -87,9 +87,9 @@ def axiswise_scale_same_order(op: AxiswiseScale,
     y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
-    D1 = int(np.prod(x.variable.shape[:target_axis_index]))
+    D1 = np.product(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = int(np.prod(x.variable.shape[target_axis_index + 1:]))
+    D3 = np.product(x.variable.shape[target_axis_index + 1:])
 
     meta_injector = MetaInjector()
     meta_injector.register({

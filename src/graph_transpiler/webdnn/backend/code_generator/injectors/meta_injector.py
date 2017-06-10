@@ -3,9 +3,10 @@ from typing import Dict, Union
 import numpy as np
 
 from webdnn.backend.code_generator.injector import Tag, Injector
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.util import flags
 
-MetaBufferContent = Union[int, float, bytes]
+MetaBufferContent = Union[int, float, bytes, PlaceHolder]
 
 
 class MetaInjector(Injector):
@@ -15,7 +16,7 @@ class MetaInjector(Injector):
         self.buffer = None  # type: bytes
         self.arg_name = "meta_buffer"
 
-    def register(self, data: Dict[str, any]):
+    def register(self, data: Dict[str, MetaBufferContent]):
         self.data.update(data)
 
     def inject_tag(self, tag: Tag):
@@ -52,10 +53,10 @@ class MetaInjector(Injector):
         for key, value in self.data.items():
             offset_map[key] = len(buffer) // 4  # sizeof(int)
 
-            if isinstance(value, int):
+            if isinstance(value, int) or isinstance(value, np.int32) or isinstance(value, np.int64):
                 buffer += np.array([value], dtype=np.int32).tobytes()
 
-            elif isinstance(value, float):
+            elif isinstance(value, float) or isinstance(value, np.float32) or isinstance(value, np.float64):
                 buffer += np.array([value], dtype=np.float32).tobytes()
 
             elif isinstance(value, bytes):
@@ -64,9 +65,17 @@ class MetaInjector(Injector):
 
                 buffer += value
 
+            elif isinstance(value, PlaceHolder):
+                if not value.is_resolved:
+                    raise TypeError("MetaBufferInjector supports only int, float, bytes, and resolved placeholder. "
+                                    + f"'{key}' is unresolved placeholder.")
+
+                # noinspection PyTypeChecker
+                buffer += np.array([int(value)], dtype=np.int32).tobytes()
+
             else:
-                raise TypeError("MetaBufferInjector supports only int, float, and bytes contents. "
-                                + f"\"{key} is {type(value)}\".")
+                raise TypeError("MetaBufferInjector supports only int, float, bytes, and resolved placeholder. "
+                                + f"'{key}' is {type(value)}.")
 
         self.offset_map = offset_map
         self.buffer = buffer

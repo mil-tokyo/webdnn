@@ -1,15 +1,16 @@
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union
 
 import numpy as np
 
 from webdnn.graph.operator import Operator
 from webdnn.graph.order import Order
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 
 
 class Sgemm(Operator):
-    def __init__(self, name: Optional[str], M: int, N: int, K: int, out_shape: Iterable[int], out_order: Order,
-                 transpose_A: bool, transpose_B: bool):
+    def __init__(self, name: Optional[str], M: Union[int, PlaceHolder], N: Union[int, PlaceHolder], K: Union[int, PlaceHolder],
+                 out_shape: Iterable[PlaceHolder], out_order: Order, transpose_A: bool, transpose_B: bool):
         super().__init__(name)
 
         # NOTE: out_shapeをIterableではなくCollectionにすればこれは解決する
@@ -44,21 +45,21 @@ class Sgemm(Operator):
         return C,
 
     @property
-    def M(self) -> int:
-        return int(self.parameters["M"])
+    def M(self) -> Union[int, PlaceHolder]:
+        return self.parameters["M"]
 
     @property
-    def N(self) -> int:
-        return int(self.parameters["N"])
+    def N(self) -> Union[int, PlaceHolder]:
+        return self.parameters["N"]
 
     @property
-    def K(self) -> int:
-        return int(self.parameters["K"])
+    def K(self) -> Union[int, PlaceHolder]:
+        return self.parameters["K"]
 
     @property
     def transpose_A(self) -> bool:
-        return bool(self.parameters["transpose_A"])
+        return self.parameters["transpose_A"]
 
     @property
     def transpose_B(self) -> bool:
-        return bool(self.parameters["transpose_B"])
+        return self.parameters["transpose_B"]
