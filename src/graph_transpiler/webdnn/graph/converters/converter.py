@@ -74,6 +74,9 @@ class Converter(Generic[T_OP]):
             raise ValueError(f"Variable {key} already exists")
         self._variable_table[self.__class__.__name__][key] = variable
 
+    def variable_exists(self, key: object) -> bool:
+        return key in self._variable_table[self.__class__.__name__]
+
     @classmethod
     def register_handler(cls, OperatorClass: str):
         """Decorator to register operator converter handler

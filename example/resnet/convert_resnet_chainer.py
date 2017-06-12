@@ -12,7 +12,7 @@ import chainer.computational_graph
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.chainer import ChainerGraphConverter
+from webdnn.graph.converters.chainer import ChainerConverter
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
     nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
     nn_output = link(nn_input, layers=[out_layer_name])[out_layer_name]  # 'prob' is also possible (uses softmax)
     chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
-    converter = ChainerGraphConverter()
+    converter = ChainerConverter()
     graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Graph
 
     any_backend_failed = False

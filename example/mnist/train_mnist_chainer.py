@@ -46,7 +46,7 @@ import chainer.links as L
 from chainer import training
 from chainer.training import extensions
 
-from webdnn.graph.converters.chainer import ChainerGraphConverter
+from webdnn.graph.converters.chainer import ChainerConverter
 from webdnn.backend.interface.generator import generate_descriptor
 
 # Network definition
@@ -166,7 +166,7 @@ def main():
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
     x = chainer.Variable(example_input)
     y = model.predictor(x)  # run model (without softmax)
-    graph = ChainerGraphConverter().convert_from_inout_vars([x], [y])  # convert graph to intermediate representation
+    graph = ChainerConverter().convert_from_inout_vars([x], [y])  # convert graph to intermediate representation
     for backend in ["webgpu", "webassembly", "fallback"]:
         try:
             exec_info = generate_descriptor(backend, graph)

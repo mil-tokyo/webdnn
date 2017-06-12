@@ -14,7 +14,7 @@ import chainer.links.caffe
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.chainer import ChainerGraphConverter
+from webdnn.graph.converters.chainer import ChainerConverter
 from webdnn.graph.graph import Graph
 
 
@@ -69,7 +69,7 @@ def main():
         output_blobs = list(
             link(inputs={args.input_name: input_blob}, outputs=output_names, train=False))  # list of Variable
     chainer_cg = chainer.computational_graph.build_computational_graph(output_blobs)
-    converter = ChainerGraphConverter()
+    converter = ChainerConverter()
     graph = converter.convert(chainer_cg, [input_blob], output_blobs)  # type: Graph
 
     if args.out:
