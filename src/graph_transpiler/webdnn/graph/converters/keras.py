@@ -9,7 +9,7 @@ If this is not the case, Flatten layer which follows Convolution have to change 
 Convolution implementation is currently assuming variable is NHWC.
 """
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Type
 
 import json
 from warnings import warn
@@ -70,21 +70,20 @@ class KerasOperator:
 
 
 class KerasConverter(Converter[KerasOperator, object]):
-    _variable_table: Dict[object, Variable]
     _weight_dataset: h5py.Group
 
     def convert_core(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
-        # FIXME: not share operator matcher between converters
-        Converter._operator_matcher = KerasOperator.operator_matcher
         model_config = json.loads(model.attrs["model_config"])
         self._weight_dataset = model["model_weights"]
-        self._variable_table = {}
         if model_config["class_name"] == "Sequential":
             return self.convert_core_sequential(model_config, input_shapes)
         elif model_config["class_name"] == "Model":
             return self.convert_core_model(model_config, input_shapes)
         else:
             raise NotImplementedError("Unknown model type")
+
+    def serialize_operator_type(self, operator: KerasOperator) -> str:
+        return operator.class_name
 
     def convert_core_sequential(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
         # set input variables
@@ -117,17 +116,6 @@ class KerasConverter(Converter[KerasOperator, object]):
 
     def convert_core_model(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
         raise NotImplementedError()
-
-    def convert_variable_core(self, variable: object, order: Order = None) -> Variable:
-        raise NotImplementedError()
-
-    def get_variable(self, key: object):
-        return self._variable_table[key]
-
-    def set_variable(self, key: object, variable: Variable):
-        if key in self._variable_table:
-            raise ValueError(f"Variable {key} already exists")
-        self._variable_table[key] = variable
 
     def create_constant_array(self, operator: KerasOperator, key: str) -> np.ndarray:
         return self._weight_dataset[f"{operator.name}/{operator.name}/{key}"].value

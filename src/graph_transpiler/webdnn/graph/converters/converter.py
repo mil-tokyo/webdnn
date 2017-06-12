@@ -1,6 +1,7 @@
 import warnings
 from abc import abstractmethod
 from typing import Callable, Dict, Iterable, TypeVar, Generic, Type, List
+from collections import defaultdict
 
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -24,11 +25,14 @@ class Converter(Generic[T_OP, T_VA]):
     Also you have to implement ConvertHandler for each operator (Please see  :func:`~webdnn.converter.Converter.register_handler`).
     """
 
-    _handler_map = {}  # type: Dict[Type[T_OP], ConvertHandler]
-    _converted_variables = {}  # type: Dict[T_VA, Variable]
-    _operator_matcher = isinstance
-
     ConvertHandler = Callable[["Converter", T_OP], Operator]
+
+    """
+    For each concrete Converter
+    """
+    _handler_map = defaultdict(dict)  # type: Dict[str, Dict[str, ConvertHandler]]
+    _converted_variables = defaultdict(dict)  # type: Dict[str, Dict[T_VA, Variable]]
+    _variable_table = defaultdict(dict)  # type: Dict[str, Dict[object, Variable]]
 
     @abstractmethod
     def convert_core(self, *args, **kwargs) -> Graph:
@@ -53,20 +57,28 @@ class Converter(Generic[T_OP, T_VA]):
         raise NotImplementedError
 
     @abstractmethod
-    def convert_variable_core(self, variable: T_VA, order: Order = None) -> Variable:
-        """Convert variable object into WebDNN IR Format.
+    def serialize_operator_type(self, operator: T_OP) -> str:
+        raise NotImplementedError
 
-        Args:
-            variable: variable object in other DNN library
-            order: order
+    def get_variable(self, key: object) -> Variable:
+        """Gets variable object corresponding to the key.
 
         Returns:
             variable object in WebDNN IR Format.
         """
-        raise NotImplementedError
+        print("class_name", self.__class__.__name__)
+        return self._variable_table[self.__class__.__name__][key]
+
+    def set_variable(self, key: object, variable: Variable):
+        """Stores variable object corresponding to the key.
+
+        """
+        if key in self._variable_table[self.__class__.__name__]:
+            raise ValueError(f"Variable {key} already exists")
+        self._variable_table[self.__class__.__name__][key] = variable
 
     @classmethod
-    def register_handler(cls, OperatorClass: Type[T_OP]):
+    def register_handler(cls, OperatorClass: str):
         """Decorator to register operator converter handler
 
         You need to implement handlers for all operators you want to supports. Each handler is consisted as follows:
@@ -104,10 +116,12 @@ class Converter(Generic[T_OP, T_VA]):
         """
 
         def decorator(handler: cls.ConvertHandler):
-            if OperatorClass in cls._handler_map:
-                warnings.warn(f"Converter Handler for '{OperatorClass.__name__}' is already registered in {cls.__name__} and overwritten.")
+            key = OperatorClass
+            if key in cls._handler_map:
+                warnings.warn(
+                    f"Converter Handler for '{OperatorClass}' is already registered in {cls.__name__} and overwritten.")
 
-            cls._handler_map[OperatorClass] = handler
+            cls._handler_map[cls.__name__][key] = handler
 
         return decorator
 
@@ -116,29 +130,10 @@ class Converter(Generic[T_OP, T_VA]):
         return self.convert_core(*args, **kwargs)
 
     def convert_operator(self, operator: T_OP):
-        matched_classes = []  # type: List[str]
-        for klass in self._handler_map.keys():
-            if not self._operator_matcher(operator, klass):
-                continue
+        operator_key = self.serialize_operator_type(operator)
+        if operator_key not in self._handler_map[self.__class__.__name__].keys():
+            raise NotImplementedError(f"Operator '{operator_key}' is not handled any converter handlers.")
 
-            matched_classes.append(str(klass))
-            if len(matched_classes) == 1:
-                self._handler_map[klass](self, operator)
-
-        if len(matched_classes) == 0:
-            raise NotImplementedError(f"Operator '{operator.__class__.__name__}' is not handled any converter handlers.")
-
-        if len(matched_classes) > 1:
-            raise TypeError(f"Operator '{operator.__class__.__name__}' is handled more than one converter handlers:"
-                            + f" [{','.join(matched_classes)}]")
+        self._handler_map[self.__class__.__name__][operator_key](self, operator)
 
         return None
-
-    def convert_variable(self, variable: T_VA, order: Order = None) -> Variable:
-        if variable in self._converted_variables:
-            return self._converted_variables[variable]
-
-        converted_variable = self.convert_variable_core(variable, order)
-        self._converted_variables[variable] = converted_variable
-
-        return converted_variable
