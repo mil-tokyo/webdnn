@@ -66,7 +66,6 @@ class Converter(Generic[T_OP, T_VA]):
         Returns:
             variable object in WebDNN IR Format.
         """
-        print("class_name", self.__class__.__name__)
         return self._variable_table[self.__class__.__name__][key]
 
     def set_variable(self, key: object, variable: Variable):
