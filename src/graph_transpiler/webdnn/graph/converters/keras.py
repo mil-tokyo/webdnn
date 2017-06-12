@@ -74,7 +74,8 @@ class KerasOperator:
         else:
             return self.serial_index
 
-class KerasConverter(Converter[KerasOperator, object]):
+
+class KerasConverter(Converter[KerasOperator]):
     _weight_dataset: h5py.Group
 
     def convert_core(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
@@ -157,7 +158,6 @@ class KerasConverter(Converter[KerasOperator, object]):
 
     def create_constant_variable(self, operator: KerasOperator, key: str, order: Order) -> ConstantVariable:
         return ConstantVariable(self.create_constant_array(operator, key), order)
-
 
     def _preprocess_zeropadding2d(self, model_config):
         """

@@ -9,10 +9,9 @@ from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 T_OP = TypeVar('T_OP')
-T_VA = TypeVar('T_VA')
 
 
-class Converter(Generic[T_OP, T_VA]):
+class Converter(Generic[T_OP]):
     """Converter base class
 
     This class converts computation graph in some DNN library into WebDNN IR format.
@@ -31,7 +30,6 @@ class Converter(Generic[T_OP, T_VA]):
     For each concrete Converter
     """
     _handler_map = defaultdict(dict)  # type: Dict[str, Dict[str, ConvertHandler]]
-    _converted_variables = defaultdict(dict)  # type: Dict[str, Dict[T_VA, Variable]]
     _variable_table = defaultdict(dict)  # type: Dict[str, Dict[object, Variable]]
 
     @abstractmethod
@@ -125,7 +123,6 @@ class Converter(Generic[T_OP, T_VA]):
         return decorator
 
     def convert(self, *args, **kwargs) -> Graph:
-        self._converted_variables = {}
         return self.convert_core(*args, **kwargs)
 
     def convert_operator(self, operator: T_OP):
