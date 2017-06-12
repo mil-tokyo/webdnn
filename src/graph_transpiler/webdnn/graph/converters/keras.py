@@ -9,7 +9,7 @@ If this is not the case, Flatten layer which follows Convolution have to change 
 Convolution implementation is currently assuming variable is NHWC.
 """
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Type
 
 import json
 from warnings import warn
@@ -20,6 +20,7 @@ import h5py
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
+from webdnn.graph.converters.converter import Converter
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
@@ -43,413 +44,56 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-class CommonGraphConverter:
-    model_config: Dict[str, object]
-    weights: h5py.Group
+class KerasOperator:
+    class_name: str
+    name: str
+    serial_index: int
+    inputs: List[object]
+    outputs: List[object]
+    specific_config: Dict[str, object]
 
-    def __init__(self, model_config: Dict[str, object], weights: h5py.Group):
-        self.model_config = model_config
-        self.weights = weights
+    def __init__(self, layer_config, serial_index: int):
+        self.class_name = layer_config["class_name"]
+        self.name = layer_config["config"]["name"]
+        self.serial_index = serial_index
+        self.specific_config = layer_config["config"]
 
-    def convert(self, input_shapes: List[List[int]]) -> Graph:
-        pass
-
-    def convert_layer(self, layer_class_name: str, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
-        Variable]:
-        outputs = None
-        if layer_class_name == "Dense":
-            outputs = self.convert_layer_dense(layer_config, inputs)
-        elif layer_class_name == "Conv2D":
-            outputs = self.convert_layer_conv2d(layer_config, inputs)
-        elif layer_class_name == "MaxPooling2D":
-            outputs = self.convert_layer_maxpooling2d(layer_config, inputs)
-        elif layer_class_name == "AveragePooling2D":
-            outputs = self.convert_layer_averagepooling2d(layer_config, inputs)
-        elif layer_class_name == "GlobalAveragePooling2D":
-            outputs = self.convert_layer_globalaveragepooling2d(layer_config, inputs)
-        elif layer_class_name == "BatchNormalization":
-            outputs = self.convert_layer_batchnormalization(layer_config, inputs)
-        elif layer_class_name == "Flatten":
-            outputs = self.convert_layer_flatten(layer_config, inputs)
-        elif layer_class_name == "Concatenate":
-            outputs = self.convert_layer_concatenate(layer_config, inputs)
-        elif layer_class_name == "Add":
-            outputs = self.convert_layer_add(layer_config, inputs)
-        elif layer_class_name == "Activation":
-            outputs = self.convert_layer_activation(layer_config, inputs)
-        elif layer_class_name == "Dropout":
-            warn("Omitting Dropout layer")
-            outputs = inputs
+        if serial_index is not None:
+            self.inputs = [serial_index - 1]
         else:
-            raise NotImplementedError(f"Unknown Layer {layer_class_name}")
-        return outputs
+            # 'inbound_nodes': [[['conv2d_2', 0, 0, {}], ['conv2d_3', 0, 0, {}]]]
+            if len(layer_config["inbound_nodes"]) > 0:
+                self.inputs = [(t[0], t[1], t[2]) for t in layer_config["inbound_nodes"][0]]
+            else:
+                self.inputs = []
 
-    def convert_layer_dense(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-        weight_array = self.weights[f"{name}/{name}/kernel:0"].value
-        weight_var = ConstantVariable(weight_array, OrderCN)  # shape: (in, out)
-        linear_opr = Linear(name)
-        y, = linear_opr(input, weight_var)
-
-        if layer_config["use_bias"]:
-            bias_array = self.weights[f"{name}/{name}/bias:0"].value
-            bias_var = ConstantVariable(bias_array, OrderC)
-            bias_opr = AxiswiseBias(name + "_bias", Axis.C)
-            y, = bias_opr(y, bias_var)
-
-        act_opr: Operator = None
-        activation_type: str = layer_config["activation"]
-        if activation_type == "relu":
-            act_opr = Relu(name + "_activation")
-        elif activation_type == "softmax":
-            warn("omitting softmax activation")
+    def get_output_key(self, index: int) -> object:
+        assert index == 0  # layer with multiple output is currently not supported
+        if self.serial_index is None:
+            return self.name, 0, 0
         else:
-            raise NotImplementedError(f"Unknown activation {activation_type}")
+            return self.serial_index
 
-        if act_opr is not None:
-            y, = act_opr(y)
 
-        return [y]
+class KerasConverter(Converter[KerasOperator]):
+    _weight_dataset: h5py.Group
 
-    def convert_layer_conv2d(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
-           {'class_name': 'Conv2D',
-   'config': {'activation': 'relu',
-    'activity_regularizer': None,
-    'bias_constraint': None,
-    'bias_initializer': {'class_name': 'Zeros', 'config': {}},
-    'bias_regularizer': None,
-    'data_format': 'channels_last',
-    'dilation_rate': [1, 1],
-    'filters': 64,
-    'kernel_constraint': None,
-    'kernel_initializer': {'class_name': 'VarianceScaling',
-     'config': {'distribution': 'uniform',
-      'mode': 'fan_avg',
-      'scale': 1.0,
-      'seed': None}},
-    'kernel_regularizer': None,
-    'kernel_size': [3, 3],
-    'name': 'conv2d_2',
-    'padding': 'valid',
-    'strides': [1, 1],
-    'trainable': True,
-    'use_bias': True}},
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-        weight_array = self.weights[f"{name}/{name}/kernel:0"].value
-        assert layer_config["data_format"] == "channels_last"
-        weight_var = ConstantVariable(weight_array, OrderHWCN)  # order does not depend on data_format
-        ksize: Tuple[int, int] = tuple(layer_config["kernel_size"])
-        stride: Tuple[int, int] = tuple(layer_config["strides"])
-        padding_keras: str = layer_config["padding"]  # valid or same
-        if isinstance(padding_keras, tuple):
-            # preprocess_zeropadding2d
-            padding = padding_keras
-        elif padding_keras == "valid":
-            padding = (0, 0)
-        elif padding_keras == "same":
-            padding = (ksize[0] // 2, ksize[1] // 2)
+    def convert_core(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
+        model_config = json.loads(model.attrs["model_config"])
+        self._weight_dataset = model["model_weights"]
+        if model_config["class_name"] == "Sequential":
+            return self.convert_core_sequential(model_config, input_shapes)
+        elif model_config["class_name"] == "Model":
+            return self.convert_core_model(model_config, input_shapes)
         else:
-            raise ValueError("Unknown padding")
+            raise NotImplementedError("Unknown model type")
 
-        conv2d_opr = Convolution2D(name,
-                                   ksize=ksize,
-                                   stride=stride,
-                                   padding=padding)
-        y, = conv2d_opr(input, weight_var)
+    def serialize_operator_type(self, operator: KerasOperator) -> str:
+        return operator.class_name
 
-        if layer_config["use_bias"]:
-            bias_array = self.weights[f"{name}/{name}/bias:0"].value
-            bias_var = ConstantVariable(bias_array, OrderC)
-            bias_opr = AxiswiseBias(name + "_bias", Axis.C)
-            y, = bias_opr(y, bias_var)
-
-        act_opr: Operator = None
-        activation_type: str = layer_config["activation"]
-        if activation_type == "relu":
-            act_opr = Relu(name + "_activation")
-        elif activation_type == "softmax":
-            warn("omitting softmax activation")
-        elif activation_type == "linear":
-            pass
-        else:
-            raise NotImplementedError(f"Unknown activation {activation_type}")
-
-        if act_opr is not None:
-            y, = act_opr(y)
-
-        return [y]
-
-    def convert_layer_maxpooling2d(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
-          {'class_name': 'MaxPooling2D',
-   'config': {'data_format': 'channels_last',
-    'name': 'max_pooling2d_1',
-    'padding': 'valid',
-    'pool_size': [2, 2],
-    'strides': [2, 2],
-    'trainable': True}},
-
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-        ksize: Tuple[int, int] = tuple(layer_config["pool_size"])
-        stride: Tuple[int, int] = tuple(layer_config["strides"])
-        padding_keras: str = layer_config["padding"]  # valid or same
-        if padding_keras == "valid":
-            padding = (0, 0)
-        elif padding_keras == "same":
-            padding = (ksize[0] // 2, ksize[1] // 2)
-        else:
-            raise ValueError("Unknown padding")
-
-        max_pooling_2d_opr = MaxPooling2D(name,
-                                          ksize=ksize,
-                                          stride=stride,
-                                          padding=padding)
-        y, = max_pooling_2d_opr(input)
-
-        return [y]
-
-    def convert_layer_batchnormalization(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
-        Variable]:
-        """
-        Example:
- {'class_name': 'BatchNormalization',
-  'config': {'axis': 3,
-   'beta_constraint': None,
-   'beta_initializer': {'class_name': 'Zeros', 'config': {}},
-   'beta_regularizer': None,
-   'center': True,
-   'epsilon': 0.001,
-   'gamma_constraint': None,
-   'gamma_initializer': {'class_name': 'Ones', 'config': {}},
-   'gamma_regularizer': None,
-   'momentum': 0.99,
-   'moving_mean_initializer': {'class_name': 'Zeros', 'config': {}},
-   'moving_variance_initializer': {'class_name': 'Ones', 'config': {}},
-   'name': 'bn2a_branch2a',
-   'scale': True,
-   'trainable': True},
-  'inbound_nodes': [[['res2a_branch2a', 0, 0, {}]]],
-  'name': 'bn2a_branch2a'},
-
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-
-        axis = input.order.axes[layer_config["axis"]]
-
-        mean = self.weights[f"{name}/{name}/moving_mean:0"].value
-        variance = self.weights[f"{name}/{name}/moving_variance:0"].value
-
-        if layer_config["scale"]:
-            gamma = self.weights[f"{name}/{name}/gamma:0"].value
-        else:
-            gamma = np.ones_like(variance)
-
-        if layer_config["center"]:
-            beta = self.weights[f"{name}/{name}/beta:0"].value
-        else:
-            beta = np.zeros_like(mean)
-
-        # (x - mean) / sqrt(var + eps) * gamma + beta
-        # gamma_div_std = gamma / sqrt(var + eps)
-        # beta_scaled = beta - mean * gamma_div_std
-        # y = x * gamma_div_std + beta_scaled
-
-        gamma_div_std = gamma / np.sqrt(variance + layer_config["epsilon"])
-        beta_scaled = beta - mean * gamma_div_std
-
-        scale_opr = AxiswiseScale(name + "_scale", axis=axis)
-        bias_opr = AxiswiseBias(name + "_bias", axis=axis)
-        scale_out, = scale_opr(input, ConstantVariable(gamma_div_std, OrderC))
-        y, = bias_opr(scale_out, ConstantVariable(beta_scaled, OrderC))
-
-        return [y]
-
-    def convert_layer_averagepooling2d(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
-        Variable]:
-        """
-        Example:
- {'class_name': 'AveragePooling2D',
-  'config': {'data_format': 'channels_last',
-   'name': 'avg_pool',
-   'padding': 'valid',
-   'pool_size': [7, 7],
-   'strides': [7, 7],
-   'trainable': True},
-  'inbound_nodes': [[['activation_49', 0, 0, {}]]],
-  'name': 'avg_pool'},
-
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-        ksize: Tuple[int, int] = tuple(layer_config["pool_size"])
-        stride: Tuple[int, int] = tuple(layer_config["strides"])
-        padding_keras: str = layer_config["padding"]  # valid or same
-        if padding_keras == "valid":
-            padding = (0, 0)
-        elif padding_keras == "same":
-            padding = (ksize[0] // 2, ksize[1] // 2)
-        else:
-            raise ValueError("Unknown padding")
-        # ksize: Tuple[int, int] = (input.shape_dict[Axis.H], input.shape_dict[Axis.W]) # FIXME: is this need?
-        average_pooling_2d_opr = AveragePooling2D(name,
-                                                  ksize=ksize,
-                                                  stride=stride,
-                                                  padding=padding)
-        y, = average_pooling_2d_opr(input)
-
-        return [y]
-
-    def convert_layer_globalaveragepooling2d(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[
-        Variable]:
-        """
-        Example:
-          {'class_name': 'GlobalAveragePooling2D',
-    'config': {'data_format': 'channels_last',
-     'name': 'global_average_pooling2d_1',
-     'trainable': True},
-    'inbound_nodes': [[['add_2', 0, 0, {}]]],
-    'name': 'global_average_pooling2d_1'},
-
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-        ksize: Tuple[int, int] = (input.shape_dict[Axis.H], input.shape_dict[Axis.W])
-
-        average_pooling_2d_opr = AveragePooling2D(name,
-                                                  ksize=ksize,
-                                                  stride=(1, 1),
-                                                  padding=(0, 0))
-        y, = average_pooling_2d_opr(input)
-
-        # データ順序を変えずに2Dにする
-        in_axes = y.order.axes.copy()
-        assert in_axes[0] == Axis.N
-        in_axes.remove(Axis.N)
-        flatten_opr = Flatten(name + "_flatten", in_axes=in_axes, out_axis=Axis.C)
-        y, = flatten_opr(y)
-
-        return [y]
-
-    def convert_layer_flatten(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
-          {'class_name': 'Flatten',
-   'config': {'name': 'flatten_1', 'trainable': True}},
-
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-
-        # データ順序を変えずに2Dにするだけ
-        in_axes = input.order.axes.copy()
-        assert in_axes[0] == Axis.N
-        in_axes.remove(Axis.N)
-        flatten_opr = Flatten(name, in_axes=in_axes, out_axis=Axis.C)
-        y, = flatten_opr(input)
-
-        return [y]
-
-    def convert_layer_concatenate(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
-          {'name': 'mixed0', 'trainable': True, 'axis': 3}
-
-        :param layer_config:
-        :param inputs:
-        :return:
-        """
-        name: str = layer_config["name"]
-
-        axis = inputs[0].order.axes[layer_config["axis"]]
-        concat_opr = Concat(name, axis=axis)
-        y, = concat_opr(*inputs)
-
-        return [y]
-
-    def convert_layer_add(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
-          {'class_name': 'Add',
-    'config': {'name': 'add_1', 'trainable': True},
-    'inbound_nodes': [[['conv2d_2', 0, 0, {}], ['conv2d_3', 0, 0, {}]]],
-    'name': 'add_1'},
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        name: str = layer_config["name"]
-
-        sum_opr = ElementwiseSum(name)
-        y, = sum_opr(*inputs)
-
-        return [y]
-
-    def convert_layer_activation(self, layer_config: Dict[str, object], inputs: List[Variable]) -> List[Variable]:
-        """
-        Example:
- {'class_name': 'Activation',
-  'config': {'activation': 'relu', 'name': 'activation_2', 'trainable': True},
-  'inbound_nodes': [[['bn2a_branch2a', 0, 0, {}]]],
-  'name': 'activation_2'},
-        :param layer_config: 
-        :param inputs: 
-        :return: 
-        """
-        assert len(inputs) == 1
-        input = inputs[0]
-        name: str = layer_config["name"]
-
-        act_opr: Operator = None
-        activation_type: str = layer_config["activation"]
-        if activation_type == "relu":
-            act_opr = Relu(name + "_activation")
-        else:
-            raise NotImplementedError(f"Unknown activation {activation_type}")
-
-        y, = act_opr(input)
-
-        return [y]
-
-
-class SequentialGraphConverter(CommonGraphConverter):
-    def __init__(self, model_config: Dict[str, object], weights: h5py.Group):
-        super().__init__(model_config, weights)
-
-    def convert(self, input_shapes: List[List[int]]) -> Graph:
+    def convert_core_sequential(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
+        # set input variables
+        assert len(input_shapes) == 1
         graph_inputs = []
         for input_shape in input_shapes:
             order = None
@@ -463,26 +107,24 @@ class SequentialGraphConverter(CommonGraphConverter):
             else:
                 raise NotImplementedError("Input shape must be 1,2,4 dimensions")
             v = Variable(input_shape, order)
+            self.set_variable(-1, v)
             graph_inputs.append(v)
 
-        current_vars = graph_inputs
-        for layer in self.model_config["config"]:
-            current_vars = self.convert_layer(layer["class_name"], layer["config"], current_vars)
-        graph_outputs = current_vars
+        # generate operator objects
+        for serial_index, layer_config in enumerate(model_config["config"]):
+            operator = KerasOperator(layer_config, serial_index)
+            self.convert_operator(operator)
+
+        # output of whole graph = output of final layer
+        graph_outputs = [self.get_variable(len(model_config["config"]) - 1)]
 
         return Graph(graph_inputs, graph_outputs)
 
+    def convert_core_model(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
+        self._preprocess_zeropadding2d(model_config)
 
-class ModelGraphConverter(CommonGraphConverter):
-    def __init__(self, model_config: Dict[str, object], weights: h5py.Group):
-        super().__init__(model_config, weights)
-
-    def convert(self, input_shapes: List[List[int]]) -> Graph:
-        input_layers = self.model_config["config"]["input_layers"]  # [['input_1', 0, 0]]
-        self.preprocess_zeropadding2d()
-        # Variableは(layer_name, 0, 0)という形式のキーで管理
-        var_dict = {}
-
+        input_layers = model_config["config"]["input_layers"]  # [['input_1', 0, 0]]
+        assert len(input_layers) == len(input_shapes)
         graph_inputs = []
         for input_layer, input_shape in zip(input_layers, input_shapes):
             order = None
@@ -498,42 +140,33 @@ class ModelGraphConverter(CommonGraphConverter):
             v = Variable(input_shape, order)
 
             graph_inputs.append(v)
-            var_dict[tuple(input_layer)] = v  # key: ('input_1', 0, 0)
+            self.set_variable(tuple(input_layer), v)  # key: ('input_1', 0, 0)
 
-        for layer in self.model_config["config"]["layers"]:
-            layer_class_name = layer["class_name"]
-            if layer_class_name == "InputLayer":
-                # 入力を表すダミーレイヤー
-                continue
-            # 入力変数をリストにまとめる
-            input_variables = []
-            assert len(layer["inbound_nodes"]) == 1  # [[var1, var2, ...]]
-            for inbound_node in layer["inbound_nodes"][0]:
-                key = (inbound_node[0], inbound_node[1], inbound_node[2])
-                assert inbound_node[3] == {}
-                input_variables.append(var_dict[key])
+        for layer_config in model_config["config"]["layers"]:
+            layer = KerasOperator(layer_config, None)
+            self.convert_operator(layer)
 
-            output_variables = self.convert_layer(layer_class_name, layer["config"], input_variables)
-            assert len(output_variables) == 1  # 複数出力の時の表現を認識できない
-            key = (layer["name"], 0, 0)
-            assert key not in var_dict
-            var_dict[key] = output_variables[0]
-
-        output_layers = self.model_config["config"]["output_layers"]
+        output_layers = model_config["config"]["output_layers"]
         graph_outputs = []
         for output_layer in output_layers:
-            graph_outputs.append(var_dict[tuple(output_layer)])
+            graph_outputs.append(self.get_variable(tuple(output_layer)))
 
         return Graph(graph_inputs, graph_outputs)
 
-    def preprocess_zeropadding2d(self):
+    def create_constant_array(self, operator: KerasOperator, key: str) -> np.ndarray:
+        return self._weight_dataset[f"{operator.name}/{operator.name}/{key}"].value
+
+    def create_constant_variable(self, operator: KerasOperator, key: str, order: Order) -> ConstantVariable:
+        return ConstantVariable(self.create_constant_array(operator, key), order)
+
+    def _preprocess_zeropadding2d(self, model_config):
         """
         ZeroPadding2D -> Conv2D のパターンについて、Conv2Dのpaddingに統合してZeroPadding2D layerを消去する
-        :return: 
+        :return:
         """
 
         zeropad_layers = dict()  # レイヤーの出力変数名とレイヤー情報
-        for layer in self.model_config["config"]["layers"]:
+        for layer in model_config["config"]["layers"]:
             layer_class_name = layer["class_name"]
             if layer_class_name == "ZeroPadding2D":
                 output_key = (layer["name"], 0, 0)
@@ -553,20 +186,384 @@ class ModelGraphConverter(CommonGraphConverter):
                     layer["inbound_nodes"] = pre_zeropad_layer["inbound_nodes"]
 
         for layer in zeropad_layers.values():
-            self.model_config["config"]["layers"].remove(layer)
+            model_config["config"]["layers"].remove(layer)
 
 
-class KerasGraphConverter:
-    def __init__(self):
+@KerasConverter.register_handler("InputLayer")
+def _convert_input_layer(converter: KerasConverter, operator: KerasOperator):
+    """
+    Dummy layer
+    Args:
+        converter:
+        operator:
+
+    Returns:
+
+    """
+    pass
+
+
+@KerasConverter.register_handler("Dense")
+def _convert_dense(converter: KerasConverter, operator: KerasOperator):
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    w = converter.create_constant_variable(operator, "kernel:0", OrderCN)
+    linear_opr = Linear(None)
+
+    y, = linear_opr(x, w)
+
+    if operator.specific_config["use_bias"]:
+        bias = converter.create_constant_variable(operator, "bias:0", OrderC)
+        bias_opr = AxiswiseBias(None, Axis.C)
+        y, = bias_opr(y, bias)
+
+    act_opr: Operator = None
+    activation_type: str = operator.specific_config["activation"]
+    if activation_type == "relu":
+        act_opr = Relu(None)
+    elif activation_type == "softmax":
+        warn("omitting softmax activation")
+    elif activation_type == "linear":
         pass
+    else:
+        raise NotImplementedError(f"Unknown activation {activation_type}")
 
-    def convert(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
-        model_config = json.loads(model.attrs["model_config"])
-        if model_config["class_name"] == "Sequential":
-            converter = SequentialGraphConverter(model_config, model["model_weights"])
-        elif model_config["class_name"] == "Model":
-            converter = ModelGraphConverter(model_config, model["model_weights"])
-        else:
-            raise NotImplementedError("Non-sequential model is currently not implemented")
+    if act_opr is not None:
+        y, = act_opr(y)
 
-        return converter.convert(input_shapes)
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Dropout")
+def _convert_dropout(converter: KerasConverter, operator: KerasOperator):
+    x = converter.get_variable(operator.inputs[0])
+    warn("omitting dropout")
+
+    converter.set_variable(operator.get_output_key(0), x)
+
+
+@KerasConverter.register_handler("Conv2D")
+def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+       {'class_name': 'Conv2D',
+'config': {'activation': 'relu',
+'activity_regularizer': None,
+'bias_constraint': None,
+'bias_initializer': {'class_name': 'Zeros', 'config': {}},
+'bias_regularizer': None,
+'data_format': 'channels_last',
+'dilation_rate': [1, 1],
+'filters': 64,
+'kernel_constraint': None,
+'kernel_initializer': {'class_name': 'VarianceScaling',
+ 'config': {'distribution': 'uniform',
+  'mode': 'fan_avg',
+  'scale': 1.0,
+  'seed': None}},
+'kernel_regularizer': None,
+'kernel_size': [3, 3],
+'name': 'conv2d_2',
+'padding': 'valid',
+'strides': [1, 1],
+'trainable': True,
+'use_bias': True}},
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    assert operator.specific_config["data_format"] == "channels_last"
+    w = converter.create_constant_variable(operator, "kernel:0", OrderHWCN)  # order does not depend on data_format
+    ksize: Tuple[int, int] = tuple(operator.specific_config["kernel_size"])
+    stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    padding_keras: str = operator.specific_config["padding"]  # valid or same
+    if isinstance(padding_keras, tuple):
+        # preprocess_zeropadding2d
+        padding = padding_keras
+    elif padding_keras == "valid":
+        padding = (0, 0)
+    elif padding_keras == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+    else:
+        raise ValueError("Unknown padding")
+
+    conv2d_opr = Convolution2D(None,
+                               ksize=ksize,
+                               stride=stride,
+                               padding=padding)
+    y, = conv2d_opr(x, w)
+
+    if operator.specific_config["use_bias"]:
+        bias = converter.create_constant_variable(operator, "bias:0", OrderC)
+        bias_opr = AxiswiseBias(None, Axis.C)
+        y, = bias_opr(y, bias)
+
+    act_opr: Operator = None
+    activation_type: str = operator.specific_config["activation"]
+    if activation_type == "relu":
+        act_opr = Relu(None)
+    elif activation_type == "softmax":
+        warn("omitting softmax activation")
+    elif activation_type == "linear":
+        pass
+    else:
+        raise NotImplementedError(f"Unknown activation {activation_type}")
+
+    if act_opr is not None:
+        y, = act_opr(y)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("MaxPooling2D")
+def _convert_max_pooling2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+          {'class_name': 'MaxPooling2D',
+   'config': {'data_format': 'channels_last',
+    'name': 'max_pooling2d_1',
+    'padding': 'valid',
+    'pool_size': [2, 2],
+    'strides': [2, 2],
+    'trainable': True}},
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
+    stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    padding_keras: str = operator.specific_config["padding"]  # valid or same
+    if isinstance(padding_keras, tuple):
+        # preprocess_zeropadding2d
+        padding = padding_keras
+    elif padding_keras == "valid":
+        padding = (0, 0)
+    elif padding_keras == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+    else:
+        raise ValueError("Unknown padding")
+
+    max_pooling_2d_opr = MaxPooling2D(None,
+                                      ksize=ksize,
+                                      stride=stride,
+                                      padding=padding)
+    y, = max_pooling_2d_opr(x)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("AveragePooling2D")
+def convert_layer_average_pooling2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+{'class_name': 'AveragePooling2D',
+'config': {'data_format': 'channels_last',
+'name': 'avg_pool',
+'padding': 'valid',
+'pool_size': [7, 7],
+'strides': [7, 7],
+'trainable': True},
+'inbound_nodes': [[['activation_49', 0, 0, {}]]],
+'name': 'avg_pool'},
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
+    stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    padding_keras: str = operator.specific_config["padding"]  # valid or same
+    if isinstance(padding_keras, tuple):
+        # preprocess_zeropadding2d
+        padding = padding_keras
+    elif padding_keras == "valid":
+        padding = (0, 0)
+    elif padding_keras == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+    else:
+        raise ValueError("Unknown padding")
+
+    average_pooling_2d_opr = AveragePooling2D(None,
+                                              ksize=ksize,
+                                              stride=stride,
+                                              padding=padding)
+    y, = average_pooling_2d_opr(x)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("GlobalAveragePooling2D")
+def convert_layer_global_average_pooling2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+      {'class_name': 'GlobalAveragePooling2D',
+'config': {'data_format': 'channels_last',
+ 'name': 'global_average_pooling2d_1',
+ 'trainable': True},
+'inbound_nodes': [[['add_2', 0, 0, {}]]],
+'name': 'global_average_pooling2d_1'},
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+
+    ksize: Tuple[int, int] = (x.shape_dict[Axis.H], x.shape_dict[Axis.W])
+    average_pooling_2d_opr = AveragePooling2D(None,
+                                              ksize=ksize,
+                                              stride=(1, 1),
+                                              padding=(0, 0))
+    y, = average_pooling_2d_opr(x)
+
+    # flatten without changing memory layout
+    in_axes = y.order.axes.copy()
+    assert in_axes[0] == Axis.N
+    in_axes.remove(Axis.N)
+
+    flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
+    y, = flatten_opr(y)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Flatten")
+def _convert_flatten(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+      {'class_name': 'Flatten',
+'config': {'name': 'flatten_1', 'trainable': True}},
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    in_axes = x.order.axes.copy()
+    assert in_axes[0] == Axis.N
+    in_axes.remove(Axis.N)
+    flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
+    y, = flatten_opr(x)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Concatenate")
+def _convert_concatenate(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+      {'name': 'mixed0', 'trainable': True, 'axis': 3}
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    xs = [converter.get_variable(input_key) for input_key in operator.inputs]
+    axis = xs[0].order.axes[operator.specific_config["axis"]]
+    concat_opr = Concat(None, axis=axis)
+    y, = concat_opr(*xs)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Add")
+def _convert_add(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+          {'class_name': 'Add',
+    'config': {'name': 'add_1', 'trainable': True},
+    'inbound_nodes': [[['conv2d_2', 0, 0, {}], ['conv2d_3', 0, 0, {}]]],
+    'name': 'add_1'},
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    xs = [converter.get_variable(input_key) for input_key in operator.inputs]
+    sum_opr = ElementwiseSum(None)
+    y, = sum_opr(*xs)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Activation")
+def _convert_activation(converter: KerasConverter, operator: KerasOperator):
+    assert len(operator.inputs) == 1
+    y = converter.get_variable(operator.inputs[0])
+
+    act_opr: Operator = None
+    activation_type: str = operator.specific_config["activation"]
+    if activation_type == "relu":
+        act_opr = Relu(None)
+    elif activation_type == "softmax":
+        warn("omitting softmax activation")
+    elif activation_type == "linear":
+        pass
+    else:
+        raise NotImplementedError(f"Unknown activation {activation_type}")
+
+    if act_opr is not None:
+        y, = act_opr(y)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("BatchNormalization")
+def _convert_batch_normalization(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+{'class_name': 'BatchNormalization',
+'config': {'axis': 3,
+'beta_constraint': None,
+'beta_initializer': {'class_name': 'Zeros', 'config': {}},
+'beta_regularizer': None,
+'center': True,
+'epsilon': 0.001,
+'gamma_constraint': None,
+'gamma_initializer': {'class_name': 'Ones', 'config': {}},
+'gamma_regularizer': None,
+'momentum': 0.99,
+'moving_mean_initializer': {'class_name': 'Zeros', 'config': {}},
+'moving_variance_initializer': {'class_name': 'Ones', 'config': {}},
+'name': 'bn2a_branch2a',
+'scale': True,
+'trainable': True},
+'inbound_nodes': [[['res2a_branch2a', 0, 0, {}]]],
+'name': 'bn2a_branch2a'},
+
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+
+    axis = x.order.axes[operator.specific_config["axis"]]
+    mean = converter.create_constant_array(operator, "moving_mean:0")
+    variance = converter.create_constant_array(operator, "moving_variance:0")
+
+    if operator.specific_config["scale"]:
+        gamma = converter.create_constant_array(operator, "gamma:0")
+    else:
+        gamma = np.ones_like(variance)
+
+    if operator.specific_config["center"]:
+        beta = converter.create_constant_array(operator, "beta:0")
+    else:
+        beta = np.ones_like(variance)
+
+    gamma_div_std = gamma / np.sqrt(variance + operator.specific_config["epsilon"])
+    beta_scaled = beta - mean * gamma_div_std
+
+    scale_opr = AxiswiseScale(None, axis=axis)
+    bias_opr = AxiswiseBias(None, axis=axis)
+    scale_out, = scale_opr(x, ConstantVariable(gamma_div_std, OrderC))
+    y, = bias_opr(scale_out, ConstantVariable(beta_scaled, OrderC))
+
+    converter.set_variable(operator.get_output_key(0), y)
