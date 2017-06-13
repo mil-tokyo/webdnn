@@ -35,6 +35,7 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
     OrderNHWC, OrderCNHW, OrderCHWN, Order
@@ -121,8 +122,6 @@ class KerasConverter(Converter[KerasOperator]):
         return Graph(graph_inputs, graph_outputs)
 
     def convert_core_model(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
-        self._preprocess_zeropadding2d(model_config)
-
         input_layers = model_config["config"]["input_layers"]  # [['input_1', 0, 0]]
         assert len(input_layers) == len(input_shapes)
         graph_inputs = []
@@ -158,35 +157,6 @@ class KerasConverter(Converter[KerasOperator]):
 
     def create_constant_variable(self, operator: KerasOperator, key: str, order: Order) -> ConstantVariable:
         return ConstantVariable(self.create_constant_array(operator, key), order)
-
-    def _preprocess_zeropadding2d(self, model_config):
-        """
-        ZeroPadding2D -> Conv2D のパターンについて、Conv2Dのpaddingに統合してZeroPadding2D layerを消去する
-        :return:
-        """
-
-        zeropad_layers = dict()  # レイヤーの出力変数名とレイヤー情報
-        for layer in model_config["config"]["layers"]:
-            layer_class_name = layer["class_name"]
-            if layer_class_name == "ZeroPadding2D":
-                output_key = (layer["name"], 0, 0)
-                zeropad_layers[output_key] = layer
-            elif layer_class_name == "Conv2D":
-                # 自身の入力がZeroPaddingの入力ならば対応する
-                input_key = tuple(layer["inbound_nodes"][0][0][:3])
-                if input_key in zeropad_layers:
-                    pre_zeropad_layer = zeropad_layers[input_key]
-                    padding_raw = pre_zeropad_layer["config"]["padding"]  # [[top, bottom], [left, right]]
-                    assert padding_raw[0][0] == padding_raw[0][1]
-                    assert padding_raw[1][0] == padding_raw[1][1]
-                    assert layer["config"]["padding"] == "valid"
-                    # Conv2Dのpaddingのところに代入し、Conv2Dレイヤーの変換時に利用
-                    layer["config"]["padding"] = (padding_raw[0][0], padding_raw[1][0])
-                    # zeropadding layerの入力をconv自体の入力に置き換える
-                    layer["inbound_nodes"] = pre_zeropad_layer["inbound_nodes"]
-
-        for layer in zeropad_layers.values():
-            model_config["config"]["layers"].remove(layer)
 
 
 @KerasConverter.register_handler("InputLayer")
@@ -279,10 +249,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     ksize: Tuple[int, int] = tuple(operator.specific_config["kernel_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
     padding_keras: str = operator.specific_config["padding"]  # valid or same
-    if isinstance(padding_keras, tuple):
-        # preprocess_zeropadding2d
-        padding = padding_keras
-    elif padding_keras == "valid":
+    if padding_keras == "valid":
         padding = (0, 0)
     elif padding_keras == "same":
         padding = (ksize[0] // 2, ksize[1] // 2)
@@ -334,10 +301,7 @@ def _convert_max_pooling2d(converter: KerasConverter, operator: KerasOperator):
     ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
     padding_keras: str = operator.specific_config["padding"]  # valid or same
-    if isinstance(padding_keras, tuple):
-        # preprocess_zeropadding2d
-        padding = padding_keras
-    elif padding_keras == "valid":
+    if padding_keras == "valid":
         padding = (0, 0)
     elif padding_keras == "same":
         padding = (ksize[0] // 2, ksize[1] // 2)
@@ -377,10 +341,7 @@ def convert_layer_average_pooling2d(converter: KerasConverter, operator: KerasOp
     ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
     padding_keras: str = operator.specific_config["padding"]  # valid or same
-    if isinstance(padding_keras, tuple):
-        # preprocess_zeropadding2d
-        padding = padding_keras
-    elif padding_keras == "valid":
+    if padding_keras == "valid":
         padding = (0, 0)
     elif padding_keras == "same":
         padding = (ksize[0] // 2, ksize[1] // 2)
@@ -565,5 +526,37 @@ def _convert_batch_normalization(converter: KerasConverter, operator: KerasOpera
     bias_opr = AxiswiseBias(None, axis=axis)
     scale_out, = scale_opr(x, ConstantVariable(gamma_div_std, OrderC))
     y, = bias_opr(scale_out, ConstantVariable(beta_scaled, OrderC))
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("ZeroPadding2D")
+def _convert_zero_padding2d(converter: KerasConverter, operator: KerasOperator):
+    """
+    Example:
+ {'class_name': 'ZeroPadding2D',
+  'config': {'data_format': 'channels_last',
+   'name': 'zero_padding2d_1',
+   'padding': [[3, 3], [3, 3]],
+   'trainable': True},
+  'inbound_nodes': [[['input_1', 0, 0, {}]]],
+  'name': 'zero_padding2d_1'},
+    :param layer_config:
+    :param inputs:
+    :return:
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+
+    padding = operator.specific_config["padding"]
+    top = padding[0][0]
+    if top != padding[0][1]:
+        raise ValueError("Padding size of top and bottom must be same.")
+    left = padding[1][0]
+    if left != padding[1][1]:
+        raise ValueError("Padding size of left and right must be same.")
+
+    pad_opr = ZeroPadding2D(None, (top, left))
+    y, = pad_opr(x)
 
     converter.set_variable(operator.get_output_key(0), y)
