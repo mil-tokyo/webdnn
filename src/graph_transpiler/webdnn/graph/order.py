@@ -86,3 +86,6 @@ usage:
     Chainer Deconvolution2D Filter
 """
 OrderCHWN = Order([Axis.C, Axis.H, Axis.W, Axis.N])
+
+OrderNT = Order([Axis.N, Axis.T])
+OrderNTC = Order([Axis.N, Axis.T, Axis.C])

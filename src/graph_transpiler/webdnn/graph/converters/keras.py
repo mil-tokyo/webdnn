@@ -37,8 +37,11 @@ from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.embedding import Embedding
+from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
-    OrderNHWC, OrderCNHW, OrderCHWN, Order
+    OrderNHWC, OrderCNHW, OrderCHWN, OrderNT, OrderNTC, Order
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
@@ -101,7 +104,7 @@ class KerasConverter(Converter[KerasOperator]):
             if len(input_shape) == 1:
                 order = OrderC
             elif len(input_shape) == 2:
-                order = OrderNC
+                order = OrderNT # fixme for LSTM
             elif len(input_shape) == 4:
                 # Assuming data_format == "channels_last":
                 order = OrderNHWC
@@ -191,6 +194,8 @@ def _convert_dense(converter: KerasConverter, operator: KerasOperator):
     activation_type: str = operator.specific_config["activation"]
     if activation_type == "relu":
         act_opr = Relu(None)
+    elif activation_type == "sigmoid":
+        act_opr = Sigmoid(None)
     elif activation_type == "softmax":
         warn("omitting softmax activation")
     elif activation_type == "linear":
@@ -271,6 +276,8 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     activation_type: str = operator.specific_config["activation"]
     if activation_type == "relu":
         act_opr = Relu(None)
+    elif activation_type == "sigmoid":
+        act_opr = Sigmoid(None)
     elif activation_type == "softmax":
         warn("omitting softmax activation")
     elif activation_type == "linear":
@@ -462,6 +469,8 @@ def _convert_activation(converter: KerasConverter, operator: KerasOperator):
     activation_type: str = operator.specific_config["activation"]
     if activation_type == "relu":
         act_opr = Relu(None)
+    elif activation_type == "sigmoid":
+        act_opr = Sigmoid(None)
     elif activation_type == "softmax":
         warn("omitting softmax activation")
     elif activation_type == "linear":
@@ -558,5 +567,96 @@ def _convert_zero_padding2d(converter: KerasConverter, operator: KerasOperator):
 
     pad_opr = ZeroPadding2D(None, (top, left))
     y, = pad_opr(x)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("Embedding")
+def _convert_embedding(converter: KerasConverter, operator: KerasOperator):
+    """
+    {'class_name': 'Embedding',
+   'config': {'activity_regularizer': None,
+    'batch_input_shape': [None, None],
+    'dtype': 'int32',
+    'embeddings_constraint': None,
+    'embeddings_initializer': {'class_name': 'RandomUniform',
+     'config': {'maxval': 0.05, 'minval': -0.05, 'seed': None}},
+    'embeddings_regularizer': None,
+    'input_dim': 20000,
+    'input_length': None,
+    'mask_zero': False,
+    'name': 'embedding_1',
+    'output_dim': 128,
+    'trainable': True}}
+
+    Args:
+        converter:
+        operator:
+
+    Returns:
+
+    """
+    assert len(operator.inputs) == 1
+    x = converter.get_variable(operator.inputs[0])
+    w = converter.create_constant_variable(operator, "embeddings:0", OrderCN)
+    embedding_opr = Embedding(None)
+
+    y, = embedding_opr(x, w)
+
+    converter.set_variable(operator.get_output_key(0), y)
+
+
+@KerasConverter.register_handler("LSTM")
+def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
+    """
+    {'class_name': 'LSTM',
+   'config': {'activation': 'tanh',
+    'activity_regularizer': None,
+    'bias_constraint': None,
+    'bias_initializer': {'class_name': 'Zeros', 'config': {}},
+    'bias_regularizer': None,
+    'dropout': 0.2,
+    'go_backwards': False,
+    'implementation': 0,
+    'kernel_constraint': None,
+    'kernel_initializer': {'class_name': 'VarianceScaling',
+     'config': {'distribution': 'uniform',
+      'mode': 'fan_avg',
+      'scale': 1.0,
+      'seed': None}},
+    'kernel_regularizer': None,
+    'name': 'lstm_1',
+    'recurrent_activation': 'hard_sigmoid',
+    'recurrent_constraint': None,
+    'recurrent_dropout': 0.2,
+    'recurrent_initializer': {'class_name': 'Orthogonal',
+     'config': {'gain': 1.0, 'seed': None}},
+    'recurrent_regularizer': None,
+    'return_sequences': False,
+    'stateful': False,
+    'trainable': True,
+    'unit_forget_bias': True,
+    'units': 128,
+    'unroll': False,
+    'use_bias': True}}
+
+    Args:
+        converter:
+        operator:
+
+    Returns:
+
+    """
+    assert len(operator.inputs) == 1
+    assert operator.specific_config["activation"] == "tanh"
+    assert operator.specific_config["recurrent_activation"] == "hard_sigmoid"
+    assert operator.specific_config["use_bias"] is True
+    x = converter.get_variable(operator.inputs[0])
+    w_input = converter.create_constant_variable(operator, "kernel:0", OrderCN)
+    w_hidden = converter.create_constant_variable(operator, "recurrent_kernel:0", OrderCN)
+    b = converter.create_constant_variable(operator, "bias:0", OrderC)
+    lstm_opr = LSTM(None)
+
+    y, = lstm_opr(x, w_input, w_hidden, b)
 
     converter.set_variable(operator.get_output_key(0), y)

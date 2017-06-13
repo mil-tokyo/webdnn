@@ -23,6 +23,7 @@ from webdnn.backend.webassembly.kernels.col2im import col2im
 from webdnn.backend.webassembly.kernels.concat import concat
 from webdnn.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webassembly.kernels.elu import elu
+from webdnn.backend.webassembly.kernels.sigmoid import sigmoid
 from webdnn.backend.webassembly.kernels.flatten import flatten
 from webdnn.backend.webassembly.kernels.im2col import im2col
 from webdnn.backend.webassembly.kernels.linear import linear
@@ -32,6 +33,8 @@ from webdnn.backend.webassembly.kernels.relu import relu
 from webdnn.backend.webassembly.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webassembly.kernels.sgemm import sgemm
 from webdnn.backend.webassembly.kernels.tanh import tanh
+from webdnn.backend.webassembly.kernels.embedding import embedding
+from webdnn.backend.webassembly.kernels.lstm import lstm
 from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.backend.webassembly.operators.im2col import Im2Col
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
@@ -46,6 +49,7 @@ from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
+from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
@@ -53,6 +57,8 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.operators.embedding import Embedding
+from webdnn.graph.operators.lstm import LSTM
 from webdnn.util import flags
 from webdnn.util.json import json
 
@@ -174,6 +180,9 @@ def generate_kernels(graph: Graph, memory_layout: MemoryLayout) -> List[Kernel]:
         elif isinstance(op, Elu):
             kernels += elu(op, memory_layout)
 
+        elif isinstance(op, Sigmoid):
+            kernels += sigmoid(op, memory_layout)
+
         elif isinstance(op, Tanh):
             kernels += tanh(op, memory_layout)
 
@@ -209,6 +218,12 @@ def generate_kernels(graph: Graph, memory_layout: MemoryLayout) -> List[Kernel]:
 
         elif isinstance(op, Concat):
             kernels += concat(op, memory_layout)
+
+        elif isinstance(op, Embedding):
+            kernels += embedding(op, memory_layout)
+
+        elif isinstance(op, LSTM):
+            kernels += lstm(op, memory_layout)
 
         elif isinstance(op, Operator):
             if "custom_kernel" in op.parameters:
