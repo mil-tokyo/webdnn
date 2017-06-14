@@ -43,18 +43,18 @@ namespace WebDNN {
         }
 
         async compile(): Promise<void> {
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-
-            let descriptor = this.descriptor;
-
-            this.compileKernel();
-            this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
-            this.variableArrays = new Map();
-
-            for (let name in descriptor.memory_layout.allocations) {
-                let alloc = descriptor.memory_layout.allocations[name];
-                this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-            }
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let descriptor = this.descriptor;
+            //
+            // this.compileKernel();
+            // this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
+            // this.variableArrays = new Map();
+            //
+            // for (let name in descriptor.memory_layout.allocations) {
+            //     let alloc = descriptor.memory_layout.allocations[name];
+            //     this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
+            // }
         }
 
         private compileKernel(): void {
@@ -108,28 +108,30 @@ namespace WebDNN {
             });
         }
 
-        async getInputViews(): Promise<Float32Array[]> {
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays) throw new Error('Variable map is not initialized');
-            if (this.inputViews) return this.inputViews;
-
-            let variableArrays = this.variableArrays;
-            let views = this.descriptor.inputs.map((name) => variableArrays.get(name)!);
-            this.inputViews = views;
-
-            return views;
+        async getInputViews(): Promise<BufferView[]> {
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
+            // if (this.inputViews) return this.inputViews;
+            //
+            // let variableArrays = this.variableArrays;
+            // let views = this.descriptor.inputs.map((name) => variableArrays.get(name)!);
+            // this.inputViews = views;
+            //
+            // return views;
+            return [];
         }
 
-        async getOutputViews(): Promise<Float32Array[]> {
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays) throw new Error('Variable map is not initialized');
-            if (this.outputViews) return this.outputViews;
-
-            let variableArrays = this.variableArrays;
-            let views = this.descriptor.outputs.map((name) => variableArrays.get(name)!);
-            this.outputViews = views;
-
-            return views;
+        async getOutputViews(): Promise<BufferView[]> {
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
+            // if (this.outputViews) return this.outputViews;
+            //
+            // let variableArrays = this.variableArrays;
+            // let views = this.descriptor.outputs.map((name) => variableArrays.get(name)!);
+            // this.outputViews = views;
+            //
+            // return views;
+            return [];
         }
     }
 }

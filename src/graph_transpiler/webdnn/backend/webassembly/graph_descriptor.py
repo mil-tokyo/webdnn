@@ -90,7 +90,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def concat_kernel_sources(self):
         func_sources = OrderedDict()
-        prototype_sources = OrderedDict()
 
         for kernel in self.kernels:
             for func_name, source in kernel.func_sources.items():
@@ -99,17 +98,10 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                 else:
                     func_sources[func_name] = source
 
-            for func_name, source in kernel.prototype_sources.items():
-                if func_name in prototype_sources:
-                    assert prototype_sources[func_name] == source
-                else:
-                    prototype_sources[func_name] = source
-
         self.generate_init_source()
         self.generate_exec_source()
         combined_source = \
             self.generate_header_source() + \
-            "\n".join(prototype_sources.values()) + \
             "\n".join(func_sources.values()) + \
             "\n".join(self.footer_sources.values())
 

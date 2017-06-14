@@ -202,7 +202,7 @@ var WebDNN;
 (function (WebDNN) {
     class WeightDecoderEightbit {
         async decode(data, memory_layout) {
-            let dst = new Float32Array(memory_layout.total_size);
+            let dst = new Float32Array(memory_layout.total_size); // FIXME: remove force cast
             let data_view = new DataView(data.buffer, data.byteOffset);
             let src_offset = 0;
             while (src_offset < data.length) {
@@ -396,12 +396,99 @@ var WebDNN;
     WebDNN.readArrayBufferProgressively = readArrayBufferProgressively;
 })(WebDNN || (WebDNN = {}));
 /// <reference path="./graph_descriptor.ts" />
+var WebDNN;
+(function (WebDNN) {
+    class BufferView {
+        constructor() {
+            this.internalView = null;
+        }
+        getFloat32Array() {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized');
+            return this.internalView;
+        }
+        setFloat32Array(array) {
+            this.internalView = array;
+        }
+        /**
+         * The size in bytes of each element in the array.
+         */
+        get BYTES_PER_ELEMENT() {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            return this.internalView.BYTES_PER_ELEMENT;
+        }
+        /**
+         * The length in bytes of the array.
+         */
+        get byteLength() {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            return this.internalView.byteLength;
+        }
+        /**
+         * The offset in bytes of the array.
+         */
+        get byteOffset() {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            return this.internalView.byteOffset;
+        }
+        /**
+         * Returns the this object after copying a section of the array identified by start and end
+         * to the same array starting at position target
+         * @param target If target is negative, it is treated as length+target where length is the
+         * length of the array.
+         * @param start If start is negative, it is treated as length+start. If end is negative, it
+         * is treated as length+end.
+         * @param end If not specified, length of the this object is used as its default value.
+         */
+        copyWithin(target, start, end) {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            this.internalView.copyWithin(target, start, end);
+            return this;
+        }
+        /**
+         * Returns the this object after filling the section identified by start and end with value
+         * @param value value to fill array section with
+         * @param start index to start filling the array at. If start is negative, it is treated as
+         * length+start where length is the length of the array.
+         * @param end index to stop filling the array at. If end is negative, it is treated as
+         * length+end.
+         */
+        fill(value, start, end) {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            this.internalView.fill(value, start, end);
+            return this;
+        }
+        /**
+         * The length of the array.
+         */
+        get length() {
+            return this.internalView ? this.internalView.length : 0;
+        }
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        set(array, offset) {
+            if (!this.internalView)
+                throw Error('BufferView is not initialized.');
+            return this.internalView.set(array, offset);
+        }
+    }
+    WebDNN.BufferView = BufferView;
+})(WebDNN || (WebDNN = {}));
 /// <reference path="../buffer/buffer_webgpu.ts" />
 /// <reference path="../webgpu_handler.ts" />
 /// <reference path="./descriptor_runner.ts" />
 /// <reference path="../decoder/get_weight_decoder.ts" />
 /// <reference path="../fetch.ts" />
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
+/// <reference path="../buffer_view.ts" />
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerWebGPU extends WebDNN.DescriptorRunner {
@@ -441,7 +528,7 @@ var WebDNN;
             }
             weight_url = WebDNN.transformUrl(weight_url);
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url, progressCallback), progressCallback);
-            await this.loadWeights(new Uint8Array(weights_data_ab));
+            this.loadedWeights = new Uint8Array(weights_data_ab);
         }
         setDescriptor(descriptor) {
             this.descriptor = descriptor;
@@ -450,49 +537,88 @@ var WebDNN;
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-            this.dataBuffer = new WebDNN.BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
+        }
+        async setPlaceholder(values) {
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.loadedWeights)
+                throw new Error('Weights is not loaded');
+            let placeholders = Object.assign(this.descriptor.placeholders, values);
+            for (let key in placeholders) {
+                if (placeholders[key] == null)
+                    throw new Error(`Placeholder '${key}' is unresolved`);
+            }
+            //resolve placeholders
+            let total_size = (typeof this.descriptor.memory_layout.total_size == 'number') ?
+                this.descriptor.memory_layout.total_size :
+                this.resolvePlaceHolder(this.descriptor.memory_layout.total_size);
+            this.dataBuffer = new WebDNN.BufferWebGPU(total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                 let exec_info = this.descriptor.exec_infos[i];
+                let metaBuffer8 = new Uint8Array(exec_info.meta_buffer);
+                let metaBuffer32 = new Int32Array(metaBuffer8.buffer);
+                //resolve unresolved metabuffer
+                for (let unresolved_value of exec_info.unresolved_value_list) {
+                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceHolder(unresolved_value.placeholder);
+                }
                 let buf = new WebDNN.BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
-                await buf.write(new Uint8Array(exec_info.meta_buffer));
+                await buf.write(metaBuffer8);
                 this.metaBuffers.push(buf);
+                let threadgroups_per_grid = exec_info.threadgroups_per_grid;
+                let threads_per_thread_group = exec_info.threads_per_thread_group;
+                threadgroups_per_grid.width = this.resolvePlaceHolder(threadgroups_per_grid.width);
+                threadgroups_per_grid.height = this.resolvePlaceHolder(threadgroups_per_grid.height);
+                threadgroups_per_grid.depth = this.resolvePlaceHolder(threadgroups_per_grid.depth);
+                threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
+                threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
+                threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
             }
-        }
-        async loadWeights(data) {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer)
-                throw new Error('Data buffer is not initialized');
+            let inputViews = await this.getInputViews();
+            for (let i = 0; i < this.descriptor.inputs.length; i++) {
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
+                let offset = this.resolvePlaceHolder(var_alloc.offset);
+                let size = this.resolvePlaceHolder(var_alloc.size);
+                inputViews[i].setFloat32Array(this.dataBuffer.getWriteView(offset, size, Float32Array));
+            }
+            let outputViews = await this.getOutputViews();
+            for (let i = 0; i < this.descriptor.outputs.length; i++) {
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
+                let offset = this.resolvePlaceHolder(var_alloc.offset);
+                let size = this.resolvePlaceHolder(var_alloc.size);
+                outputViews[i].setFloat32Array(this.dataBuffer.getReadView(offset, size, Float32Array));
+            }
             let decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-            await this.dataBuffer.write(await decoder.decode(data, this.descriptor.memory_layout));
+            await this.dataBuffer.write(await decoder.decode(this.loadedWeights, this.descriptor.memory_layout));
         }
         async getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer)
-                throw new Error('Data buffer is not initialized');
             let views = [];
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                views.push(this.dataBuffer.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
+                views.push(new WebDNN.BufferView());
             }
             this.inputViews = views;
             return views;
+        }
+        resolvePlaceHolder(placeholder) {
+            if (!this.descriptor)
+                throw Error('Descriptor is not loaded');
+            if (typeof placeholder == 'number')
+                return placeholder;
+            //noinspection JSUnusedLocalSymbols
+            return ((placeholders) => eval(placeholder.eval))(this.descriptor.placeholders);
         }
         async getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer)
-                throw new Error('Data buffer is not initialized');
             let views = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                views.push(this.dataBuffer.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
+                views.push(new WebDNN.BufferView());
             }
             this.outputViews = views;
             return views;
@@ -663,30 +789,32 @@ var WebDNN;
             return promise;
         }
         async getInputViews() {
-            if (this.inputViews)
-                return this.inputViews;
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let views = [];
-            for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                views.push(new Float32Array(var_alloc.size));
-            }
-            this.inputViews = views;
-            return views;
+            // if (this.inputViews) return this.inputViews;
+            //
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let views: Float32Array[] = [];
+            // for (let i = 0; i < this.descriptor.inputs.length; i++) {
+            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
+            //     views.push(new Float32Array(var_alloc.size));
+            // }
+            // this.inputViews = views;
+            // return views;
+            return [];
         }
         async getOutputViews() {
-            if (this.outputViews)
-                return this.outputViews;
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let views = [];
-            for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                views.push(new Float32Array(var_alloc.size));
-            }
-            this.outputViews = views;
-            return views;
+            // if (this.outputViews) return this.outputViews;
+            //
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let views: Float32Array[] = [];
+            // for (let i = 0; i < this.descriptor.outputs.length; i++) {
+            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
+            //     views.push(new Float32Array(var_alloc.size));
+            // }
+            // this.outputViews = views;
+            // return views;
+            return [];
         }
         async run() {
             if (!this.descriptor)
@@ -770,16 +898,18 @@ var WebDNN;
             this.descriptor = descriptor;
         }
         async compile() {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let descriptor = this.descriptor;
-            this.compileKernel();
-            this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
-            this.variableArrays = new Map();
-            for (let name in descriptor.memory_layout.allocations) {
-                let alloc = descriptor.memory_layout.allocations[name];
-                this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-            }
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let descriptor = this.descriptor;
+            //
+            // this.compileKernel();
+            // this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
+            // this.variableArrays = new Map();
+            //
+            // for (let name in descriptor.memory_layout.allocations) {
+            //     let alloc = descriptor.memory_layout.allocations[name];
+            //     this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
+            // }
         }
         compileKernel() {
             if (!this.descriptor)
@@ -830,28 +960,28 @@ var WebDNN;
             });
         }
         async getInputViews() {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays)
-                throw new Error('Variable map is not initialized');
-            if (this.inputViews)
-                return this.inputViews;
-            let variableArrays = this.variableArrays;
-            let views = this.descriptor.inputs.map((name) => variableArrays.get(name));
-            this.inputViews = views;
-            return views;
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
+            // if (this.inputViews) return this.inputViews;
+            //
+            // let variableArrays = this.variableArrays;
+            // let views = this.descriptor.inputs.map((name) => variableArrays.get(name)!);
+            // this.inputViews = views;
+            //
+            // return views;
+            return [];
         }
         async getOutputViews() {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays)
-                throw new Error('Variable map is not initialized');
-            if (this.outputViews)
-                return this.outputViews;
-            let variableArrays = this.variableArrays;
-            let views = this.descriptor.outputs.map((name) => variableArrays.get(name));
-            this.outputViews = views;
-            return views;
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
+            // if (this.outputViews) return this.outputViews;
+            //
+            // let variableArrays = this.variableArrays;
+            // let views = this.descriptor.outputs.map((name) => variableArrays.get(name)!);
+            // this.outputViews = views;
+            //
+            // return views;
+            return [];
         }
     }
     WebDNN.DescriptorRunnerFallback = DescriptorRunnerFallback;

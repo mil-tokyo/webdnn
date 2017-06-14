@@ -38,7 +38,8 @@ class Concat(Operator):
         for i, x in enumerate(xs):
             assert set(x.order.axes) == axes_set
             for other_axis in [other_axis for other_axis in axes_set if other_axis != concat_axis]:
-                assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis]
+                if PlaceHolder.check_resolved(xs[0].shape_dict[other_axis]) and PlaceHolder.check_resolved(x.shape_dict[other_axis]):
+                    assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis]
 
             self.append_input(f"x{i}", x)
             y_shape[axis_index] += x.shape_dict[concat_axis]

@@ -38,7 +38,7 @@ class Variable(Node, IVariable):
 
     @property
     def size(self) -> Union[int, PlaceHolder]:
-        return np.product(self.shape)
+        return PlaceHolder.to_int(np.product(self.shape))
 
     @property
     def ndim(self):
@@ -55,7 +55,8 @@ class Variable(Node, IVariable):
         new_shape = [current_shape_dict.get(axis, 1) for axis in order.axes]
         for axis, size in current_shape_dict.items():
             if axis not in order.axes:
-                assert size == 1
+                if PlaceHolder.check_resolved(size):
+                    assert size == 1
         self.order = order
         self.shape = new_shape
 

@@ -8,9 +8,9 @@ import os
 import os.path as path
 import subprocess
 import tempfile as tmp
-from typing import List
 
-from webdnn.backend.code_generator.allocator import Allocator, MemoryLayout
+from webdnn.backend.code_generator.allocator import Allocator
+from webdnn.backend.interface.descriptor_generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webgpu.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
@@ -52,7 +52,7 @@ from webdnn.util import flags
 from webdnn.util.json import json
 
 
-class GraphExecutionData(IGraphExecutionData):
+class GraphExecutionData(IGraphExecutionData[Kernel]):
     descriptor: GraphDescriptor
 
     def __init__(self, descriptor: GraphDescriptor, constants: bytes):
@@ -85,6 +85,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
         with open(source_path, "w+") as f:
             f.write(source)
 
+        # noinspection PyBroadException
         try:
             result = subprocess.run(["type", "xcrun", ">/dev/null" "2>&1"])
             if result.returncode != 0:
@@ -98,90 +99,60 @@ def validate_kernel_source(descriptor: GraphDescriptor):
         except Exception as ex:
             print(f"WebGPU kernel source validation does not work: {ex}")
 
-def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
-    graph, _ = WebGPUOptimizeRule().optimize(graph)
-    if flags.DEBUG:
-        traverse.dump(graph)
 
-    memory_layout = Allocator.allocate(graph)
-    if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.size * 4}")
-
-    constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
-    constants_bytes = constant_encoder.encode(memory_layout)
-
-    if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
-
-    kernels = generate_kernels(graph, memory_layout)
-
-    descriptor = GraphDescriptor(
-        kernels=kernels,
-        memory_layout=memory_layout,
-        inputs=graph.inputs,
-        outputs=graph.outputs,
-        constants_encoding=constant_encoder.name,
-        licenses=graph.licenses)
-
-    if flags.optimize.VALIDATE_GENERATED_SOURCE:
+class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
+    @classmethod
+    def generate(cls, graph: Graph, constant_encoder_name: str = None):
+        graph, _ = WebGPUOptimizeRule().optimize(graph)
         if flags.DEBUG:
-            print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
+            traverse.dump(graph)
 
-        validate_kernel_source(descriptor)
+        memory_layout = Allocator.allocate(graph)
+        if flags.DEBUG:
+            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.size * 4}")
 
-    return GraphExecutionData(descriptor, constants_bytes)
+        constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+        constants_bytes = constant_encoder.encode(memory_layout)
+
+        if flags.DEBUG:
+            print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
+
+        kernels = cls.generate_kernels(graph, memory_layout)
+
+        descriptor = GraphDescriptor(
+            kernels=kernels,
+            memory_layout=memory_layout,
+            inputs=graph.inputs,
+            outputs=graph.outputs,
+            constants_encoding=constant_encoder.name,
+            licenses=graph.licenses
+        )
+
+        if flags.optimize.VALIDATE_GENERATED_SOURCE:
+            if flags.DEBUG:
+                print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
+
+            validate_kernel_source(descriptor)
+
+        return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate_kernels(graph: Graph, memory_layout: MemoryLayout) -> List[Kernel]:
-    kernels: List[Kernel] = []
+def generate(graph: Graph, constant_encoder_name: str = None):
+    return WebGPUDescriptorGenerator.generate(graph, constant_encoder_name)
 
-    for op in traverse.listup_operators(graph):
-        if isinstance(op, AxiswiseBias):
-            kernels += axiswise_bias(op, memory_layout)
 
-        elif isinstance(op, Relu):
-            kernels += relu(op, memory_layout)
-
-        elif isinstance(op, Elu):
-            kernels += elu(op, memory_layout)
-
-        elif isinstance(op, Tanh):
-            kernels += tanh(op, memory_layout)
-
-        elif isinstance(op, LocalResponseNormalization):
-            kernels += local_response_normalization(op, memory_layout)
-
-        elif isinstance(op, MaxPooling2D):
-            kernels += max_pooling_2d(op, memory_layout)
-
-        elif isinstance(op, AveragePooling2D):
-            kernels += average_pooling_2d(op, memory_layout)
-
-        elif isinstance(op, AxiswiseScale):
-            kernels += axiswise_scale(op, memory_layout)
-
-        elif isinstance(op, ElementwiseSum):
-            kernels += elementwise_sum(op, memory_layout)
-
-        elif isinstance(op, Flatten):
-            kernels += flatten(op, memory_layout)
-
-        elif isinstance(op, Sgemm):
-            kernels += sgemm(op, memory_layout)
-
-        elif isinstance(op, Im2Col):
-            kernels += im2col(op, memory_layout)
-
-        elif isinstance(op, Col2Im):
-            kernels += col2im(op, memory_layout)
-
-        elif isinstance(op, ScalarAffine):
-            kernels += scalar_affine(op, memory_layout)
-
-        elif isinstance(op, Concat):
-            kernels += concat(op, memory_layout)
-
-        else:
-            raise NotImplementedError(f"{op} is Unknown for WebGPUDescriptorGenerator")
-
-    return kernels
+WebGPUDescriptorGenerator.register_generate_handler(AveragePooling2D, average_pooling_2d)
+WebGPUDescriptorGenerator.register_generate_handler(AxiswiseBias, axiswise_bias)
+WebGPUDescriptorGenerator.register_generate_handler(AxiswiseScale, axiswise_scale)
+WebGPUDescriptorGenerator.register_generate_handler(Col2Im, col2im)
+WebGPUDescriptorGenerator.register_generate_handler(Concat, concat)
+WebGPUDescriptorGenerator.register_generate_handler(ElementwiseSum, elementwise_sum)
+WebGPUDescriptorGenerator.register_generate_handler(Elu, elu)
+WebGPUDescriptorGenerator.register_generate_handler(Flatten, flatten)
+WebGPUDescriptorGenerator.register_generate_handler(Im2Col, im2col)
+WebGPUDescriptorGenerator.register_generate_handler(LocalResponseNormalization, local_response_normalization)
+WebGPUDescriptorGenerator.register_generate_handler(MaxPooling2D, max_pooling_2d)
+WebGPUDescriptorGenerator.register_generate_handler(Relu, relu)
+WebGPUDescriptorGenerator.register_generate_handler(ScalarAffine, scalar_affine)
+WebGPUDescriptorGenerator.register_generate_handler(Sgemm, sgemm)
+WebGPUDescriptorGenerator.register_generate_handler(Tanh, tanh)

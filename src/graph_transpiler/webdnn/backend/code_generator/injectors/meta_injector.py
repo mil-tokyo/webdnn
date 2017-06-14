@@ -1,4 +1,5 @@
-from typing import Dict, Union
+import warnings
+from typing import Dict, Union, Tuple, List
 
 import numpy as np
 
@@ -15,18 +16,39 @@ class MetaInjector(Injector):
         self.offset_map = None  # type: Dict[str, int]
         self.buffer = None  # type: bytes
         self.arg_name = "meta_buffer"
+        self.unresolved_value_list = []  # type: List[Tuple[int, PlaceHolder]]
 
     def register(self, data: Dict[str, MetaBufferContent]):
         self.data.update(data)
 
     def inject_tag(self, tag: Tag):
+        """
+        Inject MetaBuffer Tag
+
+        %%META_NAME%%: get buffer name
+
+            generated = injector.inject('std::string buffer_name = "%%META_NAME%%";')
+            # >> generated == 'std::string buffer_name = "meta_buffer";'
+
+        %%META_LOAD(key)%%: load buffer value
+
+            injector.register({
+                "test": 1234
+            })
+
+            generated = injector.inject("int test = %%META_LOAD(test)%%;")
+
+            # >> generated == "int test = meta_buffer[0];"
+            # buffer value is packed like "float[1] injector.buffer = {1234};"
+
+        """
         if self.offset_map is None:
             self._generate_buffer()
 
-        if tag.name == "META_NAME":  # メタバッファ名の取得
+        if tag.name == "META_NAME":
             return self.arg_name
 
-        elif tag.name == "META_LOAD":  # データの読み込み
+        elif tag.name == "META_LOAD":
             key = tag.args[0]
             if key not in self.data:
                 raise KeyError(f"key '{key}' is not registered in MetaBufferInjector.")
@@ -54,9 +76,15 @@ class MetaInjector(Injector):
             offset_map[key] = len(buffer) // 4  # sizeof(int)
 
             if isinstance(value, int) or isinstance(value, np.int32) or isinstance(value, np.int64):
+                if isinstance(value, np.int64):
+                    warnings.warn("np.int64 value is given to MetaBufferInjector and converted into int32 value.")
+
                 buffer += np.array([value], dtype=np.int32).tobytes()
 
             elif isinstance(value, float) or isinstance(value, np.float32) or isinstance(value, np.float64):
+                if isinstance(value, np.float64):
+                    warnings.warn("np.float64 value is given to MetaBufferInjector and converted into float32 value.")
+
                 buffer += np.array([value], dtype=np.float32).tobytes()
 
             elif isinstance(value, bytes):
@@ -66,12 +94,12 @@ class MetaInjector(Injector):
                 buffer += value
 
             elif isinstance(value, PlaceHolder):
-                if not value.is_resolved:
-                    raise TypeError("MetaBufferInjector supports only int, float, bytes, and resolved placeholder. "
-                                    + f"'{key}' is unresolved placeholder.")
+                if PlaceHolder.check_resolved(value):
+                    buffer += np.array([PlaceHolder.force_int(value)], dtype=np.int32).tobytes()
 
-                # noinspection PyTypeChecker
-                buffer += np.array([int(value)], dtype=np.int32).tobytes()
+                else:
+                    self.unresolved_value_list.append((len(buffer) // 4, value))
+                    buffer += bytes(4)  # sizeof(int)
 
             else:
                 raise TypeError("MetaBufferInjector supports only int, float, bytes, and resolved placeholder. "

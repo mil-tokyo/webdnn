@@ -43,12 +43,6 @@ namespace WebDNN {
         abstract compile(): Promise<void>;
 
         /**
-         * load weight data
-         * @param weightsData weights data
-         */
-        abstract loadWeights(weightsData: Uint8Array): Promise<void>;
-
-        /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
         abstract run(): Promise<void>;
@@ -56,11 +50,11 @@ namespace WebDNN {
         /**
          * Get input ArrayBufferView object
          */
-        abstract getInputViews(): Promise<Float32Array[]>;
+        abstract getInputViews(): Promise<BufferView[]>;
 
         /**
          * Get output ArrayBufferView object
          */
-        abstract getOutputViews(): Promise<Float32Array[]>;
+        abstract getOutputViews(): Promise<BufferView[]>;
     }
 }

@@ -54,6 +54,10 @@ async function prepare_run() {
 async function run() {
     let run_if = await prepare_run();
 
+    await WebDNN.runner.setPlaceholder({
+        N: 2
+    });
+
     let test_image = getImageData();
     let test_samples = [test_image];
 
@@ -67,7 +71,7 @@ async function run() {
         await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0];
+        let out_vec = run_if.outputViews[0].getFloat32Array();
         let top_labels = WebDNN.Math.argmax(out_vec, 5);
         let predicted_str = 'Predicted:';
         for (let j = 0; j < top_labels.length; j++) {

@@ -125,32 +125,34 @@ namespace WebDNN {
             return promise;
         }
 
-        async getInputViews(): Promise<Float32Array[]> {
-            if (this.inputViews) return this.inputViews;
-
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-
-            let views: Float32Array[] = [];
-            for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                views.push(new Float32Array(var_alloc.size));
-            }
-            this.inputViews = views;
-            return views;
+        async getInputViews(): Promise<BufferView[]> {
+            // if (this.inputViews) return this.inputViews;
+            //
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let views: Float32Array[] = [];
+            // for (let i = 0; i < this.descriptor.inputs.length; i++) {
+            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
+            //     views.push(new Float32Array(var_alloc.size));
+            // }
+            // this.inputViews = views;
+            // return views;
+            return []
         }
 
-        async getOutputViews(): Promise<Float32Array[]> {
-            if (this.outputViews) return this.outputViews;
-
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-
-            let views: Float32Array[] = [];
-            for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                views.push(new Float32Array(var_alloc.size));
-            }
-            this.outputViews = views;
-            return views;
+        async getOutputViews(): Promise<BufferView[]> {
+            // if (this.outputViews) return this.outputViews;
+            //
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            //
+            // let views: Float32Array[] = [];
+            // for (let i = 0; i < this.descriptor.outputs.length; i++) {
+            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
+            //     views.push(new Float32Array(var_alloc.size));
+            // }
+            // this.outputViews = views;
+            // return views;
+            return []
         }
 
         async run(): Promise<void> {

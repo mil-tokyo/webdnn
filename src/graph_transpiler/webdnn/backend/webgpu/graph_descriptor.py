@@ -1,10 +1,11 @@
 from collections import OrderedDict
-from typing import Iterable, Dict
+from typing import Iterable, Dict, List, Set, Tuple
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
 from webdnn.graph import traverse
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
 from webdnn.util import json, flags
@@ -42,7 +43,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def concat_kernel_sources(self):
         func_sources = OrderedDict()
-        prototype_sources = OrderedDict()
 
         for kernel in self.kernels:
             for func_name, source in kernel.func_sources.items():
@@ -51,25 +51,35 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                 else:
                     func_sources[func_name] = source
 
-            for func_name, source in kernel.prototype_sources.items():
-                if func_name in prototype_sources:
-                    assert prototype_sources[func_name] == source
-                else:
-                    prototype_sources[func_name] = source
-
         combined_source = \
             source_header + \
-            "\n".join(prototype_sources.values()) + \
             "\n".join(func_sources.values())
 
         return combined_source
 
+    def concat_unresolved_variables(self):
+        unresolved_variables = []  # type: List[Tuple[int, PlaceHolder]]
+        placeholders_set = set()  # type: Set[PlaceHolder]
+
+        for kernel in self.kernels:
+            unresolved_variables += kernel.exec_info.unresolved_value_list
+
+        for offset, v in unresolved_variables:
+            placeholders_set.update(v.get_depend_placeholders())
+
+        placeholders = {p.label: None for p in placeholders_set}
+
+        return placeholders, unresolved_variables
+
     def _to_serializable_(self):
+        placeholders, unresolved_variables = self.concat_unresolved_variables()
+
         return {
             "kernel_source": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_encoding": self.constants_encoding,
             "memory_layout": self.memory_layout,
+            "placeholders": placeholders,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "licenses": self.licenses

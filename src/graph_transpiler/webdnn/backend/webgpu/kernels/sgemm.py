@@ -454,7 +454,8 @@ def sgemm(op: Sgemm,
         name_injector.name,
         GPUSize((op.M + 64 - 1) // 64, (op.N + 64 - 1) // 64, 1),
         GPUSize(64, 1, 1),
-        meta_injector.buffer
+        meta_injector.buffer,
+        meta_injector.unresolved_value_list
     )
 
     return [kernel]

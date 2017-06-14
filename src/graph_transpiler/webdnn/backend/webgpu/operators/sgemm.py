@@ -19,7 +19,8 @@ class Sgemm(Operator):
         #
         # noinspection PyTypeChecker
         assert len(out_shape) == out_order.ndim
-        assert np.product(out_shape) == M * N
+        if PlaceHolder.check_resolved(np.product(out_shape)) and PlaceHolder.check_resolved(M * N):
+            assert np.product(out_shape) == M * N
 
         self.parameters["M"] = M
         self.parameters["N"] = N
@@ -30,8 +31,11 @@ class Sgemm(Operator):
         self.parameters["transpose_B"] = transpose_B
 
     def __call__(self, A: Variable, B: Variable):
-        assert A.size == self.M * self.K
-        assert B.size == self.N * self.K
+        if PlaceHolder.check_resolved(A.size) and PlaceHolder.check_resolved(self.M * self.K):
+            assert A.size == self.M * self.K
+
+        if PlaceHolder.check_resolved(B.size) and PlaceHolder.check_resolved(self.N * self.K):
+            assert B.size == self.N * self.K
 
         self.append_input("A", A)
         self.append_input("B", B)

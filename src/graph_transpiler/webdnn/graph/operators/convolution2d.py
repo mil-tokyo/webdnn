@@ -5,6 +5,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 
 
@@ -38,8 +39,10 @@ class Convolution2D(Operator):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
-        assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
+        if PlaceHolder.check_resolved(w_shape_dict[Axis.H]) and PlaceHolder.check_resolved(w_shape_dict[Axis.W]):
+            assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
+        if PlaceHolder.check_resolved(w_shape_dict[Axis.C]) and PlaceHolder.check_resolved(x_shape_dict[Axis.C]):
+            assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
 
         N = x_shape_dict[Axis.N]
         H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) // self.SH + 1

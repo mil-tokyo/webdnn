@@ -185,7 +185,8 @@ def im2col(op: Im2Col,
         name_injector.name,
         GPUSize(N * H1P * W1P, 1, 1),
         GPUSize(64, 1, 1),
-        meta_injector.buffer
+        meta_injector.buffer,
+        meta_injector.unresolved_value_list
     )
 
     return [kernel]

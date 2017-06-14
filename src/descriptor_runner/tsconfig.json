@@ -14,6 +14,7 @@
         "license.ts",
         "webdnn.ts",
         "math.ts",
-        "get_backend_availability.ts"
+        "get_backend_availability.ts",
+        "buffer_view.ts"
     ]
 }

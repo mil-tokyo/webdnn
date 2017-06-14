@@ -86,7 +86,8 @@ def average_pooling_2d(op: AveragePooling2D,
         name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        meta_injector.buffer,
+        meta_injector.unresolved_value_list
     )
 
     return [kernel]

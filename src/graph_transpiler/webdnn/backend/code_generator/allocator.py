@@ -1,4 +1,4 @@
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple, Union, Optional
 
 import numpy as np
 
@@ -40,6 +40,8 @@ class Allocation(json.SerializableMixin, IAllocation):
 
 
 class MemoryLayout(json.SerializableMixin, IMemoryLayout):
+    _manual_size: Optional[Union[int, PlaceHolder]] = None
+
     def __init__(self):
         self.allocations = {}
 
@@ -66,11 +68,18 @@ class MemoryLayout(json.SerializableMixin, IMemoryLayout):
 
     @property
     def size(self) -> Union[int, PlaceHolder]:
+        if self._manual_size:
+            return self._manual_size
+
         size = 0
         for a in self.allocations.values():
             size = max(a.offset + a.size, size)
 
         return size
+
+    @size.setter
+    def size(self, size: Union[int, PlaceHolder]):
+        self._manual_size = size
 
 
 class Allocator:
@@ -86,20 +95,35 @@ class Allocator:
 
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]):
+        # check if constant variable with shape with unresolved placeholder.
+        dynamic_constants = traverse.filter_nodes([v for v in variables if not PlaceHolder.check_resolved(v.size)], ConstantVariable)
+        assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
+
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
         lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
+        offsets, total_size = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
         for variable, offset in offsets.items():
             layout.append(variable, offset)
+        layout.size = total_size
 
-        data = np.zeros(layout.size, dtype=np.float32)
+        buffer_size = 8192
+        data = np.zeros(buffer_size, dtype=np.float32)
         constant_size = 0
         for var in variables:
             if not isinstance(var, ConstantVariable):
                 continue
+
             allocation = layout[var]
+            if allocation.offset + allocation.size > buffer_size:
+                while allocation.offset + allocation.size > buffer_size:
+                    buffer_size *= 2
+
+                data2 = np.zeros(buffer_size, dtype=np.float32)
+                data2[:constant_size] = data[:constant_size]
+                data = data2
+
             data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
             constant_size += allocation.size
 
@@ -170,17 +194,22 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
     return lifetime
 
 
-def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable, Tuple[int, int]]):
+def generate_allocation_info(variables: List[Variable],
+                             lifetime: Dict[Variable, Tuple[int, int]]) -> Tuple[Dict[Variable, int], Union[int, PlaceHolder]]:
     """
     heuristic-based optimization
 
         1. allocate constant variables first
-        2. allocate variables which lives longer first
-        3. allocate variables which released earlier first
-        4. allocate larger variables first
+        2. allocate unresolved shape variables last
+        3. allocate variables which lives longer first
+        4. allocate variables which released earlier first
+        5. allocate larger variables first
     """
 
-    queue = filter(lambda x: x in lifetime, variables)
+    static_variables = [v for v in variables if PlaceHolder.check_resolved(v.size)]
+    dynamic_variables = [v for v in variables if not PlaceHolder.check_resolved(v.size)]
+
+    queue = filter(lambda x: x in lifetime, static_variables)
     queue = sorted(queue, key=lambda x: x.size, reverse=True)
     queue = sorted(queue, key=lambda x: lifetime[x][1])
     queue = sorted(queue, key=lambda x: lifetime[x][1] - lifetime[x][0], reverse=True)
@@ -191,8 +220,9 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
     workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
     result = {}  # type: Dict[Variable, int]
 
+    min_offset = 0
     while len(queue) > 0:
-        min_offset = 999999999999
+        min_offset = +float("inf")
         min_offset_v = None
 
         # find space
@@ -236,6 +266,13 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
 
             allocated_range[t].append((min_offset, min_offset_v.size))
 
+        min_offset += min_offset_v.size
+
+    offset = min_offset
+    for v in dynamic_variables:
+        result[v] = offset
+        offset += v.size
+
     for v1 in variables:
         v2 = v1
         while "inplace_src" in v2.parameters:
@@ -243,7 +280,7 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
 
         result[v1] = result[v2]
 
-    return result
+    return result, offset
 
 
 def _visualize_allocation(ops: List[Operator],

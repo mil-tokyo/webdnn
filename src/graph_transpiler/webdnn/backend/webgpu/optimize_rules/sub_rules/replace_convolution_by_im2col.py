@@ -50,6 +50,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                           out_order=OrderNHWC,
                           transpose_A=True if col.order == OrderNHWC else False,
                           transpose_B=True)
+
             new_y, = sgemm(col, w)
 
             sgemm.replace_output(new_y, old_y)

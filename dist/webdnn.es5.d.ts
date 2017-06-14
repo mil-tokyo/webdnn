@@ -11,11 +11,20 @@ declare namespace WebDNN {
          * output variables' name
          */
         outputs: string[];
+        /**
+         * memory position table
+         */
         memory_layout: MemoryLayout;
         /**
          * Encoding algorithm of weight binary data.
          */
         weight_encoding: string;
+        /**
+         * Placeholder dict
+         */
+        placeholders: {
+            [key: string]: number;
+        };
     }
 }
 declare namespace WebDNN {
@@ -55,22 +64,17 @@ declare namespace WebDNN {
          */
         abstract compile(): Promise<void>;
         /**
-         * load weight data
-         * @param weightsData weights data
-         */
-        abstract loadWeights(weightsData: Uint8Array): Promise<void>;
-        /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
         abstract run(): Promise<void>;
         /**
          * Get input ArrayBufferView object
          */
-        abstract getInputViews(): Promise<Float32Array[]>;
+        abstract getInputViews(): Promise<BufferView[]>;
         /**
          * Get output ArrayBufferView object
          */
-        abstract getOutputViews(): Promise<Float32Array[]>;
+        abstract getOutputViews(): Promise<BufferView[]>;
     }
 }
 declare namespace WebDNN {
@@ -197,16 +201,19 @@ declare namespace WebDNN {
     }
 }
 declare namespace WebDNN {
+    interface PlaceHolder {
+        eval: string;
+    }
     interface WeightDecoder {
         decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
     interface MemoryLayout {
-        total_size: number;
+        total_size: number | PlaceHolder;
         allocations: {
             [index: string]: {
                 name: string;
-                offset: number;
-                size: number;
+                offset: number | PlaceHolder;
+                size: number | PlaceHolder;
             };
         };
     }
@@ -296,26 +303,83 @@ declare namespace WebDNN {
         threadgroups_per_grid: WebGPUSize;
         threads_per_thread_group: WebGPUSize;
         meta_buffer: number[];
+        unresolved_value_list: {
+            offset: number;
+            placeholder: PlaceHolder;
+        }[];
+    }
+}
+declare namespace WebDNN {
+    class BufferView {
+        private internalView;
+        getFloat32Array(): Float32Array;
+        setFloat32Array(array: Float32Array): void;
+        /**
+         * The size in bytes of each element in the array.
+         */
+        readonly BYTES_PER_ELEMENT: number;
+        /**
+         * The length in bytes of the array.
+         */
+        readonly byteLength: number;
+        /**
+         * The offset in bytes of the array.
+         */
+        readonly byteOffset: number;
+        /**
+         * Returns the this object after copying a section of the array identified by start and end
+         * to the same array starting at position target
+         * @param target If target is negative, it is treated as length+target where length is the
+         * length of the array.
+         * @param start If start is negative, it is treated as length+start. If end is negative, it
+         * is treated as length+end.
+         * @param end If not specified, length of the this object is used as its default value.
+         */
+        copyWithin(target: number, start: number, end?: number): this;
+        /**
+         * Returns the this object after filling the section identified by start and end with value
+         * @param value value to fill array section with
+         * @param start index to start filling the array at. If start is negative, it is treated as
+         * length+start where length is the length of the array.
+         * @param end index to stop filling the array at. If end is negative, it is treated as
+         * length+end.
+         */
+        fill(value: number, start?: number, end?: number): this;
+        /**
+         * The length of the array.
+         */
+        readonly length: number;
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        set(array: ArrayLike<number>, offset?: number): void;
+        [index: number]: number;
     }
 }
 declare namespace WebDNN {
     class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName: string;
+        private loadedWeights;
         webgpuHandler: WebGPUHandler;
         shaderLanguage: string;
         dataBuffer: BufferWebGPU | null;
         metaBuffers: BufferWebGPU[] | null;
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
+        inputViews: BufferView[] | null;
+        outputViews: BufferView[] | null;
         constructor(option?: any);
         init(): Promise<void>;
         private init_basic_kernels();
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setDescriptor(descriptor: GraphDescriptorWebGPU): void;
         compile(): Promise<void>;
-        loadWeights(data: Uint8Array): Promise<void>;
-        getInputViews(): Promise<Float32Array[]>;
-        getOutputViews(): Promise<Float32Array[]>;
+        setPlaceholder(values: {
+            [key: string]: number;
+        }): Promise<void>;
+        getInputViews(): Promise<BufferView[]>;
+        resolvePlaceHolder(placeholder: number | PlaceHolder): any;
+        getOutputViews(): Promise<BufferView[]>;
         run(): Promise<void>;
     }
 }
@@ -340,8 +404,8 @@ declare namespace WebDNN {
         setDescriptor(descriptor: GraphDescriptorWebassembly): void;
         compile(): Promise<void>;
         loadWeights(weightsData: Uint8Array): Promise<void>;
-        getInputViews(): Promise<Float32Array[]>;
-        getOutputViews(): Promise<Float32Array[]>;
+        getInputViews(): Promise<BufferView[]>;
+        getOutputViews(): Promise<BufferView[]>;
         run(): Promise<void>;
     }
 }
@@ -375,8 +439,8 @@ declare namespace WebDNN {
         loadWeights(weightsData: Uint8Array): Promise<void>;
         run(): Promise<void>;
         wait_to_display(): Promise<{}>;
-        getInputViews(): Promise<Float32Array[]>;
-        getOutputViews(): Promise<Float32Array[]>;
+        getInputViews(): Promise<BufferView[]>;
+        getOutputViews(): Promise<BufferView[]>;
     }
 }
 declare namespace WebDNN {
@@ -422,11 +486,11 @@ declare namespace WebDNN {
         /**
          * The buffers to write input data.
          */
-        inputViews: Float32Array[];
+        inputViews: BufferView[];
         /**
          * The buffers to read output data.
          */
-        outputViews: Float32Array[];
+        outputViews: BufferView[];
         /**
          * Run the model.
          */

@@ -13,11 +13,19 @@ namespace WebDNN {
          */
         outputs: string[];
 
+        /**
+         * memory position table
+         */
         memory_layout: MemoryLayout,
         
         /**
          * Encoding algorithm of weight binary data.
          */
         weight_encoding: string;
+
+        /**
+         * Placeholder dict
+         */
+        placeholders: { [key: string]: number }
     }
 }

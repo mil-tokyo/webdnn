@@ -4,17 +4,20 @@
 /// <reference path="../decoder/get_weight_decoder.ts" />
 /// <reference path="../fetch.ts" />
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
+/// <reference path="../buffer_view.ts" />
 
 namespace WebDNN {
     export class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName = 'webgpu';
 
+        private loadedWeights: Uint8Array | null;
+
         webgpuHandler: WebGPUHandler;
         shaderLanguage: string;
         dataBuffer: BufferWebGPU | null;
         metaBuffers: BufferWebGPU[] | null;
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
+        inputViews: BufferView[] | null;
+        outputViews: BufferView[] | null;
 
         constructor(option?: any) {
             super(option);
@@ -56,7 +59,7 @@ namespace WebDNN {
             }
             weight_url = transformUrl(weight_url);
             let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url, progressCallback), progressCallback);
-            await this.loadWeights(new Uint8Array(weights_data_ab));
+            this.loadedWeights = new Uint8Array(weights_data_ab);
         }
 
         setDescriptor(descriptor: GraphDescriptorWebGPU) {
@@ -67,49 +70,101 @@ namespace WebDNN {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
 
             this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-            this.dataBuffer = new BufferWebGPU(this.descriptor.memory_layout.total_size * Float32Array.BYTES_PER_ELEMENT);
+        }
+
+        async setPlaceholder(values: { [key: string]: number }) {
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            if (!this.loadedWeights) throw new Error('Weights is not loaded');
+
+            let placeholders = Object.assign(this.descriptor.placeholders, values);
+
+            for (let key in placeholders) {
+                if (placeholders[key] == null) throw new Error(`Placeholder '${key}' is unresolved`);
+            }
+
+            //resolve placeholders
+            let total_size = (typeof this.descriptor.memory_layout.total_size == 'number') ?
+                this.descriptor.memory_layout.total_size :
+                this.resolvePlaceHolder(this.descriptor.memory_layout.total_size);
+
+            this.dataBuffer = new BufferWebGPU(total_size * Float32Array.BYTES_PER_ELEMENT);
             this.metaBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
                 let exec_info = this.descriptor.exec_infos[i];
+                let metaBuffer8 = new Uint8Array(exec_info.meta_buffer);
+                let metaBuffer32 = new Int32Array(metaBuffer8.buffer);
+
+                //resolve unresolved metabuffer
+                for (let unresolved_value of exec_info.unresolved_value_list) {
+                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceHolder(unresolved_value.placeholder);
+                }
+
                 let buf = new BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
-                await buf.write(new Uint8Array(exec_info.meta_buffer));
+                await buf.write(metaBuffer8);
                 this.metaBuffers.push(buf);
+
+                let threadgroups_per_grid = exec_info.threadgroups_per_grid;
+                let threads_per_thread_group = exec_info.threads_per_thread_group;
+                threadgroups_per_grid.width = this.resolvePlaceHolder(threadgroups_per_grid.width);
+                threadgroups_per_grid.height = this.resolvePlaceHolder(threadgroups_per_grid.height);
+                threadgroups_per_grid.depth = this.resolvePlaceHolder(threadgroups_per_grid.depth);
+                threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
+                threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
+                threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
             }
-        }
 
-        async loadWeights(data: Uint8Array) {
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer) throw new Error('Data buffer is not initialized');
-
-            let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-            await this.dataBuffer.write(await decoder.decode(data, this.descriptor.memory_layout));
-        }
-
-        async getInputViews(): Promise<Float32Array[]> {
-            if (this.inputViews)return this.inputViews;
-
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer) throw new Error('Data buffer is not initialized');
-
-            let views: Float32Array[] = [];
+            let inputViews = await this.getInputViews();
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
                 let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                views.push(<Float32Array>this.dataBuffer.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
+
+                let offset = this.resolvePlaceHolder(var_alloc.offset);
+                let size = this.resolvePlaceHolder(var_alloc.size);
+
+                inputViews[i].setFloat32Array(<Float32Array>this.dataBuffer.getWriteView(offset, size, Float32Array));
+            }
+
+            let outputViews = await this.getOutputViews();
+            for (let i = 0; i < this.descriptor.outputs.length; i++) {
+                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
+
+                let offset = this.resolvePlaceHolder(var_alloc.offset);
+                let size = this.resolvePlaceHolder(var_alloc.size);
+
+                outputViews[i].setFloat32Array(<Float32Array>this.dataBuffer.getReadView(offset, size, Float32Array));
+            }
+
+            let decoder = get_weight_decoder(this.descriptor.weight_encoding);
+            await this.dataBuffer.write(await decoder.decode(this.loadedWeights, this.descriptor.memory_layout));
+        }
+
+        async getInputViews() {
+            if (this.inputViews) return this.inputViews;
+
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            let views: BufferView[] = [];
+            for (let i = 0; i < this.descriptor.inputs.length; i++) {
+                views.push(new BufferView());
             }
             this.inputViews = views;
             return views;
         }
 
-        async getOutputViews(): Promise<Float32Array[]> {
+        resolvePlaceHolder(placeholder: number | PlaceHolder) {
+            if (!this.descriptor) throw Error('Descriptor is not loaded');
+            if (typeof placeholder == 'number') return placeholder;
+
+            //noinspection JSUnusedLocalSymbols
+            return ((placeholders) => eval(placeholder.eval))(this.descriptor.placeholders);
+        }
+
+        async getOutputViews() {
             if (this.outputViews) return this.outputViews;
 
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.dataBuffer) throw new Error('Data buffer is not initialized');
 
-            let views: Float32Array[] = [];
+            let views: BufferView[] = [];
             for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                views.push(<Float32Array>this.dataBuffer.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
+                views.push(new BufferView());
             }
             this.outputViews = views;
             return views;

@@ -5,6 +5,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.order import OrderNC
+from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 
 
@@ -39,11 +40,14 @@ class Linear(Operator):
 
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
-        assert x_shape_dict[Axis.C] == w_shape_dict[Axis.C]
+        if PlaceHolder.check_resolved(x_shape_dict[Axis.C]) and PlaceHolder.check_resolved(w_shape_dict[Axis.C]):
+            assert x_shape_dict[Axis.C] == w_shape_dict[Axis.C]
         assert len(x_shape_dict) == len(w_shape_dict)
         if len(x_shape_dict) == 4:
-            assert x_shape_dict[Axis.H] == w_shape_dict[Axis.H]
-            assert x_shape_dict[Axis.W] == w_shape_dict[Axis.W]
+            if PlaceHolder.check_resolved(x_shape_dict[Axis.H]) and PlaceHolder.check_resolved(w_shape_dict[Axis.H]):
+                assert x_shape_dict[Axis.H] == w_shape_dict[Axis.H]
+            if PlaceHolder.check_resolved(x_shape_dict[Axis.W]) and PlaceHolder.check_resolved(w_shape_dict[Axis.W]):
+                assert x_shape_dict[Axis.W] == w_shape_dict[Axis.W]
         y = Variable([x_shape_dict[Axis.N], w_shape_dict[Axis.N]], OrderNC)
         self.append_output("y", y)
         return y,
