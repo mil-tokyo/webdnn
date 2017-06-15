@@ -109,7 +109,9 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
 
         memory_layout = Allocator.allocate(graph)
         if flags.DEBUG:
-            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.size * 4}")
+            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.static_size * 4}")
+            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout static size: {memory_layout.static_size * 4}")
+            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
         constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
         constants_bytes = constant_encoder.encode(memory_layout)

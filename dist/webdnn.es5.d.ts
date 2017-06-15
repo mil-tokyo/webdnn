@@ -208,12 +208,24 @@ declare namespace WebDNN {
         decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
     }
     interface MemoryLayout {
-        total_size: number | PlaceHolder;
-        allocations: {
-            [index: string]: {
-                name: string;
-                offset: number | PlaceHolder;
-                size: number | PlaceHolder;
+        'static': {
+            size: number;
+            allocations: {
+                [index: string]: {
+                    name: string;
+                    offset: number;
+                    size: number;
+                };
+            };
+        };
+        dynamic: {
+            size: number | PlaceHolder;
+            allocations: {
+                [index: string]: {
+                    name: string;
+                    offset: number | PlaceHolder;
+                    size: number | PlaceHolder;
+                };
             };
         };
     }
@@ -361,10 +373,10 @@ declare namespace WebDNN {
 declare namespace WebDNN {
     class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName: string;
-        private loadedWeights;
         webgpuHandler: WebGPUHandler;
         shaderLanguage: string;
-        dataBuffer: BufferWebGPU | null;
+        staticBuffer: BufferWebGPU | null;
+        dynamicBuffer: BufferWebGPU | null;
         metaBuffers: BufferWebGPU[] | null;
         inputViews: BufferView[] | null;
         outputViews: BufferView[] | null;

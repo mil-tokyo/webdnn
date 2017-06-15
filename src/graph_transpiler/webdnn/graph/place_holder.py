@@ -26,9 +26,16 @@ class Dependency:
             i = 0
             while i < len(operands):
                 v1 = operands[i]
+                if v1 == 0:
+                    operands.pop(i)
+                    continue
+
                 j = i + 1
                 while j < len(operands):
                     v2 = operands[j]
+                    if v2 == 0:
+                        operands.pop(j)
+                        continue
 
                     # v = ... + v1 + v2 + ...
                     # v1 = common_term * other_term1

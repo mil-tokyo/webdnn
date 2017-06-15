@@ -3,15 +3,16 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.inline_injector import InlineInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 
 def generate_template(N, has_inline):
     return """
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -26,15 +27,15 @@ kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
 
 
 #if OPTIMIZE && N_DIVIDABLE_BY_4
-    const device float4 *X0 = (const device float4 *)(data_buffer + %%META_LOAD(elementwise_sum_X0_offset)%%);
-    const device float4 *X1 = (const device float4 *)(data_buffer + %%META_LOAD(elementwise_sum_X1_offset)%%);
-    device float4 *Y = (device float4 *)(data_buffer + %%META_LOAD(elementwise_sum_Y_offset)%%);
-    const int N = (%%META_LOAD(elementwise_sum_N)%%) >> 2;
+    const device float4 *X0 = (const device float4 *)(%%LOAD_BUFFER(elementwise_sum_X0)%%);
+    const device float4 *X1 = (const device float4 *)(%%LOAD_BUFFER(elementwise_sum_X1)%%);
+    device float4 *Y = (device float4 *)(%%LOAD_BUFFER(elementwise_sum_Y)%%);
+    const int N = (%%LOAD_BUFFER(elementwise_sum_N)%%) >> 2;
 #else
-    const device float *X0 = data_buffer + %%META_LOAD(elementwise_sum_X0_offset)%%;
-    const device float *X1 = data_buffer + %%META_LOAD(elementwise_sum_X1_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(elementwise_sum_Y_offset)%%;
-    const int N = %%META_LOAD(elementwise_sum_N)%%;
+    const device float *X0 = %%LOAD_BUFFER(elementwise_sum_X0)%%;
+    const device float *X1 = %%LOAD_BUFFER(elementwise_sum_X1)%%;
+    device float *Y = %%LOAD_BUFFER(elementwise_sum_Y)%%;
+    const int N = %%LOAD_BUFFER(elementwise_sum_N)%%;
 #endif
   
     for (int gid = index; gid < N; gid += num_threads) {
@@ -73,11 +74,11 @@ def elementwise_sum(op: AxiswiseScale,
     assert len(op.inputs) == 2, "[WebGPU] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "elementwise_sum_X0_offset": x0.offset,
-        "elementwise_sum_X1_offset": x1.offset,
-        "elementwise_sum_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "elementwise_sum_X0": x0,
+        "elementwise_sum_X1": x1,
+        "elementwise_sum_Y": y,
         "elementwise_sum_N": y.variable.size
     })
 
@@ -85,7 +86,7 @@ def elementwise_sum(op: AxiswiseScale,
     name_injector = KernelNameInjector(op)
 
     source = generate_template(y.variable.size, inline_injector.has_inline)
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = inline_injector.inject(source)
     source = name_injector.inject(source)
 
@@ -94,8 +95,8 @@ def elementwise_sum(op: AxiswiseScale,
         name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        meta_injector.buffer,
-        meta_injector.unresolved_value_list
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

@@ -1,8 +1,8 @@
+from enum import auto, Enum
 from typing import Dict, List, Set, Tuple, Union, Optional
 
 import numpy as np
 
-from webdnn.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -13,19 +13,23 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
 
 
-class Allocation(json.SerializableMixin, IAllocation):
+class BufferType(Enum):
+    Static = auto()
+    Dynamic = auto()
+
+
+class Allocation(json.SerializableMixin):
     variable: Variable
     offset: Union[int, PlaceHolder]
+    buffer_type: BufferType
 
     def __init__(self,
                  variable: Variable,
-                 offset: Union[int, PlaceHolder]):
+                 offset: Union[int, PlaceHolder],
+                 buffer_type: BufferType):
         self.variable = variable
         self.offset = offset
-
-    @property
-    def is_constant(self) -> bool:
-        return isinstance(self.variable, ConstantVariable)
+        self.buffer_type = buffer_type
 
     @property
     def size(self) -> Union[int, PlaceHolder]:
@@ -39,16 +43,22 @@ class Allocation(json.SerializableMixin, IAllocation):
         }
 
 
-class MemoryLayout(json.SerializableMixin, IMemoryLayout):
-    _manual_size: Optional[Union[int, PlaceHolder]] = None
+class MemoryLayout(json.SerializableMixin):
+    data: np.array
 
     def __init__(self):
-        self.allocations = {}
+        self.allocations = {}  # type: Dict[str, Allocation]
 
     def _to_serializable_(self):
         return {
-            "total_size": self.size,
-            "allocations": {a.variable.name: a for _, a in self.allocations.items()}
+            "static": {
+                "size": self.static_size,
+                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Static}
+            },
+            "dynamic": {
+                "size": self.dynamic_size,
+                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Dynamic}
+            }
         }
 
     def __len__(self):
@@ -60,26 +70,42 @@ class MemoryLayout(json.SerializableMixin, IMemoryLayout):
     def __contains__(self, var: Variable):
         return var.name in self.allocations
 
-    def append(self, var: Variable, offset: Union[int, PlaceHolder] = -1):
-        if offset == -1:
-            offset = self.size
+    def append(self, var: Variable, offset: Union[int, PlaceHolder] = -1, buffer_type: Optional[BufferType] = None):
+        if buffer_type is None:
+            if PlaceHolder.check_resolved(offset) and PlaceHolder.check_resolved(var.size):
+                buffer_type = BufferType.Static
+            else:
+                buffer_type = BufferType.Dynamic
 
-        self.allocations[var.name] = Allocation(var, offset)
+        if offset == -1:
+            if buffer_type is BufferType.Static:
+                offset = self.static_size
+            else:
+                offset = self.dynamic_size
+
+        self.allocations[var.name] = Allocation(var, offset, buffer_type)
 
     @property
-    def size(self) -> Union[int, PlaceHolder]:
-        if self._manual_size:
-            return self._manual_size
+    def total_size(self) -> Union[int, PlaceHolder]:
+        return self.static_size + self.total_size
 
+    @property
+    def static_size(self) -> int:
         size = 0
         for a in self.allocations.values():
-            size = max(a.offset + a.size, size)
+            if a.buffer_type == BufferType.Static:
+                size = max(a.offset + a.size, size)
 
         return size
 
-    @size.setter
-    def size(self, size: Union[int, PlaceHolder]):
-        self._manual_size = size
+    @property
+    def dynamic_size(self) -> Union[int, PlaceHolder]:
+        size = 0
+        for a in self.allocations.values():
+            if a.buffer_type == BufferType.Dynamic:
+                size += a.size
+
+        return size
 
 
 class Allocator:
@@ -103,31 +129,17 @@ class Allocator:
         layout = MemoryLayout()
 
         lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets, total_size = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
+        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
         for variable, offset in offsets.items():
             layout.append(variable, offset)
-        layout.size = total_size
 
-        buffer_size = 8192
-        data = np.zeros(buffer_size, dtype=np.float32)
-        constant_size = 0
+        layout.data = np.zeros(layout.static_size, dtype=np.float32)
         for var in variables:
             if not isinstance(var, ConstantVariable):
                 continue
 
             allocation = layout[var]
-            if allocation.offset + allocation.size > buffer_size:
-                while allocation.offset + allocation.size > buffer_size:
-                    buffer_size *= 2
-
-                data2 = np.zeros(buffer_size, dtype=np.float32)
-                data2[:constant_size] = data[:constant_size]
-                data = data2
-
-            data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-            constant_size += allocation.size
-
-        layout.data = data[:constant_size]
+            layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
 
         if flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(ops, variables, layout, lifetime, offsets)
@@ -195,7 +207,7 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
 
 
 def generate_allocation_info(variables: List[Variable],
-                             lifetime: Dict[Variable, Tuple[int, int]]) -> Tuple[Dict[Variable, int], Union[int, PlaceHolder]]:
+                             lifetime: Dict[Variable, Tuple[int, int]]) -> Dict[Variable, int]:
     """
     heuristic-based optimization
 
@@ -220,7 +232,6 @@ def generate_allocation_info(variables: List[Variable],
     workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
     result = {}  # type: Dict[Variable, int]
 
-    min_offset = 0
     while len(queue) > 0:
         min_offset = +float("inf")
         min_offset_v = None
@@ -268,10 +279,8 @@ def generate_allocation_info(variables: List[Variable],
 
         min_offset += min_offset_v.size
 
-    offset = min_offset
     for v in dynamic_variables:
-        result[v] = offset
-        offset += v.size
+        result[v] = -1  # FIXME: optimize dynamic allocation
 
     for v1 in variables:
         v2 = v1
@@ -280,7 +289,7 @@ def generate_allocation_info(variables: List[Variable],
 
         result[v1] = result[v2]
 
-    return result, offset
+    return result
 
 
 def _visualize_allocation(ops: List[Operator],
@@ -289,7 +298,7 @@ def _visualize_allocation(ops: List[Operator],
                           lifetime: Dict[Variable, Tuple[int, int]],
                           offsets: Dict[Variable, Union[int, PlaceHolder]]):
     UNIT_HEIGHT = 14
-    total_size = layout.size
+    total_size = layout.total_size
 
     class RenderingInfo:
         names: List[str]
@@ -297,6 +306,7 @@ def _visualize_allocation(ops: List[Operator],
         offset: int
         lifetime: Tuple[int, int]
 
+        # noinspection PyShadowingNames
         def __init__(self, variable: Variable, offset: int, lifetime: Tuple[int, int]):
             self.names = []
             self.variable = variable
@@ -376,7 +386,7 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
 <header style="margin-bottom: 32px;">
     <h1>Memory Allocation Visualization</h1>
     <div style="margin: 32px 0">
-        <p>Total allocation size: """ + str(layout.size * 4) + """[byte]</p>
+        <p>Total allocation size: """ + str(total_size * 4) + """[byte]</p>
         <p># of allocated variables: """ + str(len(layout)) + """</p>
     </div>
     <div style="margin: 32px 0">

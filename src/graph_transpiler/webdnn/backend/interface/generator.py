@@ -1,9 +1,7 @@
 import copy
 from typing import Optional
 
-from webdnn.backend.fallback.generator import generate as generate_fallback
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
-from webdnn.backend.webassembly.generator import generate as generate_webassembly
 from webdnn.backend.webgpu.generator import generate as generate_webgpu
 from webdnn.frontend.general_optimize_rule import GeneralOptimizeRule
 from webdnn.graph.graph import Graph
@@ -11,9 +9,11 @@ from webdnn.util import flags
 
 # FIXME: ここでよい？
 
-generators = {"webgpu": generate_webgpu,
-              "webassembly": generate_webassembly,
-              "fallback": generate_fallback}
+# generators = {"webgpu": generate_webgpu,
+#               "webassembly": generate_webassembly,
+#               "fallback": generate_fallback}
+
+generators = {"webgpu": generate_webgpu}
 
 
 def generate_descriptor(backend: str, graph: Graph, constant_encoder_name: Optional[str] = None) -> IGraphExecutionData:

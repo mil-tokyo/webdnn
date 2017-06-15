@@ -139,6 +139,8 @@ def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionD
         traverse.dump(graph)
 
     memory_layout = Allocator.allocate(graph)
+    assert memory_layout.dynamic_size == 0, "Currently webassembly does not support dynamic buffer (=Placeholder)"
+
     if flags.DEBUG:
         print(f"[GraphDescriptorGeneratorWebassembly] memory_layout total size: {memory_layout.size * 4}")
 

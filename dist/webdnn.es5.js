@@ -316,7 +316,7 @@ var WebDNN;
             return __awaiter(this, void 0, void 0, function () {
                 var dst, data_view, src_offset, dst_offset, body_size, scale, scaled_table, i, src_data_view, inflate, decompressed, dec_size, s;
                 return __generator(this, function (_a) {
-                    dst = new Float32Array(memory_layout.total_size);
+                    dst = new Float32Array(memory_layout.static.size);
                     data_view = new DataView(data.buffer, data.byteOffset);
                     src_offset = 0;
                     while (src_offset < data.length) {
@@ -659,9 +659,9 @@ var WebDNN;
         };
         DescriptorRunnerWebGPU.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, graph_fetch, _a, weight_url, weights_data_ab, _b;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+                var graph_url, graph_fetch, descriptor, weight_url, weights_data_ab, _a, decoder, _b, _c;
+                return __generator(this, function (_d) {
+                    switch (_d.label) {
                         case 0:
                             graph_url = directory + "/graph_" + this.backendName + ".json";
                             if (this.ignoreCache) {
@@ -670,28 +670,34 @@ var WebDNN;
                             graph_url = WebDNN.transformUrl(graph_url);
                             return [4 /*yield*/, WebDNN.fetch(graph_url)];
                         case 1:
-                            graph_fetch = _c.sent();
+                            graph_fetch = _d.sent();
                             if (!graph_fetch.ok) {
                                 throw new Error(graph_url + " cannot be loaded");
                             }
-                            _a = this;
                             return [4 /*yield*/, graph_fetch.json()];
                         case 2:
-                            _a.descriptor = _c.sent();
+                            descriptor = _d.sent();
+                            this.descriptor = descriptor;
                             return [4 /*yield*/, this.compile()];
                         case 3:
-                            _c.sent();
+                            _d.sent();
                             weight_url = directory + "/weight_" + this.backendName + ".bin";
                             if (this.ignoreCache) {
                                 weight_url += '?t=' + Date.now();
                             }
                             weight_url = WebDNN.transformUrl(weight_url);
-                            _b = WebDNN.readArrayBufferProgressively;
+                            _a = WebDNN.readArrayBufferProgressively;
                             return [4 /*yield*/, WebDNN.fetch(weight_url, progressCallback)];
-                        case 4: return [4 /*yield*/, _b.apply(void 0, [_c.sent(), progressCallback])];
+                        case 4: return [4 /*yield*/, _a.apply(void 0, [_d.sent(), progressCallback])];
                         case 5:
-                            weights_data_ab = _c.sent();
-                            this.loadedWeights = new Uint8Array(weights_data_ab);
+                            weights_data_ab = _d.sent();
+                            this.staticBuffer = new WebDNN.BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
+                            decoder = WebDNN.get_weight_decoder(descriptor.weight_encoding);
+                            _c = (_b = this.staticBuffer).write;
+                            return [4 /*yield*/, decoder.decode(new Uint8Array(weights_data_ab), descriptor.memory_layout)];
+                        case 6: return [4 /*yield*/, _c.apply(_b, [_d.sent()])];
+                        case 7:
+                            _d.sent();
                             return [2 /*return*/];
                     }
                 });
@@ -712,26 +718,24 @@ var WebDNN;
         };
         DescriptorRunnerWebGPU.prototype.setPlaceholder = function (values) {
             return __awaiter(this, void 0, void 0, function () {
-                var placeholders, key, total_size, i, exec_info, metaBuffer8, metaBuffer32, _i, _a, unresolved_value, buf, threadgroups_per_grid, threads_per_thread_group, inputViews, i, var_alloc, offset, size, outputViews, i, var_alloc, offset, size, decoder, _b, _c;
-                return __generator(this, function (_d) {
-                    switch (_d.label) {
+                var placeholders, key, dynamicBufferSize, i, exec_info, metaBuffer8, metaBuffer32, _i, _a, unresolved_value, buf, threadgroups_per_grid, threads_per_thread_group, inputViews, i, allocation, allocation, offset, size, outputViews, i, allocation, allocation, offset, size;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
                             if (!this.descriptor)
                                 throw new Error('Descriptor is not loaded');
-                            if (!this.loadedWeights)
-                                throw new Error('Weights is not loaded');
+                            if (!this.staticBuffer)
+                                throw new Error('StaticBuffer is not initialized');
                             placeholders = Object.assign(this.descriptor.placeholders, values);
                             for (key in placeholders) {
                                 if (placeholders[key] == null)
                                     throw new Error("Placeholder '" + key + "' is unresolved");
                             }
-                            total_size = (typeof this.descriptor.memory_layout.total_size == 'number') ?
-                                this.descriptor.memory_layout.total_size :
-                                this.resolvePlaceHolder(this.descriptor.memory_layout.total_size);
-                            this.dataBuffer = new WebDNN.BufferWebGPU(total_size * Float32Array.BYTES_PER_ELEMENT);
+                            dynamicBufferSize = this.resolvePlaceHolder(this.descriptor.memory_layout.dynamic.size);
+                            this.dynamicBuffer = new WebDNN.BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
                             this.metaBuffers = [];
                             i = 0;
-                            _d.label = 1;
+                            _b.label = 1;
                         case 1:
                             if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 4];
                             exec_info = this.descriptor.exec_infos[i];
@@ -745,7 +749,7 @@ var WebDNN;
                             buf = new WebDNN.BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
                             return [4 /*yield*/, buf.write(metaBuffer8)];
                         case 2:
-                            _d.sent();
+                            _b.sent();
                             this.metaBuffers.push(buf);
                             threadgroups_per_grid = exec_info.threadgroups_per_grid;
                             threads_per_thread_group = exec_info.threads_per_thread_group;
@@ -755,34 +759,40 @@ var WebDNN;
                             threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
                             threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
                             threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
-                            _d.label = 3;
+                            _b.label = 3;
                         case 3:
                             i++;
                             return [3 /*break*/, 1];
                         case 4: return [4 /*yield*/, this.getInputViews()];
                         case 5:
-                            inputViews = _d.sent();
+                            inputViews = _b.sent();
                             for (i = 0; i < this.descriptor.inputs.length; i++) {
-                                var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                                offset = this.resolvePlaceHolder(var_alloc.offset);
-                                size = this.resolvePlaceHolder(var_alloc.size);
-                                inputViews[i].setFloat32Array(this.dataBuffer.getWriteView(offset, size, Float32Array));
+                                if (this.descriptor.inputs[i] in this.descriptor.memory_layout.static.allocations) {
+                                    allocation = this.descriptor.memory_layout.static.allocations[this.descriptor.inputs[i]];
+                                    inputViews[i].setFloat32Array(this.staticBuffer.getWriteView(allocation.offset, allocation.size, Float32Array));
+                                }
+                                else {
+                                    allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.inputs[i]];
+                                    offset = this.resolvePlaceHolder(allocation.offset);
+                                    size = this.resolvePlaceHolder(allocation.size);
+                                    inputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
+                                }
                             }
                             return [4 /*yield*/, this.getOutputViews()];
                         case 6:
-                            outputViews = _d.sent();
+                            outputViews = _b.sent();
                             for (i = 0; i < this.descriptor.outputs.length; i++) {
-                                var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                                offset = this.resolvePlaceHolder(var_alloc.offset);
-                                size = this.resolvePlaceHolder(var_alloc.size);
-                                outputViews[i].setFloat32Array(this.dataBuffer.getReadView(offset, size, Float32Array));
+                                if (this.descriptor.outputs[i] in this.descriptor.memory_layout.static.allocations) {
+                                    allocation = this.descriptor.memory_layout.static.allocations[this.descriptor.outputs[i]];
+                                    outputViews[i].setFloat32Array(this.staticBuffer.getWriteView(allocation.offset, allocation.size, Float32Array));
+                                }
+                                else {
+                                    allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.outputs[i]];
+                                    offset = this.resolvePlaceHolder(allocation.offset);
+                                    size = this.resolvePlaceHolder(allocation.size);
+                                    outputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
+                                }
                             }
-                            decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            _c = (_b = this.dataBuffer).write;
-                            return [4 /*yield*/, decoder.decode(this.loadedWeights, this.descriptor.memory_layout)];
-                        case 7: return [4 /*yield*/, _c.apply(_b, [_d.sent()])];
-                        case 8:
-                            _d.sent();
                             return [2 /*return*/];
                     }
                 });
@@ -832,7 +842,7 @@ var WebDNN;
         };
         DescriptorRunnerWebGPU.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var dataBuffer, metaBuffers, records, totalElapsedTime_1, i, exec_info, start, elapsedTime, summary, complete_promise, i, exec_info, is_last;
+                var staticBuffer, dynamicBuffer, metaBuffers, records, totalElapsedTime_1, i, exec_info, start, elapsedTime, summary, complete_promise, i, exec_info, is_last;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -840,11 +850,14 @@ var WebDNN;
                                 throw new Error('Descriptor is not loaded');
                             if (!this.inputViews || !this.outputViews)
                                 throw new Error('getInputViews and getOutputViews must be called prior to run');
-                            if (!this.dataBuffer)
-                                throw new Error('Data buffer is not initialized');
+                            if (!this.staticBuffer)
+                                throw new Error('Static buffer is not initialized');
+                            if (!this.dynamicBuffer)
+                                throw new Error('Dynamic buffer is not initialized');
                             if (!this.metaBuffers)
                                 throw new Error('Meta buffer is not initialized');
-                            dataBuffer = this.dataBuffer;
+                            staticBuffer = this.staticBuffer;
+                            dynamicBuffer = this.dynamicBuffer;
                             metaBuffers = this.metaBuffers;
                             if (!WebDNN.DEBUG) return [3 /*break*/, 5];
                             records = [];
@@ -855,7 +868,7 @@ var WebDNN;
                             if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 4];
                             exec_info = this.descriptor.exec_infos[i];
                             start = performance.now();
-                            return [4 /*yield*/, this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], true)];
+                            return [4 /*yield*/, this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true)];
                         case 2:
                             _a.sent();
                             elapsedTime = performance.now() - start;
@@ -890,7 +903,7 @@ var WebDNN;
                             for (i = 0; i < this.descriptor.exec_infos.length; i++) {
                                 exec_info = this.descriptor.exec_infos[i];
                                 is_last = i == this.descriptor.exec_infos.length - 1;
-                                complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [dataBuffer, metaBuffers[i]], is_last);
+                                complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
                             }
                             return [4 /*yield*/, complete_promise];
                         case 6:
@@ -1089,48 +1102,8 @@ var WebDNN;
         };
         DescriptorRunnerWebassembly.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _this = this;
-                var descriptor, worker, inputViews, outputViews, promise;
                 return __generator(this, function (_a) {
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.inputViews || !this.outputViews)
-                        throw new Error('getInputViews and getOutputViews must be called prior to run');
-                    if (!this.worker)
-                        throw new Error('Worker is not initialized');
-                    descriptor = this.descriptor;
-                    worker = this.worker;
-                    inputViews = this.inputViews;
-                    outputViews = this.outputViews;
-                    promise = new Promise(function (resolve, reject) {
-                        // TODO: better way not to generate function on every run
-                        _this.worker_promise_reject_func = reject;
-                        worker.onmessage = function (event) {
-                            if (Array.isArray(event.data)) {
-                                for (var i = 0; i < event.data.length; i++) {
-                                    outputViews[i].set(event.data[i]);
-                                }
-                                resolve();
-                            }
-                            else {
-                                console.log(event.data);
-                                worker.terminate();
-                                reject(new Error(event.data));
-                            }
-                        };
-                        var inputs = [];
-                        for (var i = 0; i < descriptor.inputs.length; i++) {
-                            var var_alloc = descriptor.memory_layout.allocations[descriptor.inputs[i]];
-                            inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: inputViews[i] });
-                        }
-                        var outputs = [];
-                        for (var i = 0; i < descriptor.outputs.length; i++) {
-                            var var_alloc = descriptor.memory_layout.allocations[descriptor.outputs[i]];
-                            outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
-                        }
-                        worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
-                    });
-                    return [2 /*return*/, promise];
+                    return [2 /*return*/];
                 });
             });
         };

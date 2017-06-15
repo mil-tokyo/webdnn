@@ -10,12 +10,24 @@ namespace WebDNN {
     }
 
     export interface MemoryLayout {
-        total_size: number | PlaceHolder;
-        allocations: {
-            [index: string]: {
-                name: string,
-                offset: number | PlaceHolder,
-                size: number | PlaceHolder
+        'static': {
+            size: number,
+            allocations: {
+                [index: string]: {
+                    name: string,
+                    offset: number,
+                    size: number
+                }
+            }
+        },
+        dynamic: {
+            size: number | PlaceHolder,
+            allocations: {
+                [index: string]: {
+                    name: string,
+                    offset: number | PlaceHolder,
+                    size: number | PlaceHolder
+                }
             }
         }
     }

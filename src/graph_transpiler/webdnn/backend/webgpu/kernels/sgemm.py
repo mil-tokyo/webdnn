@@ -3,15 +3,16 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.inline_injector import InlineInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.backend.webgpu.operators.sgemm import Sgemm
 
 
 def generate_template_64(transpose_A, transpose_B, M, N, K, has_inline, with_bias):
     return ("""
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           ushort index[[thread_index_in_threadgroup]],
                           ushort2 group_position[[threadgroup_position_in_grid]])
 {
@@ -43,18 +44,18 @@ kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
 
 #if K_DIVIDABLE_BY_8 && M_DIVIDABLE_BY_64  && N_DIVIDABLE_BY_64 && !TRANSPOSE_A && TRANSPOSE_B && OPTIMIZE
     const device float4 *load_target4 = (index & 32) 
-        ? (const device float4 *)(data_buffer + %%META_LOAD(sgemm_B_offset)%%) 
-        : (const device float4 *)(data_buffer + %%META_LOAD(sgemm_A_offset)%%);
+        ? (const device float4 *)(%%LOAD_BUFFER(sgemm_B)%%) 
+        : (const device float4 *)(%%LOAD_BUFFER(sgemm_A)%%);
 #else
     const device float *load_target = (index & 32) 
-        ? (data_buffer + %%META_LOAD(sgemm_B_offset)%%) 
-        : (data_buffer + %%META_LOAD(sgemm_A_offset)%%);
+        ? (%%LOAD_BUFFER(sgemm_B)%%) 
+        : (%%LOAD_BUFFER(sgemm_A)%%);
 #endif
 
-    const int M = %%META_LOAD(sgemm_M)%%;
-    const int N = %%META_LOAD(sgemm_N)%%;
+    const int M = %%LOAD_BUFFER(sgemm_M)%%;
+    const int N = %%LOAD_BUFFER(sgemm_N)%%;
 
-    const int K = %%META_LOAD(sgemm_K)%%;
+    const int K = %%LOAD_BUFFER(sgemm_K)%%;
 
     threadgroup float4 shared4[32 * 8 * 2];
 
@@ -310,12 +311,12 @@ kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
 #if OPTIMIZE && N_DIVIDABLE_BY_64
     #if WITH_BIAS
         float4 b[2];
-        const device float4 *bias4 = (const device float4 *)(data_buffer + %%META_LOAD(sgemm_b_offset)%%);
+        const device float4 *bias4 = (const device float4 *)(%%LOAD_BUFFER(sgemm_b)%%);
         b[0] = bias4[group_position.y * 16 + n_offset * 2 + 0];
         b[1] = bias4[group_position.y * 16 + n_offset * 2 + 1];
     #endif
     
-        device float4 *C4 = (device float4 *)(data_buffer + %%META_LOAD(sgemm_C_offset)%%);
+        device float4 *C4 = (device float4 *)(%%LOAD_BUFFER(sgemm_C)%%);
         const int N4 = N >> 2;
         int m = group_position.x * 64 + m_offset * 8;
         for (int m_sub = 0; m_sub < 8; m_sub++)
@@ -352,7 +353,7 @@ kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
         }
 #else
     #if WITH_BIAS
-        const device float *bias = data_buffer + %%META_LOAD(sgemm_b_offset)%%;
+        const device float *bias = %%LOAD_BUFFER(sgemm_b)%%;
         float b[8];
         for (int n_sub = 0; n_sub < 8; n_sub++)
         {
@@ -362,7 +363,7 @@ kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
         }
     #endif
 
-        device float *C = data_buffer + %%META_LOAD(sgemm_C_offset)%%;
+        device float *C = %%LOAD_BUFFER(sgemm_C)%%;
         int m = group_position.x * 64 + m_offset * 8;
         for (int m_sub = 0; m_sub < 8; m_sub++)
         {
@@ -427,12 +428,12 @@ def sgemm(op: Sgemm,
 
     with_bias = "b" in op.inputs
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "sgemm_A_offset": A.offset,
-        "sgemm_B_offset": B.offset,
-        "sgemm_C_offset": C.offset,
-        "sgemm_b_offset": memory_layout[op.inputs["b"]].offset if with_bias else 0,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "sgemm_A": A,
+        "sgemm_B": B,
+        "sgemm_C": C,
+        "sgemm_b": memory_layout[op.inputs["b"]] if with_bias else 0,
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K
@@ -445,7 +446,7 @@ def sgemm(op: Sgemm,
     # In default convolution, transpose_A == transpose_B == True.
     # The order of output matrix C is C-order.
     source = generate_template_64(op.transpose_A, op.transpose_B, op.M, op.N, op.K, inline_injector.has_inline, with_bias)
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = inline_injector.inject(source)
     source = name_injector.inject(source)
 
@@ -454,8 +455,8 @@ def sgemm(op: Sgemm,
         name_injector.name,
         GPUSize((op.M + 64 - 1) // 64, (op.N + 64 - 1) // 64, 1),
         GPUSize(64, 1, 1),
-        meta_injector.buffer,
-        meta_injector.unresolved_value_list
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

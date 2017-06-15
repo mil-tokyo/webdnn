@@ -156,47 +156,47 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
-            if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
-            if (!this.worker) throw new Error('Worker is not initialized');
-
-            let descriptor = this.descriptor;
-            let worker = this.worker;
-            let inputViews = this.inputViews;
-            let outputViews = this.outputViews;
-
-            let promise = new Promise<void>((resolve, reject) => {
-                // TODO: better way not to generate function on every run
-                this.worker_promise_reject_func = reject;
-                worker.onmessage = (event) => {
-                    if (Array.isArray(event.data)) {
-                        for (let i = 0; i < event.data.length; i++) {
-                            outputViews[i].set(event.data[i]);
-                        }
-                        resolve();
-                    } else {
-                        console.log(event.data);
-                        worker.terminate();
-                        reject(new Error(event.data));
-                    }
-                };
-
-                let inputs: any = [];
-                for (let i = 0; i < descriptor.inputs.length; i++) {
-                    let var_alloc = descriptor.memory_layout.allocations[descriptor.inputs[i]];
-                    inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: inputViews[i]});
-                }
-
-                let outputs: any = [];
-                for (let i = 0; i < descriptor.outputs.length; i++) {
-                    let var_alloc = descriptor.memory_layout.allocations[descriptor.outputs[i]];
-                    outputs.push({offset: var_alloc.offset, size: var_alloc.size});
-                }
-
-                worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
-            });
-
-            return promise;
+            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            // if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
+            // if (!this.worker) throw new Error('Worker is not initialized');
+            //
+            // let descriptor = this.descriptor;
+            // let worker = this.worker;
+            // let inputViews = this.inputViews;
+            // let outputViews = this.outputViews;
+            //
+            // let promise = new Promise<void>((resolve, reject) => {
+            //     // TODO: better way not to generate function on every run
+            //     this.worker_promise_reject_func = reject;
+            //     worker.onmessage = (event) => {
+            //         if (Array.isArray(event.data)) {
+            //             for (let i = 0; i < event.data.length; i++) {
+            //                 outputViews[i].set(event.data[i]);
+            //             }
+            //             resolve();
+            //         } else {
+            //             console.log(event.data);
+            //             worker.terminate();
+            //             reject(new Error(event.data));
+            //         }
+            //     };
+            //
+            //     let inputs: any = [];
+            //     for (let i = 0; i < descriptor.inputs.length; i++) {
+            //         let var_alloc = descriptor.memory_layout.allocations[descriptor.inputs[i]];
+            //         inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: inputViews[i]});
+            //     }
+            //
+            //     let outputs: any = [];
+            //     for (let i = 0; i < descriptor.outputs.length; i++) {
+            //         let var_alloc = descriptor.memory_layout.allocations[descriptor.outputs[i]];
+            //         outputs.push({offset: var_alloc.offset, size: var_alloc.size});
+            //     }
+            //
+            //     worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
+            // });
+            //
+            // return promise;
         }
     }
 }
