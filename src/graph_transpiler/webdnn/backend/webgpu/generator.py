@@ -86,6 +86,11 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             f.write(source)
 
         try:
+            result = subprocess.run(["type", "xcrun", ">/dev/null" "2>&1"])
+            if result.returncode != 0:
+                print("[WebGPUBackend] 'xcrun' command is not found. validation of generated source code in webgpu backend is skipped.")
+                return
+
             result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
             if result.returncode != 0:
                 print("Generated kernel source is invalid.")
