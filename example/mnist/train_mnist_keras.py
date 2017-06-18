@@ -14,12 +14,12 @@ import subprocess
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, Input, add, GlobalAveragePooling2D
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, Input, add, GlobalAveragePooling2D, Activation
 from keras.optimizers import RMSprop
 from keras import backend as K
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", default="fc", choices=["fc", "conv", "residual"])
+parser.add_argument("--model", default="fc", choices=["fc", "conv", "residual", "complex"])
 parser.add_argument("--out", default="output_keras")
 args = parser.parse_args()
 
@@ -33,7 +33,7 @@ epochs = 2
 # input image dimensions
 img_rows, img_cols = 28, 28
 
-if args.model in ["conv", "residual"]:
+if args.model in ["conv", "residual", "complex"]:
     if K.image_data_format() == "channels_first":
         raise NotImplementedError("Currently, WebDNN converter does not data_format==channels_first")
         # x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
@@ -96,6 +96,34 @@ elif args.model == "residual":
     nn_output = Dense(num_classes, activation="softmax")(hidden)
 
     model = Model(inputs=[nn_input], outputs=[nn_output])
+elif args.model == "complex":
+    # graph which has graph and sequential
+    # this is for testing converting complex model
+    nn_input = Input(shape=(28, 28, 1))
+
+    hidden_1 = Conv2D(8, kernel_size=(3, 3), activation="relu")(nn_input)
+
+    submodel_input = Input(shape=(26, 26, 8))
+    submodel_conv = Conv2D(8, kernel_size=(3, 3), activation="relu")
+    submodel_1 = submodel_conv(submodel_input)
+    submodel_2 = submodel_conv(submodel_1)  # use same layer multiple times
+    submodel_3 = Conv2D(16, kernel_size=(3, 3), activation="relu")(submodel_1)
+    submodel = Model(inputs=[submodel_input], outputs=[submodel_3, submodel_2])
+
+    subseq = Sequential()
+    subseq.add(Conv2D(16, kernel_size=(3, 3), activation="relu", input_shape=(22, 22, 16)))
+    subseq.add(Flatten())
+    subseq.add(Dense(10))
+
+    hidden_2, hidden_3 = submodel(hidden_1)
+    hidden_4 = subseq(hidden_2)
+    hidden_5 = Flatten()(hidden_3)
+    hidden_6 = Dense(10)(hidden_5)
+    hidden_sum = add([hidden_4, hidden_6])
+    nn_output = Activation(activation="softmax")(hidden_sum)
+
+    model = Model(inputs=[nn_input], outputs=[nn_output])
+
 else:
     raise NotImplementedError("Unknown model type")
 
@@ -126,7 +154,7 @@ with open(os.path.join(args.out, "test_samples.json"), "w") as f:
     json.dump(test_samples_json, f)
 
 print("Converting model into WebDNN format (graph descriptor)")
-input_shape_with_batchsize = (1, ) + input_shape
+input_shape_with_batchsize = (1,) + input_shape
 # only for demo purpose, maybe not safe
 convert_keras_command = f"python ../../bin/convert_keras.py {args.out}/keras_model/mnist_mlp.h5 --input_shape '{input_shape_with_batchsize}' --out {args.out}"
 print("$ " + convert_keras_command)

@@ -9,7 +9,7 @@ If this is not the case, Flatten layer which follows Convolution have to change 
 Convolution implementation is currently assuming variable is NHWC.
 """
 
-from typing import List, Tuple, Dict, Type
+from typing import List, Tuple, Dict, Type, Optional
 
 import json
 from warnings import warn
@@ -48,118 +48,202 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
+class KerasInput:
+    inbound_layer_name: str
+    node_index: int
+    tensor_index: int
+    kwargs: Dict
+    key: Tuple[str, int, int]
+
+    def __init__(self, inbound_layer_name: str, node_index: int, tensor_index: int, kwargs: Optional[Dict] = None):
+        self.inbound_layer_name = inbound_layer_name
+        self.node_index = node_index
+        self.tensor_index = tensor_index
+        self.kwargs = kwargs or {}
+        self.key = (inbound_layer_name, node_index, tensor_index)
+
+
 class KerasOperator:
     class_name: str
     name: str
-    serial_index: int
-    inputs: List[object]
-    outputs: List[object]
+    inputs: List[Variable]
+    inputs_kwargs: List[Dict[str, object]]
+    outputs: List[Variable]
     specific_config: Dict[str, object]
 
-    def __init__(self, layer_config, serial_index: int):
+    def __init__(self, layer_config, inputs: List[Variable], inputs_kwargs: List[Dict[str, object]]):
         self.class_name = layer_config["class_name"]
         self.name = layer_config["config"]["name"]
-        self.serial_index = serial_index
         self.specific_config = layer_config["config"]
-
-        if serial_index is not None:
-            self.inputs = [serial_index - 1]
-        else:
-            # 'inbound_nodes': [[['conv2d_2', 0, 0, {}], ['conv2d_3', 0, 0, {}]]]
-            if len(layer_config["inbound_nodes"]) > 0:
-                self.inputs = [(t[0], t[1], t[2]) for t in layer_config["inbound_nodes"][0]]
-            else:
-                self.inputs = []
-
-    def get_output_key(self, index: int) -> object:
-        assert index == 0  # layer with multiple output is currently not supported
-        if self.serial_index is None:
-            return self.name, 0, 0
-        else:
-            return self.serial_index
+        self.inputs = inputs
+        self.inputs_kwargs = inputs_kwargs
+        self.outputs = None
 
 
 class KerasConverter(Converter[KerasOperator]):
     _weight_dataset: h5py.Group
+    _global_input_variables: List[Variable]
+    _global_output_variables: List[Variable]
+    _variable_table_stack = List[Dict[object, Variable]]
+    _container_name_stack = List[str]
+    _constant_variables: Dict[str, ConstantVariable]
 
     def convert_core(self, model: h5py.File, input_shapes: List[List[int]]) -> Graph:
         model_config = json.loads(model.attrs["model_config"])
-        self._weight_dataset = model["model_weights"]
-        if model_config["class_name"] == "Sequential":
-            return self.convert_core_sequential(model_config, input_shapes)
-        elif model_config["class_name"] == "Model":
-            return self.convert_core_model(model_config, input_shapes)
-        else:
-            raise NotImplementedError("Unknown model type")
 
-    def serialize_operator_type(self, operator: KerasOperator) -> str:
-        return operator.class_name
-
-    def convert_core_sequential(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
-        # set input variables
-        assert len(input_shapes) == 1
-        graph_inputs = []
+        self._variable_table_stack = []
+        self._container_name_stack = []
+        self._constant_variables = {}
+        self._global_input_variables = []
         for input_shape in input_shapes:
             order = None
             if len(input_shape) == 1:
                 order = OrderC
             elif len(input_shape) == 2:
-                order = OrderNT # fixme for LSTM
+                order = OrderNC  # fixme for LSTM
             elif len(input_shape) == 4:
                 # Assuming data_format == "channels_last":
                 order = OrderNHWC
             else:
                 raise NotImplementedError("Input shape must be 1,2,4 dimensions")
             v = Variable(input_shape, order)
-            self.set_variable(-1, v)
-            graph_inputs.append(v)
+            self._global_input_variables.append(v)
+        self._weight_dataset = model["model_weights"]
+        if model_config["class_name"] == "Sequential":
+            self.convert_core_sequential(model_config)
+        elif model_config["class_name"] == "Model":
+            self.convert_core_model(model_config)
+        else:
+            raise NotImplementedError("Unknown model type")
+        return Graph(self._global_input_variables, self._global_output_variables)
 
-        # generate operator objects
-        for serial_index, layer_config in enumerate(model_config["config"]):
-            operator = KerasOperator(layer_config, serial_index)
-            self.convert_operator(operator)
+    def serialize_operator_type(self, operator: KerasOperator) -> str:
+        return operator.class_name
 
-        # output of whole graph = output of final layer
-        graph_outputs = [self.get_variable(len(model_config["config"]) - 1)]
+    def convert_core_sequential(self, layer_config: Dict[str, object]):
+        top_level = "inbound_nodes" not in layer_config
+        if top_level:
+            # top-level container
+            assert len(self._global_input_variables) == 1, "sequential model can take only one input variable"
+            input_nodes = [[self._global_input_variables[0]]]
+        else:
+            self._container_name_stack.append(layer_config["name"])
+            input_nodes = []
+            for inbound_node in layer_config["inbound_nodes"]:
+                assert len(inbound_node) == 1, "sequential model can take only one input variable"
+                input_var_info = inbound_node[0]  # ['conv2d_2', 0, 0, {}]
+                assert input_var_info[3] == {}, "input node to sequential model cannot have arguments"
+                input_nodes.append([self.get_variable(tuple(input_var_info[:3]))])
 
-        return Graph(graph_inputs, graph_outputs)
+        for i, input_node in enumerate(input_nodes):
+            node_index = i + 1  # Container node_index origin from 1
+            # generate operator objects
+            current_var = input_node[0]
+            self._variable_table_stack.append(self._variable_table[self.__class__.__name__])
+            self._variable_table[self.__class__.__name__] = {}
+            for serial_index, sub_layer_config in enumerate(layer_config["config"]):
+                if sub_layer_config["class_name"] == "Sequential":
+                    self.convert_core_sequential(sub_layer_config)
+                elif sub_layer_config["class_name"] == "Model":
+                    self.convert_core_model(sub_layer_config)
+                else:
+                    operator = KerasOperator(sub_layer_config, [current_var], [{}])
+                    self.convert_operator(operator)
+                    current_var = operator.outputs[0]
 
-    def convert_core_model(self, model_config: Dict[str, object], input_shapes: List[List[int]]) -> Graph:
-        input_layers = model_config["config"]["input_layers"]  # [['input_1', 0, 0]]
-        assert len(input_layers) == len(input_shapes)
-        graph_inputs = []
-        for input_layer, input_shape in zip(input_layers, input_shapes):
-            order = None
-            if len(input_shape) == 1:
-                order = OrderC
-            elif len(input_shape) == 2:
-                order = OrderNC
-            elif len(input_shape) == 4:
-                # Assuming data_format == "channels_last":
-                order = OrderNHWC
+            self._variable_table[self.__class__.__name__] = self._variable_table_stack.pop()
+            # output of whole graph = output of final layer
+            if top_level:
+                self._global_output_variables = [current_var]
             else:
-                raise NotImplementedError("Input shape must be 1,2,4 dimensions")
-            v = Variable(input_shape, order)
+                self.set_variable((layer_config["name"], node_index, 0), current_var)
 
-            graph_inputs.append(v)
-            self.set_variable(tuple(input_layer), v)  # key: ('input_1', 0, 0)
+        if not top_level:
+            self._container_name_stack.pop()
 
-        for layer_config in model_config["config"]["layers"]:
-            layer = KerasOperator(layer_config, None)
-            self.convert_operator(layer)
+    def convert_core_model(self, layer_config: Dict[str, object]):
+        top_level = "inbound_nodes" not in layer_config
+        if top_level:
+            # top-level container
+            input_nodes = [self._global_input_variables]
+            self._global_output_variables = []
+        else:
+            self._container_name_stack.append(layer_config["name"])
+            input_nodes = []
+            for inbound_node in layer_config["inbound_nodes"]:
+                input_node = []
+                for input_var_info in inbound_node:  # ['conv2d_2', 0, 0, {}]
+                    assert input_var_info[3] == {}, "input node to graph model cannot have arguments"
+                    input_node.append(self.get_variable(tuple(input_var_info[:3])))
+                input_nodes.append(input_node)
 
-        output_layers = model_config["config"]["output_layers"]
-        graph_outputs = []
-        for output_layer in output_layers:
-            graph_outputs.append(self.get_variable(tuple(output_layer)))
+        for i, input_node in enumerate(input_nodes):
+            node_index = i + 1  # Container node_index origin from 1
+            # generate operator objects
+            self._variable_table_stack.append(self._variable_table[self.__class__.__name__])
+            local_variable_table = {}
+            # assign inbound_node to local variable table
+            for j, input_key in enumerate(layer_config["config"]["input_layers"]):  # input_key: ['input_1', 0, 0]
+                # variable to this container is referred with input_key
+                local_variable_table[tuple(input_key)] = input_node[j]
+            self._variable_table[self.__class__.__name__] = local_variable_table
+            for serial_index, sub_layer_config in enumerate(layer_config["config"]["layers"]):
+                if sub_layer_config["class_name"] == "Sequential":
+                    self.convert_core_sequential(sub_layer_config)
+                elif sub_layer_config["class_name"] == "Model":
+                    self.convert_core_model(sub_layer_config)
+                else:
+                    for sub_layer_node_index, sub_layer_inbound_node in enumerate(sub_layer_config["inbound_nodes"]):
+                        # 'inbound_nodes': [[['input_2', 0, 0, {}]], [['conv2d_2', 0, 0, {}]]]
+                        # gather input variables
+                        sub_layer_inputs = []
+                        sub_layer_input_kwargs = []
+                        for sub_layer_input_var_info in sub_layer_inbound_node:
+                            sub_layer_inputs.append(self.get_variable(tuple(sub_layer_input_var_info[:3])))
+                            sub_layer_input_kwargs.append(sub_layer_input_var_info[3])
 
-        return Graph(graph_inputs, graph_outputs)
+                        operator = KerasOperator(sub_layer_config, sub_layer_inputs, sub_layer_input_kwargs)
+                        self.convert_operator(operator)
+
+                        # assign outputs
+                        for sub_layer_output_tensor_index, sub_layer_output_var in enumerate(operator.outputs):
+                            local_variable_table[(sub_layer_config["name"], sub_layer_node_index,
+                                                  sub_layer_output_tensor_index)] = sub_layer_output_var
+
+            self._variable_table[self.__class__.__name__] = self._variable_table_stack.pop()
+            # output of whole graph is desginated in layer_config["output_layers"]
+            for output_tensor_index, output_layer in enumerate(layer_config["config"]["output_layers"]):
+                # local ['conv2d_3', 0, 0] -> global ['model_1', 1, 0]
+                if top_level:
+                    self._global_output_variables.append(local_variable_table[tuple(output_layer)])
+                else:
+                    self.set_variable((layer_config["name"], node_index, output_tensor_index),
+                                      local_variable_table[tuple(output_layer)])
+
+        if not top_level:
+            self._container_name_stack.pop()
 
     def create_constant_array(self, operator: KerasOperator, key: str) -> np.ndarray:
-        return self._weight_dataset[f"{operator.name}/{operator.name}/{key}"].value
+        # when the operator is top-level, key is "{operator.name}/{operator.name}/{key}"
+        # if contained in nested container, key is "{container.name}/{operator.name}/{key}"
+        return self._weight_dataset[self._get_key_for_constant_variable(operator, key)].value
 
-    def create_constant_variable(self, operator: KerasOperator, key: str, order: Order) -> ConstantVariable:
-        return ConstantVariable(self.create_constant_array(operator, key), order)
+    def _get_key_for_constant_variable(self, operator: KerasOperator, key: str) -> str:
+        weight_key = f"{self._container_name_stack[-1] if len(self._container_name_stack) > 0 else operator.name}/{operator.name}/{key}"
+        return weight_key
+
+    def create_constant_variable(self, operator: KerasOperator, key: str, order: Order,
+                                 force_new: bool = False) -> ConstantVariable:
+        weight_key = self._get_key_for_constant_variable(operator, key)
+        # force_new should be used when the contents of constant variable may be modified
+        if not force_new and weight_key in self._constant_variables:
+            cvar = self._constant_variables[weight_key]
+            assert cvar.order == order
+            return cvar
+
+        cvar = ConstantVariable(self.create_constant_array(operator, key), order)
+        self._constant_variables[weight_key] = cvar
+        return cvar
 
 
 @KerasConverter.register_handler("InputLayer")
@@ -179,7 +263,7 @@ def _convert_input_layer(converter: KerasConverter, operator: KerasOperator):
 @KerasConverter.register_handler("Dense")
 def _convert_dense(converter: KerasConverter, operator: KerasOperator):
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     w = converter.create_constant_variable(operator, "kernel:0", OrderCN)
     linear_opr = Linear(None)
 
@@ -206,15 +290,15 @@ def _convert_dense(converter: KerasConverter, operator: KerasOperator):
     if act_opr is not None:
         y, = act_opr(y)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Dropout")
 def _convert_dropout(converter: KerasConverter, operator: KerasOperator):
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     warn("omitting dropout")
 
-    converter.set_variable(operator.get_output_key(0), x)
+    operator.outputs = [x]
 
 
 @KerasConverter.register_handler("Conv2D")
@@ -248,7 +332,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     :return:
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     assert operator.specific_config["data_format"] == "channels_last"
     w = converter.create_constant_variable(operator, "kernel:0", OrderHWCN)  # order does not depend on data_format
     ksize: Tuple[int, int] = tuple(operator.specific_config["kernel_size"])
@@ -288,7 +372,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     if act_opr is not None:
         y, = act_opr(y)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("MaxPooling2D")
@@ -304,7 +388,7 @@ def _convert_max_pooling2d(converter: KerasConverter, operator: KerasOperator):
     'trainable': True}},
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
     padding_keras: str = operator.specific_config["padding"]  # valid or same
@@ -321,7 +405,7 @@ def _convert_max_pooling2d(converter: KerasConverter, operator: KerasOperator):
                                       padding=padding)
     y, = max_pooling_2d_opr(x)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("AveragePooling2D")
@@ -344,7 +428,7 @@ def convert_layer_average_pooling2d(converter: KerasConverter, operator: KerasOp
     """
 
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     ksize: Tuple[int, int] = tuple(operator.specific_config["pool_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
     padding_keras: str = operator.specific_config["padding"]  # valid or same
@@ -361,7 +445,7 @@ def convert_layer_average_pooling2d(converter: KerasConverter, operator: KerasOp
                                               padding=padding)
     y, = average_pooling_2d_opr(x)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("GlobalAveragePooling2D")
@@ -381,7 +465,7 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, operator: 
     """
 
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
 
     ksize: Tuple[int, int] = (x.shape_dict[Axis.H], x.shape_dict[Axis.W])
     average_pooling_2d_opr = AveragePooling2D(None,
@@ -398,7 +482,7 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, operator: 
     flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
     y, = flatten_opr(y)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Flatten")
@@ -413,14 +497,14 @@ def _convert_flatten(converter: KerasConverter, operator: KerasOperator):
     :return:
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     in_axes = x.order.axes.copy()
     assert in_axes[0] == Axis.N
     in_axes.remove(Axis.N)
     flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
     y, = flatten_opr(x)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Concatenate")
@@ -433,12 +517,12 @@ def _convert_concatenate(converter: KerasConverter, operator: KerasOperator):
     :param inputs:
     :return:
     """
-    xs = [converter.get_variable(input_key) for input_key in operator.inputs]
+    xs = operator.inputs
     axis = xs[0].order.axes[operator.specific_config["axis"]]
     concat_opr = Concat(None, axis=axis)
     y, = concat_opr(*xs)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Add")
@@ -453,17 +537,17 @@ def _convert_add(converter: KerasConverter, operator: KerasOperator):
     :param inputs:
     :return:
     """
-    xs = [converter.get_variable(input_key) for input_key in operator.inputs]
+    xs = operator.inputs
     sum_opr = ElementwiseSum(None)
     y, = sum_opr(*xs)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Activation")
 def _convert_activation(converter: KerasConverter, operator: KerasOperator):
     assert len(operator.inputs) == 1
-    y = converter.get_variable(operator.inputs[0])
+    y = operator.inputs[0]
 
     act_opr: Operator = None
     activation_type: str = operator.specific_config["activation"]
@@ -481,7 +565,7 @@ def _convert_activation(converter: KerasConverter, operator: KerasOperator):
     if act_opr is not None:
         y, = act_opr(y)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("BatchNormalization")
@@ -512,7 +596,7 @@ def _convert_batch_normalization(converter: KerasConverter, operator: KerasOpera
     :return:
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
 
     axis = x.order.axes[operator.specific_config["axis"]]
     mean = converter.create_constant_array(operator, "moving_mean:0")
@@ -536,7 +620,7 @@ def _convert_batch_normalization(converter: KerasConverter, operator: KerasOpera
     scale_out, = scale_opr(x, ConstantVariable(gamma_div_std, OrderC))
     y, = bias_opr(scale_out, ConstantVariable(beta_scaled, OrderC))
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("ZeroPadding2D")
@@ -555,7 +639,7 @@ def _convert_zero_padding2d(converter: KerasConverter, operator: KerasOperator):
     :return:
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
 
     padding = operator.specific_config["padding"]
     top = padding[0][0]
@@ -568,7 +652,7 @@ def _convert_zero_padding2d(converter: KerasConverter, operator: KerasOperator):
     pad_opr = ZeroPadding2D(None, (top, left))
     y, = pad_opr(x)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("Embedding")
@@ -597,13 +681,13 @@ def _convert_embedding(converter: KerasConverter, operator: KerasOperator):
 
     """
     assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     w = converter.create_constant_variable(operator, "embeddings:0", OrderCN)
     embedding_opr = Embedding(None)
 
     y, = embedding_opr(x, w)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
 
 
 @KerasConverter.register_handler("LSTM")
@@ -651,7 +735,7 @@ def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
     assert operator.specific_config["activation"] == "tanh"
     assert operator.specific_config["recurrent_activation"] == "hard_sigmoid"
     assert operator.specific_config["use_bias"] is True
-    x = converter.get_variable(operator.inputs[0])
+    x = operator.inputs[0]
     w_input = converter.create_constant_variable(operator, "kernel:0", OrderCN)
     w_hidden = converter.create_constant_variable(operator, "recurrent_kernel:0", OrderCN)
     b = converter.create_constant_variable(operator, "bias:0", OrderC)
@@ -659,4 +743,4 @@ def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
 
     y, = lstm_opr(x, w_input, w_hidden, b)
 
-    converter.set_variable(operator.get_output_key(0), y)
+    operator.outputs = [y]
