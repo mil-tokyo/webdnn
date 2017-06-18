@@ -5,17 +5,15 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23 or 2.0
 """
 
-from typing import List, Tuple, Union
+from typing import List, Union
 
-from warnings import warn
 import chainer
 import chainer.computational_graph
 import numpy as np
 
 from webdnn.graph.axis import Axis
-from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
 from webdnn.graph.converters.converter import Converter
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
@@ -37,6 +35,7 @@ from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
 if chainer.__version__ >= "2.":
     chainer_v2 = True
@@ -78,7 +77,7 @@ class ChainerConverter(Converter[chainer.Function]):
                     pending_functions.remove(cfunc)
                     break  # for cfunc in pending_functions
             else:
-                print(pending_functions)
+                console.debug(pending_functions)
                 raise ValueError("inputs to functions cannot be resolved.")
 
         # 出力変数にAttributeをつける
@@ -301,7 +300,7 @@ def _convert_deconvolution2d_function(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: ChainerConverter,
-                                    operator: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
+                           operator: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
     # noinspection PyUnresolvedReferences
 
     x = converter.get_variable(operator.inputs[0])
@@ -318,7 +317,7 @@ def _convert_max_pooling2d(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("AveragePooling2D")
 def _convert_average_pooling2d(converter: ChainerConverter,
-                                        operator: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
+                               operator: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
     # noinspection PyUnresolvedReferences
 
     x = converter.get_variable(operator.inputs[0])
@@ -335,7 +334,7 @@ def _convert_average_pooling2d(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("LocalResponseNormalization")
 def _convert_local_response_normalization(converter: ChainerConverter,
-                                        operator: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
+                                          operator: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
     # noinspection PyUnresolvedReferences
 
     x = converter.get_variable(operator.inputs[0])
@@ -368,7 +367,7 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
         mean_data = operator.running_mean
     else:
         raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
-    print(variance_data)
+    console.debug(variance_data)
 
     # x以外の変数は、加工して新しいConstantとして使う
     # (x - mean) / sqrt(var + eps) * gamma + beta
@@ -405,7 +404,7 @@ def _convert_add(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("AddConstant")
 def _convert_add_constant(converter: ChainerConverter,
-                 operator: chainer.functions.math.basic_math.AddConstant):
+                          operator: chainer.functions.math.basic_math.AddConstant):
     # noinspection PyUnresolvedReferences
 
     x = converter.get_variable(operator.inputs[0])
@@ -419,7 +418,7 @@ def _convert_add_constant(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("MulConstant")
 def _convert_mul_constant(converter: ChainerConverter,
-                 operator: chainer.functions.math.basic_math.MulConstant):
+                          operator: chainer.functions.math.basic_math.MulConstant):
     # noinspection PyUnresolvedReferences
 
     x = converter.get_variable(operator.inputs[0])
@@ -433,7 +432,7 @@ def _convert_mul_constant(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("Reshape")
 def _convert_reshape(converter: ChainerConverter,
-                 operator: chainer.functions.array.reshape.Reshape):
+                     operator: chainer.functions.array.reshape.Reshape):
     # noinspection PyUnresolvedReferences
     # currently, only NHWC -> NC where H,W==1 is supported
     assert len(operator.inputs) == 1
@@ -450,6 +449,6 @@ def _convert_reshape(converter: ChainerConverter,
 
 @ChainerConverter.register_handler("Dropout")
 def _convert_dropout(converter: ChainerConverter, operator: chainer.functions.noise.dropout.Dropout):
-    warn("Dropout is omitted")
+    console.warning("Dropout is omitted")
     x = converter.get_variable(operator.inputs[0])
     converter.set_variable(operator.outputs[0](), x)

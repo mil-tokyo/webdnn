@@ -30,6 +30,30 @@ declare namespace WebDNN {
 declare namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * 1. runner.init()
+     *      Initialize runner.
+     *
+     * 2. runner.load()
+     *      Load graph descriptor.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.compile()
+     *          Compile the kernels
+     *
+     *      - runner.initStaticBuffer()
+     *          Initialize static buffer which is independent from placeholders.
+     *
+     * 3. runner.setPlaceholder()
+     *      Set values into place.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.initDynamicBuffer()
+     *          Initialize dynamic buffer which is dependent on placeholders.
+     *
+     * 4. runner.run()
+     *
+     *
      */
     abstract class DescriptorRunner<D extends GraphDescriptor> {
         readonly backendName: string;
@@ -54,11 +78,9 @@ declare namespace WebDNN {
          * @param progressCallback callback which is called to notice the loading is progressing.
          */
         abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        /**
-         * set descriptor.
-         * @param descriptor descriptor which will be executed.
-         */
-        abstract setDescriptor(descriptor: D): void;
+        abstract setPlaceholder(placeholders: {
+            [key: string]: number;
+        }): void;
         /**
          * compile kernels.
          */
@@ -201,7 +223,7 @@ declare namespace WebDNN {
     }
 }
 declare namespace WebDNN {
-    interface PlaceHolder {
+    interface Placeholder {
         eval: string;
     }
     interface WeightDecoder {
@@ -219,12 +241,12 @@ declare namespace WebDNN {
             };
         };
         dynamic: {
-            size: number | PlaceHolder;
+            size: number | Placeholder;
             allocations: {
                 [index: string]: {
                     name: string;
-                    offset: number | PlaceHolder;
-                    size: number | PlaceHolder;
+                    offset: number | Placeholder;
+                    size: number | Placeholder;
                 };
             };
         };
@@ -317,7 +339,7 @@ declare namespace WebDNN {
         meta_buffer: number[];
         unresolved_value_list: {
             offset: number;
-            placeholder: PlaceHolder;
+            placeholder: Placeholder;
         }[];
     }
 }
@@ -390,7 +412,7 @@ declare namespace WebDNN {
             [key: string]: number;
         }): Promise<void>;
         getInputViews(): Promise<BufferView[]>;
-        resolvePlaceHolder(placeholder: number | PlaceHolder): any;
+        resolvePlaceholder(placeholder: number | Placeholder): any;
         getOutputViews(): Promise<BufferView[]>;
         run(): Promise<void>;
     }
@@ -413,7 +435,9 @@ declare namespace WebDNN {
         constructor(option?: any);
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        setDescriptor(descriptor: GraphDescriptorWebassembly): void;
+        setPlaceholder(placeholders: {
+            [p: string]: number;
+        }): void;
         compile(): Promise<void>;
         loadWeights(weightsData: Uint8Array): Promise<void>;
         getInputViews(): Promise<BufferView[]>;
@@ -445,7 +469,9 @@ declare namespace WebDNN {
         outputViews: Float32Array[] | null;
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        setDescriptor(descriptor: GraphDescriptorFallback): void;
+        setPlaceholder(placeholders: {
+            [p: string]: number;
+        }): void;
         compile(): Promise<void>;
         private compileKernel();
         loadWeights(weightsData: Uint8Array): Promise<void>;

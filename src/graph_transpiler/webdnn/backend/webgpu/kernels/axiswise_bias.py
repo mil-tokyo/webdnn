@@ -7,7 +7,7 @@ from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelN
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 
 
 def axiswise_bias(op: AxiswiseBias,
@@ -132,8 +132,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     device float *Y = %%LOAD_BUFFER(axiswise_bias_Y)%%;
     const int D = %%LOAD_BUFFER(axiswise_bias_D)%%;
     const int d_target = %%LOAD_BUFFER(axiswise_bias_d_target)%%;
-    const device int *x_shape = &(%%LOAD_BUFFER(axiswise_bias_x_shape)%%);
-    const device int *x_stride_in_y = &(%%LOAD_BUFFER(axiswise_bias_x_stride_in_y)%%);
+    const device int *x_shape = %%LOAD_BUFFER(axiswise_bias_x_shape)%%;
+    const device int *x_stride_in_y = %%LOAD_BUFFER(axiswise_bias_x_stride_in_y)%%;
 
     int size = 1;
     for (int d = 0; d < D; d++) size *= x_shape[d];

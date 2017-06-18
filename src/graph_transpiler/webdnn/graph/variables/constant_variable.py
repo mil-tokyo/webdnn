@@ -1,13 +1,18 @@
 import numpy as np
 
 from webdnn.graph.order import Order
-from webdnn.graph.place_holder import PlaceHolder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
 
 
 # FIXME: DOCS
 class ConstantVariable(Variable):
+    """
+    Constant variable
+
+    attrs:
+        data (np.array) : data of the variable
+    """
     data: np.array
 
     def __init__(self, data: np.array, order: Order):
@@ -15,26 +20,24 @@ class ConstantVariable(Variable):
         self.data = data
         self.attributes = {Constant(self)}
 
-    def __repr__(self):
-        order_repr = ''.join(map(lambda e: e.name, self.order.axes))
-        return f"<Constant shape={self.shape}, order=\"{order_repr}\">"
-
     def change_order(self, order: Order):
-        # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
-        # 増える次元は、サイズ1
-        current_shape_dict = self.shape_dict
-        new_shape = [current_shape_dict.get(axis, PlaceHolder(1)) for axis in order.axes]
-        for axis, size in current_shape_dict.items():
-            if axis not in order.axes:
-                assert size == 1
+        """Change variable order
 
-        if len(self.order.axes) == len(order.axes):
-            #  新しい軸がもとの軸で何番目かを列挙
-            trans_axes = tuple(self.order.axes_dict[axis] for axis in order.axes)
+        When number of dimension will be increased, axes whose size is one are created.
+        Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
+
+        Args:
+            order: new order
+        """
+        old_order = self.order
+
+        super().change_order(order)
+
+        new_order = self.order
+
+        if set(old_order.axes) == set(new_order.axes):
+            trans_axes = tuple(old_order.axes_dict[axis] for axis in new_order.axes)
             self.data = np.transpose(self.data, trans_axes)
-        else:
-            #  別に実装できないわけではないが手抜き
-            raise NotImplementedError()
 
-        self.order = order
-        self.shape = new_shape
+        else:
+            raise NotImplementedError("[ConstantVariable.change_order] Currently, it's not supported to increase or decrease axis")  # FIXME

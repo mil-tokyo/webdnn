@@ -2,17 +2,17 @@ from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.relu import Relu
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
+    const float *X = %%LOAD_BUFFER(relu_X)%%;
+    float *Y = %%LOAD_BUFFER(relu_Y)%%;
 
-    const int N = %%META_LOAD(relu_N)%%;
+    const int N = %%LOAD_BUFFER(relu_N)%%;
   
     for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
@@ -31,23 +31,24 @@ def relu(op: Relu, memory_layout: MemoryLayout) -> List[Kernel]:
 
     assert x.variable.shape == y.variable.shape
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "relu_X_offset": x.offset,
-        "relu_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "relu_X": x,
+        "relu_Y": y,
         "relu_N": y.variable.size
     })
 
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

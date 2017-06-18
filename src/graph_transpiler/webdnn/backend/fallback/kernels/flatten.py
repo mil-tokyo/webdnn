@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.order import OrderNCHW, OrderNC, OrderNHWC
@@ -22,7 +23,8 @@ for (var i = 0; i < length; i++) {
 """
 
 
-def flatten(op: Flatten) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def flatten(op: Flatten, memory_layout: MemoryLayout) -> List[Kernel]:
     # データ変換がない場合のみ現状サポート
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]

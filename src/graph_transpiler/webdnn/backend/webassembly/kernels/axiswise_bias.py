@@ -2,20 +2,20 @@ from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.order import OrderHWNC, OrderNHWC, OrderNC
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(axiswise_bias_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(axiswise_bias_Y_offset)%%;
-    const float *B = data_buffer + %%META_LOAD(axiswise_bias_B_offset)%%;
-    const int N = %%META_LOAD(axiswise_bias_N)%%;
-    const int C = %%META_LOAD(axiswise_bias_C)%%;
+    const float *X = %%LOAD_BUFFER(axiswise_bias_X)%%;
+    float *Y = %%LOAD_BUFFER(axiswise_bias_Y)%%;
+    const float *B = %%LOAD_BUFFER(axiswise_bias_B)%%;
+    const int N = %%LOAD_BUFFER(axiswise_bias_N)%%;
+    const int C = %%LOAD_BUFFER(axiswise_bias_C)%%;
   
     for (int gid = 0; gid < N * C; gid += 1) {
         int c = gid % C;
@@ -38,11 +38,11 @@ def axiswise_bias(op: AxiswiseBias, memory_layout: MemoryLayout) -> List[Kernel]
 
     assert op.parameters["axis"] == Axis.C, "[Webassembly] AxiswiseBias supports only channelwise bias."
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "axiswise_bias_X_offset": x.offset,
-        "axiswise_bias_Y_offset": y.offset,
-        "axiswise_bias_B_offset": b.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "axiswise_bias_X": x,
+        "axiswise_bias_Y": y,
+        "axiswise_bias_B": b,
         "axiswise_bias_N": y.variable.size // y.variable.shape_dict[Axis.C],
         "axiswise_bias_C": y.variable.shape_dict[Axis.C],
     })
@@ -50,13 +50,14 @@ def axiswise_bias(op: AxiswiseBias, memory_layout: MemoryLayout) -> List[Kernel]
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

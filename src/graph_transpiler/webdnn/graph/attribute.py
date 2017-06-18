@@ -1,8 +1,8 @@
-from webdnn.graph.interface import INode, IAttribute
+from webdnn.graph import node
 
 
-class Attribute(IAttribute):
-    node: INode
+class Attribute:
+    base: "node.Node"
 
-    def __init__(self, node: INode):
-        self.node = node
+    def __init__(self, base: "node.Node"):
+        self.base = base

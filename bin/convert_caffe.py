@@ -16,6 +16,7 @@ import numpy as np
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph.converters.chainer import ChainerConverter
 from webdnn.graph.graph import Graph
+from webdnn.util import console
 
 
 def parse_input_blob(args):
@@ -57,10 +58,10 @@ def main():
     input_blob, input_filled = parse_input_blob(args)
     output_names = args.output_names.split(",")
 
-    sys.stderr.write("Loading caffe model... (usually takes several minutes)\n")
+    console.stderr("[convert_caffe] Loading caffe model... (usually takes several minutes)")
     link = chainer.links.caffe.CaffeFunction(args.caffemodel)
 
-    sys.stderr.write("Generating feedforward graph\n")
+    console.stderr("[convert_caffe] Generating feedforward graph")
     if chainer.__version__ >= "2.":
         chainer.using_config("train", False)
         output_blobs = list(
@@ -83,7 +84,7 @@ def main():
         output_arrays = {output_name: output_blob.data for output_name, output_blob in zip(output_names, output_blobs)}
         np.savez(path.join(output_dir, "example_output.npz"), **output_arrays)
 
-    sys.stderr.write("Generating descriptors\n")
+    console.stderr("[convert_caffe] Generating descriptors")
     any_backend_failed = False
     for backend in args.backend.split(","):
         try:
@@ -91,7 +92,7 @@ def main():
             graph_exec_data.save(output_dir)
         except Exception as ex:
             any_backend_failed = True
-            sys.stderr.write(f"Failed generating descriptor for backend {backend}: {str(ex)}\n")
+            console.error(f"[convert_caffe] Failed generating descriptor for backend {backend}: {str(ex)}")
 
     if any_backend_failed:
         sys.exit(1)

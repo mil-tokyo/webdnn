@@ -2,17 +2,17 @@ from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X0 = data_buffer + %%META_LOAD(elementwise_sum_X0_offset)%%;
-    const float *X1 = data_buffer + %%META_LOAD(elementwise_sum_X1_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(elementwise_sum_Y_offset)%%;
-    const int N = %%META_LOAD(elementwise_sum_N)%%;
+    const float *X0 = %%LOAD_BUFFER(elementwise_sum_X0)%%;
+    const float *X1 = %%LOAD_BUFFER(elementwise_sum_X1)%%;
+    float *Y = %%LOAD_BUFFER(elementwise_sum_Y)%%;
+    const int N = %%LOAD_BUFFER(elementwise_sum_N)%%;
   
     for (int gid = 0; gid < N; gid += 1) {
         float result = X0[gid] + X1[gid];
@@ -32,24 +32,25 @@ def elementwise_sum(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kern
     assert len(op.inputs) == 2, "[Webassembly] ElementwiseSum operator currently supported only 2 inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "elementwise_sum_X0_offset": x0.offset,
-        "elementwise_sum_X1_offset": x1.offset,
-        "elementwise_sum_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "elementwise_sum_X0": x0,
+        "elementwise_sum_X1": x1,
+        "elementwise_sum_Y": y,
         "elementwise_sum_N": y.variable.size
     })
 
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

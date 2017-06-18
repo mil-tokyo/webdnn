@@ -64,8 +64,8 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setDescriptor(descriptor: GraphDescriptorWebassembly) {
-            this.descriptor = descriptor;
+        setPlaceholder(placeholders: { [p: string]: number }): void {
+            throw Error('Not Implemented Yet')
         }
 
         compile(): Promise<void> {

@@ -3,7 +3,7 @@ from typing import Optional
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise
 from webdnn.graph.operators.attributes.inplace import Inplace
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -32,7 +32,7 @@ class ElementwiseSum(Operator):
             for axis in x.order.axes:
                 assert axis in y.order.axes
 
-                if PlaceHolder.check_resolved(x.shape_dict[axis]) or PlaceHolder.check_resolved(y.shape_dict[axis]):
+                if Placeholder.check_resolved(x.shape_dict[axis]) or Placeholder.check_resolved(y.shape_dict[axis]):
                     assert y.shape_dict[axis] == x.shape_dict[axis]
 
             self.append_input(f"x{i}", x)

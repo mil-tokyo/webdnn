@@ -38,8 +38,8 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setDescriptor(descriptor: GraphDescriptorFallback) {
-            this.descriptor = descriptor;
+        setPlaceholder(placeholders: { [p: string]: number }): void {
+            throw Error('Not Implemented Yet')
         }
 
         async compile(): Promise<void> {

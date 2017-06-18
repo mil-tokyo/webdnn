@@ -7,6 +7,6 @@ from webdnn.graph.node import Node
 class PostAxiswise(Attribute):
     axis: Axis
 
-    def __init__(self, node: Node, axis: Axis):
-        super(PostAxiswise, self).__init__(node)
+    def __init__(self, base: Node, axis: Axis):
+        super(PostAxiswise, self).__init__(base)
         self.axis = axis

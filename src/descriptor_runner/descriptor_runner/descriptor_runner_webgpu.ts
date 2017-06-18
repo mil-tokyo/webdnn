@@ -86,7 +86,7 @@ namespace WebDNN {
             }
 
             //resolve placeholders
-            let dynamicBufferSize = this.resolvePlaceHolder(this.descriptor.memory_layout.dynamic.size);
+            let dynamicBufferSize = this.resolvePlaceholder(this.descriptor.memory_layout.dynamic.size);
             this.dynamicBuffer = new BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
 
             this.metaBuffers = [];
@@ -97,7 +97,7 @@ namespace WebDNN {
 
                 //resolve unresolved metabuffer
                 for (let unresolved_value of exec_info.unresolved_value_list) {
-                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceHolder(unresolved_value.placeholder);
+                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceholder(unresolved_value.placeholder);
                 }
 
                 let buf = new BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
@@ -106,12 +106,12 @@ namespace WebDNN {
 
                 let threadgroups_per_grid = exec_info.threadgroups_per_grid;
                 let threads_per_thread_group = exec_info.threads_per_thread_group;
-                threadgroups_per_grid.width = this.resolvePlaceHolder(threadgroups_per_grid.width);
-                threadgroups_per_grid.height = this.resolvePlaceHolder(threadgroups_per_grid.height);
-                threadgroups_per_grid.depth = this.resolvePlaceHolder(threadgroups_per_grid.depth);
-                threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
-                threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
-                threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
+                threadgroups_per_grid.width = this.resolvePlaceholder(threadgroups_per_grid.width);
+                threadgroups_per_grid.height = this.resolvePlaceholder(threadgroups_per_grid.height);
+                threadgroups_per_grid.depth = this.resolvePlaceholder(threadgroups_per_grid.depth);
+                threads_per_thread_group.width = this.resolvePlaceholder(threads_per_thread_group.width);
+                threads_per_thread_group.height = this.resolvePlaceholder(threads_per_thread_group.height);
+                threads_per_thread_group.depth = this.resolvePlaceholder(threads_per_thread_group.depth);
             }
 
             let inputViews = await this.getInputViews();
@@ -122,8 +122,8 @@ namespace WebDNN {
 
                 } else {
                     let allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.inputs[i]];
-                    let offset = this.resolvePlaceHolder(allocation.offset);
-                    let size = this.resolvePlaceHolder(allocation.size);
+                    let offset = this.resolvePlaceholder(allocation.offset);
+                    let size = this.resolvePlaceholder(allocation.size);
 
                     inputViews[i].setFloat32Array(<Float32Array>this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                 }
@@ -137,8 +137,8 @@ namespace WebDNN {
 
                 } else {
                     let allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.outputs[i]];
-                    let offset = this.resolvePlaceHolder(allocation.offset);
-                    let size = this.resolvePlaceHolder(allocation.size);
+                    let offset = this.resolvePlaceholder(allocation.offset);
+                    let size = this.resolvePlaceholder(allocation.size);
 
                     outputViews[i].setFloat32Array(<Float32Array>this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                 }
@@ -157,7 +157,7 @@ namespace WebDNN {
             return views;
         }
 
-        resolvePlaceHolder(placeholder: number | PlaceHolder) {
+        resolvePlaceholder(placeholder: number | Placeholder) {
             if (!this.descriptor) throw Error('Descriptor is not loaded');
             if (typeof placeholder == 'number') return placeholder;
 

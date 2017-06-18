@@ -2,7 +2,7 @@ from typing import Dict, Tuple, List
 
 import numpy as np
 
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.util import json
 
 
@@ -25,19 +25,19 @@ class KernelExecutionInfo(json.SerializableMixin):
     threadgroups_per_grid: GPUSize
     threads_per_thread_group: GPUSize
     meta_buffer: bytes
-    unresolved_value_list: List[Tuple[int, PlaceHolder]]
+    unresolved_value_list: List[Tuple[int, Placeholder]]
 
     def __init__(self,
                  entry_func_name: str,
                  threadgroups_per_grid: GPUSize,
                  threads_per_thread_group: GPUSize,
                  meta_buffer: bytes,
-                 unresolved_value_list: List[Tuple[int, PlaceHolder]] = None):
+                 unresolved_value_list: List[Tuple[int, Placeholder]] = None):
         self.entry_func_name = entry_func_name
         self.threadgroups_per_grid = threadgroups_per_grid
         self.threads_per_thread_group = threads_per_thread_group
         self.meta_buffer = meta_buffer
-        self.unresolved_value_list = [] if unresolved_value_list is None else unresolved_value_list  # type:List[Tuple[int, PlaceHolder]]
+        self.unresolved_value_list = [] if unresolved_value_list is None else unresolved_value_list  # type:List[Tuple[int, Placeholder]]
 
     def _to_serializable_(self):
         return {
@@ -59,7 +59,7 @@ class Kernel:
                  threadgroups_per_grid,
                  threads_per_thread_group,
                  meta_buffer: bytes,
-                 unresolved_value_list: List[Tuple[int, PlaceHolder]] = None):
+                 unresolved_value_list: List[Tuple[int, Placeholder]] = None):
         self.func_sources = func_sources
         self.exec_info = KernelExecutionInfo(
             entry_func_name=entry_func_name,

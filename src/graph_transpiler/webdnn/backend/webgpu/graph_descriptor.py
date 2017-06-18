@@ -5,7 +5,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
 from webdnn.graph import traverse
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
 from webdnn.util import json, flags
@@ -57,9 +57,9 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
         return combined_source
 
-    def concat_unresolved_variables(self):
-        unresolved_variables = []  # type: List[Tuple[int, PlaceHolder]]
-        placeholders_set = set()  # type: Set[PlaceHolder]
+    def get_all_placeholders(self):
+        unresolved_variables = []  # type: List[Tuple[int, Placeholder]]
+        placeholders_set = set()  # type: Set[Placeholder]
 
         for kernel in self.kernels:
             unresolved_variables += kernel.exec_info.unresolved_value_list
@@ -69,10 +69,10 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
         placeholders = {p.label: None for p in placeholders_set}
 
-        return placeholders, unresolved_variables
+        return placeholders
 
     def _to_serializable_(self):
-        placeholders, unresolved_variables = self.concat_unresolved_variables()
+        placeholders = self.get_all_placeholders()
 
         return {
             "kernel_source": self.concat_kernel_sources(),

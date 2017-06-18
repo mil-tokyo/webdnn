@@ -12,6 +12,6 @@ namespace WebDNN {
         threadgroups_per_grid: WebGPUSize;
         threads_per_thread_group: WebGPUSize;
         meta_buffer: number[];
-        unresolved_value_list: { offset: number, placeholder: PlaceHolder }[]
+        unresolved_value_list: { offset: number, placeholder: Placeholder }[]
     }
 }

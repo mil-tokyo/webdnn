@@ -1,12 +1,11 @@
-import warnings
 from abc import abstractmethod
-from typing import Callable, Dict, Iterable, TypeVar, Generic, Type, List
 from collections import defaultdict
+from typing import Callable, Dict, TypeVar, Generic
 
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
+from webdnn.util import console
 
 T_OP = TypeVar('T_OP')
 
@@ -78,7 +77,7 @@ class Converter(Generic[T_OP]):
         return key in self._variable_table[self.__class__.__name__]
 
     @classmethod
-    def register_handler(cls, OperatorClass: str):
+    def register_handler(cls, key: str):
         """Decorator to register operator converter handler
 
         You need to implement handlers for all operators you want to supports. Each handler is consisted as follows:
@@ -109,17 +108,15 @@ class Converter(Generic[T_OP]):
                 op.replace_output(y_dummy, y)
 
         Args:
-            OperatorClass: operator class
+            key: operator class name
 
         .. code-block:: python
 
         """
 
         def decorator(handler: cls.ConvertHandler):
-            key = OperatorClass
-            if key in cls._handler_map:
-                warnings.warn(
-                    f"Converter Handler for '{OperatorClass}' is already registered in {cls.__name__} and overwritten.")
+            if key in cls._handler_map[cls.__name__]:
+                console.warning(f"[f{cls.__name__}] Converter Handler for '{key}' is already registered in {cls.__name__} and overwritten.")
 
             cls._handler_map[cls.__name__][key] = handler
 

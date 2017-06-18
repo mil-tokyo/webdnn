@@ -7,7 +7,7 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
@@ -20,19 +20,19 @@ class BufferType(Enum):
 
 class Allocation(json.SerializableMixin):
     variable: Variable
-    offset: Union[int, PlaceHolder]
+    offset: Union[int, Placeholder]
     buffer_type: BufferType
 
     def __init__(self,
                  variable: Variable,
-                 offset: Union[int, PlaceHolder],
+                 offset: Union[int, Placeholder],
                  buffer_type: BufferType):
         self.variable = variable
         self.offset = offset
         self.buffer_type = buffer_type
 
     @property
-    def size(self) -> Union[int, PlaceHolder]:
+    def size(self) -> Union[int, Placeholder]:
         return self.variable.size
 
     def _to_serializable_(self):
@@ -70,9 +70,9 @@ class MemoryLayout(json.SerializableMixin):
     def __contains__(self, var: Variable):
         return var.name in self.allocations
 
-    def append(self, var: Variable, offset: Union[int, PlaceHolder] = -1, buffer_type: Optional[BufferType] = None):
+    def append(self, var: Variable, offset: Union[int, Placeholder] = -1, buffer_type: Optional[BufferType] = None):
         if buffer_type is None:
-            if PlaceHolder.check_resolved(offset) and PlaceHolder.check_resolved(var.size):
+            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(var.size):
                 buffer_type = BufferType.Static
             else:
                 buffer_type = BufferType.Dynamic
@@ -86,8 +86,8 @@ class MemoryLayout(json.SerializableMixin):
         self.allocations[var.name] = Allocation(var, offset, buffer_type)
 
     @property
-    def total_size(self) -> Union[int, PlaceHolder]:
-        return self.static_size + self.total_size
+    def total_size(self) -> Union[int, Placeholder]:
+        return self.static_size + self.dynamic_size
 
     @property
     def static_size(self) -> int:
@@ -99,7 +99,7 @@ class MemoryLayout(json.SerializableMixin):
         return size
 
     @property
-    def dynamic_size(self) -> Union[int, PlaceHolder]:
+    def dynamic_size(self) -> Union[int, Placeholder]:
         size = 0
         for a in self.allocations.values():
             if a.buffer_type == BufferType.Dynamic:
@@ -122,14 +122,14 @@ class Allocator:
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]):
         # check if constant variable with shape with unresolved placeholder.
-        dynamic_constants = traverse.filter_nodes([v for v in variables if not PlaceHolder.check_resolved(v.size)], ConstantVariable)
+        dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)], ConstantVariable)
         assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
 
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
         lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, PlaceHolder]]
+        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, Placeholder]]
         for variable, offset in offsets.items():
             layout.append(variable, offset)
 
@@ -218,8 +218,8 @@ def generate_allocation_info(variables: List[Variable],
         5. allocate larger variables first
     """
 
-    static_variables = [v for v in variables if PlaceHolder.check_resolved(v.size)]
-    dynamic_variables = [v for v in variables if not PlaceHolder.check_resolved(v.size)]
+    static_variables = [v for v in variables if Placeholder.check_resolved(v.size)]
+    dynamic_variables = [v for v in variables if not Placeholder.check_resolved(v.size)]
 
     queue = filter(lambda x: x in lifetime, static_variables)
     queue = sorted(queue, key=lambda x: x.size, reverse=True)
@@ -228,7 +228,7 @@ def generate_allocation_info(variables: List[Variable],
     queue = sorted(queue, key=lambda x: isinstance(x, ConstantVariable), reverse=True)
     queue = list(queue)
 
-    allocated_range = {}  # type: Dict[int, List[Tuple[Union[int, PlaceHolder], Union[int, PlaceHolder]]]]
+    allocated_range = {}  # type: Dict[int, List[Tuple[Union[int, Placeholder], Union[int, Placeholder]]]]
     workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
     result = {}  # type: Dict[Variable, int]
 
@@ -296,9 +296,10 @@ def _visualize_allocation(ops: List[Operator],
                           variables: List[Variable],
                           layout: MemoryLayout,
                           lifetime: Dict[Variable, Tuple[int, int]],
-                          offsets: Dict[Variable, Union[int, PlaceHolder]]):
+                          offsets: Dict[Variable, Union[int, Placeholder]]):
     UNIT_HEIGHT = 14
     total_size = layout.total_size
+    rendering_dict = {}  # type: Dict[Variable, RenderingInfo]
 
     class RenderingInfo:
         names: List[str]
@@ -343,8 +344,6 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
 ">
     <p>{", ".join(self.names)}</p>
 </div>"""
-
-    rendering_dict: Dict[Variable, RenderingInfo] = {}
 
     html = """<html>
 <head>

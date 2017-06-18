@@ -3,13 +3,39 @@
 namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * 1. runner.init()
+     *      Initialize runner.
+     *
+     * 2. runner.load()
+     *      Load graph descriptor.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.compile()
+     *          Compile the kernels
+     *
+     *      - runner.initStaticBuffer()
+     *          Initialize static buffer which is independent from placeholders.
+     *
+     * 3. runner.setPlaceholder()
+     *      Set values into place.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.initDynamicBuffer()
+     *          Initialize dynamic buffer which is dependent on placeholders.
+     *
+     * 4. runner.run()
+     *
+     *
      */
     export abstract class DescriptorRunner<D extends GraphDescriptor> {
         readonly backendName: string;
         descriptor: D | null = null;
         ignoreCache: boolean = false;
 
-        constructor(option?: any) {}
+        constructor(option?: any) {
+
+        }
 
         /**
          * Initialize this runner
@@ -31,11 +57,7 @@ namespace WebDNN {
          */
         abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
-        /**
-         * set descriptor.
-         * @param descriptor descriptor which will be executed.
-         */
-        abstract setDescriptor(descriptor: D): void;
+        abstract setPlaceholder(placeholders: { [key: string]: number }): void;
 
         /**
          * compile kernels.

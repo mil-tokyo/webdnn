@@ -3,7 +3,7 @@ from typing import List, Optional
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -32,13 +32,13 @@ class Concat(Operator):
         axis_index = xs[0].order.axes_dict[concat_axis]
         axes_set = set(xs[0].order.axes)
 
-        y_shape = list(xs[0].shape)  # type: List[PlaceHolder]
+        y_shape = list(xs[0].shape)  # type: List[Placeholder]
         y_shape[axis_index] = 0
 
         for i, x in enumerate(xs):
             assert set(x.order.axes) == axes_set
             for other_axis in [other_axis for other_axis in axes_set if other_axis != concat_axis]:
-                if PlaceHolder.check_resolved(xs[0].shape_dict[other_axis]) and PlaceHolder.check_resolved(x.shape_dict[other_axis]):
+                if Placeholder.check_resolved(xs[0].shape_dict[other_axis]) and Placeholder.check_resolved(x.shape_dict[other_axis]):
                     assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis]
 
             self.append_input(f"x{i}", x)

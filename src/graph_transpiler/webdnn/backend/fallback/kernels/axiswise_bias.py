@@ -2,11 +2,12 @@ from typing import List
 
 import numpy as np
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
+
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
-from webdnn.graph.place_holder import PlaceHolder
 
 source = """
 axiswise_bias: function(input_arrays, output_arrays, option) {
@@ -27,7 +28,8 @@ for (var i = 0; i < n; i++) {
 """
 
 
-def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def axiswise_bias(op: AxiswiseBias, memory_layout: MemoryLayout) -> List[Kernel]:
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     b = op.inputs["b"]

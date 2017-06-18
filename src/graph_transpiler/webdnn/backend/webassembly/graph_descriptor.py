@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Dict, Iterable
+from typing import Dict, Iterable, List, Set, Tuple
 
 import numpy as np
 
@@ -7,6 +7,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph import traverse
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
 from webdnn.util import json
@@ -15,17 +16,17 @@ source_header = """
 #include <stdlib.h>
 #include <math.h>
 
-float data_buffer[%%DATA_SIZE%%];
+float static_buffer[%%STATIC_SIZE%%];
 
 """
 
 source_init = """
 extern "C" void init() {
-    //data_buffer = (float*)malloc(%%DATA_SIZE%% * sizeof(float));
+    //static_buffer = (float*)malloc(%%STATIC_SIZE%% * sizeof(float));
 }
 
-extern "C" float* get_data_buffer(void) {
-    return data_buffer;
+extern "C" float* get_static_buffer(void) {
+    return static_buffer;
 }
 
 """
@@ -67,11 +68,11 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def generate_header_source(self):
         return source_header \
-            .replace("%%DATA_SIZE%%", str(self.memory_layout.size))
+            .replace("%%STATIC_SIZE%%", str(self.memory_layout.static_size))
 
     def generate_init_source(self):
         self.footer_sources["init"] = source_init \
-            .replace("%%DATA_SIZE%%", str(self.memory_layout.size))
+            .replace("%%STATIC_SIZE%%", str(self.memory_layout.static_size))
 
     # noinspection PyMethodMayBeStatic
     def generate_exec_line(self, kernel: Kernel, serial: int):
@@ -107,10 +108,27 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
         return combined_source
 
+    def get_all_placeholders(self):
+        unresolved_variables = []  # type: List[Tuple[int, Placeholder]]
+        placeholders_set = set()  # type: Set[Placeholder]
+
+        for kernel in self.kernels:
+            unresolved_variables += kernel.exec_info.unresolved_value_list
+
+        for offset, v in unresolved_variables:
+            placeholders_set.update(v.get_depend_placeholders())
+
+        placeholders = {p.label: None for p in placeholders_set}
+
+        return placeholders
+
     def _to_serializable_(self):
+        placeholders = self.get_all_placeholders()
+
         return {
             "weight_encoding": self.constants_encoding,
             "memory_layout": self.memory_layout,
+            "placeholders": placeholders,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "licenses": self.licenses

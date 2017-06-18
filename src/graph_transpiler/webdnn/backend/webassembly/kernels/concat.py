@@ -4,20 +4,20 @@ import numpy as np
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *y = data_buffer + %%META_LOAD(concat_y_offset)%%;
-    const int N = %%META_LOAD(concat_N)%%;
-    const int D = %%META_LOAD(concat_D)%%;
-    const int *x_offsets = &(%%META_LOAD(concat_x_offsets)%%);
-    const int *y_offsets = &(%%META_LOAD(concat_y_offsets)%%);
-    const int *x_shapes = &(%%META_LOAD(concat_x_shapes)%%);
-    const int *x_strides_in_y = &(%%META_LOAD(concat_x_strides_in_y)%%);
+    float *y = %%LOAD_BUFFER(concat_y)%%;
+    const int N = %%LOAD_BUFFER(concat_N)%%;
+    const int D = %%LOAD_BUFFER(concat_D)%%;
+    const int *x_offsets = %%LOAD_BUFFER(concat_x_offsets)%%;
+    const int *y_offsets = %%LOAD_BUFFER(concat_y_offsets)%%;
+    const int *x_shapes = %%LOAD_BUFFER(concat_x_shapes)%%;
+    const int *x_strides_in_y = %%LOAD_BUFFER(concat_x_strides_in_y)%%;
     
     int x_index = 0;
     
@@ -79,9 +79,9 @@ def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
         y_offsets.append(target_axis_offset * y_strides[y.variable.order.axes_dict[target_axis]])
         target_axis_offset += x.variable.shape_dict[target_axis]
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "concat_y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "concat_y": y,
         "concat_D": len(y.variable.shape),
         "concat_N": len(xs),
         "concat_x_offsets": np.array(x_offsets, dtype=np.int32).tobytes(),
@@ -93,13 +93,14 @@ def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

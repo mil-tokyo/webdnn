@@ -6,7 +6,7 @@ from webdnn.graph.operators.attributes.axiswise import Axiswise
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -39,7 +39,7 @@ class AxiswiseScale(Operator):
             tuple of :class:`~webdnn.graph.variable.Variable`: Output
         """
         assert s.ndim == 1
-        if PlaceHolder.check_resolved(x.shape_dict[self.parameters["axis"]]) and PlaceHolder.check_resolved(s.size):
+        if Placeholder.check_resolved(x.shape_dict[self.parameters["axis"]]) and Placeholder.check_resolved(s.size):
             assert x.shape_dict[self.parameters["axis"]] == s.size
         y = Variable(x.shape, x.order)
         self.append_input("x", x)

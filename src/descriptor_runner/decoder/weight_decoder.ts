@@ -1,7 +1,7 @@
 ///<reference path="./weight_decoder_raw.ts" />
 
 namespace WebDNN {
-    export interface PlaceHolder {
+    export interface Placeholder {
         eval: string
     }
 
@@ -21,12 +21,12 @@ namespace WebDNN {
             }
         },
         dynamic: {
-            size: number | PlaceHolder,
+            size: number | Placeholder,
             allocations: {
                 [index: string]: {
                     name: string,
-                    offset: number | PlaceHolder,
-                    size: number | PlaceHolder
+                    offset: number | Placeholder,
+                    size: number | Placeholder
                 }
             }
         }

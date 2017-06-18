@@ -1,12 +1,13 @@
 import re
-from typing import List, Tuple, NamedTuple
+from typing import List, Tuple
 
 
-class Tag(NamedTuple):
-    original: str
-    name: str
-    args: List[str]
-    span: Tuple[int, int]
+class Tag:
+    def __init__(self, original: str, name: str, args: List[str], span: Tuple[int, int]):
+        self.original = original
+        self.name = name
+        self.args = args
+        self.span = span
 
 
 _reg_tag = re.compile("%%([a-zA-Z0-9_]+)(?:\((.*?)\))?%%", re.MULTILINE)
@@ -29,8 +30,6 @@ class Injector:
             args = [] if ma.group(2) is None else list(map(str.strip, ma.group(2).split(",")))
             span = ma.span()
 
-            # FIXME: This noinspection comment is not required. It's maybe a PyCharm's Bug?
-            # noinspection PyArgumentList
             tag = Tag(original, name, args, span)
             tags.append(tag)
             pos = tag.span[1]

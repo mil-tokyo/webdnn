@@ -71,6 +71,30 @@ var WebDNN;
 (function (WebDNN) {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * 1. runner.init()
+     *      Initialize runner.
+     *
+     * 2. runner.load()
+     *      Load graph descriptor.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.compile()
+     *          Compile the kernels
+     *
+     *      - runner.initStaticBuffer()
+     *          Initialize static buffer which is independent from placeholders.
+     *
+     * 3. runner.setPlaceholder()
+     *      Set values into place.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.initDynamicBuffer()
+     *          Initialize dynamic buffer which is dependent on placeholders.
+     *
+     * 4. runner.run()
+     *
+     *
      */
     var DescriptorRunner = (function () {
         function DescriptorRunner(option) {
@@ -731,7 +755,7 @@ var WebDNN;
                                 if (placeholders[key] == null)
                                     throw new Error("Placeholder '" + key + "' is unresolved");
                             }
-                            dynamicBufferSize = this.resolvePlaceHolder(this.descriptor.memory_layout.dynamic.size);
+                            dynamicBufferSize = this.resolvePlaceholder(this.descriptor.memory_layout.dynamic.size);
                             this.dynamicBuffer = new WebDNN.BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
                             this.metaBuffers = [];
                             i = 0;
@@ -744,7 +768,7 @@ var WebDNN;
                             //resolve unresolved metabuffer
                             for (_i = 0, _a = exec_info.unresolved_value_list; _i < _a.length; _i++) {
                                 unresolved_value = _a[_i];
-                                metaBuffer32[unresolved_value.offset] = this.resolvePlaceHolder(unresolved_value.placeholder);
+                                metaBuffer32[unresolved_value.offset] = this.resolvePlaceholder(unresolved_value.placeholder);
                             }
                             buf = new WebDNN.BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
                             return [4 /*yield*/, buf.write(metaBuffer8)];
@@ -753,12 +777,12 @@ var WebDNN;
                             this.metaBuffers.push(buf);
                             threadgroups_per_grid = exec_info.threadgroups_per_grid;
                             threads_per_thread_group = exec_info.threads_per_thread_group;
-                            threadgroups_per_grid.width = this.resolvePlaceHolder(threadgroups_per_grid.width);
-                            threadgroups_per_grid.height = this.resolvePlaceHolder(threadgroups_per_grid.height);
-                            threadgroups_per_grid.depth = this.resolvePlaceHolder(threadgroups_per_grid.depth);
-                            threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
-                            threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
-                            threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
+                            threadgroups_per_grid.width = this.resolvePlaceholder(threadgroups_per_grid.width);
+                            threadgroups_per_grid.height = this.resolvePlaceholder(threadgroups_per_grid.height);
+                            threadgroups_per_grid.depth = this.resolvePlaceholder(threadgroups_per_grid.depth);
+                            threads_per_thread_group.width = this.resolvePlaceholder(threads_per_thread_group.width);
+                            threads_per_thread_group.height = this.resolvePlaceholder(threads_per_thread_group.height);
+                            threads_per_thread_group.depth = this.resolvePlaceholder(threads_per_thread_group.depth);
                             _b.label = 3;
                         case 3:
                             i++;
@@ -773,8 +797,8 @@ var WebDNN;
                                 }
                                 else {
                                     allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.inputs[i]];
-                                    offset = this.resolvePlaceHolder(allocation.offset);
-                                    size = this.resolvePlaceHolder(allocation.size);
+                                    offset = this.resolvePlaceholder(allocation.offset);
+                                    size = this.resolvePlaceholder(allocation.size);
                                     inputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                                 }
                             }
@@ -788,8 +812,8 @@ var WebDNN;
                                 }
                                 else {
                                     allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.outputs[i]];
-                                    offset = this.resolvePlaceHolder(allocation.offset);
-                                    size = this.resolvePlaceHolder(allocation.size);
+                                    offset = this.resolvePlaceholder(allocation.offset);
+                                    size = this.resolvePlaceholder(allocation.size);
                                     outputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                                 }
                             }
@@ -815,7 +839,7 @@ var WebDNN;
                 });
             });
         };
-        DescriptorRunnerWebGPU.prototype.resolvePlaceHolder = function (placeholder) {
+        DescriptorRunnerWebGPU.prototype.resolvePlaceholder = function (placeholder) {
             if (!this.descriptor)
                 throw Error('Descriptor is not loaded');
             if (typeof placeholder == 'number')
@@ -994,8 +1018,8 @@ var WebDNN;
                 });
             });
         };
-        DescriptorRunnerWebassembly.prototype.setDescriptor = function (descriptor) {
-            this.descriptor = descriptor;
+        DescriptorRunnerWebassembly.prototype.setPlaceholder = function (placeholders) {
+            throw Error('Not Implemented Yet');
         };
         DescriptorRunnerWebassembly.prototype.compile = function () {
             var _this = this;
@@ -1169,8 +1193,8 @@ var WebDNN;
                 });
             });
         };
-        DescriptorRunnerFallback.prototype.setDescriptor = function (descriptor) {
-            this.descriptor = descriptor;
+        DescriptorRunnerFallback.prototype.setPlaceholder = function (placeholders) {
+            throw Error('Not Implemented Yet');
         };
         DescriptorRunnerFallback.prototype.compile = function () {
             return __awaiter(this, void 0, void 0, function () {

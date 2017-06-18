@@ -26,6 +26,30 @@ var WebDNN;
 (function (WebDNN) {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * 1. runner.init()
+     *      Initialize runner.
+     *
+     * 2. runner.load()
+     *      Load graph descriptor.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.compile()
+     *          Compile the kernels
+     *
+     *      - runner.initStaticBuffer()
+     *          Initialize static buffer which is independent from placeholders.
+     *
+     * 3. runner.setPlaceholder()
+     *      Set values into place.
+     *      In this process, follow operations are automatically called.
+     *
+     *      - runner.initDynamicBuffer()
+     *          Initialize dynamic buffer which is dependent on placeholders.
+     *
+     * 4. runner.run()
+     *
+     *
      */
     class DescriptorRunner {
         constructor(option) {
@@ -552,7 +576,7 @@ var WebDNN;
                     throw new Error(`Placeholder '${key}' is unresolved`);
             }
             //resolve placeholders
-            let dynamicBufferSize = this.resolvePlaceHolder(this.descriptor.memory_layout.dynamic.size);
+            let dynamicBufferSize = this.resolvePlaceholder(this.descriptor.memory_layout.dynamic.size);
             this.dynamicBuffer = new WebDNN.BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
             this.metaBuffers = [];
             for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
@@ -561,19 +585,19 @@ var WebDNN;
                 let metaBuffer32 = new Int32Array(metaBuffer8.buffer);
                 //resolve unresolved metabuffer
                 for (let unresolved_value of exec_info.unresolved_value_list) {
-                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceHolder(unresolved_value.placeholder);
+                    metaBuffer32[unresolved_value.offset] = this.resolvePlaceholder(unresolved_value.placeholder);
                 }
                 let buf = new WebDNN.BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
                 await buf.write(metaBuffer8);
                 this.metaBuffers.push(buf);
                 let threadgroups_per_grid = exec_info.threadgroups_per_grid;
                 let threads_per_thread_group = exec_info.threads_per_thread_group;
-                threadgroups_per_grid.width = this.resolvePlaceHolder(threadgroups_per_grid.width);
-                threadgroups_per_grid.height = this.resolvePlaceHolder(threadgroups_per_grid.height);
-                threadgroups_per_grid.depth = this.resolvePlaceHolder(threadgroups_per_grid.depth);
-                threads_per_thread_group.width = this.resolvePlaceHolder(threads_per_thread_group.width);
-                threads_per_thread_group.height = this.resolvePlaceHolder(threads_per_thread_group.height);
-                threads_per_thread_group.depth = this.resolvePlaceHolder(threads_per_thread_group.depth);
+                threadgroups_per_grid.width = this.resolvePlaceholder(threadgroups_per_grid.width);
+                threadgroups_per_grid.height = this.resolvePlaceholder(threadgroups_per_grid.height);
+                threadgroups_per_grid.depth = this.resolvePlaceholder(threadgroups_per_grid.depth);
+                threads_per_thread_group.width = this.resolvePlaceholder(threads_per_thread_group.width);
+                threads_per_thread_group.height = this.resolvePlaceholder(threads_per_thread_group.height);
+                threads_per_thread_group.depth = this.resolvePlaceholder(threads_per_thread_group.depth);
             }
             let inputViews = await this.getInputViews();
             for (let i = 0; i < this.descriptor.inputs.length; i++) {
@@ -583,8 +607,8 @@ var WebDNN;
                 }
                 else {
                     let allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.inputs[i]];
-                    let offset = this.resolvePlaceHolder(allocation.offset);
-                    let size = this.resolvePlaceHolder(allocation.size);
+                    let offset = this.resolvePlaceholder(allocation.offset);
+                    let size = this.resolvePlaceholder(allocation.size);
                     inputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                 }
             }
@@ -596,8 +620,8 @@ var WebDNN;
                 }
                 else {
                     let allocation = this.descriptor.memory_layout.dynamic.allocations[this.descriptor.outputs[i]];
-                    let offset = this.resolvePlaceHolder(allocation.offset);
-                    let size = this.resolvePlaceHolder(allocation.size);
+                    let offset = this.resolvePlaceholder(allocation.offset);
+                    let size = this.resolvePlaceholder(allocation.size);
                     outputViews[i].setFloat32Array(this.dynamicBuffer.getWriteView(offset, size, Float32Array));
                 }
             }
@@ -614,7 +638,7 @@ var WebDNN;
             this.inputViews = views;
             return views;
         }
-        resolvePlaceHolder(placeholder) {
+        resolvePlaceholder(placeholder) {
             if (!this.descriptor)
                 throw Error('Descriptor is not loaded');
             if (typeof placeholder == 'number')
@@ -744,8 +768,8 @@ var WebDNN;
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
-        setDescriptor(descriptor) {
-            this.descriptor = descriptor;
+        setPlaceholder(placeholders) {
+            throw Error('Not Implemented Yet');
         }
         compile() {
             let worker = new Worker(this.worker_entry_js_path);
@@ -910,8 +934,8 @@ var WebDNN;
             let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
-        setDescriptor(descriptor) {
-            this.descriptor = descriptor;
+        setPlaceholder(placeholders) {
+            throw Error('Not Implemented Yet');
         }
         async compile() {
             // if (!this.descriptor) throw new Error('Descriptor is not loaded');

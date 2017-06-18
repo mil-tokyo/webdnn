@@ -6,7 +6,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.order import Order
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -14,7 +14,7 @@ class Sgemm(Operator):
     attributes = {PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: Optional[str], M: PlaceHolder, N: PlaceHolder, K: PlaceHolder, out_shape: Iterable[PlaceHolder],
+    def __init__(self, name: Optional[str], M: Placeholder, N: Placeholder, K: Placeholder, out_shape: Iterable[Placeholder],
                  out_order: Order, transpose_A: bool, transpose_B: bool):
         super().__init__(name)
 
@@ -24,7 +24,7 @@ class Sgemm(Operator):
         #
         # noinspection PyTypeChecker
         assert len(out_shape) == out_order.ndim
-        if PlaceHolder.check_resolved(out_shape) and PlaceHolder.check_resolved(M * N):
+        if Placeholder.check_resolved(out_shape) and Placeholder.check_resolved(M * N):
             assert np.product(out_shape) == M * N
 
         self.parameters["M"] = M
@@ -36,9 +36,9 @@ class Sgemm(Operator):
         self.parameters["transpose_B"] = transpose_B
 
     def __call__(self, A: Variable, B: Variable):
-        if PlaceHolder.check_resolved(A.size) and PlaceHolder.check_resolved(self.M * self.K):
+        if Placeholder.check_resolved(A.size) and Placeholder.check_resolved(self.M * self.K):
             assert A.size == self.M * self.K
-        if PlaceHolder.check_resolved(B.size) and PlaceHolder.check_resolved(self.N * self.K):
+        if Placeholder.check_resolved(B.size) and Placeholder.check_resolved(self.N * self.K):
             assert B.size == self.N * self.K
 
         self.append_input("A", A)
@@ -53,15 +53,15 @@ class Sgemm(Operator):
         return C,
 
     @property
-    def M(self) -> Union[int, PlaceHolder]:
+    def M(self) -> Union[int, Placeholder]:
         return self.parameters["M"]
 
     @property
-    def N(self) -> Union[int, PlaceHolder]:
+    def N(self) -> Union[int, Placeholder]:
         return self.parameters["N"]
 
     @property
-    def K(self) -> Union[int, PlaceHolder]:
+    def K(self) -> Union[int, Placeholder]:
         return self.parameters["K"]
 
     @property

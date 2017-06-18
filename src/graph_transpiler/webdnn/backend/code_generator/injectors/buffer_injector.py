@@ -1,19 +1,19 @@
-import warnings
 from typing import Dict, Union, Tuple, List, Any
 
 import numpy as np
 
 from webdnn.backend.code_generator.allocator import Allocation, BufferType
 from webdnn.backend.code_generator.injector import Tag, Injector
-from webdnn.graph.place_holder import PlaceHolder
+from webdnn.graph.placeholder import Placeholder
+from webdnn.util import console
 
 Content = Union[
     int,
     float,
     bytes,
     Allocation,
-    PlaceHolder,
-    List[Union[int, PlaceHolder]],
+    Placeholder,
+    List[Union[int, Placeholder]],
     List[Allocation]
 ]
 
@@ -37,7 +37,7 @@ class BufferInjector(Injector):
         self.meta_name = meta_name
         self.static_name = static_name
         self.dynamic_name = dynamic_name
-        self.unresolved_value_list = []  # type: List[Tuple[int, PlaceHolder]]
+        self.unresolved_value_list = []  # type: List[Tuple[int, Placeholder]]
 
     def register(self, data: Dict[str, Content]):
         if self.offset_map is not None:
@@ -126,17 +126,17 @@ class BufferInjector(Injector):
 
         elif tag.name == "LOAD_BUFFER":
             if len(tag.args) == 0:
-                raise ValueError(f"BufferInjector requires more than 1 arguments: {tag.original}")
+                raise ValueError(f"[BufferInjector] Requires least 1 arguments: {tag.original}")
 
             key = tag.args[0]
             if key not in self.value_map:
-                raise KeyError(f"key '{key}' is not registered in BufferInjector.")
+                raise KeyError(f"[BufferInjector] Key '{key}' is not registered in BufferInjector.")
 
             value = self.value_map[key]
 
             if isinstance(value, Allocation):
-                if len(tag.args) > 2:
-                    warnings.warn(f"BufferInjector requires only 1 arguments to inject: {tag.original}")
+                if len(tag.args) != 1:
+                    console.warning(f"[BufferInjector] Requires just 1 arguments to inject allocation: {tag.original}")
 
                 if value.buffer_type == BufferType.Static:
                     return f"({self.static_name} + {self.meta_name}[{self.offset_map[key]}])"
@@ -148,19 +148,25 @@ class BufferInjector(Injector):
 
                 value = _flatten(value)
 
-                if all([isinstance(a, Allocation) for a in value]):
+                if all([isinstance(p, int) or isinstance(p, Placeholder) for p in value]):
+                    if len(tag.args) != 1:
+                        console.warning(f"[BufferInjector] Requires just 1 arguments to inject a list of number: {tag.original}")
+                    return f"(&({self.meta_name}[{self.offset_map[key]}]))"
+
+                elif all([isinstance(a, Allocation) for a in value]):
                     if len(tag.args) < 2:
-                        raise ValueError(f"Second argument 'Index' is required to inject a list of allocations: {tag.original}")
+                        raise ValueError(
+                            f"[BufferInjector] Second argument 'Index' is required to inject a list of allocations: {tag.original}")
 
                     if len(tag.args) > 2:
-                        warnings.warn(f"BufferInjector requires only 2 arguments to inject a list of allocations: {tag.original}")
+                        console.warning(f"[BufferInjector] Requires only 2 arguments to inject a list of allocations: {tag.original}")
 
                     index = tag.args[1]
                     return f"({self.meta_name}[{self.offset_map[key]}+{len(value)}+ ({index})] ? {self.static_name} : {self.dynamic_name})" + \
                            f"[{self.meta_name}[{self.offset_map[key]} + ({index})]]"
 
             if len(tag.args) > 2:
-                warnings.warn(f"BufferInjector requires only 1 arguments to inject: {tag.original}")
+                console.warning(f"[BufferInjector] Requires only 1 arguments to inject: {tag.original}")
 
             return f"{self.meta_name}[{self.offset_map[key]}]"
 
@@ -178,13 +184,13 @@ class BufferInjector(Injector):
 
             if isinstance(value, int) or isinstance(value, np.int32) or isinstance(value, np.int64):
                 if isinstance(value, np.int64):
-                    warnings.warn("np.int64 value is given to BufferInjector, and converted into int32 value.")
+                    console.warning("[BufferInjector] np.int64 value is given to BufferInjector, and converted into int32 value.")
 
                 buffer += np.array([value], dtype=np.int32).tobytes()
 
             elif isinstance(value, float) or isinstance(value, np.float32) or isinstance(value, np.float64):
                 if isinstance(value, np.float64):
-                    warnings.warn("np.float64 value is given to BufferInjector, and converted into float32 value.")
+                    console.warning("[BufferInjector] np.float64 value is given to BufferInjector, and converted into float32 value.")
 
                 buffer += np.array([value], dtype=np.float32).tobytes()
 
@@ -195,16 +201,16 @@ class BufferInjector(Injector):
                 buffer += value
 
             elif isinstance(value, Allocation):
-                if PlaceHolder.check_resolved(value.offset):
-                    buffer += np.array([PlaceHolder.force_int(value.offset)], dtype=np.int32).tobytes()
+                if Placeholder.check_resolved(value.offset):
+                    buffer += np.array([Placeholder.force_int(value.offset)], dtype=np.int32).tobytes()
 
                 else:
                     self.unresolved_value_list.append((len(buffer) // 4, value.offset))
                     buffer += bytes(4)  # sizeof(int)
 
-            elif isinstance(value, PlaceHolder):
-                if PlaceHolder.check_resolved(value):
-                    buffer += np.array([PlaceHolder.force_int(value)], dtype=np.int32).tobytes()
+            elif isinstance(value, Placeholder):
+                if Placeholder.check_resolved(value):
+                    buffer += np.array([Placeholder.force_int(value)], dtype=np.int32).tobytes()
 
                 else:
                     self.unresolved_value_list.append((len(buffer) // 4, value))
@@ -213,11 +219,11 @@ class BufferInjector(Injector):
             elif isinstance(value, List):
                 value = _flatten(value)
 
-                if all([isinstance(p, int) or isinstance(p, PlaceHolder) for p in value]):
+                if all([isinstance(p, int) or isinstance(p, Placeholder) for p in value]):
                     for p in value:
-                        if isinstance(p, int) or isinstance(p, PlaceHolder):
-                            if PlaceHolder.check_resolved(p):
-                                buffer += np.array([PlaceHolder.force_int(p)], dtype=np.int32).tobytes()
+                        if isinstance(p, int) or isinstance(p, Placeholder):
+                            if Placeholder.check_resolved(p):
+                                buffer += np.array([Placeholder.force_int(p)], dtype=np.int32).tobytes()
 
                             else:
                                 self.unresolved_value_list.append((len(buffer) // 4, p))
@@ -239,8 +245,8 @@ class BufferInjector(Injector):
 
                     2. pack buffer type flag:
 
-                        meta_buffer[M + K + 0]   = 1  // static1 is in static buffer 
-                        meta_buffer[M + K + 1]   = 0  // dynamic2 is not in static buffer
+                        meta_buffer[M + K + 0]   = 1  // 1 means that static1 is in STATIC buffer 
+                        meta_buffer[M + K + 1]   = 0  // 0 means that dynamic2 is in DYNAMIC buffer
                         ...
                         meta_buffer[M + K + K-1] = 0
                         
@@ -251,8 +257,8 @@ class BufferInjector(Injector):
                     """
 
                     for allocation in value:  # type: Allocation
-                        if PlaceHolder.check_resolved(allocation.offset):
-                            buffer += np.array([PlaceHolder.force_int(allocation.offset)], dtype=np.int32).tobytes()
+                        if Placeholder.check_resolved(allocation.offset):
+                            buffer += np.array([Placeholder.force_int(allocation.offset)], dtype=np.int32).tobytes()
 
                         else:
                             self.unresolved_value_list.append((len(buffer) // 4, allocation.offset))
@@ -263,8 +269,8 @@ class BufferInjector(Injector):
 
             else:
                 raise TypeError(
-                    "BufferInjector supports only int, float, bytes, allocation, placeholder and list of placeholders. " +
-                    f"'{key}' is {value}, whose type is {type(value)}.")
+                    "[BufferInjector] Only int, float, bytes, allocation, placeholder and list of placeholders is supported for injection. "
+                    + f"'{key}' is {value}, whose type is {type(value)}.")
 
         self.offset_map = offset_map
         self.buffer = buffer

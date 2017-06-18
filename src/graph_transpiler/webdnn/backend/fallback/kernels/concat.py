@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
@@ -67,7 +68,8 @@ function increment(shape, position) {
 """
 
 
-def concat(op: Concat) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [op.inputs[f"x{i}"] for i in range(len(op.inputs))]
     y = op.outputs["y"]
     target_axis = op.axis

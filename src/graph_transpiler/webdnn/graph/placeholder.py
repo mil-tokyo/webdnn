@@ -6,7 +6,7 @@ import numpy as np
 from webdnn.util.json import json
 
 
-class PlaceHolderOperator(Enum):
+class PlaceholderOperator(Enum):
     Add = auto()  # v1 + v2
     Sub = auto()  # v1 - v2
     Mul = auto()  # v1 * v2
@@ -15,14 +15,14 @@ class PlaceHolderOperator(Enum):
 
 
 class Dependency:
-    operator: PlaceHolderOperator
-    operands: List[Union[int, "PlaceHolder"]]
+    operator: PlaceholderOperator
+    operands: List[Union[int, "Placeholder"]]
 
-    def __init__(self, operator: PlaceHolderOperator, operands: List[Union[int, "PlaceHolder"]]):
+    def __init__(self, operator: PlaceholderOperator, operands: List[Union[int, "Placeholder"]]):
         self.operator = operator
         operands = list(operands)
 
-        if operator == PlaceHolderOperator.Add:
+        if operator == PlaceholderOperator.Add:
             i = 0
             while i < len(operands):
                 v1 = operands[i]
@@ -62,19 +62,19 @@ class Dependency:
                             common_term.append(vv)
 
                     if all(p.is_resolved for p in other_term1) and all(p.is_resolved for p in other_term2):
-                        other_term1 = PlaceHolder(Dependency(PlaceHolderOperator.Mul, list(other_term1)))
-                        other_term2 = PlaceHolder(Dependency(PlaceHolderOperator.Mul, list(other_term2)))
-                        common_term = PlaceHolder(Dependency(PlaceHolderOperator.Mul, list(common_term)))
+                        other_term1 = Placeholder(Dependency(PlaceholderOperator.Mul, list(other_term1)))
+                        other_term2 = Placeholder(Dependency(PlaceholderOperator.Mul, list(other_term2)))
+                        common_term = Placeholder(Dependency(PlaceholderOperator.Mul, list(common_term)))
                         operands.pop(j)
                         operands.pop(i)
                         j -= 1
                         i -= 1
-                        operands.append(PlaceHolder(value=(other_term1 + other_term2) * common_term))
+                        operands.append(Placeholder(value=(other_term1 + other_term2) * common_term))
 
                     j += 1
                 i += 1
 
-        elif operator == PlaceHolderOperator.Mul:
+        elif operator == PlaceholderOperator.Mul:
             s = 1
             i = 0
             while i < len(operands):
@@ -86,7 +86,7 @@ class Dependency:
                 i += 1
 
             if s != 1:
-                operands.append(PlaceHolder(value=s))
+                operands.append(Placeholder(value=s))
 
         self.operands = operands
 
@@ -96,45 +96,45 @@ class Dependency:
         If true, all dependent placeholders are resolved
         """
         for operand in self.operands:
-            if isinstance(operand, PlaceHolder) and not operand.is_resolved:
+            if isinstance(operand, Placeholder) and not operand.is_resolved:
                 return False
 
         return True
 
     @property
-    def value(self) -> Union[int, "PlaceHolder"]:
+    def value(self) -> Union[int, "Placeholder"]:
         if not self.is_resolved:
-            return PlaceHolder(self)
+            return Placeholder(self)
 
-        if self.operator == PlaceHolderOperator.Add:
+        if self.operator == PlaceholderOperator.Add:
             r = 0
             for v in self.operands:
                 r += v.value
             return r
 
-        elif self.operator == PlaceHolderOperator.Sub:
+        elif self.operator == PlaceholderOperator.Sub:
             raise NotImplementedError
 
-        elif self.operator == PlaceHolderOperator.Mul:
+        elif self.operator == PlaceholderOperator.Mul:
             r = 1
             for v in self.operands:
                 r *= v.value
             return r
 
-        elif self.operator == PlaceHolderOperator.Mod:
+        elif self.operator == PlaceholderOperator.Mod:
             return self.operands[0].value % self.operands[1].value
 
-        elif self.operator == PlaceHolderOperator.FloorDiv:
+        elif self.operator == PlaceholderOperator.FloorDiv:
             return self.operands[0].value // self.operands[1].value
 
         else:
             raise NotImplementedError(f"Unsupported placeholder operation: {self.operator}")
 
     def __repr__(self):
-        if self.operator == PlaceHolderOperator.Add:
+        if self.operator == PlaceholderOperator.Add:
             return " + ".join(map(lambda x: x.__repr__(), self.operands))
 
-        elif self.operator == PlaceHolderOperator.Sub:
+        elif self.operator == PlaceholderOperator.Sub:
             return " - ".join(map(lambda x: x.__repr__(), self.operands))
 
         s = []
@@ -144,41 +144,41 @@ class Dependency:
             else:
                 s.append(v.__repr__())
 
-        if self.operator == PlaceHolderOperator.Mul:
+        if self.operator == PlaceholderOperator.Mul:
             return " * ".join(s)
 
-        elif self.operator == PlaceHolderOperator.Mod:
+        elif self.operator == PlaceholderOperator.Mod:
             return " % ".join(s)
 
-        elif self.operator == PlaceHolderOperator.FloorDiv:
+        elif self.operator == PlaceholderOperator.FloorDiv:
             return " // ".join(s)
 
         raise NotImplementedError(f"Unsupported placeholder operation: {self.operator}")
 
     def dump(self):
-        if self.operator == PlaceHolderOperator.Add:
+        if self.operator == PlaceholderOperator.Add:
             return "(" + self.operands[0].dump() + " + " + self.operands[1].dump() + ")"
 
-        elif self.operator == PlaceHolderOperator.Sub:
+        elif self.operator == PlaceholderOperator.Sub:
             return "(" + self.operands[0].dump() + " - " + self.operands[1].dump() + ")"
 
-        elif self.operator == PlaceHolderOperator.Mul:
+        elif self.operator == PlaceholderOperator.Mul:
             return self.operands[0].dump() + " * " + self.operands[1].dump()
 
-        elif self.operator == PlaceHolderOperator.Mod:
+        elif self.operator == PlaceholderOperator.Mod:
             return self.operands[0].dump() + " % " + self.operands[1].dump()
 
-        elif self.operator == PlaceHolderOperator.FloorDiv:
+        elif self.operator == PlaceholderOperator.FloorDiv:
             return self.operands[0].dump() + " // " + self.operands[1].dump()
 
         else:
             raise NotImplementedError(f"Unsupported placeholder operation: {self.operator}")
 
     def generate_js_function(self):
-        if self.operator == PlaceHolderOperator.Add:
+        if self.operator == PlaceholderOperator.Add:
             return " + ".join(map(lambda x: x.generate_js_function(flag_semicolon=False), self.operands))
 
-        elif self.operator == PlaceHolderOperator.Sub:
+        elif self.operator == PlaceholderOperator.Sub:
             return " - ".join(map(lambda x: x.generate_js_function(flag_semicolon=False), self.operands))
 
         s = []
@@ -188,13 +188,13 @@ class Dependency:
             else:
                 s.append(v.generate_js_function(flag_semicolon=False))
 
-        if self.operator == PlaceHolderOperator.Mul:
+        if self.operator == PlaceholderOperator.Mul:
             return " * ".join(s)
 
-        elif self.operator == PlaceHolderOperator.Mod:
+        elif self.operator == PlaceholderOperator.Mod:
             return " % ".join(s)
 
-        elif self.operator == PlaceHolderOperator.FloorDiv:
+        elif self.operator == PlaceholderOperator.FloorDiv:
             assert len(s) == 2
             return f"Math.floor({s[0]} / {s[1]})"
 
@@ -204,23 +204,23 @@ class Dependency:
 _id = 0
 
 
-class PlaceHolder(json.SerializableMixin):
+class Placeholder(json.SerializableMixin):
     _value: Optional[int] = None
     _cache_value = None
     label: Optional[str] = None
     dependency: Optional[Dependency] = None
 
     @staticmethod
-    def to_int(x: Union[int, "PlaceHolder"]):
-        if isinstance(x, PlaceHolder):
+    def to_int(x: Union[int, "Placeholder"]):
+        if isinstance(x, Placeholder):
             return x.value if x.is_resolved else x
 
         else:
             return int(x)
 
     @staticmethod
-    def force_int(x: Union[int, "PlaceHolder"]):
-        if isinstance(x, PlaceHolder):
+    def force_int(x: Union[int, "Placeholder"]):
+        if isinstance(x, Placeholder):
             if x.is_resolved:
                 return x.value
 
@@ -229,20 +229,20 @@ class PlaceHolder(json.SerializableMixin):
             return int(x)
 
     @staticmethod
-    def check_resolved(x: Union[int, "PlaceHolder"]):
-        if isinstance(x, PlaceHolder):
+    def check_resolved(x: Union[int, "Placeholder"]):
+        if isinstance(x, Placeholder):
             return x.is_resolved
 
         else:
             return True
 
-    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "PlaceHolder"] = None, label: str = None):
-        if isinstance(value, PlaceHolder):
+    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: str = None):
+        if isinstance(value, Placeholder):
             return value
 
         return super().__new__(cls)
 
-    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "PlaceHolder"] = None, label: Optional[str] = None):
+    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: Optional[str] = None):
         global _id
 
         if self is value:
@@ -259,7 +259,7 @@ class PlaceHolder(json.SerializableMixin):
             self.value = value
 
     @property
-    def value(self) -> Union[int, "PlaceHolder"]:
+    def value(self) -> Union[int, "Placeholder"]:
         """
         Return the value if this placeholder is resolved. Otherwise, return the placeholder itself.
         """
@@ -304,129 +304,129 @@ class PlaceHolder(json.SerializableMixin):
         else:
             return False
 
-    def __add__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return self.value + other.value
 
         if self.dependency:
-            if self.dependency.operator == PlaceHolderOperator.Add:
-                return PlaceHolder(Dependency(PlaceHolderOperator.Add, self.dependency.operands + [other]))
+            if self.dependency.operator == PlaceholderOperator.Add:
+                return Placeholder(Dependency(PlaceholderOperator.Add, self.dependency.operands + [other]))
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.Add, [self, other]))
+        return Placeholder(Dependency(PlaceholderOperator.Add, [self, other]))
 
-    def __radd__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
+    def __radd__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         # Commutative property
         return self.__add__(other)
 
-    def __sub__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
+    def __sub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         return self + (-1 * other)
 
-    def __rsub__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
+    def __rsub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         return (-1 * self) + other
 
-    def __mul__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __mul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return self.value * other.value
 
         if self.dependency:
-            if self.dependency.operator == PlaceHolderOperator.Add or self.dependency.operator == PlaceHolderOperator.Sub:
+            if self.dependency.operator == PlaceholderOperator.Add or self.dependency.operator == PlaceholderOperator.Sub:
                 # (v0+v1)*o = v0*o + v1*o
-                return PlaceHolder(Dependency(self.dependency.operator, [PlaceHolder(value=v * other) for v in self.dependency.operands]))
+                return Placeholder(Dependency(self.dependency.operator, [Placeholder(value=v * other) for v in self.dependency.operands]))
 
-            elif self.dependency.operator == PlaceHolderOperator.Mul:
-                return PlaceHolder(Dependency(PlaceHolderOperator.Mul, self.dependency.operands + [other]))
+            elif self.dependency.operator == PlaceholderOperator.Mul:
+                return Placeholder(Dependency(PlaceholderOperator.Mul, self.dependency.operands + [other]))
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.Mul, [self, other]))
+        return Placeholder(Dependency(PlaceholderOperator.Mul, [self, other]))
 
-    def __rmul__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
+    def __rmul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         return self.__mul__(other)
 
-    def __floordiv__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __floordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return self.value // other.value
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.FloorDiv, [self, other]))
+        return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [self, other]))
 
-    def __rfloordiv__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __rfloordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return other.value // self.value
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.FloorDiv, [other, self]))
+        return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [other, self]))
 
-    def __mod__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __mod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return self.value % other.value
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.Mod, [self, other]))
+        return Placeholder(Dependency(PlaceholderOperator.Mod, [self, other]))
 
-    def __rmod__(self, other: Union[int, "PlaceHolder"]) -> Union[int, "PlaceHolder"]:
-        other = PlaceHolder(value=other)
+    def __rmod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        other = Placeholder(value=other)
 
         if self.is_resolved and other.is_resolved:
             return other.value % self.value
 
-        return PlaceHolder(Dependency(PlaceHolderOperator.Mod, [other, self]))
+        return Placeholder(Dependency(PlaceholderOperator.Mod, [other, self]))
 
     def __int__(self):
-        return PlaceHolder.force_int(self)
+        return Placeholder.force_int(self)
 
-    def __eq__(self, other: Union[int, "PlaceHolder"]) -> bool:
-        if not self.is_resolved or not PlaceHolder.check_resolved(other):
+    def __eq__(self, other: Union[int, "Placeholder"]) -> bool:
+        if not self.is_resolved or not Placeholder.check_resolved(other):
             return id(self) == id(other)
 
-        return self.value == PlaceHolder.force_int(other)
+        return self.value == Placeholder.force_int(other)
 
-    def __ne__(self, other: Union[int, "PlaceHolder"]) -> bool:
-        if not self.is_resolved or not PlaceHolder.check_resolved(other):
+    def __ne__(self, other: Union[int, "Placeholder"]) -> bool:
+        if not self.is_resolved or not Placeholder.check_resolved(other):
             return id(self) != id(other)
 
-        return self.value != PlaceHolder.force_int(other)
+        return self.value != Placeholder.force_int(other)
 
-    def __gt__(self, other: Union[int, "PlaceHolder"]) -> bool:
+    def __gt__(self, other: Union[int, "Placeholder"]) -> bool:
         if not self.is_resolved:
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
-        if not PlaceHolder.check_resolved(other):
+        if not Placeholder.check_resolved(other):
             raise ValueError("Second operand is unresolved placeholder. It can't be compared.")
 
-        return self.value > PlaceHolder.force_int(other)
+        return self.value > Placeholder.force_int(other)
 
-    def __lt__(self, other: Union[int, "PlaceHolder"]) -> bool:
+    def __lt__(self, other: Union[int, "Placeholder"]) -> bool:
         if not self.is_resolved:
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
-        if not PlaceHolder.check_resolved(other):
+        if not Placeholder.check_resolved(other):
             raise ValueError("Second operand is unresolved placeholder. It can't be compared.")
 
-        return self.value < PlaceHolder.force_int(other.value)
+        return self.value < Placeholder.force_int(other.value)
 
-    def __ge__(self, other: Union[int, "PlaceHolder"]) -> bool:
+    def __ge__(self, other: Union[int, "Placeholder"]) -> bool:
         if not self.is_resolved:
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
-        if not PlaceHolder.check_resolved(other):
+        if not Placeholder.check_resolved(other):
             raise ValueError("Second operand is unresolved placeholder. It can't be compared.")
 
-        return self.value >= PlaceHolder.force_int(other)
+        return self.value >= Placeholder.force_int(other)
 
-    def __le__(self, other: Union[int, "PlaceHolder"]) -> bool:
+    def __le__(self, other: Union[int, "Placeholder"]) -> bool:
         if not self.is_resolved:
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
-        if not PlaceHolder.check_resolved(other):
+        if not Placeholder.check_resolved(other):
             raise ValueError("Second operand is unresolved placeholder. It can't be compared.")
 
-        return self.value <= PlaceHolder.force_int(other)
+        return self.value <= Placeholder.force_int(other)
 
     def __repr__(self):
         if self.is_resolved:
@@ -462,7 +462,7 @@ class PlaceHolder(json.SerializableMixin):
             }
 
     def get_depend_placeholders(self):
-        if PlaceHolder.check_resolved(self):
+        if Placeholder.check_resolved(self):
             return set()
 
         if self.dependency:

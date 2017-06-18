@@ -48,7 +48,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.tanh import Tanh
-from webdnn.util import flags
+from webdnn.util import flags, console
 from webdnn.util.json import json
 
 
@@ -85,19 +85,26 @@ def validate_kernel_source(descriptor: GraphDescriptor):
         with open(source_path, "w+") as f:
             f.write(source)
 
-        # noinspection PyBroadException
-        try:
-            result = subprocess.run(["type", "xcrun", ">/dev/null" "2>&1"])
+        with open(os.devnull, "w") as f:
+            result = subprocess.run(["type", "xcrun"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if result.returncode != 0:
-                print("[WebGPUBackend] 'xcrun' command is not found. validation of generated source code in webgpu backend is skipped.")
+                console.warning(
+                    "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
+                    "skipped.")
                 return
 
-            result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path])
-            if result.returncode != 0:
-                print("Generated kernel source is invalid.")
-                exit(result.returncode)
-        except Exception as ex:
-            print(f"WebGPU kernel source validation does not work: {ex}")
+        with open(os.devnull, "w") as f:
+            result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode == 0:
+                if result.stderr != b"":
+                    console.warning("[WebGPUDescriptorGenerator] In validating kernel source, warnings are generated.")
+                    console.stderr(result.stderr.decode("utf-8"))
+
+                else:
+                    console.error("[WebGPUDescriptorGenerator] Generated kernel source is invalid.")
+                    console.stderr(result.stderr.decode("utf-8"))
+                    exit(result.returncode)
 
 
 class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
@@ -108,16 +115,14 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
             traverse.dump(graph)
 
         memory_layout = Allocator.allocate(graph)
-        if flags.DEBUG:
-            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout total size: {memory_layout.static_size * 4}")
-            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout static size: {memory_layout.static_size * 4}")
-            print(f"[GraphDescriptorGeneratorWebGPU] variables_layout dynamic size: {memory_layout.dynamic_size * 4}")
+        console.debug(f"[GraphDescriptorGeneratorWebGPU] memory_layout total size: {memory_layout.total_size * 4}")
+        console.debug(f"[GraphDescriptorGeneratorWebGPU] memory_layout static size: {memory_layout.static_size * 4}")
+        console.debug(f"[GraphDescriptorGeneratorWebGPU] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
         constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
         constants_bytes = constant_encoder.encode(memory_layout)
 
-        if flags.DEBUG:
-            print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
+        console.debug(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
@@ -131,9 +136,6 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
         )
 
         if flags.optimize.VALIDATE_GENERATED_SOURCE:
-            if flags.DEBUG:
-                print("[GraphDescriptorGeneratorWebGPU] validate generated kernel source")
-
             validate_kernel_source(descriptor)
 
         return GraphExecutionData(descriptor, constants_bytes)
@@ -143,18 +145,18 @@ def generate(graph: Graph, constant_encoder_name: str = None):
     return WebGPUDescriptorGenerator.generate(graph, constant_encoder_name)
 
 
-WebGPUDescriptorGenerator.register_generate_handler(AveragePooling2D, average_pooling_2d)
-WebGPUDescriptorGenerator.register_generate_handler(AxiswiseBias, axiswise_bias)
-WebGPUDescriptorGenerator.register_generate_handler(AxiswiseScale, axiswise_scale)
-WebGPUDescriptorGenerator.register_generate_handler(Col2Im, col2im)
-WebGPUDescriptorGenerator.register_generate_handler(Concat, concat)
-WebGPUDescriptorGenerator.register_generate_handler(ElementwiseSum, elementwise_sum)
-WebGPUDescriptorGenerator.register_generate_handler(Elu, elu)
-WebGPUDescriptorGenerator.register_generate_handler(Flatten, flatten)
-WebGPUDescriptorGenerator.register_generate_handler(Im2Col, im2col)
-WebGPUDescriptorGenerator.register_generate_handler(LocalResponseNormalization, local_response_normalization)
-WebGPUDescriptorGenerator.register_generate_handler(MaxPooling2D, max_pooling_2d)
-WebGPUDescriptorGenerator.register_generate_handler(Relu, relu)
-WebGPUDescriptorGenerator.register_generate_handler(ScalarAffine, scalar_affine)
-WebGPUDescriptorGenerator.register_generate_handler(Sgemm, sgemm)
-WebGPUDescriptorGenerator.register_generate_handler(Tanh, tanh)
+WebGPUDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)
+WebGPUDescriptorGenerator.register_handler(AxiswiseBias)(axiswise_bias)
+WebGPUDescriptorGenerator.register_handler(AxiswiseScale)(axiswise_scale)
+WebGPUDescriptorGenerator.register_handler(Col2Im)(col2im)
+WebGPUDescriptorGenerator.register_handler(Concat)(concat)
+WebGPUDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
+WebGPUDescriptorGenerator.register_handler(Elu)(elu)
+WebGPUDescriptorGenerator.register_handler(Flatten)(flatten)
+WebGPUDescriptorGenerator.register_handler(Im2Col)(im2col)
+WebGPUDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
+WebGPUDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
+WebGPUDescriptorGenerator.register_handler(Relu)(relu)
+WebGPUDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
+WebGPUDescriptorGenerator.register_handler(Sgemm)(sgemm)
+WebGPUDescriptorGenerator.register_handler(Tanh)(tanh)

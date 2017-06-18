@@ -1,6 +1,6 @@
 from typing import Dict, Set, Type, Optional
 
-from webdnn.graph.interface import IAttribute, INode
+from webdnn.graph import attribute
 
 _node_serial_counter_dict: Dict[Type["Node"], int] = {}
 
@@ -15,8 +15,11 @@ def _generate_name(node: "Node"):
     return name
 
 
-class Node(INode):
-    attributes: Set[IAttribute]
+class Node:
+    """
+    Basic graph node class.
+    """
+    attributes: Set["attribute.Attribute"]
     parameters: Dict[str, any]
     prevs: Set["Node"]
     nexts: Set["Node"]
