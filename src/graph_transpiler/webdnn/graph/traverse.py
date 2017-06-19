@@ -82,12 +82,12 @@ def listup_nodes(graph: Graph) -> List[Node]:
 
 
 def listup_operators(graph: Graph) -> List[Operator]:
-    ops: List[Operator] = filter_nodes(listup_nodes(graph), Operator)
+    ops = filter_nodes(listup_nodes(graph), Operator)  # type: List[Operator]
     return ops
 
 
 def listup_variables(graph: Graph) -> List[Variable]:
-    variables: List[Variable] = filter_nodes(listup_nodes(graph), Variable)
+    variables = filter_nodes(listup_nodes(graph), Variable)  # type: List[Variable]
     return variables
 
 

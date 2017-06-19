@@ -1,10 +1,8 @@
 from typing import List
 
-import numpy as np
-
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
@@ -14,7 +12,6 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     float *y = %%LOAD_BUFFER(concat_y)%%;
     const int N = %%LOAD_BUFFER(concat_N)%%;
     const int D = %%LOAD_BUFFER(concat_D)%%;
-    const int *x_offsets = %%LOAD_BUFFER(concat_x_offsets)%%;
     const int *y_offsets = %%LOAD_BUFFER(concat_y_offsets)%%;
     const int *x_shapes = %%LOAD_BUFFER(concat_x_shapes)%%;
     const int *x_strides_in_y = %%LOAD_BUFFER(concat_x_strides_in_y)%%;
@@ -22,10 +19,10 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     int x_index = 0;
     
     for (int n = 0; n < N; n++) {
-        const float *x = data_buffer + x_offsets[n];
+        const float *x = %%LOAD_BUFFER(concat_xs, n)%%;
         const int y_offset = y_offsets[n];
-        const int *x_shape = &(x_shapes[n*D]);
-        const int *x_stride_in_y = &(x_strides_in_y[n*D]);
+        const int *x_shape = x_shapes + n * D;
+        const int *x_stride_in_y = x_strides_in_y + n * D;
         
         int x_size = 1;
         for (int d = 0; d < D; d++) {
@@ -84,10 +81,10 @@ def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
         "concat_y": y,
         "concat_D": len(y.variable.shape),
         "concat_N": len(xs),
-        "concat_x_offsets": np.array(x_offsets, dtype=np.int32).tobytes(),
-        "concat_x_strides_in_y": np.array(x_strides_in_y, dtype=np.int32).tobytes(),
-        "concat_x_shapes": np.array(x_shapes, dtype=np.int32).tobytes(),
-        "concat_y_offsets": np.array(y_offsets, dtype=np.int32).tobytes(),
+        "concat_xs": xs,
+        "concat_x_strides_in_y": x_strides_in_y,
+        "concat_x_shapes": x_shapes,
+        "concat_y_offsets": y_offsets
     })
 
     name_injector = KernelNameInjector(op)

@@ -101,7 +101,7 @@ class BufferInjector(Injector):
             #
             #    for (int i = 0; i < N_B; i++)
             #    {
-            #        const float B_i = (meta_buffer[3+2+(i)] ? static_buffer : dynamic_buffer)[ meta_buffer[3 + (i)] ]
+            #        const float *B_i = (meta_buffer[3+2+(i)] ? static_buffer : dynamic_buffer) + meta_buffer[3 + (i)]
             #    }
             # '''
             #
@@ -163,7 +163,7 @@ class BufferInjector(Injector):
 
                     index = tag.args[1]
                     return f"({self.meta_name}[{self.offset_map[key]}+{len(value)}+ ({index})] ? {self.static_name} : {self.dynamic_name})" + \
-                           f"[{self.meta_name}[{self.offset_map[key]} + ({index})]]"
+                           f" + {self.meta_name}[{self.offset_map[key]} + ({index})]"
 
             if len(tag.args) > 2:
                 console.warning(f"[BufferInjector] Requires only 1 arguments to inject: {tag.original}")

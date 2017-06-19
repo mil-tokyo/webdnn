@@ -109,8 +109,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *im = %%LOAD_BUFFER(im2col_im_offset)%%;
-    device float *col = %%LOAD_BUFFER(im2col_col_offset)%%;
+    const device float *im = %%LOAD_BUFFER(im2col_im)%%;
+    device float *col = %%LOAD_BUFFER(im2col_col)%%;
 
     const int N = %%LOAD_BUFFER(im2col_N)%%;
     const int C1 = %%LOAD_BUFFER(im2col_C1)%%;

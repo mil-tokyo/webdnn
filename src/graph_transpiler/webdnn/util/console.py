@@ -1,5 +1,6 @@
 import shutil
 import sys
+from typing import List, Any
 
 from webdnn.util import flags
 
@@ -21,21 +22,21 @@ def colorize(text: str, color: int, bright: bool = False):
     return f"{ESC}[{'1' if bright else '0'};3{color}m{text}{ESC}[0;39m"
 
 
-def warning(text):
-    stderr(colorize(text, Color.Yellow))
+def warning(*texts: Any):
+    stderr(colorize("".join(map(str, texts)), Color.Yellow))
 
 
-def error(text):
-    stderr(colorize(text, Color.Red))
+def error(*texts: Any):
+    stderr(colorize("".join(map(str, texts)), Color.Red))
 
 
-def debug(text):
+def debug(*texts: Any):
     if flags.DEBUG:
-        stderr("[DEBUG]" + text)
+        stderr(colorize("[DEBUG]", Color.Blue) + " " + "".join(map(str, texts)))
 
 
-def info(text):
-    return colorize(text, Color.Green)
+def info(*texts: Any):
+    return colorize("".join(map(str, texts)), Color.Green)
 
 
 def get_size():
@@ -50,5 +51,5 @@ def get_height():
     return get_size()[1]
 
 
-def stderr(text: str):
-    sys.stderr.write(text + "\n")
+def stderr(*texts: Any):
+    sys.stderr.write("".join(map(str, texts)) + "\n")

@@ -32,6 +32,7 @@ from webdnn.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
 from webdnn.backend.webassembly.kernels.relu import relu
 from webdnn.backend.webassembly.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webassembly.kernels.sgemm import sgemm
+from webdnn.backend.webassembly.kernels.sigmoid import sigmoid
 from webdnn.backend.webassembly.kernels.tanh import tanh
 from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.backend.webassembly.operators.im2col import Im2Col
@@ -53,6 +54,7 @@ from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.util import flags, console
 from webdnn.util.json import json
@@ -182,5 +184,6 @@ WebassemblyDescriptorGenerator.register_handler(LSTM)(lstm)
 WebassemblyDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
 WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
 WebassemblyDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
+WebassemblyDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
 WebassemblyDescriptorGenerator.register_handler(Sgemm)(sgemm)
 WebassemblyDescriptorGenerator.register_handler(Tanh)(tanh)

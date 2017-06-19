@@ -165,6 +165,9 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
 
     for t, op in enumerate(ops):
         for var in op.outputs.values():
+            if isinstance(var, ConstantVariable):
+                continue
+
             if var not in allocated:
                 flag_allocated = False
 
@@ -195,13 +198,22 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     raise ValueError("[Allocator] Memory Allocation Failed.")
 
         for var in op.inputs.values():
+            if isinstance(var, ConstantVariable) or var in graph.inputs:
+                continue
+
             while "inplace_src" in var.parameters:
                 var = var.parameters["inplace_src"]
-            retain_count[var] -= 1
 
             if retain_count[var] == 0:
-                # `t + 1` means that `var` will be released AFTER `op` will be finished.
-                lifetime[var] = (lifetime[var][0], t + 1)
+                # var is temporally workspace memory
+                lifetime[var] = (t, t + 1)
+
+            else:
+                retain_count[var] -= 1
+
+                if retain_count[var] == 0:
+                    # `t + 1` means that `var` will be released AFTER `op` will be finished.
+                    lifetime[var] = (lifetime[var][0], t + 1)
 
     return lifetime
 

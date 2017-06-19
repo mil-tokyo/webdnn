@@ -20,7 +20,7 @@ class LSTM(Operator):
     def __init__(self, name: Optional[str]):
         # TODO: accept selection of activation function
         super().__init__(name)
-        self.attributes = {}
+        self.attributes = set()
 
     def __call__(self, x: Variable, w_input: Variable, w_hidden: Variable, b: Variable):
         """

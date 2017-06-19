@@ -16,11 +16,9 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     device float *y = %%LOAD_BUFFER(concat_y)%%;
     const char N = %%LOAD_BUFFER(concat_N)%%;
     const char D = %%LOAD_BUFFER(concat_D)%%;
-    const device int *x_offsets = %%LOAD_BUFFER(concat_x_offsets)%%;
     const device int *y_offsets = %%LOAD_BUFFER(concat_y_offsets)%%;
     const device int *x_shapes = %%LOAD_BUFFER(concat_x_shapes)%%;
     const device int *x_strides_in_y = %%LOAD_BUFFER(concat_x_strides_in_y)%%;
-    const device int *is_static = %%LOAD_BUFFER(concat_is_static)%%;
     
     int x_index = index;
     
@@ -88,8 +86,7 @@ def concat(op: Concat,
         "concat_y": y,
         "concat_D": len(y.variable.shape),
         "concat_N": len(xs),
-        "concat_Xs": xs,
-        "concat_x_offsets": x_offsets,
+        "concat_xs": xs,
         "concat_x_strides_in_y": x_strides_in_y,
         "concat_x_shapes": x_shapes,
         "concat_y_offsets": y_offsets

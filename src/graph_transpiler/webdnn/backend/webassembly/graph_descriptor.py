@@ -17,7 +17,7 @@ source_header = """
 #include <math.h>
 
 float static_buffer[%%STATIC_SIZE%%];
-
+float dynamic_buffer[1]; //dummy
 """
 
 source_init = """

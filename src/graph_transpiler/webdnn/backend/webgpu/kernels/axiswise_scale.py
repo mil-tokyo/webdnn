@@ -131,8 +131,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     device float *Y = %%LOAD_BUFFER(axiswise_scale_Y)%%;
     const int D = %%LOAD_BUFFER(axiswise_scale_D)%%;
     const int d_target = %%LOAD_BUFFER(axiswise_scale_d_target)%%;
-    const device int *x_shape = &(%%LOAD_BUFFER(axiswise_scale_x_shape)%%);
-    const device int *x_stride_in_y = &(%%LOAD_BUFFER(axiswise_scale_x_stride_in_y)%%);
+    const device int *x_shape = %%LOAD_BUFFER(axiswise_scale_x_shape)%%;
+    const device int *x_stride_in_y = %%LOAD_BUFFER(axiswise_scale_x_stride_in_y)%%;
 
     int size = 1;
     for (int d = 0; d < D; d++) size *= x_shape[d];

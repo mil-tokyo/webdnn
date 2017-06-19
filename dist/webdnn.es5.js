@@ -722,6 +722,8 @@ var WebDNN;
                         case 6: return [4 /*yield*/, _c.apply(_b, [_d.sent()])];
                         case 7:
                             _d.sent();
+                            if (Object.keys(descriptor.placeholders).length == 0)
+                                return [2 /*return*/, this.setPlaceholder({})];
                             return [2 /*return*/];
                     }
                 });

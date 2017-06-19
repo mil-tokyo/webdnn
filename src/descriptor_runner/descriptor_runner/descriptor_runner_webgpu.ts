@@ -63,6 +63,8 @@ namespace WebDNN {
             this.staticBuffer = new BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
             let decoder = get_weight_decoder(descriptor.weight_encoding);
             await this.staticBuffer.write(await decoder.decode(new Uint8Array(weights_data_ab), descriptor.memory_layout));
+
+            if (Object.keys(descriptor.placeholders).length == 0) return this.setPlaceholder({});
         }
 
         setDescriptor(descriptor: GraphDescriptorWebGPU) {

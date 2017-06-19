@@ -191,14 +191,15 @@
                 })
                 .then(function() {
                     var ds = testCase.inputs;
-
                     for (i = 0; i < ds.length; i++) {
+                        var x = xs[i].getFloat32Array();
+
                         assert.equal(
-                            xs[i].length,
+                            x.length,
                             ds[i].length,
                             'For input[' + i + '], size of ArrayView and data value are different.'
                         );
-                        for (j = 0; j < ds[i].length; j++) xs[i][j] = ds[i][j];
+                        for (j = 0; j < ds[i].length; j++) x[j] = ds[i][j];
                     }
 
                     startTime = performance.now();
@@ -211,16 +212,17 @@
                     var ds = testCase.expected;
 
                     for (i = 0; i < ds.length; i++) {
+                        var y = ys[i].getFloat32Array();
                         assert.equal(
-                            ys[i].length,
+                            y.length,
                             ds[i].length,
                             'For output[' + i + '], size of ArrayView and expected value are different.'
                         );
                         for (j = 0; j < ds[i].length; j++) {
                             assert.floatEqual(
-                                ys[i][j],
+                                y[j],
                                 ds[i][j],
-                                'Output[' + i + '][' + j + ']: (Expected)=' + ds[i][j] + ', (Real)=' + ys[i][j]
+                                'Output[' + i + '][' + j + ']: (Expected)=' + ds[i][j] + ', (Real)=' + y[j]
                             );
                         }
                     }
