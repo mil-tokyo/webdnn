@@ -35,7 +35,7 @@ from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
-    OrderNHWC, Order
+    OrderNHWC, Order, OrderNT
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
@@ -93,7 +93,7 @@ class KerasConverter(Converter[KerasOperator]):
             if len(input_shape) == 1:
                 order = OrderC
             elif len(input_shape) == 2:
-                order = OrderNC  # fixme for LSTM
+                order = OrderNT  # fixme for LSTM
             elif len(input_shape) == 4:
                 # Assuming data_format == "channels_last":
                 order = OrderNHWC

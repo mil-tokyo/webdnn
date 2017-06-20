@@ -192,7 +192,7 @@
                 .then(function() {
                     var ds = testCase.inputs;
                     for (i = 0; i < ds.length; i++) {
-                        var x = xs[i].getFloat32Array();
+                        var x = xs[i].toActual();
 
                         assert.equal(
                             x.length,
@@ -212,7 +212,7 @@
                     var ds = testCase.expected;
 
                     for (i = 0; i < ds.length; i++) {
-                        var y = ys[i].getFloat32Array();
+                        var y = ys[i].toActual();
                         assert.equal(
                             y.length,
                             ds[i].length,
