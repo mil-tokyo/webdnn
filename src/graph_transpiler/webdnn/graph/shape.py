@@ -2,6 +2,18 @@ import ast
 from typing import Dict, Tuple, Union, List
 
 from webdnn.graph.placeholder import Placeholder
+import re
+
+_reg_quote = re.compile("['\"]")
+_reg_trail_space = re.compile("\s{2,}")
+_reg_placeholder = re.compile("[a-zA-Z_]+")
+
+
+def _normalize_text(text: str) -> str:
+    text = _reg_quote.sub(lambda ma: " ", text)
+    text = _reg_trail_space.sub(lambda ma: " ", text)
+    text = _reg_placeholder.sub(lambda ma: f"'{ma[0]}'" , text)
+    return text
 
 
 class Shape:
@@ -17,7 +29,8 @@ class Shape:
             shape: parsed shape
             placeholders: parsed placeholders
         """
-        tmp = ast.literal_eval(text)
+        normalized_text = _normalize_text(text)
+        tmp = ast.literal_eval(normalized_text)
         shape = []
         placeholders = {}
         for i, t in enumerate(tmp):
@@ -30,7 +43,9 @@ class Shape:
 
             else:
                 raise ValueError("[Shape.parse()] Invalid shape format. Each element of shape must be int or str:"
-                                 f"text='{text}', type(shape[{i}])={type(t)}")
+                                 f"text='{text}', "
+                                 f"{normalized_text + ', ' if normalized_text != text else ''}"
+                                 f"type(shape[{i}])={type(t)}")
 
             shape.append(pt)
 
