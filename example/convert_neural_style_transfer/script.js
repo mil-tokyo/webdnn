@@ -50,8 +50,8 @@ async function initialize() {
 
         $input = $('#snap');
         $output = $('#result');
-        inputView = dnn.inputViews[0];
-        outputView = dnn.outputViews[0];
+        inputView = dnn.inputViews[0].toActual();
+        outputView = dnn.outputViews[0].toActual();
         ctxIn = $input.getContext('2d');
         ctxOut = $output.getContext('2d');
         h = $output.height;

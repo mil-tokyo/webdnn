@@ -38,7 +38,7 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setPlaceholder(placeholders: { [p: string]: number }): void {
+        setPlaceholderValue(placeholders: { [p: string]: number }): void {
             throw Error('Not Implemented Yet')
         }
 
@@ -108,7 +108,7 @@ namespace WebDNN {
             });
         }
 
-        async getInputViews(): Promise<BufferView[]> {
+        async getInputViews(): Promise<SymbolicFloat32Array[]> {
             // if (!this.descriptor) throw new Error('Descriptor is not loaded');
             // if (!this.variableArrays) throw new Error('Variable map is not initialized');
             // if (this.inputViews) return this.inputViews;
@@ -121,7 +121,7 @@ namespace WebDNN {
             return [];
         }
 
-        async getOutputViews(): Promise<BufferView[]> {
+        async getOutputViews(): Promise<SymbolicFloat32Array[]> {
             // if (!this.descriptor) throw new Error('Descriptor is not loaded');
             // if (!this.variableArrays) throw new Error('Variable map is not initialized');
             // if (this.outputViews) return this.outputViews;

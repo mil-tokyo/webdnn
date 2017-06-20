@@ -3,7 +3,6 @@ Keras model converter
 """
 
 import argparse
-import ast
 import os
 import sys
 import traceback
@@ -13,6 +12,7 @@ import h5py
 
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph.converters.keras import KerasConverter
+from webdnn.graph.shape import Shape
 from webdnn.util import flags, console
 
 
@@ -32,7 +32,7 @@ def main():
 
     console.stderr(f"[{path.basename(__file__)}] Generating feedforward graph")
 
-    input_shape = ast.literal_eval(args.input_shape)
+    input_shape, _ = Shape.parse(args.input_shape)
     input_shapes = [input_shape]
     model = h5py.File(args.kerasmodel, "r")
     converter = KerasConverter()

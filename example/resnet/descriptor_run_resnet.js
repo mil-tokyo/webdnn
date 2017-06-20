@@ -18,7 +18,7 @@ function log(msg) {
 
 function load_image() {
     var img = new Image();
-    img.onload = function () {
+    img.onload = function() {
         var ctx = document.getElementById('input_image').getContext('2d');
         // shrink instead of crop
         ctx.drawImage(img, 0, 0, 224, 224);
@@ -26,7 +26,7 @@ function load_image() {
         document.getElementById('run_button').disabled = false;
         log('Image loaded to canvas');
     }
-    img.onerror = function () {
+    img.onerror = function() {
         log('Failed to load image');
     }
     img.src = document.querySelector("input[name=image_url]").value;
@@ -41,7 +41,7 @@ async function prepare_run() {
     let backend_key = backend_name + framework_name;
     if (!(backend_key in run_ifs)) {
         log('Initializing and loading model');
-        let run_if = await WebDNN.prepareAll(`./output_${framework_name}`, { backendOrder: backend_name });
+        let run_if = await WebDNN.prepareAll(`./output_${framework_name}`, {backendOrder: backend_name});
         log(`Loaded backend: ${run_if.backendName}, model converted from ${framework_name}`);
 
         run_ifs[backend_key] = run_if;
@@ -54,8 +54,8 @@ async function prepare_run() {
 async function run() {
     let run_if = await prepare_run();
 
-    await WebDNN.runner.setPlaceholder({
-        N: 2
+    await WebDNN.runner.setPlaceholderValue({
+        N: 1
     });
 
     let test_image = getImageData();
@@ -71,7 +71,7 @@ async function run() {
         await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0].getFloat32Array();
+        let out_vec = run_if.outputViews[0].toActual();
         let top_labels = WebDNN.Math.argmax(out_vec, 5);
         let predicted_str = 'Predicted:';
         for (let j = 0; j < top_labels.length; j++) {

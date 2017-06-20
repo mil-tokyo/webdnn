@@ -64,7 +64,7 @@ namespace WebDNN {
             await this.loadWeights(new Uint8Array(weights_data_ab));
         }
 
-        setPlaceholder(placeholders: { [p: string]: number }): void {
+        setPlaceholderValue(placeholders: { [p: string]: number }): void {
             throw Error('Not Implemented Yet')
         }
 
@@ -125,7 +125,7 @@ namespace WebDNN {
             return promise;
         }
 
-        async getInputViews(): Promise<BufferView[]> {
+        async getInputViews(): Promise<SymbolicFloat32Array[]> {
             // if (this.inputViews) return this.inputViews;
             //
             // if (!this.descriptor) throw new Error('Descriptor is not loaded');
@@ -140,7 +140,7 @@ namespace WebDNN {
             return []
         }
 
-        async getOutputViews(): Promise<BufferView[]> {
+        async getOutputViews(): Promise<SymbolicFloat32Array[]> {
             // if (this.outputViews) return this.outputViews;
             //
             // if (!this.descriptor) throw new Error('Descriptor is not loaded');

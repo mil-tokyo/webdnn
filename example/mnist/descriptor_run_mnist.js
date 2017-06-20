@@ -45,7 +45,7 @@ async function run() {
         await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0];
+        let out_vec = run_if.outputViews[0].toActual();
         let pred_label = WebDNN.Math.argmax(out_vec)[0];
         // equivalent to
         /*        let pred_label = 0;

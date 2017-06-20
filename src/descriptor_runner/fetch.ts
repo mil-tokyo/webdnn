@@ -41,8 +41,10 @@ namespace WebDNN {
      * @param init Additional information about fetch
      * @returns Response
      */
-    export function fetch(input: RequestInfo, init?: RequestInit) {
-        return fetchDelegate(input, init);
+    export async function fetch(input: RequestInfo, init?: RequestInit) {
+        let res = await fetchDelegate(input, init);
+        if (!res.ok) throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
+        return res;
     }
 
     /**

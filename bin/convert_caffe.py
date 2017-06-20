@@ -3,7 +3,6 @@ Caffe model converter (via Chainer model)
 """
 
 import argparse
-import ast
 import os
 import sys
 from os import path
@@ -16,6 +15,7 @@ import numpy as np
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph.converters.chainer import ChainerConverter
 from webdnn.graph.graph import Graph
+from webdnn.graph.shape import Shape
 from webdnn.util import console
 
 
@@ -29,7 +29,9 @@ def parse_input_blob(args):
     else:
         if not args.input_shape:
             raise ValueError("input_npy or input_shapes must be specified to determine input")
-        input_shape = ast.literal_eval(args.input_shape)
+        input_shape, placeholders = Shape.parse(args.input_shape)
+        if len(placeholders) > 0:
+            raise ValueError("caffe converter does not support an input with placeholder")
         input_blob = chainer.Variable(np.zeros(input_shape, dtype=np.float32))
     return input_blob, input_filled
 
