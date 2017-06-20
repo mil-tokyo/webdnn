@@ -9,6 +9,7 @@ REMOVE_LAST_SOFTMAX = OPTIMIZE and os.environ.get("REMOVE_LAST_SOFTMAX", "0") ==
 CONCAT_AFFINE = OPTIMIZE and os.environ.get("CONCAT_AFFINE", "1") == "1"
 CONCAT_SGEMM_BIAS = OPTIMIZE and os.environ.get("CONCAT_SGEMM_BIAS", "1") == "1"
 CONCAT_SCALAR_AFFINE = OPTIMIZE and os.environ.get("CONCAT_SCALAR_AFFINE", "1") == "1"
+CONCAT_LSTM_INPUT_AND_HIDDEN = OPTIMIZE and os.environ.get("CONCAT_LSTM_INPUT_AND_HIDDEN", "1") == "1"
 INJECT_INLINE_INPLACE = OPTIMIZE and os.environ.get("INJECT_INLINE_INPLACE", "1") == "1"
 
 # memory allocation

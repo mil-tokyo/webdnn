@@ -3,6 +3,7 @@ from webdnn.backend.webgpu.optimize_rules.optimize_deconvolution2d import Optimi
 from webdnn.backend.webgpu.optimize_rules.optimize_flatten import OptimizeFlatten
 from webdnn.backend.webgpu.optimize_rules.optimize_inline_inplace import OptimizeInlineInplace
 from webdnn.backend.webgpu.optimize_rules.optimize_linear import OptimizeLinear
+from webdnn.backend.webgpu.optimize_rules.optimize_lstm import OptimizeLSTM
 from webdnn.graph.optimize_rule import OptimizeRule
 
 
@@ -15,3 +16,4 @@ class WebGPUOptimizeRule(OptimizeRule):
         self.register(OptimizeInlineInplace())
         self.register(OptimizeFlatten())
         self.register(OptimizeLinear())
+        self.register(OptimizeLSTM())
