@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 from webdnn.backend.code_generator.allocator import Allocator
-from webdnn.backend.interface.descriptor_generator import DescriptorGenerator
+from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webassembly.graph_descriptor import GraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
@@ -91,11 +91,13 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append("WASM=1")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
+        args.append("-s")
+        args.append(f"ALLOW_MEMORY_GROWTH=1")  # cannot be used in asm.js
         args.append("--pre-js")
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
@@ -115,7 +117,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
         args.append("--pre-js")
@@ -132,26 +134,33 @@ class GraphExecutionData(IGraphExecutionData):
 
 class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     @classmethod
-    def generate(cls, graph: Graph, constant_encoder_name: str = None):
+    def generate(cls, graph: Graph, **kwargs):
         graph, _ = WebassemblyOptimizeRule().optimize(graph)
         if flags.DEBUG:
             traverse.dump(graph)
 
         memory_layout = Allocator.allocate(graph)
-        assert memory_layout.dynamic_size == 0, "Currently webassembly does not support dynamic buffer (=Placeholder)"
 
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
-        constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
         constants_bytes = constant_encoder.encode(memory_layout)
 
         console.debug(f"[WebassemblyDescriptorGenerator] constants encoded size: {len(constants_bytes)}")
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
-        required_heap = (int((memory_layout.total_size * 4) // (16 * 1024 * 1024)) + 2) * 16 * 1024 * 1024  # required + 16MB
+        heap_block_size = 16 * 1024 * 1024
+        if isinstance(memory_layout.dynamic_size, int):
+            dynamic_size_byte_int = memory_layout.dynamic_size * 4
+        else:
+            dynamic_size_byte_int = kwargs.get("dynamic_allocation_size", heap_block_size)
+        total_size_byte = memory_layout.static_size * 4 + dynamic_size_byte_int
+
+        # required for calculation (size ceiling to one block) + one block
+        required_heap = ((total_size_byte + heap_block_size - 1) // heap_block_size + 1) * heap_block_size
 
         descriptor = GraphDescriptor(
             kernels=kernels,
@@ -165,8 +174,8 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
         return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None):
-    return WebassemblyDescriptorGenerator.generate(graph, constant_encoder_name)
+def generate(graph: Graph, **kwargs):
+    return WebassemblyDescriptorGenerator.generate(graph, **kwargs)
 
 
 WebassemblyDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)

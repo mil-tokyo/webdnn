@@ -23,7 +23,7 @@ from webdnn.backend.fallback.kernels.linear import linear
 from webdnn.backend.fallback.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from webdnn.backend.fallback.kernels.relu import relu
-from webdnn.backend.interface.descriptor_generator import DescriptorGenerator
+from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph.graph import Graph
@@ -62,14 +62,14 @@ class GraphExecutionData(IGraphExecutionData):
 
 class FallbackDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     @classmethod
-    def generate(cls, graph: Graph, constant_encoder_name: str = None):
+    def generate(cls, graph: Graph, **kwargs):
         memory_layout = Allocator.allocate(graph)
 
         console.debug(f"[FallbackDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
         console.debug(f"[FallbackDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
         console.debug(f"[FallbackDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
-        constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
         constants_bytes = constant_encoder.encode(memory_layout)
 
         console.debug(f"[FallbackDescriptorGenerator] constants encoded size: {len(constants_bytes)}")
@@ -85,8 +85,8 @@ class FallbackDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData
         return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None):
-    return FallbackDescriptorGenerator.generate(graph, constant_encoder_name)
+def generate(graph: Graph, **kwargs):
+    return FallbackDescriptorGenerator.generate(graph, **kwargs)
 
 
 FallbackDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)

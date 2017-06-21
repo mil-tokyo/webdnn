@@ -93,7 +93,7 @@ class KerasConverter(Converter[KerasOperator]):
             if len(input_shape) == 1:
                 order = OrderC
             elif len(input_shape) == 2:
-                order = OrderNT  # fixme for LSTM
+                order = OrderNC  # fixme for LSTM
             elif len(input_shape) == 4:
                 # Assuming data_format == "channels_last":
                 order = OrderNHWC

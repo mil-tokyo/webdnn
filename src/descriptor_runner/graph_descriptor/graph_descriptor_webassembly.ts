@@ -2,6 +2,6 @@
 
 namespace WebDNN {
     export interface GraphDescriptorWebassembly extends GraphDescriptor {
-        memory_layout: MemoryLayout
+        unresolved_value_lists: { offset: number, placeholder: Placeholder }[][];
     }
 }

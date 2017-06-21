@@ -74,6 +74,7 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     abstract class SymbolicArrayBufferView<T extends Float32Array | Int32Array> {
+        protected ignoreOffsetOnActual: boolean;
         protected arrayBuffer: ArrayBuffer;
         protected allocation: Allocation;
         protected placeholderContext?: PlaceholderContext;
@@ -83,7 +84,7 @@ declare namespace WebDNN {
          * the error is thrown.
          */
         abstract toActual(): T;
-        constructor(allocation: Allocation, placeholderContext?: PlaceholderContext);
+        constructor(allocation: Allocation, placeholderContext?: PlaceholderContext, ignoreOffsetOnActual?: boolean);
         setArrayBuffer(arrayBuffer: any): void;
         readonly isDynamic: boolean;
         readonly offset: any;
@@ -421,27 +422,31 @@ declare namespace WebDNN {
 }
 declare namespace WebDNN {
     interface GraphDescriptorWebassembly extends GraphDescriptor {
-        memory_layout: MemoryLayout;
+        unresolved_value_lists: {
+            offset: number;
+            placeholder: Placeholder;
+        }[][];
     }
 }
 declare let WebAssembly: any;
 declare namespace WebDNN {
     class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
         readonly backendName: string;
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
-        worker: Worker | null;
-        worker_entry_js_path: any;
-        worker_promise_reject_func: any;
-        worker_initial_error: any;
+        private inputViews;
+        private outputViews;
+        private worker;
+        private worker_entry_js_path;
+        private worker_promise_reject_func;
+        private worker_initial_error;
         constructor(option?: any);
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        setPlaceholderValue(placeholders: {
-            [p: string]: number;
-        }): void;
-        compile(): Promise<void>;
-        loadWeights(weightsData: Uint8Array): Promise<void>;
+        setPlaceholderValue(values: {
+            [key: string]: number;
+        }): Promise<void>;
+        private setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray);
+        private compile();
+        private loadWeights(weightsData);
         getInputViews(): Promise<SymbolicFloat32Array[]>;
         getOutputViews(): Promise<SymbolicFloat32Array[]>;
         run(): Promise<void>;

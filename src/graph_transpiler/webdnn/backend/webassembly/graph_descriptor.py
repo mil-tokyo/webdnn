@@ -17,7 +17,8 @@ source_header = """
 #include <math.h>
 
 float static_buffer[%%STATIC_SIZE%%];
-float dynamic_buffer[1]; //dummy
+float* dynamic_buffer = nullptr;
+
 """
 
 source_init = """
@@ -29,6 +30,21 @@ extern "C" float* get_static_buffer(void) {
     return static_buffer;
 }
 
+extern "C" float* allocate_dynamic_buffer(int count) {
+    if (dynamic_buffer) {
+        free(dynamic_buffer);
+        dynamic_buffer = nullptr;
+    }
+    dynamic_buffer = (float*)malloc(count * sizeof(float));
+    return dynamic_buffer;
+}
+
+extern "C" float* get_dynamic_buffer(void) {
+    return dynamic_buffer;
+}
+extern "C" void set_placeholder_value(int kernel_order, int offset, int value) {
+    meta_buffers[kernel_order][offset] = value;
+}
 """
 
 source_exec = """
@@ -40,17 +56,18 @@ extern "C" void run() {
 
 
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
-    kernels: Iterable[Kernel]
+    kernels: List[Kernel]
     memory_layout: MemoryLayout
     inputs: Iterable[Variable]
     outputs: Iterable[Variable]
     constants_encoding: str
+    header_sources: Dict[str, str]
     footer_sources: Dict[str, str]
     required_heap: int
     licenses: Dict[str, str]
 
     def __init__(self,
-                 kernels: Iterable[Kernel],
+                 kernels: List[Kernel],
                  memory_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
@@ -62,32 +79,42 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
+        self.header_sources = OrderedDict()
         self.footer_sources = OrderedDict()
         self.required_heap = required_heap
         self.licenses = licenses
 
-    def generate_header_source(self):
-        return source_header \
+    def generate_top_source(self):
+        self.header_sources["top"] = source_header \
             .replace("%%STATIC_SIZE%%", str(self.memory_layout.static_size))
 
     def generate_init_source(self):
-        self.footer_sources["init"] = source_init \
+        self.header_sources["init"] = source_init \
             .replace("%%STATIC_SIZE%%", str(self.memory_layout.static_size))
 
     # noinspection PyMethodMayBeStatic
     def generate_exec_line(self, kernel: Kernel, serial: int):
-        line = f"const int meta_buf_{serial}[] = {{"
+        line = f"{kernel.exec_info.entry_func_name}(meta_buf_{serial});\n"
+        return line
+
+    def generate_kernel_metabuffer_initializer_line(self, kernel: Kernel, serial: int):
+        line = "int meta_buf_" + str(serial) + "[] = {"
         # see as int32 and convert to 12345,67890
         line += ",".join(map(str, np.fromstring(kernel.exec_info.meta_buffer, dtype=np.int32).tolist()))
         line += "};\n"
-        line += f"{kernel.exec_info.entry_func_name}(meta_buf_{serial});\n"
         return line
 
     def generate_exec_source(self):
         lines = ""
+        meta_buffer_initializer = ""
         for serial, kernel in enumerate(self.kernels):
+            meta_buffer_initializer += self.generate_kernel_metabuffer_initializer_line(kernel, serial)
             lines += self.generate_exec_line(kernel, serial)
+        meta_buffer_initializer += "int* meta_buffers[] = {"
+        meta_buffer_initializer += ",".join(["meta_buf_" + str(serial) for serial in range(len(self.kernels))])
+        meta_buffer_initializer += "};\n"
         self.footer_sources["exec"] = source_exec.replace("%%EXEC_LINES%%", lines)
+        self.header_sources["meta_buffer_initializer"] = meta_buffer_initializer
 
     def concat_kernel_sources(self):
         func_sources = OrderedDict()
@@ -99,12 +126,13 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
                 else:
                     func_sources[func_name] = source
 
-        self.generate_init_source()
+        self.generate_top_source()
         self.generate_exec_source()
+        self.generate_init_source()
         combined_source = \
-            self.generate_header_source() + \
+            "".join(self.header_sources.values()) + \
             "\n".join(func_sources.values()) + \
-            "\n".join(self.footer_sources.values())
+            "".join(self.footer_sources.values())
 
         return combined_source
 
@@ -124,11 +152,16 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
     def _to_serializable_(self):
         placeholders = self.get_all_placeholders()
+        unresolved_value_lists = []
+        for kernel in self.kernels:
+            unresolved_value_list = kernel.exec_info.unresolved_value_list or []
+            unresolved_value_lists.append([{"offset": v[0], "placeholder": v[1]} for v in unresolved_value_list])
 
         return {
             "weight_encoding": self.constants_encoding,
             "memory_layout": self.memory_layout,
             "placeholders": placeholders,
+            "unresolved_value_lists": unresolved_value_lists,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "licenses": self.licenses

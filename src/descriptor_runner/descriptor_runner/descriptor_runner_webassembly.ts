@@ -10,12 +10,12 @@ namespace WebDNN {
     export class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
         readonly backendName = 'webassembly';
 
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
-        worker: Worker | null;
-        worker_entry_js_path;
-        worker_promise_reject_func: any = null;
-        worker_initial_error: any = null;
+        private inputViews: SymbolicFloat32Array[] | null;
+        private outputViews: SymbolicFloat32Array[] | null;
+        private worker: Worker | null;
+        private worker_entry_js_path;
+        private worker_promise_reject_func: any = null;
+        private worker_initial_error: any = null;
 
         constructor(option?: any) {
             super();
@@ -43,6 +43,7 @@ namespace WebDNN {
                 throw new Error(`${graph_url} cannot be loaded`);
             }
             this.descriptor = await graph_fetch.json();
+            this.placeholderContext = new PlaceholderContext(this.descriptor!.placeholders);
 
             // for browsers which does not support wasm, try asm.js code
             let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
@@ -62,13 +63,78 @@ namespace WebDNN {
             weight_url = transformUrl(weight_url);
             let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
+
+
+            //assign buffer to input/output buffer view
+            (await this.getInputViews()).forEach(view => {
+                if (view.isDynamic) return;
+                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+            });
+
+            (await this.getOutputViews()).forEach(view => {
+                if (view.isDynamic) return;
+                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+            });
         }
 
-        setPlaceholderValue(placeholders: { [p: string]: number }): void {
-            throw Error('Not Implemented Yet')
+        async setPlaceholderValue(values: { [key: string]: number }): Promise<void> {
+            if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized.');
+            let placeholderContext = this.placeholderContext;
+
+            placeholderContext.update(values);
+            if (!placeholderContext.isResolved) return;
+
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+
+            let descriptor = this.descriptor;
+            let unresolvedValueLists = descriptor.unresolved_value_lists;
+
+            let metaBufferFillList: number[] = [];
+            for (let kernel_order = 0; kernel_order < unresolvedValueLists.length; kernel_order++) {
+                let unresolvedValueList = unresolvedValueLists[kernel_order];
+                unresolvedValueList.forEach((offset_placeholder) => {
+                    let resolved_value = placeholderContext.resolve(offset_placeholder.placeholder);
+                    metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
+                });
+            }
+
+
+            (await this.getInputViews()).forEach(view => {
+                if (!view.isDynamic) return;
+                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+            });
+
+            (await this.getOutputViews()).forEach(view => {
+                if (!view.isDynamic) return;
+                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+            });
+
+            let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
+
+            await this.setPlaceholderValueWorker(
+                dynamicBufferSize,
+                new Int32Array(metaBufferFillList));
         }
 
-        compile(): Promise<void> {
+        private setPlaceholderValueWorker(dynamicBufferSize: number, metaBufferFillArray: Int32Array): Promise<void> {
+            if (!this.worker) throw Error("Worker is not initialized");
+            let worker = this.worker;
+            return new Promise<void>((resolve, reject) => {
+                worker.onmessage = (event) => {
+                    if (event.data === 0) {
+                        resolve();
+                    } else {
+                        console.log(event.data);
+                        worker.terminate();
+                        reject(new Error(event.data));
+                    }
+                };
+
+                worker.postMessage({ type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray });
+            });
+        }
+
+        private compile(): Promise<void> {
             let worker = new Worker(this.worker_entry_js_path);
             worker.onerror = (event) => {
                 console.error(event);
@@ -99,7 +165,7 @@ namespace WebDNN {
             return promise;
         }
 
-        async loadWeights(weightsData: Uint8Array) {
+        private async loadWeights(weightsData: Uint8Array) {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
             if (!this.worker) throw new Error('Worker is not initialized');
 
@@ -119,84 +185,106 @@ namespace WebDNN {
                     }
                 };
 
-                worker.postMessage({type: 'weight', data: weight_data});
+                worker.postMessage({ type: 'weight', data: weight_data });
             });
 
             return promise;
         }
 
-        async getInputViews(): Promise<SymbolicFloat32Array[]> {
-            // if (this.inputViews) return this.inputViews;
-            //
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            //
-            // let views: Float32Array[] = [];
-            // for (let i = 0; i < this.descriptor.inputs.length; i++) {
-            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-            //     views.push(new Float32Array(var_alloc.size));
-            // }
-            // this.inputViews = views;
-            // return views;
-            return []
+        async getInputViews() {
+            if (this.inputViews) return this.inputViews;
+
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
+
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+
+            this.inputViews = descriptor.inputs.map(name => {
+                let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+
+                return view;
+            });
+
+            return this.inputViews;
         }
 
-        async getOutputViews(): Promise<SymbolicFloat32Array[]> {
-            // if (this.outputViews) return this.outputViews;
-            //
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            //
-            // let views: Float32Array[] = [];
-            // for (let i = 0; i < this.descriptor.outputs.length; i++) {
-            //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-            //     views.push(new Float32Array(var_alloc.size));
-            // }
-            // this.outputViews = views;
-            // return views;
-            return []
+        async getOutputViews() {
+            if (this.outputViews) return this.outputViews;
+
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
+
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+
+            this.outputViews = descriptor.outputs.map(name => {
+                let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
+                let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+
+                return view;
+            });
+
+            return this.outputViews;
         }
 
         async run(): Promise<void> {
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            // if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
-            // if (!this.worker) throw new Error('Worker is not initialized');
-            //
-            // let descriptor = this.descriptor;
-            // let worker = this.worker;
-            // let inputViews = this.inputViews;
-            // let outputViews = this.outputViews;
-            //
-            // let promise = new Promise<void>((resolve, reject) => {
-            //     // TODO: better way not to generate function on every run
-            //     this.worker_promise_reject_func = reject;
-            //     worker.onmessage = (event) => {
-            //         if (Array.isArray(event.data)) {
-            //             for (let i = 0; i < event.data.length; i++) {
-            //                 outputViews[i].set(event.data[i]);
-            //             }
-            //             resolve();
-            //         } else {
-            //             console.log(event.data);
-            //             worker.terminate();
-            //             reject(new Error(event.data));
-            //         }
-            //     };
-            //
-            //     let inputs: any = [];
-            //     for (let i = 0; i < descriptor.inputs.length; i++) {
-            //         let var_alloc = descriptor.memory_layout.allocations[descriptor.inputs[i]];
-            //         inputs.push({offset: var_alloc.offset, size: var_alloc.size, data: inputViews[i]});
-            //     }
-            //
-            //     let outputs: any = [];
-            //     for (let i = 0; i < descriptor.outputs.length; i++) {
-            //         let var_alloc = descriptor.memory_layout.allocations[descriptor.outputs[i]];
-            //         outputs.push({offset: var_alloc.offset, size: var_alloc.size});
-            //     }
-            //
-            //     worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
-            // });
-            //
-            // return promise;
+            if (!this.descriptor) throw new Error('Descriptor is not loaded');
+            if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
+            if (!this.worker) throw new Error('Worker is not initialized');
+
+            let descriptor = this.descriptor;
+            let worker = this.worker;
+            let inputViews = this.inputViews;
+            let outputViews = this.outputViews;
+
+            let promise = new Promise<void>((resolve, reject) => {
+                // TODO: better way not to generate function on every run
+                this.worker_promise_reject_func = reject;
+                worker.onmessage = (event) => {
+                    if (Array.isArray(event.data)) {
+                        for (let i = 0; i < event.data.length; i++) {
+                            outputViews[i].set(event.data[i]);
+                        }
+                        resolve();
+                    } else {
+                        console.log(event.data);
+                        worker.terminate();
+                        reject(new Error(event.data));
+                    }
+                };
+
+                let allocations = [descriptor.memory_layout.static.allocations, descriptor.memory_layout.dynamic.allocations];
+                let inputs: any = [];
+                for (let i = 0; i < descriptor.inputs.length; i++) {
+                    for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
+                        let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
+                        if (var_alloc) {
+                            let symAb = inputViews[i];
+                            inputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length, data: symAb.toActual() });
+                            break;
+                        }
+                    }
+                }
+
+                let outputs: any = [];
+                for (let i = 0; i < descriptor.outputs.length; i++) {
+                    for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
+                        let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
+                        if (var_alloc) {
+                            let symAb = outputViews[i];
+                            outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                            break;
+                        }
+                    }
+                }
+
+                worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+            });
+
+            return promise;
         }
     }
 }
