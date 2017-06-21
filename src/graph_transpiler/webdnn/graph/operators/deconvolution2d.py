@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
@@ -20,7 +20,7 @@ class Deconvolution2D(Operator):
 
     """
 
-    def __init__(self, name: str, ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
