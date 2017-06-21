@@ -1,32 +1,86 @@
 import copy
-from typing import Optional
+from collections import defaultdict
+from typing import Generic, TypeVar, Type, Callable, List, Dict, Optional
 
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
-from webdnn.backend.webgpu.generator import generate as generate_webgpu
-from webdnn.backend.webassembly.generator import generate as generate_webassembly
-from webdnn.backend.fallback.generator import generate as generate_fallback
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.graph import traverse
+from webdnn.graph.graph import Graph
+from webdnn.graph.operator import Operator
+from webdnn.util import console
 from webdnn.frontend.general_optimize_rule import GeneralOptimizeRule
 from webdnn.graph.graph import Graph
 from webdnn.util import flags
 
-# FIXME: ここでよい？
+backend_names = ["webgpu", "webassembly", "fallback"]
 
-generators = {"webgpu": generate_webgpu,
-              "webassembly": generate_webassembly,
-              "fallback": generate_fallback}
+T_KERNEL = TypeVar("T_KERNEL")
+T_EXEC_DATA = TypeVar("T_EXEC_DATA")
 
 
-def generate_descriptor(backend: str, graph: Graph, constant_encoder_name: Optional[str] = None) -> IGraphExecutionData:
-    if backend not in generators:
-        raise NotImplementedError()
+class DescriptorGenerator(Generic[T_KERNEL, T_EXEC_DATA]):
+    _handler_map = defaultdict(dict)  # type: Dict[str, Dict[str, Callable[[Operator, MemoryLayout], List[T_KERNEL]]]]
+
+    @classmethod
+    def generate(cls, graph: Graph, constant_encoder_name: str = None) -> T_EXEC_DATA:
+        raise NotImplementedError
+
+    @classmethod
+    def register_handler(cls, OperatorClass: Type[Operator]):
+        key = OperatorClass.__name__
+
+        def decorator(handler: Callable[[Operator, MemoryLayout], List[T_KERNEL]]):
+            if key in cls._handler_map[cls.__name__]:
+                console.warning(f"[{cls.__name__}] Generator handler of '{key}' is already registered and overwritten.")
+
+            cls._handler_map[cls.__name__][key] = handler
+
+        return decorator
+
+    @classmethod
+    def serialize_operator_type(cls, operator: Operator):
+        return operator.__class__.__name__
+
+    @classmethod
+    def generate_kernels(cls, graph: Graph, memory_layout: MemoryLayout) -> List[T_KERNEL]:
+        kernels = []  # Type: List[T_KERNEL]
+
+        for op in traverse.listup_operators(graph):
+            key = cls.serialize_operator_type(op)
+            if key not in cls._handler_map[cls.__name__]:
+                raise NotImplementedError(f"Operator {op} is not handled by any generator handler")
+
+            kernels += cls._handler_map[cls.__name__][key](op, memory_layout)
+
+        return kernels
+
+
+def get_generator(backend: str):
+    if backend == "webgpu":
+        from webdnn.backend.webgpu.generator import generate as generate_webgpu
+        return generate_webgpu
+    elif backend == "webassembly":
+        from webdnn.backend.webassembly.generator import generate as generate_webassembly
+        return generate_webassembly
+    elif backend == "fallback":
+        from webdnn.backend.fallback.generator import generate as generate_fallback
+        return generate_fallback
+    else:
+        raise NotImplementedError("No such backend")
+
+
+def generate_descriptor(backend: str, graph: Graph, **kwargs) -> IGraphExecutionData:
+    generator = get_generator(backend)
 
     try:
-        graph = copy.deepcopy(graph)  # FIXME: バックエンドごとの最適化でgraphが変わってしまうので入れてあるが、もっと良い方法があれば変更
+        # Graph is transformed by backend-specific optimization
+        graph = copy.deepcopy(graph)
     except RecursionError:
+        # Occurs when the graph has many nodes (e.g. ResNet)
         raise RecursionError("Recursion error occurred when copying graph." +
                              " sys.setrecursionlimit(10000) may help fixing it.")
 
     if flags.optimize.OPTIMIZE:
         graph, _ = GeneralOptimizeRule().optimize(graph)
 
-    return generators[backend](graph, constant_encoder_name=constant_encoder_name)
+    return generator(graph, **kwargs)

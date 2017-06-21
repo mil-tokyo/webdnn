@@ -10,7 +10,7 @@ import subprocess
 import tempfile as tmp
 
 from webdnn.backend.code_generator.allocator import Allocator
-from webdnn.backend.interface.descriptor_generator import DescriptorGenerator
+from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webgpu.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
@@ -118,7 +118,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
 class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     @classmethod
-    def generate(cls, graph: Graph, constant_encoder_name: str = None):
+    def generate(cls, graph: Graph, **kwargs):
         graph, _ = WebGPUOptimizeRule().optimize(graph)
         if flags.DEBUG:
             traverse.dump(graph)
@@ -128,7 +128,7 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
         console.debug(f"[GraphDescriptorGeneratorWebGPU] memory_layout static size: {memory_layout.static_size * 4}")
         console.debug(f"[GraphDescriptorGeneratorWebGPU] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
-        constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
         constants_bytes = constant_encoder.encode(memory_layout)
 
         console.debug(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
@@ -150,8 +150,8 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
         return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None):
-    return WebGPUDescriptorGenerator.generate(graph, constant_encoder_name)
+def generate(graph: Graph, **kwargs):
+    return WebGPUDescriptorGenerator.generate(graph, **kwargs)
 
 
 WebGPUDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)

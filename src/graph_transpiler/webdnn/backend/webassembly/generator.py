@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 from webdnn.backend.code_generator.allocator import Allocator
-from webdnn.backend.interface.descriptor_generator import DescriptorGenerator
+from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webassembly.graph_descriptor import GraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
@@ -132,7 +132,7 @@ class GraphExecutionData(IGraphExecutionData):
 
 class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     @classmethod
-    def generate(cls, graph: Graph, constant_encoder_name: str = None):
+    def generate(cls, graph: Graph, **kwargs):
         graph, _ = WebassemblyOptimizeRule().optimize(graph)
         if flags.DEBUG:
             traverse.dump(graph)
@@ -144,14 +144,15 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
-        constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
         constants_bytes = constant_encoder.encode(memory_layout)
 
         console.debug(f"[WebassemblyDescriptorGenerator] constants encoded size: {len(constants_bytes)}")
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
-        required_heap = (int((memory_layout.total_size * 4) // (16 * 1024 * 1024)) + 2) * 16 * 1024 * 1024  # required + 16MB
+        required_heap = (int(
+            (memory_layout.total_size * 4) // (16 * 1024 * 1024)) + 2) * 16 * 1024 * 1024  # required + 16MB
 
         descriptor = GraphDescriptor(
             kernels=kernels,
@@ -165,8 +166,8 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
         return GraphExecutionData(descriptor, constants_bytes)
 
 
-def generate(graph: Graph, constant_encoder_name: str = None):
-    return WebassemblyDescriptorGenerator.generate(graph, constant_encoder_name)
+def generate(graph: Graph, **kwargs):
+    return WebassemblyDescriptorGenerator.generate(graph, **kwargs)
 
 
 WebassemblyDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)
