@@ -5,11 +5,11 @@ namespace WebDNN {
     export class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
         readonly backendName = 'fallback';
 
-        kernelObj: any;
-        rawArray: Float32Array | null;
-        variableArrays: Map<string, Float32Array> | null;
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
+        private kernelObj: any;
+        private rawArray: Float32Array | null;
+        private variableArrays: Map<string, Float32Array> | null;
+        private inputViews: Float32Array[] | null;
+        private outputViews: Float32Array[] | null;
 
         init(): Promise<void> {
             //nothing to do
