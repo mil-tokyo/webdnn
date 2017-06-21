@@ -96,6 +96,8 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("WASM=1")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
+        args.append("-s")
+        args.append(f"ALLOW_MEMORY_GROWTH=1")  # cannot be used in asm.js
         args.append("--pre-js")
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
@@ -151,8 +153,16 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
-        required_heap = (int(
-            (memory_layout.total_size * 4) // (16 * 1024 * 1024)) + 2) * 16 * 1024 * 1024  # required + 16MB
+        # FIXME: specify allocation size for dynamic buffer by user
+        heap_block_size = 16 * 1024 * 1024
+        if isinstance(memory_layout.dynamic_size, int):
+            dynamic_size_byte_int = memory_layout.dynamic_size * 4
+        else:
+            dynamic_size_byte_int = kwargs.get("dynamic_allocation_size", heap_block_size)
+        total_size_byte = memory_layout.static_size * 4 + dynamic_size_byte_int
+
+        # required for calculation (size ceiling to one block) + one block
+        required_heap = ((total_size_byte + heap_block_size - 1) // heap_block_size + 1) * heap_block_size
 
         descriptor = GraphDescriptor(
             kernels=kernels,
