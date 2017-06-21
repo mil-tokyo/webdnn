@@ -73,7 +73,7 @@ declare namespace WebDNN {
     }
 }
 declare namespace WebDNN {
-    abstract class SymbolicArrayBufferView<T extends ArrayBufferView> {
+    abstract class SymbolicArrayBufferView<T extends Float32Array | Int32Array> {
         protected arrayBuffer: ArrayBuffer;
         protected allocation: Allocation;
         protected placeholderContext?: PlaceholderContext;
@@ -83,30 +83,52 @@ declare namespace WebDNN {
          * the error is thrown.
          */
         abstract toActual(): T;
-        /**
-         * Sets a value or an array of values.
-         * @param array A typed or untyped array of values to set.
-         * @param offset The index in the current array at which the values are to be written.
-         */
-        abstract set(array: ArrayLike<number>, offset?: number): any;
         constructor(allocation: Allocation, placeholderContext?: PlaceholderContext);
         setArrayBuffer(arrayBuffer: any): void;
         readonly isDynamic: boolean;
         readonly offset: any;
         readonly length: any;
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        set(array: ArrayLike<number>, offset?: number): void;
     }
     class SymbolicFloat32Array extends SymbolicArrayBufferView<Float32Array> {
         toActual(): Float32Array;
-        set(array: ArrayLike<number>, offset?: number): void;
     }
     class SymbolicInt32Array extends SymbolicArrayBufferView<Int32Array> {
         toActual(): Int32Array;
-        set(array: ArrayLike<number>, offset?: number): void;
     }
 }
 declare namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
      */
     abstract class DescriptorRunner<D extends GraphDescriptor> {
         readonly backendName: string;
@@ -131,17 +153,12 @@ declare namespace WebDNN {
          * @param progressCallback callback which is called to notice the loading is progressing.
          */
         abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+        /**
+         * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
+         */
         abstract setPlaceholderValue(placeholders: {
             [key: string]: number;
         }): void;
-        /**
-         * compile kernels.
-         */
-        abstract compile(): Promise<void>;
-        /**
-         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
-         */
-        abstract run(): Promise<void>;
         /**
          * Get input ArrayBufferView object
          */
@@ -150,6 +167,10 @@ declare namespace WebDNN {
          * Get output ArrayBufferView object
          */
         abstract getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        /**
+         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
+         */
+        abstract run(): Promise<void>;
     }
 }
 declare namespace WebDNN {
@@ -374,22 +395,22 @@ declare namespace WebDNN {
 declare namespace WebDNN {
     class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName: string;
-        webgpuHandler: WebGPUHandler;
-        shaderLanguage: string;
-        staticBuffer: BufferWebGPU | null;
-        dynamicBuffer: BufferWebGPU | null;
-        metaBuffers: BufferWebGPU[] | null;
+        private webgpuHandler;
+        private shaderLanguage;
+        private staticBuffer;
+        private dynamicBuffer;
+        private metaBuffers;
         private inputViews;
         private outputViews;
         constructor(option?: any);
         init(): Promise<void>;
         private initializeBasicKernels();
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        initializeStaticBuffer(weightRawArray: ArrayBuffer): Promise<void>;
-        initializeMetaBuffers(): Promise<void>;
-        initializeDynamicBuffer(): Promise<void>;
-        setDescriptor(descriptor: GraphDescriptorWebGPU): Promise<void>;
-        compile(): Promise<void>;
+        private initializeStaticBuffer(weightRawArray);
+        private initializeMetaBuffers();
+        private initializeDynamicBuffer();
+        private setDescriptor(descriptor);
+        private compile();
         setPlaceholderValue(values: {
             [key: string]: number;
         }): Promise<void>;
@@ -443,11 +464,11 @@ declare namespace WebDNN {
 declare namespace WebDNN {
     class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
         readonly backendName: string;
-        kernelObj: any;
-        rawArray: Float32Array | null;
-        variableArrays: Map<string, Float32Array> | null;
-        inputViews: Float32Array[] | null;
-        outputViews: Float32Array[] | null;
+        private kernelObj;
+        private rawArray;
+        private variableArrays;
+        private inputViews;
+        private outputViews;
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         setPlaceholderValue(placeholders: {

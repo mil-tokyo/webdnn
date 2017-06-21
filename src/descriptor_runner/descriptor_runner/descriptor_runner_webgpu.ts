@@ -11,12 +11,12 @@ namespace WebDNN {
     export class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName = 'webgpu';
 
-        webgpuHandler: WebGPUHandler;
-        shaderLanguage: string;
+        private webgpuHandler: WebGPUHandler;
+        private shaderLanguage: string;
 
-        staticBuffer: BufferWebGPU | null;
-        dynamicBuffer: BufferWebGPU | null;
-        metaBuffers: BufferWebGPU[] | null;
+        private staticBuffer: BufferWebGPU | null;
+        private dynamicBuffer: BufferWebGPU | null;
+        private metaBuffers: BufferWebGPU[] | null;
 
         private inputViews: SymbolicFloat32Array[] | null;
         private outputViews: SymbolicFloat32Array[] | null;
@@ -71,7 +71,7 @@ namespace WebDNN {
             if (this.placeholderContext && this.placeholderContext.isResolved) await this.initializeDynamicBuffer();
         }
 
-        async initializeStaticBuffer(weightRawArray: ArrayBuffer) {
+        private async initializeStaticBuffer(weightRawArray: ArrayBuffer) {
             if (!this.descriptor) throw Error("GraphDescriptor is not loaded.");
             let descriptor = this.descriptor;
 
@@ -93,7 +93,7 @@ namespace WebDNN {
             });
         }
 
-        async initializeMetaBuffers() {
+        private async initializeMetaBuffers() {
             if (!this.descriptor) throw Error("GraphDescriptor is not loaded.");
 
             this.metaBuffers = await Promise.all<BufferWebGPU>(
@@ -106,7 +106,7 @@ namespace WebDNN {
             );
         }
 
-        async initializeDynamicBuffer() {
+        private async initializeDynamicBuffer() {
             if (!this.descriptor) throw Error("GraphDescriptor is not loaded.");
             if (!this.placeholderContext) throw Error("PlaceholderContext is not initialized.");
             if (!this.placeholderContext.isResolved) throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
@@ -126,7 +126,7 @@ namespace WebDNN {
             });
         }
 
-        async setDescriptor(descriptor: GraphDescriptorWebGPU) {
+        private async setDescriptor(descriptor: GraphDescriptorWebGPU) {
             this.descriptor = descriptor;
 
             //reset all datum depend on old descriptor
@@ -136,7 +136,7 @@ namespace WebDNN {
             this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
         }
 
-        async compile() {
+        private async compile() {
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
 
             this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');

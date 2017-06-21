@@ -89,23 +89,25 @@ var WebDNN;
                 return this.allocation.size;
             }
         }
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        set(array, offset) {
+            return this.toActual().set(array, offset);
+        }
     }
     WebDNN.SymbolicArrayBufferView = SymbolicArrayBufferView;
     class SymbolicFloat32Array extends SymbolicArrayBufferView {
         toActual() {
             return new Float32Array(this.arrayBuffer, this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
         }
-        set(array, offset) {
-            return this.toActual().set(array, offset);
-        }
     }
     WebDNN.SymbolicFloat32Array = SymbolicFloat32Array;
     class SymbolicInt32Array extends SymbolicArrayBufferView {
         toActual() {
             return new Int32Array(this.arrayBuffer, this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
-        }
-        set(array, offset) {
-            return this.toActual().set(array, offset);
         }
     }
     WebDNN.SymbolicInt32Array = SymbolicInt32Array;
@@ -117,6 +119,30 @@ var WebDNN;
 (function (WebDNN) {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
      */
     class DescriptorRunner {
         constructor() {
