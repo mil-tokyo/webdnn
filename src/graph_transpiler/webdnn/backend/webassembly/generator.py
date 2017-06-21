@@ -91,7 +91,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append("WASM=1")
         args.append("-s")
@@ -117,7 +117,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
         args.append("--pre-js")
@@ -140,7 +140,6 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
             traverse.dump(graph)
 
         memory_layout = Allocator.allocate(graph)
-        assert memory_layout.dynamic_size == 0, "Currently webassembly does not support dynamic buffer (=Placeholder)"
 
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
@@ -153,7 +152,6 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
-        # FIXME: specify allocation size for dynamic buffer by user
         heap_block_size = 16 * 1024 * 1024
         if isinstance(memory_layout.dynamic_size, int):
             dynamic_size_byte_int = memory_layout.dynamic_size * 4

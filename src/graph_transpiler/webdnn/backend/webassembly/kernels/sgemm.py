@@ -56,21 +56,15 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     float *B = %%LOAD_BUFFER(sgemm_B)%%;
     float *C = %%LOAD_BUFFER(sgemm_C)%%;
 
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
-    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
-    //Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
-    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_K)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%LOAD_BUFFER(sgemm_K)%%, %%LOAD_BUFFER(sgemm_N)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_N)%%);
 
     c_mat.noalias() = a_mat * b_mat;
 }
 """ \
         .replace("%%A_MAJOR%%", "RowMajor" if transpose_A else "ColMajor") \
-        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor") \
-        .replace("%%M%%", str(M)) \
-        .replace("%%N%%", str(N)) \
-        .replace("%%K%%", str(K))
+        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
 
 
 def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:

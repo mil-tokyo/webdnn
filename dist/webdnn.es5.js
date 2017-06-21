@@ -108,7 +108,9 @@ var WebDNN;
 var WebDNN;
 (function (WebDNN) {
     var SymbolicArrayBufferView = (function () {
-        function SymbolicArrayBufferView(allocation, placeholderContext) {
+        function SymbolicArrayBufferView(allocation, placeholderContext, ignoreOffsetOnActual) {
+            if (ignoreOffsetOnActual === void 0) { ignoreOffsetOnActual = false; }
+            this.ignoreOffsetOnActual = ignoreOffsetOnActual;
             this.allocation = allocation;
             if (this.isDynamic) {
                 if (!placeholderContext) {
@@ -129,6 +131,7 @@ var WebDNN;
         });
         Object.defineProperty(SymbolicArrayBufferView.prototype, "offset", {
             get: function () {
+                //TODO
                 if (this.isDynamic) {
                     return this.placeholderContext.resolve(this.allocation.offset);
                 }
@@ -168,7 +171,7 @@ var WebDNN;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         SymbolicFloat32Array.prototype.toActual = function () {
-            return new Float32Array(this.arrayBuffer, this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
+            return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
         };
         return SymbolicFloat32Array;
     }(SymbolicArrayBufferView));
@@ -179,7 +182,7 @@ var WebDNN;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         SymbolicInt32Array.prototype.toActual = function () {
-            return new Int32Array(this.arrayBuffer, this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
+            return new Int32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
         };
         return SymbolicInt32Array;
     }(SymbolicArrayBufferView));
@@ -1119,6 +1122,7 @@ var WebDNN;
                             return [4 /*yield*/, graph_fetch.json()];
                         case 2:
                             _a.descriptor = _c.sent();
+                            this.placeholderContext = new WebDNN.PlaceholderContext(this.descriptor.placeholders);
                             kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
                             worker_entry_js_path = directory + "/kernels_" + kernel_backend + ".js";
                             if (this.ignoreCache) {
@@ -1142,13 +1146,93 @@ var WebDNN;
                             return [4 /*yield*/, this.loadWeights(new Uint8Array(weights_data_ab))];
                         case 6:
                             _c.sent();
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 7:
+                            //assign buffer to input/output buffer view
+                            (_c.sent()).forEach(function (view) {
+                                if (view.isDynamic)
+                                    return;
+                                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+                            });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 8:
+                            (_c.sent()).forEach(function (view) {
+                                if (view.isDynamic)
+                                    return;
+                                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+                            });
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        DescriptorRunnerWebassembly.prototype.setPlaceholderValue = function (placeholders) {
-            throw Error('Not Implemented Yet');
+        DescriptorRunnerWebassembly.prototype.setPlaceholderValue = function (values) {
+            return __awaiter(this, void 0, void 0, function () {
+                var placeholderContext, descriptor, unresolvedValueLists, metaBufferFillList, _loop_1, kernel_order, dynamicBufferSize;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.placeholderContext)
+                                throw new Error('PlaceholderContext is not initialized.');
+                            placeholderContext = this.placeholderContext;
+                            placeholderContext.update(values);
+                            if (!placeholderContext.isResolved)
+                                return [2 /*return*/];
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            descriptor = this.descriptor;
+                            unresolvedValueLists = descriptor.unresolved_value_lists;
+                            metaBufferFillList = [];
+                            _loop_1 = function (kernel_order) {
+                                var unresolvedValueList = unresolvedValueLists[kernel_order];
+                                unresolvedValueList.forEach(function (offset_placeholder) {
+                                    var resolved_value = placeholderContext.resolve(offset_placeholder.placeholder);
+                                    metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
+                                });
+                            };
+                            for (kernel_order = 0; kernel_order < unresolvedValueLists.length; kernel_order++) {
+                                _loop_1(kernel_order);
+                            }
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 1:
+                            (_a.sent()).forEach(function (view) {
+                                if (!view.isDynamic)
+                                    return;
+                                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+                            });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 2:
+                            (_a.sent()).forEach(function (view) {
+                                if (!view.isDynamic)
+                                    return;
+                                view.setArrayBuffer((new Float32Array(view.length)).buffer);
+                            });
+                            dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
+                            return [4 /*yield*/, this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList))];
+                        case 3:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebassembly.prototype.setPlaceholderValueWorker = function (dynamicBufferSize, metaBufferFillArray) {
+            if (!this.worker)
+                throw Error("Worker is not initialized");
+            var worker = this.worker;
+            return new Promise(function (resolve, reject) {
+                worker.onmessage = function (event) {
+                    if (event.data === 0) {
+                        resolve();
+                    }
+                    else {
+                        console.log(event.data);
+                        worker.terminate();
+                        reject(new Error(event.data));
+                    }
+                };
+                worker.postMessage({ type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray });
+            });
         };
         DescriptorRunnerWebassembly.prototype.compile = function () {
             var _this = this;
@@ -1219,44 +1303,104 @@ var WebDNN;
         };
         DescriptorRunnerWebassembly.prototype.getInputViews = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var descriptor, placeholderContext;
                 return __generator(this, function (_a) {
-                    // if (this.inputViews) return this.inputViews;
-                    //
-                    // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-                    //
-                    // let views: Float32Array[] = [];
-                    // for (let i = 0; i < this.descriptor.inputs.length; i++) {
-                    //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.inputs[i]];
-                    //     views.push(new Float32Array(var_alloc.size));
-                    // }
-                    // this.inputViews = views;
-                    // return views;
-                    return [2 /*return*/, []];
+                    if (this.inputViews)
+                        return [2 /*return*/, this.inputViews];
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    if (!this.placeholderContext)
+                        throw new Error('PlaceholderContext is not initialized');
+                    descriptor = this.descriptor;
+                    placeholderContext = this.placeholderContext;
+                    this.inputViews = descriptor.inputs.map(function (name) {
+                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                        return view;
+                    });
+                    return [2 /*return*/, this.inputViews];
                 });
             });
         };
         DescriptorRunnerWebassembly.prototype.getOutputViews = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var descriptor, placeholderContext;
                 return __generator(this, function (_a) {
-                    // if (this.outputViews) return this.outputViews;
-                    //
-                    // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-                    //
-                    // let views: Float32Array[] = [];
-                    // for (let i = 0; i < this.descriptor.outputs.length; i++) {
-                    //     let var_alloc = this.descriptor.memory_layout.allocations[this.descriptor.outputs[i]];
-                    //     views.push(new Float32Array(var_alloc.size));
-                    // }
-                    // this.outputViews = views;
-                    // return views;
-                    return [2 /*return*/, []];
+                    if (this.outputViews)
+                        return [2 /*return*/, this.outputViews];
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    if (!this.placeholderContext)
+                        throw new Error('PlaceholderContext is not initialized');
+                    descriptor = this.descriptor;
+                    placeholderContext = this.placeholderContext;
+                    this.outputViews = descriptor.outputs.map(function (name) {
+                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                        // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
+                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                        return view;
+                    });
+                    return [2 /*return*/, this.outputViews];
                 });
             });
         };
         DescriptorRunnerWebassembly.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                var descriptor, worker, inputViews, outputViews, promise;
                 return __generator(this, function (_a) {
-                    return [2 /*return*/];
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    if (!this.inputViews || !this.outputViews)
+                        throw new Error('getInputViews and getOutputViews must be called prior to run');
+                    if (!this.worker)
+                        throw new Error('Worker is not initialized');
+                    descriptor = this.descriptor;
+                    worker = this.worker;
+                    inputViews = this.inputViews;
+                    outputViews = this.outputViews;
+                    promise = new Promise(function (resolve, reject) {
+                        // TODO: better way not to generate function on every run
+                        _this.worker_promise_reject_func = reject;
+                        worker.onmessage = function (event) {
+                            if (Array.isArray(event.data)) {
+                                for (var i = 0; i < event.data.length; i++) {
+                                    outputViews[i].set(event.data[i]);
+                                }
+                                resolve();
+                            }
+                            else {
+                                console.log(event.data);
+                                worker.terminate();
+                                reject(new Error(event.data));
+                            }
+                        };
+                        var allocations = [descriptor.memory_layout.static.allocations, descriptor.memory_layout.dynamic.allocations];
+                        var inputs = [];
+                        for (var i = 0; i < descriptor.inputs.length; i++) {
+                            for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
+                                var var_alloc = allocations[allocation_space][descriptor.inputs[i]];
+                                if (var_alloc) {
+                                    var symAb = inputViews[i];
+                                    inputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length, data: symAb.toActual() });
+                                    break;
+                                }
+                            }
+                        }
+                        var outputs = [];
+                        for (var i = 0; i < descriptor.outputs.length; i++) {
+                            for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
+                                var var_alloc = allocations[allocation_space][descriptor.outputs[i]];
+                                if (var_alloc) {
+                                    var symAb = outputViews[i];
+                                    outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                                    break;
+                                }
+                            }
+                        }
+                        worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+                    });
+                    return [2 /*return*/, promise];
                 });
             });
         };

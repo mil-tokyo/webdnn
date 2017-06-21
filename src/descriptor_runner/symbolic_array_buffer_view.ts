@@ -14,7 +14,7 @@ namespace WebDNN {
          */
         abstract toActual(): T;
 
-        constructor(allocation: Allocation, placeholderContext?: PlaceholderContext) {
+        constructor(allocation: Allocation, placeholderContext?: PlaceholderContext, protected ignoreOffsetOnActual: boolean = false) {
             this.allocation = allocation;
 
             if (this.isDynamic) {
@@ -35,6 +35,7 @@ namespace WebDNN {
         }
 
         get offset() {
+            //TODO
             if (this.isDynamic) {
                 return this.placeholderContext!.resolve(this.allocation.offset);
 
@@ -66,7 +67,7 @@ namespace WebDNN {
         toActual() {
             return new Float32Array(
                 this.arrayBuffer,
-                this.offset * Float32Array.BYTES_PER_ELEMENT,
+                this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT,
                 this.length
             );
         }
@@ -76,7 +77,7 @@ namespace WebDNN {
         toActual() {
             return new Int32Array(
                 this.arrayBuffer,
-                this.offset * Int32Array.BYTES_PER_ELEMENT,
+                this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT,
                 this.length
             );
         }
