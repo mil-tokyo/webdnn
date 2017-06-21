@@ -151,6 +151,14 @@ var WebDNN;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        SymbolicArrayBufferView.prototype.set = function (array, offset) {
+            return this.toActual().set(array, offset);
+        };
         return SymbolicArrayBufferView;
     }());
     WebDNN.SymbolicArrayBufferView = SymbolicArrayBufferView;
@@ -161,9 +169,6 @@ var WebDNN;
         }
         SymbolicFloat32Array.prototype.toActual = function () {
             return new Float32Array(this.arrayBuffer, this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
-        };
-        SymbolicFloat32Array.prototype.set = function (array, offset) {
-            return this.toActual().set(array, offset);
         };
         return SymbolicFloat32Array;
     }(SymbolicArrayBufferView));
@@ -176,9 +181,6 @@ var WebDNN;
         SymbolicInt32Array.prototype.toActual = function () {
             return new Int32Array(this.arrayBuffer, this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
         };
-        SymbolicInt32Array.prototype.set = function (array, offset) {
-            return this.toActual().set(array, offset);
-        };
         return SymbolicInt32Array;
     }(SymbolicArrayBufferView));
     WebDNN.SymbolicInt32Array = SymbolicInt32Array;
@@ -190,6 +192,30 @@ var WebDNN;
 (function (WebDNN) {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
      */
     var DescriptorRunner = (function () {
         function DescriptorRunner() {

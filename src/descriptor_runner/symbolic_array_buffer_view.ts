@@ -2,7 +2,7 @@
 ///<reference path="./placeholder.ts" />
 
 namespace WebDNN {
-    export abstract class SymbolicArrayBufferView<T extends ArrayBufferView> {
+    export abstract class SymbolicArrayBufferView<T extends Float32Array | Int32Array> {
         protected arrayBuffer: ArrayBuffer;
         protected allocation: Allocation;
         protected placeholderContext?: PlaceholderContext;
@@ -13,13 +13,6 @@ namespace WebDNN {
          * the error is thrown.
          */
         abstract toActual(): T;
-
-        /**
-         * Sets a value or an array of values.
-         * @param array A typed or untyped array of values to set.
-         * @param offset The index in the current array at which the values are to be written.
-         */
-        abstract set(array: ArrayLike<number>, offset?: number);
 
         constructor(allocation: Allocation, placeholderContext?: PlaceholderContext) {
             this.allocation = allocation;
@@ -58,6 +51,15 @@ namespace WebDNN {
                 return (this.allocation as ResolvedAllocation).size;
             }
         }
+
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        set(array: ArrayLike<number>, offset?: number): void {
+            return this.toActual().set(array, offset);
+        }
     }
 
     export class SymbolicFloat32Array extends SymbolicArrayBufferView<Float32Array> {
@@ -68,10 +70,6 @@ namespace WebDNN {
                 this.length
             );
         }
-
-        set(array: ArrayLike<number>, offset?: number): void {
-            return this.toActual().set(array, offset);
-        }
     }
 
     export class SymbolicInt32Array extends SymbolicArrayBufferView<Int32Array> {
@@ -81,10 +79,6 @@ namespace WebDNN {
                 this.offset * Int32Array.BYTES_PER_ELEMENT,
                 this.length
             );
-        }
-
-        set(array: ArrayLike<number>, offset?: number): void {
-            return this.toActual().set(array, offset);
         }
     }
 }

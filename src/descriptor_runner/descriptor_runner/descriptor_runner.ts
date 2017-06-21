@@ -5,6 +5,30 @@
 namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
      */
     export abstract class DescriptorRunner<D extends GraphDescriptor> {
         readonly backendName: string;
@@ -32,17 +56,10 @@ namespace WebDNN {
          */
         abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
+        /**
+         * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
+         */
         abstract setPlaceholderValue(placeholders: { [key: string]: number }): void;
-
-        /**
-         * compile kernels.
-         */
-        abstract compile(): Promise<void>;
-
-        /**
-         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
-         */
-        abstract run(): Promise<void>;
 
         /**
          * Get input ArrayBufferView object
@@ -53,5 +70,10 @@ namespace WebDNN {
          * Get output ArrayBufferView object
          */
         abstract getOutputViews(): Promise<SymbolicFloat32Array[]>;
+
+        /**
+         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
+         */
+        abstract run(): Promise<void>;
     }
 }
