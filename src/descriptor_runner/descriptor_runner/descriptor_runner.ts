@@ -39,7 +39,7 @@ namespace WebDNN {
         /**
          * Initialize this runner
          */
-        abstract init(): Promise<void>;
+        abstract async init(): Promise<void>;
 
         /**
          * Fetch descriptor from specified directory.
@@ -54,26 +54,26 @@ namespace WebDNN {
          *
          * @param progressCallback callback which is called to notice the loading is progressing.
          */
-        abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+        abstract async load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
         /**
          * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
          */
-        abstract setPlaceholderValue(placeholders: { [key: string]: number }): void;
+        abstract async setPlaceholderValue(values: { [key: string]: number }): Promise<void>;
 
         /**
          * Get input ArrayBufferView object
          */
-        abstract getInputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract async getInputViews(): Promise<SymbolicFloat32Array[]>;
 
         /**
          * Get output ArrayBufferView object
          */
-        abstract getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract async getOutputViews(): Promise<SymbolicFloat32Array[]>;
 
         /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
-        abstract run(): Promise<void>;
+        abstract async run(): Promise<void>;
     }
 }

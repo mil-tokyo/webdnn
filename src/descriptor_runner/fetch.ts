@@ -11,6 +11,10 @@ let transformDelegate: (base: string) => string = url => url;
 let fetchDelegate: (input: RequestInfo, init?: RequestInit) => Promise<Response> = window.fetch;
 
 namespace WebDNN {
+    export interface WebDNNRequestInit extends RequestInit {
+        ignoreCache: boolean
+    }
+
     /**
      * Register delegate function for transform url
      * @param url url which will be transformed
@@ -39,9 +43,18 @@ namespace WebDNN {
      * Fetch function. WebDNN API use this fetch function instead of original fetch function.
      * @param input Requested url
      * @param init Additional information about fetch
+     * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
      * @returns Response
      */
-    export async function fetch(input: RequestInfo, init?: RequestInit) {
+    export async function fetch(input: RequestInfo, init?: WebDNNRequestInit) {
+        if (typeof input == 'string') {
+            input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
+        } else {
+            input = Object.assign({}, input, {
+                url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
+            });
+        }
+
         let res = await fetchDelegate(input, init);
         if (!res.ok) throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
         return res;

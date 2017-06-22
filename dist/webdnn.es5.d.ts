@@ -43,7 +43,7 @@ declare namespace WebDNN {
         update(values: {
             [key: string]: number | null;
         }): void;
-        resolve(placeholder: number | Placeholder): any;
+        resolve(placeholder: any): any;
         toString(): string;
     }
 }
@@ -157,9 +157,9 @@ declare namespace WebDNN {
         /**
          * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
          */
-        abstract setPlaceholderValue(placeholders: {
+        abstract setPlaceholderValue(values: {
             [key: string]: number;
-        }): void;
+        }): Promise<void>;
         /**
          * Get input ArrayBufferView object
          */
@@ -346,6 +346,9 @@ declare let transformDelegate: (base: string) => string;
  */
 declare let fetchDelegate: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 declare namespace WebDNN {
+    interface WebDNNRequestInit extends RequestInit {
+        ignoreCache: boolean;
+    }
     /**
      * Register delegate function for transform url
      * @param url url which will be transformed
@@ -365,9 +368,10 @@ declare namespace WebDNN {
      * Fetch function. WebDNN API use this fetch function instead of original fetch function.
      * @param input Requested url
      * @param init Additional information about fetch
+     * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
      * @returns Response
      */
-    function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
+    function fetch(input: RequestInfo, init?: WebDNNRequestInit): Promise<Response>;
     /**
      * Read `Response.body` stream as ArrayBuffer. This function provide progress information by callback.
      * @param res Response object
@@ -403,6 +407,7 @@ declare namespace WebDNN {
         private metaBuffers;
         private inputViews;
         private outputViews;
+        private executionInfos;
         constructor(option?: any);
         init(): Promise<void>;
         private initializeBasicKernels();
@@ -466,24 +471,26 @@ declare namespace WebDNN {
         call_option: any;
     }
 }
+declare function wait(duration?: number): Promise<{}>;
 declare namespace WebDNN {
     class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
         readonly backendName: string;
         private kernelObj;
-        private rawArray;
-        private variableArrays;
+        private variableMap;
         private inputViews;
         private outputViews;
+        private staticBuffer;
+        private dynamicBuffer;
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
-        setPlaceholderValue(placeholders: {
-            [p: string]: number;
-        }): void;
-        compile(): Promise<void>;
-        private compileKernel();
-        loadWeights(weightsData: Uint8Array): Promise<void>;
+        private setDescriptor(descriptor);
+        private compile();
+        private initializeStaticBuffer(weightRawArray);
+        private initializeDynamicBuffer();
+        setPlaceholderValue(values: {
+            [key: string]: number;
+        }): Promise<void>;
         run(): Promise<void>;
-        wait_to_display(): Promise<{}>;
         getInputViews(): Promise<SymbolicFloat32Array[]>;
         getOutputViews(): Promise<SymbolicFloat32Array[]>;
     }
