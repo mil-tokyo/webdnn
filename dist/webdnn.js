@@ -40,11 +40,25 @@ var WebDNN;
             Object.assign(this.values, values);
         }
         resolve(placeholder) {
-            if (typeof placeholder == 'number')
+            // Literal value => return itself.
+            if (typeof placeholder !== 'object')
                 return placeholder;
-            if (!this.isResolved)
-                throw Error(`Not all placeholders are resolved: ${this}`);
-            return ((placeholders) => eval(placeholder.eval))(this.values);
+            // Placeholder object ( { eval: string } ) => resolve
+            if (Object.keys(placeholder).length == 1 && 'eval' in placeholder) {
+                if (!this.isResolved)
+                    throw Error(`Not all placeholders are resolved: ${this}`);
+                return ((placeholders) => eval(placeholder.eval))(this.values);
+            }
+            // Array => deep copy
+            if (placeholder instanceof Array) {
+                return placeholder.map((value) => this.resolve(value));
+            }
+            // Object => deep copy
+            return Object.entries(placeholder)
+                .reduce((result, [key, value]) => {
+                result[key] = this.resolve(value);
+                return result;
+            }, {});
         }
         toString() {
             return JSON.stringify(this.values);
@@ -473,9 +487,18 @@ var WebDNN;
      * Fetch function. WebDNN API use this fetch function instead of original fetch function.
      * @param input Requested url
      * @param init Additional information about fetch
+     * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
      * @returns Response
      */
     async function fetch(input, init) {
+        if (typeof input == 'string') {
+            input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
+        }
+        else {
+            input = Object.assign({}, input, {
+                url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
+            });
+        }
         let res = await fetchDelegate(input, init);
         if (!res.ok)
             throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
@@ -549,19 +572,11 @@ var WebDNN;
             this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
         }
         async load(directory, progressCallback) {
-            let descriptorUrl = `${directory}/graph_${this.backendName}.json`;
-            let weightUrl = `${directory}/weight_${this.backendName}.bin`;
-            if (this.ignoreCache) {
-                descriptorUrl += '?t=' + Date.now();
-                weightUrl += '?t=' + Date.now();
-            }
-            descriptorUrl = WebDNN.transformUrl(descriptorUrl);
-            weightUrl = WebDNN.transformUrl(weightUrl);
-            let descriptorResponse = await WebDNN.fetch(descriptorUrl);
-            let weightResponse = await WebDNN.fetch(weightUrl);
             let [descriptor, weightRawArray] = await Promise.all([
-                await descriptorResponse.json(),
-                await WebDNN.readArrayBufferProgressively(weightResponse, progressCallback)
+                WebDNN.fetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
+                    .then(res => res.json()),
+                WebDNN.fetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
+                    .then(res => WebDNN.readArrayBufferProgressively(res, progressCallback))
             ]);
             await this.setDescriptor(descriptor);
             await this.compile();
@@ -578,17 +593,12 @@ var WebDNN;
             this.staticBuffer = staticBuffer;
             let decoder = WebDNN.get_weight_decoder(descriptor.weight_encoding);
             await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray), descriptor.memory_layout));
-            //assign buffer to input/output buffer view
-            (await this.getInputViews()).forEach(view => {
-                if (view.isDynamic)
-                    return;
-                view.setArrayBuffer(staticBuffer.bufferView.buffer);
-            });
-            (await this.getOutputViews()).forEach(view => {
-                if (view.isDynamic)
-                    return;
-                view.setArrayBuffer(staticBuffer.bufferView.buffer);
-            });
+            (await this.getInputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
+            (await this.getOutputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
         }
         async initializeMetaBuffers() {
             if (!this.descriptor)
@@ -604,21 +614,17 @@ var WebDNN;
                 throw Error("GraphDescriptor is not loaded.");
             if (!this.placeholderContext)
                 throw Error("PlaceholderContext is not initialized.");
-            if (!this.placeholderContext.isResolved)
-                throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
-            let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+            let dynamicBufferSize = placeholderContext.resolve(descriptor.memory_layout.dynamic.size);
             let dynamicBuffer = new WebDNN.BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
             this.dynamicBuffer = dynamicBuffer;
-            (await this.getInputViews()).forEach(view => {
-                if (!view.isDynamic)
-                    return;
-                view.setArrayBuffer(dynamicBuffer.bufferView.buffer);
-            });
-            (await this.getOutputViews()).forEach(view => {
-                if (!view.isDynamic)
-                    return;
-                view.setArrayBuffer(dynamicBuffer.bufferView.buffer);
-            });
+            (await this.getInputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
+            (await this.getOutputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
         }
         async setDescriptor(descriptor) {
             this.descriptor = descriptor;
@@ -627,6 +633,7 @@ var WebDNN;
             this.dynamicBuffer = null;
             this.metaBuffers = null;
             this.placeholderContext = new WebDNN.PlaceholderContext(descriptor.placeholders);
+            this.executionInfos = descriptor.exec_infos;
         }
         async compile() {
             if (!this.descriptor)
@@ -646,27 +653,15 @@ var WebDNN;
                 throw new Error('MetaBuffers are not initialized');
             let descriptor = this.descriptor;
             let metaBuffers = this.metaBuffers;
-            let executionInfos = descriptor.exec_infos;
-            // resolve placeholders in dynamic buffer
             await this.initializeDynamicBuffer();
-            if (!this.dynamicBuffer)
-                throw new Error('DynamicBuffer is not initialized');
-            let dynamicBuffer = this.dynamicBuffer;
             // resolve placeholders in execution info
-            await Promise.all(executionInfos.map(async (executionInfo, i) => {
+            this.executionInfos = await Promise.all(descriptor.exec_infos.map(async (executionInfo, i) => {
                 // resolve placeholders in meta buffer
                 let bufferView = new Int32Array(metaBuffers[i].bufferView.buffer);
                 for (let unresolved_value of executionInfo.unresolved_value_list) {
                     bufferView[unresolved_value.offset] = placeholderContext.resolve(unresolved_value.placeholder);
                 }
-                let threadgroupsPerGrid = executionInfo.threadgroups_per_grid;
-                threadgroupsPerGrid.width = placeholderContext.resolve(threadgroupsPerGrid.width);
-                threadgroupsPerGrid.height = placeholderContext.resolve(threadgroupsPerGrid.height);
-                threadgroupsPerGrid.depth = placeholderContext.resolve(threadgroupsPerGrid.depth);
-                let threadsPerThreadGroup = executionInfo.threads_per_thread_group;
-                threadsPerThreadGroup.width = placeholderContext.resolve(threadsPerThreadGroup.width);
-                threadsPerThreadGroup.height = placeholderContext.resolve(threadsPerThreadGroup.height);
-                threadsPerThreadGroup.depth = placeholderContext.resolve(threadsPerThreadGroup.depth);
+                return placeholderContext.resolve(executionInfo);
             }));
         }
         async getInputViews() {
@@ -702,8 +697,8 @@ var WebDNN;
             return this.outputViews;
         }
         async run() {
-            if (!this.descriptor)
-                throw new Error('GraphDescriptor is not loaded');
+            if (!this.executionInfos)
+                throw new Error('ExecutionInfos is not loaded');
             if (!this.inputViews || !this.outputViews)
                 throw new Error('getInputViews and getOutputViews must be called prior to run');
             if (!this.staticBuffer)
@@ -722,8 +717,8 @@ var WebDNN;
             if (WebDNN.DEBUG) {
                 let records = [];
                 let totalElapsedTime = 0;
-                for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
-                    let exec_info = this.descriptor.exec_infos[i];
+                for (let i = 0; i < this.executionInfos.length; i++) {
+                    let exec_info = this.executionInfos[i];
                     let start = performance.now();
                     await this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true);
                     let elapsedTime = performance.now() - start;
@@ -751,9 +746,9 @@ var WebDNN;
             }
             else {
                 let complete_promise = null;
-                for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
-                    let exec_info = this.descriptor.exec_infos[i];
-                    let is_last = i == this.descriptor.exec_infos.length - 1;
+                for (let i = 0; i < this.executionInfos.length; i++) {
+                    let exec_info = this.executionInfos[i];
+                    let is_last = i == this.executionInfos.length - 1;
                     complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
                 }
                 await complete_promise; //wait to finish final kernel
@@ -789,14 +784,7 @@ var WebDNN;
         }
         async load(directory, progressCallback) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
-            if (this.ignoreCache) {
-                graph_url += '?t=' + Date.now();
-            }
-            graph_url = WebDNN.transformUrl(graph_url);
-            let graph_fetch = await WebDNN.fetch(graph_url);
-            if (!graph_fetch.ok) {
-                throw new Error(`${graph_url} cannot be loaded`);
-            }
+            let graph_fetch = await WebDNN.fetch(graph_url, { ignoreCache: this.ignoreCache });
             this.descriptor = await graph_fetch.json();
             this.placeholderContext = new WebDNN.PlaceholderContext(this.descriptor.placeholders);
             // for browsers which does not support wasm, try asm.js code
@@ -809,23 +797,16 @@ var WebDNN;
             this.worker_entry_js_path = worker_entry_js_path;
             await this.compile();
             let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            if (this.ignoreCache) {
-                weight_url += '?t=' + Date.now();
-            }
-            weight_url = WebDNN.transformUrl(weight_url);
-            let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
+            let weight_fetch = await WebDNN.fetch(weight_url, { ignoreCache: this.ignoreCache });
+            let weights_data_ab = await WebDNN.readArrayBufferProgressively(weight_fetch, progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
             //assign buffer to input/output buffer view
-            (await this.getInputViews()).forEach(view => {
-                if (view.isDynamic)
-                    return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
-            (await this.getOutputViews()).forEach(view => {
-                if (view.isDynamic)
-                    return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
+            (await this.getInputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+            (await this.getOutputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
         }
         async setPlaceholderValue(values) {
             if (!this.placeholderContext)
@@ -846,16 +827,12 @@ var WebDNN;
                     metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
                 });
             }
-            (await this.getInputViews()).forEach(view => {
-                if (!view.isDynamic)
-                    return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
-            (await this.getOutputViews()).forEach(view => {
-                if (!view.isDynamic)
-                    return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
+            (await this.getInputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+            (await this.getOutputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
             let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
             await this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList));
         }
@@ -999,7 +976,12 @@ var WebDNN;
                         let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
                         if (var_alloc) {
                             let symAb = inputViews[i];
-                            inputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length, data: symAb.toActual() });
+                            inputs.push({
+                                space: allocation_space,
+                                offset: symAb.offset,
+                                size: symAb.length,
+                                data: symAb.toActual()
+                            });
                             break;
                         }
                     }
@@ -1025,6 +1007,10 @@ var WebDNN;
 /// <reference path="./graph_descriptor.ts" />
 ///<reference path="../fetch.ts" />
 ///<reference path="../graph_descriptor/graph_descriptor_fallback.ts" />
+function wait(duration = 10) {
+    // let console.log to be displayed, and prevent freeze
+    return new Promise(resolve => setTimeout(resolve, duration));
+}
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerFallback extends WebDNN.DescriptorRunner {
@@ -1032,118 +1018,157 @@ var WebDNN;
             super(...arguments);
             this.backendName = 'fallback';
         }
-        init() {
+        async init() {
             //nothing to do
-            return Promise.resolve();
         }
         async load(directory, progressCallback) {
-            let graph_url = `${directory}/graph_${this.backendName}.json`;
-            if (this.ignoreCache) {
-                graph_url += '?t=' + Date.now();
-            }
-            graph_url = WebDNN.transformUrl(graph_url);
-            let graph_fetch = await WebDNN.fetch(graph_url);
-            if (!graph_fetch.ok) {
-                throw new Error(`${graph_url} cannot be loaded`);
-            }
-            this.descriptor = await graph_fetch.json();
+            let [descriptor, weightRawArray] = await Promise.all([
+                WebDNN.fetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
+                    .then(res => res.json()),
+                WebDNN.fetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
+                    .then(res => WebDNN.readArrayBufferProgressively(res, progressCallback))
+            ]);
+            this.setDescriptor(descriptor);
             await this.compile();
-            let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            if (this.ignoreCache) {
-                weight_url += '?t=' + Date.now();
-            }
-            weight_url = WebDNN.transformUrl(weight_url);
-            let weights_data_ab = await WebDNN.readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
-            await this.loadWeights(new Uint8Array(weights_data_ab));
+            await this.initializeStaticBuffer(weightRawArray);
+            if (this.placeholderContext && this.placeholderContext.isResolved)
+                await this.initializeDynamicBuffer();
         }
-        setPlaceholderValue(placeholders) {
-            throw Error('Not Implemented Yet');
+        setDescriptor(descriptor) {
+            this.descriptor = descriptor;
+            // reset
+            this.placeholderContext = new WebDNN.PlaceholderContext();
+            this.placeholderContext.update(descriptor.placeholders);
+            this.kernelObj = null;
+            this.variableMap = null;
+            this.outputViews = null;
+            this.inputViews = null;
+            this.staticBuffer = null;
+            this.dynamicBuffer = null;
         }
         async compile() {
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            //
-            // let descriptor = this.descriptor;
-            //
-            // this.compileKernel();
-            // this.rawArray = new Float32Array(descriptor.memory_layout.total_size);
-            // this.variableArrays = new Map();
-            //
-            // for (let name in descriptor.memory_layout.allocations) {
-            //     let alloc = descriptor.memory_layout.allocations[name];
-            //     this.variableArrays.set(name, new Float32Array(this.rawArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-            // }
-        }
-        compileKernel() {
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             let dnn_fallback_kernel = null;
             eval(this.descriptor.kernel_source);
             this.kernelObj = dnn_fallback_kernel;
         }
-        async loadWeights(weightsData) {
+        async initializeStaticBuffer(weightRawArray) {
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
-            if (!this.rawArray)
-                throw new Error('Raw array is not loaded');
-            // when weight format becomes not flat array (such as using quantization), the interface should be changed
+            let descriptor = this.descriptor;
+            let staticBuffer = new Float32Array(descriptor.memory_layout.static.size);
+            this.staticBuffer = staticBuffer;
+            let variableMap = this.variableMap || new Map();
+            this.variableMap = variableMap;
+            Object.entries(descriptor.memory_layout.static.allocations)
+                .forEach(([name, allocation]) => {
+                variableMap.set(name, new Float32Array(staticBuffer.buffer, allocation.offset * Float32Array.BYTES_PER_ELEMENT, allocation.size));
+            });
             let decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-            this.rawArray.set(await decoder.decode(weightsData, this.descriptor.memory_layout));
+            staticBuffer.set(await decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout));
+            (await this.getInputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+            (await this.getOutputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+        }
+        async initializeDynamicBuffer() {
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+            let dynamicBuffer = new Float32Array(placeholderContext.resolve(descriptor.memory_layout.dynamic.size));
+            this.dynamicBuffer = dynamicBuffer;
+            let variableMap = this.variableMap || new Map();
+            this.variableMap = variableMap;
+            Object.entries(descriptor.memory_layout.dynamic.allocations)
+                .forEach(([name, allocation]) => {
+                variableMap.set(name, new Float32Array(dynamicBuffer.buffer, placeholderContext.resolve(allocation.offset) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(allocation.size)));
+            });
+            (await this.getInputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+            (await this.getOutputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+        }
+        async setPlaceholderValue(values) {
+            if (!this.placeholderContext)
+                throw new Error('placeholderContext is not initialized');
+            let placeholderContext = this.placeholderContext;
+            placeholderContext.update(values);
+            if (!placeholderContext.isResolved)
+                return;
+            await this.initializeDynamicBuffer();
         }
         async run() {
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
-            if (!this.variableArrays)
+            if (!this.placeholderContext)
+                throw new Error('placeholderContext is not initialized');
+            if (!this.variableMap)
                 throw new Error('Variable map is not initialized');
+            if (!this.staticBuffer)
+                throw new Error('StaticBuffer map is not initialized');
+            if (!this.dynamicBuffer)
+                throw new Error('DynamicBuffer map is not initialized');
             if (!this.inputViews || !this.outputViews)
-                throw new Error('getInputViews and getOutputViews must be called prior to run');
-            let descriptor = this.descriptor;
-            let variableArrays = this.variableArrays;
-            let run_entry_date = Date.now();
-            let last_progress_date = Date.now(); //in milliseconds
-            for (let i = 0; i < this.descriptor.exec_infos.length; i++) {
-                let current_date = Date.now();
-                if (current_date - last_progress_date >= 1000) {
-                    let elapsed_ms = current_date - run_entry_date;
-                    console.log(`Processed ${i}/${this.descriptor.exec_infos.length} kernels in ${elapsed_ms} ms`);
-                    last_progress_date = current_date;
-                    await this.wait_to_display();
+                throw new Error('getInputViews() and getOutputViews() must be called prior to run');
+            let variableMap = this.variableMap;
+            let placeholderContext = this.placeholderContext;
+            let executionInfos = this.descriptor.exec_infos
+                .map(executionInfo => placeholderContext.resolve(executionInfo));
+            let startDate = Date.now();
+            let lastDate = Date.now();
+            for (let i = 0; i < executionInfos.length; i++) {
+                let currentDate = Date.now();
+                if (currentDate - lastDate >= 1000) {
+                    console.log(`Processed ${i}/${executionInfos.length} kernels in ${currentDate - startDate} ms`);
+                    lastDate = currentDate;
+                    await wait();
                 }
-                let exec_info = this.descriptor.exec_infos[i];
-                let input_arrays = exec_info.inputs.map((name) => variableArrays.get(name));
-                let output_arrays = exec_info.outputs.map((name) => variableArrays.get(name));
-                this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, exec_info.call_option);
+                let executionInfo = executionInfos[i];
+                let inputs = executionInfo.inputs.map((name) => variableMap.get(name));
+                let outputs = executionInfo.outputs.map((name) => variableMap.get(name));
+                this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
             }
-            console.log(`Processed ${this.descriptor.exec_infos.length}/${this.descriptor.exec_infos.length} kernels in ${Date.now() - run_entry_date} ms`);
-        }
-        async wait_to_display() {
-            // let console.log to be displayed, and prevent freeze
-            return new Promise(function (resolve) {
-                setTimeout(resolve, 10);
-            });
+            console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
         }
         async getInputViews() {
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
-            // if (this.inputViews) return this.inputViews;
-            //
-            // let variableArrays = this.variableArrays;
-            // let views = this.descriptor.inputs.map((name) => variableArrays.get(name)!);
-            // this.inputViews = views;
-            //
-            // return views;
-            return [];
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(name => {
+                let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                let view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
+            });
+            return this.inputViews;
         }
         async getOutputViews() {
-            // if (!this.descriptor) throw new Error('Descriptor is not loaded');
-            // if (!this.variableArrays) throw new Error('Variable map is not initialized');
-            // if (this.outputViews) return this.outputViews;
-            //
-            // let variableArrays = this.variableArrays;
-            // let views = this.descriptor.outputs.map((name) => variableArrays.get(name)!);
-            // this.outputViews = views;
-            //
-            // return views;
-            return [];
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(name => {
+                let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                let view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
+            });
+            return this.outputViews;
         }
     }
     WebDNN.DescriptorRunnerFallback = DescriptorRunnerFallback;

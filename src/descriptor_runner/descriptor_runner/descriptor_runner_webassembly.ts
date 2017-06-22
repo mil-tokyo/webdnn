@@ -34,14 +34,8 @@ namespace WebDNN {
 
         async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
-            if (this.ignoreCache) {
-                graph_url += '?t=' + Date.now();
-            }
-            graph_url = transformUrl(graph_url);
-            let graph_fetch = await WebDNN.fetch(graph_url);
-            if (!graph_fetch.ok) {
-                throw new Error(`${graph_url} cannot be loaded`);
-            }
+            let graph_fetch = await WebDNN.fetch(graph_url, {ignoreCache: this.ignoreCache});
+
             this.descriptor = await graph_fetch.json();
             this.placeholderContext = new PlaceholderContext(this.descriptor!.placeholders);
 
@@ -57,24 +51,18 @@ namespace WebDNN {
             await this.compile();
 
             let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            if (this.ignoreCache) {
-                weight_url += '?t=' + Date.now();
-            }
-            weight_url = transformUrl(weight_url);
-            let weights_data_ab = await readArrayBufferProgressively(await WebDNN.fetch(weight_url), progressCallback);
+            let weight_fetch = await WebDNN.fetch(weight_url, {ignoreCache: this.ignoreCache});
+            let weights_data_ab = await readArrayBufferProgressively(weight_fetch, progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
 
-
             //assign buffer to input/output buffer view
-            (await this.getInputViews()).forEach(view => {
-                if (view.isDynamic) return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
+            (await this.getInputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
 
-            (await this.getOutputViews()).forEach(view => {
-                if (view.isDynamic) return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
+            (await this.getOutputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer))
         }
 
         async setPlaceholderValue(values: { [key: string]: number }): Promise<void> {
@@ -98,22 +86,17 @@ namespace WebDNN {
                 });
             }
 
+            (await this.getInputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
 
-            (await this.getInputViews()).forEach(view => {
-                if (!view.isDynamic) return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
-
-            (await this.getOutputViews()).forEach(view => {
-                if (!view.isDynamic) return;
-                view.setArrayBuffer((new Float32Array(view.length)).buffer);
-            });
+            (await this.getOutputViews())
+                .filter(view => view.isDynamic)
+                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
 
             let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
 
-            await this.setPlaceholderValueWorker(
-                dynamicBufferSize,
-                new Int32Array(metaBufferFillList));
+            await this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList));
         }
 
         private setPlaceholderValueWorker(dynamicBufferSize: number, metaBufferFillArray: Int32Array): Promise<void> {
@@ -130,7 +113,7 @@ namespace WebDNN {
                     }
                 };
 
-                worker.postMessage({ type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray });
+                worker.postMessage({type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray});
             });
         }
 
@@ -185,7 +168,7 @@ namespace WebDNN {
                     }
                 };
 
-                worker.postMessage({ type: 'weight', data: weight_data });
+                worker.postMessage({type: 'weight', data: weight_data});
             });
 
             return promise;
@@ -263,7 +246,12 @@ namespace WebDNN {
                         let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
                         if (var_alloc) {
                             let symAb = inputViews[i];
-                            inputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length, data: symAb.toActual() });
+                            inputs.push({
+                                space: allocation_space,
+                                offset: symAb.offset,
+                                size: symAb.length,
+                                data: symAb.toActual()
+                            });
                             break;
                         }
                     }
@@ -275,13 +263,13 @@ namespace WebDNN {
                         let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
                         if (var_alloc) {
                             let symAb = outputViews[i];
-                            outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                            outputs.push({space: allocation_space, offset: symAb.offset, size: symAb.length});
                             break;
                         }
                     }
                 }
 
-                worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+                worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
             });
 
             return promise;

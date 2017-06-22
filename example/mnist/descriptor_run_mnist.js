@@ -35,6 +35,10 @@ async function run() {
     let output_table = document.getElementById('result');
     resetOutputTable(output_table);
 
+    await WebDNN.runner.setPlaceholderValue({
+        N: 1
+    });
+
     let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
@@ -47,15 +51,6 @@ async function run() {
 
         let out_vec = run_if.outputViews[0].toActual();
         let pred_label = WebDNN.Math.argmax(out_vec)[0];
-        // equivalent to
-        /*        let pred_label = 0;
-                let pred_score = -Infinity;
-                for (let j = 0; j < out_vec.length; j++) {
-                    if (out_vec[j] > pred_score) {
-                        pred_score = out_vec[j];
-                        pred_label = j;
-                    }
-                }*/
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);
         displayPrediction(output_table, sample.x, pred_label, sample.y);
