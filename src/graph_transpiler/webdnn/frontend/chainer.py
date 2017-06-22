@@ -11,8 +11,8 @@ import chainer
 import chainer.computational_graph
 import numpy as np
 
+from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
-from webdnn.graph.converters.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias

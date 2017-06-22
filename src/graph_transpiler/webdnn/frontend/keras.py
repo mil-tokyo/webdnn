@@ -16,8 +16,8 @@ from typing import Optional
 import h5py
 import numpy as np
 
+from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
-from webdnn.graph.converters.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -35,7 +35,7 @@ from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
-    OrderNHWC, Order, OrderNT
+    OrderNHWC, Order
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console

@@ -5,14 +5,13 @@ Example of converting ResNet-50 Chainer model
 import argparse
 import os
 import sys
-from os import path
 
 import chainer
 import chainer.computational_graph
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.chainer import ChainerConverter
+from webdnn.frontend.chainer import ChainerConverter
 from webdnn.util import console
 
 

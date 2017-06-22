@@ -46,7 +46,7 @@ import chainer.links as L
 from chainer import training
 from chainer.training import extensions
 
-from webdnn.graph.converters.chainer import ChainerConverter
+from webdnn.frontend.chainer import ChainerConverter
 from webdnn.backend.interface.generator import generate_descriptor
 
 # Network definition

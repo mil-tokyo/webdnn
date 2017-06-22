@@ -4,7 +4,7 @@ import numpy as np
 from nose import with_setup
 
 from test.util import FlagManager
-from webdnn.frontend.sub_rules.concat_affine import ConcatAffine
+from webdnn.optimizer.sub_rules.concat_affine import ConcatAffine
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias

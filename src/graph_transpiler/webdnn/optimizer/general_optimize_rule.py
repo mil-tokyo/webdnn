@@ -1,7 +1,7 @@
-from webdnn.frontend.sub_rules.concat_affine import ConcatAffine
-from webdnn.frontend.sub_rules.concat_scalar_affine import ConcatScalarAffine
-from webdnn.frontend.sub_rules.remove_last_softmax import RemoveLastSoftmax
-from webdnn.frontend.sub_rules.concat_zero_padding import ConcatZeroPadding
+from webdnn.optimizer.sub_rules.concat_affine import ConcatAffine
+from webdnn.optimizer.sub_rules.concat_scalar_affine import ConcatScalarAffine
+from webdnn.optimizer.sub_rules.remove_last_softmax import RemoveLastSoftmax
+from webdnn.optimizer.sub_rules.concat_zero_padding import ConcatZeroPadding
 from webdnn.graph.optimize_rule import OptimizeRule
 
 

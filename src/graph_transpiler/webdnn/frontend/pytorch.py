@@ -7,8 +7,8 @@ from torch.nn._functions.linear import Linear as PTLinear
 # noinspection PyUnresolvedReferences
 from torch.nn._functions.thnn.auto import Threshold as PTThreshold
 
+from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
-from webdnn.graph.converters.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.flatten import Flatten

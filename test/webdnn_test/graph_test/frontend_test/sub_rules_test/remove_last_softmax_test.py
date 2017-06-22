@@ -1,7 +1,7 @@
 from nose import with_setup
 
 from test.util import FlagManager
-from webdnn.frontend.sub_rules.remove_last_softmax import RemoveLastSoftmax
+from webdnn.optimizer.sub_rules.remove_last_softmax import RemoveLastSoftmax
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.softmax import Softmax
