@@ -1,5 +1,6 @@
 @import "../definitions/z-index";
 @import "../definitions/color";
+@import "~bootstrap/scss/mixins/_breakpoints";
 
 $c-PageHeader-background: #0d1115;
 $c-PageHeader-foreground: #fcfcfc;
@@ -110,10 +111,8 @@ html {
     fill: currentColor;
     vertical-align: middle;
     margin-right: 4px;
-  }
 
-  @media (max-width: 768px) {
-    svg {
+    @include media-breakpoint-down(md) {
       width: 28px;
       height: 28px;
     }

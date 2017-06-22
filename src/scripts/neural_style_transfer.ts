@@ -177,8 +177,8 @@ const App = new class {
             ga('send', 'event', 'NeuralStyleTransfer', 'play', `loading_time-${backend}`, Math.round(loadingTime));
         }
 
-        this.inputView = (await this.runner.getInputViews())[0];
-        this.outputView = (await this.runner.getOutputViews())[0];
+        this.inputView = (await this.runner.getInputViews())[0].toActual();
+        this.outputView = (await this.runner.getOutputViews())[0].toActual();
 
         await this.setState(State.STAND_BY);
     }
@@ -364,7 +364,7 @@ window.onload = () => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
         if (ma) {
-            return `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true&v=2`;
+            return `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true&v=3`;
         } else {
             return url;
         }

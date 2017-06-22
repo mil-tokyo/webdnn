@@ -1,4 +1,5 @@
 @import "../definitions/color";
+@import "~bootstrap/scss/mixins/_breakpoints";
 
 $c-SplashPage-foreground: #fcfcfc;
 
@@ -22,10 +23,8 @@ $c-SplashPage-foreground: #fcfcfc;
     font: 300 38px/48px sans-serif;
     color: #fff;
     margin: 0 0 1em;
-  }
 
-  @media (max-width: 840px) {
-    h1 {
+    @include media-breakpoint-down(md) {
       font-size: 28px;
       line-height: 34px;
       text-align: center;
@@ -50,6 +49,10 @@ $c-SplashPage-foreground: #fcfcfc;
     will-change: opacify;
     animation: fadeIn 2000ms ease-in-out;
   }
+
+  @include media-breakpoint-down(md) {
+    padding: 32px 16px;
+  }
 }
 
 @keyframes fadeIn {
@@ -58,11 +61,6 @@ $c-SplashPage-foreground: #fcfcfc;
   }
   100% {
     opacity: 1;
-  }
-}
-@media (max-width: 640px) {
-  .SplashPage {
-    padding: 32px 16px;
   }
 }
 

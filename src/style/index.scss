@@ -1,12 +1,47 @@
-@import "stylus/definitions/reset";
-@import "stylus/definitions/grid";
-@import "stylus/layout/index";
+@import "stylus/bootstrap";
+@import "stylus/reset";
+@import "stylus/section";
 @import "stylus/components/page_header";
 @import "stylus/components/splash_page";
-@import "stylus/components/section";
-@import "stylus/components/article";
 @import "stylus/components/compatibility";
 @import "stylus/components/playground";
-@import "stylus/components/page_footer";
 @import "stylus/components/button";
-@import "stylus/components/benchmark";
+@import "stylus/components/page_footer";
+
+@import "~bootstrap/scss/mixins/_breakpoints";
+
+#pipelineImage {
+  min-width: 640px;
+}
+
+#benchmarkFigure {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+  height: 396px;
+  width: 824px;
+
+  @include media-breakpoint-down(md) {
+    width: 100%;
+    height: auto;
+  }
+}
+
+#mes-ts {
+  text-align: center;
+}
+
+.Anchor {
+  position: absolute;
+  top: -64px;
+}
+
+.References {
+  font-size: 0.8em;
+  line-height: 1.2;
+  color: #666;
+
+  li {
+    margin: 4px 0;
+  }
+}

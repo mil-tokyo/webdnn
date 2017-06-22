@@ -162,8 +162,8 @@ const App = new class {
         await this.runner.load('./models/resnet50', (loaded, total) => initializingView.updateProgress(loaded / total));
         let loadingTime = performance.now() - start;
         ga('send', 'event', 'ResNet50', 'play', `loading_time-${WebDNN.backendName}`, Math.round(loadingTime));
-        this.inputView = (await this.runner.getInputViews())[0];
-        this.outputView = (await this.runner.getOutputViews())[0];
+        this.inputView = (await this.runner.getInputViews())[0].toActual();
+        this.outputView = (await this.runner.getOutputViews())[0].toActual();
 
         initializingView.remove();
         this.setState(State.NO_IMAGE);
@@ -290,7 +290,7 @@ window.onload = () => {
         let ma = url.match(/([^/]+)(?:\?.*)?$/);
 
         if (ma) {
-            return `https://mil-tokyo.github.io/webdnn-data/models/resnet50/${ma[1]}?raw=true&v=2`;
+            return `https://mil-tokyo.github.io/webdnn-data/models/resnet50/${ma[1]}?raw=true&v=3`;
         } else {
             return url;
         }

@@ -1,18 +1,18 @@
-@import "../definitions/z-index";
-
-body > header {
-  position: relative;
-  min-height: 64px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  margin: 0 24px;
-  border-bottom: 1px solid #ccc;
-  z-index: $z-Header;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-
-  .Spacer {
-    flex: 1;
-  }
-}
+//@import "../definitions/z-index";
+//
+//body > header {
+//  position: relative;
+//  min-height: 64px;
+//  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+//  margin: 0 24px;
+//  border-bottom: 1px solid #ccc;
+//  z-index: $z-Header;
+//  display: flex;
+//  flex-direction: row;
+//  align-items: center;
+//  justify-content: flex-start;
+//
+//  .Spacer {
+//    flex: 1;
+//  }
+//}

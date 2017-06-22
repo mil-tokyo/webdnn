@@ -5,37 +5,6 @@
   overflow: auto;
 }
 
-.TableWrapper-Left {
-  left: -1px;
-  background: rgba(0, 0, 0, 0); /* Old browsers */
-  background: -moz-linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-}
-
-.TableWrapper-Right {
-  right: -1px;
-  background: rgba(0, 0, 0, 0); /* Old browsers */
-  background: -moz-linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-}
-
-.Section-Grey {
-  .TableWrapper-Left {
-    background: rgba(0, 0, 0, 0); /* Old browsers */
-    background: -moz-linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(270deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-  }
-  .TableWrapper-Right {
-    background: rgba(0, 0, 0, 0); /* Old browsers */
-    background: -moz-linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(90deg, rgba(243, 243, 243, 0) 0%, rgba(243, 243, 243, 1) 95%); /* Chrome10-25,Safari5.1-6 */
-  }
-}
-
 .Compatibility-Table {
   border-collapse: collapse;
   margin: 16px auto;
@@ -84,9 +53,8 @@
   }
 }
 
-.Compatibility-SubsectionTitle {
+.Compatibility-SubTitle {
   text-align: center;
-  margin: 0;
 }
 
 .Compatibility-webgpu {

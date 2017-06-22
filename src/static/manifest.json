@@ -2,8 +2,8 @@
 	"short_name": "WebDNN",
 	"name": "MIL WebDNN",
 	"display": "standalone",
-	"background_color": "#ff9900",
-	"theme_color": "#ff9900",
+	"background_color": "#0d1115",
+	"theme_color": "#0d1115",
 	"start_url": "/webdnn",
 	"icons": [
 		{

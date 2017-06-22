@@ -1,3 +1,4 @@
+@import "~bootstrap/scss/mixins/_breakpoints";
 @import "../definitions/z-index";
 
 $c-PageFooter-background: #0d1115;
@@ -13,10 +14,8 @@ $c-PageFooter-foreground: #888;
   color: $c-PageFooter-foreground;
   padding: 32px 64px;
   font-size: 14px;
-}
 
-@media (max-width: 640px) {
-  .PageFooter {
+  @include media-breakpoint-down(md) {
     font-size: 12px;
     min-height: 0;
     padding: 16px;

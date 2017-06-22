@@ -1,11 +1,10 @@
-@import "./color";
+@import "~bootstrap/scss/mixins/_breakpoints";
+@import "definitions/color";
 
 $c-Reset-background: #fff;
 
 html {
-  width: 100%;
-  background: $c-key-dark;
-  font: 400 16px/24px Roboto, sans-serif;
+  background: #0d1115;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   margin: 0;
@@ -15,23 +14,20 @@ html {
 }
 
 body {
-  position: relative;
-  width: 100%;
   color: $c-key-dark;
-  margin: 0;
-  background: $c-Reset-background;
-}
-
-li {
-  margin: 8px 0;
 }
 
 a {
   color: currentColor;
+  text-decoration: underline;
 }
 
 p {
   margin: 0;
+}
+
+th {
+  text-align: center;
 }
 
 hr {
@@ -43,20 +39,7 @@ hr {
   border-bottom: 1px solid rgba(#000, 0.1);
 }
 
-label {
-  margin-right: 16px;
-}
-
-dt {
-  font-weight: bold;
-}
-
-dd {
-  margin-left: 0;
-  margin-bottom: 8px;
-}
-
-@media (max-width: 640px) {
+@include media-breakpoint-down(md) {
   html {
     font-size: 14px;
     line-height: 20px;
@@ -65,6 +48,7 @@ dd {
   ol {
     padding-left: 12px;
   }
+
   .Mobile-Hide {
     display: none !important;
   }
