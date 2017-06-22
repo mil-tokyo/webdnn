@@ -118,11 +118,11 @@ namespace WebDNN {
         /**
          * The buffers to write input data.
          */
-        inputViews: Float32Array[];
+        inputViews: SymbolicFloat32Array[];
         /**
          * The buffers to read output data.
          */
-        outputViews: Float32Array[];
+        outputViews: SymbolicFloat32Array[];
         /**
          * Run the model.
          */

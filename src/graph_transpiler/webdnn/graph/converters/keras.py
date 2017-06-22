@@ -9,43 +9,36 @@ If this is not the case, Flatten layer which follows Convolution have to change 
 Convolution implementation is currently assuming variable is NHWC.
 """
 
-from typing import List, Tuple, Dict, Type, Optional
-
 import json
-from warnings import warn
+from typing import List, Tuple, Dict
+from typing import Optional
 
-import numpy as np
 import h5py
+import numpy as np
 
 from webdnn.graph.axis import Axis
+from webdnn.graph.converters.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.graph.converters.converter import Converter
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
-from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
-from webdnn.graph.operators.elu import Elu
+from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
+from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
-from webdnn.graph.operators.scalar_affine import ScalarAffine
-from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.operators.sigmoid import Sigmoid
-from webdnn.graph.operators.embedding import Embedding
-from webdnn.graph.operators.lstm import LSTM
-from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
-    OrderNHWC, OrderCNHW, OrderCHWN, OrderNT, OrderNTC, Order
+from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
+from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
+    OrderNHWC, Order, OrderNT
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.input import Input
-from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
 
 class KerasInput:
@@ -281,7 +274,7 @@ def _convert_dense(converter: KerasConverter, operator: KerasOperator):
     elif activation_type == "sigmoid":
         act_opr = Sigmoid(None)
     elif activation_type == "softmax":
-        warn("omitting softmax activation")
+        console.warning("[KerasConverter] omitting softmax activation")
     elif activation_type == "linear":
         pass
     else:
@@ -296,7 +289,7 @@ def _convert_dense(converter: KerasConverter, operator: KerasOperator):
 @KerasConverter.register_handler("Dropout")
 def _convert_dropout(converter: KerasConverter, operator: KerasOperator):
     x = operator.inputs[0]
-    warn("omitting dropout")
+    console.warning("[KerasConverter] omitting dropout")
 
     operator.outputs = [x]
 
@@ -363,7 +356,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     elif activation_type == "sigmoid":
         act_opr = Sigmoid(None)
     elif activation_type == "softmax":
-        warn("omitting softmax activation")
+        console.warning("[KerasConverter] omitting softmax activation")
     elif activation_type == "linear":
         pass
     else:
@@ -556,7 +549,7 @@ def _convert_activation(converter: KerasConverter, operator: KerasOperator):
     elif activation_type == "sigmoid":
         act_opr = Sigmoid(None)
     elif activation_type == "softmax":
-        warn("omitting softmax activation")
+        console.warning("[KerasConverter] omitting softmax activation")
     elif activation_type == "linear":
         pass
     else:

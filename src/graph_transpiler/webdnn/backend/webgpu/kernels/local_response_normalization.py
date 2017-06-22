@@ -4,7 +4,7 @@ import numpy as np
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
@@ -23,21 +23,22 @@ def local_response_normalization(op: LocalResponseNormalization,
 
 
 template_same_order = """
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(local_response_normalization_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(local_response_normalization_Y_offset)%%;
-    const int D1 = %%META_LOAD(local_response_normalization_D1)%%;
-    const int D2 = %%META_LOAD(local_response_normalization_D2)%%;
-    const int D3 = %%META_LOAD(local_response_normalization_D3)%%;
+    const device float *X = %%LOAD_BUFFER(local_response_normalization_X)%%;
+    device float *Y = %%LOAD_BUFFER(local_response_normalization_Y)%%;
+    const int D1 = %%LOAD_BUFFER(local_response_normalization_D1)%%;
+    const int D2 = %%LOAD_BUFFER(local_response_normalization_D2)%%;
+    const int D3 = %%LOAD_BUFFER(local_response_normalization_D3)%%;
 
-    const int Phalfn = %%META_LOAD(local_response_normalization_param_half_n)%%;
-    const float Pk = *((const device float *)(& %%META_LOAD(local_response_normalization_param_k)%%));
-    const float Palpha = *((const device float *)(& %%META_LOAD(local_response_normalization_param_alpha)%%));
-    const float Pmbeta = *((const device float *)(& %%META_LOAD(local_response_normalization_param_minus_beta)%%));
+    const int Phalfn = %%LOAD_BUFFER(local_response_normalization_param_half_n)%%;
+    const float Pk = *((const device float *)(& %%LOAD_BUFFER(local_response_normalization_param_k)%%));
+    const float Palpha = *((const device float *)(& %%LOAD_BUFFER(local_response_normalization_param_alpha)%%));
+    const float Pmbeta = *((const device float *)(& %%LOAD_BUFFER(local_response_normalization_param_minus_beta)%%));
 
     for (int gid = index; gid < D1 * D2 * D3; gid += num_threads) {
         const int d3 = gid % D3;
@@ -69,14 +70,14 @@ def local_response_normalization_same_order(op: LocalResponseNormalization,
 
     target_axis = Axis.C  # FIXME
     target_axis_index = x.variable.order.axes_dict[target_axis]
-    D1 = int(np.prod(x.variable.shape[:target_axis_index]))
+    D1 = np.product(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = int(np.prod(x.variable.shape[target_axis_index + 1:]))
+    D3 = np.product(x.variable.shape[target_axis_index + 1:])
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "local_response_normalization_X_offset": x.offset,
-        "local_response_normalization_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "local_response_normalization_X": x,
+        "local_response_normalization_Y": y,
         "local_response_normalization_D1": D1,
         "local_response_normalization_D2": D2,
         "local_response_normalization_D3": D3,
@@ -89,7 +90,7 @@ def local_response_normalization_same_order(op: LocalResponseNormalization,
     name_injector = KernelNameInjector(op)
 
     source = template_same_order
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
@@ -97,15 +98,16 @@ def local_response_normalization_same_order(op: LocalResponseNormalization,
         name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        buffer_injector.buffer
     )
 
     return [kernel]
 
 
 template_general = """
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
@@ -180,14 +182,14 @@ def local_response_normalization_general(op: LocalResponseNormalization,
 
     x_stride_in_y = [y_strides[y.variable.order.axes_dict[axis]] for axis in x.variable.order.axes]
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "local_response_normalization_X_offset": x.offset,
-        "local_response_normalization_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "local_response_normalization_X": x,
+        "local_response_normalization_Y": y,
         "local_response_normalization_D": x.variable.ndim,
         "local_response_normalization_d_target": x.variable.order.axes_dict[target_axis],
-        "local_response_normalization_x_shape": np.array(x_shape, dtype=np.int32).tobytes(),
-        "local_response_normalization_x_stride_in_y": np.array(x_stride_in_y, dtype=np.int32).tobytes(),
+        "local_response_normalization_x_shape": x_shape,
+        "local_response_normalization_x_stride_in_y": x_stride_in_y,
         "local_response_normalization_param_half_n": int(op.parameters["n"] // 2),
         "local_response_normalization_param_k": float(op.parameters["k"]),
         "local_response_normalization_param_alpha": float(op.parameters["alpha"]),
@@ -197,7 +199,7 @@ def local_response_normalization_general(op: LocalResponseNormalization,
     name_injector = KernelNameInjector(op)
 
     source = template_general
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
@@ -205,7 +207,8 @@ def local_response_normalization_general(op: LocalResponseNormalization,
         name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

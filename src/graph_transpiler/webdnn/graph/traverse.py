@@ -5,6 +5,7 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
+from webdnn.util import console
 
 Query = Union[Type[Attribute], Type[Node]]
 
@@ -81,20 +82,20 @@ def listup_nodes(graph: Graph) -> List[Node]:
 
 
 def listup_operators(graph: Graph) -> List[Operator]:
-    ops: List[Operator] = filter_nodes(listup_nodes(graph), Operator)
+    ops = filter_nodes(listup_nodes(graph), Operator)  # type: List[Operator]
     return ops
 
 
 def listup_variables(graph: Graph) -> List[Variable]:
-    variables: List[Variable] = filter_nodes(listup_nodes(graph), Variable)
+    variables = filter_nodes(listup_nodes(graph), Variable)  # type: List[Variable]
     return variables
 
 
 def dump(graph: Graph):
     indent = ""
     for op in listup_operators(graph):
-        print(f"---------------------------------------------------------------------------")
-        print(f"{indent}{op.__class__.__name__} : {op.name}")
-        print(f"{indent}    In  : {op.inputs}")
-        print(f"{indent}    Out : {op.outputs}")
-        print(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
+        console.debug(f"---------------------------------------------------------------------------")
+        console.debug(f"{indent}{op.__class__.__name__} : {op.name}")
+        console.debug(f"{indent}    In  : {op.inputs}")
+        console.debug(f"{indent}    Out : {op.outputs}")
+        console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")

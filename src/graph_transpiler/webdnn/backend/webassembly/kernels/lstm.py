@@ -1,12 +1,12 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.lstm import LSTM
-from webdnn.graph.order import OrderNC, OrderCN, OrderNT, OrderNTC
+from webdnn.graph.order import OrderNC, OrderCN, OrderNTC
 
 template = """
 #ifndef INCLUDE_EIGEN
@@ -14,17 +14,17 @@ template = """
 #include <Eigen/Dense>
 #endif
 
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(lstm_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(lstm_Y_offset)%%;
-    float *W_input = data_buffer + %%META_LOAD(lstm_W_input_offset)%%;
-    float *W_hidden = data_buffer + %%META_LOAD(lstm_W_hidden_offset)%%;
-    float *b = data_buffer + %%META_LOAD(lstm_b_offset)%%;
-    const int input_dim = %%META_LOAD(lstm_input_dim)%%;
-    const int sequence_len = %%META_LOAD(lstm_sequence_len)%%;
-    const int batch_size = %%META_LOAD(lstm_batch_size)%%;
-    const int hidden_dim = %%META_LOAD(lstm_hidden_dim)%%;
+    const float *X = %%LOAD_BUFFER(lstm_X)%%;
+    float *Y = %%LOAD_BUFFER(lstm_Y)%%;
+    float *W_input = %%LOAD_BUFFER(lstm_W_input)%%;
+    float *W_hidden = %%LOAD_BUFFER(lstm_W_hidden)%%;
+    float *b = %%LOAD_BUFFER(lstm_b)%%;
+    const int input_dim = %%LOAD_BUFFER(lstm_input_dim)%%;
+    const int sequence_len = %%LOAD_BUFFER(lstm_sequence_len)%%;
+    const int batch_size = %%LOAD_BUFFER(lstm_batch_size)%%;
+    const int hidden_dim = %%LOAD_BUFFER(lstm_hidden_dim)%%;
     const int hidden_dim4 = hidden_dim * 4;
     const int ofs_i = 0;
     const int ofs_f = hidden_dim * 1;
@@ -115,13 +115,13 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     # W is for updating i, f, c, o
     hidden_dim = w_hidden.variable.shape_dict[Axis.C]
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "lstm_X_offset": x.offset,
-        "lstm_Y_offset": y.offset,
-        "lstm_W_input_offset": w_input.offset,
-        "lstm_W_hidden_offset": w_hidden.offset,
-        "lstm_b_offset": b.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "lstm_X": x,
+        "lstm_Y": y,
+        "lstm_W_input": w_input,
+        "lstm_W_hidden": w_hidden,
+        "lstm_b": b,
         "lstm_input_dim": x.variable.shape_dict[Axis.C],
         "lstm_sequence_len": x.variable.shape_dict[Axis.T],
         "lstm_batch_size": x.variable.shape_dict[Axis.N],
@@ -131,13 +131,14 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

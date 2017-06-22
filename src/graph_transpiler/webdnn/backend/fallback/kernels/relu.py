@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.relu import Relu
 
@@ -22,7 +23,8 @@ for (var i = 0; i < length; i++) {
 """
 
 
-def relu(op: Relu) -> List[Kernel]:
+# noinspection PyUnresolvedReferences
+def relu(op: Relu, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

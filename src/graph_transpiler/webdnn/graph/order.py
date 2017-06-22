@@ -2,14 +2,16 @@ from typing import Dict, List
 
 from webdnn.graph.axis import Axis
 
-"""
-This attribute means data order, not number of dimensions
-"""
 
-
-# FIXME: DOCS
-# FIXME: Is it need to extend from Attribute?
 class Order:
+    """
+    Class to represent variable data order
+
+    attrs:
+        ndim: number of dimensions
+        axes: list of axis
+        axes_dict: dictionary of pairs of axis and order index
+    """
     ndim: int
     axes: List[Axis]
     axes_dict: Dict[Axis, int]

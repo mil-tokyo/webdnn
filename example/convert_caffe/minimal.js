@@ -8,8 +8,8 @@ async function init() {
     runner = await WebDNN.prepareAll('./output');
 
     // (1.2) Get input and output variables
-    x = runner.inputViews[0];
-    y = runner.outputViews[0];
+    x = runner.inputViews[0].toActual();
+    y = runner.outputViews[0].toActual();
 }
 
 async function run() {

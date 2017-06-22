@@ -3,7 +3,6 @@ Caffe model converter (via Chainer model)
 """
 
 import argparse
-import ast
 import os
 import sys
 from os import path
@@ -16,6 +15,8 @@ import numpy as np
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph.converters.chainer import ChainerConverter
 from webdnn.graph.graph import Graph
+from webdnn.graph.shape import Shape
+from webdnn.util import console
 
 
 def parse_input_blob(args):
@@ -28,7 +29,9 @@ def parse_input_blob(args):
     else:
         if not args.input_shape:
             raise ValueError("input_npy or input_shapes must be specified to determine input")
-        input_shape = ast.literal_eval(args.input_shape)
+        input_shape, placeholders = Shape.parse(args.input_shape)
+        if len(placeholders) > 0:
+            raise ValueError("caffe converter does not support an input with placeholder")
         input_blob = chainer.Variable(np.zeros(input_shape, dtype=np.float32))
     return input_blob, input_filled
 
@@ -57,10 +60,10 @@ def main():
     input_blob, input_filled = parse_input_blob(args)
     output_names = args.output_names.split(",")
 
-    sys.stderr.write("Loading caffe model... (usually takes several minutes)\n")
+    console.stderr("[convert_caffe] Loading caffe model... (usually takes several minutes)")
     link = chainer.links.caffe.CaffeFunction(args.caffemodel)
 
-    sys.stderr.write("Generating feedforward graph\n")
+    console.stderr("[convert_caffe] Generating feedforward graph")
     if chainer.__version__ >= "2.":
         chainer.using_config("train", False)
         output_blobs = list(
@@ -83,7 +86,7 @@ def main():
         output_arrays = {output_name: output_blob.data for output_name, output_blob in zip(output_names, output_blobs)}
         np.savez(path.join(output_dir, "example_output.npz"), **output_arrays)
 
-    sys.stderr.write("Generating descriptors\n")
+    console.stderr("[convert_caffe] Generating descriptors")
     any_backend_failed = False
     for backend in args.backend.split(","):
         try:
@@ -91,7 +94,7 @@ def main():
             graph_exec_data.save(output_dir)
         except Exception as ex:
             any_backend_failed = True
-            sys.stderr.write(f"Failed generating descriptor for backend {backend}: {str(ex)}\n")
+            console.error(f"[convert_caffe] Failed generating descriptor for backend {backend}: {str(ex)}")
 
     if any_backend_failed:
         sys.exit(1)

@@ -163,11 +163,11 @@ class WebDNNBenchmark extends BaseBenchmark {
             })
             .then(() => WebDNN.runner.getInputViews())
             .then(xs => {
-                this.x = xs[0];
+                this.x = xs[0].toActual();
                 return WebDNN.runner.getOutputViews();
             })
             .then(ys => {
-                this.y = ys[0];
+                this.y = ys[0].toActual();
             })
     }
 

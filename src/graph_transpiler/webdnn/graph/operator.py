@@ -1,18 +1,21 @@
 from typing import Dict, Tuple, Type, List
 
+from webdnn.graph import variable
 from webdnn.graph.attribute import Attribute
-from webdnn.graph.interface import IVariable, IOperator
 from webdnn.graph.node import Node
 
 
 # FIXME: DOCS
-class Operator(Node, IOperator):
+class Operator(Node):
+    inputs: Dict[str, "variable.Variable"]
+    outputs: Dict[str, "variable.Variable"]
+
     def __init__(self, name: str):
         super().__init__(name)
-        self.inputs: Dict[str, IVariable] = {}
-        self.outputs: Dict[str, IVariable] = {}
+        self.inputs = {}
+        self.outputs = {}
 
-    def get_input_name(self, var: IVariable):
+    def get_input_name(self, var: "variable.Variable"):
         for name, v in self.inputs.items():
             if v is not var:
                 continue
@@ -22,7 +25,7 @@ class Operator(Node, IOperator):
         else:
             raise KeyError(f"'{name}' is not input of {self}")
 
-    def get_output_name(self, var: IVariable):
+    def get_output_name(self, var: "variable.Variable"):
         for name, v in self.outputs.items():
             if v is not var:
                 continue
@@ -32,7 +35,7 @@ class Operator(Node, IOperator):
         else:
             raise KeyError(f"'{name}' is not output of {self}")
 
-    def append_input(self, name: str, var: IVariable):
+    def append_input(self, name: str, var: "variable.Variable"):
         """
         入力変数を追加する
         """
@@ -42,7 +45,7 @@ class Operator(Node, IOperator):
         self.inputs[name] = var
         var.input_to.add(self)
 
-    def remove_input(self, var: IVariable):
+    def remove_input(self, var: "variable.Variable"):
         """
         入力変数を解除する
         """
@@ -53,7 +56,7 @@ class Operator(Node, IOperator):
         self.inputs.pop(name)
         var.input_to.remove(self)
 
-    def replace_input(self, v_old: IVariable, v_new: IVariable):
+    def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable"):
         """
         入力変数を置き換える
         """
@@ -71,7 +74,7 @@ class Operator(Node, IOperator):
         self.remove_input(v_old)
         self.append_input(name, v_new)
 
-    def append_output(self, name: str, var: IVariable):
+    def append_output(self, name: str, var: "variable.Variable"):
         """
         出力変数を追加する
         """
@@ -84,7 +87,7 @@ class Operator(Node, IOperator):
         self.outputs[name] = var
         var.output_from = self
 
-    def remove_output(self, var: IVariable):
+    def remove_output(self, var: "variable.Variable"):
         """
         出力変数を解除する
         """
@@ -95,7 +98,7 @@ class Operator(Node, IOperator):
         self.outputs.pop(name)
         var.output_from = None
 
-    def replace_output(self, v_old: IVariable, v_new: IVariable):
+    def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable"):
         """
         出力変数を置き換える
         """
@@ -144,11 +147,11 @@ class Operator(Node, IOperator):
     def __str__(self):
         return self.__repr__()
 
-    def __call__(self, *args, **kwargs) -> Tuple[IVariable]:
+    def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
         pass
 
     def get_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
         return [attr for attr in self.attributes if isinstance(attr, Attr)]
 
-    def has_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
+    def has_attribute(self, Attr: Type[Attribute]) -> bool:
         return len(self.get_attribute(Attr)) > 0

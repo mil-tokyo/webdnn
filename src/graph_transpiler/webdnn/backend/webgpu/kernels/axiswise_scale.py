@@ -4,7 +4,7 @@ import numpy as np
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
@@ -23,26 +23,27 @@ def axiswise_scale(op: AxiswiseScale,
 
 def generate_template_same_order(D1, D3):
     return """
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
 #define FLAG_D1_EQUAL_1 %%FLAG_D1_EQUAL_1%%
 #define FLAG_D3_EQUAL_1 %%FLAG_D3_EQUAL_1%%
 
-    const device float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
-    const device float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
+    const device float *X = %%LOAD_BUFFER(axiswise_scale_X)%%;
+    const device float *S = %%LOAD_BUFFER(axiswise_scale_S)%%;
+    device float *Y = %%LOAD_BUFFER(axiswise_scale_Y)%%;
 
 #if !OPTIMIZE || !FLAG_D1_EQUAL_1
-    const int D1 = %%META_LOAD(axiswise_scale_D1)%%;
+    const int D1 = %%LOAD_BUFFER(axiswise_scale_D1)%%;
 #endif
 
-    const int D2 = %%META_LOAD(axiswise_scale_D2)%%;
+    const int D2 = %%LOAD_BUFFER(axiswise_scale_D2)%%;
 
 #if !OPTIMIZE || !FLAG_D3_EQUAL_1
-    const int D3 = %%META_LOAD(axiswise_scale_D3)%%;
+    const int D3 = %%LOAD_BUFFER(axiswise_scale_D3)%%;
 #endif
 
 #if OPTIMIZE && FLAG_D3_EQUAL_1
@@ -87,15 +88,15 @@ def axiswise_scale_same_order(op: AxiswiseScale,
     y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
-    D1 = int(np.prod(x.variable.shape[:target_axis_index]))
+    D1 = np.product(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = int(np.prod(x.variable.shape[target_axis_index + 1:]))
+    D3 = np.product(x.variable.shape[target_axis_index + 1:])
 
-    meta_injector = MetaInjector()
+    meta_injector = BufferInjector()
     meta_injector.register({
-        "axiswise_scale_X_offset": x.offset,
-        "axiswise_scale_S_offset": s.offset,
-        "axiswise_scale_Y_offset": y.offset,
+        "axiswise_scale_X": x,
+        "axiswise_scale_S": s,
+        "axiswise_scale_Y": y,
         "axiswise_scale_D1": D1,
         "axiswise_scale_D2": D2,
         "axiswise_scale_D3": D3
@@ -119,18 +120,19 @@ def axiswise_scale_same_order(op: AxiswiseScale,
 
 
 template_general = """
-kernel void %%FUNC_NAME%%(device float *data_buffer[[buffer(0)]],
-                          const device int * %%META_NAME%% [[buffer(1)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
-    const device float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
-    const int D = %%META_LOAD(axiswise_scale_D)%%;
-    const int d_target = %%META_LOAD(axiswise_scale_d_target)%%;
-    const device int *x_shape = &(%%META_LOAD(axiswise_scale_x_shape)%%);
-    const device int *x_stride_in_y = &(%%META_LOAD(axiswise_scale_x_stride_in_y)%%);
+    const device float *X = %%LOAD_BUFFER(axiswise_scale_X)%%;
+    const device float *S = %%LOAD_BUFFER(axiswise_scale_S)%%;
+    device float *Y = %%LOAD_BUFFER(axiswise_scale_Y)%%;
+    const int D = %%LOAD_BUFFER(axiswise_scale_D)%%;
+    const int d_target = %%LOAD_BUFFER(axiswise_scale_d_target)%%;
+    const device int *x_shape = %%LOAD_BUFFER(axiswise_scale_x_shape)%%;
+    const device int *x_stride_in_y = %%LOAD_BUFFER(axiswise_scale_x_stride_in_y)%%;
 
     int size = 1;
     for (int d = 0; d < D; d++) size *= x_shape[d];
@@ -178,15 +180,15 @@ def axiswise_scale_general(op: AxiswiseScale,
 
     x_stride_in_y = [y_strides[y.variable.order.axes_dict[axis]] for axis in x.variable.order.axes]
 
-    meta_injector = MetaInjector()
+    meta_injector = BufferInjector()
     meta_injector.register({
-        "axiswise_scale_X_offset": x.offset,
-        "axiswise_scale_S_offset": s.offset,
-        "axiswise_scale_Y_offset": y.offset,
+        "axiswise_scale_X": x,
+        "axiswise_scale_S": s,
+        "axiswise_scale_Y": y,
         "axiswise_scale_D": x.variable.ndim,
         "axiswise_scale_d_target": x.variable.order.axes_dict[op.axis],
-        "axiswise_scale_x_shape": np.array(x_shape, dtype=np.int32).tobytes(),
-        "axiswise_scale_x_stride_in_y": np.array(x_stride_in_y, dtype=np.int32).tobytes(),
+        "axiswise_scale_x_shape": x_shape,
+        "axiswise_scale_x_stride_in_y": x_stride_in_y,
     })
 
     name_injector = KernelNameInjector(op)
@@ -200,7 +202,8 @@ def axiswise_scale_general(op: AxiswiseScale,
         name_injector.name,
         GPUSize(8, 1, 1),
         GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        meta_injector.buffer,
+        meta_injector.unresolved_value_list
     )
 
     return [kernel]

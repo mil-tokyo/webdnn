@@ -28,7 +28,7 @@ namespace WebDNN {
         ];
 
         async decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array> {
-            let dst = new Float32Array(memory_layout.total_size);
+            let dst = new Float32Array(memory_layout.static.size);
             let data_view = new DataView(data.buffer, data.byteOffset);
             let src_offset = 0;
             while (src_offset < data.length) {

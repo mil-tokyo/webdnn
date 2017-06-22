@@ -1,23 +1,23 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.embedding import Embedding
-from webdnn.graph.order import OrderNC, OrderCN, OrderNT, OrderNTC
+from webdnn.graph.order import OrderCN, OrderNT, OrderNTC
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(embedding_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(embedding_Y_offset)%%;
-    const float *W = data_buffer + %%META_LOAD(embedding_W_offset)%%;
-    const int vocabulary = %%META_LOAD(embedding_vocabulary)%%;
-    const int sequence_len = %%META_LOAD(embedding_sequence_len)%%;
-    const int batch_size = %%META_LOAD(embedding_batch_size)%%;
-    const int dim = %%META_LOAD(embedding_dim)%%;
+    const float *X = %%LOAD_BUFFER(embedding_X)%%;
+    float *Y = %%LOAD_BUFFER(embedding_Y)%%;
+    const float *W = %%LOAD_BUFFER(embedding_W)%%;
+    const int vocabulary = %%LOAD_BUFFER(embedding_vocabulary)%%;
+    const int sequence_len = %%LOAD_BUFFER(embedding_sequence_len)%%;
+    const int batch_size = %%LOAD_BUFFER(embedding_batch_size)%%;
+    const int dim = %%LOAD_BUFFER(embedding_dim)%%;
 
     for (int gid = 0; gid < batch_size * sequence_len; gid += 1) {
         int t = gid % sequence_len;
@@ -41,11 +41,11 @@ def embedding(op: Embedding, memory_layout: MemoryLayout) -> List[Kernel]:
     assert w.variable.order == OrderCN
     assert y.variable.order == OrderNTC
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "embedding_X_offset": x.offset,
-        "embedding_Y_offset": y.offset,
-        "embedding_W_offset": w.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "embedding_X": x,
+        "embedding_Y": y,
+        "embedding_W": w,
         "embedding_vocabulary": w.variable.shape_dict[Axis.C],
         "embedding_sequence_len": x.variable.shape_dict[Axis.T],
         "embedding_batch_size": x.variable.shape_dict[Axis.N],
@@ -55,13 +55,14 @@ def embedding(op: Embedding, memory_layout: MemoryLayout) -> List[Kernel]:
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

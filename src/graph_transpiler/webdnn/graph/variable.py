@@ -1,33 +1,43 @@
-from typing import Iterable
+from typing import Union, Dict, List, Set
 
 import numpy as np
 
-from webdnn.graph.interface import IVariable
+from webdnn.graph import operator
+from webdnn.graph.axis import Axis
 from webdnn.graph.node import Node
 from webdnn.graph.order import Order
+from webdnn.graph.placeholder import Placeholder
 
 
-# FIXME: DOCS
-class Variable(Node, IVariable):
+class Variable(Node):
     """
-    レイヤー間で受け渡される変数
-    名前で識別される
-    現在のところ、float32型(4byte/element)を想定している
-    shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存
-    """
+    Variables input to / output from operators.
 
-    def __init__(self, shape: Iterable[int], order: Order):
+    Attrs:
+        shape (list of int or Placeholder): shape of the variable.
+        order (Order): Data order such as OrderNHWC, OrderNC, and so on.
+        input_to (set of Operator): operators to which this variable is input
+        output_from (Operator): operator which generates this variable
+    """
+    shape: List[Union[int, Placeholder]]
+    order: Order
+    input_to: Set["operator.Operator"]
+    output_from: "operator.Operator"
+
+    def __init__(self, shape: List[Union[int, Placeholder]], order: Order):
         super().__init__()
 
-        self.shape = list(int(v) for v in shape)
+        self.shape = list(shape)
         self.input_to = set()
         self.output_from = None
         self.order = order
 
-        assert self.order.ndim == len(self.shape)
+        assert self.order.ndim == len(self.shape), "[Variable] order and shape are mismatched:"
+        f"order={order}, shape={shape}"
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """name of this variable"""
         return self.parameters["name"] if "name" in self.parameters else ""
 
     @name.setter
@@ -35,32 +45,42 @@ class Variable(Node, IVariable):
         self.parameters["name"] = name
 
     @property
-    def size(self):
-        # noinspection PyTypeChecker
-        return int(np.prod(self.shape))
+    def size(self) -> Union[int, Placeholder]:
+        """number of elements"""
+        return Placeholder.to_int(np.product(self.shape))
 
     @property
     def ndim(self):
-        return len(self.shape)
+        """number of dimension"""
+        return self.order.ndim
 
     @property
-    def shape_dict(self):
+    def shape_dict(self) -> Dict[Axis, Union[int, Placeholder]]:
+        """dictionary of axis and shape size pairs"""
         return dict(zip(self.order.axes, self.shape))
 
     def change_order(self, order: Order):
-        # 次元数を減らす時は、なくなる次元のサイズが1のときだけOK
-        # 増える次元は、サイズ1
+        """Change variable order
+
+        When number of dimension will be increased, axes whose size is one are created.
+        Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
+
+        Args:
+            order: new order
+        """
         current_shape_dict = self.shape_dict
         new_shape = [current_shape_dict.get(axis, 1) for axis in order.axes]
         for axis, size in current_shape_dict.items():
             if axis not in order.axes:
-                assert size == 1
+                if Placeholder.check_resolved(size):
+                    assert size == 1, "[Variable.change_order()] The size of axes which will be removed must be one:"
+                    f"variable={self}, shape_dict[{axis}]={size}."
         self.order = order
         self.shape = new_shape
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.order.axes))
-        return f"<Variable {self.name} shape={self.shape}, order=\"{order_repr}\">"
+        return f"<{self.__class__.__name__} {self.name} shape={self.shape}, order=\"{order_repr}\">"
 
     def __str__(self):
         return self.__repr__()

@@ -4,6 +4,7 @@ from webdnn.graph.variable import Variable
 
 WEBDNN_LICENSE = "(C) Machine Intelligence Laboratory (The University of Tokyo), MIT License"
 
+
 # FIXME: DOCS
 class Graph:
     def __init__(self,

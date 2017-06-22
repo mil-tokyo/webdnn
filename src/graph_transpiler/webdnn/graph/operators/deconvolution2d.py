@@ -1,10 +1,11 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -19,7 +20,7 @@ class Deconvolution2D(Operator):
 
     """
 
-    def __init__(self, name: str, ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
@@ -37,8 +38,10 @@ class Deconvolution2D(Operator):
         """
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
-        assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
-        assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
+        if Placeholder.check_resolved(w_shape_dict[Axis.H]) and Placeholder.check_resolved(w_shape_dict[Axis.W]):
+            assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
+        if Placeholder.check_resolved(w_shape_dict[Axis.C]) and Placeholder.check_resolved(x_shape_dict[Axis.C]):
+            assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
 
         N = x_shape_dict[Axis.N]
         H2 = (x_shape_dict[Axis.H] - 1) * self.SH - 2 * self.PH + self.KH

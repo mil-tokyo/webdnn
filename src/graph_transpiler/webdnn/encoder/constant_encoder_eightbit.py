@@ -5,7 +5,7 @@ import zlib
 
 import numpy as np
 
-from webdnn.backend.interface.memory_layout import IMemoryLayout, IAllocation
+from webdnn.backend.code_generator.allocator import Allocation, MemoryLayout
 from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
@@ -57,7 +57,7 @@ class ConstantEncoderEightbit(ConstantEncoder):
     def __init__(self):
         self.name = "eightbit"
 
-    def encode(self, memory_layout: IMemoryLayout) -> bytes:
+    def encode(self, memory_layout: MemoryLayout) -> bytes:
         all_code = b""
         for alloc in memory_layout.allocations.values():
             if not isinstance(alloc.variable, ConstantVariable):
@@ -68,7 +68,8 @@ class ConstantEncoderEightbit(ConstantEncoder):
 
         return all_code
 
-    def _single_encode(self, single_data: np.ndarray, alloc: IAllocation) -> bytes:
+    # noinspection PyMethodMayBeStatic
+    def _single_encode(self, single_data: np.ndarray, alloc: Allocation) -> bytes:
         maxval = np.max(np.abs(single_data))
         maxval = np.maximum(maxval, 1e-20)  # avoid zero division
         abs_scaled_data = np.abs(single_data) / maxval

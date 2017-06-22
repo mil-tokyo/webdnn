@@ -2,21 +2,21 @@ from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.order import OrderNC, OrderNHWC, OrderCN, OrderHWCN
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(linear_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(linear_Y_offset)%%;
-    const float *W = data_buffer + %%META_LOAD(linear_W_offset)%%;
-    const int M = %%META_LOAD(linear_M)%%;
-    const int N = %%META_LOAD(linear_N)%%;
-    const int K = %%META_LOAD(linear_K)%%;
+    const float *X = %%LOAD_BUFFER(linear_X)%%;
+    float *Y = %%LOAD_BUFFER(linear_Y)%%;
+    const float *W = %%LOAD_BUFFER(linear_W)%%;
+    const int M = %%LOAD_BUFFER(linear_M)%%;
+    const int N = %%LOAD_BUFFER(linear_N)%%;
+    const int K = %%LOAD_BUFFER(linear_K)%%;
     
     for (int gid = 0; gid < M * N; gid += 1) {
         int n = gid % N;
@@ -43,11 +43,11 @@ def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     assert y.variable.order == OrderNC or y.variable.order == OrderNHWC
     assert w.variable.ndim == x.variable.ndim
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "linear_X_offset": x.offset,
-        "linear_Y_offset": y.offset,
-        "linear_W_offset": w.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "linear_X": x,
+        "linear_Y": y,
+        "linear_W": w,
         "linear_M": y.variable.shape_dict[Axis.N],
         "linear_N": y.variable.size // y.variable.shape_dict[Axis.N],
         "linear_K": x.variable.size // x.variable.shape_dict[Axis.N],
@@ -56,13 +56,14 @@ def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

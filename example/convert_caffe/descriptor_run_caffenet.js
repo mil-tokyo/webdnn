@@ -66,7 +66,7 @@ async function run() {
         await run_if.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0];
+        let out_vec = run_if.outputViews[0].toActual();
         let top_labels = WebDNN.Math.argmax(out_vec, 5);
         let predicted_str = 'Predicted:';
         for (let j = 0; j < top_labels.length; j++) {

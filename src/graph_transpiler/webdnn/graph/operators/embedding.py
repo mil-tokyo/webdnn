@@ -16,7 +16,7 @@ class Embedding(Operator):
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
-        self.attributes = {}
+        self.attributes = set()
 
     def __call__(self, x: Variable, w: Variable):
         """

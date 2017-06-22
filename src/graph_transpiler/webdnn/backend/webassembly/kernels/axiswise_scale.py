@@ -2,20 +2,20 @@ from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.order import OrderNHWC, OrderNC, OrderHWNC
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(axiswise_scale_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(axiswise_scale_Y_offset)%%;
-    const float *S = data_buffer + %%META_LOAD(axiswise_scale_S_offset)%%;
-    const int N = %%META_LOAD(axiswise_scale_N)%%;
-    const int C = %%META_LOAD(axiswise_scale_C)%%;
+    const float *X = %%LOAD_BUFFER(axiswise_scale_X)%%;
+    float *Y = %%LOAD_BUFFER(axiswise_scale_Y)%%;
+    const float *S = %%LOAD_BUFFER(axiswise_scale_S)%%;
+    const int N = %%LOAD_BUFFER(axiswise_scale_N)%%;
+    const int C = %%LOAD_BUFFER(axiswise_scale_C)%%;
   
     for (int gid = 0; gid < N; gid += 1) {
         int c = gid % C;
@@ -36,11 +36,11 @@ def axiswise_scale(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kerne
     assert y.variable.order == OrderNC or y.variable.order == OrderNHWC or y.variable.order == OrderHWNC
     assert op.parameters["axis"] == Axis.C, "[Webassembly] AxiswiseScale supports only channelwise bias."
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "axiswise_scale_X_offset": x.offset,
-        "axiswise_scale_Y_offset": y.offset,
-        "axiswise_scale_S_offset": s.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "axiswise_scale_X": x,
+        "axiswise_scale_Y": y,
+        "axiswise_scale_S": s,
         "axiswise_scale_N": y.variable.size,
         "axiswise_scale_C": y.variable.shape_dict[Axis.C],
     })
@@ -48,13 +48,14 @@ def axiswise_scale(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kerne
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        meta_injector.buffer
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

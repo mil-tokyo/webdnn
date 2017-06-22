@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 
@@ -27,7 +28,8 @@ for (var i = 0; i < n; i++) {
 """
 
 
-def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def axiswise_bias(op: AxiswiseBias, memory_layout: MemoryLayout) -> List[Kernel]:
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]
     b = op.inputs["b"]
@@ -38,8 +40,7 @@ def axiswise_bias(op: AxiswiseBias) -> List[Kernel]:
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
 
-    # noinspection PyTypeChecker
-    axis_stride = int(np.prod(x.shape[axis_pos + 1:]))  # NCHWでaxis=Cなら、size(H)*size(W), np.prod([])==1.0
+    axis_stride = np.product(x.shape[axis_pos + 1:])  # NCHWでaxis=Cなら、size(H)*size(W), np.product([])==1.0
 
     kernel = Kernel(
         {"axiswise_bias": source},

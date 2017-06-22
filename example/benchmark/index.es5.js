@@ -244,10 +244,10 @@ var WebDNNBenchmark = function(_BaseBenchmark2) {
             }).then(function() {
                 return WebDNN.runner.getInputViews();
             }).then(function(xs) {
-                _this5.x = xs[0];
+                _this5.x = xs[0].toActual();
                 return WebDNN.runner.getOutputViews();
             }).then(function(ys) {
-                _this5.y = ys[0];
+                _this5.y = ys[0].toActual();
             });
         }
     }, {

@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 
@@ -22,7 +23,8 @@ for (var i = 0; i < length; i++) {
 """
 
 
-def elementwise_sum(op: ElementwiseSum) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def elementwise_sum(op: ElementwiseSum, memory_layout: MemoryLayout) -> List[Kernel]:
     assert len(op.inputs) == 2
     x0 = op.inputs["x0"]
     x1 = op.inputs["x1"]

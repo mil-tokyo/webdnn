@@ -11,10 +11,13 @@ class OptimizeRule:
         self.sub_rules = []
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        """
-        graphを変換する
-        :param graph: 
-        :return: 2要素のタプル。第一要素は変換後のGraph, 第二要素は変換があったかどうかのbool値
+        """Optimize the computational graph
+
+        params:
+            graph: Computational graph
+
+        return:
+            optimized graph and flag whether the graph is changed or not.
         """
         flag_retry = True
         flag_totally_changed = False

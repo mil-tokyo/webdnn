@@ -1,15 +1,16 @@
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union
 
 import numpy as np
 
 from webdnn.graph.operator import Operator
 from webdnn.graph.order import Order
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
 class Sgemm(Operator):
-    def __init__(self, name: Optional[str], M: int, N: int, K: int, out_shape: Iterable[int], out_order: Order,
-                 transpose_A: bool, transpose_B: bool):
+    def __init__(self, name: Optional[str], M: Union[int, Placeholder], N: Union[int, Placeholder], K: Union[int, Placeholder],
+                 out_shape: Iterable[Placeholder], out_order: Order, transpose_A: bool, transpose_B: bool):
         super().__init__(name)
 
         # NOTE: out_shapeをIterableではなくCollectionにすればこれは解決する
@@ -18,7 +19,8 @@ class Sgemm(Operator):
         #
         # noinspection PyTypeChecker
         assert len(out_shape) == out_order.ndim
-        assert np.product(out_shape) == M * N
+        if Placeholder.check_resolved(np.product(out_shape)) and Placeholder.check_resolved(M * N):
+            assert np.product(out_shape) == M * N
 
         self.parameters["M"] = M
         self.parameters["N"] = N
@@ -29,8 +31,11 @@ class Sgemm(Operator):
         self.parameters["transpose_B"] = transpose_B
 
     def __call__(self, A: Variable, B: Variable):
-        assert A.size == self.M * self.K
-        assert B.size == self.N * self.K
+        if Placeholder.check_resolved(A.size) and Placeholder.check_resolved(self.M * self.K):
+            assert A.size == self.M * self.K
+
+        if Placeholder.check_resolved(B.size) and Placeholder.check_resolved(self.N * self.K):
+            assert B.size == self.N * self.K
 
         self.append_input("A", A)
         self.append_input("B", B)
@@ -44,21 +49,21 @@ class Sgemm(Operator):
         return C,
 
     @property
-    def M(self) -> int:
-        return int(self.parameters["M"])
+    def M(self) -> Union[int, Placeholder]:
+        return self.parameters["M"]
 
     @property
-    def N(self) -> int:
-        return int(self.parameters["N"])
+    def N(self) -> Union[int, Placeholder]:
+        return self.parameters["N"]
 
     @property
-    def K(self) -> int:
-        return int(self.parameters["K"])
+    def K(self) -> Union[int, Placeholder]:
+        return self.parameters["K"]
 
     @property
     def transpose_A(self) -> bool:
-        return bool(self.parameters["transpose_A"])
+        return self.parameters["transpose_A"]
 
     @property
     def transpose_B(self) -> bool:
-        return bool(self.parameters["transpose_B"])
+        return self.parameters["transpose_B"]

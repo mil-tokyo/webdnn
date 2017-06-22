@@ -5,17 +5,15 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23 or 2.0
 """
 
-from typing import List, Tuple, Union
+from typing import List, Union
 
-from warnings import warn
 import chainer
 import chainer.computational_graph
 import numpy as np
 
 from webdnn.graph.axis import Axis
-from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
 from webdnn.graph.converters.converter import Converter
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
@@ -30,109 +28,114 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.tanh import Tanh
-from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderCN, OrderHWNC, OrderHWCN, \
-    OrderNHWC, OrderCNHW, \
-    Order
+from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
 if chainer.__version__ >= "2.":
     chainer_v2 = True
+    # noinspection PyUnresolvedReferences
     VariableNode = chainer.variable.VariableNode
 else:
     chainer_v2 = False
     VariableNode = chainer.variable.Variable
 
 
+def _to_variable_node(chainer_variable: Union[chainer.Variable, VariableNode]) -> VariableNode:
+    if chainer_v2 and not isinstance(chainer_variable, VariableNode):
+        # noinspection PyUnresolvedReferences
+        return chainer_variable.node
+    else:
+        return chainer_variable
+
+
 class ChainerConverter(Converter[chainer.Function]):
+    """
+
+    c_var, c_opr: chainer variable and chainer operator(=chainer.Function) node object
+    n_var, n_opr: WebDNN IR variable and operator object
+    """
+
     def convert_from_inout_vars(self, inputs: List[chainer.Variable], outputs: List[chainer.Variable]):
         chainer_graph = chainer.computational_graph.build_computational_graph(outputs)
         return self.convert(chainer_graph, inputs, outputs)
 
     def convert_core(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
-                     input_vars: List[chainer.Variable], output_vars: List[chainer.Variable]) -> Graph:
-        # 戦略
-        # 生成済み変数(chainer.Variable)をセットに入れる; 入力変数およびウェイト
-        # 生成済み変数だけを入力とし、未処理のchainer.Functionを変換し、生成済み変数セットに追加
-        # 未処理のchainer.Functionがなくなったら終わり
+                     input_c_vars: List[chainer.Variable], output_c_vars: List[chainer.Variable]) -> Graph:
+
+        # In chainer v2, variables are represented as Variable and VariableNode object, and
+        # graph information such as edge connection is contained in variable node.
+        # Therefore all chainer variable must be normalized into variable node.
+        input_c_vars = [_to_variable_node(v) for v in input_c_vars]
+        output_c_vars = [_to_variable_node(v) for v in output_c_vars]
+
+        # Append InputVariable attribute to input variables
+        input_n_vars = []
+        for c_var in input_c_vars:
+            n_var = self._convert_var(c_var)
+            n_var.attributes.add(Input(n_var))
+            input_n_vars.append(n_var)
+
         self._convert_weight_vars(chainer_computational_graph)
-        # Variable | VariableNodeをVariableNodeに変換
-        input_vars = [self._to_variable_node(v) for v in input_vars]
-        output_vars = [self._to_variable_node(v) for v in output_vars]
-        # Use VariableNode (not chainer.Variable) as the key for _variable_table
-        input_nvars = []
-        for cvar in input_vars:
-            nvar = self._convert_var(cvar)
-            nvar.attributes.add(Input(nvar))
-            input_nvars.append(nvar)
 
-        pending_functions = [cfunc for cfunc in chainer_computational_graph.nodes if
-                             isinstance(cfunc, chainer.Function)]
-        while len(pending_functions) > 0:
-            for cfunc in pending_functions:
-                if all(((self.variable_exists(self._to_variable_node(cvar))) for cvar in cfunc.inputs)):
-                    # このレイヤーは入力が揃った
-                    self.convert_operator(cfunc)
-                    pending_functions.remove(cfunc)
-                    break  # for cfunc in pending_functions
+        pending_c_oprs = [c_opr for c_opr in chainer_computational_graph.nodes if
+                          isinstance(c_opr, chainer.Function)]
+
+        while len(pending_c_oprs) > 0:
+            for c_opr in pending_c_oprs:
+                if all(((self.has_variable(_to_variable_node(c_var))) for c_var in c_opr.inputs)):
+                    # All input variables of the `cfunc` are converted, so this `c_opr` can be converted.
+                    self.convert_operator(c_opr)
+                    pending_c_oprs.remove(c_opr)
+                    break  # for c_opr in pending_functions
             else:
-                print(pending_functions)
-                raise ValueError("inputs to functions cannot be resolved.")
+                console.debug(pending_c_oprs)
+                raise ValueError("Inputs to functions cannot be resolved.")
 
-        # 出力変数にAttributeをつける
-        output_nvars = []
-        for cvar in output_vars:
-            if not self.variable_exists(cvar):
+        # Append OutputVariable attribute to output variables
+        output_n_vars = []
+        for c_var in output_c_vars:
+            if not self.has_variable(c_var):
                 raise ValueError("Output variable is not generated by graph.")
-            nvar = self.get_variable(cvar)
-            nvar.attributes.add(Output)
-            output_nvars.append(nvar)
+            n_var = self.get_variable(c_var)
+            n_var.attributes.add(Output)
+            output_n_vars.append(n_var)
 
-        # このフレームワークで標準的なデータオーダーに変更
+        # Convert variable order into typical one in Chainer
         self._transpose_vars()
 
-        return Graph(input_nvars, output_nvars)
-
-    def _to_variable_node(self, chainer_variable: Union[chainer.Variable, VariableNode]) -> VariableNode:
-        if chainer_v2 and not isinstance(chainer_variable, VariableNode):
-            return chainer_variable.node
-        else:
-            return chainer_variable  # type: VariableNode
-
-    def serialize_operator_type(self, operator: chainer.Function) -> str:
-        return operator.__class__.__name__
+        return Graph(input_n_vars, output_n_vars)
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
-        # 名前付きの変数を変換
+        # Convert chainer variable which has name (= which is trained parameter) into WebDNN Variable object
 
-        # Phase1. 特殊ケースのみ先に処理
-        for cvar in chainer_computational_graph.nodes:
+        # special case
+        for c_var in chainer_computational_graph.nodes:
+
             # noinspection PyUnresolvedReferences
-            if isinstance(cvar, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
-                # BNのmean, varは名無しだがウェイト
-                if len(cvar.inputs) == 5:  # data, gamma, bias, mean, var
-                    self._convert_var(cvar.inputs[3], force_constant=True)
-                    self._convert_var(cvar.inputs[4], force_constant=True)
+            if isinstance(c_var, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
+                # In chainer's BatchNormalization, mean and va (c_var.inputs[3] and c_var.inputs[4]) have no name, but
+                # they are trainable parameters.
+                if len(c_var.inputs) == 5:  # data, gamma, bias, mean, var
+                    self._convert_var(c_var.inputs[3], force_constant=True)
+                    self._convert_var(c_var.inputs[4], force_constant=True)
 
-            elif isinstance(cvar, chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
-                # chainerのDeconvolution2DのWは(Cin, Cout, Kh, Kw)のオーダー
-                self._convert_var(cvar.inputs[1], force_constant=True, force_order=OrderCNHW)
+            elif isinstance(c_var, chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
+                # The order of weight of deconvolution2D in chainer is not Order NCHW, but OrderCNHW.
+                self._convert_var(c_var.inputs[1], force_constant=True, force_order=OrderCNHW)
 
-        # Phase2. 残りを処理
-        for cvar in chainer_computational_graph.nodes:
-            # noinspection PyUnresolvedReferences
-            if isinstance(cvar, VariableNode):
-                if (not self.variable_exists(cvar)) and cvar.name is not None:
-                    self._convert_var(cvar)
+        # general case
+        for c_var in chainer_computational_graph.nodes:
+            if isinstance(c_var, VariableNode):
+                if (not self.has_variable(c_var)) and c_var.name is not None:
+                    self._convert_var(c_var)
 
-    def _convert_var(self,
-                     cvar: VariableNode,
-                     force_constant=False,
-                     force_order: Order = None):
-        assert not self.variable_exists(cvar)
-        ndim = len(cvar.shape)
+    def _convert_var(self, c_var: VariableNode, force_constant=False, force_order: Order = None):
+        assert not self.has_variable(c_var), f"{c_var} is already converted"
+        ndim = len(c_var.shape)
         if force_order:
             order = force_order
 
@@ -147,83 +150,88 @@ class ChainerConverter(Converter[chainer.Function]):
                 # both weight and variable
                 order = OrderC
             else:
-                raise NotImplementedError()
+                raise NotImplementedError(f"Unknown data format: {c_var}, ndim={c_var.ndim}, shape={c_var.shape}")
 
-        assert order.ndim == ndim
+        assert order.ndim == ndim, f"Number of dimension is mismatched: order.ndim={order.ndim}, len(shape)={ndim}"
 
-        if cvar.name is not None or force_constant:
-            nvar = ConstantVariable(chainer.cuda.to_cpu(cvar.data), order)  # force on CPU
+        if c_var.name is not None or force_constant:
+            n_var = ConstantVariable(chainer.cuda.to_cpu(c_var.data), order)  # force on CPU
         else:
-            nvar = Variable(cvar.shape, order)
+            n_var = Variable(c_var.shape, order)
 
-        self.set_variable(cvar, nvar)
-        return nvar
+        self.set_variable(c_var, n_var)
+        return n_var
 
     # noinspection PyMethodMayBeStatic
     def _transpose_vars(self):
         """
-        変数を、標準的なAxisOrderに変更
-        :param nvars: 
-        :return: 
+        Transpose variable order into typical chainer order.
         """
-        for nvar in self._variable_table[self.__class__.__name__].values():
-            if isinstance(nvar, ConstantVariable):
-                if nvar.ndim == 1:
-                    nvar.change_order(OrderC)
-                elif nvar.ndim == 2:
-                    nvar.change_order(OrderCN)
-                elif nvar.ndim == 4:
-                    assert len(nvar.input_to) == 1
-                    first_input_to = list(nvar.input_to)[0]
+        for n_var in self._variable_table[self.__class__.__name__].values():
+            if isinstance(n_var, ConstantVariable):
+                if n_var.ndim == 1:
+                    n_var.change_order(OrderC)
+
+                elif n_var.ndim == 2:
+                    n_var.change_order(OrderCN)
+
+                elif n_var.ndim == 4:
+                    assert len(n_var.input_to) == 1
+                    first_input_to = list(n_var.input_to)[0]
+
                     if isinstance(first_input_to, Convolution2D):
-                        nvar.change_order(OrderHWNC)
+                        n_var.change_order(OrderHWNC)
+
                     elif isinstance(first_input_to, Deconvolution2D):
-                        nvar.change_order(OrderHWNC)
+                        n_var.change_order(OrderHWNC)
+
                     elif isinstance(first_input_to, Linear):
-                        nvar.change_order(OrderHWCN)
+                        n_var.change_order(OrderHWCN)
+
                     else:
-                        # 今の所ないはず
-                        raise ValueError()
+                        raise NotImplementedError(f"Unknown data format: {n_var}")
+
             else:
-                if nvar.ndim == 1:
-                    nvar.change_order(OrderC)
-                elif nvar.ndim == 2:
-                    nvar.change_order(OrderNC)
-                elif nvar.ndim == 4:
-                    nvar.change_order(OrderNHWC)
+                if n_var.ndim == 1:
+                    n_var.change_order(OrderC)
+
+                elif n_var.ndim == 2:
+                    n_var.change_order(OrderNC)
+
+                elif n_var.ndim == 4:
+                    n_var.change_order(OrderNHWC)
 
 
 @ChainerConverter.register_handler("ReLU")
-def _convert_relu(converter: ChainerConverter, operator: chainer.functions.ReLU):
-    opr = Relu(None)
-    assert len(operator.inputs) == 1  # operator.inputs: Iterable[VariableNode]
-    y, = opr(converter.get_variable(operator.inputs[0]))
-    converter.set_variable(operator.outputs[0](), y)  # operator.outputs: Iterable[Weakref[VariableNode]]
+def _convert_relu(converter: ChainerConverter, c_opr: chainer.functions.ReLU):
+    n_opr = Relu(None)
+    assert len(c_opr.inputs) == 1, "Number of input of ReLU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)  # c_opr.outputs: Iterable[Weakref[VariableNode]]
 
 
 @ChainerConverter.register_handler("ELU")
-def _convert_elu(converter: ChainerConverter, operator: chainer.functions.ELU):
-    opr = Elu(None)
-    assert len(operator.inputs) == 1
-    y, = opr(converter.get_variable(operator.inputs[0]))
-    converter.set_variable(operator.outputs[0](), y)
+def _convert_elu(converter: ChainerConverter, c_opr: chainer.functions.ELU):
+    n_opr = Elu(None)
+    assert len(c_opr.inputs) == 1, "Number of input of ELU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Tanh")
-def _convert_tanh(converter: ChainerConverter, operator: chainer.functions.Tanh):
-    opr = Tanh(None)
-    assert len(operator.inputs) == 1
-    y, = opr(converter.get_variable(operator.inputs[0]))
-    converter.set_variable(operator.outputs[0](), y)
+def _convert_tanh(converter: ChainerConverter, c_opr: chainer.functions.Tanh):
+    n_opr = Tanh(None)
+    assert len(c_opr.inputs) == 1, "Number of input of Tanh is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("LinearFunction")
-def _convert_linear_function(converter: ChainerConverter, operator: chainer.functions.connection.linear.LinearFunction):
-    # noinspection PyUnresolvedReferences
+def _convert_linear_function(converter: ChainerConverter, c_opr: chainer.functions.connection.linear.LinearFunction):
     linear_opr = Linear(None)
 
-    x = converter.get_variable(operator.inputs[0])
-    w = converter.get_variable(operator.inputs[1])
+    x = converter.get_variable(c_opr.inputs[0])
+    w = converter.get_variable(c_opr.inputs[1])
     if x.ndim == 4 and w.ndim == 2:
         # wを4次元に拡張 (NC -> NCHW)
         x_shape_dict = x.shape_dict
@@ -237,145 +245,136 @@ def _convert_linear_function(converter: ChainerConverter, operator: chainer.func
         w.data = w.data.reshape(w_new_shape)
 
     y, = linear_opr(x, w)
-    if len(operator.inputs) == 3:
-        # biasあり
-        # noinspection PyUnresolvedReferences
+    if len(c_opr.inputs) == 3:
+        # with bias
         bias_opr = AxiswiseBias(None, axis=Axis.C)
-        bias = converter.get_variable(operator.inputs[2])
+        bias = converter.get_variable(c_opr.inputs[2])
         y, = bias_opr(y, bias)
 
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Convolution2DFunction")
 def _convert_convolution2d_function(converter: ChainerConverter,
-                                    operator: chainer.functions.connection.convolution_2d.Convolution2DFunction):
-    # noinspection PyUnresolvedReferences
+                                    c_opr: chainer.functions.connection.convolution_2d.Convolution2DFunction):
+    x = converter.get_variable(c_opr.inputs[0])
+    w = converter.get_variable(c_opr.inputs[1])
 
-    x = converter.get_variable(operator.inputs[0])
-    w = converter.get_variable(operator.inputs[1])
-
-    w_shape_dict = w.shape_dict
     conv_opr = Convolution2D(None,
-                             ksize=(w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
-                             stride=(operator.sy, operator.sx),
-                             padding=(operator.ph, operator.pw))
+                             ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                             stride=(c_opr.sy, c_opr.sx),
+                             padding=(c_opr.ph, c_opr.pw))
 
     y, = conv_opr(x, w)
 
-    if len(operator.inputs) == 3:
-        # biasあり
-        # noinspection PyUnresolvedReferences
+    if len(c_opr.inputs) == 3:
+        # with bias
         bias_opr = AxiswiseBias(None, axis=Axis.C)
-        bias = converter.get_variable(operator.inputs[2])
+        bias = converter.get_variable(c_opr.inputs[2])
         y, = bias_opr(y, bias)
 
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Deconvolution2DFunction")
 def _convert_deconvolution2d_function(converter: ChainerConverter,
-                                      operator: chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
-    # noinspection PyUnresolvedReferences
+                                      c_opr: chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):
+    x = converter.get_variable(c_opr.inputs[0])
+    w = converter.get_variable(c_opr.inputs[1])
 
-    x = converter.get_variable(operator.inputs[0])
-    w = converter.get_variable(operator.inputs[1])
-
-    w_shape_dict = w.shape_dict
     deconv_opr = Deconvolution2D(None,
-                                 ksize=(w_shape_dict[Axis.H], w_shape_dict[Axis.W]),
-                                 stride=(operator.sy, operator.sx),
-                                 padding=(operator.ph, operator.pw))
+                                 ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                                 stride=(c_opr.sy, c_opr.sx),
+                                 padding=(c_opr.ph, c_opr.pw))
 
     y, = deconv_opr(x, w)
 
-    if len(operator.inputs) == 3:
-        # biasあり
-        # noinspection PyUnresolvedReferences
+    if len(c_opr.inputs) == 3:
+        # with bias
         bias_opr = AxiswiseBias(None, axis=Axis.C)
-        bias = converter.get_variable(operator.inputs[2])
+        bias = converter.get_variable(c_opr.inputs[2])
         y, = bias_opr(y, bias)
 
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: ChainerConverter,
-                                    operator: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
-    # noinspection PyUnresolvedReferences
-
-    x = converter.get_variable(operator.inputs[0])
+                           c_opr: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
+    x = converter.get_variable(c_opr.inputs[0])
 
     pool_opr = MaxPooling2D(None,
-                            ksize=(operator.kh, operator.kw),
-                            stride=(operator.sy, operator.sx),
-                            padding=(operator.ph, operator.pw))
+                            ksize=(c_opr.kh, c_opr.kw),
+                            stride=(c_opr.sy, c_opr.sx),
+                            padding=(c_opr.ph, c_opr.pw))
 
     y, = pool_opr(x)
 
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("AveragePooling2D")
 def _convert_average_pooling2d(converter: ChainerConverter,
-                                        operator: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
-    # noinspection PyUnresolvedReferences
-
-    x = converter.get_variable(operator.inputs[0])
+                               c_opr: chainer.functions.pooling.average_pooling_2d.AveragePooling2D):
+    x = converter.get_variable(c_opr.inputs[0])
 
     pool_opr = AveragePooling2D(None,
-                                ksize=(operator.kh, operator.kw),
-                                stride=(operator.sy, operator.sx),
-                                padding=(operator.ph, operator.pw))
+                                ksize=(c_opr.kh, c_opr.kw),
+                                stride=(c_opr.sy, c_opr.sx),
+                                padding=(c_opr.ph, c_opr.pw))
 
     y, = pool_opr(x)
 
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("LocalResponseNormalization")
 def _convert_local_response_normalization(converter: ChainerConverter,
-                                        operator: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
-    # noinspection PyUnresolvedReferences
+                                          c_opr: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
+    x = converter.get_variable(c_opr.inputs[0])
 
-    x = converter.get_variable(operator.inputs[0])
+    n_opr = LocalResponseNormalization(None, n=c_opr.n, k=c_opr.k, alpha=c_opr.alpha, beta=c_opr.beta)
 
-    opr = LocalResponseNormalization(None,
-                                     n=operator.n,
-                                     k=operator.k,
-                                     alpha=operator.alpha,
-                                     beta=operator.beta)
+    y, = n_opr(x)
 
-    y, = opr(x)
-
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("BatchNormalizationFunction")
 def _convert_batch_normalization_function(converter: ChainerConverter,
-                                          operator: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
-    # noinspection PyUnresolvedReferences
+                                          c_opr: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
+    x = converter.get_variable(c_opr.inputs[0])
+    gamma = converter.get_variable(c_opr.inputs[1])
+    beta = converter.get_variable(c_opr.inputs[2])
 
-    x = converter.get_variable(operator.inputs[0])
-    gamma = converter.get_variable(operator.inputs[1])
-    beta = converter.get_variable(operator.inputs[2])
+    if len(c_opr.inputs) == 5:
+        # noinspection PyUnresolvedReferences
+        mean_data = converter.get_variable(c_opr.inputs[3]).data
+        # noinspection PyUnresolvedReferences
+        variance_data = converter.get_variable(c_opr.inputs[4]).data
 
-    if len(operator.inputs) == 5:
-        mean_data = converter.get_variable(operator.inputs[3]).data
-        variance_data = converter.get_variable(operator.inputs[4]).data
-    elif len(operator.inputs) == 3:
-        variance_data = operator.running_var
-        mean_data = operator.running_mean
+    elif len(c_opr.inputs) == 3:
+        variance_data = c_opr.running_var
+        mean_data = c_opr.running_mean
+
     else:
         raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
-    print(variance_data)
+    console.debug(variance_data)
 
-    # x以外の変数は、加工して新しいConstantとして使う
-    # (x - mean) / sqrt(var + eps) * gamma + beta
-    # gamma_div_std = gamma / sqrt(var + eps)
-    # beta_scaled = beta - mean * gamma_div_std
-    # y = x * gamma_div_std + beta_scaled
-    gamma_div_std = gamma.data / np.sqrt(variance_data + operator.eps)
+    # Simplify scale and bias
+    #
+    # from:
+    #   y = (x - mean) / sqrt(var + eps) * gamma + beta
+    #
+    # to:
+    #   y = x * gamma_div_std + beta_scaled
+    #
+    #   gamma_div_std = gamma / sqrt(var + eps)
+    #   beta_scaled   = beta - mean * gamma_div_std
+
+    # noinspection PyUnresolvedReferences
+    gamma_div_std = gamma.data / np.sqrt(variance_data + c_opr.eps)
+    # noinspection PyUnresolvedReferences
     beta_scaled = beta.data - mean_data * gamma_div_std
 
     scale_opr = AxiswiseScale(None, axis=Axis.C)
@@ -386,70 +385,73 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
     beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
     offset_out, = offset_opr(scale_out, beta_scaled_const)
 
-    converter.set_variable(operator.outputs[0](), offset_out)
+    converter.set_variable(c_opr.outputs[0](), offset_out)
 
 
 @ChainerConverter.register_handler("Add")
-def _convert_add(converter: ChainerConverter,
-                 operator: chainer.functions.math.basic_math.Add):
-    # noinspection PyUnresolvedReferences
+def _convert_add(converter: ChainerConverter, c_opr: chainer.functions.math.basic_math.Add):
+    xs = [converter.get_variable(x) for x in c_opr.inputs]
 
-    xs = [converter.get_variable(input) for input in operator.inputs]
+    n_opr = ElementwiseSum(None)
 
-    opr = ElementwiseSum(None)
+    y, = n_opr(*xs)
 
-    y, = opr(*xs)
-
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("AddConstant")
-def _convert_add_constant(converter: ChainerConverter,
-                 operator: chainer.functions.math.basic_math.AddConstant):
-    # noinspection PyUnresolvedReferences
+def _convert_add_constant(converter: ChainerConverter, c_opr: chainer.functions.math.basic_math.AddConstant):
+    x = converter.get_variable(c_opr.inputs[0])
 
-    x = converter.get_variable(operator.inputs[0])
+    n_opr = ScalarAffine(None, scale=1, bias=float(c_opr.value))
 
-    opr = ScalarAffine(None, scale=1, bias=float(operator.value))
+    y, = n_opr(x)
 
-    y, = opr(x)
-
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("MulConstant")
-def _convert_mul_constant(converter: ChainerConverter,
-                 operator: chainer.functions.math.basic_math.MulConstant):
-    # noinspection PyUnresolvedReferences
+def _convert_mul_constant(converter: ChainerConverter, c_opr: chainer.functions.math.basic_math.MulConstant):
+    x = converter.get_variable(c_opr.inputs[0])
 
-    x = converter.get_variable(operator.inputs[0])
+    n_opr = ScalarAffine(None, scale=float(c_opr.value), bias=0.0)
 
-    opr = ScalarAffine(None, scale=float(operator.value), bias=0.0)
+    y, = n_opr(x)
 
-    y, = opr(x)
-
-    converter.set_variable(operator.outputs[0](), y)
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Reshape")
-def _convert_reshape(converter: ChainerConverter,
-                 operator: chainer.functions.array.reshape.Reshape):
-    # noinspection PyUnresolvedReferences
-    # currently, only NHWC -> NC where H,W==1 is supported
-    assert len(operator.inputs) == 1
-    x = converter.get_variable(operator.inputs[0])
-    assert x.order == OrderNHWC
-    assert x.shape[1:3] == [1, 1]
-    assert operator.shape == (x.shape[0], x.shape[3])
+def _convert_reshape(converter: ChainerConverter, c_opr: chainer.functions.array.reshape.Reshape):
+    assert len(c_opr.inputs) == 1, \
+        f"For 'Reshape' operator in chainer, expected number of inputs is 1, but actual is {len(c_opr.inputs)}"
 
-    opr = Flatten(None, in_axes=[Axis.C, Axis.H, Axis.W], out_axis=Axis.C)
-    y, = opr(x)
+    x = converter.get_variable(c_opr.inputs[0])
 
-    converter.set_variable(operator.outputs[0](), y)
+    assert x.order == OrderNHWC, \
+        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: x.order={x.order}"
+
+    assert x.shape[1:3] == [1, 1], \
+        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: " \
+        f"x.shape[Axis.H]={x.shape_dict[Axis.H]}, x.shape[Axis.W]={x.shape_dict[Axis.W]}"
+
+    assert c_opr.shape == (x.shape[0], x.shape[3]), \
+        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: " \
+        f"x.shape[Axis.N]={x.shape_dict[Axis.N]}, target_shape[Axis.N]={c_opr.shape[0]}, " \
+        f"x.shape[Axis.C]={x.shape_dict[Axis.C]}, target_shape[Axis.C]={c_opr.shape[1]}"
+
+    n_opr = Flatten(None, in_axes=[Axis.C, Axis.H, Axis.W], out_axis=Axis.C)
+
+    y, = n_opr(x)
+
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
+# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("Dropout")
-def _convert_dropout(converter: ChainerConverter, operator: chainer.functions.noise.dropout.Dropout):
-    warn("Dropout is omitted")
-    x = converter.get_variable(operator.inputs[0])
-    converter.set_variable(operator.outputs[0](), x)
+def _convert_dropout(converter: ChainerConverter, c_opr: chainer.functions.noise.dropout.Dropout):
+    console.warning("Dropout is omitted")
+
+    x = converter.get_variable(c_opr.inputs[0])
+
+    converter.set_variable(c_opr.outputs[0](), x)

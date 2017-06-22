@@ -1,34 +1,38 @@
-import math
-from typing import Dict, List, Set, Tuple
+from enum import auto, Enum
+from typing import Dict, List, Set, Tuple, Union, Optional
 
 import numpy as np
 
-from webdnn.backend.interface.memory_layout import IMemoryLayout, IAllocation
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
 
 
-class Allocation(json.SerializableMixin, IAllocation):
+class BufferType(Enum):
+    Static = auto()
+    Dynamic = auto()
+
+
+class Allocation(json.SerializableMixin):
     variable: Variable
-    offset: int
+    offset: Union[int, Placeholder]
+    buffer_type: BufferType
 
     def __init__(self,
                  variable: Variable,
-                 offset: int):
+                 offset: Union[int, Placeholder],
+                 buffer_type: BufferType):
         self.variable = variable
         self.offset = offset
+        self.buffer_type = buffer_type
 
     @property
-    def is_constant(self) -> bool:
-        return isinstance(self.variable, ConstantVariable)
-
-    @property
-    def size(self) -> int:
+    def size(self) -> Union[int, Placeholder]:
         return self.variable.size
 
     def _to_serializable_(self):
@@ -39,14 +43,22 @@ class Allocation(json.SerializableMixin, IAllocation):
         }
 
 
-class MemoryLayout(json.SerializableMixin, IMemoryLayout):
+class MemoryLayout(json.SerializableMixin):
+    data: np.array
+
     def __init__(self):
-        self.allocations = {}
+        self.allocations = {}  # type: Dict[str, Allocation]
 
     def _to_serializable_(self):
         return {
-            "total_size": self.size,
-            "allocations": {a.variable.name: a for _, a in self.allocations.items()}
+            "static": {
+                "size": self.static_size,
+                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Static}
+            },
+            "dynamic": {
+                "size": self.dynamic_size,
+                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Dynamic}
+            }
         }
 
     def __len__(self):
@@ -58,17 +70,40 @@ class MemoryLayout(json.SerializableMixin, IMemoryLayout):
     def __contains__(self, var: Variable):
         return var.name in self.allocations
 
-    def append(self, var: Variable, offset: int = -1):
-        if offset == -1:
-            offset = self.size
+    def append(self, var: Variable, offset: Union[int, Placeholder] = -1, buffer_type: Optional[BufferType] = None):
+        if buffer_type is None:
+            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(var.size):
+                buffer_type = BufferType.Static
+            else:
+                buffer_type = BufferType.Dynamic
 
-        self.allocations[var.name] = Allocation(var, offset)
+        if offset == -1:
+            if buffer_type is BufferType.Static:
+                offset = self.static_size
+            else:
+                offset = self.dynamic_size
+
+        self.allocations[var.name] = Allocation(var, offset, buffer_type)
 
     @property
-    def size(self) -> int:
+    def total_size(self) -> Union[int, Placeholder]:
+        return self.static_size + self.dynamic_size
+
+    @property
+    def static_size(self) -> int:
         size = 0
         for a in self.allocations.values():
-            size = max(a.offset + a.size, size)
+            if a.buffer_type == BufferType.Static:
+                size = max(a.offset + a.size, size)
+
+        return size
+
+    @property
+    def dynamic_size(self) -> Union[int, Placeholder]:
+        size = 0
+        for a in self.allocations.values():
+            if a.buffer_type == BufferType.Dynamic:
+                size += a.size
 
         return size
 
@@ -86,24 +121,25 @@ class Allocator:
 
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]):
+        # check if constant variable with shape with unresolved placeholder.
+        dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)], ConstantVariable)
+        assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
+
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
 
         lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, int]
+        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, Placeholder]]
         for variable, offset in offsets.items():
             layout.append(variable, offset)
 
-        data = np.zeros(layout.size, dtype=np.float32)
-        constant_size = 0
+        layout.data = np.zeros(layout.static_size, dtype=np.float32)
         for var in variables:
             if not isinstance(var, ConstantVariable):
                 continue
-            allocation = layout[var]
-            data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-            constant_size += allocation.size
 
-        layout.data = data[:constant_size]
+            allocation = layout[var]
+            layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
 
         if flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(ops, variables, layout, lifetime, offsets)
@@ -129,6 +165,9 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
 
     for t, op in enumerate(ops):
         for var in op.outputs.values():
+            if isinstance(var, ConstantVariable):
+                continue
+
             if var not in allocated:
                 flag_allocated = False
 
@@ -159,40 +198,54 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     raise ValueError("[Allocator] Memory Allocation Failed.")
 
         for var in op.inputs.values():
+            if isinstance(var, ConstantVariable) or var in graph.inputs:
+                continue
+
             while "inplace_src" in var.parameters:
                 var = var.parameters["inplace_src"]
-            retain_count[var] -= 1
 
             if retain_count[var] == 0:
-                # `t + 1` means that `var` will be released AFTER `op` will be finished.
-                lifetime[var] = (lifetime[var][0], t + 1)
+                # var is temporally workspace memory
+                lifetime[var] = (t, t + 1)
+
+            else:
+                retain_count[var] -= 1
+
+                if retain_count[var] == 0:
+                    # `t + 1` means that `var` will be released AFTER `op` will be finished.
+                    lifetime[var] = (lifetime[var][0], t + 1)
 
     return lifetime
 
 
-def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable, Tuple[int, int]]):
+def generate_allocation_info(variables: List[Variable],
+                             lifetime: Dict[Variable, Tuple[int, int]]) -> Dict[Variable, int]:
     """
     heuristic-based optimization
 
         1. allocate constant variables first
-        2. allocate variables which lives longer first
-        3. allocate variables which released earlier first
-        4. allocate larger variables first
+        2. allocate unresolved shape variables last
+        3. allocate variables which lives longer first
+        4. allocate variables which released earlier first
+        5. allocate larger variables first
     """
 
-    queue = filter(lambda x: x in lifetime, variables)
+    static_variables = [v for v in variables if Placeholder.check_resolved(v.size)]
+    dynamic_variables = [v for v in variables if not Placeholder.check_resolved(v.size)]
+
+    queue = filter(lambda x: x in lifetime, static_variables)
     queue = sorted(queue, key=lambda x: x.size, reverse=True)
     queue = sorted(queue, key=lambda x: lifetime[x][1])
     queue = sorted(queue, key=lambda x: lifetime[x][1] - lifetime[x][0], reverse=True)
     queue = sorted(queue, key=lambda x: isinstance(x, ConstantVariable), reverse=True)
     queue = list(queue)
 
-    allocated_range = {}  # type: Dict[int, List[Tuple[int, int]]]
+    allocated_range = {}  # type: Dict[int, List[Tuple[Union[int, Placeholder], Union[int, Placeholder]]]]
     workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
     result = {}  # type: Dict[Variable, int]
 
     while len(queue) > 0:
-        min_offset = 999999999999
+        min_offset = +float("inf")
         min_offset_v = None
 
         # find space
@@ -214,7 +267,7 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
 
                         else:
                             # align for 16byte
-                            offset1 = math.ceil((offset2 + size2) / 4) * 4
+                            offset1 = ((offset2 + size2 + 4 - 1) // 4) * 4
                             flag_retry = True
                             break
 
@@ -236,6 +289,11 @@ def generate_allocation_info(variables: List[Variable], lifetime: Dict[Variable,
 
             allocated_range[t].append((min_offset, min_offset_v.size))
 
+        min_offset += min_offset_v.size
+
+    for v in dynamic_variables:
+        result[v] = -1  # FIXME: optimize dynamic allocation
+
     for v1 in variables:
         v2 = v1
         while "inplace_src" in v2.parameters:
@@ -250,9 +308,10 @@ def _visualize_allocation(ops: List[Operator],
                           variables: List[Variable],
                           layout: MemoryLayout,
                           lifetime: Dict[Variable, Tuple[int, int]],
-                          offsets: Dict[Variable, int]):
+                          offsets: Dict[Variable, Union[int, Placeholder]]):
     UNIT_HEIGHT = 14
-    total_size = layout.size
+    total_size = layout.total_size
+    rendering_dict = {}  # type: Dict[Variable, RenderingInfo]
 
     class RenderingInfo:
         names: List[str]
@@ -260,6 +319,7 @@ def _visualize_allocation(ops: List[Operator],
         offset: int
         lifetime: Tuple[int, int]
 
+        # noinspection PyShadowingNames
         def __init__(self, variable: Variable, offset: int, lifetime: Tuple[int, int]):
             self.names = []
             self.variable = variable
@@ -296,8 +356,6 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
 ">
     <p>{", ".join(self.names)}</p>
 </div>"""
-
-    rendering_dict: Dict[Variable, RenderingInfo] = {}
 
     html = """<html>
 <head>
@@ -339,7 +397,7 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
 <header style="margin-bottom: 32px;">
     <h1>Memory Allocation Visualization</h1>
     <div style="margin: 32px 0">
-        <p>Total allocation size: """ + str(layout.size * 4) + """[byte]</p>
+        <p>Total allocation size: """ + str(total_size * 4) + """[byte]</p>
         <p># of allocated variables: """ + str(len(layout)) + """</p>
     </div>
     <div style="margin: 32px 0">

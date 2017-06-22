@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -38,7 +39,8 @@ for (var i = 0; i < m; i++) {
 """
 
 
-def linear(op: Linear) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
