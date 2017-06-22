@@ -160,14 +160,14 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.attribute</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">webdnn.graph.interface</span> <span class="k">import</span> <span class="n">INode</span><span class="p">,</span> <span class="n">IAttribute</span>
+<span></span><span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">node</span>
 
 
-<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.attribute.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">(</span><span class="n">IAttribute</span><span class="p">):</span>
-    <span class="n">node</span><span class="p">:</span> <span class="n">INode</span>
+<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.attribute.Attribute">[docs]</a><span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
+    <span class="n">base</span><span class="p">:</span> <span class="s2">&quot;node.Node&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">INode</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span></div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="s2">&quot;node.Node&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span></div>
 </pre></div>
 
            </div>

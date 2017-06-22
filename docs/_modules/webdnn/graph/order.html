@@ -164,14 +164,16 @@
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This attribute means data order, not number of dimensions</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
-
-<span class="c1"># FIXME: DOCS</span>
-<span class="c1"># FIXME: Is it need to extend from Attribute?</span>
 <div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.order.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to represent variable data order</span>
+
+<span class="sd">    attrs:</span>
+<span class="sd">        ndim: number of dimensions</span>
+<span class="sd">        axes: list of axis</span>
+<span class="sd">        axes_dict: dictionary of pairs of axis and order index</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Axis</span><span class="p">]</span>
     <span class="n">axes_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
@@ -248,6 +250,9 @@
 <span class="sd">    Chainer Deconvolution2D Filter</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="n">OrderCHWN</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>
+
+<span class="n">OrderNT</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
+<span class="n">OrderNTC</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">])</span>
 </pre></div>
 
            </div>

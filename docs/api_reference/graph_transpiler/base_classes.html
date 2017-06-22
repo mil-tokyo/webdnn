@@ -200,13 +200,13 @@
 <em class="property">class </em><code class="descclassname">webdnn.graph.operator.</code><code class="descname">Operator</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="webdnn.graph.operator.Operator.append_input">
-<code class="descname">append_input</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_input" title="Permalink to this definition">¶</a></dt>
+<code class="descname">append_input</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>入力変数を追加する</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="webdnn.graph.operator.Operator.append_output">
-<code class="descname">append_output</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_output" title="Permalink to this definition">¶</a></dt>
+<code class="descname">append_output</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>出力変数を追加する</p>
 </dd></dl>
 
@@ -218,13 +218,13 @@
 
 <dl class="method">
 <dt id="webdnn.graph.operator.Operator.remove_input">
-<code class="descname">remove_input</code><span class="sig-paren">(</span><em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_input" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_input</code><span class="sig-paren">(</span><em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>入力変数を解除する</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="webdnn.graph.operator.Operator.remove_output">
-<code class="descname">remove_output</code><span class="sig-paren">(</span><em>var: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_output" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_output</code><span class="sig-paren">(</span><em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>出力変数を解除する</p>
 </dd></dl>
 
@@ -236,13 +236,13 @@
 
 <dl class="method">
 <dt id="webdnn.graph.operator.Operator.replace_input">
-<code class="descname">replace_input</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.interface.IVariable</em>, <em>v_new: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_input" title="Permalink to this definition">¶</a></dt>
+<code class="descname">replace_input</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.variable.Variable</em>, <em>v_new: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>入力変数を置き換える</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="webdnn.graph.operator.Operator.replace_output">
-<code class="descname">replace_output</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.interface.IVariable</em>, <em>v_new: webdnn.graph.interface.IVariable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_output" title="Permalink to this definition">¶</a></dt>
+<code class="descname">replace_output</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.variable.Variable</em>, <em>v_new: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>出力変数を置き換える</p>
 </dd></dl>
 
@@ -253,11 +253,55 @@
 <span id="variable"></span><h2>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="webdnn.graph.variable.Variable">
-<em class="property">class </em><code class="descclassname">webdnn.graph.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>shape: typing.Iterable[int], order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>レイヤー間で受け渡される変数
-名前で識別される
-現在のところ、float32型(4byte/element)を想定している
-shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存</p>
+<em class="property">class </em><code class="descclassname">webdnn.graph.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>shape: typing.List[typing.Union[int, webdnn.graph.placeholder.Placeholder]], order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variables input to / output from operators.</p>
+<dl class="docutils">
+<dt>Attrs:</dt>
+<dd>shape (list of int or Placeholder): shape of the variable.
+order (Order): Data order such as OrderNHWC, OrderNC, and so on.
+input_to (set of Operator): operators to which this variable is input
+output_from (Operator): operator which generates this variable</dd>
+</dl>
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.change_order">
+<code class="descname">change_order</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.change_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change variable order</p>
+<p>When number of dimension will be increased, axes whose size is one are created.
+Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> &#8211; new order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.name">
+<code class="descname">name</code><a class="headerlink" href="#webdnn.graph.variable.Variable.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of this variable</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.ndim">
+<code class="descname">ndim</code><a class="headerlink" href="#webdnn.graph.variable.Variable.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of dimension</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.shape_dict">
+<code class="descname">shape_dict</code><a class="headerlink" href="#webdnn.graph.variable.Variable.shape_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>dictionary of axis and shape size pairs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.size">
+<code class="descname">size</code><a class="headerlink" href="#webdnn.graph.variable.Variable.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of elements</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -265,7 +309,7 @@ shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存</p>
 <span id="attribute"></span><h2>Attribute<a class="headerlink" href="#attribute" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="webdnn.graph.attribute.Attribute">
-<em class="property">class </em><code class="descclassname">webdnn.graph.attribute.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>node: webdnn.graph.interface.INode</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/attribute.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.attribute.Attribute" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">webdnn.graph.attribute.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>base: webdnn.graph.node.Node</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/attribute.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.attribute.Attribute" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -283,7 +327,14 @@ shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存</p>
 <dl class="class">
 <dt id="webdnn.graph.order.Order">
 <em class="property">class </em><code class="descclassname">webdnn.graph.order.</code><code class="descname">Order</code><span class="sig-paren">(</span><em>axes: typing.List[webdnn.graph.axis.Axis]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Class to represent variable data order</p>
+<dl class="docutils">
+<dt>attrs:</dt>
+<dd>ndim: number of dimensions
+axes: list of axis
+axes_dict: dictionary of pairs of axis and order index</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="optimizerule">
@@ -294,9 +345,19 @@ shapeはlist[int]で、その順序はAttribute(OrderNC etc)に依存</p>
 <dd><dl class="method">
 <dt id="webdnn.graph.optimize_rule.OptimizeRule.optimize">
 <code class="descname">optimize</code><span class="sig-paren">(</span><em>graph: webdnn.graph.graph.Graph</em><span class="sig-paren">)</span> &#x2192; typing.Tuple[webdnn.graph.graph.Graph, bool]<a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule.optimize" title="Permalink to this definition">¶</a></dt>
-<dd><p>graphを変換する
-:param graph:
-:return: 2要素のタプル。第一要素は変換後のGraph, 第二要素は変換があったかどうかのbool値</p>
+<dd><p>Optimize the computational graph</p>
+<dl class="docutils">
+<dt>params:</dt>
+<dd>graph: Computational graph</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">optimized graph and flag whether the graph is changed or not.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

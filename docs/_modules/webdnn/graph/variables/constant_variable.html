@@ -169,6 +169,12 @@
 
 <span class="c1"># FIXME: DOCS</span>
 <div class="viewcode-block" id="ConstantVariable"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/variables.html#webdnn.graph.variables.constant_variable.ConstantVariable">[docs]</a><span class="k">class</span> <span class="nc">ConstantVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Constant variable</span>
+
+<span class="sd">    attrs:</span>
+<span class="sd">        data (np.array) : data of the variable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">):</span>
@@ -176,29 +182,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="p">)}</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">order_repr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;Constant shape=</span><span class="si">{self.shape}</span><span class="s2">, order=</span><span class="se">\&quot;</span><span class="si">{order_repr}</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span>
+<div class="viewcode-block" id="ConstantVariable.change_order"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/variables.html#webdnn.graph.variables.constant_variable.ConstantVariable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change variable order</span>
 
-    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">):</span>
-        <span class="c1"># 次元数を減らす時は、なくなる次元のサイズが1のときだけOK</span>
-        <span class="c1"># 増える次元は、サイズ1</span>
-        <span class="n">current_shape_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span>
-        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">current_shape_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">current_shape_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="sd">        When number of dimension will be increased, axes whose size is one are created.</span>
+<span class="sd">        Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">):</span>
-            <span class="c1">#  新しい軸がもとの軸で何番目かを列挙</span>
-            <span class="n">trans_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            order: new order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="n">new_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">old_order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">new_order</span><span class="o">.</span><span class="n">axes</span><span class="p">):</span>
+            <span class="n">trans_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">old_order</span><span class="o">.</span><span class="n">axes_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">new_order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trans_axes</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1">#  別に実装できないわけではないが手抜き</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">new_shape</span></div>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;[ConstantVariable.change_order] Currently, it&#39;s not supported to increase or decrease axis&quot;</span><span class="p">)</span>  <span class="c1"># FIXME</span></div></div>
 </pre></div>
 
            </div>

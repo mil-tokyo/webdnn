@@ -184,7 +184,28 @@
 <dl class="class">
 <dt id="webdnn.graph.variables.constant_variable.ConstantVariable">
 <em class="property">class </em><code class="descclassname">webdnn.graph.variables.constant_variable.</code><code class="descname">ConstantVariable</code><span class="sig-paren">(</span><em>data: &lt;built-in function array&gt;</em>, <em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variables/constant_variable.html#ConstantVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variables.constant_variable.ConstantVariable" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constant variable</p>
+<dl class="docutils">
+<dt>attrs:</dt>
+<dd>data (np.array) : data of the variable</dd>
+</dl>
+<dl class="method">
+<dt id="webdnn.graph.variables.constant_variable.ConstantVariable.change_order">
+<code class="descname">change_order</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variables/constant_variable.html#ConstantVariable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variables.constant_variable.ConstantVariable.change_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change variable order</p>
+<p>When number of dimension will be increased, axes whose size is one are created.
+Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> &#8211; new order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 </div>

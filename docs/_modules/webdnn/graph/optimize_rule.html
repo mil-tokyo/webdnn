@@ -173,10 +173,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="OptimizeRule.optimize"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.optimize_rule.OptimizeRule.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Graph</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        graphを変換する</span>
-<span class="sd">        :param graph: </span>
-<span class="sd">        :return: 2要素のタプル。第一要素は変換後のGraph, 第二要素は変換があったかどうかのbool値</span>
+        <span class="sd">&quot;&quot;&quot;Optimize the computational graph</span>
+
+<span class="sd">        params:</span>
+<span class="sd">            graph: Computational graph</span>
+
+<span class="sd">        return:</span>
+<span class="sd">            optimized graph and flag whether the graph is changed or not.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">flag_retry</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">flag_totally_changed</span> <span class="o">=</span> <span class="kc">False</span>

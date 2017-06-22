@@ -87,6 +87,10 @@
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.descriptorrunnerfallback.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Fallback</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.descriptorrunnerwebgpu.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>WebGPU</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.descriptorrunnerwebassembly.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Webassembly</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.placeholdercontext.html" class="tsd-kind-icon">Placeholder<wbr>Context</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter"><a href="../classes/webdnn.symbolicarraybufferview.html" class="tsd-kind-icon">Symbolic<wbr>Array<wbr>Buffer<wbr>View</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.symbolicfloat32array.html" class="tsd-kind-icon">Symbolic<wbr>Float32<wbr>Array</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.symbolicint32array.html" class="tsd-kind-icon">Symbolic<wbr>Int32<wbr>Array</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.webgpuhandler.html" class="tsd-kind-icon">WebGPUHandler</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.weightdecodereightbit.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Eightbit</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/webdnn.weightdecoderraw.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Raw</a></li>
@@ -95,6 +99,7 @@
 						<section class="tsd-index-section ">
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.allocation.html" class="tsd-kind-icon">Allocation</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.graphdescriptor.html" class="tsd-kind-icon">Graph<wbr>Descriptor</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.graphdescriptorfallbackexecinfo.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback<wbr>Exec<wbr>Info</a></li>
@@ -104,7 +109,15 @@
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.graphinterface.html" class="tsd-kind-icon">Graph<wbr>Interface</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.initoption.html" class="tsd-kind-icon">Init<wbr>Option</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.memorylayout.html" class="tsd-kind-icon">Memory<wbr>Layout</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.resolvedallocation.html" class="tsd-kind-icon">Resolved<wbr>Allocation</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.webdnnrequestinit.html" class="tsd-kind-icon">WebDNNRequest<wbr>Init</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/webdnn.weightdecoder.html" class="tsd-kind-icon">Weight<wbr>Decoder</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Type aliases</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="webdnn.html#placeholder" class="tsd-kind-icon">Placeholder</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -143,6 +156,27 @@
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Type aliases</h2>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="placeholder" class="tsd-anchor"></a>
+					<h3>Placeholder</h3>
+					<div class="tsd-signature tsd-kind-icon">Placeholder<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/placeholder.ts#L2">placeholder.ts:2</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter">
+								<h5>eval<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Variables</h2>
 				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module">
 					<a name="debug" class="tsd-anchor"></a>
@@ -150,7 +184,7 @@
 					<div class="tsd-signature tsd-kind-icon">DEBUG<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L15">webdnn.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L15">webdnn.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -160,7 +194,7 @@
 					<div class="tsd-signature tsd-kind-icon">backend<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;none&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L14">webdnn.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L14">webdnn.ts:14</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -170,7 +204,7 @@
 					<div class="tsd-signature tsd-kind-icon">runner<span class="tsd-signature-symbol">:</span> <a href="../classes/webdnn.descriptorrunner.html" class="tsd-signature-type">DescriptorRunner</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/webdnn.graphdescriptor.html" class="tsd-signature-type">GraphDescriptor</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L13">webdnn.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L13">webdnn.ts:13</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -181,13 +215,13 @@
 					<a name="fetch" class="tsd-anchor"></a>
 					<h3>fetch</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">fetch<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RequestInfo</span>, init<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">RequestInit</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">fetch<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RequestInfo</span>, init<span class="tsd-signature-symbol">?: </span><a href="../interfaces/webdnn.webdnnrequestinit.html" class="tsd-signature-type">WebDNNRequestInit</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/fetch.ts#L44">fetch.ts:44</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/fetch.ts#L49">fetch.ts:49</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -204,7 +238,7 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> init: <span class="tsd-signature-type">RequestInit</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> init: <a href="../interfaces/webdnn.webdnnrequestinit.html" class="tsd-signature-type">WebDNNRequestInit</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Additional information about fetch</p>
 									</div>
@@ -225,7 +259,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/get_backend_availability.ts#L18">get_backend_availability.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/get_backend_availability.ts#L18">get_backend_availability.ts:18</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -261,7 +295,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/get_backend_availability.ts#L10">get_backend_availability.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/get_backend_availability.ts#L10">get_backend_availability.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -278,7 +312,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/get_backend_availability.ts#L6">get_backend_availability.ts:6</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/get_backend_availability.ts#L6">get_backend_availability.ts:6</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -295,7 +329,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/get_backend_availability.ts#L2">get_backend_availability.ts:2</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/get_backend_availability.ts#L2">get_backend_availability.ts:2</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -312,7 +346,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/decoder/get_weight_decoder.ts#L6">decoder/get_weight_decoder.ts:6</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/decoder/get_weight_decoder.ts#L6">decoder/get_weight_decoder.ts:6</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -335,7 +369,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L36">webdnn.ts:36</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L36">webdnn.ts:36</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -366,7 +400,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L17">webdnn.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L17">webdnn.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -392,7 +426,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L73">webdnn.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L73">webdnn.ts:73</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -430,7 +464,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/fetch.ts#L54">fetch.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/fetch.ts#L69">fetch.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -489,7 +523,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/fetch.ts#L34">fetch.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/fetch.ts#L38">fetch.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -541,7 +575,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/fetch.ts#L26">fetch.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/fetch.ts#L30">fetch.ts:30</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -590,7 +624,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/fetch.ts#L18">fetch.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/fetch.ts#L22">fetch.ts:22</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -620,7 +654,7 @@
 					<div class="tsd-signature tsd-kind-icon">backends<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L7">webdnn.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L7">webdnn.ts:7</a></li>
 						</ul>
 					</aside>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -629,7 +663,7 @@
 						<div class="tsd-signature tsd-kind-icon">fallback<span class="tsd-signature-symbol">:</span> <a href="../classes/webdnn.descriptorrunnerfallback.html" class="tsd-signature-type">DescriptorRunnerFallback</a><span class="tsd-signature-symbol"> =&nbsp;DescriptorRunnerFallback</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L10">webdnn.ts:10</a></li>
+								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L10">webdnn.ts:10</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -639,7 +673,7 @@
 						<div class="tsd-signature tsd-kind-icon">webassembly<span class="tsd-signature-symbol">:</span> <a href="../classes/webdnn.descriptorrunnerwebassembly.html" class="tsd-signature-type">DescriptorRunnerWebassembly</a><span class="tsd-signature-symbol"> =&nbsp;DescriptorRunnerWebassembly</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L9">webdnn.ts:9</a></li>
+								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L9">webdnn.ts:9</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -649,7 +683,7 @@
 						<div class="tsd-signature tsd-kind-icon">webgpu<span class="tsd-signature-symbol">:</span> <a href="../classes/webdnn.descriptorrunnerwebgpu.html" class="tsd-signature-type">DescriptorRunnerWebGPU</a><span class="tsd-signature-symbol"> =&nbsp;DescriptorRunnerWebGPU</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/92e7dee/src/descriptor_runner/webdnn.ts#L8">webdnn.ts:8</a></li>
+								<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/webdnn.ts#L8">webdnn.ts:8</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -697,6 +731,18 @@
 						<a href="../classes/webdnn.descriptorrunnerwebassembly.html" class="tsd-kind-icon">Descriptor<wbr>Runner<wbr>Webassembly</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="../classes/webdnn.placeholdercontext.html" class="tsd-kind-icon">Placeholder<wbr>Context</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../classes/webdnn.symbolicarraybufferview.html" class="tsd-kind-icon">Symbolic<wbr>Array<wbr>Buffer<wbr>View</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="../classes/webdnn.symbolicfloat32array.html" class="tsd-kind-icon">Symbolic<wbr>Float32<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="../classes/webdnn.symbolicint32array.html" class="tsd-kind-icon">Symbolic<wbr>Int32<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="../classes/webdnn.webgpuhandler.html" class="tsd-kind-icon">WebGPUHandler</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
@@ -704,6 +750,9 @@
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="../classes/webdnn.weightdecoderraw.html" class="tsd-kind-icon">Weight<wbr>Decoder<wbr>Raw</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/webdnn.allocation.html" class="tsd-kind-icon">Allocation</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/webdnn.graphdescriptor.html" class="tsd-kind-icon">Graph<wbr>Descriptor</a>
@@ -733,7 +782,16 @@
 						<a href="../interfaces/webdnn.memorylayout.html" class="tsd-kind-icon">Memory<wbr>Layout</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/webdnn.resolvedallocation.html" class="tsd-kind-icon">Resolved<wbr>Allocation</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/webdnn.webdnnrequestinit.html" class="tsd-kind-icon">WebDNNRequest<wbr>Init</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/webdnn.weightdecoder.html" class="tsd-kind-icon">Weight<wbr>Decoder</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="webdnn.html#placeholder" class="tsd-kind-icon">Placeholder</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-parent-kind-module">
 						<a href="webdnn.html#debug" class="tsd-kind-icon">DEBUG</a>

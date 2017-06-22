@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>GraphDescriptorFallback | mil-web-dnn</title>
+	<title>ResolvedAllocation | mil-web-dnn</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -59,10 +59,10 @@
 					<a href="../modules/webdnn.html">WebDNN</a>
 				</li>
 				<li>
-					<a href="webdnn.graphdescriptorfallback.html">GraphDescriptorFallback</a>
+					<a href="webdnn.resolvedallocation.html">ResolvedAllocation</a>
 				</li>
 			</ul>
-			<h1>Interface GraphDescriptorFallback</h1>
+			<h1>Interface ResolvedAllocation</h1>
 		</div>
 	</div>
 </header>
@@ -73,10 +73,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="webdnn.graphdescriptor.html" class="tsd-signature-type">GraphDescriptor</a>
+						<a href="webdnn.allocation.html" class="tsd-signature-type">Allocation</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">GraphDescriptorFallback</span>
+								<span class="target">ResolvedAllocation</span>
 							</li>
 						</ul>
 					</li>
@@ -89,13 +89,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptorfallback.html#exec_infos" class="tsd-kind-icon">exec_<wbr>infos</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="webdnn.graphdescriptorfallback.html#inputs" class="tsd-kind-icon">inputs</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="webdnn.graphdescriptorfallback.html#kernel_source" class="tsd-kind-icon">kernel_<wbr>source</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="webdnn.graphdescriptorfallback.html#memory_layout" class="tsd-kind-icon">memory_<wbr>layout</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="webdnn.graphdescriptorfallback.html#outputs" class="tsd-kind-icon">outputs</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="webdnn.graphdescriptorfallback.html#placeholders" class="tsd-kind-icon">placeholders</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="webdnn.graphdescriptorfallback.html#weight_encoding" class="tsd-kind-icon">weight_<wbr>encoding</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="webdnn.resolvedallocation.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="webdnn.resolvedallocation.html#offset" class="tsd-kind-icon">offset</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="webdnn.resolvedallocation.html#size" class="tsd-kind-icon">size</a></li>
 							</ul>
 						</section>
 					</div>
@@ -103,108 +99,38 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="exec_infos" class="tsd-anchor"></a>
-					<h3>exec_<wbr>infos</h3>
-					<div class="tsd-signature tsd-kind-icon">exec_<wbr>infos<span class="tsd-signature-symbol">:</span> <a href="webdnn.graphdescriptorfallbackexecinfo.html" class="tsd-signature-type">GraphDescriptorFallbackExecInfo</a><span class="tsd-signature-symbol">[]</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L7">graph_descriptor/graph_descriptor_fallback.ts:7</a></li>
-						</ul>
-					</aside>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="inputs" class="tsd-anchor"></a>
-					<h3>inputs</h3>
-					<div class="tsd-signature tsd-kind-icon">inputs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.graphdescriptor.html">GraphDescriptor</a>.<a href="webdnn.graphdescriptor.html#inputs">inputs</a></p>
+						<p>Inherited from <a href="webdnn.allocation.html">Allocation</a>.<a href="webdnn.allocation.html#name">name</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L9">graph_descriptor/graph_descriptor.ts:9</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>input variables&#39; name</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="kernel_source" class="tsd-anchor"></a>
-					<h3>kernel_<wbr>source</h3>
-					<div class="tsd-signature tsd-kind-icon">kernel_<wbr>source<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L6">graph_descriptor/graph_descriptor_fallback.ts:6</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/memory_layout.ts#L5">memory_layout.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-					<a name="memory_layout" class="tsd-anchor"></a>
-					<h3>memory_<wbr>layout</h3>
-					<div class="tsd-signature tsd-kind-icon">memory_<wbr>layout<span class="tsd-signature-symbol">:</span> <a href="webdnn.memorylayout.html" class="tsd-signature-type">MemoryLayout</a></div>
+					<a name="offset" class="tsd-anchor"></a>
+					<h3>offset</h3>
+					<div class="tsd-signature tsd-kind-icon">offset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Overrides <a href="webdnn.graphdescriptor.html">GraphDescriptor</a>.<a href="webdnn.graphdescriptor.html#memory_layout">memory_layout</a></p>
+						<p>Overrides <a href="webdnn.allocation.html">Allocation</a>.<a href="webdnn.allocation.html#offset">offset</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L5">graph_descriptor/graph_descriptor_fallback.ts:5</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/memory_layout.ts#L11">memory_layout.ts:11</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="outputs" class="tsd-anchor"></a>
-					<h3>outputs</h3>
-					<div class="tsd-signature tsd-kind-icon">outputs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="size" class="tsd-anchor"></a>
+					<h3>size</h3>
+					<div class="tsd-signature tsd-kind-icon">size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.graphdescriptor.html">GraphDescriptor</a>.<a href="webdnn.graphdescriptor.html#outputs">outputs</a></p>
+						<p>Overrides <a href="webdnn.allocation.html">Allocation</a>.<a href="webdnn.allocation.html#size">size</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L14">graph_descriptor/graph_descriptor.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/memory_layout.ts#L12">memory_layout.ts:12</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>output variables&#39; name</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="placeholders" class="tsd-anchor"></a>
-					<h3>placeholders</h3>
-					<div class="tsd-signature tsd-kind-icon">placeholders<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.graphdescriptor.html">GraphDescriptor</a>.<a href="webdnn.graphdescriptor.html#placeholders">placeholders</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L29">graph_descriptor/graph_descriptor.ts:29</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Placeholder dict</p>
-						</div>
-					</div>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-index-signature">
-								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">number</span></h5>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="weight_encoding" class="tsd-anchor"></a>
-					<h3>weight_<wbr>encoding</h3>
-					<div class="tsd-signature tsd-kind-icon">weight_<wbr>encoding<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="webdnn.graphdescriptor.html">GraphDescriptor</a>.<a href="webdnn.graphdescriptor.html#weight_encoding">weight_encoding</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/mil-tokyo/webdnn/blob/b8943ed/src/descriptor_runner/graph_descriptor/graph_descriptor.ts#L24">graph_descriptor/graph_descriptor.ts:24</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Encoding algorithm of weight binary data.</p>
-						</div>
-					</div>
 				</section>
 			</section>
 		</div>
@@ -230,28 +156,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-module">
-						<a href="webdnn.graphdescriptorfallback.html" class="tsd-kind-icon">Graph<wbr>Descriptor<wbr>Fallback</a>
+						<a href="webdnn.resolvedallocation.html" class="tsd-kind-icon">Resolved<wbr>Allocation</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="webdnn.graphdescriptorfallback.html#exec_infos" class="tsd-kind-icon">exec_<wbr>infos</a>
-							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="webdnn.graphdescriptorfallback.html#inputs" class="tsd-kind-icon">inputs</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="webdnn.graphdescriptorfallback.html#kernel_source" class="tsd-kind-icon">kernel_<wbr>source</a>
+								<a href="webdnn.resolvedallocation.html#name" class="tsd-kind-icon">name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-								<a href="webdnn.graphdescriptorfallback.html#memory_layout" class="tsd-kind-icon">memory_<wbr>layout</a>
+								<a href="webdnn.resolvedallocation.html#offset" class="tsd-kind-icon">offset</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="webdnn.graphdescriptorfallback.html#outputs" class="tsd-kind-icon">outputs</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="webdnn.graphdescriptorfallback.html#placeholders" class="tsd-kind-icon">placeholders</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="webdnn.graphdescriptorfallback.html#weight_encoding" class="tsd-kind-icon">weight_<wbr>encoding</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="webdnn.resolvedallocation.html#size" class="tsd-kind-icon">size</a>
 							</li>
 						</ul>
 					</li>
