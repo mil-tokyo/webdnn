@@ -1,7 +1,7 @@
 from nose import with_setup
 
 from test.util import FlagManager
-from webdnn.frontend.sub_rules.concat_scalar_affine import ConcatScalarAffine
+from webdnn.optimizer.sub_rules.concat_scalar_affine import ConcatScalarAffine
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.order import OrderNC

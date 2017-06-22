@@ -26,7 +26,7 @@ pretrained in Chainer [#f2]_ into WebDNN execution format.
 3. Convert chainer computation graph to our computation graph format
 
     ```python
-    from webdnn.graph.converters.chainer import ChainerGraphConverter
+    from webdnn.frontend.chainer import ChainerGraphConverter
 
     graph = ChainerGraphConverter().convert_from_inout_vars([x], [y])
     ```

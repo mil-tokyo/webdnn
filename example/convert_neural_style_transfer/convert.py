@@ -8,7 +8,7 @@ import numpy as np
 from model import FastStyleNet
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.chainer import ChainerConverter
+from webdnn.frontend.chainer import ChainerConverter
 
 
 class NSTModelPath(Enum):

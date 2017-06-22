@@ -11,7 +11,7 @@ from os import path
 import h5py
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.keras import KerasConverter
+from webdnn.frontend.keras import KerasConverter
 from webdnn.graph.shape import Shape
 from webdnn.util import flags, console
 

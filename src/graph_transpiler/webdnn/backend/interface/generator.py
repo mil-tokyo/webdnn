@@ -8,7 +8,7 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.util import console
-from webdnn.frontend.general_optimize_rule import GeneralOptimizeRule
+from webdnn.optimizer.general_optimize_rule import GeneralOptimizeRule
 from webdnn.graph.graph import Graph
 from webdnn.util import flags
 

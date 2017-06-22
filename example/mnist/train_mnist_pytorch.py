@@ -11,7 +11,7 @@ from torch.autograd import Variable as PTVariable
 from torch.nn import functional as F
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.graph.converters.pytorch import PyTorchConverter
+from webdnn.frontend.pytorch import PyTorchConverter
 
 
 class Model(nn.Module):
