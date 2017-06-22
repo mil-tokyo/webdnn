@@ -36,23 +36,23 @@ button, .Button {
 
   &[disabled] {
     color: $c-example-button-disabled-foreground;
+    text-decoration: none;
     box-shadow: none;
 
     &.Button-primary {
       color: $c-example-button-disabled-foreground;
+      text-decoration: none;
       border: none;
-
-      &:hover:not([disabled]) {
-        background: none;
-      }
     }
   }
 
   &:hover:not([disabled]) {
     background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
   }
 
   &:active:not([disabled]) {
+    text-decoration: none;
   }
 }
 
@@ -63,6 +63,11 @@ button, .Button {
 
   &:hover:not([disabled]) {
     background: rgba(255, 153, 0, 0.1);
+    text-decoration: none;
+  }
+
+  &:active:not([disabled]) {
+    text-decoration: none;
   }
 }
 

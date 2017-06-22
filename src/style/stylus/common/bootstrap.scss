@@ -1,22 +1,22 @@
 // Core variables and mixins
-@import "./bootstrap-custom";
+@import "bootstrap-custom";
 
 html {
   font-size: $font-size-root;
 }
 
-@import "~bootstrap/scss/variables";
-@import "~bootstrap/scss/mixins";
+@import "../../../../node_modules/bootstrap/scss/variables";
+@import "../../../../node_modules/bootstrap/scss/mixins";
 
 // Reset and dependencies
-@import "~bootstrap/scss/normalize";
-@import "~bootstrap/scss/print";
+@import "../../../../node_modules/bootstrap/scss/normalize";
+@import "../../../../node_modules/bootstrap/scss/print";
 
 // Core CSS
-@import "~bootstrap/scss/reboot";
-@import "~bootstrap/scss/type";
+@import "../../../../node_modules/bootstrap/scss/reboot";
+@import "../../../../node_modules/bootstrap/scss/type";
 //@import "~bootstrap/scss/images";
-@import "~bootstrap/scss/code";
+@import "../../../../node_modules/bootstrap/scss/code";
 pre {
   margin-bottom: 0;
 }
@@ -25,10 +25,10 @@ code {
   margin-right: 0.25em;
 }
 
-@import "~bootstrap/scss/grid";
-@import "~bootstrap/scss/tables";
-@import "~bootstrap/scss/forms";
-@import "~bootstrap/scss/buttons";
+@import "../../../../node_modules/bootstrap/scss/grid";
+@import "../../../../node_modules/bootstrap/scss/tables";
+@import "../../../../node_modules/bootstrap/scss/forms";
+@import "../../../../node_modules/bootstrap/scss/buttons";
 .btn {
   cursor: pointer;
 }

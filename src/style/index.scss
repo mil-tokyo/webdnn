@@ -1,13 +1,12 @@
-@import "stylus/bootstrap";
-@import "stylus/reset";
-@import "stylus/section";
-@import "stylus/components/page_header";
-@import "stylus/components/splash_page";
-@import "stylus/components/compatibility";
-@import "stylus/components/playground";
-@import "stylus/components/button";
-@import "stylus/components/page_footer";
-
+@import "stylus/common/bootstrap";
+@import "stylus/common/reset";
+@import "stylus/common/button";
+@import "stylus/index_parts/section";
+@import "stylus/index_parts/page_header";
+@import "stylus/index_parts/splash_page";
+@import "stylus/index_parts/compatibility";
+@import "stylus/index_parts/playground";
+@import "stylus/index_parts/page_footer";
 @import "~bootstrap/scss/mixins/_breakpoints";
 
 #pipelineImage {

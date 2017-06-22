@@ -1,5 +1,4 @@
-@import "../definitions/color";
-@import "../components/button";
+@import "../common/color";
 
 .PlayGround {
   display: flex;
@@ -38,7 +37,6 @@ $c-example-button-disabled-foreground: rgb(90, 90, 90);
   text-align: center;
   color: #f90;
   -webkit-tap-highlight-color: rgba(#f90, 0.1);
-
 
   &:hover:not([disabled]) {
     background: rgba(255, 153, 0, 0.1);
