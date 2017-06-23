@@ -216,10 +216,24 @@ class KerasConverter(Converter[KerasOperator]):
         if not top_level:
             self._container_name_stack.pop()
 
+    def _get_weight_value(self, weight_key: str) -> np.ndarray:
+        try:
+            weight_object = self._weight_dataset[weight_key]
+        except KeyError:
+            try:
+                weight_key_split = weight_key.split('/')
+                weight_alter_key = f"{weight_key_split[0]}/{weight_key_split[1]}_1/{weight_key_split[2]}"
+                weight_object = self._weight_dataset[weight_alter_key]
+            except KeyError:
+                console.error(f"Weight parameter {weight_key} or {weight_alter_key} does not exist in model file.")
+                raise
+        return weight_object.value
+
     def create_constant_array(self, operator: KerasOperator, key: str) -> np.ndarray:
         # when the operator is top-level, key is "{operator.name}/{operator.name}/{key}"
         # if contained in nested container, key is "{container.name}/{operator.name}/{key}"
-        return self._weight_dataset[self._get_key_for_constant_variable(operator, key)].value
+        weight_key = self._get_key_for_constant_variable(operator, key)
+        return self._get_weight_value(weight_key)
 
     def _get_key_for_constant_variable(self, operator: KerasOperator, key: str) -> str:
         weight_key = f"{self._container_name_stack[-1] if len(self._container_name_stack) > 0 else operator.name}/{operator.name}/{key}"
