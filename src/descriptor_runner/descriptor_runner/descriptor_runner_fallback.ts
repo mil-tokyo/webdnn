@@ -17,6 +17,10 @@ namespace WebDNN {
         private staticBuffer: Float32Array | null;
         private dynamicBuffer: Float32Array | null;
 
+        constructor(option?: any) {
+            super();
+        }
+
         async init(): Promise<void> {
             //nothing to do
         }

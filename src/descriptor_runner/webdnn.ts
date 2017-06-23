@@ -9,7 +9,7 @@ namespace WebDNN {
         'webassembly': DescriptorRunnerWebassembly,
         'fallback': DescriptorRunnerFallback,
     };
-    
+
     export let DEBUG: boolean = false;
 
     async function initBackend(backendName: string, option?: any): Promise<DescriptorRunner<GraphDescriptor> | null> {
@@ -37,6 +37,7 @@ namespace WebDNN {
     export interface InitOption {
         backendOrder?: string | string[],
         backendOptions?: { [key: string]: any },
+        ignoreCache?: boolean,
         progressCallback?: (loaded: number, total: number) => any
     }
 
@@ -62,6 +63,7 @@ namespace WebDNN {
             let backendName = backendOrder.shift()!;
             let runner: DescriptorRunner<GraphDescriptor> | null = await initBackend(backendName, backendOptions[backendName]);
             if (!runner) continue;
+            runner.ignoreCache = Boolean(initOption.ignoreCache);
 
             try {
                 await runner.load(directory, initOption.progressCallback);

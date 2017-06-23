@@ -1379,8 +1379,8 @@ var WebDNN;
 (function (WebDNN) {
     var DescriptorRunnerFallback = (function (_super) {
         __extends(DescriptorRunnerFallback, _super);
-        function DescriptorRunnerFallback() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function DescriptorRunnerFallback(option) {
+            var _this = _super.call(this) || this;
             _this.backendName = 'fallback';
             return _this;
         }
@@ -1698,6 +1698,7 @@ var WebDNN;
                         runner = _a.sent();
                         if (!runner)
                             return [3 /*break*/, 1];
+                        runner.ignoreCache = Boolean(initOption.ignoreCache);
                         _a.label = 3;
                     case 3:
                         _a.trys.push([3, 5, , 6]);

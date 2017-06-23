@@ -481,6 +481,7 @@ declare namespace WebDNN {
         private outputViews;
         private staticBuffer;
         private dynamicBuffer;
+        constructor(option?: any);
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         private setDescriptor(descriptor);
@@ -513,6 +514,7 @@ declare namespace WebDNN {
         backendOptions?: {
             [key: string]: any;
         };
+        ignoreCache?: boolean;
         progressCallback?: (loaded: number, total: number) => any;
     }
     /**

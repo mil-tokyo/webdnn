@@ -128,7 +128,7 @@
                 console.group(groupName);
 
                 var runner;
-                return WebDNN.load(rootUrl + testCase.dirname, { backendOrder: testCase.backend })
+                return WebDNN.load(rootUrl + testCase.dirname, { backendOrder: testCase.backend, ignoreCache: true })
                     .then(function (_runner) {
                         assert.equal(
                             _runner.backendName,

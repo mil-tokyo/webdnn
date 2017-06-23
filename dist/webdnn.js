@@ -1020,8 +1020,8 @@ function wait(duration = 10) {
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerFallback extends WebDNN.DescriptorRunner {
-        constructor() {
-            super(...arguments);
+        constructor(option) {
+            super();
             this.backendName = 'fallback';
         }
         async init() {
@@ -1228,6 +1228,7 @@ var WebDNN;
             let runner = await initBackend(backendName, backendOptions[backendName]);
             if (!runner)
                 continue;
+            runner.ignoreCache = Boolean(initOption.ignoreCache);
             try {
                 await runner.load(directory, initOption.progressCallback);
             }
