@@ -30,7 +30,7 @@ def main():
 
     console.stderr("Converting model into WebDNN format (graph descriptor)")
     # only for demo purpose, maybe not safe
-    convert_keras_command = f"python ../../bin/convert_keras.py {keras_model_path} --input_shape '(N,224,224,3)' --out {args.out}"
+    convert_keras_command = f"python ../../bin/convert_keras.py {keras_model_path} --input_shape '(1,224,224,3)' --out {args.out}"
     if args.encoding:
         convert_keras_command += f" --encoding {args.encoding}"
 

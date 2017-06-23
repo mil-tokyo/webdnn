@@ -154,7 +154,8 @@ with open(os.path.join(args.out, "test_samples.json"), "w") as f:
     json.dump(test_samples_json, f)
 
 print("Converting model into WebDNN format (graph descriptor)")
-input_shape_with_batchsize = ('N',) + input_shape
+input_shape_with_batchsize = ('1',) + input_shape
+# input_shape_with_batchsize = ('N',) + input_shape # placeholder
 # only for demo purpose, maybe not safe
 convert_keras_command = f"python ../../bin/convert_keras.py {args.out}/keras_model/mnist_mlp.h5 --input_shape '{input_shape_with_batchsize}' --out {args.out}"
 print("$ " + convert_keras_command)

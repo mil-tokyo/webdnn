@@ -2,7 +2,7 @@
 
 var prepare_run = function () {
     var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
-        var backend_name, framework_name, backend_key, run_if;
+        var backend_name, framework_name, backend_key, runner;
         return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
@@ -11,21 +11,21 @@ var prepare_run = function () {
                         framework_name = document.querySelector('input[name=framework_name]:checked').value;
                         backend_key = backend_name + framework_name;
 
-                        if (backend_key in run_ifs) {
+                        if (backend_key in runners) {
                             _context.next = 12;
                             break;
                         }
 
                         log('Initializing and loading model');
                         _context.next = 7;
-                        return WebDNN.prepareAll('./output_' + framework_name, { backendOrder: backend_name });
+                        return WebDNN.load('./output_' + framework_name, { backendOrder: backend_name });
 
                     case 7:
-                        run_if = _context.sent;
+                        runner = _context.sent;
 
-                        log('Loaded backend: ' + run_if.backendName + ', model converted from ' + framework_name);
+                        log('Loaded backend: ' + runner.backendName + ', model converted from ' + framework_name);
 
-                        run_ifs[backend_key] = run_if;
+                        runners[backend_key] = runner;
                         _context.next = 13;
                         break;
 
@@ -33,7 +33,7 @@ var prepare_run = function () {
                         log('Model is already loaded');
 
                     case 13:
-                        return _context.abrupt('return', run_ifs[backend_key]);
+                        return _context.abrupt('return', runners[backend_key]);
 
                     case 14:
                     case 'end':
@@ -50,7 +50,7 @@ var prepare_run = function () {
 
 var run = function () {
     var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
-        var run_if, test_image, test_samples, total_elapsed_time, pred_label, i, sample, start, out_vec, top_labels, predicted_str, j;
+        var runner, test_image, test_samples, total_elapsed_time, pred_label, i, sample, start, out_vec, top_labels, predicted_str, j;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
@@ -59,7 +59,7 @@ var run = function () {
                         return prepare_run();
 
                     case 2:
-                        run_if = _context2.sent;
+                        runner = _context2.sent;
                         test_image = getImageData();
                         test_samples = [test_image];
                         total_elapsed_time = 0;
@@ -74,16 +74,16 @@ var run = function () {
 
                         sample = test_samples[i];
 
-                        run_if.inputViews[0].set(sample);
+                        runner.getInputViews()[0].set(sample);
 
                         start = performance.now();
                         _context2.next = 14;
-                        return run_if.run();
+                        return runner.run();
 
                     case 14:
                         total_elapsed_time += performance.now() - start;
 
-                        out_vec = run_if.outputViews[0];
+                        out_vec = runner.getOutputViews()[0].toActual();
                         top_labels = WebDNN.Math.argmax(out_vec, 5);
                         predicted_str = 'Predicted:';
 
@@ -181,7 +181,7 @@ function load_image() {
 }
 
 var test_samples = void 0;
-var run_ifs = {};
+var runners = {};
 
 function makeMatFromJson(mat_data) {
     var mat = new Float32Array(mat_data['data']);

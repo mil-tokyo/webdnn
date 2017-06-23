@@ -7,7 +7,7 @@ var run = function () {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        if (run_if) {
+                        if (runner) {
                             _context.next = 11;
                             break;
                         }
@@ -15,13 +15,13 @@ var run = function () {
                         backend_name = document.querySelector('input[name=backend_name]:checked').value;
                         framework_name = document.querySelector('input[name=framework_name]:checked').value;
                         _context.next = 5;
-                        return WebDNN.prepareAll('./output_' + framework_name, { backendOrder: backend_name });
+                        return WebDNN.load('./output_' + framework_name, { backendOrder: backend_name });
 
                     case 5:
-                        run_if = _context.sent;
+                        runner = _context.sent;
 
-                        msg('Backend: ' + run_if.backendName + ', model converted from ' + framework_name);
-                        console.info('Backend: ' + run_if.backendName + ', model converted from ' + framework_name);
+                        msg('Backend: ' + runner.backendName + ', model converted from ' + framework_name);
+                        console.info('Backend: ' + runner.backendName + ', model converted from ' + framework_name);
                         _context.next = 10;
                         return fetchSamples('./output_' + framework_name + '/test_samples.json');
 
@@ -44,27 +44,18 @@ var run = function () {
 
                         sample = test_samples[i];
 
-                        run_if.inputViews[0].set(sample.x);
+                        runner.getInputViews()[0].set(sample.x);
                         console.log('ground truth: ' + sample.y);
 
                         start = performance.now();
                         _context.next = 22;
-                        return run_if.run();
+                        return runner.run();
 
                     case 22:
                         total_elapsed_time += performance.now() - start;
 
-                        out_vec = run_if.outputViews[0];
+                        out_vec = runner.getOutputViews()[0].toActual();
                         pred_label = WebDNN.Math.argmax(out_vec)[0];
-                        // equivalent to
-                        /*        let pred_label = 0;
-                                let pred_score = -Infinity;
-                                for (let j = 0; j < out_vec.length; j++) {
-                                    if (out_vec[j] > pred_score) {
-                                        pred_score = out_vec[j];
-                                        pred_label = j;
-                                    }
-                                }*/
 
                         console.log('predicted: ' + pred_label);
                         console.log(out_vec);
@@ -140,7 +131,7 @@ var fetchSamples = function () {
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-var run_if = null;
+var runner = null;
 var test_samples = null;
 
 function msg(s) {
@@ -157,7 +148,7 @@ function run_entry() {
 }
 
 function reset_backend() {
-    run_if = null;
+    runner = null;
     resetOutputTable(document.getElementById('result'));
     msg('Resetted backend');
 }

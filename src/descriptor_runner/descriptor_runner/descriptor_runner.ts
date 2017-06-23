@@ -64,12 +64,12 @@ namespace WebDNN {
         /**
          * Get input ArrayBufferView object
          */
-        abstract async getInputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract getInputViews(): SymbolicFloat32Array[];
 
         /**
          * Get output ArrayBufferView object
          */
-        abstract async getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract getOutputViews(): SymbolicFloat32Array[];
 
         /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.

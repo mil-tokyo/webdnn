@@ -170,7 +170,7 @@ namespace WebDNN {
             console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
         }
 
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews) return this.inputViews;
 
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
@@ -188,7 +188,7 @@ namespace WebDNN {
             return this.inputViews;
         }
 
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews) return this.outputViews;
 
             if (!this.descriptor) throw new Error('Descriptor is not loaded');

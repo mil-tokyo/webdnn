@@ -3,7 +3,7 @@
 
 namespace WebDNN {
     export abstract class SymbolicArrayBufferView<T extends Float32Array | Int32Array> {
-        protected arrayBuffer: ArrayBuffer;
+        protected arrayBuffer?: ArrayBuffer;
         protected allocation: Allocation;
         protected placeholderContext?: PlaceholderContext;
 
@@ -65,6 +65,9 @@ namespace WebDNN {
 
     export class SymbolicFloat32Array extends SymbolicArrayBufferView<Float32Array> {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Float32Array(
                 this.arrayBuffer,
                 this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT,
@@ -75,6 +78,9 @@ namespace WebDNN {
 
     export class SymbolicInt32Array extends SymbolicArrayBufferView<Int32Array> {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Int32Array(
                 this.arrayBuffer,
                 this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT,
