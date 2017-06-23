@@ -80,7 +80,7 @@ def generate_descriptor(backend: str, graph: Graph, **kwargs) -> IGraphExecution
         raise RecursionError("Recursion error occurred when copying graph." +
                              " sys.setrecursionlimit(10000) may help fixing it.")
 
-    if flags.optimize.OPTIMIZE:
-        graph, _ = GeneralOptimizeRule().optimize(graph)
+    # some optimize rule work even when OPTIMIZE=0
+    graph, _ = GeneralOptimizeRule().optimize(graph)
 
     return generator(graph, **kwargs)
