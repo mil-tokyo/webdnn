@@ -99,3 +99,24 @@ def dump(graph: Graph):
         console.debug(f"{indent}    In  : {op.inputs}")
         console.debug(f"{indent}    Out : {op.outputs}")
         console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
+
+
+def dump_dot(graph: Graph) -> str:
+    """
+    Dumps graph into dot language for visualization.
+
+    Args:
+        graph: Target graph
+
+    Returns:
+        source code of dot language.
+    """
+    dot_source = ""
+    dot_source += "graph webdnn_ir {\n"
+    for op in listup_operators(graph):
+        dot_source += f"{op.name} [label=\"{op.name}\"];\n"
+        for output_var in op.outputs.values():
+            for input_op in output_var.input_to:
+                dot_source += f"{op.name} -- {input_op.name} [label=\"{output_var.shape}\"];\n"
+    dot_source += "}"
+    return dot_source
