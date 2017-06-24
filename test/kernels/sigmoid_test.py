@@ -16,7 +16,7 @@ def test_general():
 
     generate_kernel_test_case(
         description=f"Sigmoid",
-        backend=["webgpu"],
+        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy}
