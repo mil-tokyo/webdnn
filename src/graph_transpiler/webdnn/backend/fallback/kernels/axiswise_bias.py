@@ -8,6 +8,7 @@ from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
+from webdnn.util.misc import mul
 
 source = """
 axiswise_bias: function(input_arrays, output_arrays, option) {
@@ -40,7 +41,7 @@ def axiswise_bias(op: AxiswiseBias, memory_layout: MemoryLayout) -> List[Kernel]
     axis_size = x.shape[axis_pos]
     assert axis_size == b.size
 
-    axis_stride = np.product(x.shape[axis_pos + 1:])  # NCHWでaxis=Cなら、size(H)*size(W), np.product([])==1.0
+    axis_stride = mul(x.shape[axis_pos + 1:])
 
     kernel = Kernel(
         {"axiswise_bias": source},

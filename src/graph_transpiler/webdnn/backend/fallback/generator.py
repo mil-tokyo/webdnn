@@ -56,6 +56,9 @@ class GraphExecutionData(IGraphExecutionData):
         with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
             json.dump(self.descriptor, f, indent=2)
 
+        with open(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)), "w") as f:
+            f.write(self.descriptor.concat_kernel_sources())
+
         with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
             f.write(self.constants)
 

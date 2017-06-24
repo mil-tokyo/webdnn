@@ -8,6 +8,7 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
+from webdnn.util.misc import mul
 
 
 def local_response_normalization(op: LocalResponseNormalization,
@@ -70,9 +71,9 @@ def local_response_normalization_same_order(op: LocalResponseNormalization,
 
     target_axis = Axis.C  # FIXME
     target_axis_index = x.variable.order.axes_dict[target_axis]
-    D1 = np.product(x.variable.shape[:target_axis_index])
+    D1 = mul(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = np.product(x.variable.shape[target_axis_index + 1:])
+    D3 = mul(x.variable.shape[target_axis_index + 1:])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({

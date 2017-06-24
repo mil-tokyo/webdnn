@@ -115,8 +115,6 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             XH_X[gid] = X[(n * T + t) * C1 + c1];
         }
         
-        threadgroup_barrier(mem_flags::mem_device);
-        
         //FIXME: replace here to more efficient sgemv implementation.
         for (int gid = global_index; gid < C2 * 4 * N; gid += num_threads)
         {

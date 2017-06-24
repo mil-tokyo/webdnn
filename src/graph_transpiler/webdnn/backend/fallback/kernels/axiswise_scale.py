@@ -8,6 +8,7 @@ from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
+from webdnn.util.misc import mul
 
 source = """
 axiswise_scale: function(input_arrays, output_arrays, option) {
@@ -40,7 +41,7 @@ def axiswise_scale(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kerne
     axis_size = x.shape[axis_pos]
     assert axis_size == s.size
 
-    axis_stride = np.product(x.shape[axis_pos + 1:])  # NCHWでaxis=Cなら、size(H)*size(W), np.product([])==1.0
+    axis_stride = mul(x.shape[axis_pos + 1:])
 
     kernel = Kernel(
         {"axiswise_scale": source},

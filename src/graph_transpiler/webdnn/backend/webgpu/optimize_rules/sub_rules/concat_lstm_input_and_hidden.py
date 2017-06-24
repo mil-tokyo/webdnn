@@ -6,12 +6,12 @@ from webdnn.backend.webgpu.attributes.lstm_optimized import LSTMOptimized
 from webdnn.graph import traverse
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderCN, OrderNC
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import flags
 
 
 class ConcatLSTMInputAndHidden(OptimizeRule):
@@ -42,9 +42,6 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
-        if not (flags.optimize.OPTIMIZE and flags.optimize.CONCAT_LSTM_INPUT_AND_HIDDEN):
-            return graph, False
-
         flag_changed = False
         for match in traverse.search_sub_structure(graph, [LSTM]):
             lstm = match[0]  # type: LSTM
@@ -55,8 +52,11 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
             x = lstm.inputs["x"]
             w_input = lstm.inputs["w_input"]
             w_hidden = lstm.inputs["w_hidden"]
-            if not isinstance(w_input, ConstantVariable) or not isinstance(w_hidden, ConstantVariable):
-                continue
+            if isinstance(w_input, ConstantVariable) and isinstance(w_hidden, ConstantVariable):
+                w_all = ConstantVariable(np.vstack([w_input.data, w_hidden.data]), OrderCN)
+            else:
+                w_all, = Concat(None, axis=Axis.C)(w_input, w_hidden)  # type: Variable
+                w_all.change_order(OrderCN)
 
             attr = LSTMOptimized(lstm)
 
@@ -70,7 +70,6 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
 
             w_input.change_order(OrderCN)
             w_hidden.change_order(OrderCN)
-            w_all = ConstantVariable(np.vstack([w_input.data, w_hidden.data]), OrderCN)
 
             lstm.remove_input(w_input)
             lstm.remove_input(w_hidden)

@@ -1,16 +1,14 @@
 import copy
 from collections import defaultdict
-from typing import Generic, TypeVar, Type, Callable, List, Dict, Optional
+from typing import Generic, TypeVar, Type, Callable, List, Dict
 
-from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.util import console
 from webdnn.optimizer.general_optimize_rule import GeneralOptimizeRule
-from webdnn.graph.graph import Graph
-from webdnn.util import flags
+from webdnn.util import console
 
 backend_names = ["webgpu", "webassembly", "fallback"]
 

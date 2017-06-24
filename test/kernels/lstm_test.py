@@ -8,6 +8,7 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.order import OrderNTC, OrderCN, OrderC
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_general():
@@ -29,20 +30,15 @@ def test_general():
     vy = vy.data
 
     x = Variable(vx.shape, order=OrderNTC)
-    w_input = Variable(vw_input.shape, order=OrderCN)
-    w_hidden = Variable(vw_hidden.shape, order=OrderCN)
-    b = Variable(vb.shape, order=OrderC)
+    w_input = ConstantVariable(vw_input, order=OrderCN)
+    w_hidden = ConstantVariable(vw_hidden, order=OrderCN)
+    b = ConstantVariable(vb, order=OrderC)
     y, = LSTM(None)(x, w_input, w_hidden, b)
 
     generate_kernel_test_case(
         description=f"LSTM",
-        backend=["webgpu"],
-        graph=Graph([x, w_input, w_hidden, b], [y]),
-        inputs={
-            x: vx,
-            w_input: vw_input,
-            w_hidden: vw_hidden,
-            b: vb
-        },
+        backend=["webgpu", "webassembly"],
+        graph=Graph([x], [y]),
+        inputs={x: vx},
         expected={y: vy}
     )
