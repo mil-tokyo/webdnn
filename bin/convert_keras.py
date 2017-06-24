@@ -14,6 +14,7 @@ from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.frontend.keras import KerasConverter
 from webdnn.graph.shape import Shape
 from webdnn.util import flags, console
+from webdnn.graph.traverse import dump_dot
 
 
 def main():
@@ -28,6 +29,7 @@ def main():
     parser.add_argument("--out",
                         help="output directory (default: <model>/webdnn_graph_descriptor)")
     parser.add_argument("--encoding", help="name of weight encoder")
+    parser.add_argument("--visualize_ir", action="store_true")
     args = parser.parse_args()
 
     console.stderr(f"[{path.basename(__file__)}] Generating feedforward graph")
@@ -43,6 +45,12 @@ def main():
     else:
         output_dir = path.join(path.dirname(args.kerasmodel), "webdnn_graph_descriptor")
     os.makedirs(output_dir, exist_ok=True)
+
+    if args.visualize_ir:
+        ir_dot_path = path.join(output_dir, "ir.dot")
+        with open(ir_dot_path, "w") as f:
+            f.write(dump_dot(graph))
+        console.stderr(f"IR graph can be visualized with graphviz command: 'dot {ir_dot_path} -T png -o output.png'")
 
     console.stderr(f"[{path.basename(__file__)}] Generating graph descriptor")
 
