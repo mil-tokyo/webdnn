@@ -7,6 +7,7 @@ from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelN
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.util.misc import mul
 
 
 def axiswise_scale(op: AxiswiseScale,
@@ -88,9 +89,9 @@ def axiswise_scale_same_order(op: AxiswiseScale,
     y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
-    D1 = np.product(x.variable.shape[:target_axis_index])
+    D1 = mul(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = np.product(x.variable.shape[target_axis_index + 1:])
+    D3 = mul(x.variable.shape[target_axis_index + 1:])
 
     meta_injector = BufferInjector()
     meta_injector.register({

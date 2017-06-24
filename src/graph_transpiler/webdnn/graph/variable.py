@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Set
+from typing import Union, Dict, List, Set, Iterable
 
 import numpy as np
 
@@ -7,6 +7,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.node import Node
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
+from webdnn.util.misc import mul
 
 
 class Variable(Node):
@@ -24,7 +25,7 @@ class Variable(Node):
     input_to: Set["operator.Operator"]
     output_from: "operator.Operator"
 
-    def __init__(self, shape: List[Union[int, Placeholder]], order: Order):
+    def __init__(self, shape: Iterable[Union[int, Placeholder]], order: Order):
         super().__init__()
 
         self.shape = list(shape)
@@ -47,7 +48,7 @@ class Variable(Node):
     @property
     def size(self) -> Union[int, Placeholder]:
         """number of elements"""
-        return Placeholder.to_int(np.product(self.shape))
+        return Placeholder.to_int(mul(self.shape))
 
     @property
     def ndim(self):

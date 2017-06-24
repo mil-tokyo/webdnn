@@ -12,6 +12,9 @@ from webdnn.graph.variables.attributes.constant import Constant
 from webdnn.util import json, flags
 
 source_header = f"""
+#include <metal_stdlib>
+using namespace metal;
+
 #define OPTIMIZE {"1" if flags.optimize.OPTIMIZE else "0"}
 """
 
@@ -41,8 +44,9 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     def concat_kernel_sources(self):
         func_sources = OrderedDict()
 
-        with open(path.join(path.dirname(__file__), "./libs.metal")) as f:
-            libs = f.read()
+        # with open(path.join(path.dirname(__file__), "./libs.metal")) as f:
+        #     libs = f.read()
+        libs = ""
 
         for kernel in self.kernels:
             for func_name, source in kernel.func_sources.items():

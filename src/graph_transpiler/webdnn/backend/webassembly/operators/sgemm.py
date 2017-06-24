@@ -1,21 +1,21 @@
 from typing import Optional, Iterable, Union
 
-import numpy as np
-
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.util.misc import mul
 
 
 class Sgemm(Operator):
     attributes = {PostAxiswise,
                   HaveWeights}
 
-    def __init__(self, name: Optional[str], M: Placeholder, N: Placeholder, K: Placeholder, out_shape: Iterable[Placeholder],
-                 out_order: Order, transpose_A: bool, transpose_B: bool):
+    def __init__(self, name: Optional[str], M: Union[int, Placeholder], N: Union[int, Placeholder],
+                 K: Union[int, Placeholder],
+                 out_shape: Iterable[Union[int, Placeholder]], out_order: Order, transpose_A: bool, transpose_B: bool):
         super().__init__(name)
 
         # NOTE: out_shapeをIterableではなくCollectionにすればこれは解決する
@@ -25,7 +25,7 @@ class Sgemm(Operator):
         # noinspection PyTypeChecker
         assert len(out_shape) == out_order.ndim
         if Placeholder.check_resolved(out_shape) and Placeholder.check_resolved(M * N):
-            assert np.product(out_shape) == M * N
+            assert mul(out_shape) == M * N
 
         self.parameters["M"] = M
         self.parameters["N"] = N

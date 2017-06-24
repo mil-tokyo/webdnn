@@ -15,34 +15,15 @@ def test_NC_CN():
 
     x = Variable(vx.shape, order=OrderNC)
     w = ConstantVariable(vw, order=OrderCN)
-    y1, = Linear(None)(x, w)
-    y2, = Linear(None)(x, w)
-    y3, = Linear(None)(x, w)
+    y, = Linear(None)(x, w)
 
     generate_kernel_test_case(
         description=f"Linear: NC*CN",
-        backend=["fallback"],
-        graph=Graph([x], [y1]),
+        backend=["fallback", "webassembly", "webgpu"],
+        graph=Graph([x], [y]),
         inputs={x: vx},
-        expected={y1: vy},
+        expected={y: vy},
         raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Linear: NC*CN",
-        backend=["webgpu"],
-        graph=Graph([x], [y2]),
-        inputs={x: vx},
-        expected={y2: vy},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Linear: NC*CN",
-        backend="webassembly",
-        graph=Graph([x], [y3]),
-        inputs={x: vx},
-        expected={y3: vy}
     )
 
 
@@ -53,32 +34,13 @@ def test_NHWC_HWCN():
 
     x = Variable(vx.shape, order=OrderNHWC)
     w = ConstantVariable(vw, order=OrderHWCN)
-    y1, = Linear(None)(x, w)
-    y2, = Linear(None)(x, w)
-    y3, = Linear(None)(x, w)
+    y, = Linear(None)(x, w)
 
     generate_kernel_test_case(
         description=f"Linear: NHWC*HWCN",
-        backend=["fallback"],
-        graph=Graph([x], [y1]),
+        backend=["fallback", "webassembly", "webgpu"],
+        graph=Graph([x], [y]),
         inputs={x: vx},
-        expected={y1: vy},
+        expected={y: vy},
         raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Linear: NHWC*HWCN",
-        backend=["webgpu"],
-        graph=Graph([x], [y2]),
-        inputs={x: vx},
-        expected={y2: vy},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Linear: NHWC*HWCN",
-        backend="webassembly",
-        graph=Graph([x], [y3]),
-        inputs={x: vx},
-        expected={y3: vy}
     )

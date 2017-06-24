@@ -8,6 +8,7 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.placeholder import Placeholder
+from webdnn.util.misc import mul
 
 
 def axiswise_bias(op: AxiswiseBias,
@@ -89,9 +90,9 @@ def axiswise_bias_same_order(op: AxiswiseBias,
     y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
-    D1 = np.product(x.variable.shape[:target_axis_index])
+    D1 = mul(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = np.product(x.variable.shape[target_axis_index + 1:])
+    D3 = mul(x.variable.shape[target_axis_index + 1:])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
