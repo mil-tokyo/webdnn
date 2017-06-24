@@ -1730,6 +1730,7 @@ var WebDNN;
          */
         function argmax(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {
@@ -1776,6 +1777,7 @@ var WebDNN;
          */
         function argmin(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {

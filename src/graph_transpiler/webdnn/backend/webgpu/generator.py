@@ -34,6 +34,7 @@ from webdnn.backend.webgpu.kernels.relu import relu
 from webdnn.backend.webgpu.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webgpu.kernels.sgemm import sgemm
 from webdnn.backend.webgpu.kernels.sigmoid import sigmoid
+from webdnn.backend.webgpu.kernels.softmax import softmax
 from webdnn.backend.webgpu.kernels.softplus import softplus
 from webdnn.backend.webgpu.kernels.softsign import softsign
 from webdnn.backend.webgpu.kernels.tanh import tanh
@@ -61,6 +62,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
@@ -184,6 +186,7 @@ WebGPUDescriptorGenerator.register_handler(Relu)(relu)
 WebGPUDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
 WebGPUDescriptorGenerator.register_handler(Sgemm)(sgemm)
 WebGPUDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
+WebGPUDescriptorGenerator.register_handler(Softmax)(softmax)
 WebGPUDescriptorGenerator.register_handler(Softplus)(softplus)
 WebGPUDescriptorGenerator.register_handler(Softsign)(softsign)
 WebGPUDescriptorGenerator.register_handler(Tanh)(tanh)
