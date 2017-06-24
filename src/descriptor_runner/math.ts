@@ -7,6 +7,7 @@ namespace WebDNN {
          * @returns {number[]} indices of top-K largest samples
          */
         export function argmax(arr: number[], k: number = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace: { [key: number]: number } = {};
 
@@ -61,6 +62,7 @@ namespace WebDNN {
          * @returns {number[]} indices of top-K smallest samples
          */
         export function argmin(arr: number[], k: number = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace: { [key: number]: number } = {};
 

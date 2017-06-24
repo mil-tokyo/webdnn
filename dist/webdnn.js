@@ -1252,6 +1252,7 @@ var WebDNN;
          * @returns {number[]} indices of top-K largest samples
          */
         function argmax(arr, k = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace = {};
             while (stack.length > 0) {
@@ -1297,6 +1298,7 @@ var WebDNN;
          * @returns {number[]} indices of top-K smallest samples
          */
         function argmin(arr, k = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace = {};
             while (stack.length > 0) {
