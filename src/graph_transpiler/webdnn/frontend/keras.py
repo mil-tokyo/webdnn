@@ -28,6 +28,7 @@ from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -259,6 +260,8 @@ def do_activation(activation_type: str, x: Variable) -> Variable:
         act_opr = Relu(None)
     elif activation_type == "sigmoid":
         act_opr = Sigmoid(None)
+    elif activation_type == "hard_sigmoid":
+        act_opr = HardSigmoid(None)
     elif activation_type == "softmax":
         console.warning("[KerasConverter] omitting softmax activation")
     elif activation_type == "linear":

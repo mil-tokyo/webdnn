@@ -23,6 +23,7 @@ from webdnn.backend.webgpu.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webgpu.kernels.elu import elu
 from webdnn.backend.webgpu.kernels.embedding import embedding
 from webdnn.backend.webgpu.kernels.flatten import flatten
+from webdnn.backend.webgpu.kernels.hard_sigmoid import hard_sigmoid
 from webdnn.backend.webgpu.kernels.im2col import im2col
 from webdnn.backend.webgpu.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.webgpu.kernels.lstm import lstm
@@ -47,6 +48,7 @@ from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -163,6 +165,7 @@ WebGPUDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
 WebGPUDescriptorGenerator.register_handler(Elu)(elu)
 WebGPUDescriptorGenerator.register_handler(Embedding)(embedding)
 WebGPUDescriptorGenerator.register_handler(Flatten)(flatten)
+WebGPUDescriptorGenerator.register_handler(HardSigmoid)(hard_sigmoid)
 WebGPUDescriptorGenerator.register_handler(Im2Col)(im2col)
 WebGPUDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 WebGPUDescriptorGenerator.register_handler(LSTM)(lstm)

@@ -19,6 +19,7 @@ from webdnn.backend.fallback.kernels.concat import concat
 from webdnn.backend.fallback.kernels.convolution_2d import convolution_2d
 from webdnn.backend.fallback.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.fallback.kernels.flatten import flatten
+from webdnn.backend.fallback.kernels.hard_sigmoid import hard_sigmoid
 from webdnn.backend.fallback.kernels.linear import linear
 from webdnn.backend.fallback.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
@@ -34,6 +35,7 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -99,6 +101,7 @@ FallbackDescriptorGenerator.register_handler(Concat)(concat)
 FallbackDescriptorGenerator.register_handler(Convolution2D)(convolution_2d)
 FallbackDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
 FallbackDescriptorGenerator.register_handler(Flatten)(flatten)
+FallbackDescriptorGenerator.register_handler(HardSigmoid)(hard_sigmoid)
 FallbackDescriptorGenerator.register_handler(Linear)(linear)
 FallbackDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 FallbackDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)

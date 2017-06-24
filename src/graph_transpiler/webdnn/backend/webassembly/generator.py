@@ -25,6 +25,7 @@ from webdnn.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webassembly.kernels.elu import elu
 from webdnn.backend.webassembly.kernels.embedding import embedding
 from webdnn.backend.webassembly.kernels.flatten import flatten
+from webdnn.backend.webassembly.kernels.hard_sigmoid import hard_sigmoid
 from webdnn.backend.webassembly.kernels.im2col import im2col
 from webdnn.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.webassembly.kernels.lstm import lstm
@@ -49,6 +50,7 @@ from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -187,6 +189,7 @@ WebassemblyDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
 WebassemblyDescriptorGenerator.register_handler(Elu)(elu)
 WebassemblyDescriptorGenerator.register_handler(Embedding)(embedding)
 WebassemblyDescriptorGenerator.register_handler(Flatten)(flatten)
+WebassemblyDescriptorGenerator.register_handler(HardSigmoid)(hard_sigmoid)
 WebassemblyDescriptorGenerator.register_handler(Im2Col)(im2col)
 WebassemblyDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 WebassemblyDescriptorGenerator.register_handler(LSTM)(lstm)

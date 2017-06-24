@@ -22,6 +22,7 @@ from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -222,6 +223,14 @@ def _convert_elu(converter: ChainerConverter, c_opr: chainer.functions.ELU):
 def _convert_tanh(converter: ChainerConverter, c_opr: chainer.functions.Tanh):
     n_opr = Tanh(None)
     assert len(c_opr.inputs) == 1, "Number of input of Tanh is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("HardSigmoid")
+def _convert_tanh(converter: ChainerConverter, c_opr: chainer.functions.HardSigmoid):
+    n_opr = HardSigmoid(None)
+    assert len(c_opr.inputs) == 1, "Number of input of HardSigmoid is invalid: Expected=1, Actual={len(c_opr.inputs)}"
     y, = n_opr(converter.get_variable(c_opr.inputs[0]))
     converter.set_variable(c_opr.outputs[0](), y)
 

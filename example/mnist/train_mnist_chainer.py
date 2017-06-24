@@ -61,7 +61,7 @@ class MLP(chainer.Chain):
         )
 
     def __call__(self, x):
-        h1 = F.relu(self.l1(x))
+        h1 = F.hard_sigmoid(self.l1(x))
         h2 = F.relu(self.l2(h1))
         return self.l3(h2)
 
