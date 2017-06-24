@@ -34,6 +34,8 @@ from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softplus import Softplus
+from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
     OrderNHWC, Order
@@ -262,6 +264,10 @@ def do_activation(activation_type: str, x: Variable) -> Variable:
         act_opr = Sigmoid(None)
     elif activation_type == "hard_sigmoid":
         act_opr = HardSigmoid(None)
+    elif activation_type == "softplus":
+        act_opr = Softplus(None, beta=1.0)
+    elif activation_type == "softsign":
+        act_opr = Softsign(None)
     elif activation_type == "softmax":
         console.warning("[KerasConverter] omitting softmax activation")
     elif activation_type == "linear":

@@ -2,7 +2,7 @@ import atexit
 import os.path as path
 import shutil
 from abc import abstractmethod
-from typing import Type, Dict, List, Union, Iterable
+from typing import Type, Dict, List, Union, Iterable, Optional
 from unittest import SkipTest
 
 import numpy as np
@@ -16,11 +16,11 @@ from webdnn.graph.variable import Variable
 from webdnn.util.json import json
 
 
-def template_elementwise_operator(OperatorClass: Type[Operator]):
+def template_elementwise_operator(OperatorClass: Type[Operator], operator_kwargs: Optional[Dict[str, any]] = None):
     orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
     for order in orders:
-        op = OperatorClass("op")
+        op = OperatorClass("op", **(operator_kwargs or {}))
 
         x = Variable(np.arange(order.ndim) + 1, order)
         y, = op(x)

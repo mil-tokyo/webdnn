@@ -18,17 +18,20 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
+from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
 from webdnn.graph.variable import Variable
@@ -218,6 +221,30 @@ register_activation("ReLU", Relu)
 register_activation("ELU", Elu)
 register_activation("Tanh", Tanh)
 register_activation("HardSigmoid", HardSigmoid)
+
+
+@ChainerConverter.register_handler("Softplus")
+def _convert_softplus(converter: ChainerConverter, c_opr: chainer.functions.Softplus):
+    n_opr = Softplus(None, beta=c_opr.beta)
+    assert len(c_opr.inputs) == 1, f"Number of input of Softplus is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("LeakyReLU")
+def _convert_leaky_relu(converter: ChainerConverter, c_opr: chainer.functions.LeakyReLU):
+    n_opr = LeakyRelu(None, slope=c_opr.slope)
+    assert len(c_opr.inputs) == 1, f"Number of input of LeakyReLU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("ClippedReLU")
+def _convert_clipped_relu(converter: ChainerConverter, c_opr: chainer.functions.ClippedReLU):
+    n_opr = ClippedRelu(None, cap=c_opr.cap)
+    assert len(c_opr.inputs) == 1, f"Number of input of ClippedReLU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("LinearFunction")
