@@ -15,14 +15,22 @@ from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.average_pooling_2d import average_pooling_2d
 from webdnn.backend.fallback.kernels.axiswise_bias import axiswise_bias
 from webdnn.backend.fallback.kernels.axiswise_scale import axiswise_scale
+from webdnn.backend.fallback.kernels.clipped_relu import clipped_relu
 from webdnn.backend.fallback.kernels.concat import concat
 from webdnn.backend.fallback.kernels.convolution_2d import convolution_2d
 from webdnn.backend.fallback.kernels.elementwise_sum import elementwise_sum
+from webdnn.backend.fallback.kernels.elu import elu
 from webdnn.backend.fallback.kernels.flatten import flatten
+from webdnn.backend.fallback.kernels.hard_sigmoid import hard_sigmoid
+from webdnn.backend.fallback.kernels.leaky_relu import leaky_relu
 from webdnn.backend.fallback.kernels.linear import linear
 from webdnn.backend.fallback.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from webdnn.backend.fallback.kernels.relu import relu
+from webdnn.backend.fallback.kernels.sigmoid import sigmoid
+from webdnn.backend.fallback.kernels.softplus import softplus
+from webdnn.backend.fallback.kernels.softsign import softsign
+from webdnn.backend.fallback.kernels.tanh import tanh
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.encoder.constant_encoder import ConstantEncoder
@@ -30,14 +38,22 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
+from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.flatten import Flatten
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
+from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softplus import Softplus
+from webdnn.graph.operators.softsign import Softsign
+from webdnn.graph.operators.tanh import Tanh
 from webdnn.util import console
 from webdnn.util.json import json
 
@@ -96,10 +112,18 @@ FallbackDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2
 FallbackDescriptorGenerator.register_handler(AxiswiseBias)(axiswise_bias)
 FallbackDescriptorGenerator.register_handler(AxiswiseScale)(axiswise_scale)
 FallbackDescriptorGenerator.register_handler(Concat)(concat)
+FallbackDescriptorGenerator.register_handler(ClippedRelu)(clipped_relu)
 FallbackDescriptorGenerator.register_handler(Convolution2D)(convolution_2d)
 FallbackDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
+FallbackDescriptorGenerator.register_handler(Elu)(elu)
 FallbackDescriptorGenerator.register_handler(Flatten)(flatten)
+FallbackDescriptorGenerator.register_handler(HardSigmoid)(hard_sigmoid)
+FallbackDescriptorGenerator.register_handler(LeakyRelu)(leaky_relu)
 FallbackDescriptorGenerator.register_handler(Linear)(linear)
 FallbackDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 FallbackDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
+FallbackDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
+FallbackDescriptorGenerator.register_handler(Softplus)(softplus)
+FallbackDescriptorGenerator.register_handler(Softsign)(softsign)
 FallbackDescriptorGenerator.register_handler(Relu)(relu)
+FallbackDescriptorGenerator.register_handler(Tanh)(tanh)
