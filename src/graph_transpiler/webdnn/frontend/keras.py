@@ -253,6 +253,25 @@ class KerasConverter(Converter[KerasOperator]):
         return cvar
 
 
+def do_activation(activation_type: str, x: Variable) -> Variable:
+    act_opr = None
+    if activation_type == "relu":
+        act_opr = Relu(None)
+    elif activation_type == "sigmoid":
+        act_opr = Sigmoid(None)
+    elif activation_type == "softmax":
+        console.warning("[KerasConverter] omitting softmax activation")
+    elif activation_type == "linear":
+        pass
+    else:
+        raise NotImplementedError(f"Unknown activation {activation_type}")
+
+    if act_opr is not None:
+        x, = act_opr(x)
+
+    return x
+
+
 @KerasConverter.register_handler("InputLayer")
 def _convert_input_layer(converter: KerasConverter, operator: KerasOperator):
     """
@@ -281,21 +300,7 @@ def _convert_dense(converter: KerasConverter, operator: KerasOperator):
         bias_opr = AxiswiseBias(None, Axis.C)
         y, = bias_opr(y, bias)
 
-    act_opr: Operator = None
-    activation_type: str = operator.specific_config["activation"]
-    if activation_type == "relu":
-        act_opr = Relu(None)
-    elif activation_type == "sigmoid":
-        act_opr = Sigmoid(None)
-    elif activation_type == "softmax":
-        console.warning("[KerasConverter] omitting softmax activation")
-    elif activation_type == "linear":
-        pass
-    else:
-        raise NotImplementedError(f"Unknown activation {activation_type}")
-
-    if act_opr is not None:
-        y, = act_opr(y)
+    y = do_activation(operator.specific_config["activation"], y)
 
     operator.outputs = [y]
 
@@ -363,21 +368,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
         bias_opr = AxiswiseBias(None, Axis.C)
         y, = bias_opr(y, bias)
 
-    act_opr: Operator = None
-    activation_type: str = operator.specific_config["activation"]
-    if activation_type == "relu":
-        act_opr = Relu(None)
-    elif activation_type == "sigmoid":
-        act_opr = Sigmoid(None)
-    elif activation_type == "softmax":
-        console.warning("[KerasConverter] omitting softmax activation")
-    elif activation_type == "linear":
-        pass
-    else:
-        raise NotImplementedError(f"Unknown activation {activation_type}")
-
-    if act_opr is not None:
-        y, = act_opr(y)
+    y = do_activation(operator.specific_config["activation"], y)
 
     operator.outputs = [y]
 
@@ -556,21 +547,7 @@ def _convert_activation(converter: KerasConverter, operator: KerasOperator):
     assert len(operator.inputs) == 1
     y = operator.inputs[0]
 
-    act_opr: Operator = None
-    activation_type: str = operator.specific_config["activation"]
-    if activation_type == "relu":
-        act_opr = Relu(None)
-    elif activation_type == "sigmoid":
-        act_opr = Sigmoid(None)
-    elif activation_type == "softmax":
-        console.warning("[KerasConverter] omitting softmax activation")
-    elif activation_type == "linear":
-        pass
-    else:
-        raise NotImplementedError(f"Unknown activation {activation_type}")
-
-    if act_opr is not None:
-        y, = act_opr(y)
+    y = do_activation(operator.specific_config["activation"], y)
 
     operator.outputs = [y]
 
