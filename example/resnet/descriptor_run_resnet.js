@@ -33,30 +33,26 @@ function load_image() {
 }
 
 let test_samples;
-let run_ifs = {};
+let runners = {};
 
 async function prepare_run() {
     let backend_name = document.querySelector('input[name=backend_name]:checked').value;
     let framework_name = document.querySelector('input[name=framework_name]:checked').value;
     let backend_key = backend_name + framework_name;
-    if (!(backend_key in run_ifs)) {
+    if (!(backend_key in runners)) {
         log('Initializing and loading model');
-        let run_if = await WebDNN.prepareAll(`./output_${framework_name}`, {backendOrder: backend_name});
-        log(`Loaded backend: ${run_if.backendName}, model converted from ${framework_name}`);
+        let runner = await WebDNN.load(`./output_${framework_name}`, {backendOrder: backend_name});
+        log(`Loaded backend: ${runner.backendName}, model converted from ${framework_name}`);
 
-        run_ifs[backend_key] = run_if;
+        runners[backend_key] = runner;
     } else {
         log('Model is already loaded');
     }
-    return run_ifs[backend_key];
+    return runners[backend_key];
 }
 
 async function run() {
-    let run_if = await prepare_run();
-
-    await WebDNN.runner.setPlaceholderValue({
-        N: 1
-    });
+    let runner = await prepare_run();
 
     let test_image = getImageData();
     let test_samples = [test_image];
@@ -65,13 +61,13 @@ async function run() {
     let pred_label;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        run_if.inputViews[0].set(sample);
+        runner.getInputViews()[0].set(sample);
 
         let start = performance.now();
-        await run_if.run();
+        await runner.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0].toActual();
+        let out_vec = runner.getOutputViews()[0].toActual();
         let top_labels = WebDNN.Math.argmax(out_vec, 5);
         let predicted_str = 'Predicted:';
         for (let j = 0; j < top_labels.length; j++) {

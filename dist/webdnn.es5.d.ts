@@ -75,7 +75,7 @@ declare namespace WebDNN {
 declare namespace WebDNN {
     abstract class SymbolicArrayBufferView<T extends Float32Array | Int32Array> {
         protected ignoreOffsetOnActual: boolean;
-        protected arrayBuffer: ArrayBuffer;
+        protected arrayBuffer?: ArrayBuffer;
         protected allocation: Allocation;
         protected placeholderContext?: PlaceholderContext;
         /**
@@ -163,11 +163,11 @@ declare namespace WebDNN {
         /**
          * Get input ArrayBufferView object
          */
-        abstract getInputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract getInputViews(): SymbolicFloat32Array[];
         /**
          * Get output ArrayBufferView object
          */
-        abstract getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        abstract getOutputViews(): SymbolicFloat32Array[];
         /**
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
@@ -420,8 +420,8 @@ declare namespace WebDNN {
         setPlaceholderValue(values: {
             [key: string]: number;
         }): Promise<void>;
-        getInputViews(): Promise<SymbolicFloat32Array[]>;
-        getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        getInputViews(): SymbolicFloat32Array[];
+        getOutputViews(): SymbolicFloat32Array[];
         run(): Promise<void>;
     }
 }
@@ -452,8 +452,8 @@ declare namespace WebDNN {
         private setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray);
         private compile();
         private loadWeights(weightsData);
-        getInputViews(): Promise<SymbolicFloat32Array[]>;
-        getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        getInputViews(): SymbolicFloat32Array[];
+        getOutputViews(): SymbolicFloat32Array[];
         run(): Promise<void>;
     }
 }
@@ -481,6 +481,7 @@ declare namespace WebDNN {
         private outputViews;
         private staticBuffer;
         private dynamicBuffer;
+        constructor(option?: any);
         init(): Promise<void>;
         load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
         private setDescriptor(descriptor);
@@ -491,8 +492,8 @@ declare namespace WebDNN {
             [key: string]: number;
         }): Promise<void>;
         run(): Promise<void>;
-        getInputViews(): Promise<SymbolicFloat32Array[]>;
-        getOutputViews(): Promise<SymbolicFloat32Array[]>;
+        getInputViews(): SymbolicFloat32Array[];
+        getOutputViews(): SymbolicFloat32Array[];
     }
 }
 declare namespace WebDNN {
@@ -501,12 +502,7 @@ declare namespace WebDNN {
         'webassembly': typeof DescriptorRunnerWebassembly;
         'fallback': typeof DescriptorRunnerFallback;
     };
-    let runner: DescriptorRunner<GraphDescriptor> | null;
-    let backendName: string;
     let DEBUG: boolean;
-    function init(backendOrder?: string | string[], backendOptions?: {
-        [key: string]: any;
-    }): Promise<string>;
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param backendOrder The trying order of backend names to be initialized.
@@ -518,6 +514,7 @@ declare namespace WebDNN {
         backendOptions?: {
             [key: string]: any;
         };
+        ignoreCache?: boolean;
         progressCallback?: (loaded: number, total: number) => any;
     }
     /**
@@ -526,28 +523,7 @@ declare namespace WebDNN {
      * @param initOption Initialize option
      * @return Interface to input/output data and run the model.
      */
-    function prepareAll(directory: string, initOption?: InitOption): Promise<GraphInterface>;
-    /**
-     * Interface to input/output data and run the model.
-     */
-    interface GraphInterface {
-        /**
-         * The name of backend.
-         */
-        backendName: string;
-        /**
-         * The buffers to write input data.
-         */
-        inputViews: SymbolicFloat32Array[];
-        /**
-         * The buffers to read output data.
-         */
-        outputViews: SymbolicFloat32Array[];
-        /**
-         * Run the model.
-         */
-        run: () => Promise<void>;
-    }
+    function load(directory: string, initOption?: InitOption): Promise<DescriptorRunner<GraphDescriptor>>;
 }
 declare namespace WebDNN {
     namespace Math {

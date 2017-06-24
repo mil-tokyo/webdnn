@@ -117,12 +117,18 @@ var WebDNN;
     WebDNN.SymbolicArrayBufferView = SymbolicArrayBufferView;
     class SymbolicFloat32Array extends SymbolicArrayBufferView {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
         }
     }
     WebDNN.SymbolicFloat32Array = SymbolicFloat32Array;
     class SymbolicInt32Array extends SymbolicArrayBufferView {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Int32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
         }
     }
@@ -664,7 +670,7 @@ var WebDNN;
                 return placeholderContext.resolve(executionInfo);
             }));
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -680,7 +686,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -909,7 +915,7 @@ var WebDNN;
             });
             return promise;
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -925,7 +931,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -1014,8 +1020,8 @@ function wait(duration = 10) {
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerFallback extends WebDNN.DescriptorRunner {
-        constructor() {
-            super(...arguments);
+        constructor(option) {
+            super();
             this.backendName = 'fallback';
         }
         async init() {
@@ -1138,7 +1144,7 @@ var WebDNN;
             }
             console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -1154,7 +1160,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -1184,7 +1190,6 @@ var WebDNN;
         'webassembly': WebDNN.DescriptorRunnerWebassembly,
         'fallback': WebDNN.DescriptorRunnerFallback,
     };
-    WebDNN.backendName = 'none';
     WebDNN.DEBUG = false;
     async function initBackend(backendName, option) {
         if (!(backendName in WebDNN.backends))
@@ -1196,37 +1201,17 @@ var WebDNN;
         }
         catch (ex) {
             console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
-            return false;
+            return null;
         }
-        WebDNN.runner = runner;
-        WebDNN.backendName = backendName;
-        return true;
+        return runner;
     }
-    async function init(backendOrder, backendOptions = {}) {
-        if (!backendOrder) {
-            backendOrder = ['webgpu', 'webassembly'];
-        }
-        else if (typeof backendOrder === 'string') {
-            backendOrder = [backendOrder];
-        }
-        backendOrder = backendOrder.slice();
-        if (backendOrder.indexOf('fallback') === -1)
-            backendOrder.concat(['fallback']);
-        while (backendOrder.length > 0) {
-            let backendName = backendOrder.shift();
-            if (await initBackend(backendName, backendOptions[backendName]))
-                return WebDNN.backendName;
-        }
-        throw new Error('No backend is available');
-    }
-    WebDNN.init = init;
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
      * @param initOption Initialize option
      * @return Interface to input/output data and run the model.
      */
-    async function prepareAll(directory, initOption = {}) {
+    async function load(directory, initOption = {}) {
         let backendOrder = initOption.backendOrder;
         if (!backendOrder) {
             backendOrder = ['webgpu', 'webassembly'];
@@ -1240,28 +1225,21 @@ var WebDNN;
         let backendOptions = initOption.backendOptions || {};
         while (backendOrder.length > 0) {
             let backendName = backendOrder.shift();
-            if (!(await initBackend(backendName, backendOptions[backendName])))
+            let runner = await initBackend(backendName, backendOptions[backendName]);
+            if (!runner)
                 continue;
-            if (!WebDNN.runner)
-                continue;
+            runner.ignoreCache = Boolean(initOption.ignoreCache);
             try {
-                await WebDNN.runner.load(directory, initOption.progressCallback);
+                await runner.load(directory, initOption.progressCallback);
             }
             catch (ex) {
                 console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
             }
-            let inputViews = await WebDNN.runner.getInputViews();
-            let outputViews = await WebDNN.runner.getOutputViews();
-            return {
-                backendName: backendName,
-                inputViews: inputViews,
-                outputViews: outputViews,
-                run: WebDNN.runner.run.bind(WebDNN.runner)
-            };
+            return runner;
         }
         throw new Error('No backend is available');
     }
-    WebDNN.prepareAll = prepareAll;
+    WebDNN.load = load;
 })(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {

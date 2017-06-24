@@ -1,6 +1,6 @@
 'use strict';
 
-let run_if = null;
+let runner = null;
 let test_samples = null;
 
 function msg(s) {
@@ -17,39 +17,35 @@ function run_entry() {
 }
 
 function reset_backend() {
-    run_if = null;
+    runner = null;
     resetOutputTable(document.getElementById('result'));
     msg('Resetted backend');
 }
 
 async function run() {
-    if (!run_if) {
+    if (!runner) {
         let backend_name = document.querySelector('input[name=backend_name]:checked').value;
         let framework_name = document.querySelector('input[name=framework_name]:checked').value;
-        run_if = await WebDNN.prepareAll(`./output_${framework_name}`, { backendOrder: backend_name });
-        msg(`Backend: ${run_if.backendName}, model converted from ${framework_name}`);
-        console.info(`Backend: ${run_if.backendName}, model converted from ${framework_name}`);
+        runner = await WebDNN.load(`./output_${framework_name}`, { backendOrder: backend_name });
+        msg(`Backend: ${runner.backendName}, model converted from ${framework_name}`);
+        console.info(`Backend: ${runner.backendName}, model converted from ${framework_name}`);
         test_samples = await fetchSamples(`./output_${framework_name}/test_samples.json`);
     }
 
     let output_table = document.getElementById('result');
     resetOutputTable(output_table);
 
-    await WebDNN.runner.setPlaceholderValue({
-        N: 1
-    });
-
     let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        run_if.inputViews[0].set(sample.x);
+        runner.getInputViews()[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
 
         let start = performance.now();
-        await run_if.run();
+        await runner.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0].toActual();
+        let out_vec = runner.getOutputViews()[0].toActual();
         let pred_label = WebDNN.Math.argmax(out_vec)[0];
         console.log(`predicted: ${pred_label}`);
         console.log(out_vec);

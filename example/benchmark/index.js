@@ -152,32 +152,27 @@ class WebDNNBenchmark extends BaseBenchmark {
         this.y = null;
         this.backend = backend;
         this.flagOptimized = flagOptimized;
+        this.runner = null;
     }
 
     setupAsync() {
         //noinspection ES6ModulesDependencies
-        return WebDNN.init([this.backend])
-            .then(() => {
-                //noinspection ES6ModulesDependencies
-                return WebDNN.runner.load(`./output/webdnn/${this.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`);
-            })
-            .then(() => WebDNN.runner.getInputViews())
-            .then(xs => {
-                this.x = xs[0].toActual();
-                return WebDNN.runner.getOutputViews();
-            })
-            .then(ys => {
-                this.y = ys[0].toActual();
+        return WebDNN.load(`./output/webdnn/${this.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`, {backendOrder: [this.backend]})
+            .then((runner) => {
+                this.runner = runner;
+                this.x = runner.getInputViews()[0].toActual();
+                this.y = runner.getOutputViews()[0].toActual();
             })
     }
 
     executeSingleAsync() {
-        return WebDNN.runner.run()
+        return this.runner.run()
     }
 
     finalizeAsync() {
         this.x = null;
         this.y = null;
+        this.runner = null;
     }
 }
 
