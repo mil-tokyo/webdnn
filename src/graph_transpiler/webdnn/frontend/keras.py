@@ -34,6 +34,7 @@ from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
@@ -269,7 +270,7 @@ def do_activation(activation_type: str, x: Variable) -> Variable:
     elif activation_type == "softsign":
         act_opr = Softsign(None)
     elif activation_type == "softmax":
-        console.warning("[KerasConverter] omitting softmax activation")
+        act_opr = Softmax(None, axis=x.order.axes[-1])
     elif activation_type == "linear":
         pass
     else:

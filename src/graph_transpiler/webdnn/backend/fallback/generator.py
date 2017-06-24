@@ -28,6 +28,7 @@ from webdnn.backend.fallback.kernels.local_response_normalization import local_r
 from webdnn.backend.fallback.kernels.max_pooling_2d import max_pooling_2d
 from webdnn.backend.fallback.kernels.relu import relu
 from webdnn.backend.fallback.kernels.sigmoid import sigmoid
+from webdnn.backend.fallback.kernels.softmax import softmax
 from webdnn.backend.fallback.kernels.softplus import softplus
 from webdnn.backend.fallback.kernels.softsign import softsign
 from webdnn.backend.fallback.kernels.tanh import tanh
@@ -51,6 +52,7 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
@@ -123,6 +125,7 @@ FallbackDescriptorGenerator.register_handler(Linear)(linear)
 FallbackDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 FallbackDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
 FallbackDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
+FallbackDescriptorGenerator.register_handler(Softmax)(softmax)
 FallbackDescriptorGenerator.register_handler(Softplus)(softplus)
 FallbackDescriptorGenerator.register_handler(Softsign)(softsign)
 FallbackDescriptorGenerator.register_handler(Relu)(relu)

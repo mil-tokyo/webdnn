@@ -36,6 +36,7 @@ from webdnn.backend.webassembly.kernels.relu import relu
 from webdnn.backend.webassembly.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webassembly.kernels.sgemm import sgemm
 from webdnn.backend.webassembly.kernels.sigmoid import sigmoid
+from webdnn.backend.webassembly.kernels.softmax import softmax
 from webdnn.backend.webassembly.kernels.softplus import softplus
 from webdnn.backend.webassembly.kernels.softsign import softsign
 from webdnn.backend.webassembly.kernels.tanh import tanh
@@ -63,6 +64,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
@@ -208,6 +210,7 @@ WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
 WebassemblyDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
 WebassemblyDescriptorGenerator.register_handler(Sgemm)(sgemm)
 WebassemblyDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
+WebassemblyDescriptorGenerator.register_handler(Softmax)(softmax)
 WebassemblyDescriptorGenerator.register_handler(Softplus)(softplus)
 WebassemblyDescriptorGenerator.register_handler(Softsign)(softsign)
 WebassemblyDescriptorGenerator.register_handler(Tanh)(tanh)

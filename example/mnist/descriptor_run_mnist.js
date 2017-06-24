@@ -46,9 +46,9 @@ async function run() {
         total_elapsed_time += performance.now() - start;
 
         let out_vec = runner.getOutputViews()[0].toActual();
+        console.log(out_vec);
         let pred_label = WebDNN.Math.argmax(out_vec)[0];
         console.log(`predicted: ${pred_label}`);
-        console.log(out_vec);
         displayPrediction(output_table, sample.x, pred_label, sample.y);
     }
     console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);

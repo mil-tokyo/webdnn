@@ -31,6 +31,7 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
@@ -244,6 +245,15 @@ def _convert_clipped_relu(converter: ChainerConverter, c_opr: chainer.functions.
     n_opr = ClippedRelu(None, cap=c_opr.cap)
     assert len(c_opr.inputs) == 1, f"Number of input of ClippedReLU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
     y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("Softmax")
+def _convert_softmax(converter: ChainerConverter, c_opr: chainer.functions.Softmax):
+    x = converter.get_variable(c_opr.inputs[0])
+    n_opr = Softmax(None, axis=x.order.axes[c_opr.axis])
+    assert len(c_opr.inputs) == 1, f"Number of input of Softmax is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+    y, = n_opr(x)
     converter.set_variable(c_opr.outputs[0](), y)
 
 
