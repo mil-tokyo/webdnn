@@ -5,12 +5,13 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23 or 2.0
 """
 
-from typing import List, Union
+from typing import List, Union, Type
 
 import chainer
 import chainer.computational_graph
 import numpy as np
 
+from webdnn.graph.operator import Operator
 from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
@@ -203,36 +204,20 @@ class ChainerConverter(Converter[chainer.Function]):
                     n_var.change_order(OrderNHWC)
 
 
-@ChainerConverter.register_handler("ReLU")
-def _convert_relu(converter: ChainerConverter, c_opr: chainer.functions.ReLU):
-    n_opr = Relu(None)
-    assert len(c_opr.inputs) == 1, "Number of input of ReLU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
-    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
-    converter.set_variable(c_opr.outputs[0](), y)  # c_opr.outputs: Iterable[Weakref[VariableNode]]
+def register_activation(key: str, operator: Type[Operator]):
+    def _convert_activation(converter: ChainerConverter, c_opr: chainer.function.Function):
+        n_opr = operator(None)
+        assert len(c_opr.inputs) == 1, f"Number of input of {key} is invalid: Expected=1, Actual={len(c_opr.inputs)}"
+        y, = n_opr(converter.get_variable(c_opr.inputs[0]))
+        converter.set_variable(c_opr.outputs[0](), y)  # c_opr.outputs: Iterable[Weakref[VariableNode]]
+
+    ChainerConverter.register_handler(key)(_convert_activation)
 
 
-@ChainerConverter.register_handler("ELU")
-def _convert_elu(converter: ChainerConverter, c_opr: chainer.functions.ELU):
-    n_opr = Elu(None)
-    assert len(c_opr.inputs) == 1, "Number of input of ELU is invalid: Expected=1, Actual={len(c_opr.inputs)}"
-    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
-    converter.set_variable(c_opr.outputs[0](), y)
-
-
-@ChainerConverter.register_handler("Tanh")
-def _convert_tanh(converter: ChainerConverter, c_opr: chainer.functions.Tanh):
-    n_opr = Tanh(None)
-    assert len(c_opr.inputs) == 1, "Number of input of Tanh is invalid: Expected=1, Actual={len(c_opr.inputs)}"
-    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
-    converter.set_variable(c_opr.outputs[0](), y)
-
-
-@ChainerConverter.register_handler("HardSigmoid")
-def _convert_tanh(converter: ChainerConverter, c_opr: chainer.functions.HardSigmoid):
-    n_opr = HardSigmoid(None)
-    assert len(c_opr.inputs) == 1, "Number of input of HardSigmoid is invalid: Expected=1, Actual={len(c_opr.inputs)}"
-    y, = n_opr(converter.get_variable(c_opr.inputs[0]))
-    converter.set_variable(c_opr.outputs[0](), y)
+register_activation("ReLU", Relu)
+register_activation("ELU", Elu)
+register_activation("Tanh", Tanh)
+register_activation("HardSigmoid", HardSigmoid)
 
 
 @ChainerConverter.register_handler("LinearFunction")
