@@ -1,10 +1,11 @@
-from typing import Type, List, Set, Iterable, Union, Tuple
+from typing import Type, List, Set, Iterable, Union, Tuple, Optional
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
 Query = Union[Type[Attribute], Type[Node]]
@@ -101,7 +102,7 @@ def dump(graph: Graph):
         console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
 
 
-def dump_dot(graph: Graph) -> str:
+def dump_dot(graph: Graph, name: Optional[str]=None) -> str:
     """
     Dumps graph into dot language for visualization.
 
@@ -112,11 +113,46 @@ def dump_dot(graph: Graph) -> str:
         source code of dot language.
     """
     dot_source = ""
-    dot_source += "graph webdnn_ir {\n"
+    dot_source += "digraph webdnn_ir {\n"
+
+    # graph setting
+    dot_source += "graph [\n"
+    if name:
+        dot_source += f"label=\"{name}\"\n"
+    dot_source += "];\n"
+
+    added_variables = set()
+
+    def visualize_variable(var: Variable) -> str:
+        if var in added_variables:
+            return ""
+        node_attrs = {}
+        node_attrs["label"] = f"\"{var.name}\n{var.shape}\nOrder={var.order}\""
+        if isinstance(var, ConstantVariable):
+            node_attrs["shape"]="doubleoctagon"
+        else:
+            node_attrs["shape"]="octagon"
+        if var in graph.inputs:
+            node_attrs["style"]="\"dashed\""
+        if var in graph.outputs:
+            node_attrs["style"]="\"bold\""
+
+        dot_source_var = ""
+        dot_source_var += f"var_{id(var)} [\n"
+        dot_source_var += ",".join(f"{attr_key}={attr_value}" for attr_key, attr_value in node_attrs.items())
+        dot_source_var += "];\n"
+        added_variables.add(var)
+        return dot_source_var
+
     for op in listup_operators(graph):
-        dot_source += f"{op.name} [label=\"{op.name}\"];\n"
-        for output_var in op.outputs.values():
-            for input_op in output_var.input_to:
-                dot_source += f"{op.name} -- {input_op.name} [label=\"{output_var.shape}\"];\n"
+        op_params = getattr(op, "parameters", {})
+        op_params_str = "\n".join(f"{k}={v}" for k, v in op_params.items())
+        dot_source += f"op_{op.name} [label=\"{op.name}\n{op.__class__.__name__}\n{op_params_str}\", shape=box];\n"
+        for connection_name, var in op.inputs.items():
+            dot_source += visualize_variable(var)
+            dot_source += f"var_{id(var)} -> op_{op.name} [label=\"{connection_name}\"];\n"
+        for connection_name, var in op.outputs.items():
+            dot_source += visualize_variable(var)
+            dot_source += f"op_{op.name} -> var_{id(var)} [label=\"{connection_name}\"];\n"
     dot_source += "}"
     return dot_source
