@@ -31,6 +31,7 @@ from __future__ import print_function
 
 try:
     import matplotlib
+
     matplotlib.use('Agg')
 except ImportError:
     pass
@@ -49,11 +50,16 @@ from chainer.training import extensions
 from webdnn.frontend.chainer import ChainerConverter
 from webdnn.backend.interface.generator import generate_descriptor
 
+
 # Network definition
 class MLP(chainer.Chain):
+    """
+    Simple multi-layer perceptron
+    """
 
-    def __init__(self, n_units, n_out):
-        super(MLP, self).__init__(
+    def __init__(self, n_out):
+        n_units = 100
+        super().__init__(
             # the size of the inputs to each layer will be inferred
             l1=L.Linear(None, n_units),  # n_in -> n_units
             l2=L.Linear(None, n_units),  # n_units -> n_units
@@ -66,8 +72,32 @@ class MLP(chainer.Chain):
         return self.l3(h2)
 
 
+class Conv(chainer.Chain):
+    """
+    Simple multi-layer perceptron
+    """
+
+    def __init__(self, n_out):
+        super().__init__(
+            # the size of the inputs to each layer will be inferred
+            l1=L.Convolution2D(None, 8, ksize=3),  # n_in -> n_units
+            l2=L.DilatedConvolution2D(None, 16, ksize=3, dilate=2),  # n_units -> n_units
+            l3=L.Linear(None, n_out),  # n_units -> n_out
+        )
+
+    def __call__(self, x):
+        h1 = F.sigmoid(self.l1(x))
+        h2 = F.tanh(self.l2(h1))
+        return self.l3(h2)
+
+
+models = {"mlp": MLP, "conv": Conv}
+
+
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+    parser.add_argument("--model", default="mlp",
+                        choices=["mlp", "conv"])
     parser.add_argument('--batchsize', '-b', type=int, default=100,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=5,
@@ -80,12 +110,9 @@ def main():
                         help='Directory to output the graph descriptor and sample test data')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=100,
-                        help='Number of units')
     args = parser.parse_args()
 
     print('GPU: {}'.format(args.gpu))
-    print('# unit: {}'.format(args.unit))
     print('# Minibatch-size: {}'.format(args.batchsize))
     print('# epoch: {}'.format(args.epoch))
     print('')
@@ -95,7 +122,7 @@ def main():
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(MLP(args.unit, 10))
+    model = L.Classifier(models[args.model](10))
     if args.gpu >= 0:
         # Make a specified GPU current
         chainer.cuda.get_device_from_id(args.gpu).use()
@@ -106,7 +133,7 @@ def main():
     optimizer.setup(model)
 
     # Load the MNIST dataset
-    train, test = chainer.datasets.get_mnist()
+    train, test = chainer.datasets.get_mnist(ndim=3)
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
@@ -165,7 +192,7 @@ def main():
 
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
     x = chainer.Variable(example_input)
-    y = model.predictor(x)  # run model (without softmax)
+    y = F.softmax(model.predictor(x))  # run model
     graph = ChainerConverter().convert_from_inout_vars([x], [y])  # convert graph to intermediate representation
     for backend in ["webgpu", "webassembly", "fallback"]:
         try:
@@ -180,9 +207,10 @@ def main():
     test_samples_json = []
     for i in range(10):
         image, label = test[i]
-        test_samples_json.append({'x': image.tolist(), 'y': int(label)})
+        test_samples_json.append({'x': image.flatten().tolist(), 'y': int(label)})
     with open(os.path.join(args.out, 'test_samples.json'), 'w') as f:
         json.dump(test_samples_json, f)
+
 
 if __name__ == '__main__':
     main()

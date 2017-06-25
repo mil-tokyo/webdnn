@@ -14,12 +14,13 @@ import subprocess
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, Input, add, GlobalAveragePooling2D, Activation
+from keras.layers import Dense, Dropout, Flatten, Conv2D, AtrousConv2D, MaxPooling2D, Input, add, \
+    GlobalAveragePooling2D, Activation
 from keras.optimizers import RMSprop
 from keras import backend as K
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", default="fc", choices=["fc", "conv", "residual", "complex"])
+parser.add_argument("--model", default="fc", choices=["fc", "conv", "dilated_conv", "residual", "complex"])
 parser.add_argument("--out", default="output_keras")
 args = parser.parse_args()
 
@@ -33,7 +34,7 @@ epochs = 2
 # input image dimensions
 img_rows, img_cols = 28, 28
 
-if args.model in ["conv", "residual", "complex"]:
+if args.model in ["conv", "dilated_conv", "residual", "complex"]:
     if K.image_data_format() == "channels_first":
         raise NotImplementedError("Currently, WebDNN converter does not data_format==channels_first")
         # x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
@@ -69,6 +70,19 @@ if args.model == "conv":
                      activation="relu",
                      input_shape=input_shape))
     model.add(Conv2D(16, (3, 3), activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(32, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes, activation="softmax"))
+elif args.model == "dilated_conv":
+    model = Sequential()
+    model.add(AtrousConv2D(8, kernel_size=(3, 3), atrous_rate=(2, 2),
+                           activation="relu",
+                           input_shape=input_shape))  # shape is 5x5
+    model.add(AtrousConv2D(16, kernel_size=(3, 3), atrous_rate=(3, 3),
+                           activation="relu"))  # shape is 7x7
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
     model.add(Flatten())

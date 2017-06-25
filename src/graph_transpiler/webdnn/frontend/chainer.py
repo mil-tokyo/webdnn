@@ -309,6 +309,30 @@ def _convert_convolution2d_function(converter: ChainerConverter,
     converter.set_variable(c_opr.outputs[0](), y)
 
 
+@ChainerConverter.register_handler("DilatedConvolution2DFunction")
+def _convert_dilated_convolution2d_function(converter: ChainerConverter,
+                                            c_opr: chainer.functions.connection.dilated_convolution_2d.DilatedConvolution2DFunction):
+    x = converter.get_variable(c_opr.inputs[0])
+    w = converter.get_variable(c_opr.inputs[1])
+
+    # when dx == 1, it means ordinary convolution.
+    conv_opr = Convolution2D(None,
+                             ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                             stride=(c_opr.sy, c_opr.sx),
+                             padding=(c_opr.ph, c_opr.pw),
+                             dilation_rate=(c_opr.dx, c_opr.dy))
+
+    y, = conv_opr(x, w)
+
+    if len(c_opr.inputs) == 3:
+        # with bias
+        bias_opr = AxiswiseBias(None, axis=Axis.C)
+        bias = converter.get_variable(c_opr.inputs[2])
+        y, = bias_opr(y, bias)
+
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
 @ChainerConverter.register_handler("Deconvolution2DFunction")
 def _convert_deconvolution2d_function(converter: ChainerConverter,
                                       c_opr: chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction):

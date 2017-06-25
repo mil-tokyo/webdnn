@@ -359,6 +359,7 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     w = converter.create_constant_variable(operator, "kernel:0", OrderHWCN)  # order does not depend on data_format
     ksize: Tuple[int, int] = tuple(operator.specific_config["kernel_size"])
     stride: Tuple[int, int] = tuple(operator.specific_config["strides"])
+    dilation_rate: Tuple[int, int] = tuple(operator.specific_config.get("dilation_rate", 1))
     padding_keras: str = operator.specific_config["padding"]  # valid or same
     if padding_keras == "valid":
         padding = (0, 0)
@@ -370,7 +371,8 @@ def _convert_conv2d(converter: KerasConverter, operator: KerasOperator):
     conv2d_opr = Convolution2D(None,
                                ksize=ksize,
                                stride=stride,
-                               padding=padding)
+                               padding=padding,
+                               dilation_rate=dilation_rate)
     y, = conv2d_opr(x, w)
 
     if operator.specific_config["use_bias"]:

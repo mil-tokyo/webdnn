@@ -23,6 +23,8 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
 
             op: Convolution2D
 
+            assert op.dilation_rate == (1, 1), "Dilated convolution is not supported"
+
             x = op.inputs["x"]
             w = op.inputs["w"]
             old_y = op.outputs["y"]
