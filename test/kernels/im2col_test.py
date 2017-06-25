@@ -285,7 +285,7 @@ def test_dilated_NHWC():
     col_webgpu.change_order(OrderNHWC)
 
     generate_kernel_test_case(
-        description=f"Im2Col output=NHWC",
+        description=f"Im2Col output=NHWC dilation_rate=2",
         backend=["webassembly"],
         graph=Graph([im], [col_wasm]),
         inputs={im: v_im},
@@ -294,7 +294,7 @@ def test_dilated_NHWC():
     )
 
     generate_kernel_test_case(
-        description=f"Im2Col output=NHWC",
+        description=f"Im2Col output=NHWC dilation_rate=2",
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
@@ -317,7 +317,7 @@ def test_dilated_CNHW():
     col_webgpu.change_order(OrderCNHW)
 
     generate_kernel_test_case(
-        description=f"Im2Col output=CNHW",
+        description=f"Im2Col output=CNHW dilation_rate=2",
         backend=["webassembly"],
         graph=Graph([im], [col_wasm]),
         inputs={im: v_im},
@@ -326,7 +326,7 @@ def test_dilated_CNHW():
     )
 
     generate_kernel_test_case(
-        description=f"Im2Col output=CNHW",
+        description=f"Im2Col output=CNHW dilation_rate=2",
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
