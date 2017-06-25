@@ -21,6 +21,7 @@ var in_size = option.in_size | 0;
 var padding = option.padding;
 var stride = option.stride;
 var ksize = option.ksize;
+var dilation_rate = option.dilation_rate;
 var strides_x = option.strides_x;
 var strides_w = option.strides_w;
 var strides_y = option.strides_y;
@@ -53,7 +54,10 @@ for (var batch = 0; batch < n; batch++) {
         for (var ky = 0; ky < ksize[0]; ky++) {
           for (var kx = 0; kx < ksize[1]; kx++) {
             for (var ic = 0; ic < in_size; ic++) {
-              sum += get_x(batch, oy * stride[0] + ky, ox * stride[1] + kx, ic) * get_w(ky, kx, ic, oc);
+              sum += get_x(batch, oy * stride[0] + ky * dilation_rate[0],
+                           ox * stride[1] + kx * dilation_rate[1],
+                           ic) *
+                     get_w(ky, kx, ic, oc);
             }
           }
         }
@@ -93,7 +97,8 @@ def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kerne
                      "strides_y": calculate_all_strides(y),
                      "padding": op.padding,
                      "stride": op.stride,
-                     "ksize": op.ksize}
+                     "ksize": op.ksize,
+                     "dilation_rate": op.dilation_rate}
     )
 
     return [kernel]

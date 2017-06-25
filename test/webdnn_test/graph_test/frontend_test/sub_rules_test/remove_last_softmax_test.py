@@ -1,6 +1,7 @@
 from nose import with_setup
 
 from test.util import FlagManager
+from webdnn.graph.axis import Axis
 from webdnn.optimizer.sub_rules.remove_last_softmax import RemoveLastSoftmax
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.linear import Linear
@@ -29,7 +30,7 @@ flag_manager = RemoveLastSoftmaxFlagManager()
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_single_softmax():
     linear = Linear('linear')
-    softmax = Softmax('softmax')
+    softmax = Softmax('softmax', axis=Axis.C)
 
     x = Variable([4, 5], OrderNC)
     w = Variable([4, 5], OrderNC)
@@ -48,8 +49,8 @@ def test_single_softmax():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_double_softmax():
     linear = Linear('linear')
-    softmax1 = Softmax('softmax')
-    softmax2 = Softmax('softmax')
+    softmax1 = Softmax('softmax', axis=Axis.C)
+    softmax2 = Softmax('softmax', axis=Axis.C)
 
     x = Variable([4, 5], OrderNC)
     w = Variable([4, 5], OrderNC)
@@ -69,9 +70,9 @@ def test_double_softmax():
 @with_setup(flag_manager.setup, flag_manager.teardown)
 def test_internal_softmax():
     linear1 = Linear('linear')
-    softmax1 = Softmax('softmax')
+    softmax1 = Softmax('softmax', axis=Axis.C)
     linear2 = Linear('linear')
-    softmax2 = Softmax('softmax')
+    softmax2 = Softmax('softmax', axis=Axis.C)
 
     x = Variable([4, 5], OrderNC)
     w1 = Variable([4, 5], OrderNC)

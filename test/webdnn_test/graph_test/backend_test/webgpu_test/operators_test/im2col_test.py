@@ -10,9 +10,9 @@ orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
 
 # FIXME 各orderをテストにわけられないか
-def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
+def main(k, s, p, d, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
     for order_x in orders4:
-        op = Im2Col("im2col", ksize=k, stride=s, padding=p)
+        op = Im2Col("im2col", ksize=k, stride=s, padding=p, dilation_rate=d)
 
         x = Variable((n, h1, w1, c1), OrderNHWC)
         x.change_order(order_x)
@@ -24,7 +24,7 @@ def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
 
 
 def test_normal():
-    main(3, 1, 1, 2, 3, 4, 5, {
+    main(3, 1, 1, 1, 2, 3, 4, 5, {
         Axis.N: 2,
         Axis.H: 3,
         Axis.W: 4,
@@ -33,7 +33,7 @@ def test_normal():
 
 
 def test_large_stride():
-    main(3, 2, 1, 2, 5, 7, 3, {
+    main(3, 2, 1, 1, 2, 5, 7, 3, {
         Axis.N: 2,
         Axis.H: 3,
         Axis.W: 4,
@@ -42,7 +42,7 @@ def test_large_stride():
 
 
 def test_no_padding():
-    main(3, 1, 0, 2, 5, 7, 3, {
+    main(3, 1, 0, 1, 2, 5, 7, 3, {
         Axis.N: 2,
         Axis.H: 3,
         Axis.W: 5,
@@ -51,7 +51,7 @@ def test_no_padding():
 
 
 def test_projection():
-    main(1, 1, 0, 2, 5, 7, 3, {
+    main(1, 1, 0, 1, 2, 5, 7, 3, {
         Axis.N: 2,
         Axis.H: 5,
         Axis.W: 7,
@@ -60,9 +60,18 @@ def test_projection():
 
 
 def test_fully_connected():
-    main((5, 7), 1, 0, 2, 5, 7, 3, {
+    main((5, 7), 1, 0, 1, 2, 5, 7, 3, {
         Axis.N: 2,
         Axis.H: 1,
         Axis.W: 1,
         Axis.C: 105,
+    })
+
+
+def test_dilated():
+    main(3, 1, 1, 2, 2, 8, 9, 5, {
+        Axis.N: 2,
+        Axis.H: 4,
+        Axis.W: 5,
+        Axis.C: 45,
     })

@@ -22,6 +22,8 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int W2 = %%LOAD_BUFFER(im2col_W2)%%;
     const int KH = %%LOAD_BUFFER(im2col_KH)%%;
     const int KW = %%LOAD_BUFFER(im2col_KW)%%;
+    const int DH = %%LOAD_BUFFER(im2col_DH)%%;
+    const int DW = %%LOAD_BUFFER(im2col_DW)%%;
     const int SH = %%LOAD_BUFFER(im2col_SH)%%;
     const int SW = %%LOAD_BUFFER(im2col_SW)%%;
     const int PH = %%LOAD_BUFFER(im2col_PH)%%;
@@ -35,8 +37,8 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         const int h2 = gid / C1 / KW / KH / W2 % H2;
         const int  n = gid / C1 / KW / KH / W2 / H2;
         
-        const int h1 = h2 * SH - PH + kh;
-        const int w1 = w2 * SW - PW + kw;
+        const int h1 = h2 * SH - PH + kh * DH;
+        const int w1 = w2 * SW - PW + kw * DW;
 
         col[gid] = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n*H1+h1)*W1+w1)*C1+c1];
     }
@@ -57,6 +59,8 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int W2 = %%LOAD_BUFFER(im2col_W2)%%;
     const int KH = %%LOAD_BUFFER(im2col_KH)%%;
     const int KW = %%LOAD_BUFFER(im2col_KW)%%;
+    const int DH = %%LOAD_BUFFER(im2col_DH)%%;
+    const int DW = %%LOAD_BUFFER(im2col_DW)%%;
     const int SH = %%LOAD_BUFFER(im2col_SH)%%;
     const int SW = %%LOAD_BUFFER(im2col_SW)%%;
     const int PH = %%LOAD_BUFFER(im2col_PH)%%;
@@ -70,8 +74,8 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         const int kw = gid / W2 / H2 / N / C1 % KW;
         const int kh = gid / W2 / H2 / N / C1 / KW;
 
-        const int h1 = h2 * SH - PH + kh;
-        const int w1 = w2 * SW - PW + kw;
+        const int h1 = h2 * SH - PH + kh * DH;
+        const int w1 = w2 * SW - PW + kw * DW;
 
         col[gid] = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n*H1+h1)*W1+w1)*C1+c1];
     }
@@ -99,6 +103,8 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
         "im2col_W2": col.variable.shape_dict[Axis.W],
         "im2col_KH": op.KH,
         "im2col_KW": op.KW,
+        "im2col_DH": op.DH,
+        "im2col_DW": op.DW,
         "im2col_SH": op.SH,
         "im2col_SW": op.SW,
         "im2col_PH": op.PH,

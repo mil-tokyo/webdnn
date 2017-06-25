@@ -31,6 +31,7 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
@@ -218,10 +219,11 @@ def register_activation(key: str, operator: Type[Operator]):
     ChainerConverter.register_handler(key)(_convert_activation)
 
 
-register_activation("ReLU", Relu)
 register_activation("ELU", Elu)
-register_activation("Tanh", Tanh)
 register_activation("HardSigmoid", HardSigmoid)
+register_activation("Sigmoid", Sigmoid)
+register_activation("ReLU", Relu)
+register_activation("Tanh", Tanh)
 
 
 @ChainerConverter.register_handler("Softplus")
@@ -295,6 +297,30 @@ def _convert_convolution2d_function(converter: ChainerConverter,
                              ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
                              stride=(c_opr.sy, c_opr.sx),
                              padding=(c_opr.ph, c_opr.pw))
+
+    y, = conv_opr(x, w)
+
+    if len(c_opr.inputs) == 3:
+        # with bias
+        bias_opr = AxiswiseBias(None, axis=Axis.C)
+        bias = converter.get_variable(c_opr.inputs[2])
+        y, = bias_opr(y, bias)
+
+    converter.set_variable(c_opr.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("DilatedConvolution2DFunction")
+def _convert_dilated_convolution2d_function(converter: ChainerConverter,
+                                            c_opr: chainer.functions.connection.dilated_convolution_2d.DilatedConvolution2DFunction):
+    x = converter.get_variable(c_opr.inputs[0])
+    w = converter.get_variable(c_opr.inputs[1])
+
+    # when dx == 1, it means ordinary convolution.
+    conv_opr = Convolution2D(None,
+                             ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                             stride=(c_opr.sy, c_opr.sx),
+                             padding=(c_opr.ph, c_opr.pw),
+                             dilation_rate=(c_opr.dx, c_opr.dy))
 
     y, = conv_opr(x, w)
 
