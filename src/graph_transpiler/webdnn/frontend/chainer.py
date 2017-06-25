@@ -31,6 +31,7 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
@@ -218,10 +219,11 @@ def register_activation(key: str, operator: Type[Operator]):
     ChainerConverter.register_handler(key)(_convert_activation)
 
 
-register_activation("ReLU", Relu)
 register_activation("ELU", Elu)
-register_activation("Tanh", Tanh)
 register_activation("HardSigmoid", HardSigmoid)
+register_activation("Sigmoid", Sigmoid)
+register_activation("ReLU", Relu)
+register_activation("Tanh", Tanh)
 
 
 @ChainerConverter.register_handler("Softplus")
