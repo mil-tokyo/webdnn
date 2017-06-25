@@ -8,11 +8,13 @@ from webdnn.graph.variable import Variable
 
 
 class Im2Col(Operator):
-    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
+                 dilation_rate: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
+        self.parameters["dilation_rate"] = to_tuple(dilation_rate)
 
     def __call__(self, im: Variable):
         N = im.shape_dict[Axis.N]
