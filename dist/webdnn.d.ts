@@ -397,6 +397,7 @@ declare namespace WebDNN {
         }[];
     }
 }
+declare const IS_IOS: boolean;
 declare namespace WebDNN {
     class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName: string;

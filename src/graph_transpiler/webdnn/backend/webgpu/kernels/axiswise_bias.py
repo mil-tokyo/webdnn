@@ -1,13 +1,11 @@
 from typing import List
 
-import numpy as np
-
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-from webdnn.graph.placeholder import Placeholder
 from webdnn.util.misc import mul
 
 
@@ -114,8 +112,9 @@ def axiswise_bias_same_order(op: AxiswiseBias,
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        buffer_injector.buffer
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]
@@ -203,7 +202,7 @@ def axiswise_bias_general(op: AxiswiseBias,
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )

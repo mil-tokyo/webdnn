@@ -5,6 +5,7 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.attributes.lstm_optimized import LSTMOptimized
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.order import OrderNC, OrderNTC, OrderCN
@@ -228,7 +229,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         {name_injector.name: source},
         name_injector.name,
         GPUSize(1, 1, 1),
-        GPUSize(1024 if C2 > 1024 else C2, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )

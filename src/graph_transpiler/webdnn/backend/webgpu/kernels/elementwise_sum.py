@@ -1,10 +1,11 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.inline_injector import InlineInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 
 
@@ -94,7 +95,7 @@ def elementwise_sum(op: AxiswiseScale,
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )

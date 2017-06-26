@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from os import path
 from typing import Iterable, Dict, List, Set, Tuple
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
@@ -71,6 +70,10 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
         for offset, v in unresolved_variables:
             placeholders_set.update(v.get_depend_placeholders())
+
+        for kernel in self.kernels:
+            placeholders_set.update(kernel.exec_info.threadgroups_per_grid.unresolved_placeholders)
+            placeholders_set.update(kernel.exec_info.threads_per_thread_group.unresolved_placeholders)
 
         placeholders = {p.label: None for p in placeholders_set}
 

@@ -86,7 +86,7 @@ var WebDNN;
             configurable: true
         });
         PlaceholderContext.prototype.update = function (values) {
-            Object.assign(this.values, values);
+            this.values = Object.assign(this.values, values);
         };
         PlaceholderContext.prototype.resolve = function (placeholder) {
             var _this = this;
@@ -714,6 +714,7 @@ var WebDNN;
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
 /// <reference path="../symbolic_array_buffer_view.ts" />
 /// <reference path="../placeholder.ts" />
+var IS_IOS = navigator.userAgent.includes('iPhone');
 var WebDNN;
 (function (WebDNN) {
     var DescriptorRunnerWebGPU = (function (_super) {
@@ -773,12 +774,17 @@ var WebDNN;
                             return [4 /*yield*/, this.initializeMetaBuffers()];
                         case 5:
                             _b.sent();
-                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 7];
-                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                            return [4 /*yield*/, this.setPlaceholderValue({
+                                    '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
+                                })];
                         case 6:
                             _b.sent();
-                            _b.label = 7;
-                        case 7: return [2 /*return*/];
+                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 8];
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 7:
+                            _b.sent();
+                            _b.label = 8;
+                        case 8: return [2 /*return*/];
                     }
                 });
             });

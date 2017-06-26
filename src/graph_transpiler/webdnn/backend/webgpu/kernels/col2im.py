@@ -5,6 +5,7 @@ from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelN
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.backend.webgpu.operators.col2im import Col2Im
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC
 
@@ -71,8 +72,8 @@ def col2im(op: Col2Im,
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC
 
-    meta_injector = BufferInjector()
-    meta_injector.register({
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
         "col2im_im": im,
         "col2im_col": col,
         "col2im_N": col.variable.shape_dict[Axis.N],
@@ -92,16 +93,16 @@ def col2im(op: Col2Im,
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer,
-        meta_injector.unresolved_value_list
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]
