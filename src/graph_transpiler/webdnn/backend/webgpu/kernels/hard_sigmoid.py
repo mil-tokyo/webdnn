@@ -4,6 +4,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 
 template = """
@@ -34,7 +35,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 
 def hard_sigmoid(op: HardSigmoid,
-            memory_layout: MemoryLayout) -> List[Kernel]:
+                 memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]
 
@@ -57,7 +58,7 @@ def hard_sigmoid(op: HardSigmoid,
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )

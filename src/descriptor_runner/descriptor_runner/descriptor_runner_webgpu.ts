@@ -7,6 +7,8 @@
 /// <reference path="../symbolic_array_buffer_view.ts" />
 /// <reference path="../placeholder.ts" />
 
+const IS_IOS = navigator.userAgent.includes('iPhone');
+
 namespace WebDNN {
     export class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
         readonly backendName = 'webgpu';
@@ -58,6 +60,10 @@ namespace WebDNN {
             await this.compile();
             await this.initializeStaticBuffer(weightRawArray);
             await this.initializeMetaBuffers();
+
+            await this.setPlaceholderValue({
+               '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
+            });
             if (this.placeholderContext && this.placeholderContext.isResolved) await this.initializeDynamicBuffer();
         }
 

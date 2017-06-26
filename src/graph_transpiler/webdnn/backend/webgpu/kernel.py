@@ -19,6 +19,21 @@ class GPUSize(json.SerializableMixin):
     def _to_serializable_(self):
         return {"width": self.width, "height": self.height, "depth": self.depth}
 
+    @property
+    def unresolved_placeholders(self):
+        result = []
+
+        if not Placeholder.check_resolved(self.width):
+            result += [self.width]
+
+        if not Placeholder.check_resolved(self.height):
+            result += [self.height]
+
+        if not Placeholder.check_resolved(self.depth):
+            result += [self.depth]
+
+        return result
+
 
 class KernelExecutionInfo(json.SerializableMixin):
     entry_func_name: str

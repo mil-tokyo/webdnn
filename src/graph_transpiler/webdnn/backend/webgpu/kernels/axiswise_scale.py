@@ -1,11 +1,10 @@
 from typing import List
 
-import numpy as np
-
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.util.misc import mul
 
@@ -93,8 +92,8 @@ def axiswise_scale_same_order(op: AxiswiseScale,
     D2 = x.variable.shape[target_axis_index]
     D3 = mul(x.variable.shape[target_axis_index + 1:])
 
-    meta_injector = BufferInjector()
-    meta_injector.register({
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
         "axiswise_scale_X": x,
         "axiswise_scale_S": s,
         "axiswise_scale_Y": y,
@@ -106,15 +105,16 @@ def axiswise_scale_same_order(op: AxiswiseScale,
     name_injector = KernelNameInjector(op)
 
     source = generate_template_same_order(D1, D3)
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]
@@ -181,8 +181,8 @@ def axiswise_scale_general(op: AxiswiseScale,
 
     x_stride_in_y = [y_strides[y.variable.order.axes_dict[axis]] for axis in x.variable.order.axes]
 
-    meta_injector = BufferInjector()
-    meta_injector.register({
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
         "axiswise_scale_X": x,
         "axiswise_scale_S": s,
         "axiswise_scale_Y": y,
@@ -195,16 +195,16 @@ def axiswise_scale_general(op: AxiswiseScale,
     name_injector = KernelNameInjector(op)
 
     source = template_general
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer,
-        meta_injector.unresolved_value_list
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

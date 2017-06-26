@@ -20,7 +20,7 @@ namespace WebDNN {
         }
 
         update(values: { [key: string]: number | null }) {
-            Object.assign(this.values, values);
+            this.values = Object.assign(this.values, values);
         }
 
         resolve(placeholder: any) : any {

@@ -37,7 +37,7 @@ var WebDNN;
             return Object.values(this.values).every(value => typeof value == 'number');
         }
         update(values) {
-            Object.assign(this.values, values);
+            this.values = Object.assign(this.values, values);
         }
         resolve(placeholder) {
             // Literal value => return itself.
@@ -555,6 +555,7 @@ var WebDNN;
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
 /// <reference path="../symbolic_array_buffer_view.ts" />
 /// <reference path="../placeholder.ts" />
+const IS_IOS = navigator.userAgent.includes('iPhone');
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerWebGPU extends WebDNN.DescriptorRunner {
@@ -588,6 +589,9 @@ var WebDNN;
             await this.compile();
             await this.initializeStaticBuffer(weightRawArray);
             await this.initializeMetaBuffers();
+            await this.setPlaceholderValue({
+                '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
+            });
             if (this.placeholderContext && this.placeholderContext.isResolved)
                 await this.initializeDynamicBuffer();
         }
