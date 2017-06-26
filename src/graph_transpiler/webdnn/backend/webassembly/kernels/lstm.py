@@ -20,7 +20,6 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     float *Y = %%LOAD_BUFFER(lstm_Y)%%;
     float *W_input = %%LOAD_BUFFER(lstm_W_input)%%;
     float *W_hidden = %%LOAD_BUFFER(lstm_W_hidden)%%;
-    float *b = %%LOAD_BUFFER(lstm_b)%%;
     const int input_dim = %%LOAD_BUFFER(lstm_input_dim)%%;
     const int sequence_len = %%LOAD_BUFFER(lstm_sequence_len)%%;
     const int batch_size = %%LOAD_BUFFER(lstm_batch_size)%%;
@@ -30,6 +29,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int ofs_f = hidden_dim * 1;
     const int ofs_c = hidden_dim * 2;
     const int ofs_o = hidden_dim * 3;
+    %%BIAS_INITIALIZER%%
     
     auto activation = [](float x) {
         // hard sigmoid
@@ -41,13 +41,14 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         }
         return x;
     };
-    
+
     auto recurrent_activation = [](float x) {
         // tanh
         return tanhf(x);
     };
-    
+
     float *mem_c = new float[hidden_dim * batch_size]();
+    %%INITIAL_C_COPIER%%
     float *mem_h = new float[hidden_dim * batch_size]();
     float *mem_v = new float[hidden_dim4 * batch_size](); // i, f, c, o
     float *mem_x_t = new float[input_dim * batch_size]();
@@ -56,7 +57,6 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > mat_x_t(mem_x_t, batch_size, input_dim);
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > mat_w_input(W_input, input_dim, hidden_dim4);
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > mat_w_hidden(W_hidden, hidden_dim, hidden_dim4);
-    Eigen::Map<Eigen::RowVectorXf > vec_b(b, hidden_dim4);
 
     for (int t = 0; t < sequence_len; t++) {
         // copy x of current time
@@ -65,10 +65,10 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
                 mem_x_t[dim + n * input_dim] = X[(n * sequence_len + t) * input_dim + dim];
             }
         }
-    
+
         mat_v.noalias() = mat_x_t * mat_w_input + mat_h * mat_w_hidden;
-        mat_v.rowwise() += vec_b;
-        
+        %%BIAS_APPLIER%%
+
         for (int n = 0; n < batch_size; n++) {
             // update c, h
             for (int dim = 0; dim < hidden_dim; dim++) {
@@ -85,12 +85,12 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
             }
         }
     }
-    
+
     // write output
     for (int i = 0; i < batch_size * hidden_dim; i++) {
         Y[i] = mem_h[i];
     }
-    
+
     delete[] mem_c;
     delete[] mem_h;
     delete[] mem_v;
@@ -104,33 +104,60 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     w_input = memory_layout[op.inputs["w_input"]]
     w_hidden = memory_layout[op.inputs["w_hidden"]]
-    b = memory_layout[op.inputs["b"]]
     y = memory_layout[op.outputs["y"]]
+    final_c = memory_layout[op.outputs["final_c"]]
 
     assert x.variable.order == OrderNTC
     assert w_input.variable.order == OrderCN
     assert w_hidden.variable.order == OrderCN
-    assert y.variable.order == OrderNC
+    if op.parameters["return_sequences"]:
+        assert y.variable.order == OrderNTC
+    else:
+        assert y.variable.order == OrderNC
+    assert final_c.variable.order == OrderNC
 
     # W is for updating i, f, c, o
     hidden_dim = w_hidden.variable.shape_dict[Axis.C]
 
-    buffer_injector = BufferInjector()
-    buffer_injector.register({
+    buffer_injector_items = {
         "lstm_X": x,
         "lstm_Y": y,
+        "lstm_final_c": final_c,
         "lstm_W_input": w_input,
         "lstm_W_hidden": w_hidden,
-        "lstm_b": b,
         "lstm_input_dim": x.variable.shape_dict[Axis.C],
         "lstm_sequence_len": x.variable.shape_dict[Axis.T],
         "lstm_batch_size": x.variable.shape_dict[Axis.N],
         "lstm_hidden_dim": hidden_dim
-    })
+    }
+
+    source = template
+    if op.parameters["use_bias"]:
+        b = memory_layout[op.inputs["b"]]
+        buffer_injector_items["lstm_b"] = b
+        source = source.replace("%%BIAS_INITIALIZER%%", "float *b = %%LOAD_BUFFER(lstm_b)%%;\nEigen::Map<Eigen::RowVectorXf > vec_b(b, hidden_dim4);")
+        source = source.replace("%%BIAS_APPLIER%%", "mat_v.rowwise() += vec_b;")
+    else:
+        source = source.replace("%%BIAS_INITIALIZER%%", "")
+        source = source.replace("%%BIAS_APPLIER%%", "")
+
+    if op.parameters["use_initial_c"]:
+        initial_c = memory_layout[op.inputs["initial_c"]]
+        buffer_injector_items["lstm_initial_c"] = initial_c
+        source = source.replace("%%INITIAL_C_COPIER%%", """
+        const float *initial_c = %%LOAD_BUFFER(lstm_initial_c)%%;
+        for (int i = 0; i < hidden_dim * batch_size; i++) {
+            mem_c[i] = initial_c[i];
+        }
+        """)
+    else:
+        source = source.replace("%%INITIAL_C_COPIER%%", "")
+
+    buffer_injector = BufferInjector()
+    buffer_injector.register(buffer_injector_items)
 
     name_injector = KernelNameInjector(op)
 
-    source = template
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
