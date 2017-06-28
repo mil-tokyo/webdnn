@@ -2,9 +2,10 @@ import atexit
 import os.path as path
 import shutil
 from abc import abstractmethod
-from typing import Type, Dict, List, Union, Iterable, Optional
+from typing import Type, Dict, List, Optional, Union
 from unittest import SkipTest
 
+import chainer
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
@@ -66,22 +67,33 @@ class KernelTestCaseGenerator:
     @classmethod
     def generate_kernel_test_case(cls,
                                   description: str,
-                                  backend: Union[str, Iterable[str]],
                                   graph: Graph,
                                   inputs: Dict[Variable, np.array],
                                   expected: Dict[Variable, np.array],
-                                  raise_skip: bool = True):
+                                  backend=None,
+                                  raise_skip: bool = True,
+                                  EPS: float = 1.0e-3):
         """Generate test data for generated kernel codes
     
         Generated data are saved in JSON format, and BrowserTestRunner executes it.
         """
+
+        if backend is None:
+            backend = ["webgpu", "webassembly", "fallback"]
 
         if not cls.flag_initialized:
             cls.setup()
 
         if not isinstance(backend, str):
             for b in backend:
-                generate_kernel_test_case(description, b, graph, inputs, expected, False)
+                generate_kernel_test_case(
+                    description=description,
+                    graph=graph,
+                    inputs=inputs,
+                    expected=expected,
+                    backend=b,
+                    raise_skip=False,
+                    EPS=EPS)
 
             if raise_skip:
                 raise SkipTest(f"[BrowserTest|{backend}] {description}")
@@ -100,7 +112,8 @@ class KernelTestCaseGenerator:
             "inputs": [list(inputs[v].flatten()) for v in graph.inputs],
             "expected": [list(expected[v].flatten()) for v in graph.outputs],
             "dirname": testcase_dirname,
-            "backend": backend
+            "backend": backend,
+            "EPS": EPS
         })
 
         if raise_skip:

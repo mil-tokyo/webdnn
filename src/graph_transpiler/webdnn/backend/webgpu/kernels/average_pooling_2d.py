@@ -24,9 +24,13 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int C = %%LOAD_BUFFER(average_pooling_2d_C)%%;
     const int H2 = %%LOAD_BUFFER(average_pooling_2d_H2)%%;
     const int W2 = %%LOAD_BUFFER(average_pooling_2d_W2)%%;
-    const int K = %%LOAD_BUFFER(average_pooling_2d_K)%%;
-    const int S = %%LOAD_BUFFER(average_pooling_2d_S)%%;
-    const int P = %%LOAD_BUFFER(average_pooling_2d_P)%%;
+
+    const int KH = %%LOAD_BUFFER(average_pooling_2d_KH)%%;
+    const int KW = %%LOAD_BUFFER(average_pooling_2d_KW)%%;
+    const int SH = %%LOAD_BUFFER(average_pooling_2d_SH)%%;
+    const int SW = %%LOAD_BUFFER(average_pooling_2d_SW)%%;
+    const int PH = %%LOAD_BUFFER(average_pooling_2d_PH)%%;
+    const int PW = %%LOAD_BUFFER(average_pooling_2d_PW)%%;
     
     for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
         const int c = gid % C;
@@ -35,18 +39,18 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         const int n = gid / C / W2 / H2;
 
         float v = 0;
-        for (int kh = 0; kh < K; kh++) {
-            const int h1 = h2 * S - P + kh;
+        for (int kh = 0; kh < KH; kh++) {
+            const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
             
-            for (int kw = 0; kw < K; kw++) {
-                const int w1 = w2 * S - P + kw;
+            for (int kw = 0; kw < KW; kw++) {
+                const int w1 = w2 * SW - PW + kw;
                 if (w1 < 0 || w1 >= W1) continue;
 
                 v += X[((n * H1 + h1) * W1 + w1) * C + c];
             }
         }
-        v /= K * K;
+        v /= KH * KW;
 
         Y[gid] = v;
     }
@@ -72,9 +76,12 @@ def average_pooling_2d(op: AveragePooling2D,
         "average_pooling_2d_C": x.variable.shape_dict[Axis.C],
         "average_pooling_2d_H2": y.variable.shape_dict[Axis.H],
         "average_pooling_2d_W2": y.variable.shape_dict[Axis.W],
-        "average_pooling_2d_K": op.parameters["ksize"][0],
-        "average_pooling_2d_S": op.parameters["stride"][0],
-        "average_pooling_2d_P": op.parameters["padding"][0],
+        "average_pooling_2d_KH": op.parameters["ksize"][0],
+        "average_pooling_2d_KW": op.parameters["ksize"][1],
+        "average_pooling_2d_SH": op.parameters["stride"][0],
+        "average_pooling_2d_SW": op.parameters["stride"][1],
+        "average_pooling_2d_PH": op.parameters["padding"][0],
+        "average_pooling_2d_PW": op.parameters["padding"][1],
     })
 
     name_injector = KernelNameInjector(op)

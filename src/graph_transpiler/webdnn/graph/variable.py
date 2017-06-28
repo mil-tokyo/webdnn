@@ -1,7 +1,5 @@
 from typing import Union, Dict, List, Set, Iterable
 
-import numpy as np
-
 from webdnn.graph import operator
 from webdnn.graph.axis import Axis
 from webdnn.graph.node import Node
@@ -60,7 +58,7 @@ class Variable(Node):
         """dictionary of axis and shape size pairs"""
         return dict(zip(self.order.axes, self.shape))
 
-    def change_order(self, order: Order):
+    def change_order(self, order: Order) -> "Variable":
         """Change variable order
 
         When number of dimension will be increased, axes whose size is one are created.
@@ -78,6 +76,8 @@ class Variable(Node):
                     f"variable={self}, shape_dict[{axis}]={size}."
         self.order = order
         self.shape = new_shape
+
+        return self
 
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.order.axes))

@@ -37,7 +37,7 @@ def test_middle_axis():
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for middle axis",
-        backend=["webgpu", "fallback"],
+        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([x, s], [y]),
         inputs={x: vx, s: vs},
         expected={y: vy}
@@ -55,7 +55,7 @@ def test_major_axis():
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for major axis",
-        backend=["webgpu", "fallback"],
+        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([x, s], [y]),
         inputs={x: vx, s: vs},
         expected={y: vy}
@@ -76,7 +76,7 @@ def test_mix_order():
 
     generate_kernel_test_case(
         description=f"AxiswiseScale for mix order",
-        backend=["webgpu"],
+        backend=["webgpu", "webassembly"],
         graph=Graph([x, s], [y]),
         inputs={x: vx, s: vs},
         expected={y: vy}

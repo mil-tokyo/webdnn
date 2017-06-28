@@ -24,9 +24,13 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int C = %%LOAD_BUFFER(max_pooling_2d_C)%%;
     const int H2 = %%LOAD_BUFFER(max_pooling_2d_H2)%%;
     const int W2 = %%LOAD_BUFFER(max_pooling_2d_W2)%%;
-    const int K = %%LOAD_BUFFER(max_pooling_2d_K)%%;
-    const int S = %%LOAD_BUFFER(max_pooling_2d_S)%%;
-    const int P = %%LOAD_BUFFER(max_pooling_2d_P)%%;
+    
+    const int KH = %%LOAD_BUFFER(max_pooling_2d_KH)%%;
+    const int KW = %%LOAD_BUFFER(max_pooling_2d_KW)%%;
+    const int SH = %%LOAD_BUFFER(max_pooling_2d_SH)%%;
+    const int SW = %%LOAD_BUFFER(max_pooling_2d_SW)%%;
+    const int PH = %%LOAD_BUFFER(max_pooling_2d_PH)%%;
+    const int PW = %%LOAD_BUFFER(max_pooling_2d_PW)%%;
     
     for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
         const int c = gid % C;
@@ -35,12 +39,12 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         const int n = gid / C / W2 / H2;
 
         float v = -1e7;
-        for (int kh = 0; kh < K; kh++) {
-            const int h1 = h2 * S - P + kh;
+        for (int kh = 0; kh < KH; kh++) {
+            const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
             
-            for (int kw = 0; kw < K; kw++) {
-                const int w1 = w2 * S - P + kw;
+            for (int kw = 0; kw < KW; kw++) {
+                const int w1 = w2 * SW - PW + kw;
                 if (w1 < 0 || w1 >= W1) continue;
 
                 v = v > X[((n * H1 + h1) * W1 + w1) * C + c] ? v : X[((n * H1 + h1) * W1 + w1) * C + c];
@@ -71,9 +75,12 @@ def max_pooling_2d(op: MaxPooling2D,
         "max_pooling_2d_C": x.variable.shape_dict[Axis.C],
         "max_pooling_2d_H2": y.variable.shape_dict[Axis.H],
         "max_pooling_2d_W2": y.variable.shape_dict[Axis.W],
-        "max_pooling_2d_K": op.parameters["ksize"][0],
-        "max_pooling_2d_S": op.parameters["stride"][0],
-        "max_pooling_2d_P": op.parameters["padding"][0],
+        "max_pooling_2d_KH": op.parameters["ksize"][0],
+        "max_pooling_2d_KW": op.parameters["ksize"][1],
+        "max_pooling_2d_SH": op.parameters["stride"][0],
+        "max_pooling_2d_SW": op.parameters["stride"][1],
+        "max_pooling_2d_PH": op.parameters["padding"][0],
+        "max_pooling_2d_PW": op.parameters["padding"][1],
     })
 
     name_injector = KernelNameInjector(op)

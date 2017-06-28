@@ -37,8 +37,8 @@ def scalar_affine(op: ScalarAffine, memory_layout: MemoryLayout) -> List[Kernel]
         "affine_transform_X": x,
         "affine_transform_Y": y,
         "affine_transform_N": y.variable.size,
-        "affine_transform_scale": op.scale,
-        "affine_transform_bias": op.bias
+        "affine_transform_scale": float(op.scale),
+        "affine_transform_bias": float(op.bias)
     })
 
     name_injector = KernelNameInjector(op)

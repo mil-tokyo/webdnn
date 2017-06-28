@@ -1,37 +1,41 @@
 {
-  "name": "mil-web-dnn",
-  "version": "1.0.0",
-  "description": "Deep Neural Network Execution Framework for Web Browsers",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "example": "example",
-    "test": "test"
-  },
-  "scripts": {
-    "test": "nosetests",
-    "test-kernel": "OPTIMIZE=0 nosetests -w ./test/kernels",
-    "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;"
-  },
-  "repository": {
-      "type": "git",
-      "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
-  },
-  "author": [{
-    "name": "Masatoshi Hidaka",
-    "email": "hidaka@mi.t.u-tokyo.ac.jp",
-    "url": "https://milhidaka.github.io/"
-  }, {
-    "name": "Yuichiro Kikura",
-    "email": "kikura@mi.t.u-tokyo.ac.jp",
-    "url": "https://github.com/Kiikurage"
-  }],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mil-tokyo/mil-web-dnn/issues"
-  },
-  "homepage": "https://github.com/mil-tokyo/mil-web-dnn#readme",
-  "devDependencies": {
-    "typedoc": "^0.6.0"
-  }
+    "name": "mil-web-dnn",
+    "version": "1.0.0",
+    "description": "Deep Neural Network Execution Framework for Web Browsers",
+    "main": "index.js",
+    "directories": {
+        "doc": "docs",
+        "example": "example",
+        "test": "test"
+    },
+    "scripts": {
+        "test": "nosetests",
+        "test-kernel": "echo '\"npm run test-kernel\" is removed. please use \"npm run test-runtime\"'",
+        "test-runtime": "OPTIMIZE=0 nosetests -w ./test/runtime",
+        "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
+    },
+    "author": [
+        {
+            "name": "Masatoshi Hidaka",
+            "email": "hidaka@mi.t.u-tokyo.ac.jp",
+            "url": "https://milhidaka.github.io/"
+        },
+        {
+            "name": "Yuichiro Kikura",
+            "email": "kikura@mi.t.u-tokyo.ac.jp",
+            "url": "https://github.com/Kiikurage"
+        }
+    ],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/mil-tokyo/mil-web-dnn/issues"
+    },
+    "homepage": "https://github.com/mil-tokyo/mil-web-dnn#readme",
+    "devDependencies": {
+        "typedoc": "^0.6.0"
+    }
 }
