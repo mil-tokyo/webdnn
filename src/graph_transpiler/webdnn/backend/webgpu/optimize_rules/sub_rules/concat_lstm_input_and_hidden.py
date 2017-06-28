@@ -64,7 +64,7 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
             C1 = attr.C1
             C2 = attr.C2
 
-            x_and_h = Variable([N, C1 + C2], OrderNC)
+            x_and_h = Variable([C1 + C2, N], OrderCN)
             workspace = Variable([N, 4 * C2], OrderNC)
             cell = Variable([N, C2], OrderNC)
 

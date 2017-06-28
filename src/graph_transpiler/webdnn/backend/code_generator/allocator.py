@@ -53,11 +53,13 @@ class MemoryLayout(json.SerializableMixin):
         return {
             "static": {
                 "size": self.static_size,
-                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Static}
+                "allocations": {a.variable.name: a for a in self.allocations.values() if
+                                a.buffer_type == BufferType.Static}
             },
             "dynamic": {
                 "size": self.dynamic_size,
-                "allocations": {a.variable.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Dynamic}
+                "allocations": {a.variable.name: a for a in self.allocations.values() if
+                                a.buffer_type == BufferType.Dynamic}
             }
         }
 
@@ -122,8 +124,10 @@ class Allocator:
     @classmethod
     def allocate_variables(cls, graph: Graph, variables: List[Variable]):
         # check if constant variable with shape with unresolved placeholder.
-        dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)], ConstantVariable)
-        assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
+        dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)],
+                                                  ConstantVariable)
+        assert len(
+            dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
 
         ops = traverse.listup_operators(graph)
         layout = MemoryLayout()
@@ -178,14 +182,16 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     # Inplace optimization
                     inplace = op.get_attribute(Inplace)[0]  # type: Inplace
                     v_in = inplace.get_input()  # Use memory allocated for input variable
-                    while "inplace_src" in v_in.parameters:
-                        v_in = v_in.parameters["inplace_src"]
+                    v_out = inplace.get_output()
+                    if v_in.order == v_out.order:
+                        while "inplace_src" in v_in.parameters:
+                            v_in = v_in.parameters["inplace_src"]
 
-                    var.parameters["inplace_src"] = v_in
-                    retain_count[v_in] += len(var.input_to)
+                        var.parameters["inplace_src"] = v_in
+                        retain_count[v_in] += len(var.input_to)
 
-                    allocated.add(var)
-                    flag_allocated = True
+                        allocated.add(var)
+                        flag_allocated = True
 
                 if not flag_allocated:
                     lifetime[var] = (t, LIFETIME_FOREVER)
