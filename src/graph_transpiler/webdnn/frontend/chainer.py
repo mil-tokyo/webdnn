@@ -11,10 +11,10 @@ import chainer
 import chainer.computational_graph
 import numpy as np
 
-from webdnn.graph.operator import Operator
 from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
+from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
@@ -72,7 +72,6 @@ class ChainerConverter(Converter[chainer.Function]):
 
     def convert_core(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
                      input_c_vars: List[chainer.Variable], output_c_vars: List[chainer.Variable]) -> Graph:
-
         # In chainer v2, variables are represented as Variable and VariableNode object, and
         # graph information such as edge connection is contained in variable node.
         # Therefore all chainer variable must be normalized into variable node.
@@ -358,6 +357,9 @@ def _convert_deconvolution2d_function(converter: ChainerConverter,
 @ChainerConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: ChainerConverter,
                            c_opr: chainer.functions.pooling.max_pooling_2d.MaxPooling2D):
+    if not c_opr.cover_all:
+        raise NotImplementedError("'cover_all=False' property in 'MaxPooling2D' is not supported.")
+
     x = converter.get_variable(c_opr.inputs[0])
 
     pool_opr = MaxPooling2D(None,

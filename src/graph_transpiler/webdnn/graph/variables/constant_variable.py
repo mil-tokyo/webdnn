@@ -20,7 +20,7 @@ class ConstantVariable(Variable):
         self.data = data
         self.attributes = {Constant(self)}
 
-    def change_order(self, order: Order):
+    def change_order(self, order: Order) -> "ConstantVariable":
         """Change variable order
 
         When number of dimension will be increased, axes whose size is one are created.
@@ -41,3 +41,5 @@ class ConstantVariable(Variable):
 
         else:
             raise NotImplementedError("[ConstantVariable.change_order] Currently, it's not supported to increase or decrease axis")  # FIXME
+
+        return self

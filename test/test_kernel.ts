@@ -8,7 +8,8 @@ const assert = new class {
     }
 
     floatEqual(expected: number, real: number, description?: string) {
-        if (Math.abs(expected - real) / ((!isFinite(expected) || expected == 0) ? 1 : expected) >= this.EPS) {
+        let normalizedError = Math.abs(expected - real) / ((!isFinite(expected) || expected == 0) ? 1 : expected);
+        if (normalizedError >= this.EPS) {
             throw Error(`${description ? description + ': ' : ''}(expected: ${expected}) != (real: ${real})`);
         }
     }
@@ -18,7 +19,9 @@ const assert = new class {
             try {
                 this.floatEqual(expected[i], real[i]);
             } catch (e) {
-                throw Error(`${description ? description + ': ' : ''}(expected[${i}]: ${expected[i]}) != (real[${i}]: ${real[i]})`);
+                throw Error(e.message
+                    .replace('expected', `expected[${i}]`)
+                    .replace('real', `real[${i}]`));
             }
         }
     }
@@ -29,7 +32,8 @@ interface TestCase {
     backend: string,
     dirname: string,
     inputs: number[][],
-    expected: number[][]
+    expected: number[][],
+    EPS: number
 }
 
 interface Result {
@@ -56,14 +60,13 @@ const TestRunner = new class {
         this.results = [];
         this.currentTestCaseIndex = 0;
 
-        console.groupCollapsed('Setup');
+        console.group('Setup');
         console.log('- TestRunner loaded test case(s)');
         console.log('- # of test case(s): ' + this.testCases.length);
         console.groupEnd();
     }
 
     cleanUp() {
-
         let results = this.results;
         console.group('Result');
 
@@ -98,6 +101,8 @@ const TestRunner = new class {
         console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
 
         try {
+            assert.EPS = testCase.EPS;
+
             let runner = await WebDNN.load(this.rootUrl + testCase.dirname, {
                 backendOrder: testCase.backend,
                 ignoreCache: true
@@ -140,7 +145,7 @@ const TestRunner = new class {
 
     async run() {
         return this.setup()
-            .then(() => console.groupCollapsed('Run'))
+            .then(() => console.group('Run'))
             .then(() => this.mainLoop())
             .then(() => console.groupEnd())
             .then(() => this.cleanUp())

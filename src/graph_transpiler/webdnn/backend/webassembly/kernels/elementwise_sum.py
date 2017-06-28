@@ -1,12 +1,12 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 
-template = """
+template_general = """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
     const float *X0 = %%LOAD_BUFFER(elementwise_sum_X0)%%;
@@ -23,8 +23,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 """
 
 
-# noinspection PyUnusedLocal
-def elementwise_sum(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kernel]:
+def elementwise_sum(op: ElementwiseSum, memory_layout: MemoryLayout) -> List[Kernel]:
     x0 = memory_layout[op.inputs["x0"]]
     x1 = memory_layout[op.inputs["x1"]]
     y = memory_layout[op.outputs["y"]]
@@ -42,7 +41,7 @@ def elementwise_sum(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kern
 
     name_injector = KernelNameInjector(op)
 
-    source = template
+    source = template_general
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
