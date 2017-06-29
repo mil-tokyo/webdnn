@@ -27,22 +27,24 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.embedding import Embedding
-from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
-    OrderNHWC, Order
+    OrderNHWC, Order, OrderNT
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
+from webdnn.util.misc import mul
 
 
 class KerasInput:
@@ -485,14 +487,10 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, operator: 
     y, = average_pooling_2d_opr(x)
 
     # flatten without changing memory layout
-    in_axes = y.order.axes.copy()
-    assert in_axes[0] == Axis.N
-    in_axes.remove(Axis.N)
+    reshape_opr = Reshape(None, in_order=y.order, out_order=OrderNC, out_shape=[y.shape[0], mul(y.shape[1:])])
+    z, = reshape_opr(y)
 
-    flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
-    y, = flatten_opr(y)
-
-    operator.outputs = [y]
+    operator.outputs = [z]
 
 
 @KerasConverter.register_handler("Flatten")
@@ -508,11 +506,9 @@ def _convert_flatten(converter: KerasConverter, operator: KerasOperator):
     """
     assert len(operator.inputs) == 1
     x = operator.inputs[0]
-    in_axes = x.order.axes.copy()
-    assert in_axes[0] == Axis.N
-    in_axes.remove(Axis.N)
-    flatten_opr = Flatten(None, in_axes=in_axes, out_axis=Axis.C)
-    y, = flatten_opr(x)
+    assert x.order.axes[0] == Axis.N
+    reshape_opr = Reshape(None, in_order=x.order, out_order=OrderNC, out_shape=[x.shape[0], mul(x.shape[1:])])
+    y, = reshape_opr(x)
 
     operator.outputs = [y]
 
@@ -678,6 +674,10 @@ def _convert_embedding(converter: KerasConverter, operator: KerasOperator):
     """
     assert len(operator.inputs) == 1
     x = operator.inputs[0]
+    if x.order == OrderNC:
+        # re-interpret as NT
+        reinterpret_opr = ReinterpretAxis(None, in_order=OrderNC, out_order=OrderNT)
+        x, = reinterpret_opr(x)
     w = converter.create_constant_variable(operator, "embeddings:0", OrderCN)
     embedding_opr = Embedding(None)
 
@@ -730,13 +730,17 @@ def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
     assert len(operator.inputs) == 1
     assert operator.specific_config["activation"] == "tanh"
     assert operator.specific_config["recurrent_activation"] == "hard_sigmoid"
-    assert operator.specific_config["use_bias"] is True
+    assert operator.specific_config["stateful"] is False
+    assert operator.specific_config["go_backwards"] is False
     x = operator.inputs[0]
     w_input = converter.create_constant_variable(operator, "kernel:0", OrderCN)
     w_hidden = converter.create_constant_variable(operator, "recurrent_kernel:0", OrderCN)
-    b = converter.create_constant_variable(operator, "bias:0", OrderC)
-    lstm_opr = LSTM(None)
+    if operator.specific_config["use_bias"]:
+        b = converter.create_constant_variable(operator, "bias:0", OrderC)
+    else:
+        b = None
+    lstm_opr = LSTM(None, operator.specific_config["use_bias"], operator.specific_config["return_sequences"], False)
 
-    y, = lstm_opr(x, w_input, w_hidden, b)
+    y, _ = lstm_opr(x, w_input, w_hidden, b)
 
     operator.outputs = [y]

@@ -32,7 +32,9 @@ from webdnn.backend.webassembly.kernels.leaky_relu import leaky_relu
 from webdnn.backend.webassembly.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.webassembly.kernels.lstm import lstm
 from webdnn.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
+from webdnn.backend.webassembly.kernels.reinterpret_axis import reinterpret_axis
 from webdnn.backend.webassembly.kernels.relu import relu
+from webdnn.backend.webassembly.kernels.reshape import reshape
 from webdnn.backend.webassembly.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webassembly.kernels.sgemm import sgemm
 from webdnn.backend.webassembly.kernels.sigmoid import sigmoid
@@ -61,7 +63,9 @@ from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
@@ -206,11 +210,13 @@ WebassemblyDescriptorGenerator.register_handler(LeakyRelu)(leaky_relu)
 WebassemblyDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 WebassemblyDescriptorGenerator.register_handler(LSTM)(lstm)
 WebassemblyDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
-WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
 WebassemblyDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
 WebassemblyDescriptorGenerator.register_handler(Sgemm)(sgemm)
 WebassemblyDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
 WebassemblyDescriptorGenerator.register_handler(Softmax)(softmax)
 WebassemblyDescriptorGenerator.register_handler(Softplus)(softplus)
 WebassemblyDescriptorGenerator.register_handler(Softsign)(softsign)
+WebassemblyDescriptorGenerator.register_handler(ReinterpretAxis)(reinterpret_axis)
+WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
+WebassemblyDescriptorGenerator.register_handler(Reshape)(reshape)
 WebassemblyDescriptorGenerator.register_handler(Tanh)(tanh)

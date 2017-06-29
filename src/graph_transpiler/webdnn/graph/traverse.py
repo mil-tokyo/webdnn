@@ -59,25 +59,29 @@ def filter_nodes(nodes: Iterable[Node], query: Query, mode_not: bool = False) ->
 
 
 def listup_nodes(graph: Graph) -> List[Node]:
-    stack: List[Node] = list(graph.outputs)
-    result: List[Node] = []
-    resolved: Set[Node] = set()
+    stack = [node for node in graph.outputs]  # type: List[Node]
+    stacked = set(stack)  # type: Set[Node]
+    resolved = set()  # type Set[Node]
+    result = []  # type: List[Node]
 
     while len(stack) > 0:
-        node = stack.pop(0)
-        if node in resolved:
-            continue
+        node = stack.pop()
 
-        unresolved = [d for d in node.prevs if (d is not None) and (d not in resolved)]
+        unresolved_prev = [d for d in node.prevs if (d is not None) and (d not in resolved)]
+        unstacked_next = [d for d in node.nexts if (d is not None) and (d not in stacked)]
 
-        if len(unresolved) > 0:
-            stack.insert(0, node)
-            for dependent in unresolved:
-                stack.insert(0, dependent)
+        if len(unstacked_next) != 0:
+            stack += unstacked_next
+            stacked.update(unstacked_next)
+
+        if len(unresolved_prev) == 0:
+            resolved.add(node)
+            result.append(node)
 
         else:
-            result.append(node)
-            resolved.add(node)
+            stacked.update(unresolved_prev)
+            stack.append(node)
+            stack += unresolved_prev
 
     return result
 
@@ -102,7 +106,7 @@ def dump(graph: Graph):
         console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
 
 
-def dump_dot(graph: Graph, name: Optional[str]=None) -> str:
+def dump_dot(graph: Graph, name: Optional[str] = None) -> str:
     """
     Dumps graph into dot language for visualization.
 
@@ -129,13 +133,13 @@ def dump_dot(graph: Graph, name: Optional[str]=None) -> str:
         node_attrs = {}
         node_attrs["label"] = f"\"{var.name}\n{var.shape}\nOrder={var.order}\""
         if isinstance(var, ConstantVariable):
-            node_attrs["shape"]="doubleoctagon"
+            node_attrs["shape"] = "doubleoctagon"
         else:
-            node_attrs["shape"]="octagon"
+            node_attrs["shape"] = "octagon"
         if var in graph.inputs:
-            node_attrs["style"]="\"dashed\""
+            node_attrs["style"] = "\"dashed\""
         if var in graph.outputs:
-            node_attrs["style"]="\"bold\""
+            node_attrs["style"] = "\"bold\""
 
         dot_source_var = ""
         dot_source_var += f"var_{id(var)} [\n"
