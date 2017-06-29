@@ -71,7 +71,7 @@ def test_fully_connected():
 def test_dilated():
     main(3, 1, 1, 2, 2, 8, 9, 5, {
         Axis.N: 2,
-        Axis.H: 4,
-        Axis.W: 5,
+        Axis.H: 6,
+        Axis.W: 7,
         Axis.C: 45,
     })

@@ -59,13 +59,15 @@ def filter_nodes(nodes: Iterable[Node], query: Query, mode_not: bool = False) ->
 
 
 def listup_nodes(graph: Graph) -> List[Node]:
-    stack = [node for node in graph.outputs]  # type: List[Node]
+    stack = list(graph.outputs)  # type: List[Node]
     stacked = set(stack)  # type: Set[Node]
     resolved = set()  # type Set[Node]
     result = []  # type: List[Node]
 
     while len(stack) > 0:
         node = stack.pop()
+        if node in resolved:
+            continue
 
         unresolved_prev = [d for d in node.prevs if (d is not None) and (d not in resolved)]
         unstacked_next = [d for d in node.nexts if (d is not None) and (d not in stacked)]
