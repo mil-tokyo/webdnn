@@ -30,7 +30,9 @@ from webdnn.backend.webgpu.kernels.leaky_relu import leaky_relu
 from webdnn.backend.webgpu.kernels.local_response_normalization import local_response_normalization
 from webdnn.backend.webgpu.kernels.lstm import lstm
 from webdnn.backend.webgpu.kernels.max_pooling_2d import max_pooling_2d
+from webdnn.backend.webgpu.kernels.reinterpret_axis import reinterpret_axis
 from webdnn.backend.webgpu.kernels.relu import relu
+from webdnn.backend.webgpu.kernels.reshape import reshape
 from webdnn.backend.webgpu.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webgpu.kernels.sgemm import sgemm
 from webdnn.backend.webgpu.kernels.sigmoid import sigmoid
@@ -59,7 +61,9 @@ from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
@@ -182,7 +186,9 @@ WebGPUDescriptorGenerator.register_handler(LeakyRelu)(leaky_relu)
 WebGPUDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
 WebGPUDescriptorGenerator.register_handler(LSTM)(lstm)
 WebGPUDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
+WebGPUDescriptorGenerator.register_handler(ReinterpretAxis)(reinterpret_axis)
 WebGPUDescriptorGenerator.register_handler(Relu)(relu)
+WebGPUDescriptorGenerator.register_handler(Reshape)(reshape)
 WebGPUDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
 WebGPUDescriptorGenerator.register_handler(Sgemm)(sgemm)
 WebGPUDescriptorGenerator.register_handler(Sigmoid)(sigmoid)

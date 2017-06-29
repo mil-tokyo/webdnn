@@ -23,13 +23,13 @@ from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
-from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
@@ -41,6 +41,7 @@ from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
+from webdnn.util.misc import mul
 
 if chainer.__version__ >= "2.":
     chainer_v2 = True
@@ -487,19 +488,18 @@ def _convert_reshape(converter: ChainerConverter, c_opr: chainer.functions.array
 
     x = converter.get_variable(c_opr.inputs[0])
 
-    assert x.order == OrderNHWC, \
-        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: x.order={x.order}"
+    out_shape = c_opr.shape
+    if len(out_shape) == 1:
+        out_order = OrderC
+    elif len(out_shape) == 2:
+        out_order = OrderNC
+    elif len(out_shape) == 4:
+        out_order = OrderNCHW
+    else:
+        raise NotImplementedError("Reshaping into dimensions none of 1, 2, 4 is not supported.")
+    assert mul(out_shape) == x.size
 
-    assert x.shape[1:3] == [1, 1], \
-        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: " \
-        f"x.shape[Axis.H]={x.shape_dict[Axis.H]}, x.shape[Axis.W]={x.shape_dict[Axis.W]}"
-
-    assert c_opr.shape == (x.shape[0], x.shape[3]), \
-        f"currently, only NHWC -> NC where H,W==1 is supported for Reshape operator in chainer: " \
-        f"x.shape[Axis.N]={x.shape_dict[Axis.N]}, target_shape[Axis.N]={c_opr.shape[0]}, " \
-        f"x.shape[Axis.C]={x.shape_dict[Axis.C]}, target_shape[Axis.C]={c_opr.shape[1]}"
-
-    n_opr = Flatten(None, in_axes=[Axis.C, Axis.H, Axis.W], out_axis=Axis.C)
+    n_opr = Reshape(None, in_order=x.order, out_order=out_order, out_shape=out_shape)
 
     y, = n_opr(x)
 
