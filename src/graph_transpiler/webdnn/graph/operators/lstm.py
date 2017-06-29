@@ -1,8 +1,8 @@
 from typing import Optional
 
 from webdnn.graph.axis import Axis
-from webdnn.graph.order import OrderNTC, OrderNT, OrderNC, OrderCN, OrderC
 from webdnn.graph.operator import Operator
+from webdnn.graph.order import OrderNTC, OrderNC, OrderC
 from webdnn.graph.variable import Variable
 
 
@@ -25,7 +25,8 @@ class LSTM(Operator):
         self.parameters["use_initial_c"] = use_initial_c
         self.attributes = set()
 
-    def __call__(self, x: Variable, w_input: Variable, w_hidden: Variable, b: Optional[Variable]=None, initial_c: Optional[Variable]=None):
+    def __call__(self, x: Variable, w_input: Variable, w_hidden: Variable, b: Optional[Variable] = None,
+                 initial_c: Optional[Variable] = None):
         """
         Args:
             x (:class:`~webdnn.graph.variable.Variable`): Input (sequence OrderNTC)
@@ -35,35 +36,57 @@ class LSTM(Operator):
             initial_c (:class:`~webdnn.graph.variable.Variable`): Initial hidden state
 
         Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output (OrderNC)
+            y (:class:`~webdnn.graph.variable.Variable`): Output (OrderNC)
+            final_c (:class:`~webdnn.graph.variable.Variable`): Last cell state (OrderNC)
         """
+        assert self.parameters["use_bias"] == (b is not None)
+        assert self.parameters["use_initial_c"] == (initial_c is not None)
+
         self.append_input("x", x)
         self.append_input("w_input", w_input)
         self.append_input("w_hidden", w_hidden)
-        assert self.parameters["use_bias"] == (b is not None)
-        if self.parameters["use_bias"]:
+
+        if b is not None:
             self.append_input("b", b)
-        assert self.parameters["use_initial_c"] == (initial_c is not None)
-        if initial_c is not None:
-            self.append_input("initial_c", initial_c)
+
+        # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
+        if x.order != OrderNTC:
+            raise NotImplementedError("Currently, LSTM supports only OrderNTC variable for input sequence variable.")
 
         x_shape_dict = x.shape_dict
         w_input_shape_dict = w_input.shape_dict
         w_hidden_shape_dict = w_hidden.shape_dict
-        batch_size = x_shape_dict[Axis.N]
-        assert x.order == OrderNTC
-        assert w_input.order == OrderNC or w_input.order == OrderCN
+
+        assert set(x.order.axes) == {Axis.N, Axis.T, Axis.C}
+        assert set(w_input.order.axes) == {Axis.N, Axis.C}
+        assert set(w_hidden.order.axes) == {Axis.N, Axis.C}
         assert b.order == OrderC
-        assert x_shape_dict[Axis.C] == w_input_shape_dict[Axis.C]
+
+        batch_size = x_shape_dict[Axis.N]
         sequence_len = x_shape_dict[Axis.T]
-        hidden_dim = w_input_shape_dict[Axis.N] // 4
-        assert hidden_dim * 4 == w_hidden_shape_dict[Axis.N] and hidden_dim == w_hidden_shape_dict[Axis.C]
-        assert hidden_dim * 4 == b.shape_dict[Axis.C]
+        input_dim = x_shape_dict[Axis.C]
+        hidden_dim = w_hidden_shape_dict[Axis.C]
+
+        assert x_shape_dict[Axis.N] == batch_size
+        assert x_shape_dict[Axis.C] == w_input_shape_dict[Axis.C] == input_dim
+        assert w_input_shape_dict[Axis.N] == w_hidden_shape_dict[Axis.N] == hidden_dim * 4
+
+        if initial_c is not None:
+            self.append_input("initial_c", initial_c)
+            initial_c_shape_dict = initial_c.shape_dict
+
+            assert set(initial_c.order.axes) == {Axis.N, Axis.C}
+            assert initial_c_shape_dict[Axis.N] == batch_size
+            assert initial_c_shape_dict[Axis.C] == hidden_dim
+
         if self.parameters["return_sequences"]:
             y = Variable([batch_size, sequence_len, hidden_dim], OrderNTC)
         else:
             y = Variable([batch_size, hidden_dim], OrderNC)
+
         final_c = Variable([batch_size, hidden_dim], OrderNC)
+
         self.append_output("y", y)
         self.append_output("final_c", final_c)
+
         return y, final_c

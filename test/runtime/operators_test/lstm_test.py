@@ -6,7 +6,7 @@ from chainer.functions.connection.linear import linear
 from test.util import generate_kernel_test_case
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.lstm import LSTM
-from webdnn.graph.order import OrderNTC, OrderCN, OrderC
+from webdnn.graph.order import OrderNTC, OrderCN, OrderC, OrderNC
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
@@ -28,7 +28,8 @@ def test_t_is_1():
     vw_input = np.random.normal(size=(C1, C2 * 4)).astype(np.float32)
     vw_hidden = np.random.normal(size=(C2, C2 * 4)).astype(np.float32)
     vb = np.random.normal(size=(C2 * 4,)).astype(np.float32)
-    vc = np.zeros((N, C2)).astype(np.float32)
+    vc_in = np.zeros((N, C2)).astype(np.float32)
+    vc_out = vc_in.copy()
     vh = np.zeros((N, C2)).astype(np.float32)
 
     vw_input_c = _convert_to_chainer_order(vw_input)
@@ -36,22 +37,23 @@ def test_t_is_1():
     vb_c = _convert_to_chainer_order(vb[None, :])
 
     for i in range(T):
-        vc, vh = lstm(vc, linear(vx[:, i, :], vw_input_c.T) + linear(vh, vw_hidden_c.T) + vb_c)
+        vc_out, vh = lstm(vc_out, linear(vx[:, i, :], vw_input_c.T) + linear(vh, vw_hidden_c.T) + vb_c)
 
     vh = vh.data
 
     x = Variable(vx.shape, order=OrderNTC)
+    c_in = ConstantVariable(vc_in, order=OrderNC)
     w_input = ConstantVariable(vw_input, order=OrderCN)
     w_hidden = ConstantVariable(vw_hidden, order=OrderCN)
     b = ConstantVariable(vb, order=OrderC)
-    y, = LSTM(None)(x, w_input, w_hidden, b)
+    y, c_out = LSTM(None)(x, c_in, w_input, w_hidden, b)
 
     generate_kernel_test_case(
-        description=f"LSTM t=1",
+        description=f"LSTM t=10",
         backend=["webassembly", "webgpu"],
-        graph=Graph([x], [y]),
+        graph=Graph([x], [y, c_out]),
         inputs={x: vx},
-        expected={y: vh}
+        expected={y: vh, c_out: vc_out}
     )
 
 
@@ -64,7 +66,8 @@ def test_t_is_10():
     vw_input = np.random.normal(size=(C1, C2 * 4)).astype(np.float32)
     vw_hidden = np.random.normal(size=(C2, C2 * 4)).astype(np.float32)
     vb = np.random.normal(size=(C2 * 4,)).astype(np.float32)
-    vc = np.zeros((N, C2)).astype(np.float32)
+    vc_in = np.zeros((N, C2)).astype(np.float32)
+    vc_out = vc_in.copy()
     vh = np.zeros((N, C2)).astype(np.float32)
 
     vw_input_c = _convert_to_chainer_order(vw_input)
@@ -72,20 +75,21 @@ def test_t_is_10():
     vb_c = _convert_to_chainer_order(vb[None, :])
 
     for i in range(T):
-        vc, vh = lstm(vc, linear(vx[:, i, :], vw_input_c.T) + linear(vh, vw_hidden_c.T) + vb_c)
+        vc_out, vh = lstm(vc_out, linear(vx[:, i, :], vw_input_c.T) + linear(vh, vw_hidden_c.T) + vb_c)
 
     vh = vh.data
 
     x = Variable(vx.shape, order=OrderNTC)
+    c_in = ConstantVariable(vc_in, order=OrderNC)
     w_input = ConstantVariable(vw_input, order=OrderCN)
     w_hidden = ConstantVariable(vw_hidden, order=OrderCN)
     b = ConstantVariable(vb, order=OrderC)
-    y, = LSTM(None)(x, w_input, w_hidden, b)
+    y, c_out = LSTM(None)(x, c_in, w_input, w_hidden, b)
 
     generate_kernel_test_case(
         description=f"LSTM t=10",
         backend=["webassembly", "webgpu"],
-        graph=Graph([x], [y]),
+        graph=Graph([x], [y, c_out]),
         inputs={x: vx},
-        expected={y: vh}
+        expected={y: vh, c_out: vc_out}
     )

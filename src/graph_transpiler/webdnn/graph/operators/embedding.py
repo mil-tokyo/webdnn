@@ -30,14 +30,20 @@ class Embedding(Operator):
         self.append_input("x", x)
         self.append_input("w", w)
 
+        # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
+        if x.order != OrderNT:
+            raise NotImplementedError("Currently, Embedding supports only OrderNT variable for input sequence variable.")
+
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
+
+        assert set(w.order.axes) == {Axis.N, Axis.C}
+
         batch_size = x_shape_dict[Axis.N]
-        assert x.order == OrderNT
-        assert w.order == OrderNC or w.order == OrderCN
         sequence_len = x_shape_dict[Axis.T]
-        # n_vocabulary = w_shape_dict[Axis.C]
         embedding_dim = w_shape_dict[Axis.N]
+
         y = Variable([batch_size, sequence_len, embedding_dim], OrderNTC)
+
         self.append_output("y", y)
         return y,

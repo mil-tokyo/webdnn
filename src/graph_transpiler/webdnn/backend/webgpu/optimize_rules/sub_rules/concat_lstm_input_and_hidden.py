@@ -32,13 +32,11 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
 
         v = W_all * XH
 
-    Also this optimize rule append 2 additional inputs:
+    Also this optimize rule append 1 additional input:
 
         workspace:
-            store the data of product of W_all and XH (=v)
+            store the data of product of W_all and XH (=`v` in above equations)
 
-        cell:
-            variable to store the temporal cell state
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
@@ -66,7 +64,6 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
 
             x_and_h = Variable([C1 + C2, N], OrderCN)
             workspace = Variable([N, 4 * C2], OrderNC)
-            cell = Variable([N, C2], OrderNC)
 
             w_input.change_order(OrderCN)
             w_hidden.change_order(OrderCN)
@@ -75,7 +72,6 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
             lstm.remove_input(w_hidden)
             lstm.append_input("x_and_h", x_and_h)
             lstm.append_input("workspace", workspace)
-            lstm.append_input("cell", cell)
             lstm.append_input("w_all", w_all)
             lstm.attributes.add(attr)
 

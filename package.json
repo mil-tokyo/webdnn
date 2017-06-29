@@ -1,8 +1,8 @@
 {
-    "name": "mil-web-dnn",
+    "name": "WebDNN",
     "version": "1.0.0",
     "description": "Deep Neural Network Execution Framework for Web Browsers",
-    "main": "index.js",
+    "main": "dist/webdnn.js",
     "directories": {
         "doc": "docs",
         "example": "example",
@@ -16,7 +16,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mil-tokyo/mil-web-dnn.git"
+        "url": "git+https://github.com/mil-tokyo/webdnn.git"
     },
     "author": [
         {
@@ -32,9 +32,9 @@
     ],
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/mil-tokyo/mil-web-dnn/issues"
+        "url": "https://github.com/mil-tokyo/webdnn/issues"
     },
-    "homepage": "https://github.com/mil-tokyo/mil-web-dnn#readme",
+    "homepage": "https://mil-tokyo.github.io/webdnn/",
     "devDependencies": {
         "typedoc": "^0.6.0"
     }
