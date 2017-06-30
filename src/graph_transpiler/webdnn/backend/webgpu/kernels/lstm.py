@@ -4,12 +4,14 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.order import OrderNC, OrderNTC, OrderCN
 
 
-def generate_template_general(initial_C: bool, return_sequences: bool):
+def generate_template_general(initial_C: bool, initial_H: bool, return_sequences: bool,
+                              activation_function: str, recurrent_activation_function: str):
     return """
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
@@ -18,6 +20,9 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           uint num_threads[[threads_per_grid]])
 {
 #define USE_INITIAL_C %%USE_INITIAL_C%%
+#define USE_INITIAL_H %%USE_INITIAL_H%%
+#define activation_function(x) %%ACTIVATION_FUNCTION%%
+#define recurrent_activation_function(x) %%RECURRENT_ACTIVATION_FUNCTION%%
 #define RETURN_SEQUENCES %%RETURN_SEQUENCES%%
 
     const device float  *X         = %%LOAD_BUFFER(lstm_X)%%;
@@ -31,6 +36,9 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #if USE_INITIAL_C
         const device float  *initial_C = %%LOAD_BUFFER(lstm_initial_C)%%;
 #endif
+#if USE_INITIAL_H
+        const device float  *initial_H = %%LOAD_BUFFER(lstm_initial_H)%%;
+#endif
 
     const int N  = %%LOAD_BUFFER(lstm_N)%%;
     const int T  = %%LOAD_BUFFER(lstm_T)%%;
@@ -43,7 +51,11 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     //reset output and cell state
     for (int gid = global_index; gid < N * C2; gid += num_threads)
     {
+#if USE_INITIAL_H
+        XH_H[gid] = initial_H[gid];
+#else
         XH_H[gid] = 0;
+#endif
 
 #if USE_INITIAL_C
         final_C[gid] = initial_C[gid];
@@ -61,6 +73,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             XH_X[gid] = X[(n * T + t) * C1 + c1];
         }
         
+        threadgroup_barrier(mem_flags::mem_device);
+
         //FIXME: replace here to more efficient sgemv implementation.
         for (int gid = global_index; gid < C2 * 4 * N; gid += num_threads)
         {
@@ -77,7 +91,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             workspace[gid] = v;
         }
         
-        //threadgroup_barrier(mem_flags::mem_device);
+        threadgroup_barrier(mem_flags::mem_device);
 
         for (int gid = global_index; gid < C2 * N; gid += num_threads)
         {
@@ -85,22 +99,22 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             float f = workspace[gid + N * C2 * 1];
             float a = workspace[gid + N * C2 * 2];
             float o = workspace[gid + N * C2 * 3];
-            float cell_last = final_C[gid];
+            float c = final_C[gid];
 
-            i = i < -2.5 ? 0.0 : (i > +2.5 ? 1.0 : (i * 0.2 + 0.5));
-            f = f < -2.5 ? 0.0 : (f > +2.5 ? 1.0 : (f * 0.2 + 0.5));
-            a = tanh(a);
-            o = o < -2.5 ? 0.0 : (o > +2.5 ? 1.0 : (o * 0.2 + 0.5));
+            i = recurrent_activation_function(i);
+            f = recurrent_activation_function(f);
+            a = activation_function(a);
+            o = recurrent_activation_function(o);
     
-            cell_last = a * i + cell_last * f;
+            c = a * i + c * f;
 
-            final_C[gid] = cell_last;
-            const float h = tanh(cell_last) * o;
+            final_C[gid] = c;
+            const float h = activation_function(c) * o;
             XH_H[gid] = h;
 
 #if RETURN_SEQUENCES
             const int n = gid % N;
-            const int c2 = gid / C2;
+            const int c2 = gid / N;
             Y[(n * T + t) * C2 + c2] = h;
 #endif
         }
@@ -115,10 +129,16 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #endif
 
 #undef USE_INITIAL_C
+#undef USE_INITIAL_H
+#undef activation_function
+#undef recurrent_activation_function
 #undef RETURN_SEQUENCES
 }
     """ \
         .replace("%%USE_INITIAL_C%%", "1" if initial_C else "0") \
+        .replace("%%USE_INITIAL_H%%", "1" if initial_H else "0") \
+        .replace("%%ACTIVATION_FUNCTION%%", activation_function) \
+        .replace("%%RECURRENT_ACTIVATION_FUNCTION%%", recurrent_activation_function) \
         .replace("%%RETURN_SEQUENCES%%", "1" if return_sequences else "0")
 
 
@@ -132,6 +152,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     final_c = memory_layout[op.outputs["final_c"]]
 
     use_initial_c = op.parameters["use_initial_c"]
+    use_initial_h = op.parameters["use_initial_h"]
     return_sequences = op.parameters["return_sequences"]
 
     assert x.variable.order == OrderNTC, \
@@ -139,7 +160,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
 
     if return_sequences:
         assert y.variable.order == OrderNTC, f"Current implementation supports only OrderNTC for output variable of " + \
-                                             "LSTM in return_sequences=True mode: y.order = {y.variable.order}"
+                                             f"LSTM in return_sequences=True mode: y.order = {y.variable.order}"
     else:
         assert y.variable.order == OrderNC, \
             f"Current implementation supports only OrderNC for output variable of LSTM " + \
@@ -166,11 +187,25 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         "lstm_workspace": workspace,
         "lstm_final_C": final_c,
         "lstm_initial_C": memory_layout[op.inputs["initial_c"]] if use_initial_c else 0,
+        "lstm_initial_H": memory_layout[op.inputs["initial_h"]] if use_initial_h else 0,
     })
 
     name_injector = KernelNameInjector(op)
 
-    source = generate_template_general(use_initial_c, return_sequences)
+    if op.parameters["activation"] == "tanh":
+        activation_function = "(tanh(x))"
+    else:
+        raise NotImplementedError
+
+    if op.parameters["recurrent_activation"] == "hard_sigmoid":
+        recurrent_activation_function = "((x) < -2.5 ? 0.0 : ((x) > +2.5 ? 1.0 : ((x) * 0.2 + 0.5)))"
+    elif op.parameters["recurrent_activation"] == "sigmoid":
+        recurrent_activation_function = "(tanh(0.5f * (x)) * 0.5f + 0.5f)"
+    else:
+        raise NotImplementedError
+
+    source = generate_template_general(use_initial_c, use_initial_h, return_sequences,
+                                       activation_function, recurrent_activation_function)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
@@ -178,7 +213,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         {name_injector.name: source},
         name_injector.name,
         GPUSize(1, 1, 1),
-        GPUSize(32, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )
