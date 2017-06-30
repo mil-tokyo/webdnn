@@ -3,6 +3,7 @@ Keras model converter
 """
 
 import argparse
+import importlib.util
 import os
 import sys
 import traceback
@@ -13,8 +14,14 @@ import h5py
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.frontend.keras import KerasConverter
 from webdnn.graph.shape import Shape
-from webdnn.util import flags, console
 from webdnn.graph.traverse import dump_dot
+from webdnn.util import flags, console
+
+
+def _load_plugin(filepath: str):
+    spec = importlib.util.spec_from_file_location("_plugin", filepath)
+    plugin = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plugin)
 
 
 def main():
@@ -30,9 +37,12 @@ def main():
                         help="output directory (default: <model>/webdnn_graph_descriptor)")
     parser.add_argument("--encoding", help="name of weight encoder")
     parser.add_argument("--visualize_ir", action="store_true")
+    parser.add_argument("--plugin", action="append", help="plugin python files which are imported before transpiling")
     args = parser.parse_args()
 
     console.stderr(f"[{path.basename(__file__)}] Generating feedforward graph")
+    for plugin_path in args.plugin:
+        _load_plugin(plugin_path)
 
     input_shape, _ = Shape.parse(args.input_shape)
     input_shapes = [input_shape]

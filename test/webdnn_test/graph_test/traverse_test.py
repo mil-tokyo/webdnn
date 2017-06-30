@@ -189,7 +189,7 @@ def test_listup_operators_residual():
 
 
 @with_setup(setup_graph_residual)
-def test_listup_variables():
+def test_listup_variables_residual():
     global graph, v0, v1, v2, v3
     variables = listup_variables(graph)
 
