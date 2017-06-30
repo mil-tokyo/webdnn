@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "strictNullChecks": false,
+        "outFile": "test_kernel.js",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "declaration": false,
+        "sourceMap": false
+    },
+    "files": [
+        "test_kernel.ts"
+    ]
+}

@@ -17,23 +17,31 @@ class LSTM(Operator):
 
     """
 
-    def __init__(self, name: Optional[str], use_bias: bool, return_sequences: bool, use_initial_c: bool):
+    def __init__(self, name: Optional[str], use_bias: bool, return_sequences: bool,
+                 use_initial_c: bool, use_initial_h: bool,
+                 activation: str, recurrent_activation: str):
         # TODO: accept selection of activation function
         super().__init__(name)
         self.parameters["use_bias"] = use_bias
         self.parameters["return_sequences"] = return_sequences
         self.parameters["use_initial_c"] = use_initial_c
+        self.parameters["use_initial_h"] = use_initial_h
+        assert activation in ["tanh"], "unknown activation function"
+        self.parameters["activation"] = activation
+        assert recurrent_activation in ["hard_sigmoid", "sigmoid"], "unknown recurrent activation function"
+        self.parameters["recurrent_activation"] = recurrent_activation
         self.attributes = set()
 
     def __call__(self, x: Variable, w_input: Variable, w_hidden: Variable, b: Optional[Variable] = None,
-                 initial_c: Optional[Variable] = None):
+                 initial_c: Optional[Variable] = None, initial_h: Optional[Variable] = None):
         """
         Args:
             x (:class:`~webdnn.graph.variable.Variable`): Input (sequence OrderNTC)
             w_input (:class:`~webdnn.graph.variable.Variable`): Weight for input
             w_hidden (:class:`~webdnn.graph.variable.Variable`): Weight for hidden state
             b (:class:`~webdnn.graph.variable.Variable`): Bias
-            initial_c (:class:`~webdnn.graph.variable.Variable`): Initial hidden state
+            initial_c (:class:`~webdnn.graph.variable.Variable`): Initial cell state
+            initial_h (:class:`~webdnn.graph.variable.Variable`): Initial hidden state
 
         Returns:
             y (:class:`~webdnn.graph.variable.Variable`): Output (OrderNC)
@@ -41,6 +49,7 @@ class LSTM(Operator):
         """
         assert self.parameters["use_bias"] == (b is not None)
         assert self.parameters["use_initial_c"] == (initial_c is not None)
+        assert self.parameters["use_initial_h"] == (initial_h is not None)
 
         self.append_input("x", x)
         self.append_input("w_input", w_input)
@@ -78,6 +87,14 @@ class LSTM(Operator):
             assert set(initial_c.order.axes) == {Axis.N, Axis.C}
             assert initial_c_shape_dict[Axis.N] == batch_size
             assert initial_c_shape_dict[Axis.C] == hidden_dim
+
+        if initial_h is not None:
+            self.append_input("initial_h", initial_h)
+            initial_h_shape_dict = initial_h.shape_dict
+
+            assert set(initial_h.order.axes) == {Axis.N, Axis.C}
+            assert initial_h_shape_dict[Axis.N] == batch_size
+            assert initial_h_shape_dict[Axis.C] == hidden_dim
 
         if self.parameters["return_sequences"]:
             y = Variable([batch_size, sequence_len, hidden_dim], OrderNTC)

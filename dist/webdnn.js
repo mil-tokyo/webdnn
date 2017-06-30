@@ -590,7 +590,7 @@ var WebDNN;
             await this.initializeStaticBuffer(weightRawArray);
             await this.initializeMetaBuffers();
             await this.setPlaceholderValue({
-                '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
+                '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 512
             });
             if (this.placeholderContext && this.placeholderContext.isResolved)
                 await this.initializeDynamicBuffer();

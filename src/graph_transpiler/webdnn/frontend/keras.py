@@ -728,8 +728,6 @@ def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
 
     """
     assert len(operator.inputs) == 1
-    assert operator.specific_config["activation"] == "tanh"
-    assert operator.specific_config["recurrent_activation"] == "hard_sigmoid"
     assert operator.specific_config["stateful"] is False
     assert operator.specific_config["go_backwards"] is False
     x = operator.inputs[0]
@@ -739,7 +737,10 @@ def _convert_lstm(converter: KerasConverter, operator: KerasOperator):
         b = converter.create_constant_variable(operator, "bias:0", OrderC)
     else:
         b = None
-    lstm_opr = LSTM(None, operator.specific_config["use_bias"], operator.specific_config["return_sequences"], False)
+    lstm_opr = LSTM(None, operator.specific_config["use_bias"], operator.specific_config["return_sequences"],
+                    use_initial_c=False, use_initial_h=False,
+                    activation=operator.specific_config["activation"],
+                    recurrent_activation=operator.specific_config["recurrent_activation"])
 
     y, _ = lstm_opr(x, w_input, w_hidden, b)
 

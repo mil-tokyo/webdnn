@@ -775,7 +775,7 @@ var WebDNN;
                         case 5:
                             _b.sent();
                             return [4 /*yield*/, this.setPlaceholderValue({
-                                    '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
+                                    '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 512
                                 })];
                         case 6:
                             _b.sent();

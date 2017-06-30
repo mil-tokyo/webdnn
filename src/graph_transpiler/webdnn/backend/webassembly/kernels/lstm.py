@@ -16,8 +16,10 @@ template = """
 
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
+%%DEFINE_SEQUENCE_OUTPUT%%
     const float *X = %%LOAD_BUFFER(lstm_X)%%;
     float *Y = %%LOAD_BUFFER(lstm_Y)%%;
+    float *mem_c = %%LOAD_BUFFER(lstm_final_c)%%;
     float *W_input = %%LOAD_BUFFER(lstm_W_input)%%;
     float *W_hidden = %%LOAD_BUFFER(lstm_W_hidden)%%;
     const int input_dim = %%LOAD_BUFFER(lstm_input_dim)%%;
@@ -32,24 +34,16 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     %%BIAS_INITIALIZER%%
     
     auto activation = [](float x) {
-        // hard sigmoid
-        x = x * 0.2 + 0.5;
-        if (x < 0.0) {
-            x = 0.0;
-        } else if (x > 1.0) {
-            x = 1.0;
-        }
-        return x;
+        %%ACTIVATION_CORE%%
     };
 
     auto recurrent_activation = [](float x) {
-        // tanh
-        return tanhf(x);
+        %%RECURRENT_ACTIVATION_CORE%%
     };
 
-    float *mem_c = new float[hidden_dim * batch_size]();
     %%INITIAL_C_COPIER%%
     float *mem_h = new float[hidden_dim * batch_size]();
+    %%INITIAL_H_COPIER%%
     float *mem_v = new float[hidden_dim4 * batch_size](); // i, f, c, o
     float *mem_x_t = new float[input_dim * batch_size]();
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > mat_v(mem_v, batch_size, hidden_dim4);
@@ -76,26 +70,36 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
                 float val_f = mem_v[dim + ofs_f + n * hidden_dim4];
                 float val_c = mem_v[dim + ofs_c + n * hidden_dim4];
                 float val_o = mem_v[dim + ofs_o + n * hidden_dim4];
-                val_i = activation(val_i);
-                val_f = activation(val_f);
+                val_i = recurrent_activation(val_i);
+                val_f = recurrent_activation(val_f);
                 float val_last_c = mem_c[dim + n * hidden_dim];
-                val_c = recurrent_activation(val_c) * val_i + val_last_c * val_f;
+                val_c = activation(val_c) * val_i + val_last_c * val_f;
                 mem_c[dim + n * hidden_dim] = val_c;
-                mem_h[dim + n * hidden_dim] = recurrent_activation(val_c) * activation(val_o);
+                mem_h[dim + n * hidden_dim] = activation(val_c) * recurrent_activation(val_o);
             }
         }
+        
+        //write output on sequence
+#ifdef SEQUENCE_OUTPUT
+        for (int n = 0; n < batch_size; n++) {
+            for (int dim = 0; dim < hidden_dim; dim++) {
+                Y[(n * sequence_len + t) * hidden_dim + dim] = mem_h[n * hidden_dim + dim];
+            }
+        }
+#endif
     }
 
     // write output
+#ifndef SEQUENCE_OUTPUT
     for (int i = 0; i < batch_size * hidden_dim; i++) {
         Y[i] = mem_h[i];
     }
+#endif
 
-    delete[] mem_c;
     delete[] mem_h;
     delete[] mem_v;
     delete[] mem_x_t;
-
+#undef SEQUENCE_OUTPUT
 }
 """
 
@@ -132,6 +136,11 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     }
 
     source = template
+    if op.parameters["return_sequences"]:
+        source = source.replace("%%DEFINE_SEQUENCE_OUTPUT%%", "#define SEQUENCE_OUTPUT")
+    else:
+        source = source.replace("%%DEFINE_SEQUENCE_OUTPUT%%", "")
+
     if op.parameters["use_bias"]:
         b = memory_layout[op.inputs["b"]]
         buffer_injector_items["lstm_b"] = b
@@ -151,7 +160,48 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         }
         """)
     else:
-        source = source.replace("%%INITIAL_C_COPIER%%", "")
+        source = source.replace("%%INITIAL_C_COPIER%%", """
+        for (int i = 0; i < hidden_dim * batch_size; i++) {
+            mem_c[i] = 0.0F;
+        }
+        """)
+
+    if op.parameters["use_initial_h"]:
+        initial_h = memory_layout[op.inputs["initial_h"]]
+        buffer_injector_items["lstm_initial_h"] = initial_h
+        source = source.replace("%%INITIAL_H_COPIER%%", """
+        const float *initial_h = %%LOAD_BUFFER(lstm_initial_h)%%;
+        for (int i = 0; i < hidden_dim * batch_size; i++) {
+            mem_h[i] = initial_h[i];
+        }
+        """)
+    else:
+        source = source.replace("%%INITIAL_H_COPIER%%", "")
+
+    if op.parameters["activation"] == "tanh":
+        source = source.replace("%%ACTIVATION_CORE%%", """
+        return tanhf(x);
+        """)
+    else:
+        raise NotImplementedError
+
+    if op.parameters["recurrent_activation"] == "hard_sigmoid":
+        source = source.replace("%%RECURRENT_ACTIVATION_CORE%%", """
+        x = x * 0.2F + 0.5F;
+        if (x < 0.0F) {
+            x = 0.0F;
+        } else if (x > 1.0F) {
+            x = 1.0F;
+        }
+        return x;
+        """)
+    elif op.parameters["recurrent_activation"] == "sigmoid":
+        source = source.replace("%%RECURRENT_ACTIVATION_CORE%%", """
+        x = 1.0F / (1.0 + expf(-x));
+        return x;
+        """)
+    else:
+        raise NotImplementedError
 
     buffer_injector = BufferInjector()
     buffer_injector.register(buffer_injector_items)
