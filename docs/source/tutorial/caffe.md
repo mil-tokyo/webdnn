@@ -16,7 +16,7 @@ First, You have to initialize [`DescriptorRunner`](../api_reference/descriptor_r
 and load model data.
 
 ```js
-let runner = await WebDNN.prepareAll('./output');
+let runner = await WebDNN.load('./output');
 ```
 
 WebDNN automatically select the best backend based on Browser type and 
@@ -30,11 +30,11 @@ console.log(runner.backendName);
 
 ![backend](../_static/tutorial/check_backend.png)
 
-Then you can get input and output variable references.
+Then you can get input and output variable references (`SymbolicFloat32Array` type).
 
 ```js
-let x = runner.inputViews[0];
-let y = runner.outputViews[0];
+let x = runner.getInputViews()[0];
+let y = runner.getOutputViews()[0];
 ```
 
 That's all for initialization. You only have to do this at once in the application.
@@ -61,8 +61,9 @@ That's all.
 Show computed vector and predicted label.
 
 ```js
-console.log('Computed vector', y);
-console.log('Predicted Label', WebDNN.Math.argmax(y));
+let y_typed_array = y.toActual();
+console.log('Computed vector', y_typed_array);
+console.log('Predicted Label', WebDNN.Math.argmax(y_typed_array));
 ```
 
 ![result](../_static/tutorial/result.png)
