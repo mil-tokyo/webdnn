@@ -72,7 +72,8 @@ class KernelTestCaseGenerator:
                                   expected: Dict[Variable, np.array],
                                   backend=None,
                                   raise_skip: bool = True,
-                                  EPS: float = 1.0e-3):
+                                  EPS: float = 1.0e-3,
+                                  ABS_EPS: float = 0.0):
         """Generate test data for generated kernel codes
     
         Generated data are saved in JSON format, and BrowserTestRunner executes it.
@@ -93,7 +94,8 @@ class KernelTestCaseGenerator:
                     expected=expected,
                     backend=b,
                     raise_skip=False,
-                    EPS=EPS)
+                    EPS=EPS,
+                    ABS_EPS=ABS_EPS)
 
             if raise_skip:
                 raise SkipTest(f"[BrowserTest|{backend}] {description}")
@@ -113,7 +115,8 @@ class KernelTestCaseGenerator:
             "expected": [list(expected[v].flatten()) for v in graph.outputs],
             "dirname": testcase_dirname,
             "backend": backend,
-            "EPS": EPS
+            "EPS": EPS,
+            "ABS_EPS": ABS_EPS
         })
 
         if raise_skip:

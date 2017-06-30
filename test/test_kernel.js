@@ -2,14 +2,14 @@
 const assert = new class {
     constructor() {
         this.EPS = 1e-4;
+        this.ABS_EPS = 0.0;
     }
     equal(expected, real, description) {
         if (expected !== real)
             throw Error(`${description ? description + ': ' : ''}(expected: ${expected}) != (real: ${real})`);
     }
     floatEqual(expected, real, description) {
-        let normalizedError = Math.abs(expected - real) / ((!isFinite(expected) || expected == 0) ? 1 : expected);
-        if (normalizedError >= this.EPS) {
+        if (!(Math.abs(expected - real) <= (this.ABS_EPS + this.EPS * Math.abs(expected)))) {
             throw Error(`${description ? description + ': ' : ''}(expected: ${expected}) != (real: ${real})`);
         }
     }
@@ -75,6 +75,7 @@ const TestRunner = new class {
         console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
         try {
             assert.EPS = testCase.EPS;
+            assert.ABS_EPS = testCase.ABS_EPS;
             let runner = await WebDNN.load(this.rootUrl + testCase.dirname, {
                 backendOrder: testCase.backend,
                 ignoreCache: true
