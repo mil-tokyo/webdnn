@@ -79,6 +79,12 @@ class Variable(Node):
 
         return self
 
+    def replace(self, new_variable: "Variable"):
+        self.output_from.replace_output(self, new_variable)
+
+        for op in list(self.input_to):  # type: operator.Operator
+            op.replace_input(self, new_variable)
+
     def __repr__(self):
         order_repr = ''.join(map(lambda e: e.name, self.order.axes))
         return f"<{self.__class__.__name__} {self.name} shape={self.shape}, order=\"{order_repr}\">"

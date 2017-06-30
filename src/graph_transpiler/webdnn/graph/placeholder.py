@@ -18,6 +18,25 @@ class Dependency:
     operator: PlaceholderOperator
     operands: List[Union[int, "Placeholder"]]
 
+    @staticmethod
+    def check_deep_equal(d1: "Dependency", d2: "Dependency") -> bool:
+        if d1.operator != d2.operator:
+            return False
+
+        if d1.operator == PlaceholderOperator.Mul or d1.operator == PlaceholderOperator.Add:
+            operands1 = sorted(d1.operands, key=lambda op: str(op))
+            operands2 = sorted(d2.operands, key=lambda op: str(op))
+            if len(operands1) != len(operands2):
+                return False
+
+            return all([Placeholder.check_deep_equal(p1, p2) for p1, p2 in zip(operands1, operands2)])
+
+        elif d1.operator == PlaceholderOperator.Mod or \
+                d1.operator == PlaceholderOperator.Mod or \
+                d1.operator == PlaceholderOperator.FloorDiv:
+            return Placeholder.check_deep_equal(d1.operands[0], d2.operands[0]) and \
+                   Placeholder.check_deep_equal(d1.operands[1], d2.operands[1])
+
     def __init__(self, operator: PlaceholderOperator, operands: List[Union[int, "Placeholder"]]):
         self.operator = operator
         operands = list(operands)
@@ -236,13 +255,29 @@ class Placeholder(json.SerializableMixin):
         else:
             return True
 
-    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: str = None):
+    @staticmethod
+    def check_deep_equal(p1: Union[int, "Placeholder"], p2: Union[int, "Placeholder"]) -> bool:
+        if Placeholder.check_resolved(p1) and Placeholder.check_resolved(p2):
+            return Placeholder.force_int(p1) == Placeholder.force_int(p2)
+
+        elif Placeholder.check_resolved(p1) or Placeholder.check_resolved(p2):
+            return False
+
+        elif p1.dependency is not None and p2.dependency is not None:
+            return Dependency.check_deep_equal(p1.dependency, p2.dependency)
+
+        else:
+            return p1.label == p2.label
+
+    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None,
+                label: str = None):
         if isinstance(value, Placeholder):
             return value
 
         return super().__new__(cls)
 
-    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: Optional[str] = None):
+    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None,
+                 label: Optional[str] = None):
         global _id
 
         if self is value:
@@ -335,7 +370,8 @@ class Placeholder(json.SerializableMixin):
         if self.dependency:
             if self.dependency.operator == PlaceholderOperator.Add or self.dependency.operator == PlaceholderOperator.Sub:
                 # (v0+v1)*o = v0*o + v1*o
-                return Placeholder(Dependency(self.dependency.operator, [Placeholder(value=v * other) for v in self.dependency.operands]))
+                return Placeholder(Dependency(self.dependency.operator,
+                                              [Placeholder(value=v * other) for v in self.dependency.operands]))
 
             elif self.dependency.operator == PlaceholderOperator.Mul:
                 return Placeholder(Dependency(PlaceholderOperator.Mul, self.dependency.operands + [other]))
@@ -381,16 +417,10 @@ class Placeholder(json.SerializableMixin):
         return Placeholder.force_int(self)
 
     def __eq__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved or not Placeholder.check_resolved(other):
-            return id(self) == id(other)
-
-        return self.value == Placeholder.force_int(other)
+        return Placeholder.check_deep_equal(self, other)
 
     def __ne__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved or not Placeholder.check_resolved(other):
-            return id(self) != id(other)
-
-        return self.value != Placeholder.force_int(other)
+        return not Placeholder.check_deep_equal(self, other)
 
     def __gt__(self, other: Union[int, "Placeholder"]) -> bool:
         if not self.is_resolved:

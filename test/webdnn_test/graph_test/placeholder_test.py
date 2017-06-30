@@ -169,3 +169,35 @@ def test_mod():
     q = p % 3
     p.value = 7
     assert q == 1
+
+
+def test_deep_equal():
+    p1 = Placeholder(label='p1')
+    p2 = Placeholder(label='p2')
+    a = p1 + p2
+    b = p2 + p1
+    assert a == b
+
+
+def test_deep_equal2():
+    p1 = Placeholder(label='p1')
+    p2 = Placeholder(label='p2')
+    a = p1 * 5 + p2 * 2 + p2 * 3
+    b = (p2 + p1) * 5
+    assert a == b
+
+
+def test_deep_equal3():
+    p1 = Placeholder(label='p1')
+    p2 = Placeholder(label='p2')
+    a = (p1 * 4 + p1 * 2) * p2 + p2 * 3
+    b = (1 + 2 * p1) * p2 * 3
+    assert a == b
+
+
+def test_deep_equal4():
+    p1 = Placeholder(label='p1')
+    p2 = Placeholder(label='p1')
+    a = p1
+    b = p2
+    assert a == b
