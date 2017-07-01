@@ -100,12 +100,14 @@ class KerasConverter(Converter[KerasOperator]):
             if len(input_shape) == 1:
                 order = OrderC
             elif len(input_shape) == 2:
-                order = OrderNC  # fixme for LSTM
+                order = OrderNC
+            elif len(input_shape) == 3:
+                order = OrderNTC
             elif len(input_shape) == 4:
                 # Assuming data_format == "channels_last":
                 order = OrderNHWC
             else:
-                raise NotImplementedError("Input shape must be 1,2,4 dimensions")
+                raise NotImplementedError("Input shape must be 1,2,3,4 dimensions")
             v = Variable(input_shape, order)
             self._global_input_variables.append(v)
         self._weight_dataset = model["model_weights"]
