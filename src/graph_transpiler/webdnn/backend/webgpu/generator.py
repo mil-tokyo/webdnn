@@ -40,6 +40,7 @@ from webdnn.backend.webgpu.kernels.softmax import softmax
 from webdnn.backend.webgpu.kernels.softplus import softplus
 from webdnn.backend.webgpu.kernels.softsign import softsign
 from webdnn.backend.webgpu.kernels.tanh import tanh
+from webdnn.backend.webgpu.kernels.zero_padding_1d import zero_padding_1d
 from webdnn.backend.webgpu.operators.col2im import Col2Im
 from webdnn.backend.webgpu.operators.im2col import Im2Col
 from webdnn.backend.webgpu.operators.sgemm import Sgemm
@@ -70,6 +71,7 @@ from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.util import flags, console
 from webdnn.util.json import json
 
@@ -196,3 +198,4 @@ WebGPUDescriptorGenerator.register_handler(Softmax)(softmax)
 WebGPUDescriptorGenerator.register_handler(Softplus)(softplus)
 WebGPUDescriptorGenerator.register_handler(Softsign)(softsign)
 WebGPUDescriptorGenerator.register_handler(Tanh)(tanh)
+WebGPUDescriptorGenerator.register_handler(ZeroPadding1D)(zero_padding_1d)
