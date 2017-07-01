@@ -5,10 +5,8 @@ from webdnn.graph.graph import Graph
 
 # FIXME: DOCS
 class OptimizeRule:
-    sub_rules: List["OptimizeRule"]
-
     def __init__(self):
-        self.sub_rules = []
+        self.sub_rules = []  # type:List["OptimizeRule"]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         """Optimize the computational graph

@@ -3,30 +3,6 @@ from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
 
 
-def test_get_input_name():
-    op = Operator("op")
-    v1 = Variable((1, 2, 3, 4), OrderNHWC)
-    v2 = Variable((1, 2, 3, 4), OrderNHWC)
-
-    op.append_input("v1", v1)
-    op.append_input("v2", v2)
-
-    assert op.get_input_name(v1) == "v1"
-    assert op.get_input_name(v2) == "v2"
-
-
-def test_get_output_name():
-    op = Operator("op")
-    v1 = Variable((1, 2, 3, 4), OrderNHWC)
-    v2 = Variable((1, 2, 3, 4), OrderNHWC)
-
-    op.append_output("v1", v1)
-    op.append_output("v2", v2)
-
-    assert op.get_output_name(v1) == "v1"
-    assert op.get_output_name(v2) == "v2"
-
-
 def test_append_input():
     op = Operator("op")
     v1 = Variable((1, 2, 3, 4), OrderNHWC)

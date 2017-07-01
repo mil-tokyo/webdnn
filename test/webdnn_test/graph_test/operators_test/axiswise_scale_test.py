@@ -10,7 +10,6 @@ from webdnn.graph.order import OrderC, OrderNC, OrderNHWC, OrderHWNC, OrderHWCN,
 from webdnn.graph.variable import Variable
 
 
-# FIXME 各orderをテストにわけられないか
 def test_every_order():
     orders_x = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
     axes = [Axis.C]

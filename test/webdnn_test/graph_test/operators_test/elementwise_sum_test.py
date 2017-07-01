@@ -9,7 +9,6 @@ from webdnn.graph.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, O
 from webdnn.graph.variable import Variable
 
 
-# FIXME 各orderをテストにわけられないか
 def test_every_order():
     orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 

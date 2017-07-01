@@ -1,4 +1,4 @@
-# Graph Builder
+# Graph Transpiler
 
 ```eval_rst
 .. toctree::

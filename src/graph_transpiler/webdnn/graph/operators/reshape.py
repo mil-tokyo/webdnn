@@ -53,8 +53,7 @@ class Reshape(Operator):
         assert self.parameters["in_order"] == x.order
 
         y = Variable(self.parameters["out_shape"], self.parameters["out_order"])
-        # FIXME: implement equality check when placeholder is not resolved
-        # assert y.shape == self.parameters["out_shape"]
+        assert y.shape == self.parameters["out_shape"]
         self.append_input("x", x)
         self.append_output("y", y)
 
