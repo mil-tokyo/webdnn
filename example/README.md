@@ -30,5 +30,15 @@ This example illustrates how to use Caffe model for WebDNN.
 
 This is intended to be example of interactive application.
 
+## Sentence sentiment classification
+`lstm` directory contains the example to train and convert LSTM-based model to classify sentiments of movie reviews.
+
+This example illustrates how to use LSTM model.
+
+## Text generation
+`text_generation` directory contains the example to convert LSTM-based text generation model to generate text like Nietzsche.
+
+This example illustrates how to iteratively predict character probability and sample a character.
+
 ## Benchmark
 `benchmark` directory contains the speed benchmark to compare WebDNN and Keras.js.
