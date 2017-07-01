@@ -66,18 +66,18 @@ let runner;
 
 async function init() {
     // Initialize descriptor runner
-    runner = await WebDNN.prepareAll('./output');
+    runner = await WebDNN.load('./output');
 }
 
 async function run() {
     // Set the value into input variable.
-    runner.inputViews[0].set(loadImageData());
+    runner.getInputViews()[0].set(loadImageData());
     
     // Run
     await runner.run(); 
 
     // Show the result
-    console.log('Output', WebDNN.Math.argmax(runner.outputViews[0]));
+    console.log('Output', WebDNN.Math.argmax(runner.getOutputViews()[0].toActual()));
 }
 ```
 

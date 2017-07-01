@@ -66,13 +66,13 @@ async function init() {
 
 async function run() {
     // 入力変数にデータをセット
-    runner.inputViews[0].set(loadImageData());
+    runner.getInputViews()[0].set(loadImageData());
     
     // 実行
     await runner.run(); 
 
     // 結果を確認
-    console.log('Output', WebDNN.Math.argmax(runner.outputViews[0]));
+    console.log('Output', WebDNN.Math.argmax(runner.getOutputViews()[0].toActual()));
 }
 ```
 
