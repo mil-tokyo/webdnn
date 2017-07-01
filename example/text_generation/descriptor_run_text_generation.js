@@ -79,7 +79,7 @@ function sample_next_char(scores, temperature) {
 async function run() {
     let runner = await prepare_run();
 
-    let sentence_seed = document.querySelector('input[name=seed_text]').value;
+    let sentence_seed = document.querySelector('#seed_text').textContent;
     let sentence = sentence_seed;
 
     for (let i = 0; i < 100; i++) {
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async function (event) {
         }
         let json = await response.json();
         metadata = json;
-        document.querySelector('input[name=seed_text]').value = metadata['example_sentences'][0];
+        document.querySelector('#seed_text').textContent = metadata['example_sentences'][0];
         document.getElementById('run_button').disabled = false;
         document.getElementById('change_seed').disabled = false;
     } catch (error) {
