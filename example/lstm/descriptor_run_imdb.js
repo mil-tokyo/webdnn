@@ -50,7 +50,7 @@ async function run() {
         let pred_value = out_vec[0];
         console.log(`predicted: ${pred_value}`);
         console.log(out_vec);
-        displayPrediction(output_table, sample.x, pred_value, sample.y);
+        displayPrediction(output_table, sample.orig_sentence, pred_value, sample.y);
     }
     console.log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
 }
@@ -63,7 +63,7 @@ async function fetchSamples(path) {
     let json = await response.json();
     let samples = [];
     for (let i = 0; i < json.length; i++) {
-        samples.push({ 'x': new Float32Array(json[i]['x']), 'y': json[i]['y'], 'orig_pred': json[i]['orig_pred'] });
+        samples.push({ 'x': new Float32Array(json[i]['x']), 'y': json[i]['y'], 'orig_sentence': json[i]['orig_sentence'], 'orig_pred': json[i]['orig_pred'] });
     }
 
     return samples;
