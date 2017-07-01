@@ -2,6 +2,9 @@
 This is based on Keras's example. Feature of saving model and setting is added.
 https://raw.githubusercontent.com/fchollet/keras/master/examples/lstm_text_generation.py
 
+Trained model can be obtained from
+https://github.com/mil-tokyo/webdnn-data/raw/master/models/lstm_text_generation/lstm_text_generation.h5
+
 Example script to generate text from Nietzsche's writings.
 
 At least 20 epochs are required before the generated text
