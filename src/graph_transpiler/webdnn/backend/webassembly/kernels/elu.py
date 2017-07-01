@@ -1,23 +1,22 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.operators.elu import Elu
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *X = data_buffer + %%META_LOAD(relu_X_offset)%%;
-    float *Y = data_buffer + %%META_LOAD(relu_Y_offset)%%;
+    const float *X = %%LOAD_BUFFER(relu_X)%%;
+    float *Y = %%LOAD_BUFFER(relu_Y)%%;
 
-    const int N = %%META_LOAD(relu_N)%%;
+    const int N = %%LOAD_BUFFER(relu_N)%%;
   
     for (int gid = 0; gid < N; gid += 1) {
         float result = X[gid];
         result = result < 0.0 ? (expf(result)-1) : result;      
-        //Y[gid] = %%ELEMENTWISE_ATTACHABLE(result)%%;
         Y[gid] = result;
     }
 }
@@ -25,31 +24,30 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def elu(op: Elu,
-        constants_layout: MemoryLayout,
-        variables_layout: MemoryLayout,
-        metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+def elu(op: Elu, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.shape == y.variable.shape
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-    metabuffer_injector.register({
-        "relu_X_offset": x.offset,
-        "relu_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "relu_X": x,
+        "relu_Y": y,
         "relu_N": y.variable.size
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("elu", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = buffer_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

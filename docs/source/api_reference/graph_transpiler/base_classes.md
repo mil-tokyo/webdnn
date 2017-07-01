@@ -44,6 +44,13 @@
    :members:
 ```
 
+### Placeholder
+
+```eval_rst
+.. autoclass:: webdnn.graph.placeholder.Placeholder
+   :members:
+```
+
 ### OptimizeRule
 
 ```eval_rst

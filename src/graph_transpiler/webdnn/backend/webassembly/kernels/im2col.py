@@ -1,31 +1,33 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webassembly.operators.im2col import Im2Col
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC, OrderCNHW
 
 template_NHWC = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
-    float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
+    const float *im = %%LOAD_BUFFER(im2col_im)%%;
+    float *col = %%LOAD_BUFFER(im2col_col)%%;
 
-    const int N = %%META_LOAD(im2col_N)%%;
-    const int C1 = %%META_LOAD(im2col_C1)%%;
-    const int H1 = %%META_LOAD(im2col_H1)%%;
-    const int W1 = %%META_LOAD(im2col_W1)%%;
-    const int H2 = %%META_LOAD(im2col_H2)%%;
-    const int W2 = %%META_LOAD(im2col_W2)%%;
-    const int KH = %%META_LOAD(im2col_KH)%%;
-    const int KW = %%META_LOAD(im2col_KW)%%;
-    const int SH = %%META_LOAD(im2col_SH)%%;
-    const int SW = %%META_LOAD(im2col_SW)%%;
-    const int PH = %%META_LOAD(im2col_PH)%%;
-    const int PW = %%META_LOAD(im2col_PW)%%;
+    const int N = %%LOAD_BUFFER(im2col_N)%%;
+    const int C1 = %%LOAD_BUFFER(im2col_C1)%%;
+    const int H1 = %%LOAD_BUFFER(im2col_H1)%%;
+    const int W1 = %%LOAD_BUFFER(im2col_W1)%%;
+    const int H2 = %%LOAD_BUFFER(im2col_H2)%%;
+    const int W2 = %%LOAD_BUFFER(im2col_W2)%%;
+    const int KH = %%LOAD_BUFFER(im2col_KH)%%;
+    const int KW = %%LOAD_BUFFER(im2col_KW)%%;
+    const int DH = %%LOAD_BUFFER(im2col_DH)%%;
+    const int DW = %%LOAD_BUFFER(im2col_DW)%%;
+    const int SH = %%LOAD_BUFFER(im2col_SH)%%;
+    const int SW = %%LOAD_BUFFER(im2col_SW)%%;
+    const int PH = %%LOAD_BUFFER(im2col_PH)%%;
+    const int PW = %%LOAD_BUFFER(im2col_PW)%%;
 
     for (int gid = 0; gid < N*H2*W2*KH*KW*C1; gid += 1) {
         const int c1 = gid % C1;
@@ -35,8 +37,8 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         const int h2 = gid / C1 / KW / KH / W2 % H2;
         const int  n = gid / C1 / KW / KH / W2 / H2;
         
-        const int h1 = h2 * SH - PH + kh;
-        const int w1 = w2 * SW - PW + kw;
+        const int h1 = h2 * SH - PH + kh * DH;
+        const int w1 = w2 * SW - PW + kw * DW;
 
         col[gid] = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n*H1+h1)*W1+w1)*C1+c1];
     }
@@ -44,23 +46,25 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 """
 
 template_CNHW = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *im = data_buffer + %%META_LOAD(im2col_im_offset)%%;
-    float *col = data_buffer + %%META_LOAD(im2col_col_offset)%%;
+    const float *im = %%LOAD_BUFFER(im2col_im)%%;
+    float *col = %%LOAD_BUFFER(im2col_col)%%;
 
-    const int N = %%META_LOAD(im2col_N)%%;
-    const int C1 = %%META_LOAD(im2col_C1)%%;
-    const int H1 = %%META_LOAD(im2col_H1)%%;
-    const int W1 = %%META_LOAD(im2col_W1)%%;
-    const int H2 = %%META_LOAD(im2col_H2)%%;
-    const int W2 = %%META_LOAD(im2col_W2)%%;
-    const int KH = %%META_LOAD(im2col_KH)%%;
-    const int KW = %%META_LOAD(im2col_KW)%%;
-    const int SH = %%META_LOAD(im2col_SH)%%;
-    const int SW = %%META_LOAD(im2col_SW)%%;
-    const int PH = %%META_LOAD(im2col_PH)%%;
-    const int PW = %%META_LOAD(im2col_PW)%%;
+    const int N = %%LOAD_BUFFER(im2col_N)%%;
+    const int C1 = %%LOAD_BUFFER(im2col_C1)%%;
+    const int H1 = %%LOAD_BUFFER(im2col_H1)%%;
+    const int W1 = %%LOAD_BUFFER(im2col_W1)%%;
+    const int H2 = %%LOAD_BUFFER(im2col_H2)%%;
+    const int W2 = %%LOAD_BUFFER(im2col_W2)%%;
+    const int KH = %%LOAD_BUFFER(im2col_KH)%%;
+    const int KW = %%LOAD_BUFFER(im2col_KW)%%;
+    const int DH = %%LOAD_BUFFER(im2col_DH)%%;
+    const int DW = %%LOAD_BUFFER(im2col_DW)%%;
+    const int SH = %%LOAD_BUFFER(im2col_SH)%%;
+    const int SW = %%LOAD_BUFFER(im2col_SW)%%;
+    const int PH = %%LOAD_BUFFER(im2col_PH)%%;
+    const int PW = %%LOAD_BUFFER(im2col_PW)%%;
 
     for (int gid = 0; gid < N*H2*W2*KH*KW*C1; gid += 1) {
         const int w2 = gid % W2;
@@ -70,8 +74,8 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
         const int kw = gid / W2 / H2 / N / C1 % KW;
         const int kh = gid / W2 / H2 / N / C1 / KW;
 
-        const int h1 = h2 * SH - PH + kh;
-        const int w1 = w2 * SW - PW + kw;
+        const int h1 = h2 * SH - PH + kh * DH;
+        const int w1 = w2 * SW - PW + kw * DW;
 
         col[gid] = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n*H1+h1)*W1+w1)*C1+c1];
     }
@@ -80,22 +84,17 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def im2col(op: Im2Col,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    im = variables_layout[op.inputs["im"]]
-    col = variables_layout[op.outputs["col"]]
+def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
+    im = memory_layout[op.inputs["im"]]
+    col = memory_layout[op.outputs["col"]]
 
     assert im.variable.order == OrderNHWC
     assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
-        "im2col_im_offset": im.offset,
-        "im2col_col_offset": col.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "im2col_im": im,
+        "im2col_col": col,
         "im2col_N": col.variable.shape_dict[Axis.N],
         "im2col_C1": im.variable.shape_dict[Axis.C],
         "im2col_H1": im.variable.shape_dict[Axis.H],
@@ -104,21 +103,25 @@ def im2col(op: Im2Col,
         "im2col_W2": col.variable.shape_dict[Axis.W],
         "im2col_KH": op.KH,
         "im2col_KW": op.KW,
+        "im2col_DH": op.DH,
+        "im2col_DW": op.DW,
         "im2col_SH": op.SH,
         "im2col_SW": op.SW,
         "im2col_PH": op.PH,
         "im2col_PW": op.PW,
     })
 
+    name_injector = KernelNameInjector(op)
+
     source = template_CNHW if col.variable.order == OrderCNHW else template_NHWC
-    source = metabuffer_injector.inject(source)
-    func_name = util.add_canonical_suffix("im2col", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    source = buffer_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

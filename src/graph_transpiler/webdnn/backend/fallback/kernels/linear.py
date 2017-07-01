@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -10,10 +11,10 @@ from webdnn.graph.order import OrderNC
 # EcmaScript3 to support older browsers
 
 source = """
-linear: function(input_arrays, output_arrays, param_arrays, option) {
+linear: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
+var w = input_arrays[1];
 var y = output_arrays[0];
-var w = param_arrays[0];
 var m = option.m | 0;
 var n = option.n | 0;
 var k = option.k | 0;
@@ -38,7 +39,8 @@ for (var i = 0; i < m; i++) {
 """
 
 
-def linear(op: Linear) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
@@ -101,9 +103,8 @@ def linear(op: Linear) -> List[Kernel]:
     kernel = Kernel(
         {"linear": source},
         "linear",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[w.parameters["name"]],
+        inputs=[x, w],
+        outputs=[y],
         call_option={"m": m,
                      "n": n,
                      "k": k,

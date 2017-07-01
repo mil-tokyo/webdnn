@@ -1,11 +1,45 @@
 /// <reference path="../graph_descriptor/graph_descriptor.ts" />
+/// <reference path="../placeholder.ts" />
+/// <reference path="../symbolic_array_buffer_view.ts" />
 
 namespace WebDNN {
     /**
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
      */
-    export interface DescriptorRunner {
-        backend: string;
+    export abstract class DescriptorRunner<D extends GraphDescriptor> {
+        readonly backendName: string;
+        descriptor: D | null = null;
+        placeholderContext: PlaceholderContext | null;
+        ignoreCache: boolean = false;
+
+        /**
+         * Initialize this runner
+         */
+        abstract async init(): Promise<void>;
 
         /**
          * Fetch descriptor from specified directory.
@@ -20,38 +54,26 @@ namespace WebDNN {
          *
          * @param progressCallback callback which is called to notice the loading is progressing.
          */
-        load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+        abstract async load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
         /**
-         * set descriptor.
-         * @param descriptor descriptor which will be executed.
+         * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
          */
-        setDescriptor(descriptor: GraphDescriptor): void;
-
-        /**
-         * compile kernels.
-         */
-        compile(): Promise<void>;
-
-        /**
-         * load weight data
-         * @param weightsData weights data
-         */
-        loadWeights(weightsData: Uint8Array): Promise<void>;
-
-        /**
-         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
-         */
-        run(): Promise<void>;
+        abstract async setPlaceholderValue(values: { [key: string]: number }): Promise<void>;
 
         /**
          * Get input ArrayBufferView object
          */
-        getInputViews(): Promise<Float32Array[]>;
+        abstract getInputViews(): SymbolicFloat32Array[];
 
         /**
          * Get output ArrayBufferView object
          */
-        getOutputViews(): Promise<Float32Array[]>;
+        abstract getOutputViews(): SymbolicFloat32Array[];
+
+        /**
+         * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
+         */
+        abstract async run(): Promise<void>;
     }
 }

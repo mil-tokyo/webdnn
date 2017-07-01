@@ -1,10 +1,11 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
 source = """
-concat: function(input_arrays, output_arrays, param_arrays, option) {
+concat: function(input_arrays, output_arrays, option) {
 var xs = input_arrays;
 var y = output_arrays[0];
 var shapes = option.x_shapes;
@@ -67,7 +68,8 @@ function increment(shape, position) {
 """
 
 
-def concat(op: Concat) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [op.inputs[f"x{i}"] for i in range(len(op.inputs))]
     y = op.outputs["y"]
     target_axis = op.axis
@@ -96,9 +98,8 @@ def concat(op: Concat) -> List[Kernel]:
     kernel = Kernel(
         {"concat": source},
         "concat",
-        inputs=[x.parameters["name"] for x in xs],
-        outputs=[y.parameters["name"]],
-        weights=[],
+        inputs=xs,
+        outputs=[y],
         call_option={"x_shapes": x_shapes,
                      "x_strides": x_strides,
                      "x_offsets": x_offsets}

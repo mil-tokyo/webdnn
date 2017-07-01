@@ -29,10 +29,8 @@ function togglePause() {
 async function initialize() {
     try {
         //noinspection ES6ModulesDependencies
-        let backend = await WebDNN.init();
-        console.log(`backend: ${backend}`);
-
-        dnn = await WebDNN.prepareAll("./output");
+        dnn = await WebDNN.load("./output");
+        console.log(`backend: ${dnn.backendName}`);
 
         Webcam.set({
             dest_width: 192,
@@ -50,8 +48,8 @@ async function initialize() {
 
         $input = $('#snap');
         $output = $('#result');
-        inputView = dnn.inputViews[0];
-        outputView = dnn.outputViews[0];
+        inputView = dnn.getInputViews()[0].toActual();
+        outputView = dnn.getOutputViews()[0].toActual();
         ctxIn = $input.getContext('2d');
         ctxOut = $output.getContext('2d');
         h = $output.height;

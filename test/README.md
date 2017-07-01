@@ -2,34 +2,34 @@
 
 ### GraphBuilder
 
-- テストフレームワークとして[nose](http://nose.readthedocs.io/en/latest/)を使用
-    `pip install nose` でインストールされる `nosetests` コマンドでテストを実行可能。
+- Test framework is [nose](http://nose.readthedocs.io/en/latest/)
+    `nosetests` installed by `pip install nose` runs the test。
 
     ```
     nosetests
     ```
 
-- テスト追加の際はフォルダ・ファイル名の末尾に `_test` をつけること
+- The suffix `_test` must be attached to the file / folder name when adding a test
 
-- カバレッジも取れる
+- Taking coverage
 
     ```
     nosetests --with-coverage --cover-tests graph_transpiler
     ```
     
-    ただしカバレッジはそもそもimportしていないファイルについて計算されないので注意
+    Coverage is not calculated for files which are not imported.
 
-- カーネルコード生成のテストは、ウェブブラウザで行う。
+- Kernel code generation test is done via a web browser.
 
-    - 予め、テスト用のカーネルコードを生成する必要がある
+    - Kernel code have to be generated in advance.
     
         ```
-        nosetests -w ./test/kernels
+        nosetests -w ./test/runtime/operators_test
         ```
 
-    - `kernel_test.html` を開いて[RUN]を押すと生成されたカーネルコードがテストされる。
+    - Opening `kernel_test.html` and press [RUN] to test the generated kernel code.
 
 
 ### DescriptorRunner
 
-- 未定
+- Not implemented

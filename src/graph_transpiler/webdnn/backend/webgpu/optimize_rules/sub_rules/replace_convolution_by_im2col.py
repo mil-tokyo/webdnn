@@ -21,7 +21,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             if not isinstance(op, Convolution2D):
                 continue
 
-            op: Convolution2D
+            op = op  # type: Convolution2D
 
             x = op.inputs["x"]
             w = op.inputs["w"]
@@ -34,8 +34,9 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             w.change_order(OrderHWCN)
             assert old_y.order == OrderNHWC
 
-            if op.ksize[0] > 1 or op.ksize[1] > 1 or op.stride[0] > 1 or op.stride[1] > 1 or op.padding[0] > 0 or op.padding[1] > 0:
-                im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding)
+            if op.WH != 1 or op.WW != 1 or op.stride != (1, 1) or op.padding != (0, 0):
+                im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding,
+                                dilation_rate=op.dilation_rate)
                 col, = im2col(x)
                 col.change_order(OrderNHWC)
 
@@ -46,10 +47,12 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                           M=col.shape_dict[Axis.N] * col.shape_dict[Axis.H] * col.shape_dict[Axis.W],
                           N=w.shape_dict[Axis.N],
                           K=col.shape_dict[Axis.C],
-                          out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
+                          out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W],
+                                     w.shape_dict[Axis.N]],
                           out_order=OrderNHWC,
                           transpose_A=True if col.order == OrderNHWC else False,
                           transpose_B=True)
+
             new_y, = sgemm(col, w)
 
             sgemm.replace_output(new_y, old_y)

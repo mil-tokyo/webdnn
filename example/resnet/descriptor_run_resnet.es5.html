@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ResNet-50 conversion WebDNN example</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.23.0/polyfill.min.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch"></script>
+  <script src="../../lib/inflate.min.js"></script>
+  <script src="../../dist/webdnn.es5.js"></script>
+  <script src="../data/imagenet_labels.js"></script>
+  <script src="descriptor_run_resnet.es5.js"></script>
+</head>
+
+<body>
+  <h1>ResNet-50 conversion WebDNN example</h1>
+  <h2>For EcmaScript5 environment such as IE11</h2>
+  You have to convert ResNet-50 with python script before running this webpage.
+  <form>
+    Image URL: <input type="text" name="image_url" value="../data/school_bus.jpg" size="100"><br>
+    <canvas id="input_image" width="224" height="224"></canvas><br>
+    <button type="button" onclick="load_image(); return false;">Load image</button><br>
+    Using canvas's image slightly changes the output due to interpolation.<br>
+    <button id="run_button" type="button" onclick="run_entry(); return false;" disabled>Run</button><br>
+    Backend:
+    <label><input type="radio" name="backend_name" value="" checked>auto</label>
+    <label><input type="radio" name="backend_name" value="webgpu">webgpu</label>
+    <label><input type="radio" name="backend_name" value="webassembly">webassembly</label>
+    <label><input type="radio" name="backend_name" value="fallback">fallback (slow; debug only)</label><br>
+    Framework for model:
+    <label><input type="radio" name="framework_name" value="keras" checked>Keras</label>
+    <label><input type="radio" name="framework_name" value="chainer">Chainer</label>
+    <div id="messages"></div>
+    
+  </form>
+</body>
+
+</html>

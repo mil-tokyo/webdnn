@@ -2,22 +2,23 @@ from typing import Dict, List
 
 from webdnn.graph.axis import Axis
 
-"""
-This attribute means data order, not number of dimensions
-"""
 
-
-# FIXME: DOCS
-# FIXME: Is it need to extend from Attribute?
 class Order:
-    ndim: int
-    axes: List[Axis]
-    axes_dict: Dict[Axis, int]
+    """
+    This class represents semantics of data order of variables.
+
+    For example, :code:`OrderNHWC` means that the data is aligned as Channel-major(Batch-size-minor).
+
+    attrs:
+        ndim(int): number of dimensions
+        axes(list of :class:`~webdnn.graph.axis.Axis`): list of axis
+        axes_dict(dict of :class:`~webdnn.graph.axis.Axis` and int): dictionary of pairs of axis and order index
+    """
 
     def __init__(self, axes: List[Axis]):
-        self.ndim = len(axes)
-        self.axes = axes
-        self.axes_dict = {a: i for i, a in enumerate(axes)}
+        self.ndim = len(axes)  # type: int
+        self.axes = axes  # type: List[Axis]
+        self.axes_dict = {a: i for i, a in enumerate(axes)}  # type: Dict[Axis, int]
 
     def __eq__(self, other):
         if isinstance(other, Order):
@@ -86,3 +87,6 @@ usage:
     Chainer Deconvolution2D Filter
 """
 OrderCHWN = Order([Axis.C, Axis.H, Axis.W, Axis.N])
+
+OrderNT = Order([Axis.N, Axis.T])
+OrderNTC = Order([Axis.N, Axis.T, Axis.C])

@@ -1,23 +1,23 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
-from webdnn.backend.webgpu.allocator import MemoryLayout
 
 
 def generate_template(transpose_A, transpose_B):
     return """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
-    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
-    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+    float *A = %%LOAD_BUFFER(sgemm_A)%%;
+    float *B = %%LOAD_BUFFER(sgemm_B)%%;
+    float *C = %%LOAD_BUFFER(sgemm_C)%%;
 
-    const int M = %%META_LOAD(sgemm_M, 1)%%;
-    const int N = %%META_LOAD(sgemm_N, 1)%%;
-    const int K = %%META_LOAD(sgemm_K, 1)%%;
+    const int M = %%LOAD_BUFFER(sgemm_M)%%;
+    const int N = %%LOAD_BUFFER(sgemm_N)%%;
+    const int K = %%LOAD_BUFFER(sgemm_K)%%;
 
     const int a_stride_k = %%A_STRIDE_K%%;
     const int a_stride_mn = %%A_STRIDE_MN%%;
@@ -50,44 +50,33 @@ def generate_template_eigen(transpose_A, transpose_B, M, N, K):
 #include <Eigen/Dense>
 #endif
 
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *A = data_buffer + %%META_LOAD(sgemm_A_offset, 1)%%;
-    float *B = weight_buffer + %%META_LOAD(sgemm_B_offset, 1)%%;
-    float *C = data_buffer + %%META_LOAD(sgemm_C_offset, 1)%%;
+    float *A = %%LOAD_BUFFER(sgemm_A)%%;
+    float *B = %%LOAD_BUFFER(sgemm_B)%%;
+    float *C = %%LOAD_BUFFER(sgemm_C)%%;
 
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
-    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%K%%, Eigen::%%A_MAJOR%%> > a_mat(A, %%M%%, %%K%%);
-    //Eigen::Map<Eigen::Matrix<float, %%K%%, %%N%%, Eigen::%%B_MAJOR%%> > b_mat(B, %%K%%, %%N%%);
-    //Eigen::Map<Eigen::Matrix<float, %%M%%, %%N%%, Eigen::RowMajor> > c_mat(C, %%M%%, %%N%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_K)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%LOAD_BUFFER(sgemm_K)%%, %%LOAD_BUFFER(sgemm_N)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_N)%%);
 
     c_mat.noalias() = a_mat * b_mat;
 }
 """ \
         .replace("%%A_MAJOR%%", "RowMajor" if transpose_A else "ColMajor") \
-        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor") \
-        .replace("%%M%%", str(M)) \
-        .replace("%%N%%", str(N)) \
-        .replace("%%K%%", str(K))
+        .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
 
 
-def sgemm(op: Sgemm,
-          constants_layout: MemoryLayout,
-          variables_layout: MemoryLayout,
-          metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    A = variables_layout[op.inputs["A"]] if op.inputs["A"] in variables_layout else constants_layout[op.inputs["A"]]
-    B = variables_layout[op.inputs["B"]] if op.inputs["B"] in variables_layout else constants_layout[op.inputs["B"]]
-    C = variables_layout[op.outputs["C"]]
+def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
+    A = memory_layout[op.inputs["A"]]
+    B = memory_layout[op.inputs["B"]]
+    C = memory_layout[op.outputs["C"]]
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
-        "sgemm_A_offset": A.offset,
-        "sgemm_B_offset": B.offset,
-        "sgemm_C_offset": C.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "sgemm_A": A,
+        "sgemm_B": B,
+        "sgemm_C": C,
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K
@@ -95,33 +84,33 @@ def sgemm(op: Sgemm,
 
     if op.parameters["eigen"]:
         source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
-
-        metabuffer_injector.register({
-            "sgemm_A_offset": A.offset,
-            "sgemm_B_offset": B.offset,
-            "sgemm_C_offset": C.offset
+        buffer_injector.register({
+            "sgemm_A": A,
+            "sgemm_B": B,
+            "sgemm_C": C
         })
+
     else:
         source = generate_template(op.transpose_A, op.transpose_B)
-
-        metabuffer_injector.register({
-            "sgemm_A_offset": A.offset,
-            "sgemm_B_offset": B.offset,
-            "sgemm_C_offset": C.offset,
+        buffer_injector.register({
+            "sgemm_A": A,
+            "sgemm_B": B,
+            "sgemm_C": C,
             "sgemm_M": op.M,
             "sgemm_N": op.N,
             "sgemm_K": op.K
         })
-    source = metabuffer_injector.inject(source)
-    func_name = util.add_canonical_suffix("sgemm", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+
+    name_injector = KernelNameInjector(op)
+
+    source = buffer_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {
-            func_name: source
-        },
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

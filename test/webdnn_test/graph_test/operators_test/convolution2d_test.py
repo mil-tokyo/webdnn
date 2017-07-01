@@ -7,7 +7,6 @@ from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, Order
 from webdnn.graph.variable import Variable
 
 
-# FIXME 各orderをテストにわけられないか
 def main(k, s, p, n, h1, w1, c1, c2, expected_shape_dict: Dict[Axis, int]):
     orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 

@@ -1,31 +1,28 @@
 from typing import List
 
-import numpy as np
-
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.operators.concat import Concat
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *y = data_buffer + %%META_LOAD(concat_y_offset)%%;
-    const int N = %%META_LOAD(concat_N)%%;
-    const int D = %%META_LOAD(concat_D)%%;
-    const int *x_offsets = &(%%META_LOAD(concat_x_offsets)%%);
-    const int *y_offsets = &(%%META_LOAD(concat_y_offsets)%%);
-    const int *x_shapes = &(%%META_LOAD(concat_x_shapes)%%);
-    const int *x_strides_in_y = &(%%META_LOAD(concat_x_strides_in_y)%%);
+    float *y = %%LOAD_BUFFER(concat_y)%%;
+    const int N = %%LOAD_BUFFER(concat_N)%%;
+    const int D = %%LOAD_BUFFER(concat_D)%%;
+    const int *y_offsets = %%LOAD_BUFFER(concat_y_offsets)%%;
+    const int *x_shapes = %%LOAD_BUFFER(concat_x_shapes)%%;
+    const int *x_strides_in_y = %%LOAD_BUFFER(concat_x_strides_in_y)%%;
     
     int x_index = 0;
     
     for (int n = 0; n < N; n++) {
-        const float *x = data_buffer + x_offsets[n];
+        const float *x = %%LOAD_BUFFER(concat_xs, n)%%;
         const int y_offset = y_offsets[n];
-        const int *x_shape = &(x_shapes[n*D]);
-        const int *x_stride_in_y = &(x_strides_in_y[n*D]);
+        const int *x_shape = x_shapes + n * D;
+        const int *x_stride_in_y = x_strides_in_y + n * D;
         
         int x_size = 1;
         for (int d = 0; d < D; d++) {
@@ -52,12 +49,9 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def concat(op: Concat,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    xs = [variables_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
-    y = variables_layout[op.outputs["y"]]
+def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
+    xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
+    y = memory_layout[op.outputs["y"]]
     target_axis = op.axis
 
     x_offsets = [x.offset for x in xs]
@@ -82,27 +76,28 @@ def concat(op: Concat,
         y_offsets.append(target_axis_offset * y_strides[y.variable.order.axes_dict[target_axis]])
         target_axis_offset += x.variable.shape_dict[target_axis]
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
-        "concat_y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "concat_y": y,
         "concat_D": len(y.variable.shape),
         "concat_N": len(xs),
-        "concat_x_offsets": np.array(x_offsets, dtype=np.int32).tobytes(),
-        "concat_x_strides_in_y": np.array(x_strides_in_y, dtype=np.int32).tobytes(),
-        "concat_x_shapes": np.array(x_shapes, dtype=np.int32).tobytes(),
-        "concat_y_offsets": np.array(y_offsets, dtype=np.int32).tobytes(),
+        "concat_xs": xs,
+        "concat_x_strides_in_y": x_strides_in_y,
+        "concat_x_shapes": x_shapes,
+        "concat_y_offsets": y_offsets
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("concat", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = buffer_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

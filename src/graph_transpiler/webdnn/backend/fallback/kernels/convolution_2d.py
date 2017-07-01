@@ -1,5 +1,6 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -8,10 +9,10 @@ from webdnn.graph.operators.convolution2d import Convolution2D
 # x: (batch_size, h, w, in_size), w: (kh, kw, in_size, out_size), y: (batch_size, oh, ow, out_size) C-order
 # EcmaScript3 to support older browsers
 source = """
-convolution_2d: function(input_arrays, output_arrays, param_arrays, option) {
+convolution_2d: function(input_arrays, output_arrays, option) {
 var x = input_arrays[0];
+var w = input_arrays[1];
 var y = output_arrays[0];
-var w = param_arrays[0];
 var n = option.n | 0;
 var in_spatial = option.in_spatial;
 var out_spatial = option.out_spatial;
@@ -20,6 +21,7 @@ var in_size = option.in_size | 0;
 var padding = option.padding;
 var stride = option.stride;
 var ksize = option.ksize;
+var dilation_rate = option.dilation_rate;
 var strides_x = option.strides_x;
 var strides_w = option.strides_w;
 var strides_y = option.strides_y;
@@ -52,7 +54,10 @@ for (var batch = 0; batch < n; batch++) {
         for (var ky = 0; ky < ksize[0]; ky++) {
           for (var kx = 0; kx < ksize[1]; kx++) {
             for (var ic = 0; ic < in_size; ic++) {
-              sum += get_x(batch, oy * stride[0] + ky, ox * stride[1] + kx, ic) * get_w(ky, kx, ic, oc);
+              sum += get_x(batch, oy * stride[0] + ky * dilation_rate[0],
+                           ox * stride[1] + kx * dilation_rate[1],
+                           ic) *
+                     get_w(ky, kx, ic, oc);
             }
           }
         }
@@ -71,7 +76,8 @@ def calculate_all_strides(var):
     return [calculate_stride(var, axis) for axis in [Axis.N, Axis.H, Axis.W, Axis.C]]
 
 
-def convolution_2d(op: Convolution2D) -> List[Kernel]:
+# noinspection PyUnusedLocal
+def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]
     y = op.outputs["y"]
@@ -79,9 +85,8 @@ def convolution_2d(op: Convolution2D) -> List[Kernel]:
     kernel = Kernel(
         {"convolution_2d": source},
         "convolution_2d",
-        inputs=[x.parameters["name"]],
-        outputs=[y.parameters["name"]],
-        weights=[w.parameters["name"]],
+        inputs=[x, w],
+        outputs=[y],
         call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],
@@ -92,7 +97,8 @@ def convolution_2d(op: Convolution2D) -> List[Kernel]:
                      "strides_y": calculate_all_strides(y),
                      "padding": op.padding,
                      "stride": op.stride,
-                     "ksize": op.ksize}
+                     "ksize": op.ksize,
+                     "dilation_rate": op.dilation_rate}
     )
 
     return [kernel]

@@ -1,7 +1,7 @@
 from typing import Callable
 
+from webdnn.graph import node
 from webdnn.graph.attribute import Attribute
-from webdnn.graph.interface import INode
 from webdnn.graph.operators.attributes.inplace import Inplace
 
 
@@ -9,8 +9,8 @@ class InlineInplace(Attribute):
     injector: Callable[[str], str]
     inplace: Inplace
 
-    def __init__(self, node: INode, injector: Callable[[str], str], inplace: Inplace):
-        super(InlineInplace, self).__init__(node)
+    def __init__(self, base: "node.Node", injector: Callable[[str], str], inplace: Inplace):
+        super(InlineInplace, self).__init__(base)
         self.injector = injector
         self.inplace = inplace
 

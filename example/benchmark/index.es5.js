@@ -1,12 +1,50 @@
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function() {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];
+            descriptor.enumerable = descriptor.enumerable || false;
+            descriptor.configurable = true;
+            if ("value" in descriptor) descriptor.writable = true;
+            Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    return function(Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) defineProperties(Constructor, staticProps);
+        return Constructor;
+    };
+}();
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+        constructor: {
+            value: subClass,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
 
 var benchmarks = [];
 
@@ -23,7 +61,7 @@ function console_error(message) {
     document.getElementById('message').appendChild(document.createTextNode(message + "\n"));
 }
 
-var BaseBenchmark = function () {
+var BaseBenchmark = function() {
     function BaseBenchmark(name) {
         _classCallCheck(this, BaseBenchmark);
 
@@ -51,11 +89,11 @@ var BaseBenchmark = function () {
 
             this.numIteration = numIteration;
             this.results = [];
-            return this.setupAsync().then(function () {
+            return this.setupAsync().then(function() {
                 return _this.executeAsync();
-            }).then(function () {
+            }).then(function() {
                 return _this.finalizeAsync();
-            }).then(function () {
+            }).then(function() {
                 var summary = _this.summarize();
                 _this.summary = summary;
 
@@ -77,12 +115,12 @@ var BaseBenchmark = function () {
             this.onExecuteSingle(this.results.length);
 
             var tStart = performance.now();
-            return this.executeSingleAsync().then(function () {
+            return this.executeSingleAsync().then(function() {
                 var elapsedTime = performance.now() - tStart;
                 _this2.results.push(elapsedTime);
-            }).then(function () {
-                return new Promise(function (resolve, reject) {
-                    setTimeout(function () {
+            }).then(function() {
+                return new Promise(function(resolve, reject) {
+                    setTimeout(function() {
                         resolve(_this2.executeAsync());
                     }, 10);
                 });
@@ -103,11 +141,11 @@ var BaseBenchmark = function () {
         value: function summarize() {
             this.results.shift(); // remove first run
             var results = this.results.sort();
-            var d = results.reduce(function (d, v) {
+            var d = results.reduce(function(d, v) {
                 d.sum += v;
                 d.sum2 += v * v;
                 return d;
-            }, { sum: 0, sum2: 0 });
+            }, {sum: 0, sum2: 0});
 
             var mean = d.sum / results.length;
             var std = Math.sqrt((d.sum2 - results.length * mean * mean) / (results.length - 1));
@@ -129,7 +167,7 @@ var BaseBenchmark = function () {
     return BaseBenchmark;
 }();
 
-var KerasJSBenchmark = function (_BaseBenchmark) {
+var KerasJSBenchmark = function(_BaseBenchmark) {
     _inherits(KerasJSBenchmark, _BaseBenchmark);
 
     function KerasJSBenchmark(name, flagGPU) {
@@ -139,9 +177,6 @@ var KerasJSBenchmark = function (_BaseBenchmark) {
 
         _this3.model = null;
         _this3.flagGPU = flagGPU;
-        _this3.xs = {
-            'input_1': new Float32Array(224 * 224 * 3)
-        };
         return _this3;
     }
 
@@ -157,6 +192,11 @@ var KerasJSBenchmark = function (_BaseBenchmark) {
                 },
                 gpu: this.flagGPU
             });
+
+            var HW = (modelName === 'inception_v3') ? (299 * 299) : (224 * 224);
+            this.xs = {
+                'input_1': new Float32Array(HW * 3)
+            };
 
             return this.model.ready();
         }
@@ -176,7 +216,7 @@ var KerasJSBenchmark = function (_BaseBenchmark) {
     return KerasJSBenchmark;
 }(BaseBenchmark);
 
-var WebDNNBenchmark = function (_BaseBenchmark2) {
+var WebDNNBenchmark = function(_BaseBenchmark2) {
     _inherits(WebDNNBenchmark, _BaseBenchmark2);
 
     function WebDNNBenchmark(name, backend, flagOptimized) {
@@ -198,28 +238,26 @@ var WebDNNBenchmark = function (_BaseBenchmark2) {
             var _this5 = this;
 
             //noinspection ES6ModulesDependencies
-            return WebDNN.init([this.backend]).then(function () {
+            return WebDNN.init([this.backend]).then(function() {
                 //noinspection ES6ModulesDependencies
-                _this5.runner = WebDNN.gpu.createDescriptorRunner();
-                return _this5.runner.load('./output/webdnn/' + _this5.getSelectedModel() + '/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
-            }).then(function () {
-                return _this5.runner.getInputViews();
-            }).then(function (xs) {
-                _this5.x = xs[0];
-                return _this5.runner.getOutputViews();
-            }).then(function (ys) {
-                _this5.y = ys[0];
+                return WebDNN.runner.load('./output/webdnn/' + _this5.getSelectedModel() + '/' + (_this5.flagOptimized ? '' : 'non_') + 'optimized');
+            }).then(function() {
+                return WebDNN.runner.getInputViews();
+            }).then(function(xs) {
+                _this5.x = xs[0].toActual();
+                return WebDNN.runner.getOutputViews();
+            }).then(function(ys) {
+                _this5.y = ys[0].toActual();
             });
         }
     }, {
         key: 'executeSingleAsync',
         value: function executeSingleAsync() {
-            return this.runner.run();
+            return WebDNN.runner.run();
         }
     }, {
         key: 'finalizeAsync',
         value: function finalizeAsync() {
-            this.runner = null;
             this.x = null;
             this.y = null;
         }
@@ -248,16 +286,16 @@ function run() {
     };
 
     console_log('Benchmark ' + benchmark.name + ' start');
-    Promise.resolve().then(function () {
+    Promise.resolve().then(function() {
         return benchmark.runAsync(numIteration).then(summaryHandler);
-    }).then(function () {
+    }).then(function() {
         return console_log('Benchmark end');
-    }).catch(function (err) {
+    }).catch(function(err) {
         return console_error(err);
     });
 }
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function(event) {
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', 'webgpu', true));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU)', 'webgpu', false));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', 'webassembly', true));

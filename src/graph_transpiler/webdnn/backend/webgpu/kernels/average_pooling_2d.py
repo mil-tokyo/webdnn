@@ -1,31 +1,36 @@
 from typing import List
 
-from webdnn.backend.webgpu.allocator import MemoryLayout
-from webdnn.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.webgpu.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.order import OrderNHWC
 
 template = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(average_pooling_2d_X_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(average_pooling_2d_Y_offset)%%;
-    const int N = %%META_LOAD(average_pooling_2d_N)%%;
-    const int H1 = %%META_LOAD(average_pooling_2d_H1)%%;
-    const int W1 = %%META_LOAD(average_pooling_2d_W1)%%;
-    const int C = %%META_LOAD(average_pooling_2d_C)%%;
-    const int H2 = %%META_LOAD(average_pooling_2d_H2)%%;
-    const int W2 = %%META_LOAD(average_pooling_2d_W2)%%;
-    const int K = %%META_LOAD(average_pooling_2d_K)%%;
-    const int S = %%META_LOAD(average_pooling_2d_S)%%;
-    const int P = %%META_LOAD(average_pooling_2d_P)%%;
+    const device float *X = %%LOAD_BUFFER(average_pooling_2d_X)%%;
+    device float *Y = %%LOAD_BUFFER(average_pooling_2d_Y)%%;
+    const int N = %%LOAD_BUFFER(average_pooling_2d_N)%%;
+    const int H1 = %%LOAD_BUFFER(average_pooling_2d_H1)%%;
+    const int W1 = %%LOAD_BUFFER(average_pooling_2d_W1)%%;
+    const int C = %%LOAD_BUFFER(average_pooling_2d_C)%%;
+    const int H2 = %%LOAD_BUFFER(average_pooling_2d_H2)%%;
+    const int W2 = %%LOAD_BUFFER(average_pooling_2d_W2)%%;
+
+    const int KH = %%LOAD_BUFFER(average_pooling_2d_KH)%%;
+    const int KW = %%LOAD_BUFFER(average_pooling_2d_KW)%%;
+    const int SH = %%LOAD_BUFFER(average_pooling_2d_SH)%%;
+    const int SW = %%LOAD_BUFFER(average_pooling_2d_SW)%%;
+    const int PH = %%LOAD_BUFFER(average_pooling_2d_PH)%%;
+    const int PW = %%LOAD_BUFFER(average_pooling_2d_PW)%%;
     
     for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
         const int c = gid % C;
@@ -34,18 +39,18 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
         const int n = gid / C / W2 / H2;
 
         float v = 0;
-        for (int kh = 0; kh < K; kh++) {
-            const int h1 = h2 * S - P + kh;
+        for (int kh = 0; kh < KH; kh++) {
+            const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
             
-            for (int kw = 0; kw < K; kw++) {
-                const int w1 = w2 * S - P + kw;
+            for (int kw = 0; kw < KW; kw++) {
+                const int w1 = w2 * SW - PW + kw;
                 if (w1 < 0 || w1 >= W1) continue;
 
                 v += X[((n * H1 + h1) * W1 + w1) * C + c];
             }
         }
-        v /= K * K;
+        v /= KH * KW;
 
         Y[gid] = v;
     }
@@ -54,41 +59,44 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def average_pooling_2d(op: AveragePooling2D,
-                       constants_layout: MemoryLayout,
-                       variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                       memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     assert x.variable.order == OrderNHWC
     assert y.variable.order == OrderNHWC
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "average_pooling_2d_X_offset": x.offset,
-        "average_pooling_2d_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "average_pooling_2d_X": x,
+        "average_pooling_2d_Y": y,
         "average_pooling_2d_N": x.variable.shape_dict[Axis.N],
         "average_pooling_2d_H1": x.variable.shape_dict[Axis.H],
         "average_pooling_2d_W1": x.variable.shape_dict[Axis.W],
         "average_pooling_2d_C": x.variable.shape_dict[Axis.C],
         "average_pooling_2d_H2": y.variable.shape_dict[Axis.H],
         "average_pooling_2d_W2": y.variable.shape_dict[Axis.W],
-        "average_pooling_2d_K": op.parameters["ksize"][0],
-        "average_pooling_2d_S": op.parameters["stride"][0],
-        "average_pooling_2d_P": op.parameters["padding"][0],
+        "average_pooling_2d_KH": op.parameters["ksize"][0],
+        "average_pooling_2d_KW": op.parameters["ksize"][1],
+        "average_pooling_2d_SH": op.parameters["stride"][0],
+        "average_pooling_2d_SW": op.parameters["stride"][1],
+        "average_pooling_2d_PH": op.parameters["padding"][0],
+        "average_pooling_2d_PW": op.parameters["padding"][1],
     })
 
     name_injector = KernelNameInjector(op)
 
     source = template
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

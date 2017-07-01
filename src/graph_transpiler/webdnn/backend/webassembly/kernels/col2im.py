@@ -1,10 +1,10 @@
 from typing import List
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.kernels import util
-from webdnn.backend.webassembly.meta_buffer_injector import MetaBufferInjector
 from webdnn.backend.webassembly.operators.col2im import Col2Im
-from webdnn.backend.webgpu.allocator import MemoryLayout
 from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC
 
@@ -14,23 +14,23 @@ from webdnn.graph.order import OrderNHWC
 # C2, H2, W2などはすべてDeconvのinput, Convのoutputのサイズを表すために使用
 
 template = """
-void %%FUNC_NAME%%(const int * %%META_NAME%%)
+void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    const float *col = data_buffer + %%META_LOAD(col2im_col_offset)%%;
-    float *im = data_buffer + %%META_LOAD(col2im_im_offset)%%;
+    const float *col = %%LOAD_BUFFER(col2im_col)%%;
+    float *im = %%LOAD_BUFFER(col2im_im)%%;
 
-    const int N = %%META_LOAD(col2im_N)%%;
-    const int C1 = %%META_LOAD(col2im_C1)%%;
-    const int H1 = %%META_LOAD(col2im_H1)%%;
-    const int W1 = %%META_LOAD(col2im_W1)%%;
-    const int H2 = %%META_LOAD(col2im_H2)%%;
-    const int W2 = %%META_LOAD(col2im_W2)%%;
-    const int KH = %%META_LOAD(col2im_KH)%%;
-    const int KW = %%META_LOAD(col2im_KW)%%;
-    const int SH = %%META_LOAD(col2im_SH)%%;
-    const int SW = %%META_LOAD(col2im_SW)%%;
-    const int PH = %%META_LOAD(col2im_PH)%%;
-    const int PW = %%META_LOAD(col2im_PW)%%;
+    const int N = %%LOAD_BUFFER(col2im_N)%%;
+    const int C1 = %%LOAD_BUFFER(col2im_C1)%%;
+    const int H1 = %%LOAD_BUFFER(col2im_H1)%%;
+    const int W1 = %%LOAD_BUFFER(col2im_W1)%%;
+    const int H2 = %%LOAD_BUFFER(col2im_H2)%%;
+    const int W2 = %%LOAD_BUFFER(col2im_W2)%%;
+    const int KH = %%LOAD_BUFFER(col2im_KH)%%;
+    const int KW = %%LOAD_BUFFER(col2im_KW)%%;
+    const int SH = %%LOAD_BUFFER(col2im_SH)%%;
+    const int SW = %%LOAD_BUFFER(col2im_SW)%%;
+    const int PH = %%LOAD_BUFFER(col2im_PH)%%;
+    const int PW = %%LOAD_BUFFER(col2im_PW)%%;
 
     for (int gid = 0; gid < N*H1*W1*C1; gid += 1) {
         const int c1 = gid % C1;
@@ -58,22 +58,17 @@ void %%FUNC_NAME%%(const int * %%META_NAME%%)
 
 
 # noinspection PyUnusedLocal
-def col2im(op: Col2Im,
-           constants_layout: MemoryLayout,
-           variables_layout: MemoryLayout,
-           metabuffer_injector: MetaBufferInjector = None) -> List[Kernel]:
-    col = variables_layout[op.inputs["col"]]
-    im = variables_layout[op.outputs["im"]]
+def col2im(op: Col2Im, memory_layout: MemoryLayout) -> List[Kernel]:
+    col = memory_layout[op.inputs["col"]]
+    im = memory_layout[op.outputs["im"]]
 
     assert col.variable.order == OrderNHWC
     assert im.variable.order == OrderNHWC
 
-    if metabuffer_injector is None:
-        metabuffer_injector = MetaBufferInjector()
-
-    metabuffer_injector.register({
-        "col2im_im_offset": im.offset,
-        "col2im_col_offset": col.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "col2im_im": im,
+        "col2im_col": col,
         "col2im_N": col.variable.shape_dict[Axis.N],
         "col2im_H2": col.variable.shape_dict[Axis.H],
         "col2im_W2": col.variable.shape_dict[Axis.W],
@@ -88,14 +83,17 @@ def col2im(op: Col2Im,
         "col2im_PW": op.PW,
     })
 
-    source = metabuffer_injector.inject(template)
-    func_name = util.add_canonical_suffix("col2im", source)
-    source = source.replace("%%FUNC_NAME%%", func_name)
+    name_injector = KernelNameInjector(op)
+
+    source = template
+    source = buffer_injector.inject(source)
+    source = name_injector.inject(source)
 
     kernel = Kernel(
-        {func_name: source},
-        func_name,
-        metabuffer_injector.generate_buffer()
+        {name_injector.name: source},
+        name_injector.name,
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

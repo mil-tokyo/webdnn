@@ -1,10 +1,12 @@
-from typing import Type, List, Set, Iterable, Union, Tuple
+from typing import Type, List, Set, Iterable, Union, Tuple, Optional
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
 Query = Union[Type[Attribute], Type[Node]]
 
@@ -57,44 +59,106 @@ def filter_nodes(nodes: Iterable[Node], query: Query, mode_not: bool = False) ->
 
 
 def listup_nodes(graph: Graph) -> List[Node]:
-    stack: List[Node] = list(graph.outputs)
-    result: List[Node] = []
-    resolved: Set[Node] = set()
+    stack = list(graph.outputs)  # type: List[Node]
+    stacked = set(stack)  # type: Set[Node]
+    resolved = set()  # type Set[Node]
+    result = []  # type: List[Node]
 
     while len(stack) > 0:
-        node = stack.pop(0)
+        node = stack.pop()
         if node in resolved:
             continue
 
-        unresolved = [d for d in node.prevs if (d is not None) and (d not in resolved)]
+        unresolved_prev = [d for d in node.prevs if (d is not None) and (d not in resolved)]
+        unstacked_next = [d for d in node.nexts if (d is not None) and (d not in stacked)]
 
-        if len(unresolved) > 0:
-            stack.insert(0, node)
-            for dependent in unresolved:
-                stack.insert(0, dependent)
+        if len(unstacked_next) != 0:
+            stack += unstacked_next
+            stacked.update(unstacked_next)
+
+        if len(unresolved_prev) == 0:
+            resolved.add(node)
+            result.append(node)
 
         else:
-            result.append(node)
-            resolved.add(node)
+            stacked.update(unresolved_prev)
+            stack.append(node)
+            stack += unresolved_prev
 
     return result
 
 
 def listup_operators(graph: Graph) -> List[Operator]:
-    ops: List[Operator] = filter_nodes(listup_nodes(graph), Operator)
+    ops = filter_nodes(listup_nodes(graph), Operator)  # type: List[Operator]
     return ops
 
 
 def listup_variables(graph: Graph) -> List[Variable]:
-    variables: List[Variable] = filter_nodes(listup_nodes(graph), Variable)
+    variables = filter_nodes(listup_nodes(graph), Variable)  # type: List[Variable]
     return variables
 
 
 def dump(graph: Graph):
     indent = ""
     for op in listup_operators(graph):
-        print(f"---------------------------------------------------------------------------")
-        print(f"{indent}{op.__class__.__name__} : {op.name}")
-        print(f"{indent}    In  : {op.inputs}")
-        print(f"{indent}    Out : {op.outputs}")
-        print(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
+        console.debug(f"---------------------------------------------------------------------------")
+        console.debug(f"{indent}{op.__class__.__name__} : {op.name}")
+        console.debug(f"{indent}    In  : {op.inputs}")
+        console.debug(f"{indent}    Out : {op.outputs}")
+        console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
+
+
+def dump_dot(graph: Graph, name: Optional[str] = None) -> str:
+    """
+    Dumps graph into dot language for visualization.
+
+    Args:
+        graph: Target graph
+
+    Returns:
+        source code of dot language.
+    """
+    dot_source = ""
+    dot_source += "digraph webdnn_ir {\n"
+
+    # graph setting
+    dot_source += "graph [\n"
+    if name:
+        dot_source += f"label=\"{name}\"\n"
+    dot_source += "];\n"
+
+    added_variables = set()
+
+    def visualize_variable(var: Variable) -> str:
+        if var in added_variables:
+            return ""
+        node_attrs = {}
+        node_attrs["label"] = f"\"{var.name}\n{var.shape}\nOrder={var.order}\""
+        if isinstance(var, ConstantVariable):
+            node_attrs["shape"] = "doubleoctagon"
+        else:
+            node_attrs["shape"] = "octagon"
+        if var in graph.inputs:
+            node_attrs["style"] = "\"dashed\""
+        if var in graph.outputs:
+            node_attrs["style"] = "\"bold\""
+
+        dot_source_var = ""
+        dot_source_var += f"var_{id(var)} [\n"
+        dot_source_var += ",".join(f"{attr_key}={attr_value}" for attr_key, attr_value in node_attrs.items())
+        dot_source_var += "];\n"
+        added_variables.add(var)
+        return dot_source_var
+
+    for op in listup_operators(graph):
+        op_params = getattr(op, "parameters", {})
+        op_params_str = "\n".join(f"{k}={v}" for k, v in op_params.items())
+        dot_source += f"op_{op.name} [label=\"{op.name}\n{op.__class__.__name__}\n{op_params_str}\", shape=box];\n"
+        for connection_name, var in op.inputs.items():
+            dot_source += visualize_variable(var)
+            dot_source += f"var_{id(var)} -> op_{op.name} [label=\"{connection_name}\"];\n"
+        for connection_name, var in op.outputs.items():
+            dot_source += visualize_variable(var)
+            dot_source += f"op_{op.name} -> var_{id(var)} [label=\"{connection_name}\"];\n"
+    dot_source += "}"
+    return dot_source

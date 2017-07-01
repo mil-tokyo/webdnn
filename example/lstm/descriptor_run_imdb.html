@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>WebDNN LSTM sequence classification example</title>
+  <meta charset="utf-8">
+  <script src="../../lib/inflate.min.js"></script>
+  <script src="../../dist/webdnn.js"></script>
+  <script src="descriptor_run_imdb.js"></script>
+</head>
+
+<body>
+  WebDNN LSTM sequence classification example
+  <form>
+    <button type="button" onclick="run_entry(); return false;">Run</button><br>
+    Backend:
+    <label><input type="radio" name="backend_name" value="" onclick="reset_backend();" checked>auto</label>
+    <label><input type="radio" name="backend_name" value="webgpu" onclick="reset_backend();">webgpu</label>
+    <label><input type="radio" name="backend_name" value="webassembly" onclick="reset_backend();">webassembly</label><br>
+    Framework for model:
+    <label><input type="radio" name="framework_name" value="keras" onclick="reset_backend();" checked>Keras</label>
+  </form>
+  <span id="msg_place"></span>
+  <table id="result">
+    <tr><th>Sentence</th><th>Predicted sentiment (Positive=1, Negative=0)</th><th>Ground truth</th></tr>
+  </table>
+</body>
+
+</html>

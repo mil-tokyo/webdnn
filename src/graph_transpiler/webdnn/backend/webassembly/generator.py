@@ -7,52 +7,74 @@ Descriptor Generator for WebAssembly
 
 import os
 import os.path as path
+import platform
 import subprocess
 import sys
-from typing import List
 
+from webdnn.backend.code_generator.allocator import Allocator
+from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webassembly.graph_descriptor import GraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.kernels.average_pooling_2d import average_pooling_2d
 from webdnn.backend.webassembly.kernels.axiswise_bias import axiswise_bias
 from webdnn.backend.webassembly.kernels.axiswise_scale import axiswise_scale
+from webdnn.backend.webassembly.kernels.clipped_relu import clipped_relu
 from webdnn.backend.webassembly.kernels.col2im import col2im
 from webdnn.backend.webassembly.kernels.concat import concat
 from webdnn.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webassembly.kernels.elu import elu
+from webdnn.backend.webassembly.kernels.embedding import embedding
 from webdnn.backend.webassembly.kernels.flatten import flatten
+from webdnn.backend.webassembly.kernels.hard_sigmoid import hard_sigmoid
 from webdnn.backend.webassembly.kernels.im2col import im2col
-from webdnn.backend.webassembly.kernels.linear import linear
+from webdnn.backend.webassembly.kernels.leaky_relu import leaky_relu
 from webdnn.backend.webassembly.kernels.local_response_normalization import local_response_normalization
+from webdnn.backend.webassembly.kernels.lstm import lstm
 from webdnn.backend.webassembly.kernels.max_pooling_2d import max_pooling_2d
+from webdnn.backend.webassembly.kernels.reinterpret_axis import reinterpret_axis
 from webdnn.backend.webassembly.kernels.relu import relu
+from webdnn.backend.webassembly.kernels.reshape import reshape
 from webdnn.backend.webassembly.kernels.scalar_affine import scalar_affine
 from webdnn.backend.webassembly.kernels.sgemm import sgemm
+from webdnn.backend.webassembly.kernels.sigmoid import sigmoid
+from webdnn.backend.webassembly.kernels.softmax import softmax
+from webdnn.backend.webassembly.kernels.softplus import softplus
+from webdnn.backend.webassembly.kernels.softsign import softsign
 from webdnn.backend.webassembly.kernels.tanh import tanh
+from webdnn.backend.webassembly.kernels.zero_padding_1d import zero_padding_1d
 from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.backend.webassembly.operators.im2col import Im2Col
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
 from webdnn.backend.webassembly.optimize_rules.webassembly_optimize_rule import WebassemblyOptimizeRule
-from webdnn.backend.webgpu.allocator import Allocator, MemoryLayout
 from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
+from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.flatten import Flatten
-from webdnn.graph.operators.linear import Linear
+from webdnn.graph.operators.hard_sigmoid import HardSigmoid
+from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
+from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.relu import Relu
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.softmax import Softmax
+from webdnn.graph.operators.softplus import Softplus
+from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
-from webdnn.util import flags
+from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
+from webdnn.util import flags, console
 from webdnn.util.json import json
 
 
@@ -63,6 +85,7 @@ class GraphExecutionData(IGraphExecutionData):
         self.descriptor = descriptor
         self.constants = constants
         self.backend_suffix = "webassembly"
+        self.platform_windows = platform.system() == "Windows"  # workaround for PATH problem
 
     def save(self, dirname: str):
         os.makedirs(dirname, exist_ok=True)
@@ -86,31 +109,33 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_weight_buffer','_get_data_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append("WASM=1")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
+        args.append("-s")
+        args.append(f"ALLOW_MEMORY_GROWTH=1")  # cannot be used in asm.js
         args.append("--pre-js")
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(self.backend_suffix)))
         try:
-            subprocess.check_call(args)
+            subprocess.check_call(args, shell=self.platform_windows)
         except Exception as ex:
             sys.stderr.write("Executing em++ command failed." +
                              " Make sure emscripten is properly installed and environment variables are set.\n")
             raise ex
 
     def _compile_fallback_asmjs(self, dirname: str):
-        # noinspection PyListCreation
         backend_suffix = "asmjs"
+        # noinspection PyListCreation
         args = ["em++"]
         args.append(path.join(dirname, "kernels_{}.cpp".format(self.backend_suffix)))
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_weight_buffer','_get_data_buffer']")
+        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
         args.append("--pre-js")
@@ -118,107 +143,83 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(backend_suffix)))
         try:
-            subprocess.check_call(args)
+            subprocess.check_call(args, shell=self.platform_windows)
         except Exception as ex:
             sys.stderr.write("Executing em++ command failed." +
                              " Make sure emscripten is properly installed and environment variables are set.\n")
             raise ex
 
 
-def generate(graph: Graph, constant_encoder_name: str = None) -> GraphExecutionData:
-    graph, _ = WebassemblyOptimizeRule().optimize(graph)
-    if flags.DEBUG:
-        traverse.dump(graph)
+class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
+    @classmethod
+    def generate(cls, graph: Graph, **kwargs):
+        graph, _ = WebassemblyOptimizeRule().optimize(graph)
+        if flags.DEBUG:
+            traverse.dump(graph)
 
-    variables_layout, constants_layout, constants_data = Allocator.allocate(graph)
-    if flags.DEBUG:
-        print(
-            f"[GraphDescriptorGeneratorWebassembly] constants_layout total size: {constants_data.size} * sizeof(float)")
-        print(
-            f"[GraphDescriptorGeneratorWebassembly] variables_layout total size: {variables_layout.size} * sizeof(float)")
-    constant_encoder = ConstantEncoder.get_encoder(constant_encoder_name)
-    constants_bytes = constant_encoder.encode(constants_layout, constants_data)
-    if flags.DEBUG:
-        print(f"[GraphDescriptorGeneratorWebGPU] constants encoded size: {len(constants_bytes)}")
+        memory_layout = Allocator.allocate(graph)
 
-    kernels = generate_kernels(graph, constants_layout, variables_layout)
+        console.debug(f"[WebassemblyDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
+        console.debug(f"[WebassemblyDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
+        console.debug(f"[WebassemblyDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
 
-    weight_data_size = (variables_layout.size + constants_layout.size) * 4  # sizeof(float)
-    required_heap = (int(weight_data_size // (16 * 1048576)) + 2) * 16 * 1048576  # required + 16MB
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
+        constants_bytes = constant_encoder.encode(memory_layout)
 
-    descriptor = GraphDescriptor(
-        kernels=kernels,
-        constants_layout=constants_layout,
-        variables_layout=variables_layout,
-        inputs=graph.inputs,
-        outputs=graph.outputs,
-        constants_encoding=constant_encoder.name,
-        required_heap=required_heap,
-        licenses=graph.licenses)
+        console.debug(f"[WebassemblyDescriptorGenerator] constants encoded size: {len(constants_bytes)}")
 
-    return GraphExecutionData(descriptor, constants_bytes)
+        kernels = cls.generate_kernels(graph, memory_layout)
 
-
-def generate_kernels(graph: Graph, constants_layout: MemoryLayout, variables_layout: MemoryLayout) -> List[Kernel]:
-    kernels: List[Kernel] = []
-
-    for op in traverse.listup_operators(graph):
-        if isinstance(op, Linear):
-            kernels += linear(op, constants_layout, variables_layout)
-
-        elif isinstance(op, AxiswiseBias):
-            kernels += axiswise_bias(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Relu):
-            kernels += relu(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Elu):
-            kernels += elu(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Tanh):
-            kernels += tanh(op, constants_layout, variables_layout)
-
-        elif isinstance(op, LocalResponseNormalization):
-            kernels += local_response_normalization(op, constants_layout, variables_layout)
-
-        elif isinstance(op, MaxPooling2D):
-            kernels += max_pooling_2d(op, constants_layout, variables_layout)
-
-        elif isinstance(op, AveragePooling2D):
-            kernels += average_pooling_2d(op, constants_layout, variables_layout)
-
-        elif isinstance(op, AxiswiseScale):
-            kernels += axiswise_scale(op, constants_layout, variables_layout)
-
-        elif isinstance(op, ElementwiseSum):
-            kernels += elementwise_sum(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Flatten):
-            kernels += flatten(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Sgemm):
-            kernels += sgemm(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Im2Col):
-            kernels += im2col(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Col2Im):
-            kernels += col2im(op, constants_layout, variables_layout)
-
-        elif isinstance(op, ScalarAffine):
-            kernels += scalar_affine(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Concat):
-            kernels += concat(op, constants_layout, variables_layout)
-
-        elif isinstance(op, Operator):
-            if "custom_kernel" in op.parameters:
-                kernels += op.parameters["custom_kernel"](op, constants_layout, variables_layout)
-                continue
-
-            raise NotImplementedError(f"{op} is Unknown for WebassemblyDescriptorGenerator")
-
+        heap_block_size = 16 * 1024 * 1024
+        if isinstance(memory_layout.dynamic_size, int):
+            dynamic_size_byte_int = memory_layout.dynamic_size * 4
         else:
-            raise NotImplementedError(f"{op} is Unknown for WebassemblyDescriptorGenerator")
+            dynamic_size_byte_int = kwargs.get("dynamic_allocation_size", heap_block_size)
+        total_size_byte = memory_layout.static_size * 4 + dynamic_size_byte_int
 
-    return kernels
+        # required for calculation (size ceiling to one block) + one block
+        required_heap = ((total_size_byte + heap_block_size - 1) // heap_block_size + 1) * heap_block_size
+
+        descriptor = GraphDescriptor(
+            kernels=kernels,
+            memory_layout=memory_layout,
+            inputs=graph.inputs,
+            outputs=graph.outputs,
+            constants_encoding=constant_encoder.name,
+            required_heap=required_heap,
+            licenses=graph.licenses)
+
+        return GraphExecutionData(descriptor, constants_bytes)
+
+
+def generate(graph: Graph, **kwargs):
+    return WebassemblyDescriptorGenerator.generate(graph, **kwargs)
+
+
+WebassemblyDescriptorGenerator.register_handler(AveragePooling2D)(average_pooling_2d)
+WebassemblyDescriptorGenerator.register_handler(AxiswiseBias)(axiswise_bias)
+WebassemblyDescriptorGenerator.register_handler(AxiswiseScale)(axiswise_scale)
+WebassemblyDescriptorGenerator.register_handler(ClippedRelu)(clipped_relu)
+WebassemblyDescriptorGenerator.register_handler(Col2Im)(col2im)
+WebassemblyDescriptorGenerator.register_handler(Concat)(concat)
+WebassemblyDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
+WebassemblyDescriptorGenerator.register_handler(Elu)(elu)
+WebassemblyDescriptorGenerator.register_handler(Embedding)(embedding)
+WebassemblyDescriptorGenerator.register_handler(Flatten)(flatten)
+WebassemblyDescriptorGenerator.register_handler(HardSigmoid)(hard_sigmoid)
+WebassemblyDescriptorGenerator.register_handler(Im2Col)(im2col)
+WebassemblyDescriptorGenerator.register_handler(LeakyRelu)(leaky_relu)
+WebassemblyDescriptorGenerator.register_handler(LocalResponseNormalization)(local_response_normalization)
+WebassemblyDescriptorGenerator.register_handler(LSTM)(lstm)
+WebassemblyDescriptorGenerator.register_handler(MaxPooling2D)(max_pooling_2d)
+WebassemblyDescriptorGenerator.register_handler(ScalarAffine)(scalar_affine)
+WebassemblyDescriptorGenerator.register_handler(Sgemm)(sgemm)
+WebassemblyDescriptorGenerator.register_handler(Sigmoid)(sigmoid)
+WebassemblyDescriptorGenerator.register_handler(Softmax)(softmax)
+WebassemblyDescriptorGenerator.register_handler(Softplus)(softplus)
+WebassemblyDescriptorGenerator.register_handler(Softsign)(softsign)
+WebassemblyDescriptorGenerator.register_handler(ReinterpretAxis)(reinterpret_axis)
+WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
+WebassemblyDescriptorGenerator.register_handler(Reshape)(reshape)
+WebassemblyDescriptorGenerator.register_handler(Tanh)(tanh)
+WebassemblyDescriptorGenerator.register_handler(ZeroPadding1D)(zero_padding_1d)

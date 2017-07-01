@@ -33,24 +33,24 @@ function load_image() {
     img.src = document.querySelector("input[name=image_url]").value;
 }
 
-let run_ifs = {};
+let runners = {};
 
 async function prepare_run() {
     let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-    if (!(backend_name in run_ifs)) {
+    if (!(backend_name in runners)) {
         log('Initializing and loading model');
-        let run_if = await WebDNN.prepareAll('./output', { backendOrder: backend_name });
-        log(`Loaded backend: ${run_if.backendName}`);
+        let runner = await WebDNN.load('./output', { backendOrder: backend_name });
+        log(`Loaded backend: ${runner.backendName}`);
 
-        run_ifs[backend_name] = run_if;
+        runners[backend_name] = runner;
     } else {
         log('Model is already loaded');
     }
-    return run_ifs[backend_name];
+    return runners[backend_name];
 }
 
 async function run() {
-    let run_if = await prepare_run();
+    let runner = await prepare_run();
 
     let total_elapsed_time = 0;
     let pred_label;
@@ -60,13 +60,13 @@ async function run() {
     log('Running model...');
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        run_if.inputViews[0].set(sample);
+        runner.getInputViews()[0].set(sample);
 
         let start = performance.now();
-        await run_if.run();
+        await runner.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = run_if.outputViews[0];
+        let out_vec = runner.getOutputViews()[0].toActual();
         let top_labels = WebDNN.Math.argmax(out_vec, 5);
         let predicted_str = 'Predicted:';
         for (let j = 0; j < top_labels.length; j++) {
@@ -75,7 +75,7 @@ async function run() {
         log(predicted_str);
         console.log('output vector: ', out_vec);
     }
-    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, backend=${run_if.backendName}`);
+    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}, backend=${runner.backendName}`);
 }
 
 function makeMatFromJson(mat_data) {

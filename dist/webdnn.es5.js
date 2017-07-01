@@ -66,8 +66,191 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+var WebDNN;
+(function (WebDNN) {
+    /**
+     * PlaceholderContext manages the placeholders
+     */
+    var PlaceholderContext = (function () {
+        function PlaceholderContext(values) {
+            this.values = {};
+            if (values) {
+                this.update(values);
+            }
+        }
+        Object.defineProperty(PlaceholderContext.prototype, "isResolved", {
+            get: function () {
+                return Object.values(this.values).every(function (value) { return typeof value == 'number'; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PlaceholderContext.prototype.update = function (values) {
+            this.values = Object.assign(this.values, values);
+        };
+        PlaceholderContext.prototype.resolve = function (placeholder) {
+            var _this = this;
+            // Literal value => return itself.
+            if (typeof placeholder !== 'object')
+                return placeholder;
+            // Placeholder object ( { eval: string } ) => resolve
+            if (Object.keys(placeholder).length == 1 && 'eval' in placeholder) {
+                if (!this.isResolved)
+                    throw Error("Not all placeholders are resolved: " + this);
+                return (function (placeholders) { return eval(placeholder.eval); })(this.values);
+            }
+            // Array => deep copy
+            if (placeholder instanceof Array) {
+                return placeholder.map(function (value) { return _this.resolve(value); });
+            }
+            // Object => deep copy
+            return Object.entries(placeholder)
+                .reduce(function (result, _a) {
+                var key = _a[0], value = _a[1];
+                result[key] = _this.resolve(value);
+                return result;
+            }, {});
+        };
+        PlaceholderContext.prototype.toString = function () {
+            return JSON.stringify(this.values);
+        };
+        return PlaceholderContext;
+    }());
+    WebDNN.PlaceholderContext = PlaceholderContext;
+})(WebDNN || (WebDNN = {}));
+///<reference path="./placeholder.ts" />
+///<reference path="./memory_layout.ts" />
+///<reference path="./placeholder.ts" />
+var WebDNN;
+(function (WebDNN) {
+    var SymbolicArrayBufferView = (function () {
+        function SymbolicArrayBufferView(allocation, placeholderContext, ignoreOffsetOnActual) {
+            if (ignoreOffsetOnActual === void 0) { ignoreOffsetOnActual = false; }
+            this.ignoreOffsetOnActual = ignoreOffsetOnActual;
+            this.allocation = allocation;
+            if (this.isDynamic) {
+                if (!placeholderContext) {
+                    throw Error('PlaceholderContext must be required when SymbolicArrayBufferView is initialized as dynamic buffer view.');
+                }
+            }
+            this.placeholderContext = placeholderContext;
+        }
+        SymbolicArrayBufferView.prototype.setArrayBuffer = function (arrayBuffer) {
+            this.arrayBuffer = arrayBuffer;
+        };
+        Object.defineProperty(SymbolicArrayBufferView.prototype, "isDynamic", {
+            get: function () {
+                return (typeof this.allocation.offset !== 'number' || typeof this.allocation.size !== 'number');
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SymbolicArrayBufferView.prototype, "offset", {
+            get: function () {
+                //TODO
+                if (this.isDynamic) {
+                    return this.placeholderContext.resolve(this.allocation.offset);
+                }
+                else {
+                    return this.allocation.offset;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SymbolicArrayBufferView.prototype, "length", {
+            get: function () {
+                if (this.isDynamic) {
+                    return this.placeholderContext.resolve(this.allocation.size);
+                }
+                else {
+                    return this.allocation.size;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Sets a value or an array of values.
+         * @param array A typed or untyped array of values to set.
+         * @param offset The index in the current array at which the values are to be written.
+         */
+        SymbolicArrayBufferView.prototype.set = function (array, offset) {
+            return this.toActual().set(array, offset);
+        };
+        return SymbolicArrayBufferView;
+    }());
+    WebDNN.SymbolicArrayBufferView = SymbolicArrayBufferView;
+    var SymbolicFloat32Array = (function (_super) {
+        __extends(SymbolicFloat32Array, _super);
+        function SymbolicFloat32Array() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SymbolicFloat32Array.prototype.toActual = function () {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
+            return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
+        };
+        return SymbolicFloat32Array;
+    }(SymbolicArrayBufferView));
+    WebDNN.SymbolicFloat32Array = SymbolicFloat32Array;
+    var SymbolicInt32Array = (function (_super) {
+        __extends(SymbolicInt32Array, _super);
+        function SymbolicInt32Array() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SymbolicInt32Array.prototype.toActual = function () {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
+            return new Int32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
+        };
+        return SymbolicInt32Array;
+    }(SymbolicArrayBufferView));
+    WebDNN.SymbolicInt32Array = SymbolicInt32Array;
+})(WebDNN || (WebDNN = {}));
 /// <reference path="../graph_descriptor/graph_descriptor.ts" />
-///<reference path="../descriptor_runner/descriptor_runner.ts" />
+/// <reference path="../placeholder.ts" />
+/// <reference path="../symbolic_array_buffer_view.ts" />
+var WebDNN;
+(function (WebDNN) {
+    /**
+     * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+     *
+     * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+     *
+     * 1. Initialize static configurations
+     *
+     *    Initialize things independent from runtime configuration.
+     *
+     *      - `init()`
+     *      - `load()`
+     *
+     * 2. Initialize dynamic configurations
+     *
+     *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+     *
+     *      - `setPlaceholderValue()`
+     *      - `getInputViews()`
+     *      - `getOutputViews()`
+     *
+     * 3. Execute the model
+     *
+     *      - `run()`
+     *
+     * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
+     */
+    var DescriptorRunner = (function () {
+        function DescriptorRunner() {
+            this.descriptor = null;
+            this.ignoreCache = false;
+        }
+        return DescriptorRunner;
+    }());
+    WebDNN.DescriptorRunner = DescriptorRunner;
+})(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {
     /**
@@ -185,13 +368,15 @@ var WebDNN;
         }
         WebGPUHandler.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var context;
                 return __generator(this, function (_a) {
-                    // asynchronous operation may be added in future
-                    if (!WebGPUHandler.isBrowserSupported) {
+                    if (!WebGPUHandler.isBrowserSupported)
                         throw new Error('This browser does not support WebGPU');
-                    }
-                    this.context = document.createElement('canvas').getContext('webgpu'); //force cast
-                    this.commandQueue = this.context.createCommandQueue();
+                    context = document.createElement('canvas').getContext('webgpu');
+                    if (!context)
+                        throw new Error('WebGPURenderingContext initialization failed');
+                    this.context = context;
+                    this.commandQueue = context.createCommandQueue();
                     this.pipelineStates = new Map();
                     return [2 /*return*/];
                 });
@@ -273,13 +458,14 @@ var WebDNN;
     WebDNN.WebGPUHandler = WebGPUHandler;
     WebGPUHandler.isBrowserSupported = 'WebGPURenderingContext' in window && 'WebGPUComputeCommandEncoder' in window;
 })(WebDNN || (WebDNN = {}));
+///<reference path="../memory_layout.ts" />
 ///<reference path="./weight_decoder.ts" />
 var WebDNN;
 (function (WebDNN) {
     var WeightDecoderRaw = (function () {
         function WeightDecoderRaw() {
         }
-        WeightDecoderRaw.prototype.decode = function (data, weight_allocation) {
+        WeightDecoderRaw.prototype.decode = function (data, memory_layout) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     return [2 /*return*/, new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4)];
@@ -290,18 +476,17 @@ var WebDNN;
     }());
     WebDNN.WeightDecoderRaw = WeightDecoderRaw;
 })(WebDNN || (WebDNN = {}));
-///<reference path="./weight_decoder_raw.ts" />
 ///<reference path="./weight_decoder.ts" />
 var WebDNN;
 (function (WebDNN) {
     var WeightDecoderEightbit = (function () {
         function WeightDecoderEightbit() {
         }
-        WeightDecoderEightbit.prototype.decode = function (data, weight_allocation) {
+        WeightDecoderEightbit.prototype.decode = function (data, memory_layout) {
             return __awaiter(this, void 0, void 0, function () {
                 var dst, data_view, src_offset, dst_offset, body_size, scale, scaled_table, i, src_data_view, inflate, decompressed, dec_size, s;
                 return __generator(this, function (_a) {
-                    dst = new Float32Array(weight_allocation.total_size);
+                    dst = new Float32Array(memory_layout.static.size);
                     data_view = new DataView(data.buffer, data.byteOffset);
                     src_offset = 0;
                     while (src_offset < data.length) {
@@ -457,10 +642,32 @@ var WebDNN;
      * Fetch function. WebDNN API use this fetch function instead of original fetch function.
      * @param input Requested url
      * @param init Additional information about fetch
+     * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
      * @returns Response
      */
     function fetch(input, init) {
-        return fetchDelegate(input, init);
+        return __awaiter(this, void 0, void 0, function () {
+            var res;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (typeof input == 'string') {
+                            input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
+                        }
+                        else {
+                            input = Object.assign({}, input, {
+                                url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
+                            });
+                        }
+                        return [4 /*yield*/, fetchDelegate(input, init)];
+                    case 1:
+                        res = _a.sent();
+                        if (!res.ok)
+                            throw new Error("Fetch returns status code " + res.status + ": " + res.statusText);
+                        return [2 /*return*/, res];
+                }
+            });
+        });
     }
     WebDNN.fetch = fetch;
     /**
@@ -505,158 +712,307 @@ var WebDNN;
 /// <reference path="../decoder/get_weight_decoder.ts" />
 /// <reference path="../fetch.ts" />
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
+/// <reference path="../symbolic_array_buffer_view.ts" />
+/// <reference path="../placeholder.ts" />
+var IS_IOS = navigator.userAgent.includes('iPhone');
 var WebDNN;
 (function (WebDNN) {
-    var DescriptorRunnerWebGPU = (function () {
-        function DescriptorRunnerWebGPU(webGPUHandler) {
-            this.webGPUHandler = webGPUHandler;
-            this.ignoreCache = false;
-            this.backend = 'webgpu';
+    var DescriptorRunnerWebGPU = (function (_super) {
+        __extends(DescriptorRunnerWebGPU, _super);
+        //noinspection JSUnusedLocalSymbols
+        function DescriptorRunnerWebGPU(option) {
+            var _this = _super.call(this) || this;
+            _this.backendName = 'webgpu';
+            if (!WebDNN.WebGPUHandler.isBrowserSupported) {
+                throw new Error('WebGPU is not supported on this browser');
+            }
+            return _this;
         }
+        DescriptorRunnerWebGPU.prototype.init = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            // initialize webgpu, build kernels
+                            this.shaderLanguage = 'metal';
+                            this.webgpuHandler = new WebDNN.WebGPUHandler();
+                            return [4 /*yield*/, this.webgpuHandler.init()];
+                        case 1:
+                            _a.sent();
+                            WebDNN.BufferWebGPU.init(this.webgpuHandler);
+                            this.initializeBasicKernels();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebGPU.prototype.initializeBasicKernels = function () {
+            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
+        };
         DescriptorRunnerWebGPU.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, graph_fetch, _a, weight_url, weights_data_ab, _b;
+                var _a, descriptor, weightRawArray;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0: return [4 /*yield*/, Promise.all([
+                                WebDNN.fetch(directory + "/graph_" + this.backendName + ".json", { ignoreCache: this.ignoreCache })
+                                    .then(function (res) { return res.json(); }),
+                                WebDNN.fetch(directory + "/weight_" + this.backendName + ".bin", { ignoreCache: this.ignoreCache })
+                                    .then(function (res) { return WebDNN.readArrayBufferProgressively(res, progressCallback); })
+                            ])];
+                        case 1:
+                            _a = _b.sent(), descriptor = _a[0], weightRawArray = _a[1];
+                            return [4 /*yield*/, this.setDescriptor(descriptor)];
+                        case 2:
+                            _b.sent();
+                            return [4 /*yield*/, this.compile()];
+                        case 3:
+                            _b.sent();
+                            return [4 /*yield*/, this.initializeStaticBuffer(weightRawArray)];
+                        case 4:
+                            _b.sent();
+                            return [4 /*yield*/, this.initializeMetaBuffers()];
+                        case 5:
+                            _b.sent();
+                            return [4 /*yield*/, this.setPlaceholderValue({
+                                    '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 512
+                                })];
+                        case 6:
+                            _b.sent();
+                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 8];
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 7:
+                            _b.sent();
+                            _b.label = 8;
+                        case 8: return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebGPU.prototype.initializeStaticBuffer = function (weightRawArray) {
+            return __awaiter(this, void 0, void 0, function () {
+                var descriptor, staticBuffer, decoder, _a, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
-                            graph_url = directory + "/graph_" + this.backend + ".json";
-                            if (this.ignoreCache) {
-                                graph_url += '?t=' + Date.now();
-                            }
-                            graph_url = WebDNN.transformUrl(graph_url);
-                            return [4 /*yield*/, WebDNN.fetch(graph_url)];
-                        case 1:
-                            graph_fetch = _c.sent();
-                            if (!graph_fetch.ok) {
-                                throw new Error(graph_url + " cannot be loaded");
-                            }
-                            _a = this;
-                            return [4 /*yield*/, graph_fetch.json()];
+                            if (!this.descriptor)
+                                throw Error("GraphDescriptor is not loaded.");
+                            descriptor = this.descriptor;
+                            staticBuffer = new WebDNN.BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
+                            this.staticBuffer = staticBuffer;
+                            decoder = WebDNN.get_weight_decoder(descriptor.weight_encoding);
+                            _b = (_a = staticBuffer).write;
+                            return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray), descriptor.memory_layout)];
+                        case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
                         case 2:
-                            _a.descriptor = _c.sent();
-                            return [4 /*yield*/, this.compile()];
+                            _c.sent();
+                            return [4 /*yield*/, this.getInputViews()];
                         case 3:
-                            _c.sent();
-                            weight_url = directory + "/weight_" + this.backend + ".bin";
-                            if (this.ignoreCache) {
-                                weight_url += '?t=' + Date.now();
-                            }
-                            weight_url = WebDNN.transformUrl(weight_url);
-                            _b = WebDNN.readArrayBufferProgressively;
-                            return [4 /*yield*/, WebDNN.fetch(weight_url, progressCallback)];
-                        case 4: return [4 /*yield*/, _b.apply(void 0, [_c.sent(), progressCallback])];
-                        case 5:
-                            weights_data_ab = _c.sent();
-                            return [4 /*yield*/, this.loadWeights(new Uint8Array(weights_data_ab))];
-                        case 6:
-                            _c.sent();
+                            (_c.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(staticBuffer.bufferView.buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 4:
+                            (_c.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(staticBuffer.bufferView.buffer); });
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebGPU.prototype.initializeMetaBuffers = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                var _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            if (!this.descriptor)
+                                throw Error("GraphDescriptor is not loaded.");
+                            _a = this;
+                            return [4 /*yield*/, Promise.all(this.descriptor.exec_infos.map(function (executionInfo) { return __awaiter(_this, void 0, void 0, function () {
+                                    var buffer;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                buffer = new WebDNN.BufferWebGPU(executionInfo.meta_buffer.length * Int32Array.BYTES_PER_ELEMENT);
+                                                return [4 /*yield*/, buffer.write(new Uint8Array(executionInfo.meta_buffer))];
+                                            case 1:
+                                                _a.sent();
+                                                return [2 /*return*/, buffer];
+                                        }
+                                    });
+                                }); }))];
+                        case 1:
+                            _a.metaBuffers = _b.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebGPU.prototype.initializeDynamicBuffer = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var descriptor, placeholderContext, dynamicBufferSize, dynamicBuffer;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.descriptor)
+                                throw Error("GraphDescriptor is not loaded.");
+                            if (!this.placeholderContext)
+                                throw Error("PlaceholderContext is not initialized.");
+                            descriptor = this.descriptor;
+                            placeholderContext = this.placeholderContext;
+                            dynamicBufferSize = placeholderContext.resolve(descriptor.memory_layout.dynamic.size);
+                            dynamicBuffer = new WebDNN.BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
+                            this.dynamicBuffer = dynamicBuffer;
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 1:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.bufferView.buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 2:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.bufferView.buffer); });
                             return [2 /*return*/];
                     }
                 });
             });
         };
         DescriptorRunnerWebGPU.prototype.setDescriptor = function (descriptor) {
-            this.descriptor = descriptor;
-        };
-        DescriptorRunnerWebGPU.prototype.compile = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var i, exec_info, buf;
                 return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            this.webGPUHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-                            this.weightMat = new WebDNN.BufferWebGPU(this.descriptor.weight_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
-                            this.dataMat = new WebDNN.BufferWebGPU(this.descriptor.variable_allocation.total_size * Float32Array.BYTES_PER_ELEMENT);
-                            this.metaBufferGPUBuffers = [];
-                            i = 0;
-                            _a.label = 1;
-                        case 1:
-                            if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 4];
-                            exec_info = this.descriptor.exec_infos[i];
-                            buf = new WebDNN.BufferWebGPU(exec_info.meta_buffer.length * Float32Array.BYTES_PER_ELEMENT);
-                            return [4 /*yield*/, buf.write(new Uint8Array(exec_info.meta_buffer))];
-                        case 2:
-                            _a.sent();
-                            this.metaBufferGPUBuffers.push(buf);
-                            _a.label = 3;
-                        case 3:
-                            i++;
-                            return [3 /*break*/, 1];
-                        case 4: return [2 /*return*/];
-                    }
+                    this.descriptor = descriptor;
+                    //reset all datum depend on old descriptor
+                    this.staticBuffer = null;
+                    this.dynamicBuffer = null;
+                    this.metaBuffers = null;
+                    this.placeholderContext = new WebDNN.PlaceholderContext(descriptor.placeholders);
+                    this.executionInfos = descriptor.exec_infos;
+                    return [2 /*return*/];
                 });
             });
         };
-        DescriptorRunnerWebGPU.prototype.loadWeights = function (weightsData) {
+        DescriptorRunnerWebGPU.prototype.compile = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var decoder, _a, _b;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+                return __generator(this, function (_a) {
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
+                    return [2 /*return*/];
+                });
+            });
+        };
+        DescriptorRunnerWebGPU.prototype.setPlaceholderValue = function (values) {
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                var placeholderContext, descriptor, metaBuffers, _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            _b = (_a = this.weightMat).write;
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
-                        case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                            if (!this.placeholderContext)
+                                throw new Error('PlaceholderContext is not initialized.');
+                            placeholderContext = this.placeholderContext;
+                            placeholderContext.update(values);
+                            if (!placeholderContext.isResolved)
+                                return [2 /*return*/];
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            if (!this.metaBuffers)
+                                throw new Error('MetaBuffers are not initialized');
+                            descriptor = this.descriptor;
+                            metaBuffers = this.metaBuffers;
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 1:
+                            _b.sent();
+                            // resolve placeholders in execution info
+                            _a = this;
+                            return [4 /*yield*/, Promise.all(descriptor.exec_infos.map(function (executionInfo, i) { return __awaiter(_this, void 0, void 0, function () {
+                                    var bufferView, _i, _a, unresolved_value;
+                                    return __generator(this, function (_b) {
+                                        bufferView = new Int32Array(metaBuffers[i].bufferView.buffer);
+                                        for (_i = 0, _a = executionInfo.unresolved_value_list; _i < _a.length; _i++) {
+                                            unresolved_value = _a[_i];
+                                            bufferView[unresolved_value.offset] = placeholderContext.resolve(unresolved_value.placeholder);
+                                        }
+                                        return [2 /*return*/, placeholderContext.resolve(executionInfo)];
+                                    });
+                                }); }))];
                         case 2:
-                            _c.sent();
+                            // resolve placeholders in execution info
+                            _a.executionInfos = _b.sent();
                             return [2 /*return*/];
                     }
                 });
             });
         };
         DescriptorRunnerWebGPU.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var views, i, var_alloc;
-                return __generator(this, function (_a) {
-                    if (this.inputViews) {
-                        return [2 /*return*/, this.inputViews];
-                    }
-                    views = [];
-                    for (i = 0; i < this.descriptor.inputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
-                        views.push(this.dataMat.getWriteView(var_alloc.offset, var_alloc.size, Float32Array));
-                    }
-                    this.inputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerWebGPU.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var views, i, var_alloc;
-                return __generator(this, function (_a) {
-                    if (this.outputViews) {
-                        return [2 /*return*/, this.outputViews];
-                    }
-                    views = [];
-                    for (i = 0; i < this.descriptor.outputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
-                        views.push(this.dataMat.getReadView(var_alloc.offset, var_alloc.size, Float32Array));
-                    }
-                    this.outputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.outputViews;
         };
         DescriptorRunnerWebGPU.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var records, totalElapsedTime_1, i, exec_info, start, elapsedTime, summary, complete_promise, i, exec_info, is_last;
+                var staticBuffer, dynamicBuffer, metaBuffers, records, totalElapsedTime_1, i, exec_info, start, elapsedTime, summary, complete_promise, i, exec_info, is_last;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!this.inputViews || !this.outputViews) {
+                            if (!this.executionInfos)
+                                throw new Error('ExecutionInfos is not loaded');
+                            if (!this.inputViews || !this.outputViews)
                                 throw new Error('getInputViews and getOutputViews must be called prior to run');
-                            }
-                            if (!window['PROFILE']) return [3 /*break*/, 5];
+                            if (!this.staticBuffer)
+                                throw new Error('StaticBuffer is not initialized');
+                            if (!this.dynamicBuffer)
+                                throw new Error('DynamicBuffer is not initialized');
+                            if (!this.metaBuffers)
+                                throw new Error('MetaBuffer is not initialized');
+                            if (!this.placeholderContext)
+                                throw new Error('PlaceholderContext is not initialized');
+                            if (!this.placeholderContext.isResolved)
+                                throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
+                            staticBuffer = this.staticBuffer;
+                            dynamicBuffer = this.dynamicBuffer;
+                            metaBuffers = this.metaBuffers;
+                            if (!WebDNN.DEBUG) return [3 /*break*/, 5];
                             records = [];
                             totalElapsedTime_1 = 0;
                             i = 0;
                             _a.label = 1;
                         case 1:
-                            if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 4];
-                            exec_info = this.descriptor.exec_infos[i];
+                            if (!(i < this.executionInfos.length)) return [3 /*break*/, 4];
+                            exec_info = this.executionInfos[i];
                             start = performance.now();
-                            return [4 /*yield*/, this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]], true)];
+                            return [4 /*yield*/, this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true)];
                         case 2:
                             _a.sent();
                             elapsedTime = performance.now() - start;
@@ -688,10 +1044,10 @@ var WebDNN;
                             return [3 /*break*/, 7];
                         case 5:
                             complete_promise = null;
-                            for (i = 0; i < this.descriptor.exec_infos.length; i++) {
-                                exec_info = this.descriptor.exec_infos[i];
-                                is_last = i == this.descriptor.exec_infos.length - 1;
-                                complete_promise = this.webGPUHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [this.weightMat, this.dataMat, this.metaBufferGPUBuffers[i]], is_last);
+                            for (i = 0; i < this.executionInfos.length; i++) {
+                                exec_info = this.executionInfos[i];
+                                is_last = i == this.executionInfos.length - 1;
+                                complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
                             }
                             return [4 /*yield*/, complete_promise];
                         case 6:
@@ -703,46 +1059,8 @@ var WebDNN;
             });
         };
         return DescriptorRunnerWebGPU;
-    }());
+    }(WebDNN.DescriptorRunner));
     WebDNN.DescriptorRunnerWebGPU = DescriptorRunnerWebGPU;
-})(WebDNN || (WebDNN = {}));
-/// <reference path="../descriptor_runner/descriptor_runner_webgpu.ts" />
-var WebDNN;
-(function (WebDNN) {
-    var GPUInterfaceWebGPU = (function () {
-        function GPUInterfaceWebGPU(option) {
-            this.option = option;
-            if (!WebDNN.WebGPUHandler.isBrowserSupported) {
-                throw new Error('WebGPU is not supported on this browser');
-            }
-        }
-        GPUInterfaceWebGPU.prototype.init = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            // initialize webgpu, build kernels
-                            this.shaderLanguage = 'metal';
-                            this.webgpuHandler = new WebDNN.WebGPUHandler();
-                            return [4 /*yield*/, this.webgpuHandler.init()];
-                        case 1:
-                            _a.sent();
-                            WebDNN.BufferWebGPU.init(this.webgpuHandler);
-                            this.init_basic_kernels();
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        };
-        GPUInterfaceWebGPU.prototype.init_basic_kernels = function () {
-            this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
-        };
-        GPUInterfaceWebGPU.prototype.createDescriptorRunner = function () {
-            return new WebDNN.DescriptorRunnerWebGPU(this.webgpuHandler);
-        };
-        return GPUInterfaceWebGPU;
-    }());
-    WebDNN.GPUInterfaceWebGPU = GPUInterfaceWebGPU;
 })(WebDNN || (WebDNN = {}));
 /// <reference path="./graph_descriptor.ts" />
 /// <reference path="../webgpu_handler.ts" />
@@ -752,34 +1070,40 @@ var WebDNN;
 /// <reference path="../graph_descriptor/graph_descriptor_webassembly.ts" />
 var WebDNN;
 (function (WebDNN) {
-    var DescriptorRunnerWebassembly = (function () {
-        function DescriptorRunnerWebassembly() {
-            this.ignoreCache = false;
-            this.backend = 'webassembly';
-            this.worker_promise_reject_func = null;
-            this.worker_initial_error = null;
+    var DescriptorRunnerWebassembly = (function (_super) {
+        __extends(DescriptorRunnerWebassembly, _super);
+        function DescriptorRunnerWebassembly(option) {
+            var _this = _super.call(this) || this;
+            _this.backendName = 'webassembly';
+            _this.worker_promise_reject_func = null;
+            _this.worker_initial_error = null;
+            if (typeof Worker === 'undefined') {
+                throw new Error('WebWorker is needed for WebAssembly backend');
+            }
+            if (typeof WebAssembly !== 'object') {
+                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
+            }
+            return _this;
         }
+        DescriptorRunnerWebassembly.prototype.init = function () {
+            //nothing to do
+            return Promise.resolve();
+        };
         DescriptorRunnerWebassembly.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, graph_fetch, _a, kernel_backend, worker_entry_js_path, weight_url, weights_data_ab, _b;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+                var graph_url, graph_fetch, _a, kernel_backend, worker_entry_js_path, weight_url, weight_fetch, weights_data_ab;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            graph_url = directory + "/graph_" + this.backend + ".json";
-                            if (this.ignoreCache) {
-                                graph_url += '?t=' + Date.now();
-                            }
-                            graph_url = WebDNN.transformUrl(graph_url);
-                            return [4 /*yield*/, WebDNN.fetch(graph_url)];
+                            graph_url = directory + "/graph_" + this.backendName + ".json";
+                            return [4 /*yield*/, WebDNN.fetch(graph_url, { ignoreCache: this.ignoreCache })];
                         case 1:
-                            graph_fetch = _c.sent();
-                            if (!graph_fetch.ok) {
-                                throw new Error(graph_url + " cannot be loaded");
-                            }
+                            graph_fetch = _b.sent();
                             _a = this;
                             return [4 /*yield*/, graph_fetch.json()];
                         case 2:
-                            _a.descriptor = _c.sent();
+                            _a.descriptor = _b.sent();
+                            this.placeholderContext = new WebDNN.PlaceholderContext(this.descriptor.placeholders);
                             kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
                             worker_entry_js_path = directory + "/kernels_" + kernel_backend + ".js";
                             if (this.ignoreCache) {
@@ -789,33 +1113,103 @@ var WebDNN;
                             this.worker_entry_js_path = worker_entry_js_path;
                             return [4 /*yield*/, this.compile()];
                         case 3:
-                            _c.sent();
-                            weight_url = directory + "/weight_" + this.backend + ".bin";
-                            if (this.ignoreCache) {
-                                weight_url += '?t=' + Date.now();
-                            }
-                            weight_url = WebDNN.transformUrl(weight_url);
-                            _b = WebDNN.readArrayBufferProgressively;
-                            return [4 /*yield*/, WebDNN.fetch(weight_url)];
-                        case 4: return [4 /*yield*/, _b.apply(void 0, [_c.sent(), progressCallback])];
+                            _b.sent();
+                            weight_url = directory + "/weight_" + this.backendName + ".bin";
+                            return [4 /*yield*/, WebDNN.fetch(weight_url, { ignoreCache: this.ignoreCache })];
+                        case 4:
+                            weight_fetch = _b.sent();
+                            return [4 /*yield*/, WebDNN.readArrayBufferProgressively(weight_fetch, progressCallback)];
                         case 5:
-                            weights_data_ab = _c.sent();
+                            weights_data_ab = _b.sent();
                             return [4 /*yield*/, this.loadWeights(new Uint8Array(weights_data_ab))];
                         case 6:
-                            _c.sent();
+                            _b.sent();
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 7:
+                            //assign buffer to input/output buffer view
+                            (_b.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 8:
+                            (_b.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        DescriptorRunnerWebassembly.prototype.setDescriptor = function (descriptor) {
-            this.descriptor = descriptor;
+        DescriptorRunnerWebassembly.prototype.setPlaceholderValue = function (values) {
+            return __awaiter(this, void 0, void 0, function () {
+                var placeholderContext, descriptor, unresolvedValueLists, metaBufferFillList, _loop_1, kernel_order, dynamicBufferSize;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.placeholderContext)
+                                throw new Error('PlaceholderContext is not initialized.');
+                            placeholderContext = this.placeholderContext;
+                            placeholderContext.update(values);
+                            if (!placeholderContext.isResolved)
+                                return [2 /*return*/];
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            descriptor = this.descriptor;
+                            unresolvedValueLists = descriptor.unresolved_value_lists;
+                            metaBufferFillList = [];
+                            _loop_1 = function (kernel_order) {
+                                var unresolvedValueList = unresolvedValueLists[kernel_order];
+                                unresolvedValueList.forEach(function (offset_placeholder) {
+                                    var resolved_value = placeholderContext.resolve(offset_placeholder.placeholder);
+                                    metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
+                                });
+                            };
+                            for (kernel_order = 0; kernel_order < unresolvedValueLists.length; kernel_order++) {
+                                _loop_1(kernel_order);
+                            }
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 1:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 2:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
+                            return [4 /*yield*/, this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList))];
+                        case 3:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerWebassembly.prototype.setPlaceholderValueWorker = function (dynamicBufferSize, metaBufferFillArray) {
+            if (!this.worker)
+                throw Error("Worker is not initialized");
+            var worker = this.worker;
+            return new Promise(function (resolve, reject) {
+                worker.onmessage = function (event) {
+                    if (event.data === 0) {
+                        resolve();
+                    }
+                    else {
+                        console.log(event.data);
+                        worker.terminate();
+                        reject(new Error(event.data));
+                    }
+                };
+                worker.postMessage({ type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray });
+            });
         };
         DescriptorRunnerWebassembly.prototype.compile = function () {
             var _this = this;
-            this.worker = new Worker(this.worker_entry_js_path);
-            this.worker.onerror = function (event) {
-                console.error('Worker Exception: ' + event.message);
+            var worker = new Worker(this.worker_entry_js_path);
+            worker.onerror = function (event) {
+                console.error(event);
+                // console.error('Worker Exception: ' + event.message);
                 if (_this.worker_promise_reject_func) {
                     _this.worker_promise_reject_func(event);
                 }
@@ -824,48 +1218,53 @@ var WebDNN;
                 }
             };
             var promise = new Promise(function (resolve, reject) {
-                if (_this.worker_initial_error) {
-                    // occurs when this.worker_entry_js_path is 404
-                    reject(_this.worker_initial_error);
-                    return;
-                }
+                // occurs when this.worker_entry_js_path is 404
+                if (_this.worker_initial_error)
+                    return reject(_this.worker_initial_error);
                 _this.worker_promise_reject_func = reject;
-                _this.worker.onmessage = function (event) {
+                worker.onmessage = function (event) {
                     if (event.data === 0) {
                         resolve();
                     }
                     else {
-                        _this.worker.terminate();
+                        console.error(event.data);
+                        worker.terminate();
                         reject(new Error(event.data));
                     }
                 };
-                //this.worker.postMessage({ type: 'init' });
             });
+            this.worker = worker;
             return promise;
         };
         DescriptorRunnerWebassembly.prototype.loadWeights = function (weightsData) {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
-                var decoder, weight_data, promise;
+                var decoder, weight_data, worker, promise;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            if (!this.worker)
+                                throw new Error('Worker is not initialized');
                             decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
+                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.memory_layout)];
                         case 1:
                             weight_data = _a.sent();
+                            worker = this.worker;
                             promise = new Promise(function (resolve, reject) {
                                 _this.worker_promise_reject_func = reject;
-                                _this.worker.onmessage = function (event) {
+                                worker.onmessage = function (event) {
                                     if (event.data === 0) {
                                         resolve();
                                     }
                                     else {
-                                        _this.worker.terminate();
+                                        console.log(event.data);
+                                        worker.terminate();
                                         reject(new Error(event.data));
                                     }
                                 };
-                                _this.worker.postMessage({ type: 'weight', data: weight_data });
+                                worker.postMessage({ type: 'weight', data: weight_data });
                             });
                             return [2 /*return*/, promise];
                     }
@@ -873,203 +1272,275 @@ var WebDNN;
             });
         };
         DescriptorRunnerWebassembly.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var views, i, var_alloc;
-                return __generator(this, function (_a) {
-                    if (this.inputViews) {
-                        return [2 /*return*/, this.inputViews];
-                    }
-                    views = [];
-                    for (i = 0; i < this.descriptor.inputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.inputs[i]];
-                        views.push(new Float32Array(var_alloc.size));
-                    }
-                    this.inputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerWebassembly.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var views, i, var_alloc;
-                return __generator(this, function (_a) {
-                    if (this.outputViews) {
-                        return [2 /*return*/, this.outputViews];
-                    }
-                    views = [];
-                    for (i = 0; i < this.descriptor.outputs.length; i++) {
-                        var_alloc = this.descriptor.variable_allocation.allocation[this.descriptor.outputs[i]];
-                        views.push(new Float32Array(var_alloc.size));
-                    }
-                    this.outputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                return view;
             });
+            return this.outputViews;
         };
         DescriptorRunnerWebassembly.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
-                var promise;
+                var descriptor, worker, inputViews, outputViews, promise;
                 return __generator(this, function (_a) {
-                    if (!this.inputViews || !this.outputViews) {
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    if (!this.inputViews || !this.outputViews)
                         throw new Error('getInputViews and getOutputViews must be called prior to run');
-                    }
+                    if (!this.worker)
+                        throw new Error('Worker is not initialized');
+                    descriptor = this.descriptor;
+                    worker = this.worker;
+                    inputViews = this.inputViews;
+                    outputViews = this.outputViews;
                     promise = new Promise(function (resolve, reject) {
                         // TODO: better way not to generate function on every run
                         _this.worker_promise_reject_func = reject;
-                        _this.worker.onmessage = function (event) {
+                        worker.onmessage = function (event) {
                             if (Array.isArray(event.data)) {
                                 for (var i = 0; i < event.data.length; i++) {
-                                    _this.outputViews[i].set(event.data[i]);
+                                    outputViews[i].set(event.data[i]);
                                 }
                                 resolve();
                             }
                             else {
-                                _this.worker.terminate();
+                                console.log(event.data);
+                                worker.terminate();
                                 reject(new Error(event.data));
                             }
                         };
+                        var allocations = [descriptor.memory_layout.static.allocations, descriptor.memory_layout.dynamic.allocations];
                         var inputs = [];
-                        for (var i = 0; i < _this.descriptor.inputs.length; i++) {
-                            var var_alloc = _this.descriptor.variable_allocation.allocation[_this.descriptor.inputs[i]];
-                            inputs.push({ offset: var_alloc.offset, size: var_alloc.size, data: _this.inputViews[i] });
+                        for (var i = 0; i < descriptor.inputs.length; i++) {
+                            for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
+                                var var_alloc = allocations[allocation_space][descriptor.inputs[i]];
+                                if (var_alloc) {
+                                    var symAb = inputViews[i];
+                                    inputs.push({
+                                        space: allocation_space,
+                                        offset: symAb.offset,
+                                        size: symAb.length,
+                                        data: symAb.toActual()
+                                    });
+                                    break;
+                                }
+                            }
                         }
                         var outputs = [];
-                        for (var i = 0; i < _this.descriptor.outputs.length; i++) {
-                            var var_alloc = _this.descriptor.variable_allocation.allocation[_this.descriptor.outputs[i]];
-                            outputs.push({ offset: var_alloc.offset, size: var_alloc.size });
+                        for (var i = 0; i < descriptor.outputs.length; i++) {
+                            for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
+                                var var_alloc = allocations[allocation_space][descriptor.outputs[i]];
+                                if (var_alloc) {
+                                    var symAb = outputViews[i];
+                                    outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                                    break;
+                                }
+                            }
                         }
-                        _this.worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
+                        worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
                     });
                     return [2 /*return*/, promise];
                 });
             });
         };
         return DescriptorRunnerWebassembly;
-    }());
+    }(WebDNN.DescriptorRunner));
     WebDNN.DescriptorRunnerWebassembly = DescriptorRunnerWebassembly;
 })(WebDNN || (WebDNN = {}));
-/// <reference path="./gpu_interface.ts" />
-/// <reference path="../descriptor_runner/descriptor_runner_webassembly.ts" />
+/// <reference path="./graph_descriptor.ts" />
+///<reference path="../fetch.ts" />
+///<reference path="../graph_descriptor/graph_descriptor_fallback.ts" />
+function wait(duration) {
+    if (duration === void 0) { duration = 10; }
+    // let console.log to be displayed, and prevent freeze
+    return new Promise(function (resolve) { return setTimeout(resolve, duration); });
+}
 var WebDNN;
 (function (WebDNN) {
-    var GPUInterfaceWebassembly = (function () {
-        function GPUInterfaceWebassembly(option) {
-            this.option = option;
-            if (typeof Worker === 'undefined') {
-                throw new Error('WebWorker is needed for WebAssembly backend');
-            }
-            if (typeof WebAssembly !== 'object') {
-                console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
-            }
+    var DescriptorRunnerFallback = (function (_super) {
+        __extends(DescriptorRunnerFallback, _super);
+        function DescriptorRunnerFallback(option) {
+            var _this = _super.call(this) || this;
+            _this.backendName = 'fallback';
+            return _this;
         }
-        GPUInterfaceWebassembly.prototype.init = function () {
+        DescriptorRunnerFallback.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     return [2 /*return*/];
                 });
             });
         };
-        GPUInterfaceWebassembly.prototype.createDescriptorRunner = function () {
-            return new WebDNN.DescriptorRunnerWebassembly();
-        };
-        return GPUInterfaceWebassembly;
-    }());
-    WebDNN.GPUInterfaceWebassembly = GPUInterfaceWebassembly;
-})(WebDNN || (WebDNN = {}));
-/// <reference path="./graph_descriptor.ts" />
-///<reference path="../fetch.ts" />
-///<reference path="../graph_descriptor/graph_descriptor_fallback.ts" />
-var WebDNN;
-(function (WebDNN) {
-    var DescriptorRunnerFallback = (function () {
-        function DescriptorRunnerFallback() {
-            this.ignoreCache = false;
-            this.backend = 'fallback';
-        }
         DescriptorRunnerFallback.prototype.load = function (directory, progressCallback) {
             return __awaiter(this, void 0, void 0, function () {
-                var graph_url, graph_fetch, _a, weight_url, weights_data_ab, _b;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
-                        case 0:
-                            graph_url = directory + "/graph_" + this.backend + ".json";
-                            if (this.ignoreCache) {
-                                graph_url += '?t=' + Date.now();
-                            }
-                            graph_url = WebDNN.transformUrl(graph_url);
-                            return [4 /*yield*/, WebDNN.fetch(graph_url)];
+                var _a, descriptor, weightRawArray;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0: return [4 /*yield*/, Promise.all([
+                                WebDNN.fetch(directory + "/graph_" + this.backendName + ".json", { ignoreCache: this.ignoreCache })
+                                    .then(function (res) { return res.json(); }),
+                                WebDNN.fetch(directory + "/weight_" + this.backendName + ".bin", { ignoreCache: this.ignoreCache })
+                                    .then(function (res) { return WebDNN.readArrayBufferProgressively(res, progressCallback); })
+                            ])];
                         case 1:
-                            graph_fetch = _c.sent();
-                            if (!graph_fetch.ok) {
-                                throw new Error(graph_url + " cannot be loaded");
-                            }
-                            _a = this;
-                            return [4 /*yield*/, graph_fetch.json()];
-                        case 2:
-                            _a.descriptor = _c.sent();
+                            _a = _b.sent(), descriptor = _a[0], weightRawArray = _a[1];
+                            this.setDescriptor(descriptor);
                             return [4 /*yield*/, this.compile()];
+                        case 2:
+                            _b.sent();
+                            return [4 /*yield*/, this.initializeStaticBuffer(weightRawArray)];
                         case 3:
-                            _c.sent();
-                            weight_url = directory + "/weight_" + this.backend + ".bin";
-                            if (this.ignoreCache) {
-                                weight_url += '?t=' + Date.now();
-                            }
-                            weight_url = WebDNN.transformUrl(weight_url);
-                            _b = WebDNN.readArrayBufferProgressively;
-                            return [4 /*yield*/, WebDNN.fetch(weight_url)];
-                        case 4: return [4 /*yield*/, _b.apply(void 0, [_c.sent(), progressCallback])];
-                        case 5:
-                            weights_data_ab = _c.sent();
-                            return [4 /*yield*/, this.loadWeights(new Uint8Array(weights_data_ab))];
-                        case 6:
-                            _c.sent();
-                            return [2 /*return*/];
+                            _b.sent();
+                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 5];
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 4:
+                            _b.sent();
+                            _b.label = 5;
+                        case 5: return [2 /*return*/];
                     }
                 });
             });
         };
         DescriptorRunnerFallback.prototype.setDescriptor = function (descriptor) {
             this.descriptor = descriptor;
+            // reset
+            this.placeholderContext = new WebDNN.PlaceholderContext();
+            this.placeholderContext.update(descriptor.placeholders);
+            this.kernelObj = null;
+            this.variableMap = null;
+            this.outputViews = null;
+            this.inputViews = null;
+            this.staticBuffer = null;
+            this.dynamicBuffer = null;
         };
         DescriptorRunnerFallback.prototype.compile = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var weight_name_alloc, name_2, alloc, variable_name_alloc, name_3, alloc;
+                var dnn_fallback_kernel;
                 return __generator(this, function (_a) {
-                    this.compileKernel();
-                    this.rawWeightArray = new Float32Array(this.descriptor.weight_allocation.total_size);
-                    weight_name_alloc = this.descriptor.weight_allocation.allocation;
-                    this.weightArrays = new Map();
-                    for (name_2 in weight_name_alloc) {
-                        alloc = weight_name_alloc[name_2];
-                        this.weightArrays.set(name_2, new Float32Array(this.rawWeightArray.buffer, alloc.offset * Float32Array.BYTES_PER_ELEMENT, alloc.size));
-                    }
-                    this.variableArrays = new Map();
-                    variable_name_alloc = this.descriptor.variable_allocation.allocation;
-                    for (name_3 in variable_name_alloc) {
-                        alloc = variable_name_alloc[name_3];
-                        this.variableArrays.set(name_3, new Float32Array(alloc.size));
-                    }
+                    if (!this.descriptor)
+                        throw new Error('Descriptor is not loaded');
+                    dnn_fallback_kernel = null;
+                    eval(this.descriptor.kernel_source);
+                    this.kernelObj = dnn_fallback_kernel;
                     return [2 /*return*/];
                 });
             });
         };
-        DescriptorRunnerFallback.prototype.compileKernel = function () {
-            var dnn_fallback_kernel;
-            eval(this.descriptor.kernel_source);
-            this.kernelObj = dnn_fallback_kernel;
-        };
-        DescriptorRunnerFallback.prototype.loadWeights = function (weightsData) {
+        DescriptorRunnerFallback.prototype.initializeStaticBuffer = function (weightRawArray) {
             return __awaiter(this, void 0, void 0, function () {
-                var decoder, _a, _b;
+                var descriptor, staticBuffer, variableMap, decoder, _a, _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            descriptor = this.descriptor;
+                            staticBuffer = new Float32Array(descriptor.memory_layout.static.size);
+                            this.staticBuffer = staticBuffer;
+                            variableMap = this.variableMap || new Map();
+                            this.variableMap = variableMap;
+                            Object.entries(descriptor.memory_layout.static.allocations)
+                                .forEach(function (_a) {
+                                var name = _a[0], allocation = _a[1];
+                                variableMap.set(name, new Float32Array(staticBuffer.buffer, allocation.offset * Float32Array.BYTES_PER_ELEMENT, allocation.size));
+                            });
                             decoder = WebDNN.get_weight_decoder(this.descriptor.weight_encoding);
-                            _b = (_a = this.rawWeightArray).set;
-                            return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.weight_allocation)];
+                            _b = (_a = staticBuffer).set;
+                            return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout)];
                         case 1:
                             _b.apply(_a, [_c.sent()]);
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 2:
+                            (_c.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(staticBuffer.buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 3:
+                            (_c.sent())
+                                .filter(function (view) { return !view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(staticBuffer.buffer); });
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerFallback.prototype.initializeDynamicBuffer = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var descriptor, placeholderContext, dynamicBuffer, variableMap;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            if (!this.placeholderContext)
+                                throw new Error('PlaceholderContext is not initialized');
+                            descriptor = this.descriptor;
+                            placeholderContext = this.placeholderContext;
+                            dynamicBuffer = new Float32Array(placeholderContext.resolve(descriptor.memory_layout.dynamic.size));
+                            this.dynamicBuffer = dynamicBuffer;
+                            variableMap = this.variableMap || new Map();
+                            this.variableMap = variableMap;
+                            Object.entries(descriptor.memory_layout.dynamic.allocations)
+                                .forEach(function (_a) {
+                                var name = _a[0], allocation = _a[1];
+                                variableMap.set(name, new Float32Array(dynamicBuffer.buffer, placeholderContext.resolve(allocation.offset) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(allocation.size)));
+                            });
+                            return [4 /*yield*/, this.getInputViews()];
+                        case 1:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.buffer); });
+                            return [4 /*yield*/, this.getOutputViews()];
+                        case 2:
+                            (_a.sent())
+                                .filter(function (view) { return view.isDynamic; })
+                                .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.buffer); });
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        DescriptorRunnerFallback.prototype.setPlaceholderValue = function (values) {
+            return __awaiter(this, void 0, void 0, function () {
+                var placeholderContext;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.placeholderContext)
+                                throw new Error('placeholderContext is not initialized');
+                            placeholderContext = this.placeholderContext;
+                            placeholderContext.update(values);
+                            if (!placeholderContext.isResolved)
+                                return [2 /*return*/];
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 1:
+                            _a.sent();
                             return [2 /*return*/];
                     }
                 });
@@ -1077,235 +1548,181 @@ var WebDNN;
         };
         DescriptorRunnerFallback.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _this = this;
-                var run_entry_date, last_progress_date, i, current_date, elapsed_ms, exec_info, input_arrays, output_arrays, weight_arrays;
+                var variableMap, placeholderContext, executionInfos, startDate, lastDate, i, currentDate, executionInfo, inputs, outputs;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!this.inputViews || !this.outputViews) {
-                                throw new Error('getInputViews and getOutputViews must be called prior to run');
-                            }
-                            run_entry_date = Date.now();
-                            last_progress_date = Date.now();
+                            if (!this.descriptor)
+                                throw new Error('Descriptor is not loaded');
+                            if (!this.placeholderContext)
+                                throw new Error('placeholderContext is not initialized');
+                            if (!this.variableMap)
+                                throw new Error('Variable map is not initialized');
+                            if (!this.staticBuffer)
+                                throw new Error('StaticBuffer map is not initialized');
+                            if (!this.dynamicBuffer)
+                                throw new Error('DynamicBuffer map is not initialized');
+                            if (!this.inputViews || !this.outputViews)
+                                throw new Error('getInputViews() and getOutputViews() must be called prior to run');
+                            variableMap = this.variableMap;
+                            placeholderContext = this.placeholderContext;
+                            executionInfos = this.descriptor.exec_infos
+                                .map(function (executionInfo) { return placeholderContext.resolve(executionInfo); });
+                            startDate = Date.now();
+                            lastDate = Date.now();
                             i = 0;
                             _a.label = 1;
                         case 1:
-                            if (!(i < this.descriptor.exec_infos.length)) return [3 /*break*/, 5];
-                            current_date = Date.now();
-                            if (!(current_date - last_progress_date >= 1000)) return [3 /*break*/, 3];
-                            elapsed_ms = current_date - run_entry_date;
-                            console.log("Processed " + i + "/" + this.descriptor.exec_infos.length + " kernels in " + elapsed_ms + " ms");
-                            last_progress_date = current_date;
-                            return [4 /*yield*/, this.wait_to_display()];
+                            if (!(i < executionInfos.length)) return [3 /*break*/, 5];
+                            currentDate = Date.now();
+                            if (!(currentDate - lastDate >= 1000)) return [3 /*break*/, 3];
+                            console.log("Processed " + i + "/" + executionInfos.length + " kernels in " + (currentDate - startDate) + " ms");
+                            lastDate = currentDate;
+                            return [4 /*yield*/, wait()];
                         case 2:
                             _a.sent();
                             _a.label = 3;
                         case 3:
-                            exec_info = this.descriptor.exec_infos[i];
-                            input_arrays = exec_info.inputs.map(function (name) { return _this.variableArrays.get(name); });
-                            output_arrays = exec_info.outputs.map(function (name) { return _this.variableArrays.get(name); });
-                            weight_arrays = exec_info.weights.map(function (name) { return _this.weightArrays.get(name); });
-                            this.kernelObj[exec_info.entry_func_name](input_arrays, output_arrays, weight_arrays, exec_info.call_option);
+                            executionInfo = executionInfos[i];
+                            inputs = executionInfo.inputs.map(function (name) { return variableMap.get(name); });
+                            outputs = executionInfo.outputs.map(function (name) { return variableMap.get(name); });
+                            this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
                             _a.label = 4;
                         case 4:
                             i++;
                             return [3 /*break*/, 1];
                         case 5:
-                            console.log("Processed " + this.descriptor.exec_infos.length + "/" + this.descriptor.exec_infos.length + " kernels in " + (Date.now() - run_entry_date) + " ms");
+                            console.log("Processed " + executionInfos.length + "/" + executionInfos.length + " kernels in " + (Date.now() - startDate) + " ms");
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        DescriptorRunnerFallback.prototype.wait_to_display = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    // let console.log to be displayed, and prevent freeze
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
-                            setTimeout(resolve, 10);
-                        })];
-                });
-            });
-        };
         DescriptorRunnerFallback.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var _this = this;
-                var views;
-                return __generator(this, function (_a) {
-                    if (this.inputViews) {
-                        return [2 /*return*/, this.inputViews];
-                    }
-                    views = this.descriptor.inputs.map(function (name) { return _this.variableArrays.get(name); });
-                    this.inputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerFallback.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var _this = this;
-                var views;
-                return __generator(this, function (_a) {
-                    if (this.outputViews) {
-                        return [2 /*return*/, this.outputViews];
-                    }
-                    views = this.descriptor.outputs.map(function (name) { return _this.variableArrays.get(name); });
-                    this.outputViews = views;
-                    return [2 /*return*/, views];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.outputViews;
         };
         return DescriptorRunnerFallback;
-    }());
+    }(WebDNN.DescriptorRunner));
     WebDNN.DescriptorRunnerFallback = DescriptorRunnerFallback;
 })(WebDNN || (WebDNN = {}));
-/// <reference path="../descriptor_runner/descriptor_runner_fallback.ts" />
+///<reference path="./descriptor_runner/descriptor_runner.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webgpu.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_webassembly.ts" />
+///<reference path="./descriptor_runner/descriptor_runner_fallback.ts" />
 var WebDNN;
 (function (WebDNN) {
-    var GPUInterfaceFallback = (function () {
-        function GPUInterfaceFallback(option) {
-            this.option = option;
-        }
-        GPUInterfaceFallback.prototype.init = function (option) {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    return [2 /*return*/];
-                });
-            });
-        };
-        GPUInterfaceFallback.prototype.createDescriptorRunner = function () {
-            return new WebDNN.DescriptorRunnerFallback();
-        };
-        return GPUInterfaceFallback;
-    }());
-    WebDNN.GPUInterfaceFallback = GPUInterfaceFallback;
-})(WebDNN || (WebDNN = {}));
-///<reference path="./gpu_interface/gpu_interface.ts" />
-///<reference path="./gpu_interface/gpu_interface_webgpu.ts" />
-///<reference path="./gpu_interface/gpu_interface_webassembly.ts" />
-///<reference path="./gpu_interface/gpu_interface_fallback.ts" />
-var WebDNN;
-(function (WebDNN) {
-    var givenBackendOptions;
-    var tryingBackendOrder;
-    var loadedBackendName;
-    function tryInitNext() {
+    WebDNN.backends = {
+        'webgpu': WebDNN.DescriptorRunnerWebGPU,
+        'webassembly': WebDNN.DescriptorRunnerWebassembly,
+        'fallback': WebDNN.DescriptorRunnerFallback,
+    };
+    WebDNN.DEBUG = false;
+    function initBackend(backendName, option) {
         return __awaiter(this, void 0, void 0, function () {
-            var backend_name, option, gpuif, ex_1;
+            var runner, ex_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        backend_name = tryingBackendOrder.shift();
-                        if (!backend_name) {
-                            throw new Error('No backend is available');
-                        }
-                        option = givenBackendOptions[backend_name];
+                        if (!(backendName in WebDNN.backends))
+                            throw new Error("Unknown backend: \"" + backendName + "\"");
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 5]);
-                        switch (backend_name) {
-                            case 'webgpu':
-                                gpuif = new WebDNN.GPUInterfaceWebGPU(option);
-                                break;
-                            case 'webassembly':
-                                gpuif = new WebDNN.GPUInterfaceWebassembly(option);
-                                break;
-                            case 'fallback':
-                                gpuif = new WebDNN.GPUInterfaceFallback(option);
-                                break;
-                            default:
-                                throw new Error('Unknown backend ' + backend_name);
-                        }
-                        return [4 /*yield*/, gpuif.init()];
+                        _a.trys.push([1, 3, , 4]);
+                        runner = new WebDNN.backends[backendName](option);
+                        return [4 /*yield*/, runner.init()];
                     case 2:
                         _a.sent();
-                        WebDNN.gpu = gpuif;
-                        loadedBackendName = backend_name;
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 4];
                     case 3:
                         ex_1 = _a.sent();
-                        console.warn("Failed to initialize " + backend_name + " backend: " + ex_1);
-                        return [4 /*yield*/, tryInitNext()];
-                    case 4: return [2 /*return*/, _a.sent()];
-                    case 5: return [2 /*return*/, loadedBackendName];
+                        console.warn("Failed to initialize " + backendName + " backend: " + ex_1);
+                        return [2 /*return*/, null];
+                    case 4: return [2 /*return*/, runner];
                 }
             });
         });
     }
-    function init(backendOrder, backendOptions) {
-        if (backendOptions === void 0) { backendOptions = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!backendOrder) {
-                            backendOrder = ['webgpu', 'webassembly'];
-                        }
-                        else if (typeof backendOrder === 'string') {
-                            backendOrder = [backendOrder];
-                        }
-                        givenBackendOptions = backendOptions;
-                        tryingBackendOrder = backendOrder.concat(['fallback']);
-                        return [4 /*yield*/, tryInitNext()];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, loadedBackendName];
-                }
-            });
-        });
-    }
-    WebDNN.init = init;
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
      * @param initOption Initialize option
      * @return Interface to input/output data and run the model.
      */
-    function prepareAll(directory, initOption) {
+    function load(directory, initOption) {
         if (initOption === void 0) { initOption = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var runner, inputViews, outputViews, ex_2;
+            var backendOrder, backendOptions, backendName, runner, ex_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, init(initOption.backendOrder, initOption.backendOptions)];
+                    case 0:
+                        backendOrder = initOption.backendOrder;
+                        if (!backendOrder) {
+                            backendOrder = ['webgpu', 'webassembly'];
+                        }
+                        else if (typeof backendOrder === 'string') {
+                            backendOrder = [backendOrder];
+                        }
+                        backendOrder = backendOrder.slice();
+                        if (backendOrder.indexOf('fallback') === -1)
+                            backendOrder.concat(['fallback']);
+                        backendOptions = initOption.backendOptions || {};
+                        _a.label = 1;
                     case 1:
-                        _a.sent();
-                        _a.label = 2;
+                        if (!(backendOrder.length > 0)) return [3 /*break*/, 7];
+                        backendName = backendOrder.shift();
+                        return [4 /*yield*/, initBackend(backendName, backendOptions[backendName])];
                     case 2:
-                        if (!true) return [3 /*break*/, 10];
+                        runner = _a.sent();
+                        if (!runner)
+                            return [3 /*break*/, 1];
+                        runner.ignoreCache = Boolean(initOption.ignoreCache);
                         _a.label = 3;
                     case 3:
-                        _a.trys.push([3, 7, , 9]);
-                        runner = WebDNN.gpu.createDescriptorRunner();
+                        _a.trys.push([3, 5, , 6]);
                         return [4 /*yield*/, runner.load(directory, initOption.progressCallback)];
                     case 4:
                         _a.sent();
-                        return [4 /*yield*/, runner.getInputViews()];
+                        return [3 /*break*/, 6];
                     case 5:
-                        inputViews = _a.sent();
-                        return [4 /*yield*/, runner.getOutputViews()];
-                    case 6:
-                        outputViews = _a.sent();
-                        return [2 /*return*/, {
-                                backendName: loadedBackendName,
-                                inputViews: inputViews,
-                                outputViews: outputViews,
-                                run: runner.run.bind(runner)
-                            }];
-                    case 7:
                         ex_2 = _a.sent();
-                        console.error("Model loading failed for " + loadedBackendName + " backend. Trying next backend. " + ex_2.message);
-                        return [4 /*yield*/, tryInitNext()];
-                    case 8:
-                        _a.sent();
-                        return [3 /*break*/, 9];
-                    case 9: return [3 /*break*/, 2];
-                    case 10: return [2 /*return*/];
+                        console.warn("Model loading failed for " + backendName + " backend. Trying next backend: " + ex_2.message);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/, runner];
+                    case 7: throw new Error('No backend is available');
                 }
             });
         });
     }
-    WebDNN.prepareAll = prepareAll;
+    WebDNN.load = load;
 })(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {
@@ -1319,6 +1736,7 @@ var WebDNN;
          */
         function argmax(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {
@@ -1365,6 +1783,7 @@ var WebDNN;
          */
         function argmin(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {

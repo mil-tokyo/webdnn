@@ -34,7 +34,6 @@ def main(order1: Type[Order], order2: Type[Order], concat_axis: Axis):
             assert y.shape_dict[axis] == x1.shape_dict[axis]
 
 
-# FIXME 各orderをテストにわけられないか
 def test_every_order():
     orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
     axes = [Axis.N, Axis.H, Axis.W, Axis.C]

@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Dict, Tuple, List
 
 import numpy as np
 
+from webdnn.graph.placeholder import Placeholder
 from webdnn.util import json
 
 
@@ -18,35 +19,53 @@ class GPUSize(json.SerializableMixin):
     def _to_serializable_(self):
         return {"width": self.width, "height": self.height, "depth": self.depth}
 
+    @property
+    def unresolved_placeholders(self):
+        result = []
+
+        if not Placeholder.check_resolved(self.width):
+            result += [self.width]
+
+        if not Placeholder.check_resolved(self.height):
+            result += [self.height]
+
+        if not Placeholder.check_resolved(self.depth):
+            result += [self.depth]
+
+        return result
+
 
 class KernelExecutionInfo(json.SerializableMixin):
     entry_func_name: str
     threadgroups_per_grid: GPUSize
     threads_per_thread_group: GPUSize
     meta_buffer: bytes
+    unresolved_value_list: List[Tuple[int, Placeholder]]
 
     def __init__(self,
                  entry_func_name: str,
                  threadgroups_per_grid: GPUSize,
                  threads_per_thread_group: GPUSize,
-                 meta_buffer: bytes):
+                 meta_buffer: bytes,
+                 unresolved_value_list: List[Tuple[int, Placeholder]] = None):
         self.entry_func_name = entry_func_name
         self.threadgroups_per_grid = threadgroups_per_grid
         self.threads_per_thread_group = threads_per_thread_group
         self.meta_buffer = meta_buffer
+        self.unresolved_value_list = [] if unresolved_value_list is None else unresolved_value_list  # type:List[Tuple[int, Placeholder]]
 
     def _to_serializable_(self):
         return {
             "entry_func_name": self.entry_func_name,
             "threadgroups_per_grid": self.threadgroups_per_grid,
             "threads_per_thread_group": self.threads_per_thread_group,
-            "meta_buffer": np.frombuffer(self.meta_buffer, dtype=np.uint8).tolist()
+            "meta_buffer": np.frombuffer(self.meta_buffer, dtype=np.uint8).tolist(),
+            "unresolved_value_list": [{"offset": v[0], "placeholder": v[1]} for v in self.unresolved_value_list]
         }
 
 
 class Kernel:
     func_sources: Dict[str, str]
-    prototype_sources: Dict[str, str]
     exec_info: KernelExecutionInfo
 
     def __init__(self,
@@ -55,12 +74,12 @@ class Kernel:
                  threadgroups_per_grid,
                  threads_per_thread_group,
                  meta_buffer: bytes,
-                 prototype_sources: Dict[str, str] = None):
+                 unresolved_value_list: List[Tuple[int, Placeholder]] = None):
         self.func_sources = func_sources
-        self.prototype_sources = {} if prototype_sources is None else prototype_sources
         self.exec_info = KernelExecutionInfo(
             entry_func_name=entry_func_name,
             threadgroups_per_grid=threadgroups_per_grid,
             threads_per_thread_group=threads_per_thread_group,
-            meta_buffer=meta_buffer
+            meta_buffer=meta_buffer,
+            unresolved_value_list=[] if unresolved_value_list is None else unresolved_value_list
         )

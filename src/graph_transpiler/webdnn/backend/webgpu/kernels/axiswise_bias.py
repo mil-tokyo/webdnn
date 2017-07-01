@@ -1,50 +1,49 @@
 from typing import List
 
-import numpy as np
-
-from webdnn.backend.webgpu.allocator import MemoryLayout
-from webdnn.backend.webgpu.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.webgpu.injectors.meta_injector import MetaInjector
+from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
+from webdnn.util.misc import mul
 
 
 def axiswise_bias(op: AxiswiseBias,
-                  constants_layout: MemoryLayout,
-                  variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    y = variables_layout[op.outputs["y"]]
+                  memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    y = memory_layout[op.outputs["y"]]
 
     if x.variable.order == y.variable.order:
-        return axiswise_bias_same_order(op, constants_layout, variables_layout)
+        return axiswise_bias_same_order(op, memory_layout)
 
     else:
-        return axiswise_bias_general(op, constants_layout, variables_layout)
+        return axiswise_bias_general(op, memory_layout)
 
 
 def generate_template_same_order(D1, D3):
     return """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
 #define FLAG_D1_EQUAL_1 %%FLAG_D1_EQUAL_1%%
 #define FLAG_D3_EQUAL_1 %%FLAG_D3_EQUAL_1%%
 
-    const device float *X = data_buffer + %%META_LOAD(axiswise_bias_X_offset)%%;
-    const device float *B = weight_buffer + %%META_LOAD(axiswise_bias_B_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(axiswise_bias_Y_offset)%%;
+    const device float *X = %%LOAD_BUFFER(axiswise_bias_X)%%;
+    const device float *B = %%LOAD_BUFFER(axiswise_bias_B)%%;
+    device float *Y = %%LOAD_BUFFER(axiswise_bias_Y)%%;
 
 #if !OPTIMIZE || !FLAG_D1_EQUAL_1
-    const int D1 = %%META_LOAD(axiswise_bias_D1)%%;
+    const int D1 = %%LOAD_BUFFER(axiswise_bias_D1)%%;
 #endif
 
-    const int D2 = %%META_LOAD(axiswise_bias_D2)%%;
+    const int D2 = %%LOAD_BUFFER(axiswise_bias_D2)%%;
 
 #if !OPTIMIZE || !FLAG_D3_EQUAL_1
-    const int D3 = %%META_LOAD(axiswise_bias_D3)%%;
+    const int D3 = %%LOAD_BUFFER(axiswise_bias_D3)%%;
 #endif
 
 #if OPTIMIZE && FLAG_D3_EQUAL_1
@@ -83,22 +82,21 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def axiswise_bias_same_order(op: AxiswiseBias,
-                             constants_layout: MemoryLayout,
-                             variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    b = constants_layout[op.inputs["b"]]
-    y = variables_layout[op.outputs["y"]]
+                             memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    b = memory_layout[op.inputs["b"]]
+    y = memory_layout[op.outputs["y"]]
 
     target_axis_index = x.variable.order.axes_dict[op.axis]
-    D1 = int(np.prod(x.variable.shape[:target_axis_index]))
+    D1 = mul(x.variable.shape[:target_axis_index])
     D2 = x.variable.shape[target_axis_index]
-    D3 = int(np.prod(x.variable.shape[target_axis_index + 1:]))
+    D3 = mul(x.variable.shape[target_axis_index + 1:])
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "axiswise_bias_X_offset": x.offset,
-        "axiswise_bias_B_offset": b.offset,
-        "axiswise_bias_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "axiswise_bias_X": x,
+        "axiswise_bias_B": b,
+        "axiswise_bias_Y": y,
         "axiswise_bias_D1": D1,
         "axiswise_bias_D2": D2,
         "axiswise_bias_D3": D3
@@ -107,34 +105,35 @@ def axiswise_bias_same_order(op: AxiswiseBias,
     name_injector = KernelNameInjector(op)
 
     source = generate_template_same_order(D1, D3)
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]
 
 
 template_general = """
-kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
-                          device float *data_buffer[[buffer(1)]],
-                          const device int * %%META_NAME%% [[buffer(2)]],
+kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
+                          device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
+                          const device int * %%META_BUFFER%% [[buffer(2)]],
                           uint index[[thread_position_in_grid]],
                           uint num_threads[[threads_per_grid]])
 {
-    const device float *X = data_buffer + %%META_LOAD(axiswise_bias_X_offset)%%;
-    const device float *B = weight_buffer + %%META_LOAD(axiswise_bias_B_offset)%%;
-    device float *Y = data_buffer + %%META_LOAD(axiswise_bias_Y_offset)%%;
-    const int D = %%META_LOAD(axiswise_bias_D)%%;
-    const int d_target = %%META_LOAD(axiswise_bias_d_target)%%;
-    const device int *x_shape = &(%%META_LOAD(axiswise_bias_x_shape)%%);
-    const device int *x_stride_in_y = &(%%META_LOAD(axiswise_bias_x_stride_in_y)%%);
+    const device float *X = %%LOAD_BUFFER(axiswise_bias_X)%%;
+    const device float *B = %%LOAD_BUFFER(axiswise_bias_B)%%;
+    device float *Y = %%LOAD_BUFFER(axiswise_bias_Y)%%;
+    const int D = %%LOAD_BUFFER(axiswise_bias_D)%%;
+    const int d_target = %%LOAD_BUFFER(axiswise_bias_d_target)%%;
+    const device int *x_shape = %%LOAD_BUFFER(axiswise_bias_x_shape)%%;
+    const device int *x_stride_in_y = %%LOAD_BUFFER(axiswise_bias_x_stride_in_y)%%;
 
     int size = 1;
     for (int d = 0; d < D; d++) size *= x_shape[d];
@@ -167,11 +166,10 @@ kernel void %%FUNC_NAME%%(const device float *weight_buffer[[buffer(0)]],
 
 
 def axiswise_bias_general(op: AxiswiseBias,
-                          constants_layout: MemoryLayout,
-                          variables_layout: MemoryLayout) -> List[Kernel]:
-    x = variables_layout[op.inputs["x"]]
-    b = constants_layout[op.inputs["b"]]
-    y = variables_layout[op.outputs["y"]]
+                          memory_layout: MemoryLayout) -> List[Kernel]:
+    x = memory_layout[op.inputs["x"]]
+    b = memory_layout[op.inputs["b"]]
+    y = memory_layout[op.outputs["y"]]
 
     x_shape = x.variable.shape
 
@@ -183,29 +181,30 @@ def axiswise_bias_general(op: AxiswiseBias,
 
     x_stride_in_y = [y_strides[y.variable.order.axes_dict[axis]] for axis in x.variable.order.axes]
 
-    meta_injector = MetaInjector()
-    meta_injector.register({
-        "axiswise_bias_X_offset": x.offset,
-        "axiswise_bias_B_offset": b.offset,
-        "axiswise_bias_Y_offset": y.offset,
+    buffer_injector = BufferInjector()
+    buffer_injector.register({
+        "axiswise_bias_X": x,
+        "axiswise_bias_B": b,
+        "axiswise_bias_Y": y,
         "axiswise_bias_D": x.variable.ndim,
         "axiswise_bias_d_target": x.variable.order.axes_dict[op.axis],
-        "axiswise_bias_x_shape": np.array(x_shape, dtype=np.int32).tobytes(),
-        "axiswise_bias_x_stride_in_y": np.array(x_stride_in_y, dtype=np.int32).tobytes(),
+        "axiswise_bias_x_shape": x_shape,
+        "axiswise_bias_x_stride_in_y": x_stride_in_y,
     })
 
     name_injector = KernelNameInjector(op)
 
     source = template_general
-    source = meta_injector.inject(source)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
-        meta_injector.buffer
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
+        buffer_injector.buffer,
+        buffer_injector.unresolved_value_list
     )
 
     return [kernel]

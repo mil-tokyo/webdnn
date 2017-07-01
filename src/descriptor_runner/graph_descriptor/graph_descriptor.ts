@@ -14,22 +14,18 @@ namespace WebDNN {
         outputs: string[];
 
         /**
-         * Allocation information for each variable.
+         * memory position table
          */
-        weight_allocation: {
-            allocation: { [name: string]: any }
-        };
-
-        /**
-         * Allocation information for each variable.
-         */
-        variable_allocation: {
-            allocation: { [name: string]: any }
-        };
-
+        memory_layout: MemoryLayout,
+        
         /**
          * Encoding algorithm of weight binary data.
          */
         weight_encoding: string;
+
+        /**
+         * Placeholder dict
+         */
+        placeholders: { [key: string]: number }
     }
 }

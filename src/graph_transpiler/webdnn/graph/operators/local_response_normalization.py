@@ -10,7 +10,8 @@ from webdnn.graph.variable import Variable
 
 # FIXME: Improve documentation
 class LocalResponseNormalization(Operator):
-    """Operator same as local response normalization layer in Caffe. 
+    """Operator same as local response normalization layer in Caffe.
+    Only cross channel mode is supported; normalization is done for channel axis.
 
     see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html
     
@@ -30,8 +31,7 @@ class LocalResponseNormalization(Operator):
         self.parameters["alpha"] = alpha
         self.parameters["beta"] = beta
         self.attributes = {PostAxiswise(self, Axis.C),
-                           Axiswise(self, Axis.C),
-                           Inplace(self, "x", "y")}
+                           Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
         """

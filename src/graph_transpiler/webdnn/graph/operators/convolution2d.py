@@ -5,6 +5,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
@@ -16,14 +17,18 @@ class Convolution2D(Operator):
         ksize (int or tuple of int): Kernel size.
         stride (int or tuple of int): Stride size.
         padding (int or tuple of int): Padding size.
+        dilation_rate (int or tuple of int): Dilation rate. 1 means ordinary convolution.
+         Input pixels are shifted by (dilation_rate - 1) pixels.
 
     """
 
-    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
+                 dilation_rate: Optional[IntOrTuple] = 1):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
+        self.parameters["dilation_rate"] = to_tuple(dilation_rate)
         self.attributes = {HaveWeights(self)}
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
@@ -38,12 +43,14 @@ class Convolution2D(Operator):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
-        assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
+        if Placeholder.check_resolved(w_shape_dict[Axis.H]) and Placeholder.check_resolved(w_shape_dict[Axis.W]):
+            assert (w_shape_dict[Axis.H], w_shape_dict[Axis.W]) == self.ksize
+        if Placeholder.check_resolved(w_shape_dict[Axis.C]) and Placeholder.check_resolved(x_shape_dict[Axis.C]):
+            assert w_shape_dict[Axis.C] == x_shape_dict[Axis.C]
 
         N = x_shape_dict[Axis.N]
-        H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) // self.SH + 1
-        W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) // self.SW + 1
+        H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1
+        W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
         C2 = w_shape_dict[Axis.N]
 
         y = Variable([N, H2, W2, C2], OrderNHWC)
@@ -64,6 +71,10 @@ class Convolution2D(Operator):
     @property
     def padding(self) -> Tuple[int, int]:
         return self.parameters["padding"]
+
+    @property
+    def dilation_rate(self) -> Tuple[int, int]:
+        return self.parameters["dilation_rate"]
 
     @property
     def KH(self) -> int:
@@ -88,3 +99,29 @@ class Convolution2D(Operator):
     @property
     def PW(self) -> int:
         return self.padding[1]
+
+    @property
+    def DH(self) -> int:
+        return self.dilation_rate[0]
+
+    @property
+    def DW(self) -> int:
+        return self.dilation_rate[1]
+
+    @property
+    def WH(self) -> int:
+        """
+        Input window height considering dilation.
+        Returns:
+
+        """
+        return self.DH * (self.KH - 1) + 1
+
+    @property
+    def WW(self) -> int:
+        """
+        Input window width considering dilation.
+        Returns:
+
+        """
+        return self.DW * (self.KW - 1) + 1

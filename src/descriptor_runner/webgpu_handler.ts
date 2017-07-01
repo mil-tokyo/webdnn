@@ -8,12 +8,14 @@ namespace WebDNN {
         private pipelineStates: Map<string, WebGPUComputePipelineState>;
 
         async init() {
-            // asynchronous operation may be added in future
-            if (!WebGPUHandler.isBrowserSupported) {
-                throw new Error('This browser does not support WebGPU');
-            }
-            this.context = <WebGPURenderingContext>(<any>document.createElement('canvas').getContext('webgpu'));//force cast
-            this.commandQueue = this.context.createCommandQueue();
+            if (!WebGPUHandler.isBrowserSupported) throw new Error('This browser does not support WebGPU');
+
+            let context = document.createElement('canvas').getContext('webgpu');
+            if (!context) throw new Error('WebGPURenderingContext initialization failed');
+
+            this.context = context;
+
+            this.commandQueue = context.createCommandQueue();
             this.pipelineStates = new Map();
         }
 
@@ -145,4 +147,8 @@ declare interface WebGPUComputeCommandEncoder extends WebGPUCommandEncoder {
 }
 
 declare interface WebGPUComputePipelineState {
+}
+
+declare interface HTMLCanvasElement {
+    getContext(contextId: "webgpu"): WebGPURenderingContext | null;
 }

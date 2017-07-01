@@ -34,8 +34,8 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             w.change_order(OrderHWCN)
             assert old_y.order == OrderNHWC
 
-            if op.ksize[0] > 1 or op.ksize[1] > 1 or op.stride[0] > 1 or op.stride[1] > 1 or op.padding[0] > 0 or op.padding[1] > 0:
-                im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding)
+            if op.WH != 1 or op.WW != 1 or op.stride != (1, 1) or op.padding != (0, 0):
+                im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding, dilation_rate=op.dilation_rate)
                 col, = im2col(x)
                 col.change_order(OrderNHWC)
 

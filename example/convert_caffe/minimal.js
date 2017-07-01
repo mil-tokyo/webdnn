@@ -5,11 +5,11 @@ let x, y;
 
 async function init() {
     // (1.1) Initialize DescriptorRunner
-    runner = await WebDNN.prepareAll('./output');
+    runner = await WebDNN.load('./output');
 
     // (1.2) Get input and output variables
-    x = runner.inputViews[0];
-    y = runner.outputViews[0];
+    x = runner.getInputViews()[0].toActual();
+    y = runner.getOutputViews()[0].toActual();
 }
 
 async function run() {
