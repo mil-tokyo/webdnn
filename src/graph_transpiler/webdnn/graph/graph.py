@@ -5,8 +5,15 @@ from webdnn.graph.variable import Variable
 WEBDNN_LICENSE = "(C) Machine Intelligence Laboratory (The University of Tokyo), MIT License"
 
 
-# FIXME: DOCS
 class Graph:
+    """
+    Graph is computation graph of DNN model.
+
+    Args:
+        inputs (list of :class:`~webdnn.graph.variable.Variable`): input variables
+        outputs (list of :class:`~webdnn.graph.variable.Variable`): output variables
+    """
+
     def __init__(self,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable]):

@@ -30,8 +30,7 @@ def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
 
     assert x.order == op.parameters["in_order"]
     assert y.order == op.parameters["out_order"]
-    # FIXME: implement equality check when placeholder is not resolved
-    # assert y.size == mul(op.parameters["out_shape"])
+    assert y.size == mul(op.parameters["out_shape"])
 
     kernel = Kernel(
         {"reshape": source},

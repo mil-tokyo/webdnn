@@ -9,7 +9,6 @@ from webdnn.graph.variable import Variable
 orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
 
-# FIXME 各orderをテストにわけられないか
 def main(k, s, p, d, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
     for order_x in orders4:
         op = Im2Col("im2col", ksize=k, stride=s, padding=p, dilation_rate=d)

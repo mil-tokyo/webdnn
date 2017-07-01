@@ -33,8 +33,7 @@ def reshape(op: Reshape,
 
     assert x.variable.order == op.parameters["in_order"]
     assert y.variable.order == op.parameters["out_order"]
-    # FIXME: implement equality check when placeholder is not resolved
-    # assert y.variable.size == mul(op.parameters["out_shape"])
+    assert y.variable.size == mul(op.parameters["out_shape"])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({

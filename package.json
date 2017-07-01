@@ -12,7 +12,8 @@
         "test": "nosetests",
         "test-kernel": "echo '\"npm run test-kernel\" is removed. please use \"npm run test-runtime\"'",
         "test-runtime": "OPTIMIZE=0 nosetests -w ./test/runtime",
-        "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;"
+        "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;",
+        "build-doc": "cd docs; make html"
     },
     "repository": {
         "type": "git",
