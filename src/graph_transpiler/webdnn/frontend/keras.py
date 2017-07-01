@@ -38,9 +38,10 @@ from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
+from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderHWCN, \
-    OrderNHWC, Order, OrderNT
+    OrderNHWC, Order, OrderNT, OrderNTC
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
@@ -642,6 +643,31 @@ def _convert_zero_padding2d(converter: KerasConverter, operator: KerasOperator):
         raise ValueError("Padding size of left and right must be same.")
 
     pad_opr = ZeroPadding2D(None, (top, left))
+    y, = pad_opr(x)
+
+    operator.outputs = [y]
+
+
+@KerasConverter.register_handler("ZeroPadding1D")
+def _convert_zero_padding1d(converter: KerasConverter, operator: KerasOperator):
+    """
+  {'class_name': 'ZeroPadding1D',
+   'config': {'name': 'zero_padding1d_1',
+    'padding': [0, 1],
+    'trainable': True}},
+
+    Args:
+        converter:
+        operator:
+
+    Returns:
+
+    """
+    assert len(operator.inputs) == 1
+    x = operator.inputs[0]
+    assert x.order == OrderNTC
+    pad_opr = ZeroPadding1D(None, padding=tuple(operator.specific_config["padding"]))
+
     y, = pad_opr(x)
 
     operator.outputs = [y]

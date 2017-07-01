@@ -41,8 +41,9 @@ def main():
     args = parser.parse_args()
 
     console.stderr(f"[{path.basename(__file__)}] Generating feedforward graph")
-    for plugin_path in args.plugin:
-        _load_plugin(plugin_path)
+    if args.plugin:
+        for plugin_path in args.plugin:
+            _load_plugin(plugin_path)
 
     input_shape, _ = Shape.parse(args.input_shape)
     input_shapes = [input_shape]
