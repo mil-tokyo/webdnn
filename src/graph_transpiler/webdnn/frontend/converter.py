@@ -92,7 +92,7 @@ class Converter(Generic[T_OP]):
 
         def decorator(handler: Callable[["Converter", T_OP], Operator]):
             if key in cls._handler_map[cls.__name__]:
-                console.warning(f"[f{cls.__name__}] Converter Handler for '{key}' is already registered in {cls.__name__} and overwritten.")
+                console.warning(f"[{cls.__name__}] Converter Handler for '{key}' is already registered in {cls.__name__} and overwritten.")
 
             cls._handler_map[cls.__name__][key] = handler
             return handler
