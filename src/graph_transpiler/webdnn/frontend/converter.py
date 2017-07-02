@@ -15,7 +15,7 @@ class Converter(Generic[T_OP]):
 
     This class converts computation graph in some DNN library into WebDNN IR format.
 
-    To use this class, you should implement :func:`~webdnn.converter.Converter.convert_core` and
+    To use this class, you should implement :func:`~webdnn.converter.Converter.convert` and
     convert handler for each operator (Please see :func:`~webdnn.converter.Converter.register_handler`).
     """
 
@@ -26,7 +26,7 @@ class Converter(Generic[T_OP]):
     _variable_table = defaultdict(dict)  # type: Dict[str, Dict[object, Variable]]
 
     @abstractmethod
-    def convert_core(self, *args, **kwargs) -> Graph:
+    def convert(self, *args, **kwargs) -> Graph:
         """Convert computation graph into WebDNN IR format.
 
         This is main routine of converter. You need to implement follow operations.
@@ -95,6 +95,7 @@ class Converter(Generic[T_OP]):
                 console.warning(f"[f{cls.__name__}] Converter Handler for '{key}' is already registered in {cls.__name__} and overwritten.")
 
             cls._handler_map[cls.__name__][key] = handler
+            return handler
 
         return decorator
 
@@ -122,9 +123,6 @@ class Converter(Generic[T_OP]):
 
         """
         return key in self._variable_table[self.__class__.__name__]
-
-    def convert(self, *args, **kwargs) -> Graph:
-        return self.convert_core(*args, **kwargs)
 
     def convert_operator(self, operator: T_OP):
         operator_key = self.serialize_operator_type(operator)
