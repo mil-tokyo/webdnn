@@ -71,8 +71,8 @@ class ChainerConverter(Converter[chainer.Function]):
         chainer_graph = chainer.computational_graph.build_computational_graph(outputs)
         return self.convert(chainer_graph, inputs, outputs)
 
-    def convert_core(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
-                     input_c_vars: List[chainer.Variable], output_c_vars: List[chainer.Variable]) -> Graph:
+    def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
+                input_c_vars: List[chainer.Variable], output_c_vars: List[chainer.Variable]) -> Graph:
         # In chainer v2, variables are represented as Variable and VariableNode object, and
         # graph information such as edge connection is contained in variable node.
         # Therefore all chainer variable must be normalized into variable node.

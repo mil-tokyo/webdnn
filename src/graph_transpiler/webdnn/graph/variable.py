@@ -80,7 +80,8 @@ class Variable(Node):
         return self
 
     def replace(self, new_variable: "Variable"):
-        self.output_from.replace_output(self, new_variable)
+        if self.output_from:
+            self.output_from.replace_output(self, new_variable)
 
         for op in list(self.input_to):  # type: operator.Operator
             op.replace_input(self, new_variable)
