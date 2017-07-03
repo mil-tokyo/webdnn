@@ -488,7 +488,7 @@ def _convert_reshape(converter: ChainerConverter, c_opr: chainer.functions.array
 
     x = converter.get_variable(c_opr.inputs[0])
 
-    out_shape = c_opr.shape
+    out_shape = list(c_opr.shape)  # c_opr.shape is tuple
     if len(out_shape) == 1:
         out_order = OrderC
     elif len(out_shape) == 2:
