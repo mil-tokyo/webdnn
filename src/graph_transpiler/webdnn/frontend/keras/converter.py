@@ -18,10 +18,24 @@ import tensorflow as tf
 
 from webdnn.frontend.converter import Converter
 from webdnn.graph.graph import Graph
-from webdnn.graph.order import OrderNC, Order, OrderNHWC
+from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
+
+
+def _get_default_order(tf_tensor: tf.Tensor):
+    if len(tf_tensor.shape) == 2:
+        return OrderNC
+
+    elif len(tf_tensor.shape) == 3:
+        return OrderNTC
+
+    elif len(tf_tensor.shape) == 4:
+        return OrderNHWC
+
+    else:
+        raise NotImplementedError(f"Unknown default data order: {tf_tensor}")
 
 
 def _to_list(x):
@@ -34,7 +48,6 @@ class KerasConverter(Converter[keras.layers.Layer]):
 
     Args:
         batch_size: input batch size (default=1)
-
     """
 
     def __init__(self, batch_size: int = 1):
@@ -42,22 +55,21 @@ class KerasConverter(Converter[keras.layers.Layer]):
         self._output_index_dict = defaultdict(lambda: 0)
         self._placeholder_N = Placeholder(label='N', value=batch_size)
 
-    def convert(self, model: keras.models.Model) -> Graph:
+    def convert(self, model: keras.models.Model, input_orders: List[Order] = None) -> Graph:
         """
         Convert kerasmodel into WebDNN IR Graph. Currently, only TensorFlow backend is supported.
 
         Args:
             model (`keras.models.Model`): keras model
+            input_orders (list of `webdnn.graph.order.Order`): order of input tensors. If `None` is passed, default order
+                (`OrderNC` for 2D, `OrderNTC` for 3D, `OrderNHWC` for 4D) is used. If `input_orders=None`, default orders
+                are assigned to all input tensors. If `input_orders[0]=None`, only first input tensor are converted with
+                the default order.
 
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph
         """
-        for tf_tensor in model.inputs:
-            # FIXME: this assumption about input tensors' order is too ugly.
-            shape = [self._placeholder_N if d.value is None else d.value for d in tf_tensor.shape]
-            order = OrderNC if len(shape) == 2 else OrderNHWC
-
-            self.set_variable(tf_tensor, Variable(shape, order))
+        self._convert_tensors(model.inputs, input_orders)
 
         for depth in sorted(list(model.nodes_by_depth.keys()), reverse=True):
             for node in model.nodes_by_depth[depth]:
@@ -70,9 +82,27 @@ class KerasConverter(Converter[keras.layers.Layer]):
                             f"[KerasConverter] {node.outbound_layer} outputs {tensor}, but it was not converted into "
                             f"WebDNN Variable by {self._handler_map[self.__class__.__name__][self.serialize_operator_type(node.outbound_layer)]}")
 
-        inputs = _to_list(self.get_input_tensor(model))
-        outputs = _to_list(self.get_output_tensor(model))
-        return Graph([self.get_variable(t) for t in inputs], [self.get_variable(t) for t in outputs])
+        return Graph([self.get_variable(t) for t in _to_list(self.get_input_tensor(model))],
+                     [self.get_variable(t) for t in _to_list(self.get_output_tensor(model))])
+
+    def _convert_tensors(self, tf_tensors: List[tf.Tensor], orders: List[Order]):
+        if orders is None:
+            orders = [None for _ in tf_tensors]
+
+        orders = [_get_default_order(tf_tensor) if order is None else order
+                  for tf_tensor, order in zip(tf_tensors, orders)]
+
+        assert len(tf_tensors) == len(orders), f"[KerasConverter] Number of specified orders is mismatched for number " \
+                                               f"of tensors: tensors={tf_tensors} orders={orders}"
+
+        variables = []
+        for tf_tensor, order in zip(tf_tensors, orders):
+            shape = [self._placeholder_N if d.value is None else d.value for d in tf_tensor.shape]
+            variable = Variable(shape, order)
+            self.set_variable(tf_tensor, variable)
+            variables.append(variable)
+
+        return variables
 
     def convert_to_constant_variable(self, tf_var: tf.Variable, order: Order) -> ConstantVariable:
         """
@@ -114,10 +144,10 @@ class KerasConverter(Converter[keras.layers.Layer]):
         """
         Return input tensor(s) of specified keras layer.
 
-        KerasConverter has counters about how many times this method is called for each keras operator, and at first time.
-        this method returns first input tensors (= `k_op.get_input_at(0)`), and when call this method again, this method
-        returns second input tensors (= `k_op.get_input_at(1)`). Therefore, you should call this method just once in your
-        converter handler.
+        KerasConverter has counters about how many times this method is called for each keras operator. At first time,
+        this method returns the first input tensors (= `k_op.get_input_at(0)`) and increments the counter. When call
+        this method again, the second input tensors (= `k_op.get_input_at(1)`) is returned. Therefore, you should call
+        this method just once in your converter handler.
 
         *This method is provided only for implementing custom converter handler.*
 
@@ -135,10 +165,10 @@ class KerasConverter(Converter[keras.layers.Layer]):
         """
         Return output tensor(s) of specified keras layer.
 
-        KerasConverter has counters about how many times this method is called for each keras operator, and at first time.
-        this method returns first output tensors (= `k_op.get_output_at(0)`), and when call this method again, this method
-        returns second output tensors (= `k_op.get_output_at(1)`). Therefore, you should call this method just once in your
-        converter handler.
+        KerasConverter has counters about how many times this method is called for each keras operator. At first time,
+        this method returns the first output tensors (= `k_op.get_output_at(0)`) and increments the counter. When call
+        this method again, the second output tensors (= `k_op.get_output_at(1)`) is returned. Therefore, you should call
+        this method just once in your converter handler.
 
         *This method is provided only for implementing custom converter handler.*
 
@@ -151,5 +181,3 @@ class KerasConverter(Converter[keras.layers.Layer]):
         index = self._output_index_dict[k_op]
         self._output_index_dict[k_op] += 1
         return _to_list(k_op.get_output_at(index))
-
-

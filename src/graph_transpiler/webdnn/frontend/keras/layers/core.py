@@ -26,7 +26,7 @@ def _convert_dense(converter: KerasConverter, k_op: keras.layers.Dense):
 
 
 @KerasConverter.register_handler("Activation")
-def _convert_activation(converter: KerasConverter, k_op: keras.layers):
+def _convert_activation(converter: KerasConverter, k_op: keras.layers.Activation):
     y = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     y = do_activation(k_op.activation, y)

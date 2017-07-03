@@ -5,8 +5,9 @@ from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.convolution2d import Convolution2D
+from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN
+from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN, OrderNTC
 
 
 # noinspection PyUnusedLocal
@@ -121,8 +122,6 @@ def _convert_zero_padding1d(converter: KerasConverter, k_op: keras.layers.ZeroPa
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     assert x.order == OrderNTC
-    if k_op.padding[0][0] != k_op.padding[0][1]:
-        raise ValueError("Padding size of left and right must be same.")
 
     y, = ZeroPadding1D(None, padding=tuple(k_op.padding))(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
