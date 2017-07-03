@@ -34,9 +34,6 @@ import chainer.functions as F
 import chainer.links as L
 
 if chainer.__version__ >= "2.":
-    chainer.using_config("train", False)
-
-
     class ResidualBlock(chainer.Chain):
         def __init__(self, n_in, n_out, stride=1, ksize=3):
             w = math.sqrt(2)
