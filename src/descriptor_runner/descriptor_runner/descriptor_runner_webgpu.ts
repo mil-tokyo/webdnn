@@ -204,6 +204,7 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            if (this._running) throw new Error('Calling another run() while running.');
             if (!this.executionInfos) throw new Error('ExecutionInfos is not loaded');
             if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
             if (!this.staticBuffer) throw new Error('StaticBuffer is not initialized');
@@ -216,6 +217,7 @@ namespace WebDNN {
             let dynamicBuffer = this.dynamicBuffer;
             let metaBuffers = this.metaBuffers;
 
+            this._running = true;
             if (WebDNN.DEBUG) {
                 let records: any = [];
                 let totalElapsedTime = 0;
@@ -275,6 +277,8 @@ namespace WebDNN {
 
                 await complete_promise!;//wait to finish final kernel
             }
+
+            this._running = false;
         }
     }
 }

@@ -168,8 +168,16 @@ var WebDNN;
      */
     class DescriptorRunner {
         constructor() {
+            this._running = false;
             this.descriptor = null;
             this.ignoreCache = false;
+        }
+        /**
+         * Get if model is running.
+         * While running, calling run() again or modifying input is invalid.
+         */
+        get running() {
+            return this._running;
         }
     }
     WebDNN.DescriptorRunner = DescriptorRunner;
@@ -707,6 +715,8 @@ var WebDNN;
             return this.outputViews;
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.executionInfos)
                 throw new Error('ExecutionInfos is not loaded');
             if (!this.inputViews || !this.outputViews)
@@ -724,6 +734,7 @@ var WebDNN;
             let staticBuffer = this.staticBuffer;
             let dynamicBuffer = this.dynamicBuffer;
             let metaBuffers = this.metaBuffers;
+            this._running = true;
             if (WebDNN.DEBUG) {
                 let records = [];
                 let totalElapsedTime = 0;
@@ -763,6 +774,7 @@ var WebDNN;
                 }
                 await complete_promise; //wait to finish final kernel
             }
+            this._running = false;
         }
     }
     WebDNN.DescriptorRunnerWebGPU = DescriptorRunnerWebGPU;
@@ -868,6 +880,7 @@ var WebDNN;
             let worker = new Worker(this.worker_entry_js_path);
             worker.onerror = (event) => {
                 console.error(event);
+                this._running = false;
                 // console.error('Worker Exception: ' + event.message);
                 if (this.worker_promise_reject_func) {
                     this.worker_promise_reject_func(event);
@@ -953,6 +966,8 @@ var WebDNN;
             return this.outputViews;
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             if (!this.inputViews || !this.outputViews)
@@ -971,11 +986,13 @@ var WebDNN;
                         for (let i = 0; i < event.data.length; i++) {
                             outputViews[i].set(event.data[i]);
                         }
+                        this._running = false;
                         resolve();
                     }
                     else {
                         console.log(event.data);
                         worker.terminate();
+                        this._running = false;
                         reject(new Error(event.data));
                     }
                 };
@@ -1007,6 +1024,7 @@ var WebDNN;
                         }
                     }
                 }
+                this._running = true;
                 worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
             });
             return promise;
@@ -1116,6 +1134,8 @@ var WebDNN;
             await this.initializeDynamicBuffer();
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             if (!this.placeholderContext)
@@ -1134,6 +1154,7 @@ var WebDNN;
                 .map(executionInfo => placeholderContext.resolve(executionInfo));
             let startDate = Date.now();
             let lastDate = Date.now();
+            this._running = true;
             for (let i = 0; i < executionInfos.length; i++) {
                 let currentDate = Date.now();
                 if (currentDate - lastDate >= 1000) {
@@ -1147,6 +1168,7 @@ var WebDNN;
                 this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
             }
             console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
+            this._running = false;
         }
         getInputViews() {
             if (this.inputViews)

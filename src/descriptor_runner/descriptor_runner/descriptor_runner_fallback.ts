@@ -142,6 +142,7 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            if (this._running) throw new Error('Calling another run() while running.');
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
             if (!this.placeholderContext) throw new Error('placeholderContext is not initialized');
             if (!this.variableMap) throw new Error('Variable map is not initialized');
@@ -157,6 +158,7 @@ namespace WebDNN {
             let startDate = Date.now();
             let lastDate = Date.now();
 
+            this._running = true;
             for (let i = 0; i < executionInfos.length; i++) {
                 let currentDate = Date.now();
                 if (currentDate - lastDate >= 1000) {
@@ -172,6 +174,7 @@ namespace WebDNN {
                 this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
             }
             console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
+            this._running = false;
         }
 
         getInputViews() {
