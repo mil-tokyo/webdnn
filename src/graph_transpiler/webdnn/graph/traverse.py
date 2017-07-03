@@ -101,11 +101,13 @@ def listup_variables(graph: Graph) -> List[Variable]:
 def dump(graph: Graph):
     indent = ""
     for op in listup_operators(graph):
+        parameters_sorted = [repr(key) + ': ' + str(op.parameters[key]) for key in sorted(op.parameters.keys())]
         console.debug(f"---------------------------------------------------------------------------")
         console.debug(f"{indent}{op.__class__.__name__} : {op.name}")
         console.debug(f"{indent}    In  : {op.inputs}")
         console.debug(f"{indent}    Out : {op.outputs}")
-        console.debug(f"{indent}    Attr: {[attr.__class__.__name__ for attr in op.attributes]}")
+        console.debug(f"{indent}    Attr: {sorted([attr.__class__.__name__ for attr in op.attributes])}")
+        console.debug(f"{indent}    Parameters: {{{', '.join(parameters_sorted)}}}")
 
 
 def dump_dot(graph: Graph, name: Optional[str] = None) -> str:
