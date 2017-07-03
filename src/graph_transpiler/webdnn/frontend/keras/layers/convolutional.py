@@ -134,11 +134,15 @@ def _convert_zero_padding2d(converter: KerasConverter, k_op: keras.layers.ZeroPa
     padding = k_op.padding
     top = padding[0][0]
     if top != padding[0][1]:
-        raise ValueError("Padding size of top and bottom must be same.")
+        # FIXME: This condition should be checked in each backend
+        raise NotImplementedError(
+            "[KerasConverter] In current implementation, Padding size of top and bottom must be same.")
 
     left = padding[1][0]
     if left != padding[1][1]:
-        raise ValueError("Padding size of left and right must be same.")
+        # FIXME: This condition should be checked in each backend
+        raise NotImplementedError(
+            "[KerasConverter] In current implementation, Padding size of left and right must be same.")
 
     y, = ZeroPadding2D(None, (top, left))(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)

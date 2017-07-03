@@ -14,15 +14,13 @@ def _convert_leaky_relu(converter: KerasConverter, k_op: keras.layers.LeakyReLU)
 
     # FIXME: More effective implementation
     # LeakyReLU(x) = x > 0 ? x : a*x
-    #              = (x > 0 ? x : 0) + (x < 0 ? a*x : 0)
-    #              = ReLU(x) + (-a) * (-x > 0 ? -x : 0)
-    #              = ReLU(x) + (-a) * ReLU(-x)
+    #              = (x > 0 ? (1-a)*x : 0) + a*x
+    #              = (1-a) * ReLU(x) + a*x
 
     y1, = Relu(None)(x)
+    y1, = ScalarAffine(None, scale=1 - k_op.alpha, bias=0)(y1)
 
-    y2, = ScalarAffine(None, scale=-1, bias=0)(x)
-    y2, = Relu(None)(y2)
-    y2, = ScalarAffine(None, scale=-k_op.alpha, bias=0)(y2)
+    y2, = ScalarAffine(None, scale=k_op.alpha, bias=0)(x)
 
     y, = ElementwiseSum(None)(y1, y2)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
