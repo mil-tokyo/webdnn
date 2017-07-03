@@ -14,18 +14,18 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: keras.layers.MaxPool
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])
+    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
 
     if k_op.padding == "valid":
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (k_op.pool_size // 2, k_op.pool_size // 2)
+        padding = (k_op.pool_size[0] // 2, k_op.pool_size[0] // 2)
 
     else:
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
 
-    y, = MaxPooling2D(None, ksize=(k_op.pool_size, 1), stride=(1, 1), padding=padding)(y)
+    y, = MaxPooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
     z, = Reshape(None, in_order=y.order, out_order=OrderNTC, out_shape=[y.shape[0], y.shape[1], y.shape[3]])(y)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
@@ -71,18 +71,18 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: keras.layers.Ave
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])
+    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
 
     if k_op.padding == "valid":
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (k_op.pool_size // 2, k_op.pool_size // 2)
+        padding = (k_op.pool_size[0] // 2, k_op.pool_size[0] // 2)
 
     else:
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
 
-    y, = AveragePooling2D(None, ksize=(k_op.pool_size, 1), stride=(1, 1), padding=padding)(y)
+    y, = AveragePooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
     z, = Reshape(None, in_order=y.order, out_order=OrderNTC, out_shape=[y.shape[0], y.shape[1], y.shape[3]])(y)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
@@ -128,7 +128,7 @@ def _convert_global_max_pooling1d(converter: KerasConverter, k_op: keras.layers.
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])
+    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
     y, = MaxPooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
     # flatten without changing memory layout
@@ -160,7 +160,7 @@ def _convert_global_average_pooling1d(converter: KerasConverter, k_op: keras.lay
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])
+    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
     y, = AveragePooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
     # flatten without changing memory layout

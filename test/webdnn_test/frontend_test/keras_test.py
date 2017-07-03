@@ -1,13 +1,7 @@
-import logging
-
+from test.runtime.frontend_test.keras_test.util import keras
+from webdnn.frontend.keras import KerasConverter
 from webdnn.graph import traverse
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
-
-logging.getLogger("tensorflow").setLevel(logging.WARNING)
-
-import keras
-
-from webdnn.frontend.keras import KerasConverter
 from webdnn.graph.operators.linear import Linear
 from webdnn.util.assertion import assert_equal
 
