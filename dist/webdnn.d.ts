@@ -133,6 +133,7 @@ declare namespace WebDNN {
      */
     abstract class DescriptorRunner<D extends GraphDescriptor> {
         readonly backendName: string;
+        protected _running: boolean;
         descriptor: D | null;
         placeholderContext: PlaceholderContext | null;
         ignoreCache: boolean;
@@ -172,6 +173,11 @@ declare namespace WebDNN {
          * Run descriptor. You must call [[getInputViews]] and [[getOutputViews]] before calling this function.
          */
         abstract run(): Promise<void>;
+        /**
+         * Get if model is running.
+         * While running, calling run() again or modifying input is invalid.
+         */
+        readonly running: boolean;
     }
 }
 declare namespace WebDNN {

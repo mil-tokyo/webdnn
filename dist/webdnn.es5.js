@@ -244,9 +244,21 @@ var WebDNN;
      */
     var DescriptorRunner = (function () {
         function DescriptorRunner() {
+            this._running = false;
             this.descriptor = null;
             this.ignoreCache = false;
         }
+        Object.defineProperty(DescriptorRunner.prototype, "running", {
+            /**
+             * Get if model is running.
+             * While running, calling run() again or modifying input is invalid.
+             */
+            get: function () {
+                return this._running;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return DescriptorRunner;
     }());
     WebDNN.DescriptorRunner = DescriptorRunner;
@@ -986,6 +998,8 @@ var WebDNN;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (this._running)
+                                throw new Error('Calling another run() while running.');
                             if (!this.executionInfos)
                                 throw new Error('ExecutionInfos is not loaded');
                             if (!this.inputViews || !this.outputViews)
@@ -1003,6 +1017,7 @@ var WebDNN;
                             staticBuffer = this.staticBuffer;
                             dynamicBuffer = this.dynamicBuffer;
                             metaBuffers = this.metaBuffers;
+                            this._running = true;
                             if (!WebDNN.DEBUG) return [3 /*break*/, 5];
                             records = [];
                             totalElapsedTime_1 = 0;
@@ -1053,7 +1068,9 @@ var WebDNN;
                         case 6:
                             _a.sent(); //wait to finish final kernel
                             _a.label = 7;
-                        case 7: return [2 /*return*/];
+                        case 7:
+                            this._running = false;
+                            return [2 /*return*/];
                     }
                 });
             });
@@ -1209,6 +1226,7 @@ var WebDNN;
             var worker = new Worker(this.worker_entry_js_path);
             worker.onerror = function (event) {
                 console.error(event);
+                _this._running = false;
                 // console.error('Worker Exception: ' + event.message);
                 if (_this.worker_promise_reject_func) {
                     _this.worker_promise_reject_func(event);
@@ -1309,6 +1327,8 @@ var WebDNN;
                 var _this = this;
                 var descriptor, worker, inputViews, outputViews, promise;
                 return __generator(this, function (_a) {
+                    if (this._running)
+                        throw new Error('Calling another run() while running.');
                     if (!this.descriptor)
                         throw new Error('Descriptor is not loaded');
                     if (!this.inputViews || !this.outputViews)
@@ -1327,11 +1347,13 @@ var WebDNN;
                                 for (var i = 0; i < event.data.length; i++) {
                                     outputViews[i].set(event.data[i]);
                                 }
+                                _this._running = false;
                                 resolve();
                             }
                             else {
                                 console.log(event.data);
                                 worker.terminate();
+                                _this._running = false;
                                 reject(new Error(event.data));
                             }
                         };
@@ -1363,6 +1385,7 @@ var WebDNN;
                                 }
                             }
                         }
+                        _this._running = true;
                         worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
                     });
                     return [2 /*return*/, promise];
@@ -1552,6 +1575,8 @@ var WebDNN;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (this._running)
+                                throw new Error('Calling another run() while running.');
                             if (!this.descriptor)
                                 throw new Error('Descriptor is not loaded');
                             if (!this.placeholderContext)
@@ -1570,6 +1595,7 @@ var WebDNN;
                                 .map(function (executionInfo) { return placeholderContext.resolve(executionInfo); });
                             startDate = Date.now();
                             lastDate = Date.now();
+                            this._running = true;
                             i = 0;
                             _a.label = 1;
                         case 1:
@@ -1593,6 +1619,7 @@ var WebDNN;
                             return [3 /*break*/, 1];
                         case 5:
                             console.log("Processed " + executionInfos.length + "/" + executionInfos.length + " kernels in " + (Date.now() - startDate) + " ms");
+                            this._running = false;
                             return [2 /*return*/];
                     }
                 });

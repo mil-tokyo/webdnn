@@ -34,7 +34,7 @@ namespace WebDNN {
 
         async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
-            let graph_fetch = await WebDNN.fetch(graph_url, {ignoreCache: this.ignoreCache});
+            let graph_fetch = await WebDNN.fetch(graph_url, { ignoreCache: this.ignoreCache });
 
             this.descriptor = await graph_fetch.json();
             this.placeholderContext = new PlaceholderContext(this.descriptor!.placeholders);
@@ -51,7 +51,7 @@ namespace WebDNN {
             await this.compile();
 
             let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            let weight_fetch = await WebDNN.fetch(weight_url, {ignoreCache: this.ignoreCache});
+            let weight_fetch = await WebDNN.fetch(weight_url, { ignoreCache: this.ignoreCache });
             let weights_data_ab = await readArrayBufferProgressively(weight_fetch, progressCallback);
             await this.loadWeights(new Uint8Array(weights_data_ab));
 
@@ -113,7 +113,7 @@ namespace WebDNN {
                     }
                 };
 
-                worker.postMessage({type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray});
+                worker.postMessage({ type: 'set_dynamic_buffer', size: dynamicBufferSize, data: metaBufferFillArray });
             });
         }
 
@@ -121,6 +121,7 @@ namespace WebDNN {
             let worker = new Worker(this.worker_entry_js_path);
             worker.onerror = (event) => {
                 console.error(event);
+                this._running = false;
                 // console.error('Worker Exception: ' + event.message);
                 if (this.worker_promise_reject_func) {
                     this.worker_promise_reject_func(event);
@@ -168,7 +169,7 @@ namespace WebDNN {
                     }
                 };
 
-                worker.postMessage({type: 'weight', data: weight_data});
+                worker.postMessage({ type: 'weight', data: weight_data });
             });
 
             return promise;
@@ -214,6 +215,7 @@ namespace WebDNN {
         }
 
         async run(): Promise<void> {
+            if (this._running) throw new Error('Calling another run() while running.');
             if (!this.descriptor) throw new Error('Descriptor is not loaded');
             if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
             if (!this.worker) throw new Error('Worker is not initialized');
@@ -231,10 +233,12 @@ namespace WebDNN {
                         for (let i = 0; i < event.data.length; i++) {
                             outputViews[i].set(event.data[i]);
                         }
+                        this._running = false;
                         resolve();
                     } else {
                         console.log(event.data);
                         worker.terminate();
+                        this._running = false;
                         reject(new Error(event.data));
                     }
                 };
@@ -263,13 +267,14 @@ namespace WebDNN {
                         let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
                         if (var_alloc) {
                             let symAb = outputViews[i];
-                            outputs.push({space: allocation_space, offset: symAb.offset, size: symAb.length});
+                            outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
                             break;
                         }
                     }
                 }
 
-                worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
+                this._running = true;
+                worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
             });
 
             return promise;
