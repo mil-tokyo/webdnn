@@ -24,7 +24,7 @@ from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-def _get_default_order(tf_tensor: tf.Tensor):
+def get_default_order(tf_tensor: tf.Tensor):
     if len(tf_tensor.shape) == 2:
         return OrderNC
 
@@ -89,7 +89,7 @@ class KerasConverter(Converter[keras.layers.Layer]):
         if orders is None:
             orders = [None for _ in tf_tensors]
 
-        orders = [_get_default_order(tf_tensor) if order is None else order
+        orders = [get_default_order(tf_tensor) if order is None else order
                   for tf_tensor, order in zip(tf_tensors, orders)]
 
         assert len(tf_tensors) == len(orders), f"[KerasConverter] Number of specified orders is mismatched for number " \
