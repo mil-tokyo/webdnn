@@ -51,6 +51,8 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
             w_input = lstm.inputs["w_input"]
             w_hidden = lstm.inputs["w_hidden"]
             if isinstance(w_input, ConstantVariable) and isinstance(w_hidden, ConstantVariable):
+                w_input.change_order(OrderCN)
+                w_hidden.change_order(OrderCN)
                 w_all = ConstantVariable(np.vstack([w_input.data, w_hidden.data]), OrderCN)
             else:
                 w_all, = Concat(None, axis=Axis.C)(w_input, w_hidden)  # type: Variable
@@ -64,9 +66,6 @@ class ConcatLSTMInputAndHidden(OptimizeRule):
 
             x_and_h = Variable([C1 + C2, N], OrderCN)
             workspace = Variable([N, 4 * C2], OrderNC)
-
-            w_input.change_order(OrderCN)
-            w_hidden.change_order(OrderCN)
 
             lstm.remove_input(w_input)
             lstm.remove_input(w_hidden)
