@@ -14,7 +14,7 @@ def test():
         {"use_bias": False, "activation": None}
     ]:
         x = keras.layers.Input((4,))
-        y = keras.layers.Dense(**kwargs)(x)
+        y = keras.layers.Dense(8, **kwargs)(x)
         model = keras.models.Model([x], [y])
 
         vx = np.random.rand(2, 4)
