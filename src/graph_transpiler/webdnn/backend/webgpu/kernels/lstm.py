@@ -95,11 +95,14 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
         for (int gid = global_index; gid < C2 * N; gid += num_threads)
         {
+            const int n = gid % N;
+            const int c2 = gid / N;
+
             float i = workspace[gid + N * C2 * 0];
             float f = workspace[gid + N * C2 * 1];
             float a = workspace[gid + N * C2 * 2];
             float o = workspace[gid + N * C2 * 3];
-            float c = final_C[gid];
+            float c = final_C[n * C2 + c2];
 
             i = recurrent_activation_function(i);
             f = recurrent_activation_function(f);
@@ -108,13 +111,11 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     
             c = a * i + c * f;
 
-            final_C[gid] = c;
+            final_C[n * C2 + c2] = c;
             const float h = activation_function(c) * o;
             XH_H[gid] = h;
 
 #if RETURN_SEQUENCES
-            const int n = gid % N;
-            const int c2 = gid / N;
             Y[(n * T + t) * C2 + c2] = h;
 #endif
         }
@@ -124,7 +125,9 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     //copy final output to output variable
     for (int gid = global_index; gid < C2 * N; gid += num_threads)
     {
-        Y[gid] = XH_H[gid];
+        const int n = gid % N;
+        const int c2 = gid / N;
+        Y[n * C2 + c2] = XH_H[gid];
     }
 #endif
 
@@ -167,6 +170,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
             f"in return_sequences=False mode: y.order = {y.variable.order}"
 
     assert w_all.variable.order == OrderCN
+    assert final_c.variable.order == OrderNC
 
     N = x.variable.shape_dict[Axis.N]
     T = x.variable.shape_dict[Axis.T]

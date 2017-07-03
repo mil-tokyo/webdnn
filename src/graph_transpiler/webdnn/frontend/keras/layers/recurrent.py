@@ -34,8 +34,15 @@ def _convert_lstm(converter: KerasConverter, k_op: keras.layers.LSTM):
     else:
         b = None
 
-    y, = LSTM(None, k_op.use_bias, k_op.return_sequences,
-              use_initial_c=False, use_initial_h=False,
-              activation=k_op.activation,
-              recurrent_activation=k_op.recurrent_activation)(x, w_input, w_hidden, b)
-    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+    y, c = LSTM(None, k_op.use_bias, k_op.return_sequences,
+                use_initial_c=False, use_initial_h=False,
+                activation=k_op.activation.__name__,
+                recurrent_activation=k_op.recurrent_activation.__name__)(x, w_input, w_hidden, b)
+
+    k_outputs = converter.get_output_tensor(k_op)
+
+    converter.set_variable(k_outputs[0], y)
+
+    if k_op.return_state:
+        converter.set_variable(k_outputs[1], None)
+        converter.set_variable(k_outputs[2], c)
