@@ -20,6 +20,7 @@ from webdnn.backend.webgpu.kernels.axiswise_scale import axiswise_scale
 from webdnn.backend.webgpu.kernels.clipped_relu import clipped_relu
 from webdnn.backend.webgpu.kernels.col2im import col2im
 from webdnn.backend.webgpu.kernels.concat import concat
+from webdnn.backend.webgpu.kernels.elementwise_mul import elementwise_mul
 from webdnn.backend.webgpu.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webgpu.kernels.elu import elu
 from webdnn.backend.webgpu.kernels.embedding import embedding
@@ -53,6 +54,7 @@ from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.embedding import Embedding
@@ -179,6 +181,7 @@ WebGPUDescriptorGenerator.register_handler(ClippedRelu)(clipped_relu)
 WebGPUDescriptorGenerator.register_handler(Col2Im)(col2im)
 WebGPUDescriptorGenerator.register_handler(Concat)(concat)
 WebGPUDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
+WebGPUDescriptorGenerator.register_handler(ElementwiseMul)(elementwise_mul)
 WebGPUDescriptorGenerator.register_handler(Elu)(elu)
 WebGPUDescriptorGenerator.register_handler(Embedding)(embedding)
 WebGPUDescriptorGenerator.register_handler(Flatten)(flatten)

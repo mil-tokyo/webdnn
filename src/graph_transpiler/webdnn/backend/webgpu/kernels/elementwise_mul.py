@@ -6,7 +6,7 @@ from webdnn.backend.code_generator.injectors.inline_injector import InlineInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
-from webdnn.graph.operators.axiswise_scale import AxiswiseScale
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 
 
 def generate_template(N, has_inline):
@@ -28,20 +28,20 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 
 #if OPTIMIZE && N_DIVIDABLE_BY_4
-    const device float4 *X0 = (const device float4 *)(%%LOAD_BUFFER(elementwise_sum_X0)%%);
-    const device float4 *X1 = (const device float4 *)(%%LOAD_BUFFER(elementwise_sum_X1)%%);
-    device float4 *Y = (device float4 *)(%%LOAD_BUFFER(elementwise_sum_Y)%%);
-    const int N = (%%LOAD_BUFFER(elementwise_sum_N)%%) >> 2;
+    const device float4 *X0 = (const device float4 *)(%%LOAD_BUFFER(elementwise_mul_X0)%%);
+    const device float4 *X1 = (const device float4 *)(%%LOAD_BUFFER(elementwise_mul_X1)%%);
+    device float4 *Y = (device float4 *)(%%LOAD_BUFFER(elementwise_mul_Y)%%);
+    const int N = (%%LOAD_BUFFER(elementwise_mul_N)%%) >> 2;
 #else
-    const device float *X0 = %%LOAD_BUFFER(elementwise_sum_X0)%%;
-    const device float *X1 = %%LOAD_BUFFER(elementwise_sum_X1)%%;
-    device float *Y = %%LOAD_BUFFER(elementwise_sum_Y)%%;
-    const int N = %%LOAD_BUFFER(elementwise_sum_N)%%;
+    const device float *X0 = %%LOAD_BUFFER(elementwise_mul_X0)%%;
+    const device float *X1 = %%LOAD_BUFFER(elementwise_mul_X1)%%;
+    device float *Y = %%LOAD_BUFFER(elementwise_mul_Y)%%;
+    const int N = %%LOAD_BUFFER(elementwise_mul_N)%%;
 #endif
   
     for (int gid = index; gid < N; gid += num_threads) {
 
-        T_VALUE result = X0[gid] + X1[gid];
+        T_VALUE result = X0[gid] * X1[gid];
 
 #if OPTIMIZE && HAS_INLINE
     #if OPTIMIZE && N_DIVIDABLE_BY_4
@@ -66,23 +66,23 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         .replace("%%HAS_INLINE%%", "1" if has_inline else "0")
 
 
-def elementwise_sum(op: AxiswiseScale,
+def elementwise_mul(op: ElementwiseMul,
                     memory_layout: MemoryLayout) -> List[Kernel]:
     x0 = memory_layout[op.inputs["x0"]]
     x1 = memory_layout[op.inputs["x1"]]
     y = memory_layout[op.outputs["y"]]
 
-    assert len(op.inputs) == 2, "[WebGPU] ElementwiseSum operator currently supported only 2 inputs."
+    assert len(op.inputs) == 2, "[WebGPU] ElementwiseMul operator currently supported only 2 inputs."
     assert x0.variable.order == x1.variable.order == y.variable.order, \
-        "[WebGPU] ElementwiseSum operator currently supported only same order inputs."
+        "[WebGPU] ElementwiseMul operator currently supported only same order inputs."
     assert x0.variable.shape == x1.variable.shape == y.variable.shape
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "elementwise_sum_X0": x0,
-        "elementwise_sum_X1": x1,
-        "elementwise_sum_Y": y,
-        "elementwise_sum_N": y.variable.size
+        "elementwise_mul_X0": x0,
+        "elementwise_mul_X1": x1,
+        "elementwise_mul_Y": y,
+        "elementwise_mul_N": y.variable.size
     })
 
     inline_injector = InlineInjector(op)

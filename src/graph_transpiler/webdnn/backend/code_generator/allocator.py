@@ -183,15 +183,17 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     inplace = op.get_attribute(Inplace)[0]  # type: Inplace
                     v_in = inplace.get_input()  # Use memory allocated for input variable
                     v_out = inplace.get_output()
-                    if v_in.order == v_out.order:
-                        while "inplace_src" in v_in.parameters:
-                            v_in = v_in.parameters["inplace_src"]
 
-                        var.parameters["inplace_src"] = v_in
-                        retain_count[v_in] += len(var.input_to)
+                    if len(v_in.input_to) == 1:
+                        if v_in.order == v_out.order:
+                            while "inplace_src" in v_in.parameters:
+                                v_in = v_in.parameters["inplace_src"]
 
-                        allocated.add(var)
-                        flag_allocated = True
+                            var.parameters["inplace_src"] = v_in
+                            retain_count[v_in] += len(var.input_to)
+
+                            allocated.add(var)
+                            flag_allocated = True
 
                 if not flag_allocated:
                     lifetime[var] = (t, LIFETIME_FOREVER)
