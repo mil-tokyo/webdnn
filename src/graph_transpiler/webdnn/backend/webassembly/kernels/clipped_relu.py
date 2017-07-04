@@ -1,8 +1,8 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 
@@ -25,7 +25,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 # noinspection PyUnusedLocal
 def clipped_relu(op: ClippedRelu, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
+    x = memory_layout[op.inputs["x0"]]
     y = memory_layout[op.outputs["y"]]
 
     assert x.variable.shape == y.variable.shape

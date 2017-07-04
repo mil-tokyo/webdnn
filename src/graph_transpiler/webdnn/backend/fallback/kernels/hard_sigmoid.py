@@ -31,7 +31,7 @@ for (var i = 0; i < length; i++) {
 
 # noinspection PyUnresolvedReferences
 def hard_sigmoid(op: HardSigmoid, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = op.inputs["x"]
+    x = op.inputs["x0"]
     y = op.outputs["y"]
 
     kernel = Kernel(
