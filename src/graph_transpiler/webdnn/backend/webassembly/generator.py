@@ -22,6 +22,7 @@ from webdnn.backend.webassembly.kernels.axiswise_scale import axiswise_scale
 from webdnn.backend.webassembly.kernels.clipped_relu import clipped_relu
 from webdnn.backend.webassembly.kernels.col2im import col2im
 from webdnn.backend.webassembly.kernels.concat import concat
+from webdnn.backend.webassembly.kernels.elementwise_mul import elementwise_mul
 from webdnn.backend.webassembly.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.webassembly.kernels.elu import elu
 from webdnn.backend.webassembly.kernels.embedding import embedding
@@ -55,6 +56,7 @@ from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.embedding import Embedding
@@ -202,6 +204,7 @@ WebassemblyDescriptorGenerator.register_handler(AxiswiseScale)(axiswise_scale)
 WebassemblyDescriptorGenerator.register_handler(ClippedRelu)(clipped_relu)
 WebassemblyDescriptorGenerator.register_handler(Col2Im)(col2im)
 WebassemblyDescriptorGenerator.register_handler(Concat)(concat)
+WebassemblyDescriptorGenerator.register_handler(ElementwiseMul)(elementwise_mul)
 WebassemblyDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
 WebassemblyDescriptorGenerator.register_handler(Elu)(elu)
 WebassemblyDescriptorGenerator.register_handler(Embedding)(embedding)

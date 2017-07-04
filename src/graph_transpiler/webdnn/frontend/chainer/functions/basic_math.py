@@ -1,9 +1,11 @@
 import chainer.computational_graph
 
 from webdnn.frontend.chainer import ChainerConverter
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
+from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.order import OrderNC, OrderCN
 
@@ -11,15 +13,26 @@ from webdnn.graph.order import OrderNC, OrderCN
 # noinspection PyUnusedLocal,PyUnresolvedReferences
 @ChainerConverter.register_handler("Neg")
 def _convert_neg(converter: ChainerConverter, c_op: chainer.functions.math.basic_math.Neg):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Neg is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = ScalarAffine(None, scale=-1, bias=0)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("Absolute")
 def _convert_absolute(converter: ChainerConverter, c_op: chainer.functions.math.basic_math.Absolute):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Absolute is not supported")
+    # FIXME: More effective implementation
+    # abs(x) = ReLU(x) + ReLU(-x)
+
+    x = converter.get_variable(c_op.inputs[0])
+
+    y1, = Relu(None)(x)
+
+    y2, = ScalarAffine(None, scale=-1, bias=0)(x)
+    y2, = Relu(None)(y2)
+
+    y, = ElementwiseSum(None)(y1, y2)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnresolvedReferences
@@ -69,15 +82,11 @@ def _convert_sub_from_constant(converter: ChainerConverter, c_op: chainer.functi
 
 # noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("Mul")
-@ChainerConverter.register_handler("MatMulVarVar")
 def _convert_mul(converter: ChainerConverter, c_op: chainer.functions.math.basic_math.Mul):
     x1 = converter.get_variable(c_op.inputs[0])
     x2 = converter.get_variable(c_op.inputs[1])
 
-    x1, = ReinterpretAxis(None, x1.order, OrderNC)(x1)
-    x2, = ReinterpretAxis(None, x2.order, OrderCN)(x2)
-
-    y, = Linear(None)(x1, x2)
+    y, = ElementwiseMul(None)(x1, x2)
     converter.set_variable(c_op.outputs[0](), y)
 
 
@@ -88,6 +97,19 @@ def _convert_mul(converter: ChainerConverter, c_op: chainer.functions.math.basic
 def _convert_mul_constant(converter: ChainerConverter, c_op: chainer.functions.math.basic_math.MulConstant):
     x = converter.get_variable(c_op.inputs[0])
     y, = ScalarAffine(None, scale=float(c_op.value), bias=0.0)(x)
+    converter.set_variable(c_op.outputs[0](), y)
+
+
+# noinspection PyUnresolvedReferences
+@ChainerConverter.register_handler("MatMulVarVar")
+def _convert_mul(converter: ChainerConverter, c_op: chainer.functions.math.basic_math.Mul):
+    x1 = converter.get_variable(c_op.inputs[0])
+    x2 = converter.get_variable(c_op.inputs[1])
+
+    x1, = ReinterpretAxis(None, x1.order, OrderNC)(x1)
+    x2, = ReinterpretAxis(None, x2.order, OrderCN)(x2)
+
+    y, = Linear(None)(x1, x2)
     converter.set_variable(c_op.outputs[0](), y)
 
 

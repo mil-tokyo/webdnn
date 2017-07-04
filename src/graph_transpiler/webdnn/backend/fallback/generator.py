@@ -18,6 +18,7 @@ from webdnn.backend.fallback.kernels.axiswise_scale import axiswise_scale
 from webdnn.backend.fallback.kernels.clipped_relu import clipped_relu
 from webdnn.backend.fallback.kernels.concat import concat
 from webdnn.backend.fallback.kernels.convolution_2d import convolution_2d
+from webdnn.backend.fallback.kernels.elementwise_mul import elementwise_mul
 from webdnn.backend.fallback.kernels.elementwise_sum import elementwise_sum
 from webdnn.backend.fallback.kernels.elu import elu
 from webdnn.backend.fallback.kernels.flatten import flatten
@@ -45,6 +46,7 @@ from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.convolution2d import Convolution2D
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.flatten import Flatten
@@ -122,6 +124,7 @@ FallbackDescriptorGenerator.register_handler(AxiswiseScale)(axiswise_scale)
 FallbackDescriptorGenerator.register_handler(Concat)(concat)
 FallbackDescriptorGenerator.register_handler(ClippedRelu)(clipped_relu)
 FallbackDescriptorGenerator.register_handler(Convolution2D)(convolution_2d)
+FallbackDescriptorGenerator.register_handler(ElementwiseMul)(elementwise_mul)
 FallbackDescriptorGenerator.register_handler(ElementwiseSum)(elementwise_sum)
 FallbackDescriptorGenerator.register_handler(Elu)(elu)
 FallbackDescriptorGenerator.register_handler(Flatten)(flatten)
