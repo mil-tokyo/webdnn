@@ -33,7 +33,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 def scalar_affine(op: ScalarAffine,
                   memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
+    x = memory_layout[op.inputs["x0"]]
     y = memory_layout[op.outputs["y"]]
     assert x.variable.shape == y.variable.shape
 
