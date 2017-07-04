@@ -43,6 +43,7 @@ from webdnn.backend.webassembly.kernels.softmax import softmax
 from webdnn.backend.webassembly.kernels.softplus import softplus
 from webdnn.backend.webassembly.kernels.softsign import softsign
 from webdnn.backend.webassembly.kernels.tanh import tanh
+from webdnn.backend.webassembly.kernels.threshold_relu import threshold_relu
 from webdnn.backend.webassembly.kernels.zero_padding_1d import zero_padding_1d
 from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.backend.webassembly.operators.im2col import Im2Col
@@ -75,6 +76,7 @@ from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.operators.threshold_relu import ThresholdRelu
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.util import flags, console
 from webdnn.util.json import json
@@ -111,7 +113,8 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
+        args.append(
+            "EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append("WASM=1")
         args.append("-s")
@@ -137,7 +140,8 @@ class GraphExecutionData(IGraphExecutionData):
         args.append("-O3")
         args.append("-std=c++11")
         args.append("-s")
-        args.append("EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
+        args.append(
+            "EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
         args.append("--pre-js")
@@ -225,4 +229,5 @@ WebassemblyDescriptorGenerator.register_handler(ReinterpretAxis)(reinterpret_axi
 WebassemblyDescriptorGenerator.register_handler(Relu)(relu)
 WebassemblyDescriptorGenerator.register_handler(Reshape)(reshape)
 WebassemblyDescriptorGenerator.register_handler(Tanh)(tanh)
+WebassemblyDescriptorGenerator.register_handler(ThresholdRelu)(threshold_relu)
 WebassemblyDescriptorGenerator.register_handler(ZeroPadding1D)(zero_padding_1d)

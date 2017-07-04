@@ -5,6 +5,7 @@ from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.threshold_relu import ThresholdRelu
 
 
 @KerasConverter.register_handler("LeakyReLU")
@@ -40,5 +41,11 @@ def _convert_elu(converter: KerasConverter, k_op: keras.layers.ELU):
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("ThresholdedReLU")
 def _convert_thresholded_relu(converter: KerasConverter, k_op: keras.layers.ThresholdedReLU):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.ThresholdedReLU is not supported')
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+
+    if k_op.theta == 0:
+        y, = Relu(None)(x)
+    else:
+        y, = ThresholdRelu(None, threshold=k_op.theta)(x)
+
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)

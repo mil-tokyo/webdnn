@@ -36,6 +36,7 @@ from webdnn.backend.fallback.kernels.softmax import softmax
 from webdnn.backend.fallback.kernels.softplus import softplus
 from webdnn.backend.fallback.kernels.softsign import softsign
 from webdnn.backend.fallback.kernels.tanh import tanh
+from webdnn.backend.fallback.kernels.threshold_relu import threshold_relu
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.encoder.constant_encoder import ConstantEncoder
@@ -64,6 +65,7 @@ from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.operators.threshold_relu import ThresholdRelu
 from webdnn.util import console
 from webdnn.util.json import json
 
@@ -142,3 +144,4 @@ FallbackDescriptorGenerator.register_handler(ReinterpretAxis)(reinterpret_axis)
 FallbackDescriptorGenerator.register_handler(Relu)(relu)
 FallbackDescriptorGenerator.register_handler(Reshape)(reshape)
 FallbackDescriptorGenerator.register_handler(Tanh)(tanh)
+FallbackDescriptorGenerator.register_handler(ThresholdRelu)(threshold_relu)
