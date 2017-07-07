@@ -23,6 +23,9 @@ from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
+if not "2." <= keras.__version__ < "3.":
+    raise ValueError(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
+
 
 def get_default_order(tf_tensor: tf.Tensor):
     if len(tf_tensor.shape) == 2:
