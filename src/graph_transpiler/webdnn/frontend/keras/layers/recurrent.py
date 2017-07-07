@@ -1,6 +1,6 @@
 import keras
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.order import OrderC, OrderCN
 

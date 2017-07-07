@@ -6,4 +6,4 @@ logging.getLogger("tensorflow").setLevel(logging.WARNING)
 import keras
 
 # noinspection PyUnresolvedReferences
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter

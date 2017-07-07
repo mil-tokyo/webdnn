@@ -1,4 +1,4 @@
-from webdnn.frontend.keras.converter import KerasConverter
+from webdnn.frontend.keras import converter
 # converter handlers
 from webdnn.frontend.keras.layers import advanced_activations
 from webdnn.frontend.keras.layers import convolutional

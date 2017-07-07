@@ -1,6 +1,6 @@
 import keras
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.scalar_affine import ScalarAffine

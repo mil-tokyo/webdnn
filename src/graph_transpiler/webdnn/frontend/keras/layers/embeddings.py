@@ -1,6 +1,6 @@
 import keras
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.order import OrderNC, OrderCN, OrderNT

@@ -1,6 +1,6 @@
 import chainer.computational_graph
 
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.convolution2d import Convolution2D

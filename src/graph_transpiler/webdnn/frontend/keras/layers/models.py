@@ -1,6 +1,6 @@
 import keras
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 
 
 @KerasConverter.register_handler("Model")

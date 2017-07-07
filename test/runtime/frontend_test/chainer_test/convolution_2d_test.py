@@ -2,7 +2,7 @@ import chainer
 import numpy as np
 
 from test.util import generate_kernel_test_case
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.order import OrderNCHW
 from webdnn.graph.variables.constant_variable import ConstantVariable
 

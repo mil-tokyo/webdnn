@@ -1,6 +1,6 @@
 import chainer.computational_graph
 
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid

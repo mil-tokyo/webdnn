@@ -1,6 +1,6 @@
 import keras
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias

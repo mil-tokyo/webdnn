@@ -1,6 +1,6 @@
 import chainer.computational_graph
 
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 # noinspection PyUnusedLocal
