@@ -3,6 +3,7 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.operators.im2col import Im2Col
 from webdnn.graph.axis import Axis
@@ -83,7 +84,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 """
 
 
-# noinspection PyUnusedLocal
+@WebassemblyDescriptorGenerator.register_handler(Im2Col)
 def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
     im = memory_layout[op.inputs["im"]]
     col = memory_layout[op.outputs["col"]]

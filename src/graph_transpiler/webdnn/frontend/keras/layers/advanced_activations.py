@@ -1,6 +1,7 @@
 import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
+from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.relu import Relu
@@ -29,11 +30,20 @@ def _convert_prelu(converter: KerasConverter, k_op: keras.layers.PReLU):
 @KerasConverter.register_handler("ELU")
 def _convert_elu(converter: KerasConverter, k_op: keras.layers.ELU):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    alpha = float(k_op.alpha)
 
-    y, = Elu(None)(x)
+    if alpha == 1.0:
+        y, = Elu(None)(x)
 
-    if k_op.alpha != 1.0:
-        y, = ScalarAffine(None, scale=k_op.alpha, bias=0)(y)
+    elif alpha == 0.0:
+        y, = Relu(None)(x)
+
+    else:
+        y1, = Elu(None)(x)
+        y2, = Relu(None)(x)
+        y1, = ScalarAffine(None, scale=alpha, bias=0)(y1)
+        y2, = ScalarAffine(None, scale=1 - alpha, bias=0)(y2)
+        y, = ElementwiseSum(None)(y1, y2)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 

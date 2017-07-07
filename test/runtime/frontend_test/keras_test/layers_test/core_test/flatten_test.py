@@ -15,7 +15,7 @@ def test():
     graph = KerasConverter(batch_size=2).convert(model)
 
     generate_kernel_test_case(
-        description="[keras] Flatten " + (", ".join([f"{k}={v}" for k, v in kwargs.items()])),
+        description="[keras] Flatten",
         graph=graph,
         inputs={graph.inputs[0]: vx},
         expected={graph.outputs[0]: vy}

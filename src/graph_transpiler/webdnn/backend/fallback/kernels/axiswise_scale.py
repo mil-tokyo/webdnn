@@ -1,11 +1,9 @@
 from typing import List
 
-import numpy as np
-
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
-
 # assume (batch_size, in_size) * (in_size, out_size) = (batch_size, out_size), C-order
 # EcmaScript3 to support older browsers
 from webdnn.util.misc import mul
@@ -30,6 +28,7 @@ for (var i = 0; i < n; i++) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(AxiswiseScale)
 def axiswise_scale(op: AxiswiseScale, memory_layout: MemoryLayout) -> List[Kernel]:
     # 該当軸のsize, strideを与える
     x = op.inputs["x"]

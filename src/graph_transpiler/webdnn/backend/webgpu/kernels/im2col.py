@@ -1,8 +1,9 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.backend.webgpu.operators.im2col import Im2Col
 from webdnn.graph.axis import Axis
@@ -146,6 +147,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
+@WebGPUDescriptorGenerator.register_handler(Im2Col)
 def im2col(op: Im2Col,
            memory_layout: MemoryLayout) -> List[Kernel]:
     im = memory_layout[op.inputs["im"]]

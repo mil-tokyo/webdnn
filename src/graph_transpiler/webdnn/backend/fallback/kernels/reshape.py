@@ -1,11 +1,12 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.util.misc import mul
 
 # EcmaScript3 to support older browsers
-from webdnn.util.misc import mul
 
 source = """
 reshape: function(input_arrays, output_arrays, option) {
@@ -23,6 +24,7 @@ for (var i = 0; i < length; i++) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Reshape)
 def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
     # Operation without need for transposition is currently supported
     x = op.inputs["x"]

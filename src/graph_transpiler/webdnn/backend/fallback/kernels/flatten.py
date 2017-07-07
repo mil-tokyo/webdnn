@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.flatten import Flatten
 from webdnn.graph.order import OrderNCHW, OrderNC, OrderNHWC
@@ -24,6 +25,7 @@ for (var i = 0; i < length; i++) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Flatten)
 def flatten(op: Flatten, memory_layout: MemoryLayout) -> List[Kernel]:
     # データ変換がない場合のみ現状サポート
     # 該当軸のsize, strideを与える

@@ -3,6 +3,7 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.backend.webgpu.operators.col2im import Col2Im
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
@@ -63,7 +64,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
-# noinspection PyUnusedLocal
+@WebGPUDescriptorGenerator.register_handler(Col2Im)
 def col2im(op: Col2Im,
            memory_layout: MemoryLayout) -> List[Kernel]:
     col = memory_layout[op.inputs["col"]]

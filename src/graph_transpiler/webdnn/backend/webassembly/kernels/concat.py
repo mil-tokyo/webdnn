@@ -3,6 +3,7 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
@@ -48,7 +49,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 """
 
 
-# noinspection PyUnusedLocal
+@WebassemblyDescriptorGenerator.register_handler(Concat)
 def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
     y = memory_layout[op.outputs["y"]]

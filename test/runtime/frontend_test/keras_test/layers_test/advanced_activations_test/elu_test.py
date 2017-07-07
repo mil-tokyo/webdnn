@@ -7,7 +7,7 @@ from test.util import generate_kernel_test_case
 
 
 def test():
-    for alpha in [0, 0.3]:
+    for alpha in [0, 0.5, 1.0]:
         x = keras.layers.Input((4,))
         y = keras.layers.ELU(alpha=alpha)(x)
         model = keras.models.Model([x], [y])
