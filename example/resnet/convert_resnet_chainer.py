@@ -11,7 +11,7 @@ import chainer.computational_graph
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.util import console
 
 

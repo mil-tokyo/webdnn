@@ -1,5 +1,5 @@
 from test.runtime.frontend_test.keras_test.util import keras
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph import traverse
 from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.operators.linear import Linear

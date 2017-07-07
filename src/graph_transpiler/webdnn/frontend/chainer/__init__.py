@@ -1,4 +1,4 @@
-from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer import converter
 # converter handlers
 from webdnn.frontend.chainer.functions import activation
 from webdnn.frontend.chainer.functions import array

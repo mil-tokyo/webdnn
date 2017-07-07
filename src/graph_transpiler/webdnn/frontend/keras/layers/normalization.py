@@ -2,7 +2,7 @@ import keras
 import keras.backend as K
 import numpy as np
 
-from webdnn.frontend.keras import KerasConverter
+from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.order import Order

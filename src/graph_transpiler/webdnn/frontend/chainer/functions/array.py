@@ -1,6 +1,6 @@
 import chainer.computational_graph
 
-from webdnn.frontend.chainer import ChainerConverter
+from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderC, OrderNC, OrderNCHW
