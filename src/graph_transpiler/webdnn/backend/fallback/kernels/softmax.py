@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.softmax import Softmax
 
@@ -40,6 +41,7 @@ for (var n = 0; n < N; n++) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Softmax)
 def softmax(op: Softmax, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]

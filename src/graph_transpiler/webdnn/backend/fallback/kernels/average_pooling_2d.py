@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -64,6 +65,7 @@ def calculate_all_strides(var):
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(AveragePooling2D)
 def average_pooling_2d(op: AveragePooling2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]

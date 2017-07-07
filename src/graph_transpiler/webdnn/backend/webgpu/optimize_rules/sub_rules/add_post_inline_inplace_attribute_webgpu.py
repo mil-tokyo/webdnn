@@ -21,7 +21,7 @@ class AddPostInlineInplaceAttribute(OptimizeRule):
         ops = traverse.listup_operators(graph)
         ops = traverse.filter_nodes(ops, PostInlineInplace, mode_not=True)
         for op in ops:  # type: Operator
-            if isinstance(op, Sgemm) or isinstance(op, ElementwiseSum):
+            if isinstance(op, Sgemm):
                 op.attributes.add(PostInlineInplace(op))
                 flag_changed = True
 

@@ -3,11 +3,13 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.util.misc import mul
 
 
+@WebassemblyDescriptorGenerator.register_handler(AxiswiseScale)
 def axiswise_scale(op: AxiswiseScale,
                    memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]

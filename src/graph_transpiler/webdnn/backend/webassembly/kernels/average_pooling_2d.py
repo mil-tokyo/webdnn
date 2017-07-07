@@ -3,6 +3,7 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -53,7 +54,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 """
 
 
-# noinspection PyUnusedLocal
+@WebassemblyDescriptorGenerator.register_handler(AveragePooling2D)
 def average_pooling_2d(op: AveragePooling2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]

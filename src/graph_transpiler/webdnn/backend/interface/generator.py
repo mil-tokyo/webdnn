@@ -46,7 +46,7 @@ class DescriptorGenerator(Generic[T_KERNEL, T_EXEC_DATA]):
         for op in traverse.listup_operators(graph):
             key = cls.serialize_operator_type(op)
             if key not in cls._handler_map[cls.__name__]:
-                raise NotImplementedError(f"Operator {op} is not handled by any generator handler")
+                raise NotImplementedError(f"[{cls.__name__}] Operator {op} is not handled by any generator handler")
 
             kernels += cls._handler_map[cls.__name__][key](op, memory_layout)
 
@@ -64,7 +64,7 @@ def get_generator(backend: str):
         from webdnn.backend.fallback.generator import generate as generate_fallback
         return generate_fallback
     else:
-        raise NotImplementedError("No such backend")
+        raise NotImplementedError(f"Unknown backend: {backend}")
 
 
 def generate_descriptor(backend: str, graph: Graph, **kwargs) -> IGraphExecutionData:

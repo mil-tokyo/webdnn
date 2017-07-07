@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph.operators.concat import Concat
 
@@ -69,6 +70,7 @@ function increment(shape, position) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Concat)
 def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [op.inputs[f"x{i}"] for i in range(len(op.inputs))]
     y = op.outputs["y"]

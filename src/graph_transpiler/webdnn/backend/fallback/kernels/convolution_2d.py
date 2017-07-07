@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -77,6 +78,7 @@ def calculate_all_strides(var):
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Convolution2D)
 def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]

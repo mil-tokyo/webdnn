@@ -3,12 +3,14 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.util.misc import mul
 
 
+@WebGPUDescriptorGenerator.register_handler(AxiswiseScale)
 def axiswise_scale(op: AxiswiseScale,
                    memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]

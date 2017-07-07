@@ -1,9 +1,10 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.inline_injector import InlineInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
-from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.backend.webgpu.operators.sgemm import Sgemm
 
@@ -420,6 +421,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         .replace("%%HAS_INLINE%%", "1" if has_inline else "0")
 
 
+@WebGPUDescriptorGenerator.register_handler(Sgemm)
 def sgemm(op: Sgemm,
           memory_layout: MemoryLayout) -> List[Kernel]:
     A = memory_layout[op.inputs["A"]]

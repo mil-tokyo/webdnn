@@ -3,6 +3,7 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
@@ -58,6 +59,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
+@WebGPUDescriptorGenerator.register_handler(AveragePooling2D)
 def average_pooling_2d(op: AveragePooling2D,
                        memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]

@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
@@ -40,6 +41,7 @@ for (var i = 0; i < m; i++) {
 
 
 # noinspection PyUnusedLocal
+@FallbackDescriptorGenerator.register_handler(Linear)
 def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     w = op.inputs["w"]

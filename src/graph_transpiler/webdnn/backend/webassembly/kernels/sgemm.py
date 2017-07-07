@@ -1,8 +1,9 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.operators.sgemm import Sgemm
 
@@ -67,6 +68,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
 
 
+@WebassemblyDescriptorGenerator.register_handler(Sgemm)
 def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
     A = memory_layout[op.inputs["A"]]
     B = memory_layout[op.inputs["B"]]

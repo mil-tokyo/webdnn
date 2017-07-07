@@ -1,8 +1,9 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.linear import Linear
@@ -33,6 +34,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 """
 
 
+@WebassemblyDescriptorGenerator.register_handler(Linear)
 def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     w = memory_layout[op.inputs["w"]]
