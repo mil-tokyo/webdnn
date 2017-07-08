@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Type, List
+from typing import Dict, Tuple, Type, List, Optional
 
 from webdnn.graph import variable
 from webdnn.graph.attribute import Attribute
@@ -19,7 +19,7 @@ class Operator(Node):
     inputs: Dict[str, "variable.Variable"]
     outputs: Dict[str, "variable.Variable"]
 
-    def __init__(self, name: str):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name)
         self.inputs = {}
         self.outputs = {}

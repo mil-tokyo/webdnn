@@ -4,6 +4,7 @@ from webdnn.backend.fallback.kernels import axiswise_bias
 from webdnn.backend.fallback.kernels import axiswise_scale
 from webdnn.backend.fallback.kernels import clipped_relu
 from webdnn.backend.fallback.kernels import concat
+from webdnn.backend.fallback.kernels import convolution_2d
 from webdnn.backend.fallback.kernels import elementwise
 from webdnn.backend.fallback.kernels import elementwise_add
 from webdnn.backend.fallback.kernels import elementwise_div

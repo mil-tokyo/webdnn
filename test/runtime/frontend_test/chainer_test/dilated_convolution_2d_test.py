@@ -21,6 +21,7 @@ def test_dilate_is_1():
     generate_kernel_test_case(
         description=f"[chainer] L.DilatedConvolution2D(dilate=1)",
         graph=graph,
+        backend=["webgpu", "webassembly"],
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
         expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data}
     )
@@ -40,6 +41,7 @@ def test_dilate_is_2():
     generate_kernel_test_case(
         description=f"[chainer] L.DilatedConvolution2D(dilate=2)",
         graph=graph,
+        backend=["webgpu", "webassembly"],
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
         expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data}
     )
@@ -59,6 +61,7 @@ def test_nobias():
     generate_kernel_test_case(
         description=f"[chainer] L.DilatedConvolution2D(dilate=2, nobias=True)",
         graph=graph,
+        backend=["webgpu", "webassembly"],
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
         expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data}
     )
