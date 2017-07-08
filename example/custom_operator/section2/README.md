@@ -149,4 +149,4 @@ The result is like follows.
 
 ---
 
-[Go to Section 3. "Layer with Weights"]("../section3/README.md")
+[Go to Section 3. "Layer with Weights"](../section3)
