@@ -1,11 +1,11 @@
 from abc import ABCMeta
 from typing import Optional
 
+from webdnn.graph import variable
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise as ElementwiseAttribute
 from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.placeholder import Placeholder
-from webdnn.graph.variable import Variable
 
 
 class Elementwise(Operator, metaclass=ABCMeta):
@@ -38,7 +38,7 @@ class Elementwise(Operator, metaclass=ABCMeta):
         self.attributes = {ElementwiseAttribute(self),
                            Inplace(self, "x0", "y")}
 
-    def __call__(self, *xs: Variable):
+    def __call__(self, *xs: "variable.Variable"):
         """
         Args:
             *xs (:class:`~webdnn.graph.variable.Variable`): Input variables. All input variables must be same shape.
@@ -46,7 +46,7 @@ class Elementwise(Operator, metaclass=ABCMeta):
         Returns:
             tuple of :class:`~webdnn.graph.variable.Variable`: Output variable. It is same shape of input variables.
         """
-        y = Variable(xs[0].shape, xs[0].order)
+        y = variable.Variable(xs[0].shape, xs[0].order)
         for i, x in enumerate(xs):
             for axis in x.order.axes:
                 assert axis in y.order.axes

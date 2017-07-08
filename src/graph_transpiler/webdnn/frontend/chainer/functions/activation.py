@@ -6,7 +6,6 @@ from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.relu import Relu
-from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
@@ -30,9 +29,9 @@ def _convert_crelu(converter: ChainerConverter, c_op: chainer.functions.CReLU):
 @ChainerConverter.register_handler("ELU")
 def _convert_elu(converter: ChainerConverter, c_op: chainer.functions.ELU):
     x = converter.get_variable(c_op.inputs[0])
-    y, = Elu(None)(x)
-    if c_op.alpha != 1.0:
-        y, = ScalarAffine(None, scale=c_op.alpha, bias=0)(y)
+    y1, = Elu(None)(x)
+    y2, = Relu(None)(x)
+    y = y1 * c_op.alpha + y2 * (1 - c_op.alpha)
     converter.set_variable(c_op.outputs[0](), y)
 
 

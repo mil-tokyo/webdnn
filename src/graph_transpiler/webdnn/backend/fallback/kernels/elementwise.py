@@ -56,7 +56,7 @@ def _generate_source(xs: List[Variable], expression: str, parameters: Dict[str, 
 
         output_arrays[0][i] = y;
     }
-}
+},
 """ \
         .replace("%%ELEMENTWISE_INPUTS%%", inputs_expression) \
         .replace("%%ELEMENTWISE_CALL_ARGS%%", call_args_expression) \
@@ -117,7 +117,7 @@ def register_elementwise_kernel(OperatorClass: Type[Elementwise],
     :func:`webdnn.backend.fallback.kernels.elementwise_kernel<elementwise_kernel>`, and kernel code is generated with `code`.::
 
         # With expression code
-        register_elementwise_kernel(ElementwiseSum, "y = x0 + x1;")
+        register_elementwise_kernel(ElementwiseAdd, "y = x0 + x1;")
 
         # With block code
         register_elementwise_kernel(HardSigmoid, \"\"\"

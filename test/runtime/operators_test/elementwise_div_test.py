@@ -4,7 +4,6 @@ import numpy as np
 
 from test.util import generate_kernel_test_case
 from webdnn.graph.graph import Graph
-from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderHWCN
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
@@ -27,18 +26,18 @@ def test_general():
 
         vx1 = np.random.rand(2, 3, 4, 5)
         vx2 = np.random.rand(2, 3, 4, 5)
-        vy = vx1 + vx2
+        vy = vx1 / vx2
 
         x1 = Variable(vx1.shape, order=OrderNHWC)
         x2 = Variable(vx2.shape, order=OrderNHWC)
-        y, = ElementwiseSum(None)(x1, x2)
+        y = x1 / x2
 
         x1.change_order(condition["x1_order"])
         x2.change_order(condition["x2_order"])
         y.change_order(condition["y_order"])
 
         generate_kernel_test_case(
-            description=f"ElementwiseSum: " + (", ".join([f"{k}={v}" for k, v in condition_custom.items()])),
+            description=f"ElementwiseDiv: " + (", ".join([f"{k}={v}" for k, v in condition_custom.items()])),
             backend=condition["backend"],
             graph=Graph([x1, x2], [y]),
             inputs={
