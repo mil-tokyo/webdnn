@@ -1,6 +1,6 @@
 # 1. Elementwise Operator without Parameters
 
-In this section, you will learn about **how to convert custom keras layer which is elementwise operation with no hyper parameters**.
+In this section, you will learn about how to convert **custom keras layer which is elementwise operation with no hyper parameters**.
  
 
 ## Example: Squaring

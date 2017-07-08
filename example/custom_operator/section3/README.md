@@ -1,6 +1,6 @@
 # 3. Layer with Weights
 
-In this section, you will learn about **how to convert custom keras layer which has trainable weights**.
+In this section, you will learn about how to convert **custom keras layer which has trainable weights**.
  
 
 ## Example: Bias
@@ -66,6 +66,7 @@ Typical order is defined in `webdnn.graph.order`
 Based on previous section, Let's convert `BiasLayer`.
 
 Luckily, bias operator is already implemented in webdnn as `AxiswiseBias`. 
+Therefore, you only have to implement converter handler.
 
 ```python
 # webdnn.graph.operators.axiswise_bias.AxiswiseBias
@@ -96,9 +97,8 @@ class AxiswiseBias(Operator):
 ```
 
 `AxiswiseBias` operator is received 2 variables, `x` and `b` and add `b` into `x` along to specified axis. 
-	    
 
-Therefore, you only have to implement converter handler.
+Converter handler is implemented like follows: 
 
 ```python
 from webdnn.frontend.keras.converter import KerasConverter

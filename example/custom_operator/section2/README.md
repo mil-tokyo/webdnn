@@ -1,6 +1,6 @@
 # 2. Elementwise Operator with Parameters
 
-In this section, you will learn about **how to convert custom keras layer which is elementwise operation with hyper parameters**.
+In this section, you will learn about how to convert **custom keras layer which is elementwise operation with hyper parameters**.
  
 
 ## Example: Pow
@@ -66,8 +66,8 @@ def square_converter_handler(converter, keras_layer):
 from webdnn.backend.webassembly.kernels.elementwise import register_elementwise_kernel
     
 register_elementwise_kernel(PowOperator, 
-							"y = powf(x0, a);",
-							{ "a": lambda op: op.parameters["a"] })
+                            "y = powf(x0, a);",
+                            { "a": lambda op: op.parameters["a"] })
 ```
 
 All parameters specified in the third argument can be used in kernel code.
@@ -80,19 +80,20 @@ from webdnn.backend.webassembly.kernels.elementwise import register_elementwise_
 from webdnn.backend.webgpu.kernels.elementwise import register_elementwise_kernel as register_elementwise_kernel_webgpu
 
 register_elementwise_kernel_fallback(PowOperator, 
-									 "y = Math.pow(x0, a);", # JavaScript
-	   								 { "a": lambda op: op.parameters["a"] })
-	   								 
+                                     "y = Math.pow(x0, a);", # JavaScript
+                                     { "a": lambda op: op.parameters["a"] })
+
 register_elementwise_kernel_webassembly(PowOperator, 
-									    "y = powf(x0, a);", # C++
-	   								    { "a": lambda op: op.parameters["a"] })
+                                        "y = powf(x0, a);", # C++
+                                        { "a": lambda op: op.parameters["a"] })
 
 register_elementwise_kernel_webgpu(PowOperator, 
-								   "y = pow(x0, a);",  # Metal (Almost same as C++)
-	   							   { "a": lambda op: op.parameters["a"] })
+                                   "y = pow(x0, a);",  # Metal (Almost same as C++)
+                                   { "a": lambda op: op.parameters["a"] })
 ```
 
-Please be careful that kernel code of fallback generator is written in JavaScript, kernel code of webassembly backend is written in c++, and kernel code of webgpu backend is written in Metal.
+Please be careful that fallback backend kernel is written in JavaScript, webassembly backend kernel is written in c++, and webgpu backend
+ kernel is written in Metal.
 
 ## Test
 
