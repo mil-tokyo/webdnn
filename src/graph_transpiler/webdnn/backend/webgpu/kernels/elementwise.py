@@ -151,7 +151,7 @@ def register_elementwise_kernel(OperatorClass: Type[Elementwise],
     :func:`webdnn.backend.webgpu.kernels.elementwise_kernel<elementwise_kernel>`, and kernel code is generated with `code`.::
 
         # With expression code
-        register_elementwise_kernel(ElementwiseSum, "y = x0 + x1;")
+        register_elementwise_kernel(ElementwiseAdd, "y = x0 + x1;")
 
         # With block code
         register_elementwise_kernel(HardSigmoid, \"\"\"

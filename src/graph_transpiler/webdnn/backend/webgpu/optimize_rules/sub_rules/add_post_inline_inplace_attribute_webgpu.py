@@ -5,7 +5,6 @@ from webdnn.backend.webgpu.operators.sgemm import Sgemm
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.elementwise_sum import ElementwiseSum
 from webdnn.graph.optimize_rule import OptimizeRule
 
 

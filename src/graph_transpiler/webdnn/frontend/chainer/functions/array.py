@@ -5,10 +5,10 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderC, OrderNC, OrderNCHW
 from webdnn.util import console
-# noinspection PyUnusedLocal
 from webdnn.util.misc import mul
 
 
+# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Broadcast")
 def _convert_broadcast(converter: ChainerConverter, c_op: chainer.functions.Broadcast):
     # TODO

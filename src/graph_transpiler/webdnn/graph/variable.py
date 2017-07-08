@@ -3,6 +3,15 @@ from typing import Union, Dict, List, Set, Iterable
 from webdnn.graph import operator
 from webdnn.graph.axis import Axis
 from webdnn.graph.node import Node
+from webdnn.graph.operators import abs as operators_abs
+from webdnn.graph.operators import elementwise_add
+from webdnn.graph.operators import elementwise_div
+from webdnn.graph.operators import elementwise_mul
+from webdnn.graph.operators import elementwise_pow
+from webdnn.graph.operators import scalar_add
+from webdnn.graph.operators import scalar_affine
+from webdnn.graph.operators import scalar_mul
+from webdnn.graph.operators import scalar_pow
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.util.misc import mul
@@ -92,3 +101,118 @@ class Variable(Node):
 
     def __str__(self):
         return self.__repr__()
+
+    # Unary operators
+    def __pos__(self):
+        return scalar_affine.ScalarAffine(None, scale=+1, bias=0)(self)[0]
+
+    def __neg__(self):
+        return scalar_affine.ScalarAffine(None, scale=-1, bias=0)(self)[0]
+
+    def __abs__(self):
+        return operators_abs.Abs(None)(self)[0]
+
+    # Binary operators
+    def __add__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_add.ScalarAdd(None, other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_add.ElementwiseAdd(None)(self, other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for +: 'Variable' and '{type(other)}'")
+
+    def __radd__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_add.ScalarAdd(None, other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_add.ElementwiseAdd(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for +: '{type(other)}' and 'Variable'")
+
+    def __sub__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_add.ScalarAdd(None, -other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_add.ElementwiseAdd(None)(self, -other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for -: 'Variable' and '{type(other)}'")
+
+    def __rsub__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_add.ScalarAdd(None, other)(-self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_add.ElementwiseAdd(None)(other, -self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for -: '{type(other)}' and 'Variable'")
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_mul.ScalarMul(None, other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_mul.ElementwiseMul(None)(self, other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for *: 'Variable' and '{type(other)}'")
+
+    def __rmul__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_mul.ScalarMul(None, other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_mul.ElementwiseMul(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for *: '{type(other)}' and 'Variable'")
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_mul.ScalarMul(None, 1 / other)(self)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_div.ElementwiseDiv(None)(self, other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for /: 'Variable' and '{type(other)}'")
+
+    def __rtruediv__(self, other):
+        if isinstance(other, (int, float)):
+            return scalar_mul.ScalarMul(None, other)(self ** -1)[0]
+
+        elif isinstance(other, Variable):
+            return elementwise_div.ElementwiseDiv(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for *: '{type(other)}' and 'Variable'")
+
+    def __pow__(self, power, modulo=None):
+        if modulo is not None:
+            raise NotImplementedError("Variable.__pow__ is not supported modulo argument")
+
+        elif isinstance(power, (int, float)):
+            return scalar_pow.ScalarPow(None, power)(self)[0]
+
+        elif isinstance(power, Variable):
+            return elementwise_pow.ElementwisePow(None)(self, power)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for ** or pow: 'Variable' and '{type(other)}'")
+
+    def __rpow__(self, other):
+        if isinstance(other, (int, float)):
+            # FIXME
+            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other)}' and 'Variable'")
+
+        elif isinstance(other, Variable):
+            return elementwise_pow.ElementwisePow(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other)}' and 'Variable'")

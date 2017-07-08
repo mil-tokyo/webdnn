@@ -5,43 +5,22 @@ Chainer Link -> Graph object converters
 Assuming Chainer 1.23 or 2.0
 """
 
-from typing import List, Union, Type
+from typing import List, Union
 
 import chainer
 import chainer.computational_graph
-import numpy as np
 
 from webdnn.frontend.converter import Converter
-from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
-from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-from webdnn.graph.operators.axiswise_scale import AxiswiseScale
-from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
-from webdnn.graph.operators.elementwise_sum import ElementwiseSum
-from webdnn.graph.operators.elu import Elu
-from webdnn.graph.operators.hard_sigmoid import HardSigmoid
-from webdnn.graph.operators.leaky_relu import LeakyRelu
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
-from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.operators.relu import Relu
-from webdnn.graph.operators.reshape import Reshape
-from webdnn.graph.operators.scalar_affine import ScalarAffine
-from webdnn.graph.operators.sigmoid import Sigmoid
-from webdnn.graph.operators.softmax import Softmax
-from webdnn.graph.operators.softplus import Softplus
-from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
-from webdnn.util.misc import mul
 
 if chainer.__version__ >= "2.":
     chainer_v2 = True

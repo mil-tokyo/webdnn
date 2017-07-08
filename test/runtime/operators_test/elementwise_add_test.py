@@ -26,18 +26,18 @@ def test_general():
 
         vx1 = np.random.rand(2, 3, 4, 5)
         vx2 = np.random.rand(2, 3, 4, 5)
-        vy = vx1 * vx2
+        vy = vx1 + vx2
 
         x1 = Variable(vx1.shape, order=OrderNHWC)
         x2 = Variable(vx2.shape, order=OrderNHWC)
-        y = x1 * x2
+        y = x1 + x2
 
         x1.change_order(condition["x1_order"])
         x2.change_order(condition["x2_order"])
         y.change_order(condition["y_order"])
 
         generate_kernel_test_case(
-            description=f"ElementwiseMul: " + (", ".join([f"{k}={v}" for k, v in condition_custom.items()])),
+            description=f"ElementwiseAdd: " + (", ".join([f"{k}={v}" for k, v in condition_custom.items()])),
             backend=condition["backend"],
             graph=Graph([x1, x2], [y]),
             inputs={

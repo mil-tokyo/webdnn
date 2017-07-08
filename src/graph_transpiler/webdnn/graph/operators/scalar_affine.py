@@ -1,7 +1,6 @@
 from typing import Optional
 
 from webdnn.graph.operators.elementwise import Elementwise
-from webdnn.graph.variable import Variable
 
 
 class ScalarAffine(Elementwise):
