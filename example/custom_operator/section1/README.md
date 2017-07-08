@@ -222,4 +222,4 @@ The result is like follows.
 
 ---
 
-[Go to Section 2. "Elementwise Operator withs Parameters"]("../section2/README.md")
+[Go to Section 2. "Elementwise Operator withs Parameters"](../section2)

@@ -45,4 +45,4 @@ There are two choices:
 
 ---
 
-[Go to Section 1. "Elementwise Operator without Parameters"]("../section1/README.md")
+[Go to Section 1. "Elementwise Operator without Parameters"](../section1)

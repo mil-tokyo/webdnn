@@ -185,7 +185,3 @@ FallbackDescriptorGenerator.generate(graph).save("./output")
 The result is like follows.
 
 <img src="../figures/section3_result.png" >
-
----
-
-[Go to Step 2: Elementwise Operator with Parameters]("../step2/README.md")
