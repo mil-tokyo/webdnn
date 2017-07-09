@@ -8,6 +8,7 @@ import os
 import sys
 import traceback
 from os import path
+import inspect
 
 import keras
 
@@ -20,9 +21,12 @@ from webdnn.util import flags, console
 
 
 def _load_plugin(filepath: str):
+    # returns user-defined Layer subclasses
     spec = importlib.util.spec_from_file_location("_plugin", filepath)
     plugin = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(plugin)
+    return inspect.getmembers(plugin,
+        lambda x: inspect.isclass(x) and issubclass(x, keras.layers.Layer))
 
 
 def main():
@@ -42,14 +46,21 @@ def main():
     args = parser.parse_args()
 
     console.stderr(f"[{path.basename(__file__)}] Generating feedforward graph")
+    class_list = []
     if args.plugin:
         for plugin_path in args.plugin:
-            _load_plugin(plugin_path)
+            class_list += _load_plugin(plugin_path)
+    if len(class_list) > 0:
+        # custom_objects is a dictionary for load_model to load user-defined custom layers
+        custom_objects = {}
+        for k, v in class_list:
+            custom_objects[k] = v
 
     input_shape, _ = Shape.parse(args.input_shape)
     input_shapes = [input_shape]
 
-    model = keras.models.load_model(args.kerasmodel)
+    model = keras.models.load_model(args.kerasmodel, custom_objects=custom_objects)
+    model.build()
     converter = KerasConverter()
     graph = converter.convert(model)
 
