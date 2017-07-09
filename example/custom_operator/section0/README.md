@@ -1,3 +1,10 @@
+0. **Architecture of Graph Transpiler and How to Extend**
+1. [Elementwise Operator without Parameters](../section1)
+2. [Elementwise Operator with Parameters](../section2)
+3. [Layer with Weights](../section3)
+
+---
+
 # 0. Architecture of Graph Transpiler and How to Extend
 
 This section describes about overview of WebDNN graph transpiler and how to extend it.
@@ -45,4 +52,4 @@ There are two choices:
 
 ---
 
-[Go to Section 1. "Elementwise Operator without Parameters"](../section1)
+- [Next: "1. Elementwise Operator without Parameters"](../section1)
