@@ -1,3 +1,10 @@
+0. [Architecture of Graph Transpiler and How to Extend](../section0)
+1. [Elementwise Operator without Parameters](../section1)
+2. **Elementwise Operator with Parameters**
+3. [Layer with Weights](../section3)
+
+---
+
 # 2. Elementwise Operator with Parameters
 
 In this section, you will learn about how to convert **custom keras layer which is elementwise operation with hyper parameters**.
@@ -150,4 +157,5 @@ The result is like follows.
 
 ---
 
-[Go to Section 3. "Layer with Weights"](../section3)
+- [Next: "3. Layer with Weights"](../section3)
+- [Prev: "1. Elementwise Operator without Parameters"](../section1)

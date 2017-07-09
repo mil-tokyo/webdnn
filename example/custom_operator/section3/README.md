@@ -1,3 +1,10 @@
+0. [Architecture of Graph Transpiler and How to Extend](../section0)
+1. [Elementwise Operator without Parameters](../section1)
+2. [Elementwise Operator with Parameters](../section2)
+3. **Layer with Weights**
+
+---
+
 # 3. Layer with Weights
 
 In this section, you will learn about how to convert **custom keras layer which has trainable weights**.
@@ -185,3 +192,7 @@ FallbackDescriptorGenerator.generate(graph).save("./output")
 The result is like follows.
 
 <img src="../figures/section3_result.png" >
+
+---
+
+- [Prev: "2. Elementwise Operator with Parameters"](../section2)
