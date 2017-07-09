@@ -72,6 +72,9 @@ class KerasConverter(Converter[keras.layers.Layer]):
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph
         """
+        if not model.built:
+            model.build(None)
+
         self._convert_tensors(model.inputs, input_orders)
 
         for depth in sorted(list(model.nodes_by_depth.keys()), reverse=True):
