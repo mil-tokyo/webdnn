@@ -35,8 +35,8 @@ def main():
     parser.add_argument("kerasmodel")
     parser.add_argument("--backend", default="webgpu,webassembly,fallback",
                         help="comma-separated list of backends")
-    parser.add_argument("--input_shape", required=True,
-                        help="shape of blobs for inputs (example: '(1,3,224,224)')")
+    parser.add_argument("--input_shape", required=True, action="append",
+                        help="shape of blobs for inputs (example: '(1,3,224,224)'), can be specified multiple times")
     # parser.add_argument("--input_data_format", choices=["channels_first", "channels_last"])
     parser.add_argument("--out",
                         help="output directory (default: <model>/webdnn_graph_descriptor)")
@@ -50,14 +50,13 @@ def main():
     if args.plugin:
         for plugin_path in args.plugin:
             class_list += _load_plugin(plugin_path)
+    custom_objects = {}
     if len(class_list) > 0:
         # custom_objects is a dictionary for load_model to load user-defined custom layers
-        custom_objects = {}
         for k, v in class_list:
             custom_objects[k] = v
 
-    input_shape, _ = Shape.parse(args.input_shape)
-    input_shapes = [input_shape]
+    input_shapes = [Shape.parse(input_shape)[0] for input_shape in args.input_shape]
 
     model = keras.models.load_model(args.kerasmodel, custom_objects=custom_objects)
     model.build()
