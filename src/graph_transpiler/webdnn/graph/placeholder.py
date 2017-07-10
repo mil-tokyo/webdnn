@@ -235,7 +235,7 @@ class Placeholder(json.SerializableMixin):
     .. code-block:: javascript
 
         runner = await WebDNN.load('./my_model');
-        runner.setPlaceholderValue({
+        await runner.setPlaceholderValue({
             'N': 8
         });
 
