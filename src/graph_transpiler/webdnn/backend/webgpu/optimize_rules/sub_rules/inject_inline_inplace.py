@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from webdnn.backend.webgpu.attributes.inline_inject import InlineInplace, PostInlineInplace
+from webdnn.backend.code_generator.injectors.inline_injector import InlineInplace, PostInlineInplace
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
