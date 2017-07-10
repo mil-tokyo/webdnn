@@ -138,13 +138,15 @@ class Allocator:
             layout.append(variable, offset)
 
         layout.data = np.zeros(layout.static_size, dtype=np.float32)
+        constant_size = 0
         for var in variables:
             if not isinstance(var, ConstantVariable):
                 continue
 
             allocation = layout[var]
             layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-
+            constant_size += var.data.size()
+        layout.data = layout.data[:constant_size]
         if flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(ops, variables, layout, lifetime, offsets)
 
@@ -225,6 +227,9 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     # `t + 1` means that `var` will be released AFTER `op` will be finished.
                     lifetime[var] = (lifetime[var][0], t + 1)
 
+    for var in graph.outputs:
+        lifetime[var] = (lifetime[var][0], LIFETIME_FOREVER)
+        
     return lifetime
 
 
