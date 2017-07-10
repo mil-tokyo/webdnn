@@ -2,6 +2,7 @@ from webdnn.backend.webassembly.optimize_rules.optimize_convolution2d import Opt
 from webdnn.backend.webassembly.optimize_rules.optimize_deconvolution2d import OptimizeDeconvolution2D
 from webdnn.backend.webassembly.optimize_rules.optimize_linear import OptimizeLinear
 from webdnn.backend.webassembly.optimize_rules.optimize_sgemm_eigen import OptimizeSgemmEigen
+from webdnn.backend.webassembly.optimize_rules.optimize_transpose import OptimizeTranspose
 from webdnn.graph.optimize_rule import OptimizeRule
 
 
@@ -13,3 +14,4 @@ class WebassemblyOptimizeRule(OptimizeRule):
         self.register(OptimizeDeconvolution2D())
         self.register(OptimizeLinear())
         self.register(OptimizeSgemmEigen())
+        self.register(OptimizeTranspose())
