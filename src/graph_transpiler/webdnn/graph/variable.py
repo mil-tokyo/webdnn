@@ -90,7 +90,7 @@ class Variable(Node):
 
     def replace(self, new_variable: "Variable"):
         if self.output_from:
-            self.output_from.replace_output(self, new_variable)
+            self.output_from._replace_output(self, new_variable)
 
         for op in list(self.input_to):  # type: operator.Operator
             op.replace_input(self, new_variable)

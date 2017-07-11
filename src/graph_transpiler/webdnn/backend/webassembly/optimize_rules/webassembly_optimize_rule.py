@@ -10,8 +10,8 @@ class WebassemblyOptimizeRule(OptimizeRule):
     def __init__(self):
         super(WebassemblyOptimizeRule, self).__init__()
 
+        self.register(OptimizeTranspose())
         self.register(OptimizeConvolution2D())
         self.register(OptimizeDeconvolution2D())
         self.register(OptimizeLinear())
         self.register(OptimizeSgemmEigen())
-        self.register(OptimizeTranspose())
