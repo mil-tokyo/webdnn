@@ -7,8 +7,8 @@ import sys
 
 from keras.applications import resnet50
 
-from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.frontend.keras.converter import KerasConverter
+from webdnn.backend import generate_descriptor
+from webdnn.frontend.keras import KerasConverter
 from webdnn.util import console
 
 

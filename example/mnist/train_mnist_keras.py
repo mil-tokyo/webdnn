@@ -7,17 +7,17 @@ Trains a simple deep NN on the MNIST dataset.
 from __future__ import print_function
 
 import argparse
-import os
 import json
+import os
 import subprocess
 
 import keras
+from keras import backend as K
 from keras.datasets import mnist
-from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Flatten, Conv2D, AtrousConv2D, MaxPooling2D, Input, add, \
     GlobalAveragePooling2D, Activation
+from keras.models import Sequential, Model
 from keras.optimizers import RMSprop
-from keras import backend as K
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", default="fc", choices=["fc", "conv", "dilated_conv", "residual", "complex"])

@@ -4,18 +4,17 @@ Keras model converter
 
 import argparse
 import importlib.util
+import inspect
 import os
 import sys
 import traceback
 from os import path
-import inspect
 
 import keras
 
-from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.graph.placeholder import Placeholder
-from webdnn.graph.shape import Shape
+from webdnn import Placeholder, Shape
+from webdnn.backend import generate_descriptor
+from webdnn.frontend.keras import KerasConverter
 from webdnn.graph.traverse import dump_dot
 from webdnn.util import flags, console
 
@@ -25,8 +24,7 @@ def _load_plugin(filepath: str):
     spec = importlib.util.spec_from_file_location("_plugin", filepath)
     plugin = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(plugin)
-    return inspect.getmembers(plugin,
-        lambda x: inspect.isclass(x) and issubclass(x, keras.layers.Layer))
+    return inspect.getmembers(plugin, lambda x: inspect.isclass(x) and issubclass(x, keras.layers.Layer))
 
 
 def main():

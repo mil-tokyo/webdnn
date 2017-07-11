@@ -15,17 +15,16 @@ from what you see with CNNs/MLPs/etc.
 '''
 
 import argparse
-import sys
-import os
-from os import path
-import subprocess
 import json
+import os
+import subprocess
+from os import path
 
-from keras.preprocessing import sequence
-from keras.models import Sequential
-from keras.layers import Dense, Embedding, ZeroPadding1D
-from keras.layers import LSTM
 from keras.datasets import imdb
+from keras.layers import Dense, Embedding
+from keras.layers import LSTM
+from keras.models import Sequential
+from keras.preprocessing import sequence
 
 max_features = 20000
 maxlen = 80  # cut texts after this number of words (among top max_features most common words)

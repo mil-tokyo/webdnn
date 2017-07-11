@@ -18,17 +18,19 @@ has at least ~100k characters. ~1M is better.
 '''
 
 from __future__ import print_function
-from keras.models import Sequential
-from keras.layers import Dense, Activation
-from keras.layers import LSTM
-from keras.optimizers import RMSprop
-from keras.utils.data_utils import get_file
-import numpy as np
+
+import argparse
+import json
+import os
 import random
 import sys
-import os
-import json
-import argparse
+
+import numpy as np
+from keras.layers import Dense, Activation
+from keras.layers import LSTM
+from keras.models import Sequential
+from keras.optimizers import RMSprop
+from keras.utils.data_utils import get_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--out", default="output")

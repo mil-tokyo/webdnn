@@ -3,12 +3,12 @@ import sys
 from enum import Enum
 from os import path
 
-import chainer.computational_graph
+import chainer
 import numpy as np
 from model import FastStyleNet
 
-from webdnn.backend.interface.generator import generate_descriptor
-from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.backend import generate_descriptor
+from webdnn.frontend.chainer import ChainerConverter
 
 
 class NSTModelPath(Enum):

@@ -1,0 +1,3 @@
+from webdnn.backend.code_generator.injectors import buffer_injector
+from webdnn.backend.code_generator.injectors import inline_injector
+from webdnn.backend.code_generator.injectors import kernel_name_injector
