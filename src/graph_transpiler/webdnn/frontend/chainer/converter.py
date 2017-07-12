@@ -11,10 +11,12 @@ import chainer
 import chainer.computational_graph
 
 from webdnn.frontend.converter import Converter
+from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.linear import Linear
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
@@ -90,10 +92,11 @@ class ChainerConverter(Converter[chainer.Function]):
             n_var.attributes.add(Output)
             output_n_vars.append(n_var)
 
+        graph = Graph(input_n_vars, output_n_vars)
         # Convert variable order into typical one in Chainer
-        self._transpose_vars()
+        self._transpose_vars(graph)
 
-        return Graph(input_n_vars, output_n_vars)
+        return graph
 
     def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
         # Convert chainer variable which has name (= which is trained parameter) into WebDNN Variable object
@@ -149,11 +152,14 @@ class ChainerConverter(Converter[chainer.Function]):
         return n_var
 
     # noinspection PyMethodMayBeStatic
-    def _transpose_vars(self):
+    def _transpose_vars(self, graph: Graph):
         """
-        Transpose variable order into typical chainer order.
+        Transpose variable order into typical WebDNN order.
         """
-        for n_var in self._variable_table[self.__class__.__name__].values():
+        for n_var in traverse.listup_variables(graph):
+            if isinstance(n_var.output_from, ReinterpretAxis):
+                # workaround for MatMulVarVar
+                continue
             if isinstance(n_var, ConstantVariable):
                 if n_var.ndim == 1:
                     n_var.change_order(OrderC)

@@ -54,6 +54,7 @@ class Convolution2D(Operator):
         C2 = w_shape_dict[Axis.N]
 
         y = Variable([N, H2, W2, C2], OrderNHWC)
+        y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
         self.append_input("x", x)
         self.append_input("w", w)
