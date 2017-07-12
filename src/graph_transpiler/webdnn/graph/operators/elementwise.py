@@ -9,26 +9,35 @@ from webdnn.graph.placeholder import Placeholder
 
 
 class Elementwise(Operator, metaclass=ABCMeta):
-    """Elementwise operator base class
+    """Elementwise(name)
+    Elementwise operator base class.
 
-    Operation 'Elementwise' is defined as follows:
+    Operation *"Elementwise"* is defined as follows:
 
     - It outputs only one variable.
+    - All input variables and the output variable are same shape (not need to be same order).
+    - Each element of output variable can be computed with only the elements at the same position of input variables.
 
-    - All input variables and the output variable are same shape.
+      .. math::
+        y[p] = f(x_0[p], x_1[p], ..., x_n[p]),
 
-    - For each element of output variable, it can be computed with only elements of input variable at same position of
-      the output element.
+      where :math:`p` means the position of the element.
 
-        y[pos] = f(x0[pos], x1[pos], ..., x_n[pos])
+    All input variables are registered with name like :code:`x0`, :code:`x1`, ... :code:`x{index}`, and the output variable is registered
+    with name :code:`y`.
 
-    All input variables are registered with name like "x0", "x1", ... "x{index}". The output variable is registered with
-    name "y".
-
-    This operator has 2 attributes, `ElementwiseAttribute` and `Inplace(x0, y)`.
+    This operator has :obj:`~webdnn.graph.attributes.elementwise.Elementwise` attribute.
 
     Args:
         name (str): Operator name.
+
+    Signature
+        .. code::
+
+            y, = op(x0, x1, ...)
+
+        - **x0**, **x1**, ... - Input variables.
+        - **y** - Output variable. Its shape and order is same as :code:`x0`.
     """
 
     def __init__(self, name: Optional[str]):
@@ -39,20 +48,16 @@ class Elementwise(Operator, metaclass=ABCMeta):
                            Inplace(self, "x0", "y")}
 
     def __call__(self, *xs: "variable.Variable"):
-        """
-        Args:
-            *xs (:class:`~webdnn.graph.variable.Variable`): Input variables. All input variables must be same shape.
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output variable. It is same shape of input variables.
-        """
         y = variable.Variable(xs[0].shape, xs[0].order)
         for i, x in enumerate(xs):
             for axis in x.order.axes:
-                assert axis in y.order.axes
+                assert axis in y.order.axes, f"All input variables of elementwise operator should be same shape. x[{i}] does not have " \
+                                             f"{axis}: x0.order={xs[0].order}, x{i}.order={xs[i].order}"
 
                 if Placeholder.check_resolved(x.shape_dict[axis]) or Placeholder.check_resolved(y.shape_dict[axis]):
-                    assert y.shape_dict[axis] == x.shape_dict[axis]
+                    assert y.shape_dict[axis] == x.shape_dict[axis], "All input variables of elementwise operator should be " \
+                                                                     f"same shape: x0.shape_dict=f{xs[0].shape_dict}, x{i}" \
+                                                                     f".shape_dict=f{xs[i].shape_dict}"
 
             self.append_input(f"x{i}", x)
         self.append_output("y", y)

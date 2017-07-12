@@ -1,4 +1,7 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.axis import Axis
@@ -10,7 +13,7 @@ from webdnn.util.misc import mul
 
 
 @KerasConverter.register_handler("MaxPooling1D")
-def _convert_max_pooling1d(converter: KerasConverter, k_op: keras.layers.MaxPooling1D):
+def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
@@ -32,7 +35,7 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: keras.layers.MaxPool
 
 
 @KerasConverter.register_handler("MaxPooling2D")
-def _convert_max_pooling2d(converter: KerasConverter, k_op: keras.layers.MaxPooling2D):
+def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.data_format == "channels_first":
@@ -61,13 +64,13 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: keras.layers.MaxPool
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("MaxPooling3D")
-def _convert_max_pooling3d(converter: KerasConverter, k_op: keras.layers.MaxPooling3D):
+def _convert_max_pooling3d(converter: KerasConverter, k_op: "keras.layers.MaxPooling3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.MaxPooling3D is not supported')
 
 
 @KerasConverter.register_handler("AveragePooling1D")
-def _convert_average_pooling1d(converter: KerasConverter, k_op: keras.layers.AveragePooling1D):
+def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.AveragePooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
@@ -89,7 +92,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: keras.layers.Ave
 
 
 @KerasConverter.register_handler("AveragePooling2D")
-def _convert_max_pooling2d(converter: KerasConverter, k_op: keras.layers.AveragePooling2D):
+def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.AveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.data_format == "channels_first":
@@ -118,13 +121,13 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: keras.layers.Average
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("AveragePooling3D")
-def _convert_average_pooling3d(converter: KerasConverter, k_op: keras.layers.AveragePooling3D):
+def _convert_average_pooling3d(converter: KerasConverter, k_op: "keras.layers.AveragePooling3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.AveragePooling3D is not supported')
 
 
 @KerasConverter.register_handler("GlobalMaxPooling1D")
-def _convert_global_max_pooling1d(converter: KerasConverter, k_op: keras.layers.GlobalMaxPooling1D):
+def _convert_global_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.GlobalMaxPooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
@@ -137,7 +140,7 @@ def _convert_global_max_pooling1d(converter: KerasConverter, k_op: keras.layers.
 
 
 @KerasConverter.register_handler("GlobalMaxPooling2D")
-def _convert_global_max_pooling2d(converter: KerasConverter, k_op: keras.layers.GlobalMaxPooling2D):
+def _convert_global_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalMaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.data_format == "channels_first":
         assert x.order == OrderNCHW
@@ -156,7 +159,7 @@ def _convert_global_max_pooling2d(converter: KerasConverter, k_op: keras.layers.
 
 
 @KerasConverter.register_handler("GlobalAveragePooling1D")
-def _convert_global_average_pooling1d(converter: KerasConverter, k_op: keras.layers.GlobalAveragePooling1D):
+def _convert_global_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.GlobalAveragePooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
@@ -169,7 +172,7 @@ def _convert_global_average_pooling1d(converter: KerasConverter, k_op: keras.lay
 
 
 @KerasConverter.register_handler("GlobalAveragePooling2D")
-def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: keras.layers.GlobalAveragePooling2D):
+def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalAveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.data_format == "channels_first":
         assert x.order == OrderNCHW

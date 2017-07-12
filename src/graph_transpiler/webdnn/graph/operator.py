@@ -6,15 +6,16 @@ from webdnn.graph.node import Node
 
 
 class Operator(Node):
-    """
-    Operator a.k.a layer or function, is one of key component in DNN computation graph.
+    """Operator(name=None)
+
+    Operator a.k.a layer or function in DNN computation graph.
 
     Args:
-        name (str): the name
+        name (str): the name. If :code:`None`, automatically generated name is used.
 
     Attributes:
-        inputs (dict of :class:`~webdnn.graph.variable.Variable`): input varibales
-        outputs (dict of :class:`~webdnn.graph.variable.Variable`): output variable
+        inputs (dict of :class:`~webdnn.Variable`): input variables
+        outputs (dict of :class:`~webdnn.Variable`): output variable
     """
     inputs: Dict[str, "variable.Variable"]
     outputs: Dict[str, "variable.Variable"]
@@ -45,12 +46,13 @@ class Operator(Node):
             raise KeyError(f"'{name}' is not output of {self}")
 
     def append_input(self, name: str, var: "variable.Variable"):
-        """
+        """append_input(name, var)
+
         Append input variable
 
         Args:
             name(str): the name of input variable
-            var(:class:`~webdnn.graph.variable.Variable`): the variable
+            var(:class:`~webdnn.Variable`): the variable
         """
         # noinspection PyTypeChecker
         self.append_prev(var)
@@ -59,11 +61,12 @@ class Operator(Node):
         var.input_to.add(self)
 
     def remove_input(self, var: "variable.Variable"):
-        """
+        """remove_input(var)
+
         Remove input variable
 
         Args:
-            var(:class:`~webdnn.graph.variable.Variable`): the variable
+            var(:class:`~webdnn.Variable`): the variable
         """
         # noinspection PyTypeChecker
         self.remove_prev(var)
@@ -73,12 +76,13 @@ class Operator(Node):
         var.input_to.remove(self)
 
     def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable"):
-        """
+        """replace_input(v_old, v_new)
+
         Replace input variable with other variable
 
         Args:
-            v_old(:class:`~webdnn.graph.variable.Variable`): the variable which is removed
-            v_new(:class:`~webdnn.graph.variable.Variable`): the variable which is appended
+            v_old(:class:`~webdnn.Variable`): the variable which is removed
+            v_new(:class:`~webdnn.Variable`): the variable which is appended
         """
         assert v_old.ndim == v_new.ndim, \
             "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
@@ -95,12 +99,13 @@ class Operator(Node):
         self.append_input(name, v_new)
 
     def append_output(self, name: str, var: "variable.Variable"):
-        """
+        """append_output(name, var)
+
         Append output variable
 
         Args:
             name(str): the name of output variable
-            var(:class:`~webdnn.graph.variable.Variable`): the variable
+            var(:class:`~webdnn.Variable`): the variable
         """
         if var.output_from is not None:
             raise KeyError(f"{var} has been registered as f{var.output_from}'s output already.")
@@ -112,11 +117,12 @@ class Operator(Node):
         var.output_from = self
 
     def remove_output(self, var: "variable.Variable"):
-        """
+        """remove_output(var)
+
         Remove output variable
 
         Args:
-            var(:class:`~webdnn.graph.variable.Variable`): the variable
+            var(:class:`~webdnn.Variable`): the variable
         """
         # noinspection PyTypeChecker
         self.remove_next(var)
@@ -126,12 +132,13 @@ class Operator(Node):
         var.output_from = None
 
     def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable"):
-        """
+        """replace_output(v_old, v_new)
+
         Replace output variable with other variable
 
         Args:
-            v_old(:class:`~webdnn.graph.variable.Variable`): the variable which is removed
-            v_new(:class:`~webdnn.graph.variable.Variable`): the variable which is appended
+            v_old(:class:`~webdnn.Variable`): the variable which is removed
+            v_new(:class:`~webdnn.Variable`): the variable which is appended
         """
         assert v_old.ndim == v_new.ndim, \
             "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
@@ -148,7 +155,8 @@ class Operator(Node):
         self.append_output(name, v_new)
 
     def remove_all(self):
-        """
+        """remove_all()
+
         Remove all input and output variables
         """
         for _, v in list(self.inputs.items()):
@@ -158,12 +166,13 @@ class Operator(Node):
             self.remove_output(v)
 
     def replace(self, op_new: "Operator"):
-        """
-        Replace this operator with other operator. all variables connected with this operator will be disconnected and
-        connected to the other operator.
+        """replace(op_new)
+
+        Replace this operator by new operator. all variables connected with this operator will be disconnected and
+        connected to the new operator.
 
         Args:
-            op_new(:class:`~webdnn.graph.operator.Operator`): the new operator
+            op_new(:class:`~webdnn.Operator`): the new operator
         """
         inputs = dict(self.inputs)
         outputs = dict(self.outputs)

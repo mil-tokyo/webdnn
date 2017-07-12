@@ -1,5 +1,9 @@
-import keras
-import keras.backend as K
+try:
+    import keras
+    import keras.backend as K
+except ImportError as e:
+    pass
+
 import numpy as np
 
 from webdnn.frontend.keras.converter import KerasConverter
@@ -10,7 +14,7 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 @KerasConverter.register_handler("BatchNormalization")
-def _convert_batch_normalization(converter: KerasConverter, k_op: keras.layers.BatchNormalization):
+def _convert_batch_normalization(converter: KerasConverter, k_op: "keras.layers.BatchNormalization"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     axis = x.order.axes[k_op.axis]

@@ -1,20 +1,7 @@
 # -*- coding:utf-8 -*-
 
-"""
-Keras model -> Graph object converters
-Assuming Keras 2.0.4
-
-Currently, the system assumes the model is trained with "data_format" == "channels_last".
-If this is not the case, Flatten layer which follows Convolution have to change the order of variable.
-Convolution implementation is currently assuming variable is NHWC.
-"""
-
 from collections import defaultdict
 from typing import List
-
-import keras
-import keras.backend as K
-import tensorflow as tf
 
 from webdnn.frontend.converter import Converter
 from webdnn.graph.graph import Graph
@@ -22,12 +9,25 @@ from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
-if not "2." <= keras.__version__ < "3.":
-    raise ValueError(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
+FLAG_KERAS_INSTALLED = False
+
+try:
+    import keras
+    import keras.backend as K
+    import tensorflow as tf
+
+    if not "2." <= keras.__version__ < "3.":
+        console.debug(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
+    FLAG_KERAS_INSTALLED = True
+
+except ImportError as e:
+    console.debug("Keras and Tensorflow are not completely installed.")
+    pass
 
 
-def get_default_order(tf_tensor: tf.Tensor):
+def get_default_order(tf_tensor: "tf.Tensor"):
     if len(tf_tensor.shape) == 2:
         return OrderNC
 
@@ -45,29 +45,52 @@ def _to_list(x):
     return x if isinstance(x, (list, tuple)) else [x]
 
 
-class KerasConverter(Converter[keras.layers.Layer]):
-    """
-    KerasConverter
+class KerasConverter(Converter["keras.layers.Layer"]):
+    """KerasConverter(batch_size=1)
+
+    Convert keras.models.model into WebDNN IR.
+
+    **Limitations**
+
+    - Only Keras v2+ is supported.
+    - Only tensorflow backend is supported.
+    - Only :code:`data_format="channel_last"` is supported.
+
+    If you want to implement custom handler for your custom Keras Layer, please see :doc:`/tutorial/custom_operator/index`.
 
     Args:
-        batch_size: input batch size (default=1)
+        batch_size(int or None): input batch size. As default, keras handle the batch size as place holder (undetermined) value. If
+          :code:`None` is passed, converter handles the batch size as placeholder named "N".
     """
 
     def __init__(self, batch_size: int = 1):
+        if not FLAG_KERAS_INSTALLED:
+            raise ImportError("ImportError is occurred when Keras and Tensorflow are loaded.")
+
         self._input_index_dict = defaultdict(lambda: 0)
         self._output_index_dict = defaultdict(lambda: 0)
         self._placeholder_N = Placeholder(label='N', value=batch_size)
+        self._input_tensor_cache = None  # type: List[tf.Tensor]
+        self._output_tensor_cache = None  # type: List[tf.Tensor]
 
-    def convert(self, model: keras.models.Model, input_orders: List[Order] = None) -> Graph:
-        """
-        Convert kerasmodel into WebDNN IR Graph. Currently, only TensorFlow backend is supported.
+    def convert(self, model: "keras.models.Model", input_orders: List[Order] = None) -> Graph:
+        """convert(model, input_orders=None)
+
+        Convert kerasmodel into WebDNN IR Graph.
 
         Args:
             model (`keras.models.Model`): keras model
-            input_orders (list of `webdnn.graph.order.Order`): order of input tensors. If `None` is passed, default order
+            input_orders (list of :class:`~webdnn.graph.order.Order`): Order of input tensors. If `None` is passed, default order
                 (`OrderNC` for 2D, `OrderNTC` for 3D, `OrderNHWC` for 4D) is used. If `input_orders=None`, default orders
                 are assigned to all input tensors. If `input_orders[0]=None`, only first input tensor are converted with
                 the default order.
+
+        .. admonition:: Example
+
+            .. code::
+
+                model = keras.models.load_model("pre_trained_model.h5")
+                graph = KerasConverter(batch_size=1).convert(model)
 
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph
@@ -79,19 +102,26 @@ class KerasConverter(Converter[keras.layers.Layer]):
 
         for depth in sorted(list(model.nodes_by_depth.keys()), reverse=True):
             for node in model.nodes_by_depth[depth]:
-                self.convert_operator(node.outbound_layer)
+                self._convert_operator(node.outbound_layer)
 
                 # Check that all output tensors from current layer are converted into WebDNN Variable
                 for tensor in node.output_tensors:
                     if not self.has_variable(tensor):
                         raise AssertionError(
-                            f"[KerasConverter] {node.outbound_layer} outputs {tensor}, but it was not converted into "
-                            f"WebDNN Variable by {self._handler_map[self.__class__.__name__][self.serialize_operator_type(node.outbound_layer)]}")
+                            f"[KerasConverter] {node.outbound_layer} outputs {tensor}, but it was not converted into WebDNN Variable by "
+                            f"{self._handler_map[self.__class__.__name__][self.serialize_operator_type(node.outbound_layer)]}")
 
         return Graph([self.get_variable(t) for t in _to_list(self.get_input_tensor(model))],
                      [self.get_variable(t) for t in _to_list(self.get_output_tensor(model))])
 
-    def _convert_tensors(self, tf_tensors: List[tf.Tensor], orders: List[Order]):
+    def _convert_operator(self, k_op: "keras.layers.Layer"):
+        self._input_tensor_cache = None
+        self._output_tensor_cache = None
+        self.get_input_tensor(k_op)
+        self.get_output_tensor(k_op)
+        return super(KerasConverter, self)._convert_operator(k_op)
+
+    def _convert_tensors(self, tf_tensors: List["tf.Tensor"], orders: List[Order]):
         if orders is None:
             orders = [None for _ in tf_tensors]
 
@@ -110,8 +140,9 @@ class KerasConverter(Converter[keras.layers.Layer]):
 
         return variables
 
-    def convert_to_constant_variable(self, tf_var: tf.Variable, order: Order) -> ConstantVariable:
-        """
+    def convert_to_constant_variable(self, tf_var: "tf.Variable", order: Order) -> ConstantVariable:
+        """convert_to_constant_variable(tf_var, order)
+
         Convert TensorFlow variable (parameter of kerasmodel) into
         :class:`~webdnn.graph.variables.constant_variable.ConstantVariable`.
 
@@ -119,7 +150,7 @@ class KerasConverter(Converter[keras.layers.Layer]):
         If specified TensorFlow variable is already registered into converter, converter checks that the shape and order
         is valid
 
-        *This method is provided only for implementing custom converter handler.*
+        **This method is provided only for implementing custom converter handler.**
 
         Args:
             tf_var (tensorflow.Variable): TensorFlow variable
@@ -146,16 +177,12 @@ class KerasConverter(Converter[keras.layers.Layer]):
 
         return variable
 
-    def get_input_tensor(self, k_op: keras.layers.Layer) -> List[tf.Tensor]:
-        """
+    def get_input_tensor(self, k_op: "keras.layers.Layer") -> List["tf.Tensor"]:
+        """get_input_tensor(k_op)
+
         Return input tensor(s) of specified keras layer.
 
-        KerasConverter has counters about how many times this method is called for each keras operator. At first time,
-        this method returns the first input tensors (= `k_op.get_input_at(0)`) and increments the counter. When call
-        this method again, the second input tensors (= `k_op.get_input_at(1)`) is returned. Therefore, you should call
-        this method just once in your converter handler.
-
-        *This method is provided only for implementing custom converter handler.*
+        **This method is provided only for implementing custom converter handler.**
 
         Args:
             k_op (keras.layers.Layer): keras operator
@@ -163,20 +190,20 @@ class KerasConverter(Converter[keras.layers.Layer]):
         Returns:
             (list of tensorflow.Tensor): list of input tensor(s). Even if only one element, it's wrapped in a list.
         """
+        if self._input_tensor_cache:
+            return self._input_tensor_cache
+
         index = self._input_index_dict[k_op]
         self._input_index_dict[k_op] += 1
-        return _to_list(k_op.get_input_at(index))
+        self._input_tensor_cache = _to_list(k_op.get_input_at(index))
+        return self._input_tensor_cache
 
-    def get_output_tensor(self, k_op: keras.layers.Layer) -> List[tf.Tensor]:
-        """
+    def get_output_tensor(self, k_op: "keras.layers.Layer") -> List["tf.Tensor"]:
+        """get_output_tensor(k_op)
+
         Return output tensor(s) of specified keras layer.
 
-        KerasConverter has counters about how many times this method is called for each keras operator. At first time,
-        this method returns the first output tensors (= `k_op.get_output_at(0)`) and increments the counter. When call
-        this method again, the second output tensors (= `k_op.get_output_at(1)`) is returned. Therefore, you should call
-        this method just once in your converter handler.
-
-        *This method is provided only for implementing custom converter handler.*
+        **This method is provided only for implementing custom converter handler.**
 
         Args:
             k_op (keras.layers.Layer): keras operator
@@ -184,6 +211,10 @@ class KerasConverter(Converter[keras.layers.Layer]):
         Returns:
             (list of tensorflow.Tensor): list of output tensor(s). Even if only one element, it's wrapped in a list.
         """
+        if self._output_tensor_cache:
+            return self._output_tensor_cache
+
         index = self._output_index_dict[k_op]
         self._output_index_dict[k_op] += 1
-        return _to_list(k_op.get_output_at(index))
+        self._output_tensor_cache = _to_list(k_op.get_output_at(index))
+        return self._output_tensor_cache

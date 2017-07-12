@@ -10,14 +10,30 @@ from webdnn.util.misc import mul
 
 
 class Variable(Node):
-    """
-    Variables input to / output from operators.
+    """Variable(shape, order)
 
-    Attrs:
-        shape (list of int or Placeholder): shape of the variable.
-        order (Order): Data order such as OrderNHWC, OrderNC, and so on.
-        input_to (set of Operator): operators to which this variable is input
-        output_from (Operator): operator which generates this variable
+    Data container class which is input to and output from operators.
+
+    Variable supports basic unary and binary operations.
+
+    .. code::
+
+        x1 = Variable((2, 3), OrderNC)
+        x2 = Variable((3, 2), OrderCN)
+        h = x1 + x2
+        y = abs(h)
+
+        # variables are connected as follows:
+        #
+        #   x1 -+
+        #       +-[ElementwiseAdd]-> h -[ElementwiseAbs]-> y
+        #   x2 -+
+
+    Attributes:
+        shape (list of int or :class:`~webdnn.Placeholder`): shape of the variable.
+        order (:class:`~webdnn.Order`): Data order such as OrderNHWC, OrderNC, and so on.
+        input_to (set of :class:`~webdnn.Operator`): operators to which this variable is input
+        output_from (:class:`~webdnn.Operator`): operator which generates this variable
     """
     shape: List[Union[int, Placeholder]]
     order: Order
@@ -32,8 +48,7 @@ class Variable(Node):
         self.output_from = None
         self.order = order
 
-        assert self.order.ndim == len(self.shape), "[Variable] order and shape are mismatched:"
-        f"order={order}, shape={shape}"
+        assert self.order.ndim == len(self.shape), f"[Variable] order and shape are mismatched: order={order}, shape={shape}"
 
     @property
     def name(self) -> str:
@@ -60,7 +75,9 @@ class Variable(Node):
         return dict(zip(self.order.axes, self.shape))
 
     def change_order(self, order: Order) -> "Variable":
-        """Change variable order
+        """change_order(order)
+
+        Change variable order.
 
         When number of dimension will be increased, axes whose size is one are created.
         Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
@@ -81,6 +98,15 @@ class Variable(Node):
         return self
 
     def replace(self, new_variable: "Variable"):
+        """replace(new_variable)
+
+        Replace this variable in graph by specified new variable.
+
+        All operators connected with this variable are disconnected and re-connected to new variable with same name.
+
+        Args:
+            new_variable (:class:`~webdnn.Variable`): new variable
+        """
         if self.output_from:
             self.output_from.replace_output(self, new_variable)
 

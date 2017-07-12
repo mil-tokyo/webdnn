@@ -7,9 +7,6 @@ Assuming Chainer 1.23 or 2.0
 
 from typing import List, Union
 
-import chainer
-import chainer.computational_graph
-
 from webdnn.frontend.converter import Converter
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
@@ -24,16 +21,28 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
-if chainer.__version__ >= "2.":
-    chainer_v2 = True
-    # noinspection PyUnresolvedReferences
-    VariableNode = chainer.variable.VariableNode
-else:
-    chainer_v2 = False
-    VariableNode = chainer.variable.Variable
+FLAG_CHAINER_INSTALLED = False
+
+try:
+    import chainer
+    import chainer.computational_graph
+
+    if chainer.__version__ >= "2.":
+        chainer_v2 = True
+        # noinspection PyUnresolvedReferences
+        VariableNode = chainer.variable.VariableNode
+    else:
+        chainer_v2 = False
+        VariableNode = chainer.variable.Variable
+
+    FLAG_CHAINER_INSTALLED = True
+
+except ImportError as e:
+    console.debug("Chainer is not completely installed.")
+    pass
 
 
-def _to_variable_node(chainer_variable: Union[chainer.Variable, VariableNode]) -> VariableNode:
+def _to_variable_node(chainer_variable: Union["chainer.Variable", "VariableNode"]) -> "VariableNode":
     if chainer_v2 and not isinstance(chainer_variable, VariableNode):
         # noinspection PyUnresolvedReferences
         return chainer_variable.node
@@ -41,19 +50,60 @@ def _to_variable_node(chainer_variable: Union[chainer.Variable, VariableNode]) -
         return chainer_variable
 
 
-class ChainerConverter(Converter[chainer.Function]):
+class ChainerConverter(Converter["chainer.Function"]):
+    """ChainerConverter()
+
+
     """
 
-    c_var, c_opr: chainer variable and chainer operator(=chainer.Function) node object
-    n_var, n_opr: WebDNN IR variable and operator object
-    """
+    def __init__(self):
+        if not FLAG_CHAINER_INSTALLED:
+            raise ImportError("ImportError is occurred when chainer is loaded.")
 
-    def convert_from_inout_vars(self, inputs: List[chainer.Variable], outputs: List[chainer.Variable]):
+    def convert_from_inout_vars(self, inputs: List["chainer.Variable"], outputs: List["chainer.Variable"]):
+        """convert_from_inout_vars(inputs, output)
+
+        Construct computational graph from input and output chainer variables, and convert the graph into WebDNN IR.
+
+        Args:
+            inputs(list of chainer.Variable): input chainer variables
+            outputs(list of chainer.Variable): output chainer variables
+
+        .. admonition:: Example
+
+            .. code::
+
+                model = chainer.links.model.vision.resnet.ResNet50Layers()
+
+                # Forward propagation with dummy input to build computational graph
+                x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))
+                y = model(x, layers=["fc6"])["fc6"]
+
+                graph = ChainerConverter().convert_from_inout_vars([x], [y])
+
+        Returns:
+            (:class:`~webdnn.Graph`): WebDNN Graph
+        """
         chainer_graph = chainer.computational_graph.build_computational_graph(outputs)
         return self.convert(chainer_graph, inputs, outputs)
 
-    def convert(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph,
-                input_c_vars: List[chainer.Variable], output_c_vars: List[chainer.Variable]) -> Graph:
+    def convert(self, chainer_computational_graph: "chainer.computational_graph.ComputationalGraph",
+                input_c_vars: List["chainer.Variable"], output_c_vars: List["chainer.Variable"]) -> Graph:
+        """convert(chainer_computational_graph, input_c_vars, output_c_vars)
+
+        Convert chainer computational graph into WebDNN IR.
+
+        Instead of using this method directly, you should use
+        :func:`convert_from_inout_vars<webdnn.frontend.chainer.ChainerConverter.convert_from_inout_vars>`.
+
+        Args:
+            chainer_computational_graph(chainer.computational_graph.ComputationalGraph): chainer computational graph
+            input_c_vars(list of chainer.Variable): input chainer variables
+            output_c_vars(list of chainer.Variable): output chainer variables
+
+        Returns:
+            (:class:`~webdnn.Graph`): WebDNN Graph
+        """
         # In chainer v2, variables are represented as Variable and VariableNode object, and
         # graph information such as edge connection is contained in variable node.
         # Therefore all chainer variable must be normalized into variable node.
@@ -76,7 +126,7 @@ class ChainerConverter(Converter[chainer.Function]):
             for c_opr in pending_c_oprs:
                 if all(((self.has_variable(_to_variable_node(c_var))) for c_var in c_opr.inputs)):
                     # All input variables of the `cfunc` are converted, so this `c_opr` can be converted.
-                    self.convert_operator(c_opr)
+                    self._convert_operator(c_opr)
                     pending_c_oprs.remove(c_opr)
                     break  # for c_opr in pending_functions
             else:
@@ -98,7 +148,7 @@ class ChainerConverter(Converter[chainer.Function]):
 
         return graph
 
-    def _convert_weight_vars(self, chainer_computational_graph: chainer.computational_graph.ComputationalGraph):
+    def _convert_weight_vars(self, chainer_computational_graph: "chainer.computational_graph.ComputationalGraph"):
         # Convert chainer variable which has name (= which is trained parameter) into WebDNN Variable object
 
         # special case
@@ -122,7 +172,7 @@ class ChainerConverter(Converter[chainer.Function]):
                 if (not self.has_variable(c_var)) and c_var.name is not None:
                     self._convert_var(c_var)
 
-    def _convert_var(self, c_var: VariableNode, force_constant=False, force_order: Order = None):
+    def _convert_var(self, c_var: "VariableNode", force_constant=False, force_order: Order = None):
         assert not self.has_variable(c_var), f"{c_var} is already converted"
         ndim = len(c_var.shape)
         if force_order:

@@ -1,4 +1,4 @@
-# Setup Guide (for Windows)
+# Setup guide (for Windows)
 
 No browser on Windows supports WebGPU, but you can still develop applications using WebDNN. Commands have to be used on command prompt.
 
@@ -85,7 +85,7 @@ Here, `python3.bat` have to exist on the current directory.
 
 ## Running example
 
-```cmd
+```
 cd example\mnist
 python3 train_mnist_chainer.py
 ```

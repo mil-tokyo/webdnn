@@ -1,4 +1,7 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.embedding import Embedding
@@ -7,7 +10,7 @@ from webdnn.graph.order import OrderNC, OrderCN, OrderNT
 
 
 @KerasConverter.register_handler("Embedding")
-def _convert_embedding(converter: KerasConverter, k_op: keras.layers.Embedding):
+def _convert_embedding(converter: KerasConverter, k_op: "keras.layers.Embedding"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if x.order == OrderNC:

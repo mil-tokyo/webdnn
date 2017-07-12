@@ -15,13 +15,25 @@ from webdnn.util.misc import mul
 
 
 class Flatten(Operator):
-    """Flatten some axes into one axis.
+    """Flatten(name, in_axes, out_axis)
+
+    Flatten operator.
+
+    This operator combines some axes in input variable into single axis.
+    If
 
     Args:
         name (str): Operator name.
-        in_axes (set of :class:~`graph_transpiler.graph.Axis`): axes which are combined
-        out_axes (set of :class:~`graph_transpiler.graph.Axis`): axes which `in_axes` are combined into  
+        in_axes (set of :class:~`webdnn.Axis`): axes which are combined
+        out_axis (set of :class:~`webdnn.Axis`): axes which `in_axes` are combined into
 
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variables. It must has axes specified as :code:`in_axes`.
+        - **y** - Output variable. Its order is :obj:`~webdnn.graph.order.OrderNTC`.
     """
 
     # 入力変数の形を変形するレイヤー

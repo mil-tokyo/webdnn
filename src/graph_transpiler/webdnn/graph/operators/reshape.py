@@ -1,21 +1,15 @@
 from typing import Optional, List, Union
 
-import numpy as np
-
-from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.elementwise import Elementwise
-from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
 
-from webdnn.util.misc import mul
-
-
 class Reshape(Operator):
-    """Reshape array assuming it is C-order.
+    """Reshape(name, in_order, out_order, out_shape)
+
+    Reshape array assuming it is C-order.
     Removing / inserting axis with length 1
 
     When in_order: NHWC, out_order: NTC, out_shape: (2, 6, 10) and input variable is (2, 3, 4, 5), the semantic procedure is as follows.
@@ -28,11 +22,20 @@ class Reshape(Operator):
 
     Args:
         name (str): Operator name.
+        in_order (:class:`~webdnn.graph.order.Order`): input order
+        out_order (:class:`~webdnn.graph.order.Order`): output order
+        out_shape (list of int or :class:`~webdnn.graph.placeholder.Placeholder`): output shape
 
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variable.
+        - **y** - Output variable.
     """
 
     def __init__(self, name: Optional[str], in_order: Order, out_order: Order, out_shape: List[Union[int, Placeholder]]):
-
         super().__init__(name)
 
         self.parameters["in_order"] = in_order
@@ -43,17 +46,12 @@ class Reshape(Operator):
         self.attributes = {}
 
     def __call__(self, x: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
         assert self.parameters["in_order"] == x.order
 
         y = Variable(self.parameters["out_shape"], self.parameters["out_order"])
-        assert y.shape == self.parameters["out_shape"], f"Generated output shape does not match self.parameters[\"out_shape\"] ({y.shape} != {self.parameters['out_shape']})"
+        assert y.shape == self.parameters[
+            "out_shape"], f"Generated output shape does not match self.parameters[\"out_shape\"] " \
+                          f"({y.shape} != {self.parameters['out_shape']})"
         self.append_input("x", x)
         self.append_output("y", y)
 

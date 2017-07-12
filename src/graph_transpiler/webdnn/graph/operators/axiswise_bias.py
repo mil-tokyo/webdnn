@@ -11,16 +11,22 @@ from webdnn.graph.variable import Variable
 
 
 class AxiswiseBias(Operator):
-    """Adds a bias value along to specified axis.
-    
-    In general, after some operators such as :class:`~webdnn.graph.operators.linear.Linear` and 
-    :class:`~webdnn.graph.operators.convolution2d.Convolution2D`, bias value are added.
-    In that case, you should use this operator with axis parameter as :obj:`~webdnn.graph.axis.Axis.C`.
+    """AxiswiseBias(name, axis)
 
+    Adds a bias value along to specified axis.
+    
     Args:
         name (str): Operator name.
-        axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
+        axis (:obj:`~webdnn.Axis`): target axis
 
+    Signature
+        .. code::
+
+            y, = op(x, b)
+
+        - **x** - Data variable. It must has `axis` axis, and whose size must be same as :code:`b`.
+        - **b** - Bias variable. It must be 1D variable and that size must be same as :code:`x.shape_dict[axis]`
+        - **y** - Output variable. Its order and shape is same as :code:`x`.
     """
 
     def __init__(self, name: Optional[str], axis: Axis):
@@ -32,17 +38,13 @@ class AxiswiseBias(Operator):
                            HaveWeights(self)}
 
     def __call__(self, x: Variable, b: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-            b (:class:`~webdnn.graph.variable.Variable`): Bias value
+        assert b.ndim == 1, f"Bias variable of AxiswiseBias operator should be 1D variable: b.ndim={b.ndim}"
 
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
-        assert b.ndim == 1
-        if Placeholder.check_resolved(x.shape_dict[self.parameters["axis"]]) and Placeholder.check_resolved(b.size):
-            assert x.shape_dict[self.parameters["axis"]] == b.size
+        axis = self.axis
+        if Placeholder.check_resolved(x.shape_dict[axis]) and Placeholder.check_resolved(b.size):
+            assert x.shape_dict[axis] == b.size, f"Dimension mismatch: x.shape_dict[{axis}]={x.shape_dict[axis]}, " \
+                                                 f"b.shape_dict[{axis}]={b.shape_dict[axis]}"
+
         y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_input("b", b)

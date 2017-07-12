@@ -1,3 +1,0 @@
-# Optimize Rules
-
-FIXME: DOCS

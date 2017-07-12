@@ -6,12 +6,13 @@ WEBDNN_LICENSE = "(C) Machine Intelligence Laboratory (The University of Tokyo),
 
 
 class Graph:
-    """
-    Graph is computation graph of DNN model.
+    """Graph(inputs, outputs)
+
+    Computation graph of DNN model.
 
     Args:
-        inputs (list of :class:`~webdnn.graph.variable.Variable`): input variables
-        outputs (list of :class:`~webdnn.graph.variable.Variable`): output variables
+        inputs (list of :class:`~webdnn.Variable`): input variables
+        outputs (list of :class:`~webdnn.Variable`): output variables
     """
 
     def __init__(self,

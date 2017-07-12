@@ -10,13 +10,23 @@ from webdnn.graph.variable import Variable
 
 
 class ZeroPadding1D(Operator):
-    """Zero padding 1D operator
+    """ZeroPadding1D(name, padding)
+
+    Zero padding 1D operator
 
     Add padding to time-series data (n, t, c) -> (n, left + t + right, c)
 
     Args:
         name (str): Operator name.
         padding (int or tuple of int): Padding size. [left, right]
+
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variable.
+        - **y** - Output variable. Its order and shape is same as :code:`x`.
     """
 
     def __init__(self, name: Optional[str], padding: IntOrTuple):
@@ -26,13 +36,6 @@ class ZeroPadding1D(Operator):
                            Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         T2 = x_shape_dict[Axis.T] + self.parameters["padding"][0] + self.parameters["padding"][1]

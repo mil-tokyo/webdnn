@@ -1,4 +1,4 @@
-# Use with Keras Model
+# Use with keras model
 
 ```eval_rst
 In this tutorial, we'll convert ResNet50 [#f1]_ classification model 

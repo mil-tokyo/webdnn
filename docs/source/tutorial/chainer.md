@@ -1,4 +1,4 @@
-# Use with Chainer Model
+# Use with chainer model
 
 ```eval_rst
 In this tutorial, we'll convert ResNet50 [#f1]_ classification model 
