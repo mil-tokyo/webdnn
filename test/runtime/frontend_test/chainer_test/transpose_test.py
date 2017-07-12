@@ -25,8 +25,10 @@ def test():
     linear1 = chainer.links.Linear(None, 5)
     h = conv1(vx)  # (2, 10, 4, 6)
     h = chainer.functions.reshape(h, (1, 2, 8, 30))
-    #vy = chainer.functions.reshape(vx, (1, 2, 8, 24))
     h = conv2(h)  # (1, 4, 4, 26)
+    h = chainer.functions.max_pooling_2d(h, ksize=2, stride=2)  # (1, 4, 2, 13)
+    h = chainer.functions.reshape(h, (1, 2, 2, 26))
+    # implicit reshape to (1, 2*2*26)
     vy = linear1(h)
 
     graph = ChainerConverter().convert_from_inout_vars([vx], [vy])
@@ -39,5 +41,5 @@ def test():
         graph=graph,
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
         expected={y: ConstantVariable(vy.data, OrderNC).change_order(y.order).data},
-        backend=["webassembly"]
+        backend=["webgpu", "webassembly"]
     )

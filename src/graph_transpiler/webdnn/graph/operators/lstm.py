@@ -98,6 +98,7 @@ class LSTM(Operator):
 
         if self.parameters["return_sequences"]:
             y = Variable([batch_size, sequence_len, hidden_dim], OrderNTC)
+            y.change_order(x.order)  # output same order as input to preserve following reshape semantics
         else:
             y = Variable([batch_size, hidden_dim], OrderNC)
 

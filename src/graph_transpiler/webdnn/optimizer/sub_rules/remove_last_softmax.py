@@ -29,7 +29,7 @@ class RemoveLastSoftmax(OptimizeRule):
                 x = op.inputs["x"]
                 y = op.outputs["y"]
                 op.remove_all()
-                x.output_from._replace_output(x, y)
+                x.output_from.replace_output(x, y)
 
                 flag_changed = True
 

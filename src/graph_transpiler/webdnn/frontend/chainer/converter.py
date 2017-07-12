@@ -16,6 +16,7 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.linear import Linear
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderC, OrderNHWC, OrderCNHW, Order, OrderCN, OrderHWNC, OrderHWCN
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
@@ -156,6 +157,9 @@ class ChainerConverter(Converter[chainer.Function]):
         Transpose variable order into typical WebDNN order.
         """
         for n_var in traverse.listup_variables(graph):
+            if isinstance(n_var.output_from, ReinterpretAxis):
+                # workaround for MatMulVarVar
+                continue
             if isinstance(n_var, ConstantVariable):
                 if n_var.ndim == 1:
                     n_var.change_order(OrderC)

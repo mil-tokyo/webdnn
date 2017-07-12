@@ -40,6 +40,7 @@ class ZeroPadding2D(Operator):
         C2 = x_shape_dict[Axis.C]
 
         y = Variable([N, H2, W2, C2], OrderNHWC)
+        y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
         self.append_input("x", x)
         self.append_output("y", y)
