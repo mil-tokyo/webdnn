@@ -10,13 +10,23 @@ from webdnn.graph.variable import Variable
 
 
 class ZeroPadding2D(Operator):
-    """Zero padding 2D operator
+    """ZeroPadding2D(name, padding)
+
+    Zero padding 2D operator
 
     Supposed to be merged into convolution in optimization
 
     Args:
         name (str): Operator name.
         padding (int or tuple of int): Padding size. [top, left]
+
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variable.
+        - **y** - Output variable. Its order and shape is same as :code:`x`.
     """
 
     def __init__(self, name: Optional[str], padding: IntOrTuple):
@@ -26,13 +36,6 @@ class ZeroPadding2D(Operator):
                            Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         H2 = x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0]

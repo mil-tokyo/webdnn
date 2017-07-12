@@ -3,17 +3,18 @@ from typing import Optional
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.axiswise import Axiswise
-from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.variable import Variable
 
 
 # FIXME: Improve documentation
 class LocalResponseNormalization(Operator):
-    """Operator same as local response normalization layer in Caffe.
-    Only cross channel mode is supported; normalization is done for channel axis.
+    """LocalResponseNormalization(name, n, k, alpha, beta)
 
-    see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html
+    Operator same as local response normalization layer in Caffe. Only cross channel mode is supported; normalization is done for channel
+    axis.
+
+    For more detail, see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html
     
     Args:
         name (str): Operator name.
@@ -22,6 +23,13 @@ class LocalResponseNormalization(Operator):
         alpha (float): Parameter alpha.
         beta (float): Parameter beta.
 
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variable.
+        - **y** - Output variable. Its order and shape is same as :code:`x`.
     """
 
     def __init__(self, name: Optional[str], n: float, k: float, alpha: float, beta: float):
@@ -34,13 +42,6 @@ class LocalResponseNormalization(Operator):
                            Axiswise(self, Axis.C)}
 
     def __call__(self, x: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
         y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_output("y", y)

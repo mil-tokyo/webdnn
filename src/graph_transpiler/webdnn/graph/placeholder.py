@@ -241,7 +241,7 @@ class Placeholder(json.SerializableMixin):
 
     Also Placeholder can be resolved by setting concrete value at compile time.
 
-    .. code-block:: python
+    .. code::
 
         >> x = Placeholder(label="x")
         >> print(x)
@@ -256,14 +256,14 @@ class Placeholder(json.SerializableMixin):
 
     - add(:code:`+`), sub(:code:`-`), mul(:code:`*`), mod(:code:`%`), floor-div(:code:`//`).
 
-        .. code-block:: python
+        .. code::
 
             >> x = Placeholder(label="x")
             >> y = x * 2 + 3
             >> print(y)
             <x> * 2 + 3
 
-        .. code-block:: python
+        .. code::
 
             >> x = Placeholder(label="x")
             >> y = x % 4 // 5
@@ -272,7 +272,7 @@ class Placeholder(json.SerializableMixin):
 
         If possible, equation are simplified
 
-        .. code-block:: python
+        .. code::
 
             >> x = Placeholder(label="x")
             >> y = x * 6 + x * 7
@@ -283,7 +283,7 @@ class Placeholder(json.SerializableMixin):
 
         If both placeholders are resolved, they are compared based on concrete values.
 
-        .. code-block:: python
+        .. code::
 
             >> p = Placeholder(value=3)
             >> x = p * 2
@@ -293,7 +293,7 @@ class Placeholder(json.SerializableMixin):
 
         If either placeholder is not resolved, they are compared symbolically.
 
-        .. code-block:: python
+        .. code::
 
             >> p = Placeholder(label="p")
             >> x = p * 2
@@ -309,7 +309,7 @@ class Placeholder(json.SerializableMixin):
 
         Supported only when both placeholders are resolved. Otherwise, an error is raised.
 
-        .. code-block:: python
+        .. code::
 
             >> p = Placeholder(label="p")
             >> x = p * 2

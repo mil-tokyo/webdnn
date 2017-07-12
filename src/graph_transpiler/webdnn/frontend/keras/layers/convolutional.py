@@ -1,4 +1,7 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
@@ -12,13 +15,13 @@ from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN, OrderNTC
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Conv1D")
-def _convert_conv1d(converter: KerasConverter, k_op: keras.layers.Conv1D):
+def _convert_conv1d(converter: KerasConverter, k_op: "keras.layers.Conv1D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Conv1D is not supported')
 
 
 @KerasConverter.register_handler("Conv2D")
-def _convert_conv2d(converter: KerasConverter, k_op: keras.layers.Conv2D):
+def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.data_format == "channels_first":
@@ -56,69 +59,69 @@ def _convert_conv2d(converter: KerasConverter, k_op: keras.layers.Conv2D):
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("SeparableConv2D")
-def _convert_separable_conv2d(converter: KerasConverter, k_op: keras.layers.SeparableConv2D):
+def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.SeparableConv2D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.SeparableConv2D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Conv2DTranspose")
-def _convert_conv2d_transpose(converter: KerasConverter, k_op: keras.layers.Conv2DTranspose):
+def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Conv2DTranspose"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Conv2DTranspose is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Conv3D")
-def _convert_conv3d(converter: KerasConverter, k_op: keras.layers.Conv3D):
+def _convert_conv3d(converter: KerasConverter, k_op: "keras.layers.Conv3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Conv3D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Cropping1D")
-def _convert_cropping1d(converter: KerasConverter, k_op: keras.layers.Cropping1D):
+def _convert_cropping1d(converter: KerasConverter, k_op: "keras.layers.Cropping1D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Cropping1D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Cropping2D")
-def _convert_cropping2d(converter: KerasConverter, k_op: keras.layers.Cropping2D):
+def _convert_cropping2d(converter: KerasConverter, k_op: "keras.layers.Cropping2D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Cropping2D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Cropping3D")
-def _convert_cropping3d(converter: KerasConverter, k_op: keras.layers.Cropping3D):
+def _convert_cropping3d(converter: KerasConverter, k_op: "keras.layers.Cropping3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Cropping3D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("UpSampling1D")
-def _convert_up_sampling1d(converter: KerasConverter, k_op: keras.layers.UpSampling1D):
+def _convert_up_sampling1d(converter: KerasConverter, k_op: "keras.layers.UpSampling1D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.UpSampling1D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("UpSampling2D")
-def _convert_up_sampling2d(converter: KerasConverter, k_op: keras.layers.UpSampling2D):
+def _convert_up_sampling2d(converter: KerasConverter, k_op: "keras.layers.UpSampling2D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.UpSampling2D is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("UpSampling3D")
-def _convert_up_sampling2d(converter: KerasConverter, k_op: keras.layers.UpSampling3D):
+def _convert_up_sampling2d(converter: KerasConverter, k_op: "keras.layers.UpSampling3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.UpSampling3D is not supported')
 
 
 @KerasConverter.register_handler("ZeroPadding1D")
-def _convert_zero_padding1d(converter: KerasConverter, k_op: keras.layers.ZeroPadding1D):
+def _convert_zero_padding1d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     assert x.order == OrderNTC
@@ -128,7 +131,7 @@ def _convert_zero_padding1d(converter: KerasConverter, k_op: keras.layers.ZeroPa
 
 
 @KerasConverter.register_handler("ZeroPadding2D")
-def _convert_zero_padding2d(converter: KerasConverter, k_op: keras.layers.ZeroPadding2D):
+def _convert_zero_padding2d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     padding = k_op.padding
@@ -150,6 +153,6 @@ def _convert_zero_padding2d(converter: KerasConverter, k_op: keras.layers.ZeroPa
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("ZeroPadding3D")
-def _convert_zero_padding3d(converter: KerasConverter, k_op: keras.layers.ZeroPadding3D):
+def _convert_zero_padding3d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding3D"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.ZeroPadding3D is not supported')

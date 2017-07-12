@@ -1,10 +1,5 @@
-# Frontend Converters
+KerasConverter
+==============
 
-
-
-### KerasConverter
-
-```eval_rst
 .. autoclass:: webdnn.frontend.keras.KerasConverter
     :members:
-```

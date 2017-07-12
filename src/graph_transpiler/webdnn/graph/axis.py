@@ -3,30 +3,10 @@ from enum import Enum, auto
 
 class Axis(Enum):
     """
-    This class represents semantics of each dimension of variables.
-
-    - :code:`Axis.N`
-
-        number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
-
-    - :code:`Axis.C`
-
-        number of features
-
-    - :code:`Axis.H`
-
-        height of image
-
-    - :code:`Axis.W`
-
-        width of image
-
-    - :code:`Axis.T`
-
-        length of series
+    Enum class for representing semantics of each dimension of variables.
     """
-    N = auto()
-    C = auto()
-    H = auto()
-    W = auto()
-    T = auto()
+    N = auto()  #: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
+    C = auto()  #: Number of features
+    H = auto()  #: Height of image
+    W = auto()  #: Width of image
+    T = auto()  #: Length of series

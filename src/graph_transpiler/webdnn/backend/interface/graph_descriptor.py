@@ -14,9 +14,26 @@ class IGraphDescriptor(Generic[T_KERNEL]):
 
 
 class IGraphExecutionData(Generic[T_KERNEL]):
+    """
+    Container class for graph descriptor and related datum.
+    """
     descriptor: IGraphDescriptor[T_KERNEL]
     constants: bytes
     backend_suffix: str
 
     def save(self, dirname: str):
+        """save(dirname)
+
+        Save graph descriptor and related files into specified directory.
+
+        .. admonition:: Example
+
+            .. code::
+
+                descriptor = generate_descriptor("webgpu", graph)
+                descriptor.save("./output")
+
+        Args:
+            dirname (str): destination directory name
+        """
         raise NotImplementedError()

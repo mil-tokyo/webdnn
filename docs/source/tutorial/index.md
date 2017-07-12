@@ -10,4 +10,5 @@
     ./keras
     ./caffe
     ./chainer
+    ./custom_operator/index
 ```

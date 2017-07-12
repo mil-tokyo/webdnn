@@ -4,15 +4,26 @@ from webdnn.graph.axis import Axis
 
 
 class Order:
-    """
-    This class represents semantics of data order of variables.
+    """Order(axes)
 
-    For example, :code:`OrderNHWC` means that the data is aligned as Channel-major(Batch-size-minor).
+    Descriptor class for representing semantics of data order.
 
-    attrs:
+    For example, :obj:`~webdnn.graph.order.OrderNHWC` means that the data is aligned as Channel-major (Batch-size-minor).
+    Popular data order is already defined in :mod:`webdnn.graph.order`. You should use pre-defined order instance.
+
+    If you have to define new data order, you can simply as follows.
+
+    .. code::
+
+        OrderHCNW = Order([Axis.H, Axis.C, Axis.N, Axis.W])
+
+    Args:
+        axes(list of :class:`~webdnn.Axis`): list of axis.
+
+    Attributes:
         ndim(int): number of dimensions
-        axes(list of :class:`~webdnn.graph.axis.Axis`): list of axis
-        axes_dict(dict of :class:`~webdnn.graph.axis.Axis` and int): dictionary of pairs of axis and order index
+        axes(list of :class:`~webdnn.Axis`): list of axis
+        axes_dict(dict of :class:`~webdnn.Axis` and int): dictionary of pairs of axis and order index
     """
 
     def __init__(self, axes: List[Axis]):

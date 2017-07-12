@@ -1,4 +1,4 @@
-# Setup Guide (for Mac / Linux)
+# Setup guide (for Mac / Linux)
 
 For Windows users, jump to [setup_windows](../setup_windows.html)
 

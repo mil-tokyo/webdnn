@@ -7,11 +7,13 @@ from webdnn.graph.variables.attributes.constant import Constant
 
 # FIXME: DOCS
 class ConstantVariable(Variable):
-    """
-    Constant variable
+    """ConstantVariable(data, order)
 
-    attrs:
-        data (np.array) : data of the variable
+    Variable with constant data.
+
+    Args:
+        data (np.array): constant data.
+        order (:class:`~webdnn.Order`): the data order.
     """
     data: np.array
 
@@ -21,10 +23,14 @@ class ConstantVariable(Variable):
         self.attributes = {Constant(self)}
 
     def change_order(self, order: Order) -> "ConstantVariable":
-        """Change variable order
+        """change_order(order)
+
+        Change variable order.
 
         When number of dimension will be increased, axes whose size is one are created.
         Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
+
+        Not only order attribute, the data attribute is also modified.
 
         Args:
             order: new order

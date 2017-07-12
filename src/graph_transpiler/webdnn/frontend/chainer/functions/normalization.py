@@ -1,4 +1,8 @@
-import chainer.computational_graph
+try:
+    import chainer
+except ImportError:
+    pass
+
 import numpy as np
 
 from webdnn.frontend.chainer.converter import ChainerConverter
@@ -13,7 +17,7 @@ from webdnn.util import console
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("NormalizeL2")
-def _convert_normalize_l2(converter: ChainerConverter, c_op: chainer.functions.NormalizeL2):
+def _convert_normalize_l2(converter: ChainerConverter, c_op: "chainer.functions.NormalizeL2"):
     # TODO
     raise NotImplementedError("[ChainerConverter] NormalizeL2 is not supported")
 
@@ -21,7 +25,7 @@ def _convert_normalize_l2(converter: ChainerConverter, c_op: chainer.functions.N
 # noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("LocalResponseNormalization")
 def _convert_local_response_normalization(converter: ChainerConverter,
-                                          c_op: chainer.functions.normalization.local_response_normalization.LocalResponseNormalization):
+                                          c_op: "chainer.functions.normalization.local_response_normalization.LocalResponseNormalization"):
     x = converter.get_variable(c_op.inputs[0])
 
     n_opr = LocalResponseNormalization(None, n=c_op.n, k=c_op.k, alpha=c_op.alpha, beta=c_op.beta)
@@ -34,7 +38,7 @@ def _convert_local_response_normalization(converter: ChainerConverter,
 # noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("BatchNormalizationFunction")
 def _convert_batch_normalization_function(converter: ChainerConverter,
-                                          c_op: chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
+                                          c_op: "chainer.functions.normalization.batch_normalization.BatchNormalizationFunction"):
     x = converter.get_variable(c_op.inputs[0])
     gamma = converter.get_variable(c_op.inputs[1])
     beta = converter.get_variable(c_op.inputs[2])

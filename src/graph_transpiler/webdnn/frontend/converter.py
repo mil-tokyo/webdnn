@@ -11,12 +11,10 @@ T_OP = TypeVar('T_OP')
 
 
 class Converter(Generic[T_OP]):
-    """Converter base class
+    """Converter()
+    This class converts computation graph in other DNN library into WebDNN IR format.
 
-    This class converts computation graph in some DNN library into WebDNN IR format.
-
-    To use this class, you should implement :func:`~webdnn.converter.Converter.convert` and
-    convert handler for each operator (Please see :func:`~webdnn.converter.Converter.register_handler`).
+    If you want to implement your custom converter, see :doc:`/tutorial/custom_operator/index`.
     """
 
     """
@@ -27,15 +25,8 @@ class Converter(Generic[T_OP]):
 
     @abstractmethod
     def convert(self, *args, **kwargs) -> Graph:
-        """Convert computation graph into WebDNN IR format.
-
-        This is main routine of converter. You need to implement follow operations.
-
-        1. Traverse given computation graph and for each operator, call
-            :func:`~webdnn.converter.Converter.convert_operator` with the operator and variables.
-            This method converts the operator in IR format and build computation graph around this operator.
-
-        2. Build and return computation graph. This procedure can be implemented simply like follows::
+        """convert(*args, **kwargs)
+        Convert computation graph into WebDNN IR format. Arguments of this method is defined in each child class.
 
         Returns:
             Graph in WebDNN IR format
@@ -44,46 +35,8 @@ class Converter(Generic[T_OP]):
 
     @classmethod
     def register_handler(cls, key: str):
-        """Decorator to register operator converter handler
-
-        You need to implement handlers for all operators you want to supports. Each handler is consisted as follows:
-
-        1. Call :func:`~webdnn.converter.Converter.convert_variable` for each input and output variables.
-            This method converts the variable in IR format.
-
-        2. Connect computation graph.
-
-            For example, considering follows sequential graph in framework A. let op1 and op2 be instances of
-            `A.SomeOperator`
-
-            .. code-block:: text
-
-                v1 -[op1]-> v2 -[op2]-> v3
-
-            Converter handler can be implemented as follows::
-
-            @A_Converter.register_handler("SomeOperator")
-            def _handler(converter: A_Converter, op_A: A.SomeOperator):
-                # convert operator into WebDNN IR
-                op_webdnn = webdnn.graph.operators.SomeOperator(op_A.some_hyper_parameter)
-
-                # connect input variable
-                if converter.has_variable(op_A.inputs[0]):
-                    x = self.get_variable(op_A.inputs[0])
-
-                else:
-                    x = webdnn.graph.variable.Variable(op_A.inputs[0].shape, OrderNHWC)
-                    self.set_variable(op_A.inputs[0], x)
-
-                # connect output variable
-                if converter.has_variable(op_A.outputs[0]):
-                    y = self.get_variable(op_A.outputs[0])
-                    y_dummy = op_WebDNN(x)
-                    op.replace_output(y_dummy, y)
-
-                else:
-                    y = op_WebDNN(x)
-                    self.set_variable(op.outputs[0], y)
+        """register_handler(key)
+        Decorator to register operator converter handler.
 
         Args:
             key: operator type name. As default, it's the class name for each operator instance. you can change this
@@ -100,31 +53,54 @@ class Converter(Generic[T_OP]):
         return decorator
 
     def serialize_operator_type(self, operator: T_OP) -> str:
+        """serialize_operator_type(operator)
+        Serialize operators type in other DNN framework into strings
+
+        Args:
+            operator (Type): operator type in other DNN framework
+
+        Returns:
+            (str): serialized value
+        """
         return operator.__class__.__name__
 
     def get_variable(self, key: object) -> Variable:
-        """Gets variable object corresponding to the key.
+        """get_variable(key)
+        Gets variable object corresponding to the key.
+
+        Args:
+            key (object): key
 
         Returns:
-            variable object in WebDNN IR Format.
+            (:class:`~webdnn.Variable`):variable object in WebDNN IR Format.
         """
         return self._variable_table[self.__class__.__name__][key]
 
     def set_variable(self, key: object, variable: Variable):
-        """Stores variable object corresponding to the key.
+        """set_variable(key, variable)
+        Stores variable object corresponding to the key.
 
+        Args:
+            key (object): key
+            variable (:class:`~webdnn.Variable`): variable
         """
         if key in self._variable_table[self.__class__.__name__]:
             raise ValueError(f"Variable {key} already exists")
         self._variable_table[self.__class__.__name__][key] = variable
 
     def has_variable(self, key: object) -> bool:
-        """Check whether variable object corresponding to the key is generated or not.
+        """has_variable(key)
+        Check whether variable object corresponding to the key is generated or not.
 
+        Args:
+            key (object): key
+
+        Returns:
+            (bool): If :code:`True`, the key is contained.
         """
         return key in self._variable_table[self.__class__.__name__]
 
-    def convert_operator(self, operator: T_OP):
+    def _convert_operator(self, operator: T_OP):
         operator_key = self.serialize_operator_type(operator)
         if operator_key not in self._handler_map[self.__class__.__name__].keys():
             raise NotImplementedError(f"Operator '{operator_key}' is not handled any converter handlers.")

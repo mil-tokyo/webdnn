@@ -11,14 +11,22 @@ from webdnn.graph.variable import Variable
 
 
 class AxiswiseScale(Operator):
-    """Multiply a scale value along to specified axis.
+    """AxiswiseScale(name, axis)
 
-    This is scale version of :class:`~webdnn.graph.operators.axiswise_bias.AxiswiseBias`. Please see that.
+    Multiply a scale value along to specified axis.
 
     Args:
         name (str): Operator name.
-        axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
+        axis (:obj:`~webdnn.Axis`): target axis
 
+    Signature
+        .. code::
+
+            y, = op(x, s)
+
+        - **x** - Data variable. It must has `axis` axis, and whose size must be same as :code:`s`.
+        - **s** - Scale variable. It must be 1D variable and that size must be same as :code:`x.shape_dict[axis]`
+        - **y** - Output variable. Its order and shape is same as :code:`x`.
     """
 
     def __init__(self, name: Optional[str], axis: Axis):
@@ -30,17 +38,13 @@ class AxiswiseScale(Operator):
                            HaveWeights(self)}
 
     def __call__(self, x: Variable, s: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-            s (:class:`~webdnn.graph.variable.Variable`): Scale value
+        assert s.ndim == 1, f"Scale variable of AxiswiseScale operator should be 1D variable: s.ndim={s.ndim}"
 
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
-        assert s.ndim == 1
-        if Placeholder.check_resolved(x.shape_dict[self.parameters["axis"]]) and Placeholder.check_resolved(s.size):
-            assert x.shape_dict[self.parameters["axis"]] == s.size
+        axis = self.axis
+        if Placeholder.check_resolved(x.shape_dict[axis]) and Placeholder.check_resolved(s.size):
+            assert x.shape_dict[axis] == s.size, f"Dimension mismatch: x.shape_dict[{axis}]={x.shape_dict[axis]}, " \
+                                                 f"s.shape_dict[{axis}]={b.shape_dict[axis]}"
+
         y = Variable(x.shape, x.order)
         self.append_input("x", x)
         self.append_input("s", s)

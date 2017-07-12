@@ -68,6 +68,18 @@ def get_generator(backend: str):
 
 
 def generate_descriptor(backend: str, graph: Graph, **kwargs) -> IGraphExecutionData:
+    """generate_descriptor(backend, graph, **kwargs)
+
+    This is utility function to generate graph descriptor. This function create specified backend descriptor generator and generat graph
+    descriptor.
+
+    Args:
+        backend (str): target backend
+        graph (:class:`~webdnn.Graph`): graph
+
+    Returns:
+        (:class:`~webdnn.backend.interface.graph_descriptor.IGraphExecutionData`) generated graph descriptor
+    """
     generator = get_generator(backend)
 
     try:

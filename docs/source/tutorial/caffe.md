@@ -1,4 +1,4 @@
-# Use with Caffemodel
+# Use with caffemodel
 
 In this section, you will learn about how to convert your caffemodel
 into `GraphDescriptor`, and run `GraphDescriptor` on your web page.

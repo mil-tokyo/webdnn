@@ -1,11 +1,14 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
 
 from webdnn.frontend.keras.converter import KerasConverter
 
 
 @KerasConverter.register_handler("Model")
 @KerasConverter.register_handler("Sequential")
-def _convert_model(converter: KerasConverter, k_op: keras.models.Model):
+def _convert_model(converter: KerasConverter, k_op: "keras.models.Model"):
     graph = converter.convert(k_op)
 
     # Initial state of nested model
@@ -38,5 +41,5 @@ def _convert_model(converter: KerasConverter, k_op: keras.models.Model):
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("InputLayer")
-def _convert_input_layer(converter: KerasConverter, k_op: keras.layers.InputLayer):
+def _convert_input_layer(converter: KerasConverter, k_op: "keras.layers.InputLayer"):
     pass

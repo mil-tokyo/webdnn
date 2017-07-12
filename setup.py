@@ -1,8 +1,13 @@
+import json
+
 from setuptools import setup, find_packages
+
+with open("./package.json") as f:
+    version = json.load(f)["version"]
 
 setup(
     name="webdnn",
-    version="1.1.0",
+    version=version,
     package_dir={"": "src/graph_transpiler"},
     packages=find_packages("src/graph_transpiler"),
     package_data={"": "*.js"}

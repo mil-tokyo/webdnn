@@ -4,14 +4,26 @@ from webdnn.graph.operators.elementwise import Elementwise
 
 
 class LeakyRelu(Elementwise):
-    """leaky relu activation
+    """LeakyRelu(name, slope)
 
-    max(x, slope*x)
+    Leaky relu operator
 
+    .. math::
+
+        f(x) = max(x, ax)
+
+    where :math:`a` is slope value.
+    
     Args:
-        name (str): Operator name.
-        slope (float): slope in negative input.
+        slope (float): slope value
 
+    Signature
+        .. code::
+
+            y, = op(x0)
+
+        - **x0** - Input variable.
+        - **y** - Output variable. Its order and shape is same as :code:`x0`.
     """
 
     def __init__(self, name: Optional[str], slope: float):

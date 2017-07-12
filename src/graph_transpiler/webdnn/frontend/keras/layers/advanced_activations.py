@@ -1,4 +1,7 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.elu import Elu
@@ -8,7 +11,7 @@ from webdnn.graph.operators.threshold_relu import ThresholdRelu
 
 
 @KerasConverter.register_handler("LeakyReLU")
-def _convert_leaky_relu(converter: KerasConverter, k_op: keras.layers.LeakyReLU):
+def _convert_leaky_relu(converter: KerasConverter, k_op: "keras.layers.LeakyReLU"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.alpha == 0:
         y, = Relu(None)(x)
@@ -20,13 +23,13 @@ def _convert_leaky_relu(converter: KerasConverter, k_op: keras.layers.LeakyReLU)
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("PReLU")
-def _convert_prelu(converter: KerasConverter, k_op: keras.layers.PReLU):
+def _convert_prelu(converter: KerasConverter, k_op: "keras.layers.PReLU"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.PReLU is not supported')
 
 
 @KerasConverter.register_handler("ELU")
-def _convert_elu(converter: KerasConverter, k_op: keras.layers.ELU):
+def _convert_elu(converter: KerasConverter, k_op: "keras.layers.ELU"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     alpha = float(k_op.alpha)
 
@@ -44,9 +47,8 @@ def _convert_elu(converter: KerasConverter, k_op: keras.layers.ELU):
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
-# noinspection PyUnusedLocal
 @KerasConverter.register_handler("ThresholdedReLU")
-def _convert_thresholded_relu(converter: KerasConverter, k_op: keras.layers.ThresholdedReLU):
+def _convert_thresholded_relu(converter: KerasConverter, k_op: "keras.layers.ThresholdedReLU"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.theta == 0:

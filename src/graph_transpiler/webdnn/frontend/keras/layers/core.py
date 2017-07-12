@@ -1,4 +1,8 @@
-import keras
+try:
+    import keras
+except ImportError as e:
+    pass
+
 import numpy as np
 
 from webdnn.frontend.keras.converter import KerasConverter
@@ -14,7 +18,7 @@ from webdnn.util.misc import mul
 
 
 @KerasConverter.register_handler("Dense")
-def _convert_dense(converter: KerasConverter, k_op: keras.layers.Dense):
+def _convert_dense(converter: KerasConverter, k_op: "keras.layers.Dense"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     w = converter.convert_to_constant_variable(k_op.kernel, OrderCN)
     y, = Linear(None)(x, w)
@@ -28,7 +32,7 @@ def _convert_dense(converter: KerasConverter, k_op: keras.layers.Dense):
 
 
 @KerasConverter.register_handler("Activation")
-def _convert_activation(converter: KerasConverter, k_op: keras.layers.Activation):
+def _convert_activation(converter: KerasConverter, k_op: "keras.layers.Activation"):
     y = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     y = do_activation(k_op.activation, y)
@@ -36,7 +40,7 @@ def _convert_activation(converter: KerasConverter, k_op: keras.layers.Activation
 
 
 @KerasConverter.register_handler("Dropout")
-def _convert_dropout(converter: KerasConverter, k_op: keras.layers.Dropout):
+def _convert_dropout(converter: KerasConverter, k_op: "keras.layers.Dropout"):
     console.warning("[KerasConverter] omitting dropout")
 
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
@@ -45,7 +49,7 @@ def _convert_dropout(converter: KerasConverter, k_op: keras.layers.Dropout):
 
 
 @KerasConverter.register_handler("Flatten")
-def _convert_flatten(converter: KerasConverter, k_op: keras.layers.Flatten):
+def _convert_flatten(converter: KerasConverter, k_op: "keras.layers.Flatten"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # flatten without changing memory layout
@@ -58,7 +62,7 @@ _flag_reshape_first_time = True
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Reshape")
-def _convert_reshape(converter: KerasConverter, k_op: keras.layers.Reshape):
+def _convert_reshape(converter: KerasConverter, k_op: "keras.layers.Reshape"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     target_shape = [x.shape[0]] + list(k_op.target_shape)
@@ -84,13 +88,13 @@ def _convert_reshape(converter: KerasConverter, k_op: keras.layers.Reshape):
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Permute")
-def _convert_permute(converter: KerasConverter, k_op: keras.layers.Permute):
+def _convert_permute(converter: KerasConverter, k_op: "keras.layers.Permute"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Permute is not supported')
 
 
 @KerasConverter.register_handler("RepeatVector")
-def _convert_repeat_vector(converter: KerasConverter, k_op: keras.layers.RepeatVector):
+def _convert_repeat_vector(converter: KerasConverter, k_op: "keras.layers.RepeatVector"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     assert x.order == OrderNC, f"[KerasConverter] Currently only OrderNC is supported for input variable order of " \
@@ -119,20 +123,20 @@ def _convert_repeat_vector(converter: KerasConverter, k_op: keras.layers.RepeatV
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Lambda")
-def _convert_lambda(converter: KerasConverter, k_op: keras.layers.Lambda):
+def _convert_lambda(converter: KerasConverter, k_op: "keras.layers.Lambda"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Lambda is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("ActivityRegularization")
-def _convert_activity_regularization(converter: KerasConverter, k_op: keras.layers.ActivityRegularization):
+def _convert_activity_regularization(converter: KerasConverter, k_op: "keras.layers.ActivityRegularization"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.ActivityRegularization is not supported')
 
 
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Masking")
-def _convert_masking(converter: KerasConverter, k_op: keras.layers.Masking):
+def _convert_masking(converter: KerasConverter, k_op: "keras.layers.Masking"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Masking is not supported')

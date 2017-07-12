@@ -1,6 +1,6 @@
 from webdnn.graph.operators import abs
 from webdnn.graph.operators import attributes
-from webdnn.graph.operators import average_pooling_2d
+from webdnn.graph.operators import pooling_2d
 from webdnn.graph.operators import axiswise_bias
 from webdnn.graph.operators import axiswise_bias
 from webdnn.graph.operators import clipped_relu
