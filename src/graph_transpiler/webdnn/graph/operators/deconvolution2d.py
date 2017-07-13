@@ -42,11 +42,11 @@ class Deconvolution2D(Operator):
         self.attributes = {HaveWeights(self)}
 
     def __call__(self, x: Variable, w: Variable):
-        assert x.order.axes == OrderNHWC.axes, \
+        assert set(x.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
             "Input variable of Deconvolution2D must have N, C, H, and W axes.: " \
             f"x.order.axes={x.order.axes}"
 
-        assert w.order.axes == OrderNHWC.axes, \
+        assert set(w.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
             "Kernel variable of Deconvolution2D must have N, C, H, and W axes.: " \
             f"w.order.axes={w.order.axes}"
 
