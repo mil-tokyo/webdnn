@@ -6,6 +6,7 @@ except ImportError:
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.order import OrderC, OrderNC, OrderNCHW
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -49,8 +50,9 @@ def _convert_copy(converter: ChainerConverter, c_op: "chainer.functions.Copy"):
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Depth2Space")
 def _convert_depth2space(converter: ChainerConverter, c_op: "chainer.functions.Depth2Space"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Depth2Space is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Depth2Space(None, r=c_op.r)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal,PyUnresolvedReferences
