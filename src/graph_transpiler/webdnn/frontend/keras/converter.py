@@ -111,8 +111,10 @@ class KerasConverter(Converter["keras.layers.Layer"]):
                             f"[KerasConverter] {node.outbound_layer} outputs {tensor}, but it was not converted into WebDNN Variable by "
                             f"{self._handler_map[self.__class__.__name__][self.serialize_operator_type(node.outbound_layer)]}")
 
-        return Graph([self.get_variable(t) for t in _to_list(self.get_input_tensor(model))],
-                     [self.get_variable(t) for t in _to_list(self.get_output_tensor(model))])
+        self._input_tensor_cache = None
+        self._output_tensor_cache = None
+        return Graph([self.get_variable(t) for t in self.get_input_tensor(model)],
+                     [self.get_variable(t) for t in self.get_output_tensor(model)])
 
     def _convert_operator(self, k_op: "keras.layers.Layer"):
         self._input_tensor_cache = None

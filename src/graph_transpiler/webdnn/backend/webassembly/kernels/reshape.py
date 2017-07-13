@@ -29,6 +29,10 @@ def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
     x = memory_layout[op.inputs["x"]]
     y = memory_layout[op.outputs["y"]]
 
+    if x.offset == y.offset:
+        # Inplace
+        return []
+
     assert x.variable.order == op.parameters["in_order"]
     assert y.variable.order == op.parameters["out_order"]
     assert y.variable.size == mul(op.parameters["out_shape"])

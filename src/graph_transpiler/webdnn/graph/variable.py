@@ -74,6 +74,22 @@ class Variable(Node):
         """dictionary of axis and shape size pairs"""
         return dict(zip(self.order.axes, self.shape))
 
+    @property
+    def stride(self) -> List[Union[int, Placeholder]]:
+        """stride size for each dimension"""
+        stride = []
+        s = self.size
+        for size in self.shape:
+            s //= size
+            stride.append(s)
+
+        return stride
+
+    @property
+    def stride_dict(self) -> Dict[Axis, Union[int, Placeholder]]:
+        """dictionary of axis and stride size pairs"""
+        return dict(zip(self.order.axes, self.stride))
+
     def change_order(self, order: Order) -> "Variable":
         """change_order(order)
 

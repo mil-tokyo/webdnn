@@ -1,6 +1,7 @@
 from typing import Optional, List, Union
 
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
@@ -43,7 +44,7 @@ class Reshape(Operator):
         assert -1 not in out_shape, "-1 (wildcard) in reshape output shape is currently not supported"
         self.parameters["out_shape"] = out_shape
 
-        self.attributes = {}
+        self.attributes.add(Inplace(self, "x", "y"))
 
     def __call__(self, x: Variable):
         assert self.parameters["in_order"] == x.order

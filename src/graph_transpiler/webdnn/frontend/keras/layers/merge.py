@@ -1,3 +1,5 @@
+from webdnn.graph.operators.concat import Concat
+
 try:
     import keras
 except ImportError as e:
@@ -24,12 +26,10 @@ def _convert_multiply(converter: KerasConverter, k_op: "keras.layers.Multiply"):
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
-# noinspection PyUnusedLocal
 @KerasConverter.register_handler("Average")
 def _convert_average(converter: KerasConverter, k_op: "keras.layers.Average"):
     xs = [converter.get_variable(tensor) for tensor in converter.get_input_tensor(k_op)]
 
-    # FIXME: More effective implementation
     y = ElementwiseAdd(None)(*xs)[0] / len(xs)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
@@ -39,6 +39,13 @@ def _convert_average(converter: KerasConverter, k_op: "keras.layers.Average"):
 def _convert_maximum(converter: KerasConverter, k_op: "keras.layers.Maximum"):
     # TODO
     raise NotImplementedError('[KerasConverter] keras.layers.Maximum is not supported')
+
+
+@KerasConverter.register_handler("Concatenate")
+def _convert_maximum(converter: KerasConverter, k_op: "keras.layers.Concatenate"):
+    xs = [converter.get_variable(tensor) for tensor in converter.get_input_tensor(k_op)]
+    y, = Concat(None, axis=xs[0].order.axes[k_op.axis])(*xs)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
 # noinspection PyUnusedLocal
