@@ -5,6 +5,7 @@ from webdnn.backend.webgpu.kernels import axiswise_scale
 from webdnn.backend.webgpu.kernels import clipped_relu
 from webdnn.backend.webgpu.kernels import col2im
 from webdnn.backend.webgpu.kernels import concat
+from webdnn.backend.webgpu.kernels import depth2space
 from webdnn.backend.webgpu.kernels import elementwise
 from webdnn.backend.webgpu.kernels import elementwise_add
 from webdnn.backend.webgpu.kernels import elementwise_div
