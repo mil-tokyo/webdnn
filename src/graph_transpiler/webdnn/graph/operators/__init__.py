@@ -6,6 +6,7 @@ from webdnn.graph.operators import clipped_relu
 from webdnn.graph.operators import concat
 from webdnn.graph.operators import convolution2d
 from webdnn.graph.operators import deconvolution2d
+from webdnn.graph.operators import depth2space
 from webdnn.graph.operators import elementwise
 from webdnn.graph.operators import elementwise_add
 from webdnn.graph.operators import elementwise_add_relu
@@ -38,3 +39,4 @@ from webdnn.graph.operators import threshold_relu
 from webdnn.graph.operators import util
 from webdnn.graph.operators import zero_padding_1d
 from webdnn.graph.operators import zero_padding_2d
+

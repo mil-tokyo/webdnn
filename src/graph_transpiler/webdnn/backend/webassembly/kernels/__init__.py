@@ -5,6 +5,7 @@ from webdnn.backend.webassembly.kernels import axiswise_scale
 from webdnn.backend.webassembly.kernels import clipped_relu
 from webdnn.backend.webassembly.kernels import col2im
 from webdnn.backend.webassembly.kernels import concat
+from webdnn.backend.webassembly.kernels import depth2space
 from webdnn.backend.webassembly.kernels import elementwise
 from webdnn.backend.webassembly.kernels import elementwise_add
 from webdnn.backend.webassembly.kernels import elementwise_div
