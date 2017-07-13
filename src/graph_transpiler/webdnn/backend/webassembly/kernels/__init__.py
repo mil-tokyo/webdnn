@@ -12,7 +12,6 @@ from webdnn.backend.webassembly.kernels import elementwise_mul
 from webdnn.backend.webassembly.kernels import elementwise_pow
 from webdnn.backend.webassembly.kernels import elu
 from webdnn.backend.webassembly.kernels import embedding
-from webdnn.backend.webassembly.kernels import flatten
 from webdnn.backend.webassembly.kernels import hard_sigmoid
 from webdnn.backend.webassembly.kernels import im2col
 from webdnn.backend.webassembly.kernels import leaky_relu

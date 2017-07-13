@@ -15,6 +15,7 @@ import keras
 from webdnn import Placeholder, Shape
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.keras import KerasConverter
+from webdnn.graph import traverse
 from webdnn.graph.traverse import dump_dot
 from webdnn.util import flags, console
 
@@ -57,9 +58,10 @@ def main():
     input_shapes = [Shape.parse(input_shape)[0] for input_shape in args.input_shape]
 
     model = keras.models.load_model(args.kerasmodel, custom_objects=custom_objects)
-    model.build()
+    model.build(input_shape=None)
     converter = KerasConverter()
     graph = converter.convert(model)
+    traverse.dump(graph)
 
     for graph_input, input_shape in zip(graph.inputs, input_shapes):
         for p1, p2 in zip(graph_input.shape, input_shape):
@@ -67,10 +69,10 @@ def main():
                 p1.value = Placeholder.force_int(p2)
 
             elif Placeholder.check_resolved(p1) and not Placeholder.check_resolved(p2):
-                raise ValueError(f'Shape mismatch: {p1} != {p2}')
+                raise ValueError(f'Shape mismatch: expected:{input_shape}, real:{graph_input.shape}, {p1} != {p2}')
 
             elif Placeholder.check_resolved(p1) and Placeholder.check_resolved(p2):
-                assert p1 == p2, f'Shape mismatch: {p1} != {p2}'
+                assert p1 == p2, f'Shape mismatch: expected:{input_shape}, real:{graph_input.shape}, {p1} != {p2}'
 
     if args.out:
         output_dir = args.out

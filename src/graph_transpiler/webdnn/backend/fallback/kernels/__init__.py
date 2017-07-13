@@ -11,7 +11,6 @@ from webdnn.backend.fallback.kernels import elementwise_div
 from webdnn.backend.fallback.kernels import elementwise_mul
 from webdnn.backend.fallback.kernels import elementwise_pow
 from webdnn.backend.fallback.kernels import elu
-from webdnn.backend.fallback.kernels import flatten
 from webdnn.backend.fallback.kernels import hard_sigmoid
 from webdnn.backend.fallback.kernels import leaky_relu
 from webdnn.backend.fallback.kernels import linear

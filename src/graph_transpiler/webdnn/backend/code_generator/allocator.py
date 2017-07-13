@@ -185,9 +185,10 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     inplace = op.get_attribute(Inplace)[0]  # type: Inplace
                     v_in = inplace.get_input()  # Use memory allocated for input variable
                     v_out = inplace.get_output()
+                    common_axes = set(v_in.order.axes).intersection(set(v_out.order.axes))
 
                     if len(v_in.input_to) == 1 and \
-                            v_in.order == v_out.order and \
+                        all(v_in.stride_dict[axis] == v_out.stride_dict[axis] for axis in common_axes) and \
                             v_in.output_from is not None and \
                             len(v_out.input_to) != 0:
                         while "inplace_src" in v_in.parameters:
@@ -229,7 +230,7 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
 
     for var in graph.outputs:
         lifetime[var] = (lifetime[var][0], LIFETIME_FOREVER)
-        
+
     return lifetime
 
 

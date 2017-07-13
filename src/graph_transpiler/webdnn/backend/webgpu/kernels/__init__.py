@@ -7,12 +7,12 @@ from webdnn.backend.webgpu.kernels import col2im
 from webdnn.backend.webgpu.kernels import concat
 from webdnn.backend.webgpu.kernels import elementwise
 from webdnn.backend.webgpu.kernels import elementwise_add
+from webdnn.backend.webgpu.kernels import elementwise_add_relu
 from webdnn.backend.webgpu.kernels import elementwise_div
 from webdnn.backend.webgpu.kernels import elementwise_mul
 from webdnn.backend.webgpu.kernels import elementwise_pow
 from webdnn.backend.webgpu.kernels import elu
 from webdnn.backend.webgpu.kernels import embedding
-from webdnn.backend.webgpu.kernels import flatten
 from webdnn.backend.webgpu.kernels import hard_sigmoid
 from webdnn.backend.webgpu.kernels import im2col
 from webdnn.backend.webgpu.kernels import leaky_relu
