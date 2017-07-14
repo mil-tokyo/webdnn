@@ -7,6 +7,7 @@ from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
+from webdnn.util import console
 
 
 class Pooling2D(Operator):
@@ -44,6 +45,13 @@ class Pooling2D(Operator):
         H2 = (x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) // self.parameters["stride"][0] + 1
         W2 = (x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
         C2 = x_shape_dict[Axis.C]
+        if ((x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) % self.parameters["stride"][0] != 0) or \
+           ((x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) % self.parameters["stride"][1] != 0):
+            # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
+            console.warning(
+                "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +
+                "Which edge (left / right) is ignored is different on frameworks," +
+                " so slightly different result will be generated.")
 
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics

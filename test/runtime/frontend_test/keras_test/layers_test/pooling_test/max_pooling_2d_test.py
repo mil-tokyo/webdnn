@@ -18,11 +18,11 @@ def test():
     ]:
         channels_first = ("data_format" in kwargs) and (kwargs["data_format"] == "channels_first")
 
-        x = keras.layers.Input((14, 15, 16))
+        x = keras.layers.Input((15, 17, 16))  # (height + pad * 2 - pool_size) % stride == 0 to avoid edge difference
         y = keras.layers.MaxPooling2D(**kwargs)(x)
         model = keras.models.Model([x], [y])
 
-        vx = np.random.rand(2, 14, 15, 16)
+        vx = np.random.random((2, 15, 17, 16))
         vy = model.predict(vx, batch_size=2)
 
         graph = KerasConverter(batch_size=2).convert(model, input_orders=[OrderNCHW if channels_first else OrderNHWC])
