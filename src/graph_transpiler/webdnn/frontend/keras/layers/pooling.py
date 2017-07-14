@@ -10,6 +10,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderNHWC, OrderNTC
 from webdnn.util.misc import mul
+from webdnn.util import console
 
 
 @KerasConverter.register_handler("MaxPooling1D")
@@ -23,7 +24,7 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (k_op.pool_size[0] // 2, k_op.pool_size[0] // 2)
+        padding = (k_op.pool_size[0] // 2, 0)
 
     else:
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
@@ -80,7 +81,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (k_op.pool_size[0] // 2, k_op.pool_size[0] // 2)
+        padding = (k_op.pool_size[0] // 2, 0)
 
     else:
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
@@ -111,6 +112,10 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
 
     elif k_op.padding == "same":
         padding = (ksize[0] // 2, ksize[1] // 2)
+        console.warning(
+            "[KerasConverter] keras.layers.AveragePooling with padding divides summed values in window by the number "
+            "of valid elements, but WebDNN divides it by the number of elements including zero padding, so different "
+            "result will be generated on the edge.")
 
     else:
         raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
