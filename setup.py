@@ -1,5 +1,10 @@
-import json
+import sys
 
+if sys.version_info < (3, 6):
+    sys.stderr.write("Sorry, this library only works with python >= 3.6\n")
+    sys.exit(1)
+
+import json
 from setuptools import setup, find_packages
 
 with open("./package.json") as f:
