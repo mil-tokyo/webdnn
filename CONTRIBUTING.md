@@ -1,8 +1,33 @@
 # How to contribute
+We welcome contributions to WebDNN. This document describes the procedures and rules.
 
-TODO test, pull-request etc.
+Kinds of contributions will be one of the following, but not restricted to:
+- Bugfix
+- Implementation of a layer
+- Implementation of a converter from a deep learning framework
+- Improvement of performance
+- Documantation
 
-# Developer Certificate of Origin 1.1
+For new layer implementation, at least WebAssembly backend implementation is required. WebGPU backend can only be tested on Mac, so it is not mandatory.
+
+# Testing
+If you have added some features, implementing tests corresponding to them is recommended.
+
+`test/webdnn_test` is for tests which can be completed within graph transpiler. `test/runtime` is for tests which generates graph descriptor and compares its behavior on web browsers.
+
+See how to run test commands in `test/README.md`.
+
+# Pull Request
+Send pull request from your fork branch to our master branch. The project organizer checks the request and accepts or gives request for revision.
+
+# License
+WebDNN is distributed under the MIT License. Every contributor holds the copyright of his/her part.
+
+By contributing to the mil-tokyo/webdnn repository through pull-request, comment,
+or otherwise, the contributor releases their content to the license and copyright
+terms herein.
+
+## Developer Certificate of Origin 1.1
 Developer Certificate of Origin
 Version 1.1
 
