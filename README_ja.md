@@ -61,7 +61,7 @@ let runner;
 
 async function init() {
     // DNNを実行するための "DescriptorRunner" を初期化する
-    runner = await WebDNN.prepareAll('./output');
+    runner = await WebDNN.load('./output');
 }
 
 async function run() {
