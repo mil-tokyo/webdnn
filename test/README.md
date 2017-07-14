@@ -24,10 +24,16 @@
     - Kernel code have to be generated in advance.
     
         ```
-        nosetests -w ./test/runtime/operators_test
+        nosetests -w ./test/runtime
         ```
 
     - Opening `kernel_test.html` and press [RUN] to test the generated kernel code.
+
+    - Generating all code requires about 30 minutes. To check only specific layers, you can specify python files to check.
+
+        ```
+        nosetests ./test/runtime/frontend_test/keras_test/layers_test/core_test/activation_test.py
+        ```
 
 
 ### DescriptorRunner
