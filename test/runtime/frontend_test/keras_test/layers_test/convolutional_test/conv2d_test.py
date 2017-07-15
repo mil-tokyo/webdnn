@@ -34,7 +34,8 @@ def test():
             graph=graph,
             inputs={graph.inputs[0]: vx},
             expected={graph.outputs[0]: vy},
-            raise_skip=False
+            raise_skip=False,
+            EPS=1e-2
         )
 
     raise SkipTest
