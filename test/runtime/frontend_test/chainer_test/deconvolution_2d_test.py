@@ -23,7 +23,8 @@ def test():
         graph=graph,
         backend=["webgpu", "webassembly"],
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
-        expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data}
+        expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data},
+        EPS=1e-2
     )
 
 
@@ -43,5 +44,6 @@ def test_nobias():
         graph=graph,
         backend=["webgpu", "webassembly"],
         inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
-        expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data}
+        expected={y: ConstantVariable(vy.data, OrderNCHW).change_order(y.order).data},
+        EPS=1e-2
     )

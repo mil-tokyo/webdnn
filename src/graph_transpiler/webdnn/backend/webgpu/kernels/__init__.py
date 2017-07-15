@@ -8,7 +8,6 @@ from webdnn.backend.webgpu.kernels import concat
 from webdnn.backend.webgpu.kernels import depth2space
 from webdnn.backend.webgpu.kernels import elementwise
 from webdnn.backend.webgpu.kernels import elementwise_add
-from webdnn.backend.webgpu.kernels import elementwise_add_relu
 from webdnn.backend.webgpu.kernels import elementwise_div
 from webdnn.backend.webgpu.kernels import elementwise_mul
 from webdnn.backend.webgpu.kernels import elementwise_pow
