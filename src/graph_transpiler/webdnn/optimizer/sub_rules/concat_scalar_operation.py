@@ -67,7 +67,7 @@ class ConcatScalarOperation(OptimizeRule):
                     new_y, = new_op(x)
                     op1.remove_all()
                     op2.remove_all()
-                    y2.replace(new_y)
+                    new_y.replace(y2)
 
                 else:
                     console.debug(f"[ConcatScalarOperation] unhandled pair: {type(op1)} and {type(op2)}")
@@ -85,7 +85,7 @@ class ConcatScalarOperation(OptimizeRule):
                     new_y, = new_op(x)
                     op1.remove_all()
                     op2.remove_all()
-                    y2.replace(new_y)
+                    new_y.replace(y2)
 
                 elif isinstance(op2, ScalarMul):
                     op1.parameters["value"] *= op2.value

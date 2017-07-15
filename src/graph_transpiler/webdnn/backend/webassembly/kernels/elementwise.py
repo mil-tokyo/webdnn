@@ -1,42 +1,31 @@
 from collections import namedtuple
-from typing import List, Dict, Type, Callable, Union
+from typing import List, Dict, Type, Union, Callable, Any
 
 from webdnn.backend.code_generator.allocator import MemoryLayout, Allocation
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
+from webdnn.graph import traverse
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.operators.merged_elementwise import MergedElementwise
+from webdnn.graph.variable import Variable
 
 RegisteredItem = namedtuple('RegisteredItem', ['OperatorClass', 'code', 'parameters'])
 _registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
 
 
-def _generate_source(xs: List[Allocation], y: Allocation, code: str, parameters: Dict[str, Union[int, float]]):
-    input_variable_declaration_expression = "float y;"
-    input_variable_declaration_expression += "\nfloat " + ", ".join(['x' + str(i) for i in range(len(xs))]) + ";"
-    for i in range(len(xs)):
-        input_variable_declaration_expression += \
-            f"\nconst float *X{i} = %%LOAD_BUFFER(elementwise_Xs, {i})%%;"
-    for varname, val in parameters.items():
-        if isinstance(val, int):
-            input_variable_declaration_expression += f"\nconst int {varname} = %%LOAD_BUFFER(elementwise_parameters_{varname})%%;"
+def _generate_source(xs: List[Allocation], y: Allocation, codes: List[List[Any]], parameters: Dict[str, Union[int, float]]):
+    flag_same_order = all([x.variable.order == y.variable.order for x in xs])
 
-        elif isinstance(val, float):
-            input_variable_declaration_expression += \
-                f"\nconst float {varname} = *((float *)(&%%LOAD_BUFFER(elementwise_parameters_{varname})%%));"
+    variable_declaration_expression = "\n".join(
+        [f"const float *X{i} = %%LOAD_BUFFER(elementwise_Xs, {i})%%;" for i in range(len(xs))])
 
-        else:
-            raise NotImplementedError
-
-    if all([x.variable.order == y.variable.order for x in xs]):
+    if flag_same_order:
         calculate_index_expression = ""
 
-        load_input_expression = ""
-        for i in range(len(xs)):
-            load_input_expression += f"\nx{i} = X{i}[i];"
     else:
-        input_variable_declaration_expression += """
+        variable_declaration_expression += """
 const char D = %%LOAD_BUFFER(elementwise_D)%%;
 const int *X_shapes = %%LOAD_BUFFER(elementwise_X_shapes)%%;
 const int *X_strides_in_Y = %%LOAD_BUFFER(elementwise_X_strides_in_Y)%%;"""
@@ -50,9 +39,58 @@ const int *X_strides_in_Y = %%LOAD_BUFFER(elementwise_X_strides_in_Y)%%;"""
                 f"\ni_x{i} = i_x{i} * X_shapes[D*{i} + d] + ((i / X_strides_in_Y[D*{i} + d]) % X_shapes[D*{i} + d]);"
         calculate_index_expression += "\n}"
 
-        load_input_expression = ""
-        for i in range(len(xs)):
-            load_input_expression += f"\nx{i} = X{i}[i_x{i}];"
+    elementwise_body = []
+    for code in codes:
+        if code[0] == "declare":
+            # ("declare", name, type)
+            elementwise_body.append(f"{code[2]} {code[1]};")
+
+        elif code[0] == "loadX":
+            #  ("loadX", varname, buffer_index)
+            if flag_same_order:
+                elementwise_body.append(f"{code[1]} = X{code[2]}[i]; // {code}")
+
+            else:
+                elementwise_body.append(f"{code[1]} = X{code[2]}[i_x{code[2]}]; // {code}")
+
+        elif code[0] == "loadP":
+            #  ("loadP", varname, meta_name)
+            varname = code[1]
+            value = parameters[code[2]]
+            if isinstance(value, int):
+                elementwise_body.append(f"const int {varname} = %%LOAD_BUFFER({code[2]})%%; // {code}")
+
+            elif isinstance(value, float):
+                elementwise_body.append(f"const float {varname} = *((float *)(&%%LOAD_BUFFER({code[2]})%%)); // {code}")
+
+            else:
+                raise NotImplementedError
+
+        elif code[0] == "storeY":
+            #  ("storeY")
+            elementwise_body.append("Y[i] = y;")
+
+        elif code[0] == "rename":
+            #  ("rename", old_name, new_name)
+            elementwise_body.append(f"{code[2]} = {code[1]}; // {code}")
+
+        elif code[0] == "enterBlock":
+            #  ("enterBlock")
+            elementwise_body.append("{")
+
+        elif code[0] == "exitBlock":
+            #  ("exitBlock")
+            elementwise_body.append("}")
+
+        elif code[0] == "exec":
+            #  ("exec", OperatorClass)
+            elementwise_body.append(f"// ('exec', {code[1].__name__})")
+            elementwise_body.append(_registered_items[code[1]].code)
+
+        else:
+            raise NotImplementedError(f"Unknown OP code: {code}")
+
+    elementwise_body = "\n".join(elementwise_body)
 
     return """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
@@ -60,66 +98,172 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     float *Y = %%LOAD_BUFFER(elementwise_Y)%%;
     const int N = %%LOAD_BUFFER(elementwise_N)%%;
 
-%%ELEMENTWISE_INPUT_VARIABLE_DECLARATIONS%%
-    
+%%ELEMENTWISE_VARIABLE_DECLARATIONS%%
+
     for (int i = 0; i < N; i++)
     {
 %%ELEMENTWISE_INDEX_CALCULATION%%
 
-%%ELEMENTWISE_LOAD_INPUT%%
-
-        {
 %%ELEMENTWISE_BODY%%
-        }
-
-        Y[i] = y;
     }
 }
-""" \
-        .replace("%%ELEMENTWISE_INPUT_VARIABLE_DECLARATIONS%%", input_variable_declaration_expression) \
+    """ \
+        .replace("%%ELEMENTWISE_VARIABLE_DECLARATIONS%%", variable_declaration_expression) \
         .replace("%%ELEMENTWISE_INDEX_CALCULATION%%", calculate_index_expression) \
-        .replace("%%ELEMENTWISE_LOAD_INPUT%%", load_input_expression) \
-        .replace("%%ELEMENTWISE_BODY%%", code)
+        .replace("%%ELEMENTWISE_BODY%%", elementwise_body)
 
 
-def elementwise_kernel(op: Elementwise,
-                       memory_layout: MemoryLayout) -> List[Kernel]:
+@WebassemblyDescriptorGenerator.register_handler(MergedElementwise)
+def merged_elementwise_kernel(op: MergedElementwise, memory_layout: MemoryLayout) -> List[Kernel]:
+    xs = []
+    y = None
+
+    codes = []
+    parameters = {}
+    name2variable = {}
+    variable2name = {}
+    retain_count = {}  # type: Dict[str, int]
+
+    def rename(old_name, new_name):
+        v = name2variable[old_name]
+        codes.append(("rename", old_name, new_name))
+        variable2name[v] = new_name
+        name2variable[new_name] = v
+        name2variable[old_name] = None
+        retain_count[new_name] = retain_count[old_name]
+        retain_count[old_name] = 0
+
+    def declare(name):
+        codes.append(("declare", name, "float"))
+        name2variable[name] = None
+        retain_count[name] = 0
+
+    def escape(name):
+        i = 0
+        while True:
+            temp = f"temp{i}"
+            if temp not in name2variable:
+                declare(temp)
+                break
+
+            if retain_count[temp] == 0:
+                break
+
+            i += 1
+        rename(name, temp)
+
+    for sub_op in traverse.listup_operators(op.sub_graph):
+        for name, x in sub_op.inputs.items():  # type: str, Variable
+            if x in op.dummy2real:
+                x = op.dummy2real[x]
+
+            if name in name2variable:
+                if retain_count[name] > 0:
+                    # Escape loaded value into another name to avoid loading overhead
+                    escape(name)
+
+            else:
+                declare(name)
+
+            if x in variable2name:
+                if variable2name[x] == name:
+                    # Already loaded as correct name
+                    pass
+
+                else:
+                    # Loaded as other name
+                    rename(variable2name[x], name)
+
+            else:
+                # Not loaded
+                codes.append(("loadX", name, len(xs)))
+                variable2name[x] = name
+                name2variable[name] = x
+                retain_count[name] = len(x.input_to)
+                xs.append(x)
+
+        if "y" in name2variable:
+            if retain_count["y"] > 0:
+                # Escape intermediate calculated value
+                escape("y")
+
+        else:
+            declare("y")
+
+        codes.append(("enterBlock",))
+
+        for varname, fn in _registered_items[sub_op.__class__].parameters.items():
+            meta_name = f"elementwise_parameters{len(parameters)}"
+            value = fn(sub_op)
+            parameters[meta_name] = value
+            codes.append(("loadP", varname, meta_name))
+
+        codes.append(("exec", sub_op.__class__))
+        y = sub_op.outputs["y"]  # type: Variable
+        if y in op.dummy2real:
+            y = op.dummy2real[y]
+        variable2name[y] = "y"
+        name2variable["y"] = y
+        retain_count["y"] = len(y.input_to)
+
+        for name in sub_op.inputs:
+            retain_count[name] -= 1
+
+        codes.append(("exitBlock",))
+
+    codes.append(("storeY",))
+    retain_count["y"] -= 1
+
+    xs = [memory_layout[x] for x in xs]
+    y = memory_layout[y]
+    return elementwise_kernel_base(op, xs, y, codes, parameters)
+
+
+def elementwise_kernel(op: Elementwise, memory_layout: MemoryLayout) -> List[Kernel]:
     xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
     y = memory_layout[op.outputs["y"]]
-    item = _registered_items[op.__class__]
 
-    parameters = {key: fn(op) for key, fn in item.parameters.items()}
+    codes = []
+    parameters = {}
+    for i in range(len(xs)):
+        codes.append(("declare", f"x{i}", "float"))
+        codes.append(("loadX", f"x{i}", i))
 
-    x_shapes = [x.variable.shape for x in xs]
+    codes.append(("declare", "y", "float"))
+    codes.append(("enterBlock",))
 
-    y_strides = []
-    stride = 1
-    for s in reversed(y.variable.shape):
-        y_strides.insert(0, stride)
-        stride *= s
+    for varname, fn in _registered_items[op.__class__].parameters.items():
+        meta_name = f"elementwise_parameters{len(parameters)}"
+        value = fn(op)
+        parameters[meta_name] = value
+        codes.append(("loadP", varname, meta_name))
 
-    # x_strides[i][j] is stride size of xs[i].order.axes[j] in y
-    x_strides_in_y = [[] for _ in xs]
-    for x, strides in zip(xs, x_strides_in_y):
-        for axis in x.variable.order.axes:
-            strides.append(y_strides[y.variable.order.axes_dict[axis]])
+    codes.append(("exec", op.__class__))
+    codes.append(("exitBlock",))
+    codes.append(("storeY",))
 
+    return elementwise_kernel_base(op, xs, y, codes, parameters)
+
+
+def elementwise_kernel_base(op: Elementwise,
+                            xs: List[Allocation],
+                            y: Allocation,
+                            codes: List[List[Any]],
+                            parameters: Dict[str, Union[int, float]]):
     buffer_injector = BufferInjector()
     buffer_injector.register({
         "elementwise_Y": y,
         "elementwise_D": len(y.variable.shape),
         "elementwise_N": xs[0].variable.size,
         "elementwise_Xs": xs,
-        "elementwise_X_strides_in_Y": x_strides_in_y,
-        "elementwise_X_shapes": x_shapes
+        "elementwise_X_strides_in_Y": [[y.variable.stride_dict[axis] for axis in x.variable.order.axes] for x in xs],
+        "elementwise_X_shapes": [x.variable.shape for x in xs]
     })
-    buffer_injector.register({
-        f"elementwise_parameters_{key}": val for key, val in parameters.items()
-    })
+    buffer_injector.register(parameters)
 
     name_injector = KernelNameInjector(op)
 
-    source = _generate_source(xs, y, item.code, parameters)
+    source = _generate_source(xs, y, codes, parameters)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

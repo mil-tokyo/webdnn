@@ -62,7 +62,14 @@ def listup_nodes(graph: Graph) -> List[Node]:
     stack = list(graph.outputs)  # type: List[Node]
     stacked = set(stack)  # type: Set[Node]
     resolved = set()  # type Set[Node]
-    result = []  # type: List[Node]
+    result = list()  # type: List[Node]
+
+    for variable in graph.inputs:
+        result.append(variable)
+        resolved.add(variable)
+
+    for variable in graph.outputs:
+        resolved.update(variable.nexts)
 
     while len(stack) > 0:
         node = stack.pop()
