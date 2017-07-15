@@ -1,3 +1,5 @@
+from webdnn.graph.operators.concat import Concat
+
 try:
     import chainer
 except ImportError:
@@ -22,11 +24,13 @@ def _convert_clipped_relu(converter: ChainerConverter, c_op: "chainer.functions.
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("CReLU")
 def _convert_crelu(converter: ChainerConverter, c_op: "chainer.functions.CReLU"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] CReLU is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y1, = Relu(None)(x)
+    y2, = Relu(None)(-x)
+    y, = Concat(None, axis=x.order.axes[c_op.axis])(y1, y2)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("ELU")
