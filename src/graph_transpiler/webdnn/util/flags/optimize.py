@@ -3,8 +3,7 @@ import os
 OPTIMIZE = os.environ.get("OPTIMIZE", "1") == "1"
 
 # optimize rule
-CONCAT_ELEMENTWISE_OPERATION = OPTIMIZE and os.environ.get("CONCAT_ELEMENTWISE_OPERATION", "1") == "1"
-CONCAT_CHANNELWISE_OPERATION = OPTIMIZE and os.environ.get("CONCAT_CHANNELWISE_OPERATION", "1") == "1"
+MERGE_ELEMENTWISE_OPERATION = OPTIMIZE and os.environ.get("MERGE_ELEMENTWISE_OPERATION", "1") == "1"
 REMOVE_LAST_SOFTMAX = OPTIMIZE and os.environ.get("REMOVE_LAST_SOFTMAX", "0") == "1"
 CONCAT_AFFINE = OPTIMIZE and os.environ.get("CONCAT_AFFINE", "1") == "1"
 CONCAT_SGEMM_BIAS = OPTIMIZE and os.environ.get("CONCAT_SGEMM_BIAS", "1") == "1"

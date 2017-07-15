@@ -4,18 +4,18 @@ from webdnn.backend.webgpu.optimize_rules.optimize_inline_inplace import Optimiz
 from webdnn.backend.webgpu.optimize_rules.optimize_linear import OptimizeLinear
 from webdnn.backend.webgpu.optimize_rules.optimize_lstm import OptimizeLSTM
 from webdnn.backend.webgpu.optimize_rules.optimize_transpose import OptimizeTranspose
-from webdnn.backend.webgpu.optimize_rules.replace_elementwise_add_relu import ReplaceElementwiseAddRelu
 from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.optimizer.sub_rules.merge_elementwise import MergeElementwise
 
 
 class WebGPUOptimizeRule(OptimizeRule):
     def __init__(self):
         super(WebGPUOptimizeRule, self).__init__()
 
-        self.register(ReplaceElementwiseAddRelu())
         self.register(OptimizeTranspose())
         self.register(OptimizeConvolution2D())
         self.register(OptimizeDeconvolution2D())
         self.register(OptimizeInlineInplace())
         self.register(OptimizeLinear())
         self.register(OptimizeLSTM())
+        self.register(MergeElementwise())

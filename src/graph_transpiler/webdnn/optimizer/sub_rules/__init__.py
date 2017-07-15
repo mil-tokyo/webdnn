@@ -1,4 +1,4 @@
-from webdnn.optimizer.sub_rules import conbine_elementwise_operator
+from webdnn.optimizer.sub_rules import merge_elementwise
 from webdnn.optimizer.sub_rules import concat_affine
 from webdnn.optimizer.sub_rules import concat_scalar_operation
 from webdnn.optimizer.sub_rules import concat_zero_padding
