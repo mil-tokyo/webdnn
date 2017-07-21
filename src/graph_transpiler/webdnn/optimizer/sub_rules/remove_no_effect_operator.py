@@ -1,0 +1,181 @@
+from typing import Tuple
+
+import numpy as np
+
+from webdnn.graph import traverse
+from webdnn.graph.graph import Graph
+from webdnn.graph.operator import Operator
+from webdnn.graph.operators.elementwise_add import ElementwiseAdd
+from webdnn.graph.operators.elementwise_div import ElementwiseDiv
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
+from webdnn.graph.operators.elementwise_pow import ElementwisePow
+from webdnn.graph.operators.scalar_add import ScalarAdd
+from webdnn.graph.operators.scalar_affine import ScalarAffine
+from webdnn.graph.operators.scalar_mul import ScalarMul
+from webdnn.graph.operators.scalar_pow import ScalarPow
+from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import flags
+
+
+def _remove_unary_elementwise(op: Operator):
+    x = op.inputs["x0"]
+    y = op.outputs["y"]
+    op.remove_all()
+    y.change_order(x.order)
+    x.replace(y)
+
+
+def _remove_binary_elementwise(op: Operator, v: Variable):
+    y = op.outputs["y"]
+    op.remove_all()
+    y.change_order(v.order)
+    v.replace(y)
+
+
+def _remove_ScalarAdd(op: Operator):
+    if isinstance(op, ScalarAdd) and op.value == 0:
+        _remove_unary_elementwise(op)
+        return True
+
+    return False
+
+
+def _remove_ScalarMul(op: Operator):
+    if isinstance(op, ScalarMul) and op.value == 1:
+        _remove_unary_elementwise(op)
+        return True
+
+    return False
+
+
+def _remove_ScalarPow(op: Operator):
+    if isinstance(op, ScalarPow) and op.value == 1:
+        _remove_unary_elementwise(op)
+        return True
+
+    return False
+
+
+def _remove_ScalarAffine(op: Operator):
+    if isinstance(op, ScalarAffine) and op.scale == 1 and op.bias == 0:
+        _remove_unary_elementwise(op)
+        return True
+
+    return False
+
+
+def _remove_ElementwiseAdd(op: Operator):
+    if not isinstance(op, ElementwiseAdd):
+        return False
+
+    if isinstance(op.inputs["x0"], ConstantVariable):
+        c = op.inputs["x0"]
+        v = op.inputs["x1"]
+
+    elif isinstance(op.inputs["x1"], ConstantVariable):
+        v = op.inputs["x0"]
+        c = op.inputs["x1"]
+
+    else:
+        return False
+
+    if np.all(c == 0):
+        _remove_binary_elementwise(op, v)
+        return True
+
+    return False
+
+
+def _remove_ElementwiseMul(op: Operator):
+    if not isinstance(op, ElementwiseMul):
+        return False
+
+    if isinstance(op.inputs["x0"], ConstantVariable):
+        c = op.inputs["x0"]
+        v = op.inputs["x1"]
+
+    elif isinstance(op.inputs["x1"], ConstantVariable):
+        v = op.inputs["x0"]
+        c = op.inputs["x1"]
+
+    else:
+        return False
+
+    if np.all(c == 1):
+        _remove_binary_elementwise(op, v)
+        return True
+
+    return False
+
+
+def _remove_ElementwiseDiv(op: Operator):
+    if not isinstance(op, ElementwiseDiv):
+        return False
+
+    if isinstance(op.inputs["x0"], ConstantVariable):
+        c = op.inputs["x0"]
+        v = op.inputs["x1"]
+
+    elif isinstance(op.inputs["x1"], ConstantVariable):
+        v = op.inputs["x0"]
+        c = op.inputs["x1"]
+
+    else:
+        return False
+
+    if np.all(c == 1):
+        _remove_binary_elementwise(op, v)
+        return True
+
+    return False
+
+
+def _remove_ElementwisePow(op: Operator):
+    if not isinstance(op, ElementwisePow):
+        return False
+
+    if isinstance(op.inputs["x0"], ConstantVariable):
+        c = op.inputs["x0"]
+        v = op.inputs["x1"]
+
+    elif isinstance(op.inputs["x1"], ConstantVariable):
+        v = op.inputs["x0"]
+        c = op.inputs["x1"]
+
+    else:
+        return False
+
+    if np.all(c == 1):
+        _remove_binary_elementwise(op, v)
+        return True
+
+    return False
+
+
+class RemoveNoEffectOperator(OptimizeRule):
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR
+        ]
+
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
+        flag_changed = False
+
+        ops = traverse.listup_operators(graph)
+        while len(ops) > 0:
+            op = ops.pop()
+            if _remove_ScalarAdd(op) or \
+                _remove_ScalarMul(op) or \
+                _remove_ScalarPow(op) or \
+                _remove_ScalarAffine(op) or \
+                _remove_ElementwiseAdd(op) or \
+                _remove_ElementwiseMul(op) or \
+                _remove_ElementwiseDiv(op) or \
+                _remove_ElementwisePow(op):
+                flag_changed = True
+
+        return graph, flag_changed

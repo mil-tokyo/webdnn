@@ -10,17 +10,25 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC, OrderCNHW
 
 
-def generate_template_NHWC(SH, SW, C1):
-    return """
+def generate_template_NHWC(SH, SW, DH, DW, C1):
+    SH_EQUAL_1 = 1 if SH == 1 else 0
+    SW_EQUAL_1 = 1 if SW == 1 else 0
+    DH_EQUAL_1 = 1 if DH == 1 else 0
+    DW_EQUAL_1 = 1 if DW == 1 else 0
+    C1_DIVIDABLE_BY_4 = 1 if C1 % 4 == 0 else 0
+
+    return f"""
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
                           const device int * %%META_BUFFER%% [[buffer(2)]],
                           ushort index_thread[[thread_position_in_threadgroup]],
                           ushort index_group[[threadgroup_position_in_grid]])
-{
-#define SH_EQUAL_1 %%SH_EQUAL_1%%
-#define SW_EQUAL_1 %%SW_EQUAL_1%%
-#define C1_DIVIDABLE_BY_4 %%C1_DIVIDABLE_BY_4%%
+{{
+#define SH_EQUAL_1 {SH_EQUAL_1}
+#define SW_EQUAL_1 {SW_EQUAL_1}
+#define DH_EQUAL_1 {DH_EQUAL_1}
+#define DW_EQUAL_1 {DW_EQUAL_1}
+#define C1_DIVIDABLE_BY_4 {C1_DIVIDABLE_BY_4}
 
 
 #if OPTIMIZE && C1_DIVIDABLE_BY_4
@@ -39,8 +47,12 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int W2 = %%LOAD_BUFFER(im2col_W2)%%;
     const int KH = %%LOAD_BUFFER(im2col_KH)%%;
     const int KW = %%LOAD_BUFFER(im2col_KW)%%;
+#if !DH_EQUAL_1
     const int DH = %%LOAD_BUFFER(im2col_DH)%%;
+#endif
+#if !DW_EQUAL_1
     const int DW = %%LOAD_BUFFER(im2col_DW)%%;
+#endif
     const int PH = %%LOAD_BUFFER(im2col_PH)%%;
     const int PW = %%LOAD_BUFFER(im2col_PW)%%;
 
@@ -60,28 +72,45 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int  n = index_group / W1P / H1P;
 
 #if OPTIMIZE && C1_DIVIDABLE_BY_4
-    for (int c1_4 = index_thread; c1_4 < C1_4; c1_4 += 64) {
+    for (int c1_4 = index_thread; c1_4 < C1_4; c1_4 += 64) {{
         const float4 v4 = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im4[((n * H1 + h1) * W1 + w1) * C1_4 + c1_4];
 #else
-    for (int c1 = index_thread; c1 < C1; c1 += 64) {
+    for (int c1 = index_thread; c1 < C1; c1 += 64) {{
         const float v = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0 : im[((n * H1 + h1) * W1 + w1) * C1 + c1];
 #endif
 
 #if OPTIMIZE && SH_EQUAL_1
-        for (int kh = 0; kh < KH; kh++) {
+        for (int kh = 0; kh < KH; kh++) {{
+    #if DH_EQUAL_1
+            const int h2 = h1 + PH - kh;
+    #else
             const int h2 = h1 + PH - kh * DH;
+    #endif
+    
 #else
-        for (int kh = (h1 + PH) % SH; kh < KH; kh += SH) {
+        for (int kh = (h1 + PH) % SH; kh < KH; kh += SH) {{
+    #if DH_EQUAL_1
+            const int h2 = (h1 + PH - kh) / SH;
+    #else
             const int h2 = (h1 + PH - kh * DH) / SH;
+    #endif
 #endif
             if (h2 < 0 || h2 >= H2) continue;
 
 #if OPTIMIZE && SH_EQUAL_1
-            for (int kw = 0; kw < KW; kw++) {
+            for (int kw = 0; kw < KW; kw++) {{
+    #if DW_EQUAL_1
+                const int w2 = w1 + PW - kw;
+    #else
                 const int w2 = w1 + PW - kw * DW;
+    #endif
 #else
-            for (int kw = (w1 + PW) % SW; kw < KW; kw += SW) {
+            for (int kw = (w1 + PW) % SW; kw < KW; kw += SW) {{
+    #if DW_EQUAL_1
+                const int w2 = (w1 + PW - kw) / SW;
+    #else
                 const int w2 = (w1 + PW - kw * DW) / SW;
+    #endif
 #endif
                 if (w2 < 0 || w2 >= W2) continue;
 
@@ -90,19 +119,18 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #else
                 col[((((n * H2 + h2) * W2 + w2) * KH + kh) * KW + kw) * C1 + c1] = v;
 #endif
-            }
-        }
-    }
+            }}
+        }}
+    }}
 
 
 #undef SH_EQUAL_1
 #undef SW_EQUAL_1
+#undef DH_EQUAL_1
+#undef DW_EQUAL_1
 #undef C1_DIVIDABLE_BY_4
-}
-""" \
-        .replace("%%SH_EQUAL_1%%", "1" if SH == 1 else "0") \
-        .replace("%%SW_EQUAL_1%%", "1" if SW == 1 else "0") \
-        .replace("%%C1_DIVIDABLE_BY_4%%", "1" if C1 % 4 == 0 else "0")
+}}
+"""
 
 
 template_CNHW = """
@@ -186,7 +214,7 @@ def im2col(op: Im2Col,
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.variable.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, C1)
+    source = template_CNHW if col.variable.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, C1, op.DH, op.DW)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

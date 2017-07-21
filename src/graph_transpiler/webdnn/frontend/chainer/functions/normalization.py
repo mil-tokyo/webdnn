@@ -6,9 +6,6 @@ except ImportError:
 import numpy as np
 
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.graph.axis import Axis
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.order import OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
@@ -55,7 +52,6 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
 
     else:
         raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
-    console.debug(variance_data)
 
     # Simplify scale and bias
     #
@@ -73,12 +69,9 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
     # noinspection PyUnresolvedReferences
     beta_scaled = beta.data - mean_data * gamma_div_std
 
-    scale_opr = AxiswiseScale(None, axis=Axis.C)
     gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
-    scale_out, = scale_opr(x, gamma_div_std_const)
-
-    offset_opr = AxiswiseBias(None, axis=Axis.C)
     beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
-    offset_out, = offset_opr(scale_out, beta_scaled_const)
+
+    offset_out = x * gamma_div_std_const + beta_scaled_const
 
     converter.set_variable(c_op.outputs[0](), offset_out)

@@ -5,7 +5,6 @@ except ImportError:
 
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.linear import Linear
@@ -36,9 +35,8 @@ def _convert_convolution_2d(converter: ChainerConverter,
 
     if len(c_op.inputs) == 3:
         # with bias
-        bias_opr = AxiswiseBias(None, axis=Axis.C)
         bias = converter.get_variable(c_op.inputs[2])
-        y, = bias_opr(y, bias)
+        y = y + bias
 
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -67,9 +65,8 @@ def _convert_deconvolution_2d(converter: ChainerConverter,
 
     if len(c_op.inputs) == 3:
         # with bias
-        bias_opr = AxiswiseBias(None, axis=Axis.C)
         bias = converter.get_variable(c_op.inputs[2])
-        y, = bias_opr(y, bias)
+        y = y + bias
 
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -107,9 +104,8 @@ def _convert_selected_item(converter: ChainerConverter,
 
     if len(c_op.inputs) == 3:
         # with bias
-        bias_opr = AxiswiseBias(None, axis=Axis.C)
         bias = converter.get_variable(c_op.inputs[2])
-        y, = bias_opr(y, bias)
+        y = y + bias
 
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -142,9 +138,8 @@ def _convert_linear_function(converter: ChainerConverter, c_op: "chainer.functio
     y, = linear_opr(x, w)
     if len(c_op.inputs) == 3:
         # with bias
-        bias_opr = AxiswiseBias(None, axis=Axis.C)
         bias = converter.get_variable(c_op.inputs[2])
-        y, = bias_opr(y, bias)
+        y = y + bias
 
     converter.set_variable(c_op.outputs[0](), y)
 

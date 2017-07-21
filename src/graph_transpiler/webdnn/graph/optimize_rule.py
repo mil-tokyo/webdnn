@@ -15,6 +15,15 @@ class OptimizeRule:
     def __init__(self):
         self.sub_rules = []  # type:List["OptimizeRule"]
 
+    def flags(self):
+        """optimize(graph)
+
+        Return list of boolean values. If False is contained more than zero, this optimize rule is not applied.
+        returns:
+            (tuple of bool): boolean values
+        """
+        return []
+
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         """optimize(graph)
 
@@ -26,6 +35,9 @@ class OptimizeRule:
         returns:
             (tuple of :class:`~webdnn.Graph` and bool): Optimized graph and flag whether the graph is changed or not.
         """
+        if not all(self.flags()):
+            return graph, False
+
         flag_retry = True
         flag_totally_changed = False
 
@@ -33,6 +45,9 @@ class OptimizeRule:
             flag_retry = False
 
             for sub_rules in self.sub_rules:
+                if not all(sub_rules.flags()):
+                    continue
+
                 graph, flag_changed = sub_rules.optimize(graph)
                 flag_retry |= flag_changed
 

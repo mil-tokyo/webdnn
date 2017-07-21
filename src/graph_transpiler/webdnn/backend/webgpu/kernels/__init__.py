@@ -1,7 +1,5 @@
 from webdnn.backend.webgpu.kernels import abs
 from webdnn.backend.webgpu.kernels import average_pooling_2d
-from webdnn.backend.webgpu.kernels import axiswise_bias
-from webdnn.backend.webgpu.kernels import axiswise_scale
 from webdnn.backend.webgpu.kernels import clipped_relu
 from webdnn.backend.webgpu.kernels import col2im
 from webdnn.backend.webgpu.kernels import concat
@@ -32,6 +30,6 @@ from webdnn.backend.webgpu.kernels import softmax
 from webdnn.backend.webgpu.kernels import softplus
 from webdnn.backend.webgpu.kernels import softsign
 from webdnn.backend.webgpu.kernels import tanh
-from webdnn.backend.webgpu.kernels import transpose
 from webdnn.backend.webgpu.kernels import threshold_relu
+from webdnn.backend.webgpu.kernels import transpose
 from webdnn.backend.webgpu.kernels import zero_padding_1d

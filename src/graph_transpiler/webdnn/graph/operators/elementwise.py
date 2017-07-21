@@ -5,6 +5,7 @@ from webdnn.graph import variable
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise as ElementwiseAttribute
 from webdnn.graph.operators.attributes.inplace import Inplace
+from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 
 
@@ -48,17 +49,25 @@ class Elementwise(Operator, metaclass=ABCMeta):
                            Inplace(self, "x0", "y")}
 
     def __call__(self, *xs: "variable.Variable"):
-        y = variable.Variable(xs[0].shape, xs[0].order)
+        y_axes = []
+        y_shape_dict = {}
         for i, x in enumerate(xs):
             for axis in x.order.axes:
-                assert axis in y.order.axes, f"All input variables of elementwise operator should be same shape. x[{i}] does not have " \
-                                             f"{axis}: x0.order={xs[0].order}, x{i}.order={xs[i].order}"
+                if axis not in y_axes:
+                    y_axes.append(axis)
+                    y_shape_dict[axis] = x.shape_dict[axis]
 
-                if Placeholder.check_resolved(x.shape_dict[axis]) or Placeholder.check_resolved(y.shape_dict[axis]):
-                    assert y.shape_dict[axis] == x.shape_dict[axis], "All input variables of elementwise operator should be " \
-                                                                     f"same shape: x0.shape_dict=f{xs[0].shape_dict}, x{i}" \
-                                                                     f".shape_dict=f{xs[i].shape_dict}"
+                if Placeholder.check_resolved(x.shape_dict[axis]):
+                    if Placeholder.check_resolved(y_shape_dict[axis]):
+                        assert y_shape_dict[axis] == x.shape_dict[axis], \
+                            "All input variables of elementwise operator should be same shape: " \
+                            f"y.shape_dict[{axis}]=f{y_shape_dict[axis]}, " \
+                            f"x{i}.shape_dict[{axis}]=f{x.shape_dict[axis]}"
+                    else:
+                        y_shape_dict[axis] = x.shape_dict[axis]
 
             self.append_input(f"x{i}", x)
+
+        y = variable.Variable([y_shape_dict[axis] for axis in y_axes], Order(y_axes))
         self.append_output("y", y)
         return y,

@@ -1,7 +1,7 @@
 from test.runtime.frontend_test.keras_test.util import keras
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph import traverse
-from webdnn.graph.operators.elementwise_sum import ElementwiseSum
+from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.linear import Linear
 from webdnn.util.assertion import assert_equal
 
@@ -104,6 +104,6 @@ def test_residual():
     assert_equal(type(ops[0]), Linear)
     assert_equal(type(ops[1]), Linear)
     assert_equal(type(ops[2]), Linear)
-    assert_equal(type(ops[3]), ElementwiseSum)
+    assert_equal(type(ops[3]), ElementwiseAdd)
 
     assert_equal(len(graph.outputs), 1)

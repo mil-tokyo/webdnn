@@ -80,39 +80,8 @@ Define Converter Handler
 ------------------------
 
 Based on previous section, Let's convert :code:`BiasLayer`.
-
-Luckily, bias operator is already implemented in webdnn as :class:`~webdnn.graph.operators.axiswise_bias.AxiswiseBias` as follows.
-
-.. code::
-
-    class AxiswiseBias(Operator):
-        """Adds a bias value along to specified axis.
-
-        In general, after some operators such as :class:`~webdnn.graph.operators.linear.Linear` and
-        :class:`~webdnn.graph.operators.convolution2d.Convolution2D`, bias value are added.
-        In that case, you should use this operator with axis parameter as :obj:`~webdnn.graph.axis.Axis.C`.
-
-        Args:
-            name (str): Operator name.
-            axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
-
-        """
-        def __init__(self, name: Optional[str], axis: Axis):
-
-        def __call__(self, x: Variable, b: Variable):
-            """
-            Args:
-                x (:class:`~webdnn.graph.variable.Variable`): Input
-                b (:class:`~webdnn.graph.variable.Variable`): Bias value
-
-            Returns:
-                tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
-
-You only have to implement converter handler. :class:`~webdnn.graph.operators.axiswise_bias.AxiswiseBias` operator is received 2 variables,
-:code:`x` and :code:`b`. Then, operator adds :code:`b` into :code:`x` along to specified axis.
-
-Converter handler is implemented like follows:
+Luckily, bias operator is already implemented in webdnn as :code:`ElementwiseAdd`, or operator :code:`+`. You only have to implement
+converter handler. Converter handler is implemented like follows:
 
 .. code::
 
@@ -124,9 +93,8 @@ Converter handler is implemented like follows:
         webdnn_x = converter.get_variable(keras_x)
 
         webdnn_b = converter.convert_to_constant_variable(keras_layer.bias, OrderC)
-        webdnn_operator = AxiswiseBias(None, axis=Axis.C)
 
-        webdnn_y, = webdnn_operator(webdnn_x, webdnn_b)
+        webdnn_y = webdnn_x + webdnn_b
         keras_y = converter.get_output_tensor(keras_layer)[0]
 
         converter.set_variable(keras_y, webdnn_y)
@@ -136,7 +104,6 @@ The important lines are follows:
 .. code::
 
     webdnn_b = converter.convert_to_constant_variable(keras_layer.bias, OrderC)
-    webdnn_operator = AxiswiseBias(None, axis=Axis.C)
 
 :func:`converter.convert_to_constant_variable(weight, order)<webdnn.frontend.keras.KerasConverter.convert_to_constant_variable>` is the
 function which converts keras weights into WebDNN variables. The output variables' data order is determined by :code:`order`. In

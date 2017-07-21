@@ -72,38 +72,8 @@ Typical order is defined in `webdnn.graph.order`
 
 Based on previous section, Let's convert `BiasLayer`.
 
-Luckily, bias operator is already implemented in webdnn as `AxiswiseBias`. 
+Luckily, bias operator is already implemented in webdnn as `ElementwiseAdd`, or operator `+`. 
 Therefore, you only have to implement converter handler.
-
-```python
-# webdnn.graph.operators.axiswise_bias.AxiswiseBias
-
-class AxiswiseBias(Operator):
-    """Adds a bias value along to specified axis.
-    
-    In general, after some operators such as :class:`~webdnn.graph.operators.linear.Linear` and 
-    :class:`~webdnn.graph.operators.convolution2d.Convolution2D`, bias value are added.
-    In that case, you should use this operator with axis parameter as :obj:`~webdnn.graph.axis.Axis.C`.
-
-    Args:
-        name (str): Operator name.
-        axis (:obj:~`graph_transpiler.graph.axis.Axis`): target axis
-
-    """
-    def __init__(self, name: Optional[str], axis: Axis):
-	    
-    def __call__(self, x: Variable, b: Variable):
-        """
-        Args:
-            x (:class:`~webdnn.graph.variable.Variable`): Input
-            b (:class:`~webdnn.graph.variable.Variable`): Bias value
-
-        Returns:
-            tuple of :class:`~webdnn.graph.variable.Variable`: Output
-        """
-```
-
-`AxiswiseBias` operator is received 2 variables, `x` and `b` and add `b` into `x` along to specified axis. 
 
 Converter handler is implemented like follows: 
 
@@ -116,9 +86,8 @@ def square_converter_handler(converter, keras_layer):
     webdnn_x = converter.get_variable(keras_x)
     
     webdnn_b = converter.convert_to_constant_variable(keras_layer.bias, OrderC)
-    webdnn_operator = AxiswiseBias(None, axis=Axis.C)
 
-    webdnn_y, = webdnn_operator(webdnn_x, webdnn_b)
+    webdnn_y = webdnn_x + webdnn_b
     keras_y = converter.get_output_tensor(keras_layer)[0]
 
     converter.set_variable(keras_y, webdnn_y)
@@ -128,12 +97,14 @@ The important lines are follows:
 
 ```python
 webdnn_b = converter.convert_to_constant_variable(keras_layer.bias, OrderC)
-webdnn_operator = AxiswiseBias(None, axis=Axis.C)
 ```
 
-`converter.convert_to_constant_variable(weight, order)` is the function which converts keras weights into WebDNN variables. The output variables' data order is determined by `order`. In `BiasLayer`'s case, `bias` is a tensor of shape `(features,)`. Therefore `order=OrderC` is specified.
+`converter.convert_to_constant_variable(weight, order)` is the function which converts keras weights into WebDNN variables. 
+The output variables' data order is determined by `order`. 
+In `BiasLayer`'s case, `bias` is a tensor of shape `(features,)`. Therefore `order=OrderC` is specified.
 
-Different from `webdnn_x` and `webdnn_y`, it's not need to store `webdnn_b` variable into converter because `keras_layer.bias` is not referrenced from other keras layers.
+Different from `webdnn_x` and `webdnn_y`, it's not need to store `webdnn_b` variable into converter 
+because `keras_layer.bias` is not referenced from other keras layers.
 
 
 ## Test

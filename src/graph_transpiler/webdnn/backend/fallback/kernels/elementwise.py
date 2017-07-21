@@ -1,112 +1,58 @@
-from collections import namedtuple
 from typing import List, Dict, Type, Union, Callable
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
+from webdnn.backend.code_generator.command_buffer import CommandBuffer
+from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.code_generator.templates.elementwise import generate_elementwise_command_buffer, RegisteredItem
+from webdnn.backend.fallback.encode_command import encode_command
 from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
+from webdnn.graph import traverse
 from webdnn.graph.operators.elementwise import Elementwise
-from webdnn.graph.variable import Variable
+from webdnn.graph.operators.merged_elementwise import MergedElementwise
 
-RegisteredItem = namedtuple('RegisteredItem', ['OperatorClass', 'code', 'parameters'])
 _registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
 
 
-def _generate_source(xs: List[Variable], expression: str, parameters: Dict[str, Union[int, float]]):
-    inputs_expression = ",".join([f"x{i}" for i in range(len(xs))])
-    for varname in parameters.keys():
-        inputs_expression += f", {varname}"
-
-    call_args_expression = ",".join([f"xs[{i}]" for i in range(len(xs))])
-    for varname in parameters.keys():
-        call_args_expression += f", option.elementwise_parameters_{varname}"
-
-    return """
-%%FUNC_NAME%%: function(input_arrays, output_arrays, option) {
-    var x_shapes = option.x_shapes;
-    var x_strides_in_y = option.x_strides_in_y;
-    
-    var y = 0;
-    var xs = [];
-    var i_xs = [];    
-    var i = 0, n = 0, d = 0;
-    
-    for (i = 0; i < output_arrays[0].length; i++) {
-        for (n = 0; n < input_arrays.length; n++) {
-            i_xs[n] = 0;
-        }
-        for (d = 0; d < x_shapes[0].length; d++) {
-            for (n = 0; n < input_arrays.length; n++) {
-                i_xs[n] = i_xs[n] * x_shapes[n][d] + (Math.floor(i / x_strides_in_y[n][d]) % x_shapes[n][d]);
-            }
-        }
-        for (n = 0; n < input_arrays.length; n++) {
-            xs[n] = input_arrays[n][i_xs[n]];
-        }
-
-        y = (function(){
-            var y = 0;
-
-            (function(%%ELEMENTWISE_INPUTS%%){
-                %%ELEMENTWISE_BODY%%
-            })(%%ELEMENTWISE_CALL_ARGS%%);
-            
-            return y;
-        })();
-
-        output_arrays[0][i] = y;
-    }
-},
-""" \
-        .replace("%%ELEMENTWISE_INPUTS%%", inputs_expression) \
-        .replace("%%ELEMENTWISE_CALL_ARGS%%", call_args_expression) \
-        .replace("%%ELEMENTWISE_BODY%%", expression)
+@FallbackDescriptorGenerator.register_handler(MergedElementwise)
+def merged_elementwise_kernel(op: MergedElementwise, memory_layout: MemoryLayout) -> List[Kernel]:
+    ops = traverse.listup_operators(op.sub_graph)
+    builder, buffer_injector = generate_elementwise_command_buffer(ops,
+                                                                   [_registered_items[op.__class__] for op in ops],
+                                                                   memory_layout,
+                                                                   dummy2real=op.dummy2real)
+    return elementwise_kernel_base(op, builder, buffer_injector)
 
 
-# noinspection PyUnusedLocal
 def elementwise_kernel(op: Elementwise, memory_layout: MemoryLayout) -> List[Kernel]:
-    xs = [op.inputs[f"x{str(i)}"] for i in range(len(op.inputs))]
-    y = op.outputs["y"]
-    item = _registered_items[op.__class__]
+    builder, buffer_injector = generate_elementwise_command_buffer([op],
+                                                                   [_registered_items[op.__class__]],
+                                                                   memory_layout)
+    return elementwise_kernel_base(op, builder, buffer_injector)
 
-    parameters = {key: fn(op) for key, fn in item.parameters.items()}
 
-    x_shapes = [x.shape for x in xs]
-
-    y_strides = []
-    stride = 1
-    for s in reversed(y.shape):
-        y_strides.insert(0, stride)
-        stride *= s
-
-    # x_strides[i][j] is stride size of xs[i].order.axes[j] in y
-    x_strides_in_y = [[] for _ in xs]
-    for x, strides in zip(xs, x_strides_in_y):
-        for axis in x.order.axes:
-            strides.append(y_strides[y.order.axes_dict[axis]])
-
-    call_options = {
-        "x_shapes": x_shapes,
-        "x_strides_in_y": x_strides_in_y
-    }
-    call_options.update({f"elementwise_parameters_{key}": val for key, val in parameters.items()})
-
+def elementwise_kernel_base(op: Elementwise,
+                            command_buffer: CommandBuffer,
+                            buffer_injector: BufferInjector):
     name_injector = KernelNameInjector(op)
 
-    source = _generate_source(xs, item.code, parameters)
+    source, inputs, outputs, call_option = encode_command(command_buffer)
+    source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 
     kernel = Kernel(
         {name_injector.name: source},
         name_injector.name,
-        inputs=xs,
-        outputs=[y],
-        call_option=call_options
+        inputs,
+        outputs,
+        call_option=call_option
     )
 
     return [kernel]
 
 
+# noinspection PyPep8Naming
 def register_elementwise_kernel(OperatorClass: Type[Elementwise],
                                 code: str,
                                 parameters: Dict[str, Callable[[Elementwise], Union[int, float]]] = None):

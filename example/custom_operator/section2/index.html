@@ -2,7 +2,7 @@
 <script src="../../../dist/webdnn.js"></script>
 <script type="application/javascript">
     async function main() {
-        let runner = await WebDNN.load("../output");
+        let runner = await WebDNN.load("./output");
         let x = runner.getInputViews()[0];
         let y = runner.getOutputViews()[0];
 

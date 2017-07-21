@@ -13,10 +13,13 @@ class RemoveLastSoftmax(OptimizeRule):
     最終出力を作る関数がSoftmaxなら、これを削除する
     """
 
-    def optimize(self, graph: Graph):
-        if not (flags.optimize.OPTIMIZE and flags.optimize.REMOVE_LAST_SOFTMAX):
-            return graph, False
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.REMOVE_LAST_SOFTMAX
+        ]
 
+    def optimize(self, graph: Graph):
         flag_changed = False
         ops: List[Operator] = list(reversed(traverse.listup_operators(graph)))
 

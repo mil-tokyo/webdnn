@@ -77,13 +77,7 @@ class Variable(Node):
     @property
     def stride(self) -> List[Union[int, Placeholder]]:
         """stride size for each dimension"""
-        stride = []
-        s = self.size
-        for size in self.shape:
-            s //= size
-            stride.append(s)
-
-        return stride
+        return [mul(self.shape[i + 1:]) for i in range(self.ndim)]
 
     @property
     def stride_dict(self) -> Dict[Axis, Union[int, Placeholder]]:
@@ -106,8 +100,8 @@ class Variable(Node):
         for axis, size in current_shape_dict.items():
             if axis not in order.axes:
                 if Placeholder.check_resolved(size):
-                    assert size == 1, "[Variable.change_order()] The size of axes which will be removed must be one:"
-                    f"variable={self}, shape_dict[{axis}]={size}."
+                    assert size == 1, "[Variable.change_order()] The size of axes which will be removed must be one: " \
+                                      f"variable={self}, shape_dict[{axis}]={size}."
         self.order = order
         self.shape = new_shape
 
@@ -155,7 +149,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(self, other)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for +: 'Variable' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for +: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __radd__(self, other):
         if isinstance(other, (int, float)):
@@ -165,7 +159,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(other, self)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for +: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for +: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __sub__(self, other):
         if isinstance(other, (int, float)):
@@ -175,7 +169,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(self, -other)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for -: 'Variable' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for -: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rsub__(self, other):
         if isinstance(other, (int, float)):
@@ -185,7 +179,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(other, -self)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for -: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for -: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
@@ -195,7 +189,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_mul.ElementwiseMul(None)(self, other)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for *: 'Variable' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for *: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rmul__(self, other):
         if isinstance(other, (int, float)):
@@ -205,7 +199,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_mul.ElementwiseMul(None)(other, self)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for *: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
@@ -215,7 +209,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_div.ElementwiseDiv(None)(self, other)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for /: 'Variable' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for /: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
@@ -225,7 +219,7 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_div.ElementwiseDiv(None)(other, self)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for *: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __pow__(self, power, modulo=None):
         if modulo is not None:
@@ -238,15 +232,15 @@ class Variable(Node):
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(self, power)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for ** or pow: 'Variable' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(self).__name__}' and '{type(power).__name__}'")
 
     def __rpow__(self, other):
         if isinstance(other, (int, float)):
             # FIXME
-            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
 
         elif isinstance(other, Variable):
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
 
         else:
-            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other)}' and 'Variable'")
+            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")

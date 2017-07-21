@@ -7,8 +7,6 @@ except ImportError as e:
 import numpy as np
 
 from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
-from webdnn.graph.operators.axiswise_scale import AxiswiseScale
 from webdnn.graph.order import Order
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
@@ -37,6 +35,5 @@ def _convert_batch_normalization(converter: KerasConverter, k_op: "keras.layers.
     gamma_div_std = ConstantVariable(gamma_div_std_data, Order([axis]))
     beta_scaled = ConstantVariable(beta_scaled_data, Order([axis]))
 
-    y, = AxiswiseScale(None, axis=axis)(x, gamma_div_std)
-    y, = AxiswiseBias(None, axis=axis)(y, beta_scaled)
+    y = x * gamma_div_std + beta_scaled
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
