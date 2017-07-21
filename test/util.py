@@ -2,10 +2,9 @@ import atexit
 import os.path as path
 import shutil
 from abc import abstractmethod
-from typing import Type, Dict, List, Optional, Union
+from typing import Type, Dict, List, Optional
 from unittest import SkipTest
 
-import chainer
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
@@ -14,6 +13,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 from webdnn.graph.variable import Variable
+from webdnn.util import flags
 from webdnn.util.json import json
 
 
@@ -82,6 +82,15 @@ class KernelTestCaseGenerator:
         if backend is None:
             backend = ["webgpu", "webassembly", "fallback"]
 
+        backend_flag_map = {
+            "webgpu": flags.test.TEST_WEBGPU,
+            "webassembly": flags.test.TEST_WEBASSEMBLY,
+            "fallback": flags.test.TEST_FALLBACK
+        }
+
+        if not backend_flag_map[backend]:
+            return
+
         if not cls.flag_initialized:
             cls.setup()
 
@@ -104,8 +113,8 @@ class KernelTestCaseGenerator:
 
         graph_descriptor = generate_descriptor(backend, graph)
 
-        testcase_dirname = f"testcase-{str(cls.counter)}"
         cls.counter += 1
+        testcase_dirname = f"testcase-{str(cls.counter)}"
 
         graph_descriptor.save(path.join(cls.OUTPUT_ROOT, testcase_dirname))
 

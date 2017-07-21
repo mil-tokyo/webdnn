@@ -19,54 +19,76 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import flags
 
 
-def _remove_unary_elementwise(op: Operator):
+def _remove_unary_elementwise(graph: Graph, op: Operator):
     x = op.inputs["x0"]
     y = op.outputs["y"]
     op.remove_all()
     y.change_order(x.order)
-    x.replace(y)
+    if x in graph.inputs:
+        if y in graph.outputs:
+            index = graph.outputs.index(y)
+            graph.outputs.remove(y)
+            graph.outputs.insert(index, x)
+
+        else:
+            y.replace(x)
+
+    else:
+        x.replace(y)
 
 
-def _remove_binary_elementwise(op: Operator, v: Variable):
+def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):
     y = op.outputs["y"]
     op.remove_all()
     y.change_order(v.order)
     v.replace(y)
 
+    if v in graph.inputs:
+        if y in graph.outputs:
+            index = graph.outputs.index(y)
+            graph.outputs.remove(y)
+            graph.outputs.insert(index, v)
 
-def _remove_ScalarAdd(op: Operator):
+        else:
+            y.replace(v)
+
+    else:
+        v.replace(y)
+
+
+def _remove_ScalarAdd(graph: Graph, op: Operator):
     if isinstance(op, ScalarAdd) and op.value == 0:
-        _remove_unary_elementwise(op)
+        _remove_unary_elementwise(graph, op)
         return True
 
     return False
 
 
-def _remove_ScalarMul(op: Operator):
+def _remove_ScalarMul(graph: Graph, op: Operator):
     if isinstance(op, ScalarMul) and op.value == 1:
-        _remove_unary_elementwise(op)
+        _remove_unary_elementwise(graph, op)
         return True
 
     return False
 
 
-def _remove_ScalarPow(op: Operator):
+def _remove_ScalarPow(graph: Graph, op: Operator):
     if isinstance(op, ScalarPow) and op.value == 1:
-        _remove_unary_elementwise(op)
+        _remove_unary_elementwise(graph, op)
         return True
 
     return False
 
 
-def _remove_ScalarAffine(op: Operator):
+def _remove_ScalarAffine(graph: Graph, op: Operator):
     if isinstance(op, ScalarAffine) and op.scale == 1 and op.bias == 0:
-        _remove_unary_elementwise(op)
+        _remove_unary_elementwise(graph, op)
         return True
 
     return False
 
 
-def _remove_ElementwiseAdd(op: Operator):
+def _remove_ElementwiseAdd(graph: Graph, op: Operator):
     if not isinstance(op, ElementwiseAdd):
         return False
 
@@ -82,13 +104,13 @@ def _remove_ElementwiseAdd(op: Operator):
         return False
 
     if np.all(c == 0):
-        _remove_binary_elementwise(op, v)
+        _remove_binary_elementwise(graph, op, v)
         return True
 
     return False
 
 
-def _remove_ElementwiseMul(op: Operator):
+def _remove_ElementwiseMul(graph: Graph, op: Operator):
     if not isinstance(op, ElementwiseMul):
         return False
 
@@ -104,13 +126,13 @@ def _remove_ElementwiseMul(op: Operator):
         return False
 
     if np.all(c == 1):
-        _remove_binary_elementwise(op, v)
+        _remove_binary_elementwise(graph, op, v)
         return True
 
     return False
 
 
-def _remove_ElementwiseDiv(op: Operator):
+def _remove_ElementwiseDiv(graph: Graph, op: Operator):
     if not isinstance(op, ElementwiseDiv):
         return False
 
@@ -126,13 +148,13 @@ def _remove_ElementwiseDiv(op: Operator):
         return False
 
     if np.all(c == 1):
-        _remove_binary_elementwise(op, v)
+        _remove_binary_elementwise(graph, op, v)
         return True
 
     return False
 
 
-def _remove_ElementwisePow(op: Operator):
+def _remove_ElementwisePow(graph: Graph, op: Operator):
     if not isinstance(op, ElementwisePow):
         return False
 
@@ -148,7 +170,7 @@ def _remove_ElementwisePow(op: Operator):
         return False
 
     if np.all(c == 1):
-        _remove_binary_elementwise(op, v)
+        _remove_binary_elementwise(graph, op, v)
         return True
 
     return False
@@ -168,14 +190,14 @@ class RemoveNoEffectOperator(OptimizeRule):
         ops = traverse.listup_operators(graph)
         while len(ops) > 0:
             op = ops.pop()
-            if _remove_ScalarAdd(op) or \
-                _remove_ScalarMul(op) or \
-                _remove_ScalarPow(op) or \
-                _remove_ScalarAffine(op) or \
-                _remove_ElementwiseAdd(op) or \
-                _remove_ElementwiseMul(op) or \
-                _remove_ElementwiseDiv(op) or \
-                _remove_ElementwisePow(op):
+            if _remove_ScalarAdd(graph, op) or \
+                _remove_ScalarMul(graph, op) or \
+                _remove_ScalarPow(graph, op) or \
+                _remove_ScalarAffine(graph, op) or \
+                _remove_ElementwiseAdd(graph, op) or \
+                _remove_ElementwiseMul(graph, op) or \
+                _remove_ElementwiseDiv(graph, op) or \
+                _remove_ElementwisePow(graph, op):
                 flag_changed = True
 
         return graph, flag_changed
