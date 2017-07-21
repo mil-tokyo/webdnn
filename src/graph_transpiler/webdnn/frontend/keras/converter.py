@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import List
 
 from webdnn.frontend.converter import Converter
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
 from webdnn.graph.placeholder import Placeholder
@@ -69,7 +70,9 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         self._input_index_dict = defaultdict(lambda: 0)
         self._output_index_dict = defaultdict(lambda: 0)
-        self._placeholder_N = Placeholder(label='N', value=batch_size)
+        self._placeholders = {
+            Axis.N: Placeholder(label=Axis.N.name, value=batch_size)
+        }
         self._input_tensor_cache = None  # type: List[tf.Tensor]
         self._output_tensor_cache = None  # type: List[tf.Tensor]
 
@@ -111,10 +114,17 @@ class KerasConverter(Converter["keras.layers.Layer"]):
                             f"[KerasConverter] {node.outbound_layer} outputs {tensor}, but it was not converted into WebDNN Variable by "
                             f"{self._handler_map[self.__class__.__name__][self.serialize_operator_type(node.outbound_layer)]}")
 
+        self._input_index_dict[model] -= 1
+        self._output_index_dict[model] -= 1
         self._input_tensor_cache = None
         self._output_tensor_cache = None
-        return Graph([self.get_variable(t) for t in self.get_input_tensor(model)],
-                     [self.get_variable(t) for t in self.get_output_tensor(model)])
+
+        graph = Graph([self.get_variable(t) for t in self.get_input_tensor(model)],
+                      [self.get_variable(t) for t in self.get_output_tensor(model)])
+
+        self._input_tensor_cache = None
+        self._output_tensor_cache = None
+        return graph
 
     def _convert_operator(self, k_op: "keras.layers.Layer"):
         self._input_tensor_cache = None
@@ -135,7 +145,16 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         variables = []
         for tf_tensor, order in zip(tf_tensors, orders):
-            shape = [self._placeholder_N if d.value is None else d.value for d in tf_tensor.shape]
+            shape = []
+            for s, axis in zip(tf_tensor.shape, order.axes):
+                if s.value is None:
+                    if axis not in self._placeholders:
+                        self._placeholders[axis] = Placeholder(label=axis.name)
+                    shape.append(self._placeholders[axis])
+
+                else:
+                    shape.append(s.value)
+
             variable = Variable(shape, order)
             self.set_variable(tf_tensor, variable)
             variables.append(variable)

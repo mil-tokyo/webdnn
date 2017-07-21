@@ -7,6 +7,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 
 EIGEN_LICENSE = "(C) Eigen authors, MPL 2.0 License"
 
+
 class OptimizeSgemmEigen(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False

@@ -36,9 +36,17 @@ def _convert_crelu(converter: ChainerConverter, c_op: "chainer.functions.CReLU")
 @ChainerConverter.register_handler("ELU")
 def _convert_elu(converter: ChainerConverter, c_op: "chainer.functions.ELU"):
     x = converter.get_variable(c_op.inputs[0])
-    y1, = Elu(None)(x)
-    y2, = Relu(None)(x)
-    y = y1 * c_op.alpha + y2 * (1 - c_op.alpha)
+    if c_op.alpha == 0:
+        y, = Relu(None)(x)
+
+    elif c_op.alpha == 1:
+        y, = Elu(None)(x)
+
+    else:
+        y1, = Elu(None)(x)
+        y2, = Relu(None)(x)
+        y = y1 * c_op.alpha + y2 * (1 - c_op.alpha)
+
     converter.set_variable(c_op.outputs[0](), y)
 
 

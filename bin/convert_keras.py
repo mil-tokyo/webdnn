@@ -59,7 +59,7 @@ def main():
 
     model = keras.models.load_model(args.kerasmodel, custom_objects=custom_objects)
     model.build(input_shape=None)
-    converter = KerasConverter()
+    converter = KerasConverter(batch_size=Placeholder(label='N'))
     graph = converter.convert(model)
     traverse.dump(graph)
 

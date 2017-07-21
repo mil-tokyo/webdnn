@@ -37,12 +37,14 @@ class ReinterpretAxis(Operator):
         self.attributes = {}
 
     def __call__(self, x: Variable):
-        assert self.parameters["in_order"] == x.order, \
+        assert set(x.order.axes) == set(self.parameters["in_order"].axes), \
             "Shape mismatch: " \
             f"op.in_order={self.parameters['in_order']}" \
             f"x.order={x.order}"
 
-        y = Variable(x.shape, self.parameters["out_order"])
+        in_order = self.parameters["in_order"]  # type: Order
+        out_order = self.parameters["out_order"]  # type: Order
+        y = Variable(x.shape, Order([out_order.axes[in_order.axes_dict[axis]] for axis in x.order.axes]))
         self.append_input("x", x)
         self.append_output("y", y)
 

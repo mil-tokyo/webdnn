@@ -1,7 +1,5 @@
 from webdnn.backend.webassembly.kernels import abs
 from webdnn.backend.webassembly.kernels import average_pooling_2d
-from webdnn.backend.webassembly.kernels import axiswise_bias
-from webdnn.backend.webassembly.kernels import axiswise_scale
 from webdnn.backend.webassembly.kernels import clipped_relu
 from webdnn.backend.webassembly.kernels import col2im
 from webdnn.backend.webassembly.kernels import concat
@@ -32,6 +30,6 @@ from webdnn.backend.webassembly.kernels import softmax
 from webdnn.backend.webassembly.kernels import softplus
 from webdnn.backend.webassembly.kernels import softsign
 from webdnn.backend.webassembly.kernels import tanh
-from webdnn.backend.webassembly.kernels import transpose
 from webdnn.backend.webassembly.kernels import threshold_relu
+from webdnn.backend.webassembly.kernels import transpose
 from webdnn.backend.webassembly.kernels import zero_padding_1d

@@ -9,7 +9,6 @@ from webdnn.graph.operators import deconvolution2d
 from webdnn.graph.operators import depth2space
 from webdnn.graph.operators import elementwise
 from webdnn.graph.operators import elementwise_add
-from webdnn.graph.operators import elementwise_add_relu
 from webdnn.graph.operators import elementwise_div
 from webdnn.graph.operators import elementwise_mul
 from webdnn.graph.operators import elementwise_pow

@@ -4,7 +4,7 @@ from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.order import OrderNC
 from webdnn.graph.traverse import listup_operators
 from webdnn.graph.variable import Variable
-from webdnn.optimizer.sub_rules.remove_unnecessary_operator import RemoveUnnecessaryOperator
+from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 
 
 def fn(x: Variable):
@@ -26,7 +26,7 @@ def test_scalar_affine1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -41,7 +41,7 @@ def test_scalar_affine2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2
@@ -56,7 +56,7 @@ def test_scalar_add1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -71,7 +71,7 @@ def test_scalar_add2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2
@@ -86,7 +86,7 @@ def test_scalar_sub1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -101,7 +101,7 @@ def test_scalar_sub2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2
@@ -116,7 +116,7 @@ def test_scalar_mul1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -131,7 +131,7 @@ def test_scalar_mul2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2
@@ -146,7 +146,7 @@ def test_scalar_div1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -161,7 +161,7 @@ def test_scalar_div2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2
@@ -176,7 +176,7 @@ def test_scalar_pow1():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 1 and type(ops[0]) is Operator
@@ -191,7 +191,7 @@ def test_scalar_pow2():
 
     flag_changed = True
     while flag_changed:
-        graph, flag_changed = RemoveUnnecessaryOperator().optimize(graph)
+        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
 
     ops = listup_operators(graph)
     assert len(ops) == 2

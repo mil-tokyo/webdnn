@@ -8,7 +8,6 @@ import numpy as np
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderNTC, OrderNHWC
@@ -25,7 +24,7 @@ def _convert_dense(converter: KerasConverter, k_op: "keras.layers.Dense"):
 
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)
-        y, = AxiswiseBias(None, Axis.C)(y, b)
+        y = y + b
 
     y = do_activation(k_op.activation, y)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)

@@ -1,7 +1,5 @@
 from typing import Optional, Iterable, Union
 
-import numpy as np
-
 from webdnn.graph.operator import Operator
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder

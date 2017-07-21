@@ -15,7 +15,7 @@ Python API
     ./constant_variable
     ./optimize_rule
     ./placeholder
-
+    ./environment_variable
 
 .. rubric:: Module
 
@@ -34,7 +34,7 @@ Python API
 
 .. rubric:: Class
 
-:code:`webdnn` module also contains some basic classes in WebDNN.
+:code:`webdnn` module also contains some basic class aliases in WebDNN.
 
 - :doc:`Graph<./graph>`
 - :doc:`Operator<./operator>`
@@ -45,3 +45,6 @@ Python API
 - :doc:`OptimizeRule<./optimize_rule>`
 - :doc:`Placeholder<./placeholder>`
 
+.. rubric:: Misc
+
+- :doc:`Environment Variables<./environment_variable>`

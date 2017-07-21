@@ -88,11 +88,6 @@ Embedding
 .. autoclass:: webdnn.graph.operators.embedding.Embedding
    :members:
 
-Flatten
--------
-.. autoclass:: webdnn.graph.operators.flatten.Flatten
-   :members:
-
 HardSigmoid
 -----------
 .. autoclass:: webdnn.graph.operators.hard_sigmoid.HardSigmoid

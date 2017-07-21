@@ -43,7 +43,7 @@ chainer.serializers.load_npz(model_path, model)
 
 # Execute forward propagation to construct computation graph
 if chainer.__version__ >= "2.":
-    with chainer.using_config("train", False):  # fixes batch normalization
+    with chainer.using_config("train_and_save", False):  # fixes batch normalization
         x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
         y = model(x)
 else:

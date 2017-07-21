@@ -1,5 +1,4 @@
 import numpy as np
-from nose.tools import raises
 
 from webdnn.graph.order import OrderNHWC, OrderHWNC, OrderNC, OrderCHWN, OrderCN
 from webdnn.graph.variables.constant_variable import ConstantVariable
@@ -17,7 +16,6 @@ def test_change_order():
     assert np.all(v.data == d2)
 
 
-@raises(NotImplementedError)
 def test_change_order_with_expansion():
     d1 = np.arange(3 * 4).reshape((3, 4))
     v = ConstantVariable(d1, OrderNC)
@@ -28,7 +26,6 @@ def test_change_order_with_expansion():
     assert np.all(v.data.flatten() == d2.flatten())
 
 
-@raises(NotImplementedError)
 def test_change_order_with_compression():
     d1 = np.arange(3 * 4).reshape((3, 1, 1, 4))
     v = ConstantVariable(d1, OrderNHWC)
@@ -39,7 +36,6 @@ def test_change_order_with_compression():
     assert np.all(v.data.flatten() == d2.flatten())
 
 
-@raises(AssertionError)
 def test_change_order_with_invalid_compression():
     d1 = np.arange(3 * 2 * 2 * 4).reshape((3, 2, 2, 4))
     v = ConstantVariable(d1, OrderNHWC)

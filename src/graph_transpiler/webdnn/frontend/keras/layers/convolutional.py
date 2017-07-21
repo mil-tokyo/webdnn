@@ -5,8 +5,6 @@ except ImportError as e:
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
-from webdnn.graph.axis import Axis
-from webdnn.graph.operators.axiswise_bias import AxiswiseBias
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
@@ -51,7 +49,7 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
 
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)
-        y, = AxiswiseBias(None, Axis.C)(y, b)
+        y = y + b
 
     y = do_activation(k_op.activation, y)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
