@@ -22,7 +22,7 @@ class SimplifyElementwiseSequential(OptimizeRule):
 
     .. math::
 
-        (X * S + B) * s + b
+        X * S * s + B + b
 
     where,
 
@@ -124,7 +124,7 @@ def _optimize_ScalarAdd_ElementwiseMul(op1: ScalarAdd, op2: Operator):
 
     op2.remove_all()
     op1.remove_all()
-    y = (x0 * w) + op1.value
+    y = (x0 * w) + (op1.value * w)
     y.replace(y2)
     return True
 
@@ -140,26 +140,6 @@ def _optimize_ScalarMul_ScalarMul(op1: ScalarMul, op2: Operator):
     op2.remove_all()
     op1.remove_all()
     y = x0 * (op1.value * op2.value)
-    y.replace(y2)
-    return True
-
-
-def _optimize_ScalarMul_ElementwiseAdd(op1: ScalarMul, op2: Operator):
-    if not isinstance(op2, ElementwiseAdd):
-        return False
-
-    x0 = op1.inputs["x0"]
-    y1 = op1.outputs["y"]
-
-    if y1 == op2.inputs["x0"]:
-        w = op2.inputs["x1"]
-    else:
-        w = op2.inputs["x0"]
-    y2 = op2.outputs["y"]
-
-    op2.remove_all()
-    op1.remove_all()
-    y = (x0 + w) * op1.value
     y.replace(y2)
     return True
 
@@ -311,7 +291,6 @@ def _optimizeScalarMul(op1: Operator, op2: Operator):
         return False
 
     if _optimize_ScalarMul_ScalarMul(op1, op2) or \
-        _optimize_ScalarMul_ElementwiseAdd(op1, op2) or \
         _optimize_ScalarMul_ElementwiseMul(op1, op2):
         return True
 

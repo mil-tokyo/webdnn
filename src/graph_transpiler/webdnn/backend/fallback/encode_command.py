@@ -92,7 +92,7 @@ def encode_command(builder: CommandBuffer):
 %%FUNC_NAME%%: function(input_arrays, output_arrays, option) {{
 {generated_lines}
 }},""" \
-        .replace("%%INITIAL_PARALLEL_POSITION%%", "1") \
+        .replace("%%INITIAL_PARALLEL_POSITION%%", "0") \
         .replace("%%PARALLEL_SIZE%%", "1")
 
     return source, inputs, outputs, call_option

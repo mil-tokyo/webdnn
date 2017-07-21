@@ -57,6 +57,7 @@ const TestRunner = new class {
         }
         failedResults.forEach(result => {
             console.group(result.name);
+            console.log(`In: ${result.testCase.dirname}`);
             console.log('- ' + result.err.message);
             console.groupEnd();
         });
