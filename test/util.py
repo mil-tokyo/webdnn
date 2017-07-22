@@ -79,20 +79,11 @@ class KernelTestCaseGenerator:
         Generated data are saved in JSON format, and BrowserTestRunner executes it.
         """
 
-        if backend is None:
-            backend = ["webgpu", "webassembly", "fallback"]
-
-        backend_flag_map = {
-            "webgpu": flags.test.TEST_WEBGPU,
-            "webassembly": flags.test.TEST_WEBASSEMBLY,
-            "fallback": flags.test.TEST_FALLBACK
-        }
-
-        if not backend_flag_map[backend]:
-            return
-
         if not cls.flag_initialized:
             cls.setup()
+
+        if backend is None:
+            backend = ["webgpu", "webassembly", "fallback"]
 
         if not isinstance(backend, str):
             for b in backend:
@@ -109,6 +100,15 @@ class KernelTestCaseGenerator:
             if raise_skip:
                 raise SkipTest(f"[BrowserTest|{backend}] {description}")
 
+            return
+
+        backend_flag_map = {
+            "webgpu": flags.test.TEST_WEBGPU,
+            "webassembly": flags.test.TEST_WEBASSEMBLY,
+            "fallback": flags.test.TEST_FALLBACK
+        }
+
+        if not backend_flag_map[backend]:
             return
 
         graph_descriptor = generate_descriptor(backend, graph)
