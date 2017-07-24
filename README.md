@@ -18,3 +18,11 @@ $ yarn run webpack
 $ cd ./build
 $ python3 -m http.server # or "python2 -m SimpleHTTPServer"
 ```
+
+# When tagging master branch
+Make permanent copy of document
+
+TAG_NAME is like "v1.1.0"
+```
+cp -R ${WEBDNN}/docs/build/html/ ${WEBDNN_GH}/docs/${TAG_NAME}
+```
