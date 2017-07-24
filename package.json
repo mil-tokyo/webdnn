@@ -37,6 +37,6 @@
     },
     "homepage": "https://mil-tokyo.github.io/webdnn/",
     "devDependencies": {
-        "typedoc": "^0.6.0"
+        "typedoc": "^0.7.1"
     }
 }
