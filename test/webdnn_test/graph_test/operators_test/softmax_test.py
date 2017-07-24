@@ -1,18 +1,19 @@
-import numpy as np
-
+from test.webdnn_test.graph_test.operators_test.util import template_test_unary_operator
+from webdnn import Axis
 from webdnn.graph.operators.softmax import Softmax
-from webdnn.graph.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
-    OrderCHWN, OrderNCHW
-from webdnn.graph.variable import Variable
 
 
-def test_every_order():
-    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+def template():
+    template_test_unary_operator(Softmax, {"axis": Axis.C},
+                                 test1d=False, test2d=True, test3d=False, test4d=False,
+                                 axes=[Axis.N, Axis.C])
+    template_test_unary_operator(Softmax, {"axis": Axis.C},
+                                 test1d=False, test2d=False, test3d=True, test4d=False,
+                                 axes=[Axis.N, Axis.C, Axis.T])
+    template_test_unary_operator(Softmax, {"axis": Axis.C},
+                                 test1d=False, test2d=False, test3d=False, test4d=True,
+                                 axes=[Axis.N, Axis.C, Axis.H, Axis.W])
 
-    for order in orders:
-        op = Softmax("op", axis=order.axes[-1])
 
-        x = Variable(np.arange(order.ndim) + 1, order)
-        y, = op(x)
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == x.shape_dict[axis]
+def test():
+    template()

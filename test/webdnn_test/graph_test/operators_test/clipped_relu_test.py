@@ -1,6 +1,10 @@
-from test.util import template_elementwise_operator
+from test.webdnn_test.graph_test.operators_test.util import template_test_unary_operator
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 
 
-def test_every_order():
-    template_elementwise_operator(ClippedRelu, {"cap": 10.0})
+def template():
+    template_test_unary_operator(ClippedRelu, {"cap": 10.0})
+
+
+def test():
+    template()

@@ -1,41 +1,35 @@
 # Test
 
-### GraphBuilder
+As test framework, [nose](http://nose.readthedocs.io/en/latest/) is used in WebDNN. `nosetests` installed by `pip install nose` runs 
+the test.
 
-- Test framework is [nose](http://nose.readthedocs.io/en/latest/)
-    `nosetests` installed by `pip install nose` runs the test。
+```shell
+nosetests
+```
 
+`nosetests` traverses all directories and files with suffix `_test` recursively. As default, all test cases in `/test/webdnn_test` will 
+be executed.
+
+## Kernel test
+
+Kernel code is test on web browsers. To run test, you need to generate all kernel codes first.
+
+```shell
+nosetests ./test/runtime
+```
+
+Then, open `/test/kernel_test.html` and press `RUN` button. Result is output at console.
+
+Generating all code requires about 10 minutes. 
+
+- If you want to check only specific layers, you can specify python files to check.
+
+    ```shell
+    nosetests ./test/runtime/frontend_test/keras_test/layers_test/core_test/activation_test.py
     ```
-    nosetests
+  
+- To check only specific backend, you can toggle target backends like follows,
+
+    ```shell
+    TEST_WEBGPU=1 TEST_WEBASSEMBLY=0 TEST_FALLBACK=0 nosetests ./test/runtime
     ```
-
-- The suffix `_test` must be attached to the file / folder name when adding a test
-
-- Taking coverage
-
-    ```
-    nosetests --with-coverage --cover-tests graph_transpiler
-    ```
-    
-    Coverage is not calculated for files which are not imported.
-
-- Kernel code generation test is done via a web browser.
-
-    - Kernel code have to be generated in advance.
-    
-        ```
-        nosetests -w ./test/runtime
-        ```
-
-    - Opening `kernel_test.html` and press [RUN] to test the generated kernel code.
-
-    - Generating all code requires about 30 minutes. To check only specific layers, you can specify python files to check.
-
-        ```
-        nosetests ./test/runtime/frontend_test/keras_test/layers_test/core_test/activation_test.py
-        ```
-
-
-### DescriptorRunner
-
-- Not implemented

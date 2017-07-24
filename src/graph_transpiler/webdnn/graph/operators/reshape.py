@@ -5,6 +5,7 @@ from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.util.misc import mul
 
 
 class Reshape(Operator):
@@ -39,20 +40,27 @@ class Reshape(Operator):
     def __init__(self, name: Optional[str], in_order: Order, out_order: Order, out_shape: List[Union[int, Placeholder]]):
         super().__init__(name)
 
+        assert -1 not in out_shape, "-1 (wildcard) in reshape output shape is currently not supported"
+
         self.parameters["in_order"] = in_order
         self.parameters["out_order"] = out_order
-        assert -1 not in out_shape, "-1 (wildcard) in reshape output shape is currently not supported"
         self.parameters["out_shape"] = out_shape
 
         self.attributes.add(Inplace(self, "x", "y"))
 
     def __call__(self, x: Variable):
-        assert self.parameters["in_order"] == x.order
+        in_shape = x.shape
+        in_order = self.parameters["in_order"]
+        out_shape = self.parameters["out_shape"]
+        out_order = self.parameters["out_order"]
+        assert x.order == in_order
+        assert x.size == mul(out_shape), f"Reshape operator must not change variable size: " \
+                                         f"(x.shape)={in_shape}, (x.size)={mul(in_shape)}, " \
+                                         f"(y.shape)={out_shape}, (y.size)={mul(out_shape)}"
 
-        y = Variable(self.parameters["out_shape"], self.parameters["out_order"])
-        assert y.shape == self.parameters[
-            "out_shape"], f"Generated output shape does not match self.parameters[\"out_shape\"] " \
-                          f"({y.shape} != {self.parameters['out_shape']})"
+        removed_axes = set(in_order.axes).difference(set(out_order.axes))
+
+        y = Variable(out_shape, out_order)
         self.append_input("x", x)
         self.append_output("y", y)
 

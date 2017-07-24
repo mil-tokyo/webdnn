@@ -1,4 +1,5 @@
 import numpy as np
+from nose.tools import raises
 
 from webdnn.graph.order import OrderNHWC, OrderHWNC, OrderNC, OrderCHWN, OrderCN
 from webdnn.graph.variables.constant_variable import ConstantVariable
@@ -32,10 +33,11 @@ def test_change_order_with_compression():
     v.change_order(OrderCN)
     d2 = np.rollaxis(d1, 0, 4)
 
-    assert v.order == OrderCHWN
+    assert v.order == OrderCN
     assert np.all(v.data.flatten() == d2.flatten())
 
 
+@raises(AssertionError)
 def test_change_order_with_invalid_compression():
     d1 = np.arange(3 * 2 * 2 * 4).reshape((3, 2, 2, 4))
     v = ConstantVariable(d1, OrderNHWC)

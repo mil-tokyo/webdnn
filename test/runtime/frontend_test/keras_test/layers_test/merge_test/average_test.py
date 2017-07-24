@@ -1,10 +1,11 @@
 import numpy as np
 
 from test.runtime.frontend_test.keras_test.util import keras, KerasConverter
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
 
 
-def test():
+@wrap_template
+def template(description: str = ""):
     x1 = keras.layers.Input((14, 15, 16))
     x2 = keras.layers.Input((14, 15, 16))
     y = keras.layers.Average()([x1, x2])
@@ -17,7 +18,7 @@ def test():
     graph = KerasConverter(batch_size=2).convert(model)
 
     generate_kernel_test_case(
-        description="[keras] Average",
+        description=f"[keras] Average {description}",
         graph=graph,
         inputs={
             graph.inputs[0]: vx1,
@@ -25,3 +26,7 @@ def test():
         },
         expected={graph.outputs[0]: vy},
     )
+
+
+def test():
+    template()

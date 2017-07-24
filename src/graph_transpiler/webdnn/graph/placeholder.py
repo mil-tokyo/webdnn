@@ -224,7 +224,8 @@ _id = 0
 
 
 class Placeholder(json.SerializableMixin):
-    """
+    """Placeholder(value=None, label=None)
+
     Placeholder represents values which are unknown at compile time and determined at runtime, like batch size, length of
     time series, etc.
 
@@ -241,84 +242,69 @@ class Placeholder(json.SerializableMixin):
 
     Also Placeholder can be resolved by setting concrete value at compile time.
 
-    .. code::
-
-        >> x = Placeholder(label="x")
-        >> print(x)
+        >>> x = Placeholder(label="x")
+        >>> print(x)
         <x>
-        >> x.value = 3
-        >> print(x)
+        >>> x.value = 3
+        >>> print(x)
         3
-        >> print(type(x))
+        >>> print(type(x))
         <class 'webdnn.graph.placeholder.Placeholder'>
 
     Placeholder supports follow basic operations.
 
     - add(:code:`+`), sub(:code:`-`), mul(:code:`*`), mod(:code:`%`), floor-div(:code:`//`).
 
-        .. code::
+        >>> x = Placeholder(label="x")
+        >>> y = x * 2 + 3
+        >>> print(y)
+        <x> * 2 + 3
 
-            >> x = Placeholder(label="x")
-            >> y = x * 2 + 3
-            >> print(y)
-            <x> * 2 + 3
-
-        .. code::
-
-            >> x = Placeholder(label="x")
-            >> y = x % 4 // 5
-            >> print(y)
-            (<x> % 4) // 5
+        >>> x = Placeholder(label="x")
+        >>> y = x % 4 // 5
+        >>> print(y)
+        (<x> % 4) // 5
 
         If possible, equation are simplified
 
-        .. code::
-
-            >> x = Placeholder(label="x")
-            >> y = x * 6 + x * 7
-            >> print(y)
-            <x> * 13
+        >>> x = Placeholder(label="x")
+        >>> y = x * 6 + x * 7
+        >>> print(y)
+        <x> * 13
 
     - eq(:code:`==`), ne(:code:`!=`)
 
         If both placeholders are resolved, they are compared based on concrete values.
 
-        .. code::
-
-            >> p = Placeholder(value=3)
-            >> x = p * 2
-            >> y = p + p
-            >> print(x == y == 6)
-            True
+        >>> p = Placeholder(value=3)
+        >>> x = p * 2
+        >>> y = p + p
+        >>> print(x == y == 6)
+        True
 
         If either placeholder is not resolved, they are compared symbolically.
 
-        .. code::
-
-            >> p = Placeholder(label="p")
-            >> x = p * 2
-            >> y = p * 3
-            >> print(x == y)
-            False
-            >> p.value = 0
-            >> print(x == y)
-            True
-
+        >>> p = Placeholder(label="p")
+        >>> x = p * 2
+        >>> y = p * 3
+        >>> print(x == y)
+        False
+        >>> p.value = 0
+        >>> print(x == y)
+        True
 
     - gt(:code:`>`), lt(:code:`<`), ge(:code:`>=`), le(:code:`<=`)
 
         Supported only when both placeholders are resolved. Otherwise, an error is raised.
 
-        .. code::
-
-            >> p = Placeholder(label="p")
-            >> x = p * 2
-            >> y = p * 3
-            >> print(x < y)
-            ValueError: First operand is unresolved placeholder. It can't be compared.
-            >> p.value = 3
-            >> print(x < y)
-            True
+        >>> p = Placeholder(label="p")
+        >>> x = p * 2
+        >>> y = p * 3
+        >>> print(x < y)
+        ValueError: First operand is unresolved placeholder. It can't be compared.
+        >>> p.value = 3
+        >>> print(x < y)
+        True
 
     Attributes:
         label (str): the label.
@@ -330,7 +316,8 @@ class Placeholder(json.SerializableMixin):
 
     @staticmethod
     def to_int(x: Union[int, "Placeholder"]):
-        """
+        """to_int(x)
+
         Convert the placeholder into concrete integer value.
         Args:
             x: the placeholder
@@ -346,7 +333,8 @@ class Placeholder(json.SerializableMixin):
 
     @staticmethod
     def force_int(x: Union[int, "Placeholder"]):
-        """
+        """force_int(x)
+
         Convert the placeholder into concrete integer value. If `x` is not resolved, an error is raised.
         Args:
             x: the placeholder
@@ -364,7 +352,8 @@ class Placeholder(json.SerializableMixin):
 
     @staticmethod
     def check_resolved(x: Union[int, "Placeholder"]):
-        """
+        """check_resolved(x)
+
         Check whether specified placeholder is resolved or not.
         Args:
             x: the placeholder
@@ -418,7 +407,8 @@ class Placeholder(json.SerializableMixin):
 
     @property
     def value(self) -> Union[int, "Placeholder"]:
-        """
+        """value
+
         The placeholder's value. If it's not resolved, the placeholder itself is returned.
 
         If the placeholder is already resolved, new value cannot be set, and it causes an error.
@@ -616,7 +606,8 @@ class Placeholder(json.SerializableMixin):
             }
 
     def get_depend_placeholders(self):
-        """
+        """get_depend_placeholders
+
         List up all dependent placeholders
 
         Returns:
@@ -635,7 +626,8 @@ class Placeholder(json.SerializableMixin):
             return {self}
 
     def generate_js_function(self, flag_semicolon=True):
-        """
+        """generate_js_function
+
         Generate javascript code to resolve this placeholder's value at runtime.
 
         Args:

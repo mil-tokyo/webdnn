@@ -6,8 +6,7 @@ from nose.tools import raises
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.concat import Concat
-from webdnn.graph.order import Order, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
-    OrderCHWN, OrderNCHW
+from webdnn.graph.order import Order, OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, OrderCHWN, OrderNCHW
 from webdnn.graph.variable import Variable
 
 
