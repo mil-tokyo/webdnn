@@ -1,10 +1,11 @@
 import numpy as np
 
 from test.runtime.frontend_test.keras_test.util import keras, KerasConverter
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
 
 
-def test():
+@wrap_template
+def template(description: str = ""):
     x = keras.layers.Input((14, 15))
     y = keras.layers.GlobalMaxPooling1D()(x)
     model = keras.models.Model([x], [y])
@@ -15,8 +16,12 @@ def test():
     graph = KerasConverter(batch_size=2).convert(model)
 
     generate_kernel_test_case(
-        description="[keras] GlobalMaxPooling1D",
+        description=f"[keras] GlobalMaxPooling1D {description}",
         graph=graph,
         inputs={graph.inputs[0]: vx},
-        expected={graph.outputs[0]: vy}
+        expected={graph.outputs[0]: vy},
     )
+
+
+def test():
+    template()

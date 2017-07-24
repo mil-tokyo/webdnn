@@ -1,54 +1,89 @@
 import atexit
 import os.path as path
 import shutil
-from abc import abstractmethod
-from typing import Type, Dict, List, Optional
+from typing import Dict, List
 from unittest import SkipTest
 
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
-from webdnn.graph.order import OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
-    OrderCHWN, OrderNCHW
+from webdnn.graph.order import OrderNC
 from webdnn.graph.variable import Variable
 from webdnn.util import flags
 from webdnn.util.json import json
 
 
-def template_elementwise_operator(OperatorClass: Type[Operator], operator_kwargs: Optional[Dict[str, any]] = None):
-    orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+def assert_shape(v: Variable, expected: Dict[Axis, int]) -> bool:
+    """assert_shape(v, expected)
 
-    for order in orders:
-        op = OperatorClass("op", **(operator_kwargs or {}))
+    Assert variable shape is correct. If shape is mismatched, exception with information message is raised.
 
-        x = Variable(np.arange(order.ndim) + 1, order)
-        y, = op(x)
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == x.shape_dict[axis]
+    Args:
+        v: target variable
+        expected: dictionary with key of axis and value of corresponding dimensions' size
+
+    Examples
+
+        >>> x = Variable((2, 3), OrderNC)
+        >>> assert_shape(x, {Axis.N:2, Axis.C:3})
+        # no exception is raised.
+
+        >>> assert_shape(x, {Axis.C:2, Axis.N:3})
+        "AssertionError: Shape mismatch: (expected shape)={N: 3, C: 2}, (real shape)={N: 2, C: 3}"
+
+    """
+    assert set(v.order.axes) == set(expected.keys()), \
+        f"Shape mismatch: (expected shape)={expected}, (real shape)={v.shape_dict}"
+
+    for axis in v.order.axes:
+        assert v.shape_dict[axis] == expected[axis], \
+            f"Shape mismatch: (expected shape)={expected}, (real shape)={v.shape_dict}"
 
 
-class FlagManager:
-    _tmp_value = None
+def wrap_template(fn, arg_name="description"):
+    """
+    Decorator to inject information about custom configuration of test case.
 
-    def __init__(self, target_value: bool = True):
-        self.target_value = target_value
+    Args:
+        fn (Callable): test case template
+        arg_name (str): name of custom configuration information string
 
-    def setup(self):
-        self._tmp_value = self.get()
-        self.set(self.target_value)
+    Examples:
 
-    def teardown(self):
-        self.set(self._tmp_value)
+    ..code::
 
-    @abstractmethod
-    def get(self) -> bool:
-        raise NotImplementedError
+        template("custom_data")
+        def template(a: float = 1.0, b: int = 1, custom_data: str = ""):
 
-    @abstractmethod
-    def set(self, value: bool):
-        raise NotImplementedError
+            # build your test
+
+            generate_kernel_test_case(
+                description=f"Example {custom_data}",
+                graph=graph,
+                inputs=inputs,
+                expected=outputs
+            )
+
+        def test_1():
+            template()  # generated test-case's description is "Example"
+
+        def test_2():
+            template(a=2.0)  # "Example a=2.0"
+
+        def test_3():
+            template(a=2.0, b=1)  # "Example a=2.0, b=1"
+
+    Returns:
+        wrapped template function
+    """
+
+    def wrapper(*args, **kwargs):
+        kwargs[arg_name] = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        return fn(*args, **kwargs)
+
+    return wrapper
 
 
 class KernelTestCaseGenerator:

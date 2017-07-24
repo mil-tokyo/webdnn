@@ -13,8 +13,8 @@ WebDNN graph transpiler is consist of three modules: **Model Converter**, **Opti
 
 .. image:: ./figures/transpiler_pipeline.png
 
-Model Converter (:class:`~webdnn.frontend.converter.Converter`) converts trained model in other frameworks (e.g. `keras.models.Model`,
-`chainer.Chain`) into WebDNN intermediate representation (IR). Optimizer transform graph to optimize execution speed and model data size.
+Model Converter (:class:`~webdnn.frontend.converter.Converter`) converts trained model in other frameworks (e.g. :code:`keras.models.Model`,
+:code:`chainer.Chain`) into WebDNN intermediate representation (IR). Optimizer transform graph to optimize execution speed and model data size.
 Descriptor Generator (:class:`~webdnn.backend.interface.descriptor_generator.DescriptorGenerator`) converts IR into graph descriptor.
 
 WebDNN IR
@@ -37,8 +37,8 @@ Converter Handler
 
 Converter handler is function which convert other framework's operator (Keras layers, Chainer functions, etc.) into WebDNN IR operators.
 In converter handler, not only the operator itself, related variables (*kernel* and *bias* in the follow figure) are also converted into
-WebDNN IR variables. Many preset converter handlers like `conv2d_handler()` and `dense_handler` are registered to model converter with
-corresponding operator type. In model conversion phase, converter traverse model's computation graph from input to output and when any
+WebDNN IR variables. Many preset converter handlers like :code:`conv2d_handler()` and :code:`dense_handler()` are registered to model converter
+with corresponding operator type. In model conversion phase, converter traverse model's computation graph from input to output and when any
 operator is found, corresponding converter handler is called.
 
 .. image:: ./figures/converter_handler.png
@@ -60,12 +60,12 @@ How to Extend Graph Transpiler
 There are two choices:
 
 1. If your custom operator can be constructed with preset WebDNN operators, you have to do is only implementing converter handler from
-    your custom operator to preset WebDNN operators.
+   your custom operator to preset WebDNN operators.
 
-   For example, `keras.layers.Average`, which computes average of inputs elementwisely, can be constructed as right figure (when number
-    of inputs is 4). In this case, both :class:`~webdnn.graph.operators.elementwise_sum.ElementwiseSum` and
-    :class:`~webdnn.graph.operators.scalar_affine.ScalarAffine` are already supported in generators. Therefore, you have to implement
-    only converter handler.
+   For example, :code:`keras.layers.Average`, which computes average of inputs elementwisely, can be constructed as right figure (when
+   number of inputs is 4). In this case, both :class:`~webdnn.graph.operators.elementwise_sum.ElementwiseSum` and
+   :class:`~webdnn.graph.operators.scalar_affine.ScalarAffine` are already supported in generators. Therefore, you have to implement
+   only converter handler.
 
 2. Otherwise, you have to implement both converter handler and generator handler.
 

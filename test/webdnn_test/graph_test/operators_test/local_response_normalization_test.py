@@ -1,21 +1,13 @@
-import numpy as np
-
+from test.webdnn_test.graph_test.operators_test.util import template_test_unary_operator
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
-from webdnn.graph.order import OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
-    OrderCHWN, OrderNCHW
-from webdnn.graph.variable import Variable
 
 
-def test_every_order():
-    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+def template():
+    template_test_unary_operator(LocalResponseNormalization, {"n": 1, "k": 2, "alpha": 0.1, "beta": 0.2},
+                                 test1d=False, test2d=False, test3d=False, test4d=True,
+                                 axes=[Axis.N, Axis.H, Axis.W, Axis.C])
 
-    for order in orders:
-        op = LocalResponseNormalization(None, n=1, k=2, alpha=0.1, beta=0.2)
 
-        x = Variable(np.arange(order.ndim) + 1, OrderNHWC)
-        x.change_order(order)
-
-        y, = op(x)
-
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == x.shape_dict[axis]
+def test():
+    template()

@@ -2,6 +2,11 @@ class Axis:
     """
     Enum class for representing semantics of each dimension of variables.
     """
+    N = None  # type: "Axis"
+    C = None  # type: "Axis"
+    H = None  # type: "Axis"
+    W = None  # type: "Axis"
+    T = None  # type: "Axis"
 
     def __init__(self, name):
         self.name = name
@@ -10,7 +15,7 @@ class Axis:
         return f"<Axis.{self.name}>"
 
     def __repr__(self):
-        return self.__str__()
+        return self.name
 
     def __eq__(self, other):
         return isinstance(other, Axis) and self.name.__hash__() == other.name.__hash__()

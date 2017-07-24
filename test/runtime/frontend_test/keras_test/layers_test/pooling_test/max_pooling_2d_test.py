@@ -1,38 +1,38 @@
-from unittest import SkipTest
-
 import numpy as np
 
 from test.runtime.frontend_test.keras_test.util import keras, KerasConverter
-from test.util import generate_kernel_test_case
-from webdnn.graph.order import OrderNHWC, OrderNCHW
+from test.util import generate_kernel_test_case, wrap_template
+
+
+@wrap_template
+def template(pool_size=(3, 3), strides=2, padding="valid", data_format=None, description: str = ""):
+    x = keras.layers.Input((15, 17, 16))  # (height + pad * 2 - pool_size) % stride == 0 to avoid edge difference
+    y = keras.layers.MaxPooling2D(pool_size=pool_size, strides=strides, padding=padding, data_format=data_format)(x)
+    model = keras.models.Model([x], [y])
+
+    vx = np.random.rand(2, 15, 17, 16)
+    vy = model.predict(vx, batch_size=2)
+
+    graph = KerasConverter(batch_size=2).convert(model)
+
+    generate_kernel_test_case(
+        description=f"[keras] MaxPooling2D {description}",
+        graph=graph,
+        inputs={graph.inputs[0]: vx},
+        expected={graph.outputs[0]: vy},
+    )
 
 
 def test():
-    for kwargs in [
-        {"pool_size": 3, "strides": 2},
-        # {"pool_size": 3, "strides": 2, "data_format": "channels_first"}, # FIXME: Not Supported Yet
-        {"pool_size": 3, "strides": 2, "data_format": "channels_last"},
-        {"pool_size": (3, 4), "strides": (2, 1)},
-        {"pool_size": 3, "strides": 2, "padding": "valid"},
-        {"pool_size": 3, "strides": 2, "padding": "same"},
-    ]:
-        channels_first = ("data_format" in kwargs) and (kwargs["data_format"] == "channels_first")
+    template()
 
-        x = keras.layers.Input((15, 17, 16))  # (height + pad * 2 - pool_size) % stride == 0 to avoid edge difference
-        y = keras.layers.MaxPooling2D(**kwargs)(x)
-        model = keras.models.Model([x], [y])
 
-        vx = np.random.random((2, 15, 17, 16))
-        vy = model.predict(vx, batch_size=2)
+def test_irregular_size():
+    template(pool_size=(3, 4), strides=(2, 1))
 
-        graph = KerasConverter(batch_size=2).convert(model, input_orders=[OrderNCHW if channels_first else OrderNHWC])
 
-        generate_kernel_test_case(
-            description="[keras] MaxPooling2D " + (", ".join([f"{k}={v}" for k, v in kwargs.items()])),
-            graph=graph,
-            inputs={graph.inputs[0]: vx},
-            expected={graph.outputs[0]: vy},
-            raise_skip=False
-        )
+def test_padding_valid():
+    template(padding="valid")
 
-    raise SkipTest
+def test_padding_same():
+    template(padding="same")

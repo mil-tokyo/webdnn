@@ -1,66 +1,42 @@
-from typing import Dict
-
+from test.webdnn_test.graph_test.operators_test.util import template_test_unary_operator
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
-from webdnn.graph.variable import Variable
 
 
-def main(k, s, p, n, h1, w1, c1, expected_shape_dict: Dict[Axis, int]):
-    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
-
-    for order_x in orders:
-        op = MaxPooling2D(None, ksize=k, stride=s, padding=p)
-
-        x = Variable((n, h1, w1, c1), OrderNHWC)
-        x.change_order(order_x)
-
-        y, = op(x)
-
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == expected_shape_dict[axis]
+def template(ksize=3, stride=1, pad=1, height=2, width=3, expected_dict=None):
+    template_test_unary_operator(MaxPooling2D, {"ksize": ksize, "stride": stride, "padding": pad},
+                                 test1d=False, test2d=False, test3d=False, test4d=True,
+                                 axes=[Axis.N, Axis.H, Axis.W, Axis.C],
+                                 shape_dict={Axis.N: 2, Axis.H: height, Axis.W: width, Axis.C: 4},
+                                 expected_dict=expected_dict)
 
 
-def test_normal():
-    main(3, 1, 1, 2, 3, 4, 5, {
-        Axis.N: 2,
-        Axis.H: 3,
-        Axis.W: 4,
-        Axis.C: 5,
-    })
+def test():
+    template(expected_dict={Axis.N: 2, Axis.H: 2, Axis.W: 3, Axis.C: 4})
 
 
 def test_large_stride():
-    main(3, 2, 1, 2, 5, 7, 3, {
-        Axis.N: 2,
-        Axis.H: 3,
-        Axis.W: 4,
-        Axis.C: 3,
-    })
+    template(stride=2,
+             height=(2 - 1) * 2 + 3 - 2 * 1,
+             width=(3 - 1) * 2 + 3 - 2 * 1,
+             expected_dict={Axis.N: 2, Axis.H: 2, Axis.W: 3, Axis.C: 4})
 
 
 def test_no_padding():
-    main(3, 1, 0, 2, 5, 7, 3, {
-        Axis.N: 2,
-        Axis.H: 3,
-        Axis.W: 5,
-        Axis.C: 3,
-    })
+    template(pad=0,
+             height=(2 - 1) * 1 + 3 - 2 * 0,
+             width=(3 - 1) * 1 + 3 - 2 * 0,
+             expected_dict={Axis.N: 2, Axis.H: 2, Axis.W: 3, Axis.C: 4})
 
 
 def test_projection():
-    main(1, 1, 0, 2, 5, 7, 3, {
-        Axis.N: 2,
-        Axis.H: 5,
-        Axis.W: 7,
-        Axis.C: 3,
-    })
+    template(ksize=1, stride=1, pad=0,
+             height=(2 - 1) * 1 + 1 - 2 * 0,
+             width=(3 - 1) * 1 + 1 - 2 * 0,
+             expected_dict={Axis.N: 2, Axis.H: 2, Axis.W: 3, Axis.C: 4})
 
 
-def test_fully_connected():
-    main((5, 7), 1, 0, 2, 5, 7, 3, {
-        Axis.N: 2,
-        Axis.H: 1,
-        Axis.W: 1,
-        Axis.C: 3,
-    })
+def test_global():
+    template(ksize=(3, 4), stride=1, pad=0,
+             height=3, width=4,
+             expected_dict={Axis.N: 2, Axis.H: 1, Axis.W: 1, Axis.C: 4})

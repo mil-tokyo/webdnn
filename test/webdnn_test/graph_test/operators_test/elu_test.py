@@ -1,7 +1,10 @@
+from test.webdnn_test.graph_test.operators_test.util import template_test_unary_operator
 from webdnn.graph.operators.elu import Elu
 
-from test.util import template_elementwise_operator
+
+def template():
+    template_test_unary_operator(Elu)
 
 
-def test_every_order():
-    template_elementwise_operator(Elu)
+def test():
+    template()

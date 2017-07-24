@@ -1,45 +1,41 @@
-from unittest import SkipTest
-
 import numpy as np
 
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
 from webdnn.graph.graph import Graph
-from webdnn.graph.order import OrderNHWC, OrderNCHW
+from webdnn.graph.order import OrderCNHW, OrderNHWC
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.constant_variable import ConstantVariable
-
-condition_default = {
-    "x_order": OrderNHWC,
-    "y_order": OrderNHWC,
-    "backend": ["webgpu", "webassembly", "fallback"],
-    "value": 4
-}
 
 
-def test_general():
-    for condition_custom in [
-        {},
-        {"x_order": OrderNCHW},
-    ]:
-        condition = dict(condition_default)
-        condition.update(condition_custom)
+@wrap_template
+def template(x_order=OrderNHWC, y_order=OrderNHWC, value=4, description: str = ""):
+    vx = np.random.rand(2, 3, 4, 5) - 0.5
+    vy = vx.copy() * value
 
-        vx = np.random.rand(2, 3, 4, 5) - 0.5
-        vy = vx.copy() * condition["value"]
+    x = Variable(vx.shape, order=OrderNHWC)
+    y = x * value  # type: Variable
 
-        x = Variable(vx.shape, order=OrderNHWC)
-        y = x * condition["value"]  # type: Variable
+    x.change_order(x_order)
+    y.change_order(y_order)
 
-        x.change_order(condition["x_order"])
-        y.change_order(condition["y_order"])
+    generate_kernel_test_case(
+        description=f"ScalarMul {description}",
+        graph=Graph([x], [y]),
+        inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
+        expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},
+    )
 
-        generate_kernel_test_case(
-            description=f"ScalarMul: " + (", ".join([f"{k}={v}" for k, v in condition_custom.items()])),
-            backend=condition["backend"],
-            graph=Graph([x], [y]),
-            inputs={x: ConstantVariable(vx, OrderNHWC).change_order(x.order).data},
-            expected={y: ConstantVariable(vy, OrderNHWC).change_order(y.order).data},
-            raise_skip=False
-        )
 
-    raise SkipTest
+def test():
+    template()
+
+
+def test_different_order():
+    template(x_order=OrderCNHW)
+
+
+def test_value_1():
+    template(value=1)
+
+
+def test_value_0():
+    template(value=0)

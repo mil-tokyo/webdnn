@@ -21,3 +21,9 @@ Contents
 
     api_reference/graph_transpiler/index
     api_reference/descriptor-runner/index
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contributing
+
+    contributing/index
