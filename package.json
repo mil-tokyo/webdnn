@@ -19,7 +19,12 @@
         "type": "git",
         "url": "git+https://github.com/mil-tokyo/webdnn.git"
     },
-    "author": [
+    "author": {
+        "name": "Yuichiro Kikura",
+        "email": "kikura@mi.t.u-tokyo.ac.jp",
+        "url": "https://github.com/Kiikurage"
+    },
+    "contributors": [
         {
             "name": "Masatoshi Hidaka",
             "email": "hidaka@mi.t.u-tokyo.ac.jp",
