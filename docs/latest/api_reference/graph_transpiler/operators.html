@@ -1,0 +1,1529 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>operators &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Python API" href="index.html"/>
+        <link rel="next" title="Graph" href="graph.html"/>
+        <link rel="prev" title="backend" href="backend/index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="frontend/index.html">frontend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend/index.html">backend</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">operators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#abs">Abs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#averagepooling2d">AveragePooling2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#axiswisebias">AxiswiseBias</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#axiswisescale">AxiswiseScale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clippedrelu">ClippedRelu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#concat">Concat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convolution2d">Convolution2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deconvolution2d">Deconvolution2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementwise">Elementwise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementwiseadd">ElementwiseAdd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementwisediv">ElementwiseDiv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementwisemul">ElementwiseMul</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementwisepow">ElementwisePow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elu">Elu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#embedding">Embedding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hardsigmoid">HardSigmoid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#leakyrelu">LeakyRelu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linear">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#localresponsenormalization">LocalResponseNormalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#maxpooling2d">MaxPooling2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pooling2d">Pooling2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reinterpretaxis">ReinterpretAxis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#relu">Relu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reshape">Reshape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scalaradd">ScalarAdd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scalaraffine">ScalarAffine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scalarmul">ScalarMul</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scalarpow">ScalarPow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sigmoid">Sigmoid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmax">Softmax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softplus">Softplus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softsign">Softsign</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tanh">Tanh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#thresholdrelu">ThresholdRelu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zeropadding1d">ZeroPadding1D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zeropadding2d">ZeroPadding2D</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="graph.html">Graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="operator.html">Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="axis.html">Axis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="order.html">Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constant_variable.html">ConstantVariable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimize_rule.html">OptimizeRule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="placeholder.html">Placeholder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment_variable.html">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Python API</a> &raquo;</li>
+        
+      <li>operators</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_reference/graph_transpiler/operators.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="operators">
+<h1>operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h1>
+<p>Module <code class="code docutils literal"><span class="pre">webdnn.graph.operators</span></code> contains WebDNN Operator IR classes.
+All classes inherit <a class="reference internal" href="operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> base class.</p>
+<p>All operator class instances are callable. When it is called, input and output variables are registered with corresponding names.
+In this document, the registered name of each operator is described in <strong>Signature</strong> section.</p>
+<p>For almost of all users, it is not need to understand this section. If you want to implement your custom converter/generator handler,
+this section may be helpful.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="abs">
+<h2>Abs<a class="headerlink" href="#abs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.abs.Abs">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.abs.</code><code class="descname">Abs</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/abs.html#Abs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.abs.Abs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise absolute value operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Absolute value of <code class="code docutils literal"><span class="pre">x</span></code>. Its shape and order is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#abs" title="(in Python v3.6)"><code class="xref py py-func docutils literal"><span class="pre">abs()</span></code></a>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="averagepooling2d">
+<h2>AveragePooling2D<a class="headerlink" href="#averagepooling2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.average_pooling_2d.AveragePooling2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.average_pooling_2d.</code><code class="descname">AveragePooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/average_pooling_2d.html#AveragePooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.average_pooling_2d.AveragePooling2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial average pooling operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output value. Its order is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="axiswisebias">
+<h2>AxiswiseBias<a class="headerlink" href="#axiswisebias" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.axiswise_bias.AxiswiseBias">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.axiswise_bias.</code><code class="descname">AxiswiseBias</code><span class="sig-paren">(</span><em>name</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_bias.html#AxiswiseBias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_bias.AxiswiseBias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a bias value along to specified axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Data variable. It must has <cite>axis</cite> axis, and whose size must be same as <code class="code docutils literal"><span class="pre">b</span></code>.</li>
+<li><strong>b</strong> - Bias variable. It must be 1D variable and that size must be same as <code class="code docutils literal"><span class="pre">x.shape_dict[axis]</span></code></li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+<div class="deprecated">
+<p><span class="versionmodified">Deprecated since version v1.2: </span>Use <a class="reference internal" href="#webdnn.graph.operators.elementwise_add.ElementwiseAdd" title="webdnn.graph.operators.elementwise_add.ElementwiseAdd"><code class="xref py py-class docutils literal"><span class="pre">ElementwiseAdd</span></code></a> instead.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="axiswisescale">
+<h2>AxiswiseScale<a class="headerlink" href="#axiswisescale" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.axiswise_scale.AxiswiseScale">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.axiswise_scale.</code><code class="descname">AxiswiseScale</code><span class="sig-paren">(</span><em>name</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/axiswise_scale.html#AxiswiseScale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.axiswise_scale.AxiswiseScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply a scale value along to specified axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Data variable. It must has <cite>axis</cite> axis, and whose size must be same as <code class="code docutils literal"><span class="pre">s</span></code>.</li>
+<li><strong>s</strong> - Scale variable. It must be 1D variable and that size must be same as <code class="code docutils literal"><span class="pre">x.shape_dict[axis]</span></code></li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+<div class="deprecated">
+<p><span class="versionmodified">Deprecated since version v1.2: </span>Use <a class="reference internal" href="#webdnn.graph.operators.elementwise_mul.ElementwiseMul" title="webdnn.graph.operators.elementwise_mul.ElementwiseMul"><code class="xref py py-class docutils literal"><span class="pre">ElementwiseMul</span></code></a> instead.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="clippedrelu">
+<h2>ClippedRelu<a class="headerlink" href="#clippedrelu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.clipped_relu.ClippedRelu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.clipped_relu.</code><code class="descname">ClippedRelu</code><span class="sig-paren">(</span><em>name</em>, <em>cap</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/clipped_relu.html#ClippedRelu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.clipped_relu.ClippedRelu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clipped relu operator.</p>
+<div class="math">
+\[y = min(max(x, 0), cap)\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>cap</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; clipping threshold.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="concat">
+<h2>Concat<a class="headerlink" href="#concat" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.concat.Concat">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.concat.</code><code class="descname">Concat</code><span class="sig-paren">(</span><em>name</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/concat.html#Concat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.concat.Concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate multiple variables into one variable along to specified axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong></strong><strong>(</strong><strong></strong> (<em>axis</em>) &#8211; obj:~`webdnn.Axis`): target axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong>, <strong>x1</strong>, ... - Input variables. All variables has same shape except the specified axis.</li>
+<li><strong>y</strong> - Output variable. Its order is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="convolution2d">
+<h2>Convolution2D<a class="headerlink" href="#convolution2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.convolution2d.Convolution2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.convolution2d.</code><code class="descname">Convolution2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em>, <em>dilation_rate=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/convolution2d.html#Convolution2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.convolution2d.Convolution2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial convolution operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+<li><strong>dilation_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Dilation rate. 1 means ordinary convolution.
+Input pixels are shifted by (dilation_rate - 1) pixels.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variables. It must has 4 axes, <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>,
+<code class="xref py py-obj docutils literal"><span class="pre">H</span></code>, and <code class="xref py py-obj docutils literal"><span class="pre">W</span></code>.</li>
+<li><strong>w</strong> - Kernel variable. It must has <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>,
+<code class="xref py py-obj docutils literal"><span class="pre">H</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">W</span></code>. Its size of <code class="xref py py-obj docutils literal"><span class="pre">H</span></code> and
+<code class="xref py py-obj docutils literal"><span class="pre">W</span></code> must be same as kernel size. Its size of <code class="xref py py-obj docutils literal"><span class="pre">C</span></code> must be same as
+<code class="code docutils literal"><span class="pre">x</span></code>.</li>
+<li><strong>y</strong> - Output variable. Its order is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="deconvolution2d">
+<h2>Deconvolution2D<a class="headerlink" href="#deconvolution2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.deconvolution2d.Deconvolution2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.deconvolution2d.</code><code class="descname">Deconvolution2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/deconvolution2d.html#Deconvolution2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.deconvolution2d.Deconvolution2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial deconvolution operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variables. It must has 4 axes, <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>,
+<code class="xref py py-obj docutils literal"><span class="pre">H</span></code>, and <code class="xref py py-obj docutils literal"><span class="pre">W</span></code>.</li>
+<li><strong>w</strong> - Kernel variable. It must has <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>,
+<code class="xref py py-obj docutils literal"><span class="pre">H</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">W</span></code>. Its size of <code class="xref py py-obj docutils literal"><span class="pre">H</span></code> and
+<code class="xref py py-obj docutils literal"><span class="pre">W</span></code> must be same as kernel size. Its size of <code class="xref py py-obj docutils literal"><span class="pre">C</span></code> must be same as
+<code class="code docutils literal"><span class="pre">x</span></code>.</li>
+<li><strong>y</strong> - Output variable. Its order is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elementwise">
+<h2>Elementwise<a class="headerlink" href="#elementwise" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise.Elementwise">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise.</code><code class="descname">Elementwise</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise.html#Elementwise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise.Elementwise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise operator base class.</p>
+<p>Operation <em>&#8220;Elementwise&#8221;</em> is defined as follows:</p>
+<ul>
+<li><p class="first">It outputs only one variable.</p>
+</li>
+<li><p class="first">All input variables and the output variable are same shape (not need to be same order).</p>
+</li>
+<li><p class="first">Each element of output variable can be computed with only the elements at the same position of input variables.</p>
+<div class="math">
+\[y[p] = f(x_0[p], x_1[p], ..., x_n[p]),\]</div>
+<p>where <span class="math">\(p\)</span> means the position of the element.</p>
+</li>
+</ul>
+<p>All input variables are registered with name like <code class="code docutils literal"><span class="pre">x0</span></code>, <code class="code docutils literal"><span class="pre">x1</span></code>, ... <code class="code docutils literal"><span class="pre">x{index}</span></code>, and the output variable is registered
+with name <code class="code docutils literal"><span class="pre">y</span></code>.</p>
+<p>This operator has <code class="xref py py-obj docutils literal"><span class="pre">Elementwise</span></code> attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong>, <strong>x1</strong>, ... - Input variables.</li>
+<li><strong>y</strong> - Output variable. Its shape and order is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elementwiseadd">
+<h2>ElementwiseAdd<a class="headerlink" href="#elementwiseadd" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise_add.ElementwiseAdd">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise_add.</code><code class="descname">ElementwiseAdd</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_add.html#ElementwiseAdd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_add.ElementwiseAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise add</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong>, <strong>x1</strong> - Input variable. They must be same shape.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">+</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elementwisediv">
+<h2>ElementwiseDiv<a class="headerlink" href="#elementwisediv" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise_div.ElementwiseDiv">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise_div.</code><code class="descname">ElementwiseDiv</code><span class="sig-paren">(</span><em>name: typing.Union[str, NoneType]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_div.html#ElementwiseDiv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_div.ElementwiseDiv" title="Permalink to this definition">¶</a></dt>
+<dd><p>ElementwiseAdd(name)</p>
+<p>Elementwise divide</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong>, <strong>x1</strong> - Input variable. They must be same shape.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">/</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">/</span> <span class="n">x1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elementwisemul">
+<h2>ElementwiseMul<a class="headerlink" href="#elementwisemul" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise_mul.ElementwiseMul">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise_mul.</code><code class="descname">ElementwiseMul</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_mul.html#ElementwiseMul"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_mul.ElementwiseMul" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise multiply</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong>, <strong>x1</strong> - Input variable. They must be same shape.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">*</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">x1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elementwisepow">
+<h2>ElementwisePow<a class="headerlink" href="#elementwisepow" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elementwise_pow.ElementwisePow">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elementwise_pow.</code><code class="descname">ElementwisePow</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elementwise_pow.html#ElementwisePow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elementwise_pow.ElementwisePow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise power</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong>, <strong>x1</strong> - Input variable. They must be same shape.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">**</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">**</span> <span class="n">x1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="elu">
+<h2>Elu<a class="headerlink" href="#elu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.elu.Elu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.elu.</code><code class="descname">Elu</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/elu.html#Elu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.elu.Elu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential Linear Unit operator.</p>
+<div class="math">
+\[\begin{split}f(x) = \left \{ \begin{array}{ll}
+x &amp; {\rm if}~ x \ge 0 \\
+\exp(x) - 1 &amp; {\rm if}~ x &lt; 0,
+\end{array} \right.\end{split}\]</div>
+<p>More detail, please see <a class="reference external" href="https://arxiv.org/abs/1511.07289">https://arxiv.org/abs/1511.07289</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="embedding">
+<h2>Embedding<a class="headerlink" href="#embedding" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.embedding.Embedding">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.embedding.</code><code class="descname">Embedding</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/embedding.html#Embedding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.embedding.Embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Word embedding operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variables. It must has 2 axes, <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">T</span></code>.</li>
+<li><strong>w</strong> - Dictionary variable. It must has <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, and <code class="xref py py-obj docutils literal"><span class="pre">C</span></code>.
+Its size of <code class="xref py py-obj docutils literal"><span class="pre">C</span></code> must be same as the vocabulary size. Its size of <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>
+must be same as the embed feature size.</li>
+<li><strong>y</strong> - Output variable. Its order is <code class="xref py py-obj docutils literal"><span class="pre">OrderNTC</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="hardsigmoid">
+<h2>HardSigmoid<a class="headerlink" href="#hardsigmoid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.hard_sigmoid.HardSigmoid">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.hard_sigmoid.</code><code class="descname">HardSigmoid</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/hard_sigmoid.html#HardSigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.hard_sigmoid.HardSigmoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hard sigmoid operator</p>
+<div class="math">
+\[\begin{split}f(x) = \left \{ \begin{array}{ll}
+0 &amp; {\rm if}~ x &lt; -2.5 \\
+0.2 x + 0.5 &amp; {\rm if}~ -2.5 &lt; x &lt; 2.5 \\
+1 &amp; {\rm if}~ 2.5 &lt; x.
+\end{array} \right.\end{split}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="leakyrelu">
+<h2>LeakyRelu<a class="headerlink" href="#leakyrelu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.leaky_relu.LeakyRelu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.leaky_relu.</code><code class="descname">LeakyRelu</code><span class="sig-paren">(</span><em>name</em>, <em>slope</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/leaky_relu.html#LeakyRelu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.leaky_relu.LeakyRelu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leaky relu operator</p>
+<div class="math">
+\[f(x) = max(x, ax)\]</div>
+<p>where <span class="math">\(a\)</span> is slope value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>slope</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; slope value</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="linear">
+<h2>Linear<a class="headerlink" href="#linear" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.linear.Linear">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.linear.</code><code class="descname">Linear</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/linear.html#Linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.linear.Linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear operator a.k.a. Dense, Fully-Connected operator.</p>
+<p>This operator compute dot product with input and weight variables. Except <code class="xref py py-obj docutils literal"><span class="pre">N</span></code>, all axes are used for
+calculation. If x is <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code> and w is <code class="xref py py-obj docutils literal"><span class="pre">OrderCN</span></code>, this operation is just same as
+<code class="code docutils literal"><span class="pre">np.tensor_dot(x,</span> <span class="pre">w,</span> <span class="pre">(1,</span> <span class="pre">0))</span></code> in numpy&#8217;s <code class="code docutils literal"><span class="pre">tensordot</span></code>.</p>
+<p>Also, 4D variable is acceptable for input and weight variable. If x is <code class="xref py py-obj docutils literal"><span class="pre">OrderNCHW</span></code> and w is
+<code class="xref py py-obj docutils literal"><span class="pre">OrderNHWC</span></code>, this operation is just same as <code class="code docutils literal"><span class="pre">np.tensor_dot(x,</span> <span class="pre">w,</span> <span class="pre">((1,2,3),</span> <span class="pre">(3,1,2))</span></code> in numpy&#8217;s
+<code class="code docutils literal"><span class="pre">tensordot</span></code>.</p>
+<p>Input and weight variables must be same dimension. Otherwise, an assertion error is raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>w</strong> - Weight variable.</li>
+<li><strong>y</strong> - Output variable. Its order is <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code>. Its <code class="xref py py-obj docutils literal"><span class="pre">N</span></code> size is same as
+<code class="code docutils literal"><span class="pre">x.shape_dict[Axis.N]</span></code>, and its <code class="xref py py-obj docutils literal"><span class="pre">C</span></code> size is same as <code class="code docutils literal"><span class="pre">w.shape_dict[Axis.N]</span></code></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="localresponsenormalization">
+<h2>LocalResponseNormalization<a class="headerlink" href="#localresponsenormalization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.local_response_normalization.LocalResponseNormalization">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.local_response_normalization.</code><code class="descname">LocalResponseNormalization</code><span class="sig-paren">(</span><em>name</em>, <em>n</em>, <em>k</em>, <em>alpha</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/local_response_normalization.html#LocalResponseNormalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.local_response_normalization.LocalResponseNormalization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator same as local response normalization layer in Caffe. Only cross channel mode is supported; normalization is done for channel
+axis.</p>
+<p>For more detail, see: <a class="reference external" href="http://caffe.berkeleyvision.org/tutorial/layers/lrn.html">http://caffe.berkeleyvision.org/tutorial/layers/lrn.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; Parameter n.</li>
+<li><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; Parameter k.</li>
+<li><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; Parameter alpha.</li>
+<li><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; Parameter beta.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="maxpooling2d">
+<h2>MaxPooling2D<a class="headerlink" href="#maxpooling2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.max_pooling_2d.MaxPooling2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.max_pooling_2d.</code><code class="descname">MaxPooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/max_pooling_2d.html#MaxPooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.max_pooling_2d.MaxPooling2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial max pooling operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Signature</p>
+<blockquote>
+<div><div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output value. Its order is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="pooling2d">
+<h2>Pooling2D<a class="headerlink" href="#pooling2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.pooling_2d.Pooling2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.pooling_2d.</code><code class="descname">Pooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/pooling_2d.html#Pooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.pooling_2d.Pooling2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial pooling base operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
+<li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Signature</p>
+<blockquote>
+<div><div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output value. Its order is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="reinterpretaxis">
+<h2>ReinterpretAxis<a class="headerlink" href="#reinterpretaxis" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.reinterpret_axis.ReinterpretAxis">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.reinterpret_axis.</code><code class="descname">ReinterpretAxis</code><span class="sig-paren">(</span><em>name</em>, <em>in_order</em>, <em>out_order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/reinterpret_axis.html#ReinterpretAxis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.reinterpret_axis.ReinterpretAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-interpret an axis as another semantics. Shape is not changed.</p>
+<p>In case of <code class="code docutils literal"><span class="pre">in_order</span></code> is <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code> and <code class="code docutils literal"><span class="pre">out_order</span></code> is <code class="xref py py-obj docutils literal"><span class="pre">OrderNT</span></code>,
+if <code class="xref py py-obj docutils literal"><span class="pre">OrderCN</span></code> variable is input, <cite>~webdnn.graph.order.OrderTN</cite> variable is output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>in_order</strong> (<a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a>) &#8211; Input order</li>
+<li><strong>out_order</strong> (<a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a>) &#8211; Output order</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="relu">
+<h2>Relu<a class="headerlink" href="#relu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.relu.Relu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.relu.</code><code class="descname">Relu</code><span class="sig-paren">(</span><em>name</em>, <em>slope</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/relu.html#Relu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.relu.Relu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rectified Linear Unit</p>
+<div class="math">
+\[f(x) = max(0, x)\]</div>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="reshape">
+<h2>Reshape<a class="headerlink" href="#reshape" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.reshape.Reshape">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.reshape.</code><code class="descname">Reshape</code><span class="sig-paren">(</span><em>name</em>, <em>in_order</em>, <em>out_order</em>, <em>out_shape</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/reshape.html#Reshape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.reshape.Reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape array assuming it is C-order.
+Removing / inserting axis with length 1</p>
+<p>When in_order: NHWC, out_order: NTC, out_shape: (2, 6, 10) and input variable is (2, 3, 4, 5), the semantic procedure is as follows.
+1. Interpret input variable as NTHWC (2, 1, 3, 4, 5) with inserting axis with length 1
+2. Reshape it with assuming C-order and length of axis being removed is 1; NTHWC (2, 6, 1, 1, 10)
+3. Remove axes; NTC (2, 6, 10)</p>
+<p>Swapping axes is prohibited because it is ambiguous.
+If in_order and out_order match the actual input / output variable order, kernel does not have to do anything.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>in_order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; input order</li>
+<li><strong>out_order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; output order</li>
+<li><strong>out_shape</strong> (list of int or <code class="xref py py-class docutils literal"><span class="pre">Placeholder</span></code>) &#8211; output shape</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="scalaradd">
+<h2>ScalarAdd<a class="headerlink" href="#scalaradd" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.scalar_add.ScalarAdd">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.scalar_add.</code><code class="descname">ScalarAdd</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/scalar_add.html#ScalarAdd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.scalar_add.ScalarAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise add with scalar value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">+</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">value</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="scalaraffine">
+<h2>ScalarAffine<a class="headerlink" href="#scalaraffine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.scalar_affine.ScalarAffine">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.scalar_affine.</code><code class="descname">ScalarAffine</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/scalar_affine.html#ScalarAffine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.scalar_affine.ScalarAffine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Affine transform operator with scalar scale and value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the scale value</li>
+<li><strong>bias</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the bias value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="scalarmul">
+<h2>ScalarMul<a class="headerlink" href="#scalarmul" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.scalar_mul.ScalarMul">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.scalar_mul.</code><code class="descname">ScalarMul</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/scalar_mul.html#ScalarMul"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.scalar_mul.ScalarMul" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise multiply with scalar value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">*</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">value</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="scalarpow">
+<h2>ScalarPow<a class="headerlink" href="#scalarpow" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.scalar_pow.ScalarPow">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.scalar_pow.</code><code class="descname">ScalarPow</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/scalar_pow.html#ScalarPow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.scalar_pow.ScalarPow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elementwise power with scalar value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+<p>This operator also can be called by <code class="code docutils literal"><span class="pre">**</span></code>.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">**</span> <span class="n">value</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="sigmoid">
+<h2>Sigmoid<a class="headerlink" href="#sigmoid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.sigmoid.Sigmoid">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.sigmoid.</code><code class="descname">Sigmoid</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/sigmoid.html#Sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.sigmoid.Sigmoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sigmoid operator.</p>
+<div class="math">
+\[f(x) = \frac{1}{1+exp(-x)}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="softmax">
+<h2>Softmax<a class="headerlink" href="#softmax" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.softmax.Softmax">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.softmax.</code><code class="descname">Softmax</code><span class="sig-paren">(</span><em>name</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/softmax.html#Softmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.softmax.Softmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Softmax operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="softplus">
+<h2>Softplus<a class="headerlink" href="#softplus" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.softplus.Softplus">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.softplus.</code><code class="descname">Softplus</code><span class="sig-paren">(</span><em>name</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/softplus.html#Softplus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.softplus.Softplus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Softplus operator.</p>
+<div class="math">
+\[f(x) = \frac{1}{beta} log(1 + exp(beta * x))\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; coefficient.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="softsign">
+<h2>Softsign<a class="headerlink" href="#softsign" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.softsign.Softsign">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.softsign.</code><code class="descname">Softsign</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/softsign.html#Softsign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.softsign.Softsign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Softsign operator.</p>
+<p>For more detail, see <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/nn/softsign">https://www.tensorflow.org/api_docs/python/tf/nn/softsign</a></p>
+<div class="math">
+\[f(x) = \frac{x}{abs(x) + 1}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="tanh">
+<h2>Tanh<a class="headerlink" href="#tanh" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.tanh.Tanh">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.tanh.</code><code class="descname">Tanh</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/tanh.html#Tanh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.tanh.Tanh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tanh operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="thresholdrelu">
+<h2>ThresholdRelu<a class="headerlink" href="#thresholdrelu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.threshold_relu.ThresholdRelu">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.threshold_relu.</code><code class="descname">ThresholdRelu</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/threshold_relu.html#ThresholdRelu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.threshold_relu.ThresholdRelu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relu operator with threshold.</p>
+<div class="math">
+\[f(x) = x &gt; a ? x : 0\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; the threshold value.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x0</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x0</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="zeropadding1d">
+<h2>ZeroPadding1D<a class="headerlink" href="#zeropadding1d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.zero_padding_1d.ZeroPadding1D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.zero_padding_1d.</code><code class="descname">ZeroPadding1D</code><span class="sig-paren">(</span><em>name</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/zero_padding_1d.html#ZeroPadding1D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.zero_padding_1d.ZeroPadding1D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zero padding 1D operator</p>
+<p>Add padding to time-series data (n, t, c) -&gt; (n, left + t + right, c)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size. [left, right]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="zeropadding2d">
+<h2>ZeroPadding2D<a class="headerlink" href="#zeropadding2d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operators.zero_padding_2d.ZeroPadding2D">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.zero_padding_2d.</code><code class="descname">ZeroPadding2D</code><span class="sig-paren">(</span><em>name</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/zero_padding_2d.html#ZeroPadding2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.zero_padding_2d.ZeroPadding2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zero padding 2D operator</p>
+<p>Supposed to be merged into convolution in optimization</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
+<li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size. [top, left]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Signature</dt>
+<dd><div class="code first highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li><strong>x</strong> - Input variable.</li>
+<li><strong>y</strong> - Output variable. Its order and shape is same as <code class="code docutils literal"><span class="pre">x</span></code>.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="graph.html" class="btn btn-neutral float-right" title="Graph" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="backend/index.html" class="btn btn-neutral" title="backend" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>0. Architecture of Graph Transpiler and How to Extend &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Use your custom operator" href="index.html"/>
+        <link rel="next" title="1. Elementwise Operator without Parameters" href="section1.html"/>
+        <link rel="prev" title="Use your custom operator" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html">Introduction to WebDNN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#framework-structure">Framework structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup.html">Setup guide (for Mac / Linux)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup_windows.html">Setup guide (for Windows)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../keras.html">Use with keras model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caffe.html">Use with caffemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chainer.html">Use with chainer model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Use your custom operator</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">0. Architecture of Graph Transpiler and How to Extend</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#webdnn-ir">WebDNN IR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#converter-handler">Converter Handler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#generator-handler">Generator Handler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-extend-graph-transpiler">How to Extend Graph Transpiler</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="section1.html">1. Elementwise Operator without Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="section2.html">2. Elementwise Operator with Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="section3.html">3. Layer with Weights</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial</a> &raquo;</li>
+        
+          <li><a href="index.html">Use your custom operator</a> &raquo;</li>
+        
+      <li>0. Architecture of Graph Transpiler and How to Extend</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/custom_operator/section0.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="architecture-of-graph-transpiler-and-how-to-extend">
+<h1>0. Architecture of Graph Transpiler and How to Extend<a class="headerlink" href="#architecture-of-graph-transpiler-and-how-to-extend" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>This section describes about overview of WebDNN graph transpiler and how to extend it.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>WebDNN graph transpiler is consist of three modules: <strong>Model Converter</strong>, <strong>Optimizer</strong>, and <strong>Descriptor Generator</strong>.</p>
+<img alt="../../_images/transpiler_pipeline.png" src="../../_images/transpiler_pipeline.png" />
+<p>Model Converter (<a class="reference internal" href="../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter" title="webdnn.frontend.converter.Converter"><code class="xref py py-class docutils literal"><span class="pre">Converter</span></code></a>) converts trained model in other frameworks (e.g. <code class="code docutils literal"><span class="pre">keras.models.Model</span></code>,
+<code class="code docutils literal"><span class="pre">chainer.Chain</span></code>) into WebDNN intermediate representation (IR). Optimizer transform graph to optimize execution speed and model data size.
+Descriptor Generator (<code class="xref py py-class docutils literal"><span class="pre">DescriptorGenerator</span></code>) converts IR into graph descriptor.</p>
+</div>
+<div class="section" id="webdnn-ir">
+<h2>WebDNN IR<a class="headerlink" href="#webdnn-ir" title="Permalink to this headline">¶</a></h2>
+<img alt="../../_images/ir.png" class="align-left" src="../../_images/ir.png" />
+<p>WebDNN IR consists two type of nodes: <a class="reference internal" href="../../api_reference/graph_transpiler/operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> and <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>. Operator represents each operation in DNN
+model such as convolution, activation, and so on. <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> represents each operator&#8217;s inputs and outputs.</p>
+<p>Each <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> is referenced from operators with a name. For example, in left figure, two input variables are referenced as
+<strong>x</strong> and <strong>w</strong> respectively, and output variable is referenced as <strong>y</strong>.</p>
+<p>All WebDNN operators are stateless, and operator doesn&#8217;t have any reference to variables without input and output connections. All data
+required to calculate outputs is given as input variable.</p>
+</div>
+<div class="section" id="converter-handler">
+<h2>Converter Handler<a class="headerlink" href="#converter-handler" title="Permalink to this headline">¶</a></h2>
+<p>Converter handler is function which convert other framework&#8217;s operator (Keras layers, Chainer functions, etc.) into WebDNN IR operators.
+In converter handler, not only the operator itself, related variables (<em>kernel</em> and <em>bias</em> in the follow figure) are also converted into
+WebDNN IR variables. Many preset converter handlers like <code class="code docutils literal"><span class="pre">conv2d_handler()</span></code> and <code class="code docutils literal"><span class="pre">dense_handler()</span></code> are registered to model converter
+with corresponding operator type. In model conversion phase, converter traverse model&#8217;s computation graph from input to output and when any
+operator is found, corresponding converter handler is called.</p>
+<img alt="../../_images/converter_handler.png" src="../../_images/converter_handler.png" />
+</div>
+<div class="section" id="generator-handler">
+<h2>Generator Handler<a class="headerlink" href="#generator-handler" title="Permalink to this headline">¶</a></h2>
+<p>Similarly to converter handler, generator handler is function which is registered to descriptor generator and convert corresponding
+WebDNN IR operator into kernel source code.</p>
+<img alt="../../_images/generator_handler.png" src="../../_images/generator_handler.png" />
+</div>
+<div class="section" id="how-to-extend-graph-transpiler">
+<h2>How to Extend Graph Transpiler<a class="headerlink" href="#how-to-extend-graph-transpiler" title="Permalink to this headline">¶</a></h2>
+<img alt="../../_images/keras_average.png" class="align-right" src="../../_images/keras_average.png" />
+<p>There are two choices:</p>
+<ol class="arabic">
+<li><p class="first">If your custom operator can be constructed with preset WebDNN operators, you have to do is only implementing converter handler from
+your custom operator to preset WebDNN operators.</p>
+<p>For example, <code class="code docutils literal"><span class="pre">keras.layers.Average</span></code>, which computes average of inputs elementwisely, can be constructed as right figure (when
+number of inputs is 4). In this case, both <code class="xref py py-class docutils literal"><span class="pre">ElementwiseSum</span></code> and
+<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.scalar_affine.ScalarAffine" title="webdnn.graph.operators.scalar_affine.ScalarAffine"><code class="xref py py-class docutils literal"><span class="pre">ScalarAffine</span></code></a> are already supported in generators. Therefore, you have to implement
+only converter handler.</p>
+</li>
+<li><p class="first">Otherwise, you have to implement both converter handler and generator handler.</p>
+</li>
+</ol>
+<hr class="docutils" />
+<ul class="simple">
+<li><a class="reference internal" href="section1.html"><span class="doc">Next: &#8220;1. Elementwise Operator without Parameters&#8221;</span></a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="section1.html" class="btn btn-neutral float-right" title="1. Elementwise Operator without Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Use your custom operator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

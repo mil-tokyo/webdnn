@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How to Contribute &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../index.html"/>
+        <link rel="prev" title="JavaScript API" href="../api_reference/descriptor-runner/index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Contribute</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#open-new-issue">Open New Issue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#send-pull-request">Send Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#compile-time-test">Compile-Time Test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#runtime-test">Runtime Test</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>How to Contribute</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/contributing/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="how-to-contribute">
+<h1>How to Contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h1>
+<p>We welcome contributions to WebDNN. This document describes the procedures and rules.</p>
+<p>Kinds of contributions will be one of the following, but not restricted to:</p>
+<ul class="simple">
+<li>New bug reporting</li>
+<li>New feature proposal</li>
+<li>Bug fix</li>
+<li>Implementation of a layer</li>
+<li>Implementation of a converter from a deep learning framework</li>
+<li>Improvement of performance</li>
+<li>Documantation</li>
+</ul>
+<p>For new layer implementation, at least <strong>WebAssembly</strong> backend implementation is required.
+<strong>WebGPU</strong> backend can only be tested on Mac, so it is not mandatory.</p>
+<div class="section" id="open-new-issue">
+<h2>Open New Issue<a class="headerlink" href="#open-new-issue" title="Permalink to this headline">¶</a></h2>
+<p>Feel free to create open new issue, for example:</p>
+<ul class="simple">
+<li>New bug report</li>
+<li>Ask question</li>
+<li>Feature proposal/request</li>
+</ul>
+<p>If you found a bug, please report with execution environment information such as python interpreter version, DNN framework version,
+browser version, OS version, GPU version, and so on.</p>
+</div>
+<div class="section" id="send-pull-request">
+<h2>Send Pull Request<a class="headerlink" href="#send-pull-request" title="Permalink to this headline">¶</a></h2>
+<p>Please send pull request from your fork branch to our <code class="code docutils literal"><span class="pre">master</span></code> branch. The project organizer checks the request and accepts or gives
+request for revision.</p>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>If you have added some features, implementing tests corresponding to them is recommended. WebDNN uses
+<a class="reference external" href="http://nose.readthedocs.io/en/latest/">nose</a> test framework. All tests of WebDNN is in <code class="code docutils literal"><span class="pre">/test</span></code>.
+There are many examples. Please check them.</p>
+<div class="section" id="compile-time-test">
+<h3>Compile-Time Test<a class="headerlink" href="#compile-time-test" title="Permalink to this headline">¶</a></h3>
+<p><code class="code docutils literal"><span class="pre">/test/webdnn_test</span></code> directory contains compile-time graph transpiler tests. All tests is done only in python code.</p>
+<p>You can run compile-time test like follows:</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>$ nosetests
+</pre></div>
+</div>
+<p><code class="code docutils literal"><span class="pre">nosetests</span></code> command traverse directories whose name contains <cite>&#8220;test&#8221;</cite> recursively, therefore you simply hit above command.
+If you want to create new tests, please create directory and files based on this suffix rule.</p>
+</div>
+<div class="section" id="runtime-test">
+<h3>Runtime Test<a class="headerlink" href="#runtime-test" title="Permalink to this headline">¶</a></h3>
+<p><code class="code docutils literal"><span class="pre">/test/runtime</span></code> directory contains runtime graph transpiler test. Test code is compiled by transpiler and run on web browsers.</p>
+<p>To run runtime test, you need to generate test codes first. All test codes are generated under <code class="code docutils literal"><span class="pre">/build/test</span></code> directory.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="c1"># generate test codes</span>
+$ nosetests test/runtime
+</pre></div>
+</div>
+<p>Then, access <code class="code docutils literal"><span class="pre">/test/test_kernel.html</span></code> and click <strong>RUN</strong> button. Result are output in debug console.</p>
+<p>Generating all test codes requires more than 10 minutes. Instead of that, you can specify target test files like follows:</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="c1"># generate test code only for AveragePooling2D</span>
+$ nosetests test/runtime/operators_test/average_pooling_2d_test.py
+</pre></div>
+</div>
+<p>Also you can specify target backends. For example, follow command generates test code of only webgpu backend.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="c1"># generate test code only for WebGPU backend</span>
+$ <span class="nv">TEST_WEBGPU</span><span class="o">=</span><span class="m">1</span> <span class="nv">TEST_WEBASSEMBLY</span><span class="o">=</span><span class="m">0</span>, <span class="nv">TEST_FALLBACK</span><span class="o">=</span><span class="m">0</span> nosetests test/runtime
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>WebDNN is distributed under the MIT License. Every contributor holds the copyright of his/her part.</p>
+<p>By contributing to the mil-tokyo/webdnn repository through pull-request, comment, or otherwise, the contributor releases their content to
+the license and copyright terms herein.</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>Developer Certificate of Origin 1.1
+
+Developer Certificate of Origin
+Version 1.1
+
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+1 Letterman Drive
+Suite D4700
+San Francisco, CA, 94129
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+
+Developer&#39;s Certificate of Origin 1.1
+
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    indicated in the file; or
+
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../api_reference/descriptor-runner/index.html" class="btn btn-neutral" title="JavaScript API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

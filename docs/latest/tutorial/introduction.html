@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction to WebDNN &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorial" href="index.html"/>
+        <link rel="next" title="Setup guide (for Mac / Linux)" href="setup.html"/>
+        <link rel="prev" title="Tutorial" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction to WebDNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation-free">Installation-free</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#non-overhead-interface">Non overhead interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inference-phase-specialized-optimization">Inference-phase-specialized optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#framework-structure">Framework structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">Setup guide (for Mac / Linux)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_windows.html">Setup guide (for Windows)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="keras.html">Use with keras model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caffe.html">Use with caffemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chainer.html">Use with chainer model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_operator/index.html">Use your custom operator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorial</a> &raquo;</li>
+        
+      <li>Introduction to WebDNN</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorial/introduction.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction-to-webdnn">
+<span id="introduction-to-webdnn"></span><h1>Introduction to WebDNN<a class="headerlink" href="#introduction-to-webdnn" title="Permalink to this headline">¶</a></h1>
+<p>Recently, deep neural network (DNN) is attracting a lot of attention in various fields such as image and video recognition, natural language processing and gaming AI. In these fields, DNNs are applied for various products. However, DNNs are computationally expensive and generally hardware acceleration is required for its execution, and so it is not practical to execute DNN on end-user devices such as laptops or smartphones.</p>
+<p>One of the solutions to this is cloud computing. As another solution, WebDNN highly optimizes the DNN models and executes them on the web browsers in end-user devices.</p>
+<p>Key features of WebDNN are the follows.</p>
+<ul class="simple">
+<li>Installation-free</li>
+<li>Non overhead interface</li>
+<li>Inference-phase-specialized optimization</li>
+</ul>
+<div class="section" id="installation-free">
+<span id="installation-free"></span><h2>Installation-free<a class="headerlink" href="#installation-free" title="Permalink to this headline">¶</a></h2>
+<p>WebDNN executes DNN models on a web browser. Usually, web browsers are already installed on end-user devices already and users are familiar with how to use it. Therefore, using WebDNN, DNN applications can be provided easily, without any difficulty in installing a native application.</p>
+<p>There are a few number of major web browsers, and they have different set of features that can be used for acceleration. WebDNN have several sterategies to execute DNN model as speedy as possible in each web browser.</p>
+</div>
+<div class="section" id="non-overhead-interface">
+<span id="non-overhead-interface"></span><h2>Non overhead interface<a class="headerlink" href="#non-overhead-interface" title="Permalink to this headline">¶</a></h2>
+<p>JavaScript is a standard programing language running on web browsers. It is executed by an interpreter. Therefore, it requires computing overhead and it cannot completely harness the capacity of the CPU. The same problem is encountered in GPU. Modern web browsers support WebGL, which is a JavaScript API to use GPU. However, this API is designed for graphics processing and is not suitable for general purpose computation. In addition, using WebGL for general purpose computing incurs overhead costs.</p>
+<p>WebDNN uses next generation JavaScript API, WebGPU for GPU execution, and WebAssembly for CPU execution. These APIs help to bring out the full performance of GPU and CPU.</p>
+</div>
+<div class="section" id="inference-phase-specialized-optimization">
+<span id="inference-phase-specialized-optimization"></span><h2>Inference-phase-specialized optimization<a class="headerlink" href="#inference-phase-specialized-optimization" title="Permalink to this headline">¶</a></h2>
+<p>To achieve speedier execution, optimizing the computation graph of DNN models is very important. Execution of DNN consists of two phases, the training phase and the inference phase, and they requires different optimization sterategies. WebDNN focuses on only the inference phase execution on end-user devices and supports aggressive optimization. This optimization pipeline can be applied for models trained with various DNN frameworks. It is not required to edit the training codes.</p>
+</div>
+</div>
+<div class="section" id="framework-structure">
+<span id="framework-structure"></span><h1>Framework structure<a class="headerlink" href="#framework-structure" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Pipeline" src="../_images/pipeline.png" /></p>
+<p>WebDNN consists of two modules - the graph transpiler, which transpiles and optimizes trained model into an executable format on the web browser and the descriptor runner, which executes the converted model on the web browser.</p>
+<p>Graph transpiler is the offline module to transpile the model. It is implemented in python (version 3.6) and only application developers need to run it. It outputs the &#8216;graph descriptor&#8217; files, which consist of JavaScript and binary weight data.</p>
+<p>Descriptor runner is the online module to run the graph descriptor on the web browser of the end-users. It is JavaScript files. Application developers have to use the API provided by the library to supply input to the model and display output.</p>
+<p>Setting up the application development environment is described in <a class="reference external" href="setup.html">setup</a> page. You can find examples of steps to use models from Caffe, Keras, Chainer in WebDNN in the example directory.</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="setup.html" class="btn btn-neutral float-right" title="Setup guide (for Mac / Linux)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

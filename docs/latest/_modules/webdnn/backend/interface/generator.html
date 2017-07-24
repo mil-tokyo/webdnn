@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.backend.interface.generator &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.backend.interface.generator</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.backend.interface.generator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.backend.code_generator.allocator</span> <span class="k">import</span> <span class="n">MemoryLayout</span>
+<span class="kn">from</span> <span class="nn">webdnn.backend.interface.graph_descriptor</span> <span class="k">import</span> <span class="n">IGraphExecutionData</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">traverse</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
+<span class="kn">from</span> <span class="nn">webdnn.optimizer.general_optimize_rule</span> <span class="k">import</span> <span class="n">GeneralOptimizeRule</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
+
+<span class="n">backend_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;webgpu&quot;</span><span class="p">,</span> <span class="s2">&quot;webassembly&quot;</span><span class="p">,</span> <span class="s2">&quot;fallback&quot;</span><span class="p">]</span>
+
+<span class="n">T_KERNEL</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_KERNEL&quot;</span><span class="p">)</span>
+<span class="n">T_EXEC_DATA</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_EXEC_DATA&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">DescriptorGenerator</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_KERNEL</span><span class="p">,</span> <span class="n">T_EXEC_DATA</span><span class="p">]):</span>
+    <span class="n">_handler_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># type: Dict[str, Dict[str, Callable[[Operator, MemoryLayout], List[T_KERNEL]]]]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">constant_encoder_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_EXEC_DATA</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">OperatorClass</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Operator</span><span class="p">]):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">OperatorClass</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Operator</span><span class="p">,</span> <span class="n">MemoryLayout</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">T_KERNEL</span><span class="p">]]):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_handler_map</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]:</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[</span><span class="si">{cls.__name__}</span><span class="s2">] Generator handler of &#39;</span><span class="si">{key}</span><span class="s2">&#39; is already registered and overwritten.&quot;</span><span class="p">)</span>
+
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_handler_map</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span>
+
+        <span class="k">return</span> <span class="n">decorator</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">serialize_operator_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">operator</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_kernels</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">memory_layout</span><span class="p">:</span> <span class="n">MemoryLayout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T_KERNEL</span><span class="p">]:</span>
+        <span class="n">kernels</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Type: List[T_KERNEL]</span>
+
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">traverse</span><span class="o">.</span><span class="n">listup_operators</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">serialize_operator_type</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_handler_map</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[</span><span class="si">{cls.__name__}</span><span class="s2">] Operator </span><span class="si">{op}</span><span class="s2"> is not handled by any generator handler&quot;</span><span class="p">)</span>
+
+            <span class="n">kernels</span> <span class="o">+=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_handler_map</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">][</span><span class="n">key</span><span class="p">](</span><span class="n">op</span><span class="p">,</span> <span class="n">memory_layout</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kernels</span>
+
+
+<span class="k">def</span> <span class="nf">get_generator</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;webgpu&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">webdnn.backend.webgpu.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_webgpu</span>
+        <span class="k">return</span> <span class="n">generate_webgpu</span>
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;webassembly&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">webdnn.backend.webassembly.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_webassembly</span>
+        <span class="k">return</span> <span class="n">generate_webassembly</span>
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;fallback&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">webdnn.backend.fallback.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_fallback</span>
+        <span class="k">return</span> <span class="n">generate_fallback</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown backend: </span><span class="si">{backend}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">generate_descriptor</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IGraphExecutionData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;generate_descriptor(backend, graph, **kwargs)</span>
+
+<span class="sd">    This is utility function to generate graph descriptor. This function create specified backend descriptor generator and generat graph</span>
+<span class="sd">    descriptor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        backend (str): target backend</span>
+<span class="sd">        graph (:class:`~webdnn.Graph`): graph</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (:class:`~webdnn.backend.interface.graph_descriptor.IGraphExecutionData`) generated graph descriptor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">get_generator</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Graph is transformed by backend-specific optimization</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">RecursionError</span><span class="p">:</span>
+        <span class="c1"># Occurs when the graph has many nodes (e.g. ResNet)</span>
+        <span class="k">raise</span> <span class="n">RecursionError</span><span class="p">(</span><span class="s2">&quot;Recursion error occurred when copying graph.&quot;</span> <span class="o">+</span>
+                             <span class="s2">&quot; sys.setrecursionlimit(10000) may help fixing it.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># some optimize rule work even when OPTIMIZE=0</span>
+    <span class="n">graph</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">GeneralOptimizeRule</span><span class="p">()</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">generator</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

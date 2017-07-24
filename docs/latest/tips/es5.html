@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>EcmaScript5 support &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../index.html"/>
+        <link rel="up" title="Tips" href="index.html"/>
+        <link rel="next" title="Using web camera in Safari" href="safari_webcam.html"/>
+        <link rel="prev" title="Using LSTM model" href="lstm.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lstm.html">Using LSTM model</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">EcmaScript5 support</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-webdnn-es5-js-and-polyfill">Use webdnn.es5.js and polyfill</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#converting-your-own-code">Converting your own code</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="safari_webcam.html">Using web camera in Safari</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tips</a> &raquo;</li>
+        
+      <li>EcmaScript5 support</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tips/es5.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ecmascript5-support">
+<span id="ecmascript5-support"></span><h1>EcmaScript5 support<a class="headerlink" href="#ecmascript5-support" title="Permalink to this headline">¶</a></h1>
+<p>In some cases, you want to support older browser such as IE11, which is the default browser for Windows 7 and 8. To support IE11, the JavaScript code have to be compliant with EcmaScript5. In this document, how to convert the code is described.</p>
+<div class="section" id="use-webdnn-es5-js-and-polyfill">
+<span id="use-webdnn-es5-js-and-polyfill"></span><h2>Use webdnn.es5.js and polyfill<a class="headerlink" href="#use-webdnn-es5-js-and-polyfill" title="Permalink to this headline">¶</a></h2>
+<p>In syntax level, <code class="docutils literal"><span class="pre">webdnn.js</span></code> uses statements like <code class="docutils literal"><span class="pre">await</span></code>, which is not compatible with EcmaScript5. Instead, you can use <code class="docutils literal"><span class="pre">webdnn.es5.js</span></code> which does not use such statements. This library can be compiled with <code class="docutils literal"><span class="pre">tsc</span> <span class="pre">-p</span> <span class="pre">tsconfig.es5.js</span></code> on <code class="docutils literal"><span class="pre">src/descriptor_runner</span></code> directory.</p>
+<p>In standard library level, <code class="docutils literal"><span class="pre">webdnn.js</span></code> uses <code class="docutils literal"><span class="pre">Promise</span></code> and <code class="docutils literal"><span class="pre">fetch</span></code>. You need to supply these objects by loading polyfill.</p>
+<p>In colusion, you need to insert the following statements in the html.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.23.0/polyfill.min.js&quot;</span><span class="o">&gt;&lt;/</span><span class="n">script</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch&quot;</span><span class="o">&gt;&lt;/</span><span class="n">script</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;../../lib/inflate.min.js&quot;</span><span class="o">&gt;&lt;/</span><span class="n">script</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">script</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;../../dist/webdnn.es5.js&quot;</span><span class="o">&gt;&lt;/</span><span class="n">script</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="converting-your-own-code">
+<span id="converting-your-own-code"></span><h2>Converting your own code<a class="headerlink" href="#converting-your-own-code" title="Permalink to this headline">¶</a></h2>
+<p>If your own JavaScript code uses newer statements like <code class="docutils literal"><span class="pre">await</span></code>, you can also convert it automatically by <a class="reference external" href="https://babeljs.io/">babel</a>.</p>
+<p>Install babel</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">npm</span> <span class="n">install</span> <span class="n">babel</span><span class="o">-</span><span class="n">cli</span> <span class="n">babel</span><span class="o">-</span><span class="n">preset</span><span class="o">-</span><span class="n">env</span> <span class="n">babel</span><span class="o">-</span><span class="n">preset</span><span class="o">-</span><span class="n">es2015</span> <span class="n">babel</span><span class="o">-</span><span class="n">plugin</span><span class="o">-</span><span class="n">transform</span><span class="o">-</span><span class="n">regenerator</span>
+</pre></div>
+</div>
+<p>Converting your code</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">babel</span> <span class="n">foo</span><span class="o">.</span><span class="n">js</span> <span class="o">--</span><span class="n">out</span><span class="o">-</span><span class="n">file</span> <span class="n">foo</span><span class="o">.</span><span class="n">es5</span><span class="o">.</span><span class="n">js</span> <span class="o">--</span><span class="n">presets</span> <span class="n">env</span><span class="p">,</span><span class="n">es2015</span> <span class="o">--</span><span class="n">plugins</span> <span class="n">transform</span><span class="o">-</span><span class="n">regenerator</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="safari_webcam.html" class="btn btn-neutral float-right" title="Using web camera in Safari" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="lstm.html" class="btn btn-neutral" title="Using LSTM model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

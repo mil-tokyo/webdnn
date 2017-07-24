@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.frontend.chainer.converter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.frontend.chainer.converter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.frontend.chainer.converter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding:utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Chainer Link -&gt; Graph object converters</span>
+<span class="sd">Assuming Chainer 1.23 or 2.0</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">traverse</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.convolution2d</span> <span class="k">import</span> <span class="n">Convolution2D</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.deconvolution2d</span> <span class="k">import</span> <span class="n">Deconvolution2D</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.linear</span> <span class="k">import</span> <span class="n">Linear</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.reinterpret_axis</span> <span class="k">import</span> <span class="n">ReinterpretAxis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNC</span><span class="p">,</span> <span class="n">OrderNCHW</span><span class="p">,</span> <span class="n">OrderC</span><span class="p">,</span> <span class="n">OrderNHWC</span><span class="p">,</span> <span class="n">OrderCNHW</span><span class="p">,</span> <span class="n">Order</span><span class="p">,</span> <span class="n">OrderCN</span><span class="p">,</span> <span class="n">OrderHWNC</span><span class="p">,</span> <span class="n">OrderHWCN</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.input</span> <span class="k">import</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.output</span> <span class="k">import</span> <span class="n">Output</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
+
+<span class="n">FLAG_CHAINER_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">chainer</span>
+    <span class="kn">import</span> <span class="nn">chainer.computational_graph</span>
+
+    <span class="k">if</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&gt;=</span> <span class="s2">&quot;2.&quot;</span><span class="p">:</span>
+        <span class="n">chainer_v2</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="n">VariableNode</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">VariableNode</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">chainer_v2</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">VariableNode</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span>
+
+    <span class="n">FLAG_CHAINER_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Chainer is not completely installed.&quot;</span><span class="p">)</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">_to_variable_node</span><span class="p">(</span><span class="n">chainer_variable</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">,</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">chainer_v2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chainer_variable</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">):</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="k">return</span> <span class="n">chainer_variable</span><span class="o">.</span><span class="n">node</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">chainer_variable</span>
+
+
+<div class="viewcode-block" id="ChainerConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter">[docs]</a><span class="k">class</span> <span class="nc">ChainerConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;chainer.Function&quot;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;ChainerConverter()</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">FLAG_CHAINER_INSTALLED</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;ImportError is occurred when chainer is loaded.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ChainerConverter.convert_from_inout_vars"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter.convert_from_inout_vars">[docs]</a>    <span class="k">def</span> <span class="nf">convert_from_inout_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;convert_from_inout_vars(inputs, output)</span>
+
+<span class="sd">        Construct computational graph from input and output chainer variables, and convert the graph into WebDNN IR.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs(list of chainer.Variable): input chainer variables</span>
+<span class="sd">            outputs(list of chainer.Variable): output chainer variables</span>
+
+<span class="sd">        .. admonition:: Example</span>
+
+<span class="sd">            .. code::</span>
+
+<span class="sd">                model = chainer.links.model.vision.resnet.ResNet50Layers()</span>
+
+<span class="sd">                # Forward propagation with dummy input to build computational graph</span>
+<span class="sd">                x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))</span>
+<span class="sd">                y = model(x, layers=[&quot;fc6&quot;])[&quot;fc6&quot;]</span>
+
+<span class="sd">                graph = ChainerConverter().convert_from_inout_vars([x], [y])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chainer_graph</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">computational_graph</span><span class="o">.</span><span class="n">build_computational_graph</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">chainer_graph</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChainerConverter.convert"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chainer_computational_graph</span><span class="p">:</span> <span class="s2">&quot;chainer.computational_graph.ComputationalGraph&quot;</span><span class="p">,</span>
+                <span class="n">input_c_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">],</span> <span class="n">output_c_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Graph</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;convert(chainer_computational_graph, input_c_vars, output_c_vars)</span>
+
+<span class="sd">        Convert chainer computational graph into WebDNN IR.</span>
+
+<span class="sd">        Instead of using this method directly, you should use</span>
+<span class="sd">        :func:`convert_from_inout_vars&lt;webdnn.frontend.chainer.ChainerConverter.convert_from_inout_vars&gt;`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            chainer_computational_graph(chainer.computational_graph.ComputationalGraph): chainer computational graph</span>
+<span class="sd">            input_c_vars(list of chainer.Variable): input chainer variables</span>
+<span class="sd">            output_c_vars(list of chainer.Variable): output chainer variables</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># In chainer v2, variables are represented as Variable and VariableNode object, and</span>
+        <span class="c1"># graph information such as edge connection is contained in variable node.</span>
+        <span class="c1"># Therefore all chainer variable must be normalized into variable node.</span>
+        <span class="n">input_c_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_c_vars</span><span class="p">]</span>
+        <span class="n">output_c_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output_c_vars</span><span class="p">]</span>
+
+        <span class="c1"># Append InputVariable attribute to input variables</span>
+        <span class="n">input_n_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">input_c_vars</span><span class="p">:</span>
+            <span class="n">n_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span>
+            <span class="n">n_var</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">n_var</span><span class="p">))</span>
+            <span class="n">input_n_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_var</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_weight_vars</span><span class="p">(</span><span class="n">chainer_computational_graph</span><span class="p">)</span>
+
+        <span class="n">pending_c_oprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">c_opr</span> <span class="k">for</span> <span class="n">c_opr</span> <span class="ow">in</span> <span class="n">chainer_computational_graph</span><span class="o">.</span><span class="n">nodes</span> <span class="k">if</span>
+                          <span class="nb">isinstance</span><span class="p">(</span><span class="n">c_opr</span><span class="p">,</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Function</span><span class="p">)]</span>
+
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">pending_c_oprs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c_opr</span> <span class="ow">in</span> <span class="n">pending_c_oprs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">c_var</span><span class="p">)))</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">c_opr</span><span class="o">.</span><span class="n">inputs</span><span class="p">)):</span>
+                    <span class="c1"># All input variables of the `cfunc` are converted, so this `c_opr` can be converted.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_convert_operator</span><span class="p">(</span><span class="n">c_opr</span><span class="p">)</span>
+                    <span class="n">pending_c_oprs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c_opr</span><span class="p">)</span>
+                    <span class="k">break</span>  <span class="c1"># for c_opr in pending_functions</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">pending_c_oprs</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inputs to functions cannot be resolved.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Append OutputVariable attribute to output variables</span>
+        <span class="n">output_n_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">output_c_vars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Output variable is not generated by graph.&quot;</span><span class="p">)</span>
+            <span class="n">n_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span>
+            <span class="n">n_var</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">)</span>
+            <span class="n">output_n_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_var</span><span class="p">)</span>
+
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">input_n_vars</span><span class="p">,</span> <span class="n">output_n_vars</span><span class="p">)</span>
+        <span class="c1"># Convert variable order into typical one in Chainer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transpose_vars</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">graph</span></div>
+
+    <span class="k">def</span> <span class="nf">_convert_weight_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chainer_computational_graph</span><span class="p">:</span> <span class="s2">&quot;chainer.computational_graph.ComputationalGraph&quot;</span><span class="p">):</span>
+        <span class="c1"># Convert chainer variable which has name (= which is trained parameter) into WebDNN Variable object</span>
+
+        <span class="c1"># special case</span>
+        <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">chainer_computational_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+
+            <span class="c1"># noinspection PyUnresolvedReferences</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">chainer</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">normalization</span><span class="o">.</span><span class="n">batch_normalization</span><span class="o">.</span><span class="n">BatchNormalizationFunction</span><span class="p">):</span>
+                <span class="c1"># In chainer&#39;s BatchNormalization, mean and va (c_var.inputs[3] and c_var.inputs[4]) have no name, but</span>
+                <span class="c1"># they are trainable parameters.</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># data, gamma, bias, mean, var</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">force_constant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">force_constant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">chainer</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">deconvolution_2d</span><span class="o">.</span><span class="n">Deconvolution2DFunction</span><span class="p">):</span>
+                <span class="c1"># The order of weight of deconvolution2D in chainer is not Order NCHW, but OrderCNHW.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">force_constant</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force_order</span><span class="o">=</span><span class="n">OrderCNHW</span><span class="p">)</span>
+
+        <span class="c1"># general case</span>
+        <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">chainer_computational_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">))</span> <span class="ow">and</span> <span class="n">c_var</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_convert_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_var</span><span class="p">:</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">,</span> <span class="n">force_constant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force_order</span><span class="p">:</span> <span class="n">Order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{c_var}</span><span class="s2"> is already converted&quot;</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">force_order</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">force_order</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="c1"># both weight and variable</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">OrderNCHW</span>
+            <span class="k">elif</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># both weight and variable</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">OrderNC</span>
+            <span class="k">elif</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># both weight and variable</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">OrderC</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown data format: </span><span class="si">{c_var}</span><span class="s2">, ndim=</span><span class="si">{c_var.ndim}</span><span class="s2">, shape=</span><span class="si">{c_var.shape}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">order</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;Number of dimension is mismatched: order.ndim=</span><span class="si">{order.ndim}</span><span class="s2">, len(shape)=</span><span class="si">{ndim}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">c_var</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force_constant</span><span class="p">:</span>
+            <span class="n">n_var</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">chainer</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">to_cpu</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">order</span><span class="p">)</span>  <span class="c1"># force on CPU</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">n_var</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n_var</span>
+
+    <span class="c1"># noinspection PyMethodMayBeStatic</span>
+    <span class="k">def</span> <span class="nf">_transpose_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transpose variable order into typical WebDNN order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">n_var</span> <span class="ow">in</span> <span class="n">traverse</span><span class="o">.</span><span class="n">listup_variables</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_var</span><span class="o">.</span><span class="n">output_from</span><span class="p">,</span> <span class="n">ReinterpretAxis</span><span class="p">):</span>
+                <span class="c1"># workaround for MatMulVarVar</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_var</span><span class="p">,</span> <span class="n">ConstantVariable</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderC</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderCN</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_var</span><span class="o">.</span><span class="n">input_to</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                    <span class="n">first_input_to</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">n_var</span><span class="o">.</span><span class="n">input_to</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first_input_to</span><span class="p">,</span> <span class="n">Convolution2D</span><span class="p">):</span>
+                        <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderHWNC</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first_input_to</span><span class="p">,</span> <span class="n">Deconvolution2D</span><span class="p">):</span>
+                        <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderHWNC</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first_input_to</span><span class="p">,</span> <span class="n">Linear</span><span class="p">):</span>
+                        <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderHWCN</span><span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown data format: </span><span class="si">{n_var}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderC</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderNC</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">n_var</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">n_var</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">OrderNHWC</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

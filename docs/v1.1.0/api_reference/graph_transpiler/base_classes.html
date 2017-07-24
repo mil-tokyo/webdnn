@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Base Classes &mdash; MIL WebDNN 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.0.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Graph Transpiler" href="index.html"/>
+        <link rel="next" title="Operators" href="operators.html"/>
+        <link rel="prev" title="Graph Transpiler" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mil-tokyo/webdnn">GitHub</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips/index.html">Tips</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Graph Transpiler</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph">Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#operator">Operator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variable">Variable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#attribute">Attribute</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#axis">Axis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#order">Order</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#placeholder">Placeholder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optimizerule">OptimizeRule</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variables.html">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimize_rules.html">Optimize Rules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="index.html">Graph Transpiler</a> &raquo;</li>
+        
+      <li>Base Classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_reference/graph_transpiler/base_classes.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="base-classes">
+<span id="base-classes"></span><h1>Base Classes<a class="headerlink" href="#base-classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="graph">
+<span id="graph"></span><h2>Graph<a class="headerlink" href="#graph" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.graph.Graph">
+<em class="property">class </em><code class="descclassname">webdnn.graph.graph.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>inputs: typing.Iterable[webdnn.graph.variable.Variable], outputs: typing.Iterable[webdnn.graph.variable.Variable]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/graph.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Graph is computation graph of DNN model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputs</strong> (list of <a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; input variables</li>
+<li><strong>outputs</strong> (list of <a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; output variables</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="operator">
+<span id="operator"></span><h2>Operator<a class="headerlink" href="#operator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.operator.Operator">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operator.</code><code class="descname">Operator</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator a.k.a layer or function, is one of key component in DNN computation graph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="Operator.inputs">
+<code class="descname">inputs</code><a class="headerlink" href="#Operator.inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict of <a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> &#8211; input varibales</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Operator.outputs">
+<code class="descname">outputs</code><a class="headerlink" href="#Operator.outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict of <a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> &#8211; output variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_input">
+<code class="descname">append_input</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append input variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of input variable</li>
+<li><strong>var</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_output">
+<code class="descname">append_output</code><span class="sig-paren">(</span><em>name: str</em>, <em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append output variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of output variable</li>
+<li><strong>var</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_all">
+<code class="descname">remove_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all input and output variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_input">
+<code class="descname">remove_input</code><span class="sig-paren">(</span><em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove input variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_output">
+<code class="descname">remove_output</code><span class="sig-paren">(</span><em>var: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove output variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace">
+<code class="descname">replace</code><span class="sig-paren">(</span><em>op_new: webdnn.graph.operator.Operator</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace this operator with other operator. all variables connected with this operator will be disconnected and
+connected to the other operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>op_new</strong> (<a class="reference internal" href="#webdnn.graph.operator.Operator" title="webdnn.graph.operator.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a>) &#8211; the new operator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_input">
+<code class="descname">replace_input</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.variable.Variable</em>, <em>v_new: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace input variable with other variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>v_old</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable which is removed</li>
+<li><strong>v_new</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable which is appended</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_output">
+<code class="descname">replace_output</code><span class="sig-paren">(</span><em>v_old: webdnn.graph.variable.Variable</em>, <em>v_new: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace output variable with other variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>v_old</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable which is removed</li>
+<li><strong>v_new</strong> (<a class="reference internal" href="#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>) &#8211; the variable which is appended</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="variable">
+<span id="variable"></span><h2>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.variable.Variable">
+<em class="property">class </em><code class="descclassname">webdnn.graph.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>shape: typing.Iterable[typing.Union[int, webdnn.graph.placeholder.Placeholder]], order: webdnn.graph.order.Order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variables input to / output from operators.</p>
+<dl class="docutils">
+<dt>Attrs:</dt>
+<dd>shape (list of int or Placeholder): shape of the variable.
+order (Order): Data order such as OrderNHWC, OrderNC, and so on.
+input_to (set of Operator): operators to which this variable is input
+output_from (Operator): operator which generates this variable</dd>
+</dl>
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.change_order">
+<code class="descname">change_order</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.change_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change variable order</p>
+<p>When number of dimension will be increased, axes whose size is one are created.
+Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> &#8211; new order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.name">
+<code class="descname">name</code><a class="headerlink" href="#webdnn.graph.variable.Variable.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of this variable</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.ndim">
+<code class="descname">ndim</code><a class="headerlink" href="#webdnn.graph.variable.Variable.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of dimension</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.shape_dict">
+<code class="descname">shape_dict</code><a class="headerlink" href="#webdnn.graph.variable.Variable.shape_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>dictionary of axis and shape size pairs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.size">
+<code class="descname">size</code><a class="headerlink" href="#webdnn.graph.variable.Variable.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of elements</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="attribute">
+<span id="attribute"></span><h2>Attribute<a class="headerlink" href="#attribute" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.attribute.Attribute">
+<em class="property">class </em><code class="descclassname">webdnn.graph.attribute.</code><code class="descname">Attribute</code><span class="sig-paren">(</span><em>base: webdnn.graph.node.Node</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/attribute.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.attribute.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="axis">
+<span id="axis"></span><h2>Axis<a class="headerlink" href="#axis" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.axis.Axis">
+<em class="property">class </em><code class="descclassname">webdnn.graph.axis.</code><code class="descname">Axis</code><a class="reference internal" href="../../_modules/webdnn/graph/axis.html#Axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.axis.Axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents semantics of each dimension of variables.</p>
+<ul>
+<li><p class="first"><code class="code docutils literal"><span class="pre">Axis.N</span></code></p>
+<blockquote>
+<div><p>number of samples (batch size), number of output channels in linear connection and convolution (number of filters).</p>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="code docutils literal"><span class="pre">Axis.C</span></code></p>
+<blockquote>
+<div><p>number of features</p>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="code docutils literal"><span class="pre">Axis.H</span></code></p>
+<blockquote>
+<div><p>height of image</p>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="code docutils literal"><span class="pre">Axis.W</span></code></p>
+<blockquote>
+<div><p>width of image</p>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="code docutils literal"><span class="pre">Axis.T</span></code></p>
+<blockquote>
+<div><p>length of series</p>
+</div></blockquote>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="order">
+<span id="order"></span><h2>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.order.Order">
+<em class="property">class </em><code class="descclassname">webdnn.graph.order.</code><code class="descname">Order</code><span class="sig-paren">(</span><em>axes: typing.List[webdnn.graph.axis.Axis]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents semantics of data order of variables.</p>
+<p>For example, <code class="code docutils literal"><span class="pre">OrderNHWC</span></code> means that the data is aligned as Channel-major(Batch-size-minor).</p>
+<dl class="docutils">
+<dt>attrs:</dt>
+<dd>ndim(int): number of dimensions
+axes(list of <a class="reference internal" href="#webdnn.graph.axis.Axis" title="webdnn.graph.axis.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a>): list of axis
+axes_dict(dict of <a class="reference internal" href="#webdnn.graph.axis.Axis" title="webdnn.graph.axis.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> and int): dictionary of pairs of axis and order index</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="placeholder">
+<span id="placeholder"></span><h2>Placeholder<a class="headerlink" href="#placeholder" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.placeholder.Placeholder">
+<em class="property">class </em><code class="descclassname">webdnn.graph.placeholder.</code><code class="descname">Placeholder</code><span class="sig-paren">(</span><em>dependency: typing.Union[webdnn.graph.placeholder.Dependency</em>, <em>NoneType] = None</em>, <em>value: typing.Union[int</em>, <em>_ForwardRef('Placeholder')] = None</em>, <em>label: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholder represents values which are unknown at compile time and determined at runtime, like batch size, length of
+time series, etc.</p>
+<p>Placeholder supports only integer value.</p>
+<p>Placeholder is embedded in graph descriptor and resolved at runtime like follows:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="nx">runner</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nx">load</span><span class="p">(</span><span class="s1">&#39;./my_model&#39;</span><span class="p">);</span>
+<span class="nx">runner</span><span class="p">.</span><span class="nx">setPlaceholderValue</span><span class="p">({</span>
+    <span class="s1">&#39;N&#39;</span><span class="o">:</span> <span class="mi">8</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Also Placeholder can be resolved by setting concrete value at compile time.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt;&gt; x = Placeholder(label=&quot;x&quot;)
+&gt;&gt; print(x)
+&lt;x&gt;
+&gt;&gt; x.value = 3
+&gt;&gt; print(x)
+3
+&gt;&gt; print(type(x))
+&lt;class &#39;webdnn.graph.placeholder.Placeholder&#39;&gt;
+</pre></div>
+</div>
+<p>Placeholder supports follow basic operations.</p>
+<ul>
+<li><p class="first">add(<code class="code docutils literal"><span class="pre">+</span></code>), sub(<code class="code docutils literal"><span class="pre">-</span></code>), mul(<code class="code docutils literal"><span class="pre">*</span></code>), mod(<code class="code docutils literal"><span class="pre">%</span></code>), floor-div(<code class="code docutils literal"><span class="pre">//</span></code>).</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">//</span> <span class="mi">5</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span> <span class="o">%</span> <span class="mi">4</span><span class="p">)</span> <span class="o">//</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>If possible, equation are simplified</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">7</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span> <span class="o">*</span> <span class="mi">13</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">eq(<code class="code docutils literal"><span class="pre">==</span></code>), ne(<code class="code docutils literal"><span class="pre">!=</span></code>)</p>
+<blockquote>
+<div><p>If both placeholders are resolved, they are compared based on concrete values.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">y</span> <span class="o">==</span> <span class="mi">6</span><span class="p">)</span>
+<span class="bp">True</span>
+</pre></div>
+</div>
+<p>If either placeholder is not resolved, they are compared symbolically.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span>
+<span class="bp">False</span>
+<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span>
+<span class="bp">True</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">gt(<code class="code docutils literal"><span class="pre">&gt;</span></code>), lt(<code class="code docutils literal"><span class="pre">&lt;</span></code>), ge(<code class="code docutils literal"><span class="pre">&gt;=</span></code>), le(<code class="code docutils literal"><span class="pre">&lt;=</span></code>)</p>
+<blockquote>
+<div><p>Supported only when both placeholders are resolved. Otherwise, an error is raised.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">y</span><span class="p">)</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">First</span> <span class="n">operand</span> <span class="ow">is</span> <span class="n">unresolved</span> <span class="n">placeholder</span><span class="o">.</span> <span class="n">It</span> <span class="n">can</span><span class="s1">&#39;t be compared.</span>
+<span class="o">&gt;&gt;</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="o">&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">y</span><span class="p">)</span>
+<span class="bp">True</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="Placeholder.label">
+<code class="descname">label</code><a class="headerlink" href="#Placeholder.label" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; the label.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="webdnn.graph.placeholder.Placeholder.check_resolved">
+<em class="property">static </em><code class="descname">check_resolved</code><span class="sig-paren">(</span><em>x: typing.Union[int, _ForwardRef('Placeholder')]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder.check_resolved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.check_resolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether specified placeholder is resolved or not.
+:param x: the placeholder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">If <cite>True</cite>, the placeholder is resolved. Otherwise, it&#8217;s not resolved.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)">bool</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="webdnn.graph.placeholder.Placeholder.force_int">
+<em class="property">static </em><code class="descname">force_int</code><span class="sig-paren">(</span><em>x: typing.Union[int, _ForwardRef('Placeholder')]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder.force_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.force_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the placeholder into concrete integer value. If <cite>x</cite> is not resolved, an error is raised.
+:param x: the placeholder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an integer</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)">int</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.placeholder.Placeholder.generate_js_function">
+<code class="descname">generate_js_function</code><span class="sig-paren">(</span><em>flag_semicolon=True</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder.generate_js_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.generate_js_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate javascript code to resolve this placeholder&#8217;s value at runtime.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flag_semicolon</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, semicolon is appended into generated code.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">generated code</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)">str</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.placeholder.Placeholder.get_depend_placeholders">
+<code class="descname">get_depend_placeholders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder.get_depend_placeholders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.get_depend_placeholders" title="Permalink to this definition">¶</a></dt>
+<dd><p>List up all dependent placeholders</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all dependent placeholders</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(list of Placeholder)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.placeholder.Placeholder.is_resolved">
+<code class="descname">is_resolved</code><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.is_resolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if the placeholder is resolved. Otherwise <cite>False</cite> is returned.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="webdnn.graph.placeholder.Placeholder.to_int">
+<em class="property">static </em><code class="descname">to_int</code><span class="sig-paren">(</span><em>x: typing.Union[int, _ForwardRef('Placeholder')]</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/placeholder.html#Placeholder.to_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.to_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the placeholder into concrete integer value.
+:param x: the placeholder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">If <cite>x</cite> is resolved, an integer is returned. Otherwise, <cite>x</cite> itself is returned.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)">int</a> or <a class="reference internal" href="#webdnn.graph.placeholder.Placeholder" title="webdnn.graph.placeholder.Placeholder">Placeholder</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.placeholder.Placeholder.value">
+<code class="descname">value</code><a class="headerlink" href="#webdnn.graph.placeholder.Placeholder.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The placeholder&#8217;s value. If it&#8217;s not resolved, the placeholder itself is returned.</p>
+<p>If the placeholder is already resolved, new value cannot be set, and it causes an error.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="optimizerule">
+<span id="optimizerule"></span><h2>OptimizeRule<a class="headerlink" href="#optimizerule" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule">
+<em class="property">class </em><code class="descclassname">webdnn.graph.optimize_rule.</code><code class="descname">OptimizeRule</code><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>graph: webdnn.graph.graph.Graph</em><span class="sig-paren">)</span> &#x2192; typing.Tuple[webdnn.graph.graph.Graph, bool]<a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the computational graph</p>
+<dl class="docutils">
+<dt>params:</dt>
+<dd>graph: Computational graph</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">optimized graph and flag whether the graph is changed or not.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="operators.html" class="btn btn-neutral float-right" title="Operators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Graph Transpiler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

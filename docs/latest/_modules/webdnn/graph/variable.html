@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.graph.variable &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.graph.variable</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.graph.variable</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="kn">import</span> <span class="nn">webdnn.graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">operator</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.node</span> <span class="k">import</span> <span class="n">Node</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
+<span class="kn">from</span> <span class="nn">webdnn.util.misc</span> <span class="k">import</span> <span class="n">mul</span>
+
+
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Variable(shape, order)</span>
+
+<span class="sd">    Data container class which is input to and output from operators.</span>
+
+<span class="sd">    Variable supports basic unary and binary operations.</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        x1 = Variable((2, 3), OrderNC)</span>
+<span class="sd">        x2 = Variable((3, 2), OrderCN)</span>
+<span class="sd">        h = x1 + x2</span>
+<span class="sd">        y = abs(h)</span>
+
+<span class="sd">        # variables are connected as follows:</span>
+<span class="sd">        #</span>
+<span class="sd">        #   x1 -+</span>
+<span class="sd">        #       +-[ElementwiseAdd]-&gt; h -[ElementwiseAbs]-&gt; y</span>
+<span class="sd">        #   x2 -+</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        shape (list of int or :class:`~webdnn.Placeholder`): shape of the variable.</span>
+<span class="sd">        order (:class:`~webdnn.Order`): Data order such as OrderNHWC, OrderNC, and so on.</span>
+<span class="sd">        input_to (set of :class:`~webdnn.Operator`): operators to which this variable is input</span>
+<span class="sd">        output_from (:class:`~webdnn.Operator`): operator which generates this variable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]]</span>
+    <span class="n">order</span><span class="p">:</span> <span class="n">Order</span>
+    <span class="n">input_to</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="s2">&quot;operator.Operator&quot;</span><span class="p">]</span>
+    <span class="n">output_from</span><span class="p">:</span> <span class="s2">&quot;operator.Operator&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]],</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_to</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;[Variable] order and shape are mismatched: order=</span><span class="si">{order}</span><span class="s2">, shape=</span><span class="si">{shape}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;name of this variable&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;number of elements&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">to_int</span><span class="p">(</span><span class="n">mul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;number of dimension&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">ndim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;dictionary of axis and shape size pairs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stride</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;stride size for each dimension&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">mul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stride_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;dictionary of axis and stride size pairs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Variable.change_order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;change_order(order)</span>
+
+<span class="sd">        Change variable order.</span>
+
+<span class="sd">        When number of dimension will be increased, axes whose size is one are created.</span>
+<span class="sd">        Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            order: new order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_shape_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">current_shape_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">current_shape_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+                    <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;[Variable.change_order()] The size of axes which will be removed must be one: &quot;</span> \
+                                      <span class="n">f</span><span class="s2">&quot;variable=</span><span class="si">{self}</span><span class="s2">, shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{size}</span><span class="s2">.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">new_shape</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Variable.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;replace(new_variable)</span>
+
+<span class="sd">        Replace this variable in graph by specified new variable.</span>
+
+<span class="sd">        All operators connected with this variable are disconnected and re-connected to new variable with same name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_variable (:class:`~webdnn.Variable`): new variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span><span class="o">.</span><span class="n">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_to</span><span class="p">):</span>  <span class="c1"># type: operator.Operator</span>
+            <span class="n">op</span><span class="o">.</span><span class="n">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">order_repr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.__class__.__name__}</span><span class="s2"> </span><span class="si">{self.name}</span><span class="s2"> shape=</span><span class="si">{self.shape}</span><span class="s2">, order=</span><span class="se">\&quot;</span><span class="si">{order_repr}</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="c1"># Unary operators</span>
+    <span class="k">def</span> <span class="nf">__pos__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_affine</span><span class="o">.</span><span class="n">ScalarAffine</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=+</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="mi">0</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_affine</span><span class="o">.</span><span class="n">ScalarAffine</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="mi">0</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__abs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">abs</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Binary operators</span>
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for -: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="o">-</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for -: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_mul</span><span class="o">.</span><span class="n">ElementwiseMul</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_mul</span><span class="o">.</span><span class="n">ElementwiseMul</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_div</span><span class="o">.</span><span class="n">ElementwiseDiv</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for /: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span> <span class="o">**</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_div</span><span class="o">.</span><span class="n">ElementwiseDiv</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">modulo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Variable.__pow__ is not supported modulo argument&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_pow</span><span class="o">.</span><span class="n">ScalarPow</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">power</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_pow</span><span class="o">.</span><span class="n">ElementwisePow</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;{type(self).__name__}&#39; and &#39;{type(power).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="c1"># FIXME</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_pow</span><span class="o">.</span><span class="n">ElementwisePow</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,883 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.graph.placeholder &mdash; MIL WebDNN 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.0.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mil-tokyo/webdnn">GitHub</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips/index.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.graph.placeholder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.graph.placeholder</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">auto</span><span class="p">,</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.util.json</span> <span class="k">import</span> <span class="n">json</span>
+
+
+<span class="k">class</span> <span class="nc">PlaceholderOperator</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Add</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># v1 + v2</span>
+    <span class="n">Sub</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># v1 - v2</span>
+    <span class="n">Mul</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># v1 * v2</span>
+    <span class="n">Mod</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># v1 % v2</span>
+    <span class="n">FloorDiv</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># v1 // v2</span>
+
+
+<span class="k">class</span> <span class="nc">Dependency</span><span class="p">:</span>
+    <span class="n">operator</span><span class="p">:</span> <span class="n">PlaceholderOperator</span>
+    <span class="n">operands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_deep_equal</span><span class="p">(</span><span class="n">d1</span><span class="p">:</span> <span class="s2">&quot;Dependency&quot;</span><span class="p">,</span> <span class="n">d2</span><span class="p">:</span> <span class="s2">&quot;Dependency&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">!=</span> <span class="n">d2</span><span class="o">.</span><span class="n">operator</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span> <span class="ow">or</span> <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="n">operands1</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">operands</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">op</span><span class="p">))</span>
+            <span class="n">operands2</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">operands</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">op</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">operands1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">operands2</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="k">return</span> <span class="nb">all</span><span class="p">([</span><span class="n">Placeholder</span><span class="o">.</span><span class="n">_check_deep_equal</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="k">for</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">operands1</span><span class="p">,</span> <span class="n">operands2</span><span class="p">)])</span>
+
+        <span class="k">elif</span> <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span> <span class="ow">or</span> \
+                <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span> <span class="ow">or</span> \
+                <span class="n">d1</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">_check_deep_equal</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d2</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> \
+                   <span class="n">Placeholder</span><span class="o">.</span><span class="n">_check_deep_equal</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">d2</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">PlaceholderOperator</span><span class="p">,</span> <span class="n">operands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="n">operands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">operands</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">operands</span><span class="p">):</span>
+                <span class="n">v1</span> <span class="o">=</span> <span class="n">operands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">v1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">operands</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">operands</span><span class="p">):</span>
+                    <span class="n">v2</span> <span class="o">=</span> <span class="n">operands</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">v2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">operands</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># v = ... + v1 + v2 + ...</span>
+                    <span class="c1"># v1 = common_term * other_term1</span>
+                    <span class="c1"># v2 = common_term * other_term2</span>
+                    <span class="c1">#</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># &gt;&gt; When other_term1 and other_term2 are resolved,</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># v = (... + (other_term1 + other_term2) * common_term + ...)</span>
+                    <span class="n">other_term1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v1</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">)</span> <span class="k">if</span> <span class="n">v1</span><span class="o">.</span><span class="n">dependency</span> <span class="k">else</span> <span class="p">{</span><span class="n">v1</span><span class="p">}</span>
+                    <span class="n">other_term2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v2</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">)</span> <span class="k">if</span> <span class="n">v2</span><span class="o">.</span><span class="n">dependency</span> <span class="k">else</span> <span class="p">{</span><span class="n">v2</span><span class="p">}</span>
+                    <span class="n">common_term</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+                    <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">other_term1</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">other_term2</span><span class="p">:</span>
+                            <span class="n">other_term1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                            <span class="n">other_term2</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                            <span class="n">common_term</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">other_term2</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">other_term1</span><span class="p">:</span>
+                            <span class="n">other_term1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                            <span class="n">other_term2</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                            <span class="n">common_term</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">is_resolved</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">other_term1</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">is_resolved</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">other_term2</span><span class="p">):</span>
+                        <span class="n">other_term1</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">other_term1</span><span class="p">)))</span>
+                        <span class="n">other_term2</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">other_term2</span><span class="p">)))</span>
+                        <span class="n">common_term</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">common_term</span><span class="p">)))</span>
+                        <span class="n">operands</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                        <span class="n">operands</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+                        <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+                        <span class="n">operands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="p">(</span><span class="n">other_term1</span> <span class="o">+</span> <span class="n">other_term2</span><span class="p">)</span> <span class="o">*</span> <span class="n">common_term</span><span class="p">))</span>
+
+                    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">operands</span><span class="p">):</span>
+                <span class="n">v1</span> <span class="o">=</span> <span class="n">operands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">v1</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+                    <span class="n">s</span> <span class="o">*=</span> <span class="n">v1</span>
+                    <span class="n">operands</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">s</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">operands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">s</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">operands</span> <span class="o">=</span> <span class="n">operands</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If true, all dependent placeholders are resolved</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">operand</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operand</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">operand</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="n">v</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Sub</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">*=</span> <span class="n">v</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unsupported placeholder operation: </span><span class="si">{self.operator}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Sub</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">))</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">dependency</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">v</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; * &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; % &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; // &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unsupported placeholder operation: </span><span class="si">{self.operator}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; + &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Sub</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; * &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; % &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; // &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unsupported placeholder operation: </span><span class="si">{self.operator}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">generate_js_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">(</span><span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Sub</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">(</span><span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">))</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">dependency</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">v</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">(</span><span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">(</span><span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; * &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot; % &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+            <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;Math.floor(</span><span class="si">{s[0]}</span><span class="s2"> / </span><span class="si">{s[1]}</span><span class="s2">)&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unsupported placeholder operation: </span><span class="si">{self.operator}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="Placeholder"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder">[docs]</a><span class="k">class</span> <span class="nc">Placeholder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">SerializableMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Placeholder represents values which are unknown at compile time and determined at runtime, like batch size, length of</span>
+<span class="sd">    time series, etc.</span>
+
+<span class="sd">    Placeholder supports only integer value.</span>
+
+<span class="sd">    Placeholder is embedded in graph descriptor and resolved at runtime like follows:</span>
+
+<span class="sd">    .. code-block:: javascript</span>
+
+<span class="sd">        runner = await WebDNN.load(&#39;./my_model&#39;);</span>
+<span class="sd">        runner.setPlaceholderValue({</span>
+<span class="sd">            &#39;N&#39;: 8</span>
+<span class="sd">        });</span>
+
+<span class="sd">    Also Placeholder can be resolved by setting concrete value at compile time.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        &gt;&gt; x = Placeholder(label=&quot;x&quot;)</span>
+<span class="sd">        &gt;&gt; print(x)</span>
+<span class="sd">        &lt;x&gt;</span>
+<span class="sd">        &gt;&gt; x.value = 3</span>
+<span class="sd">        &gt;&gt; print(x)</span>
+<span class="sd">        3</span>
+<span class="sd">        &gt;&gt; print(type(x))</span>
+<span class="sd">        &lt;class &#39;webdnn.graph.placeholder.Placeholder&#39;&gt;</span>
+
+<span class="sd">    Placeholder supports follow basic operations.</span>
+
+<span class="sd">    - add(:code:`+`), sub(:code:`-`), mul(:code:`*`), mod(:code:`%`), floor-div(:code:`//`).</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; x = Placeholder(label=&quot;x&quot;)</span>
+<span class="sd">            &gt;&gt; y = x * 2 + 3</span>
+<span class="sd">            &gt;&gt; print(y)</span>
+<span class="sd">            &lt;x&gt; * 2 + 3</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; x = Placeholder(label=&quot;x&quot;)</span>
+<span class="sd">            &gt;&gt; y = x % 4 // 5</span>
+<span class="sd">            &gt;&gt; print(y)</span>
+<span class="sd">            (&lt;x&gt; % 4) // 5</span>
+
+<span class="sd">        If possible, equation are simplified</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; x = Placeholder(label=&quot;x&quot;)</span>
+<span class="sd">            &gt;&gt; y = x * 6 + x * 7</span>
+<span class="sd">            &gt;&gt; print(y)</span>
+<span class="sd">            &lt;x&gt; * 13</span>
+
+<span class="sd">    - eq(:code:`==`), ne(:code:`!=`)</span>
+
+<span class="sd">        If both placeholders are resolved, they are compared based on concrete values.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; p = Placeholder(value=3)</span>
+<span class="sd">            &gt;&gt; x = p * 2</span>
+<span class="sd">            &gt;&gt; y = p + p</span>
+<span class="sd">            &gt;&gt; print(x == y == 6)</span>
+<span class="sd">            True</span>
+
+<span class="sd">        If either placeholder is not resolved, they are compared symbolically.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; p = Placeholder(label=&quot;p&quot;)</span>
+<span class="sd">            &gt;&gt; x = p * 2</span>
+<span class="sd">            &gt;&gt; y = p * 3</span>
+<span class="sd">            &gt;&gt; print(x == y)</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt; p.value = 0</span>
+<span class="sd">            &gt;&gt; print(x == y)</span>
+<span class="sd">            True</span>
+
+
+<span class="sd">    - gt(:code:`&gt;`), lt(:code:`&lt;`), ge(:code:`&gt;=`), le(:code:`&lt;=`)</span>
+
+<span class="sd">        Supported only when both placeholders are resolved. Otherwise, an error is raised.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt; p = Placeholder(label=&quot;p&quot;)</span>
+<span class="sd">            &gt;&gt; x = p * 2</span>
+<span class="sd">            &gt;&gt; y = p * 3</span>
+<span class="sd">            &gt;&gt; print(x &lt; y)</span>
+<span class="sd">            ValueError: First operand is unresolved placeholder. It can&#39;t be compared.</span>
+<span class="sd">            &gt;&gt; p.value = 3</span>
+<span class="sd">            &gt;&gt; print(x &lt; y)</span>
+<span class="sd">            True</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        label (str): the label.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_value</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[int]</span>
+    <span class="n">_cache_value</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[int]</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[str]</span>
+    <span class="n">dependency</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[Dependency]</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Placeholder.to_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder.to_int">[docs]</a>    <span class="k">def</span> <span class="nf">to_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the placeholder into concrete integer value.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x: the placeholder</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (int or Placeholder): If `x` is resolved, an integer is returned. Otherwise, `x` itself is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_resolved</span> <span class="k">else</span> <span class="n">x</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Placeholder.force_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder.force_int">[docs]</a>    <span class="k">def</span> <span class="nf">force_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the placeholder into concrete integer value. If `x` is not resolved, an error is raised.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x: the placeholder</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (int): an integer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">value</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{x}</span><span class="s2"> is not resolved.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Placeholder.check_resolved"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder.check_resolved">[docs]</a>    <span class="k">def</span> <span class="nf">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether specified placeholder is resolved or not.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x: the placeholder</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (bool): If `True`, the placeholder is resolved. Otherwise, it&#39;s not resolved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">is_resolved</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check_deep_equal</span><span class="p">(</span><span class="n">p1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">p2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="o">==</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">p2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">elif</span> <span class="n">p1</span><span class="o">.</span><span class="n">dependency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">p2</span><span class="o">.</span><span class="n">dependency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Dependency</span><span class="o">.</span><span class="n">check_deep_equal</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">dependency</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">dependency</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">p1</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">p2</span><span class="o">.</span><span class="n">label</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dependency</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dependency</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dependency</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">_id</span>
+
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span> <span class="o">=</span> <span class="n">dependency</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;placeholder_[</span><span class="si">{_id}</span><span class="s2">]&quot;</span>
+            <span class="n">_id</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
+
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The placeholder&#39;s value. If it&#39;s not resolved, the placeholder itself is returned.</span>
+
+<span class="sd">        If the placeholder is already resolved, new value cannot be set, and it causes an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cache_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">value</span>
+
+                <span class="c1"># noinspection PyTypeChecker</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_value</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@value</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_v</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">new_v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Placeholder#value must be a int, not &#39;{type(new_v)}&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> is already resolved&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">new_v</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return `True` if the placeholder is resolved. Otherwise `False` is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">is_resolved</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span> <span class="o">+</span> <span class="p">[</span><span class="n">other</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="c1"># Commutative property</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="nf">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Add</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Sub</span><span class="p">:</span>
+                <span class="c1"># (v0+v1)*o = v0*o + v1*o</span>
+                <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span>
+                                              <span class="p">[</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">v</span> <span class="o">*</span> <span class="n">other</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">]))</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span> <span class="o">+</span> <span class="p">[</span><span class="n">other</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mul</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__floordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__rfloordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">,</span> <span class="p">[</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">%</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__rmod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">Dependency</span><span class="p">(</span><span class="n">PlaceholderOperator</span><span class="o">.</span><span class="n">Mod</span><span class="p">,</span> <span class="p">[</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">_check_deep_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">_check_deep_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Second operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Second operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Second operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Second operand is unresolved placeholder. It can&#39;t be compared.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.label}</span><span class="s2">&gt;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="k">else</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.__class__.__name__}</span><span class="s2"> at {hex(id(self))}&gt;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.label}</span><span class="s2">&gt;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="k">else</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.__class__.__name__}</span><span class="s2"> at {hex(id(self))}&gt;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_to_serializable_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;eval&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">()</span>
+            <span class="p">}</span>
+
+<div class="viewcode-block" id="Placeholder.get_depend_placeholders"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder.get_depend_placeholders">[docs]</a>    <span class="k">def</span> <span class="nf">get_depend_placeholders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List up all dependent placeholders</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (list of Placeholder): list of all dependent placeholders</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get_depend_placeholders</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">res</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Placeholder.generate_js_function"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/base_classes.html#webdnn.graph.placeholder.Placeholder.generate_js_function">[docs]</a>    <span class="k">def</span> <span class="nf">generate_js_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate javascript code to resolve this placeholder&#39;s value at runtime.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            flag_semicolon(bool): If True, semicolon is appended into generated code.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (str): generated code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_resolved</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.value}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;;&quot;</span> <span class="k">if</span> <span class="n">flag_semicolon</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">()</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;placeholders[&#39;</span><span class="si">{self.label}</span><span class="s2">&#39;]&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;;&quot;</span> <span class="k">if</span> <span class="n">flag_semicolon</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

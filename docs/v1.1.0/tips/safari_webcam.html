@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Using web camera in Safari &mdash; MIL WebDNN 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.0.0 documentation" href="../index.html"/>
+        <link rel="up" title="Tips" href="index.html"/>
+        <link rel="next" title="API Reference" href="../api_reference/index.html"/>
+        <link rel="prev" title="EcmaScript5 support" href="es5.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mil-tokyo/webdnn">GitHub</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="es5.html">EcmaScript5 support</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Using web camera in Safari</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flash-player">Flash player</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#security-setting-for-camera">Security setting for camera</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tips</a> &raquo;</li>
+        
+      <li>Using web camera in Safari</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tips/safari_webcam.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="using-web-camera-in-safari">
+<span id="using-web-camera-in-safari"></span><h1>Using web camera in Safari<a class="headerlink" href="#using-web-camera-in-safari" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<span id="background"></span><h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>Most modern web browsers support WebRTC, which supports easy access to camera from web page scripts.
+However, Safari (on Mac) does not support WebRTC, so the workaround is to use Flash.</p>
+<p>There is a good library &#8220;<a class="reference external" href="https://github.com/jhuckaby/webcamjs">webcamjs</a>&#8221; to wrap the browser difference. To make this library to work, security setting is needed. This document describes how to change the setting.</p>
+</div>
+<div class="section" id="flash-player">
+<span id="flash-player"></span><h2>Flash player<a class="headerlink" href="#flash-player" title="Permalink to this headline">¶</a></h2>
+<p>You need to install and enable Flash player <em>on the target website</em> first.</p>
+<p>Visit official instruction:
+<a class="reference external" href="https://helpx.adobe.com/flash-player/kb/enabling-flash-player-safari.html">https://helpx.adobe.com/flash-player/kb/enabling-flash-player-safari.html</a></p>
+</div>
+<div class="section" id="security-setting-for-camera">
+<span id="security-setting-for-camera"></span><h2>Security setting for camera<a class="headerlink" href="#security-setting-for-camera" title="Permalink to this headline">¶</a></h2>
+<p>When you visit a website that want to access your camera, special permission is needed.</p>
+<p>If you are lucky, you have only to click &#8220;Allow&#8221; button.
+<img alt="Allow button" src="../_images/safari_webcam_4.png" /></p>
+<p>Sometimes, the button does not work. In this case, you need to change the setting from &#8220;System Preferences&#8221;.</p>
+<ol class="simple">
+<li>Open Flash Player
+<img alt="Flash Player" src="../_images/safari_webcam_1.png" /></li>
+<li>Click &#8220;Camera and Mic&#8221; tab and open &#8220;Camera and Microphone Settings by Site...&#8221; dialog
+<img alt="Camera and Mic" src="../_images/safari_webcam_2.png" /></li>
+<li>Change configuration to &#8220;Allow&#8221; for target website
+<img alt="Allow" src="../_images/safari_webcam_3.png" /></li>
+</ol>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../api_reference/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="es5.html" class="btn btn-neutral" title="EcmaScript5 support" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

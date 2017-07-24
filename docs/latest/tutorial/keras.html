@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Use with keras model &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorial" href="index.html"/>
+        <link rel="next" title="Use with caffemodel" href="caffe.html"/>
+        <link rel="prev" title="Setup guide (for Windows)" href="setup_windows.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction to WebDNN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#framework-structure">Framework structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">Setup guide (for Mac / Linux)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_windows.html">Setup guide (for Windows)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Use with keras model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caffe.html">Use with caffemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chainer.html">Use with chainer model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_operator/index.html">Use your custom operator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorial</a> &raquo;</li>
+        
+      <li>Use with keras model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorial/keras.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="use-with-keras-model">
+<span id="use-with-keras-model"></span><h1>Use with keras model<a class="headerlink" href="#use-with-keras-model" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we&#8217;ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model 
+pretrained in Keras <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
+<ol>
+<li><p class="first">Export Keras pretrained model</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">keras.applications</span> <span class="kn">import</span> <span class="n">resnet50</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span><span class="n">include_top</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;resnet50.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Convert Keras model to our computation graph format</p>
+<div class="highlight-sh"><div class="highlight"><pre><span></span>python bin/convert_keras.py resnet50.h5 --input_shape <span class="s1">&#39;(1,224,224,3)&#39;</span> --out output
+</pre></div>
+</div>
+<p>At least you need to specify the model file and the shape of input array.</p>
+<p>Now you have the &#8220;graph descriptor&#8221; to execute on the web browsers in output directory.</p>
+</li>
+<li><p class="first">Run on web browser</p>
+<p>This document illustrates the essence of running the &#8220;graph descriptor&#8221; to execute on the web browsers.
+In <code class="docutils literal"><span class="pre">convert_keras</span></code> example directory, the complete codes for training and converting a Keras model and running it on the web browsers can be found.</p>
+<p>First, You have to initialize <a class="reference external" href="../api_reference/descriptor_runner/interfaces/webdnn.dnndescriptorrunner.html"><code class="docutils literal"><span class="pre">DescriptorRunner</span></code></a>
+and load model data.</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nx">load</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>WebDNN automatically select the best backend based on Browser type and
+compiled model data on the server.</p>
+<p>You can check the backend type</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">runner</span><span class="p">.</span><span class="nx">backendName</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="backend" src="../_images/check_backend.png" /></p>
+<p>Then you can get input and output variable references (<code class="docutils literal"><span class="pre">SymbolicFloat32Array</span></code> type).</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">getInputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">];</span>
+<span class="kd">let</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">getOutputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>That&#8217;s all for initialization. You only have to do this at once in the application.</p>
+<p>Let&#8217;s classify this image.</p>
+<p><img alt="sample image" src="../_images/sample_image2.jpeg" /></p>
+<p>First, set input data.</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="c1">// loadImageData() returns image data as Float32Array</span>
+<span class="nx">x</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">loadImageData</span><span class="p">());</span>
+</pre></div>
+</div>
+<p>Next, run model.</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="nx">await</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">run</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>That&#8217;s all.</p>
+<p>Show computed vector and predicted label.</p>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">y_typed_array</span> <span class="o">=</span> <span class="nx">y</span><span class="p">.</span><span class="nx">toActual</span><span class="p">();</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Computed vector&#39;</span><span class="p">,</span> <span class="nx">y_typed_array</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Predicted Label&#39;</span><span class="p">,</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nb">Math</span><span class="p">.</span><span class="nx">argmax</span><span class="p">(</span><span class="nx">y_typed_array</span><span class="p">));</span>
+</pre></div>
+</div>
+<p><img alt="result" src="../_images/result_keras.png" /></p>
+<p>Congratulation! <code class="docutils literal"><span class="pre">LabelID:779</span></code> is <code class="docutils literal"><span class="pre">&quot;School</span> <span class="pre">bus&quot;</span></code> in ImageNet. It looks work well.</p>
+</li>
+</ol>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="11">
+<li>He, X. Zhang, S. Ren, and J. Sun, &#8220;Deep Residual Learning for Image Recognition&#8221;, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><a class="reference external" href="https://keras.io/applications/#resnet50">https://keras.io/applications/#resnet50</a></td></tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="caffe.html" class="btn btn-neutral float-right" title="Use with caffemodel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="setup_windows.html" class="btn btn-neutral" title="Setup guide (for Windows)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
