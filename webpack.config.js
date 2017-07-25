@@ -18,8 +18,9 @@ const minifyOption = {
 	removeTagWhitespace: true
 };
 
-function generateConfig(tsxPath, htmlPath) {
+function generateConfig(tsxPath, ejsPath) {
 	let chunkName = path.basename(tsxPath, '.tsx');
+	let htmlPath = ejsPath.replace('ejs', 'html');
 	
 	let entry = {};
 	entry[chunkName] = tsxPath;
@@ -55,6 +56,9 @@ function generateConfig(tsxPath, htmlPath) {
 				test: /\.(png|json)$/,
 				use: [{
 					loader: 'file-loader',
+					query: {
+						name: '[name].[ext]'
+					}
 				}]
 			}]
 		},
@@ -76,7 +80,7 @@ function generateConfig(tsxPath, htmlPath) {
 				filename: path.basename(htmlPath),
 				inject: 'head',
 				chunksSortMode: 'dependency',
-				template: htmlPath,
+				template: ejsPath,
 				minify: process.env.DEBUG ? null : minifyOption
 			}),
 			new PrerenderSpaPlugin(
@@ -90,6 +94,6 @@ function generateConfig(tsxPath, htmlPath) {
 
 
 module.exports = [
-	generateConfig('./src/scripts/index.tsx', './src/html/index.html'),
-	generateConfig('./src/scripts/neural_style_transfer.tsx', './src/html/neural_style_transfer.html')
+	generateConfig('./src/scripts/index.tsx', './src/html/index.ejs'),
+	generateConfig('./src/scripts/neural_style_transfer.tsx', './src/html/neural_style_transfer.ejs')
 ];
