@@ -1,0 +1,30 @@
+@import "../button/button";
+
+.ControlBar {
+  display: block;
+  background: rgb(28, 29, 35);
+  color: #fff;
+  box-shadow: 0 -1px 3px rgba(#000, 0.3);
+  z-index: 1;
+  flex: 0 auto;
+}
+
+.ControlBar-Header {
+  position: relative;
+  line-height: 32px;
+  height: 32px;
+  padding: 0 16px;
+  color: lighten(rgb(28, 29, 35), 30);
+}
+
+.ControlBar-Body {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 64px;
+}
+
+.ControlBar .Button {
+  flex-direction: column;
+}

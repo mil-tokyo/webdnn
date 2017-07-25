@@ -1,0 +1,18 @@
+@import "../../../style/stylus/bootstrap-mixin";
+
+.playground {
+  display: block;
+}
+
+.iframe {
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+.linkButton {
+  @include media-breakpoint-down(sm) {
+    display: flex;
+    position: relative;
+    width: 100%;
+  }
+}

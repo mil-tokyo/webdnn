@@ -1,0 +1,17 @@
+@import "../../common/stylus/button";
+@import "../../../style/stylus/playground";
+@import "../../../style/stylus/bootstrap-mixin";
+
+#mes-ts {
+  text-align: center;
+}
+
+.topPage {
+  margin-top: 64px;
+}
+
+@include media-breakpoint-down(md) {
+  .topPage {
+    margin-top: 48px;
+  }
+}

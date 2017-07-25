@@ -1,0 +1,88 @@
+.compatibilityTable {
+  border-collapse: collapse;
+  margin: 16px auto;
+
+  th {
+    font-weight: 300;
+    color: #444;
+    padding: 12px 16px 6px;
+    background: rgba(#000, 0.1);
+    border-left: 1px solid rgba(#fff, 0.3);
+
+    svg {
+      fill: currentColor;
+    }
+  }
+  td {
+    text-align: center;
+    padding: 8px 16px;
+    border-left: 1px solid rgba(#fff, 0.3);
+    border-bottom: 1px solid rgba(#fff, 0.3);
+  }
+  .backend {
+    display: block;
+    font-weight: bold;
+  }
+}
+
+.thisBrowserTable {
+  border-collapse: collapse;
+  margin: 16px auto;
+
+  th {
+    font-weight: 300;
+    padding: 8px 16px;
+    background: rgba(#000, 0.1);
+    color: #444;
+    border-left: 1px solid rgba(#fff, 0.3);
+  }
+  td {
+    width: 200px;
+    line-height: 64px;
+    text-align: center;
+    padding: 8px 16px;
+    border-left: 1px solid rgba(#fff, 0.3);
+    white-space: nowrap;
+  }
+}
+
+.subTitle {
+  text-align: center;
+}
+
+.webgpu {
+  background: #ff9900;
+  color: #fff;
+}
+
+.webassembly {
+  background: #ffb200;
+  color: #fff;
+}
+
+.fallback {
+  background: #ffcc00;
+  color: #fff;
+}
+
+.checking {
+  background: none;
+  color: #444;
+}
+
+.supported {
+  font-weight: bold;
+}
+
+.unsupported {
+  background: rgba(#000, 0.3);
+  color: #444;
+}
+
+.browser {
+  display: block;
+}
+
+.versionRange {
+  display: block;
+}

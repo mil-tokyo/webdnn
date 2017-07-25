@@ -1,0 +1,40 @@
+@import "../../../../style/stylus/bootstrap";
+@import "../../../../style/stylus/reset";
+
+body {
+  background: #000;
+  color: #fff;
+}
+
+main {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.App {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.App-SplashScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: 65535;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

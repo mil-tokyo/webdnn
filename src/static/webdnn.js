@@ -37,7 +37,7 @@ var WebDNN;
             return Object.values(this.values).every(value => typeof value == 'number');
         }
         update(values) {
-            Object.assign(this.values, values);
+            this.values = Object.assign(this.values, values);
         }
         resolve(placeholder) {
             // Literal value => return itself.
@@ -117,12 +117,18 @@ var WebDNN;
     WebDNN.SymbolicArrayBufferView = SymbolicArrayBufferView;
     class SymbolicFloat32Array extends SymbolicArrayBufferView {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
         }
     }
     WebDNN.SymbolicFloat32Array = SymbolicFloat32Array;
     class SymbolicInt32Array extends SymbolicArrayBufferView {
         toActual() {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Int32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
         }
     }
@@ -162,8 +168,16 @@ var WebDNN;
      */
     class DescriptorRunner {
         constructor() {
+            this._running = false;
             this.descriptor = null;
             this.ignoreCache = false;
+        }
+        /**
+         * Get if model is running.
+         * While running, calling run() again or modifying input is invalid.
+         */
+        get running() {
+            return this._running;
         }
     }
     WebDNN.DescriptorRunner = DescriptorRunner;
@@ -549,6 +563,7 @@ var WebDNN;
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
 /// <reference path="../symbolic_array_buffer_view.ts" />
 /// <reference path="../placeholder.ts" />
+const IS_IOS = navigator.userAgent.includes('iPhone');
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerWebGPU extends WebDNN.DescriptorRunner {
@@ -582,6 +597,9 @@ var WebDNN;
             await this.compile();
             await this.initializeStaticBuffer(weightRawArray);
             await this.initializeMetaBuffers();
+            await this.setPlaceholderValue({
+                '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 512
+            });
             if (this.placeholderContext && this.placeholderContext.isResolved)
                 await this.initializeDynamicBuffer();
         }
@@ -664,7 +682,7 @@ var WebDNN;
                 return placeholderContext.resolve(executionInfo);
             }));
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -680,7 +698,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -697,6 +715,8 @@ var WebDNN;
             return this.outputViews;
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.executionInfos)
                 throw new Error('ExecutionInfos is not loaded');
             if (!this.inputViews || !this.outputViews)
@@ -714,6 +734,7 @@ var WebDNN;
             let staticBuffer = this.staticBuffer;
             let dynamicBuffer = this.dynamicBuffer;
             let metaBuffers = this.metaBuffers;
+            this._running = true;
             if (WebDNN.DEBUG) {
                 let records = [];
                 let totalElapsedTime = 0;
@@ -753,6 +774,7 @@ var WebDNN;
                 }
                 await complete_promise; //wait to finish final kernel
             }
+            this._running = false;
         }
     }
     WebDNN.DescriptorRunnerWebGPU = DescriptorRunnerWebGPU;
@@ -858,6 +880,7 @@ var WebDNN;
             let worker = new Worker(this.worker_entry_js_path);
             worker.onerror = (event) => {
                 console.error(event);
+                this._running = false;
                 // console.error('Worker Exception: ' + event.message);
                 if (this.worker_promise_reject_func) {
                     this.worker_promise_reject_func(event);
@@ -909,7 +932,7 @@ var WebDNN;
             });
             return promise;
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -925,7 +948,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -943,6 +966,8 @@ var WebDNN;
             return this.outputViews;
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             if (!this.inputViews || !this.outputViews)
@@ -961,11 +986,13 @@ var WebDNN;
                         for (let i = 0; i < event.data.length; i++) {
                             outputViews[i].set(event.data[i]);
                         }
+                        this._running = false;
                         resolve();
                     }
                     else {
                         console.log(event.data);
                         worker.terminate();
+                        this._running = false;
                         reject(new Error(event.data));
                     }
                 };
@@ -997,6 +1024,7 @@ var WebDNN;
                         }
                     }
                 }
+                this._running = true;
                 worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
             });
             return promise;
@@ -1014,8 +1042,8 @@ function wait(duration = 10) {
 var WebDNN;
 (function (WebDNN) {
     class DescriptorRunnerFallback extends WebDNN.DescriptorRunner {
-        constructor() {
-            super(...arguments);
+        constructor(option) {
+            super();
             this.backendName = 'fallback';
         }
         async init() {
@@ -1106,6 +1134,8 @@ var WebDNN;
             await this.initializeDynamicBuffer();
         }
         async run() {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
             if (!this.descriptor)
                 throw new Error('Descriptor is not loaded');
             if (!this.placeholderContext)
@@ -1124,6 +1154,7 @@ var WebDNN;
                 .map(executionInfo => placeholderContext.resolve(executionInfo));
             let startDate = Date.now();
             let lastDate = Date.now();
+            this._running = true;
             for (let i = 0; i < executionInfos.length; i++) {
                 let currentDate = Date.now();
                 if (currentDate - lastDate >= 1000) {
@@ -1137,8 +1168,9 @@ var WebDNN;
                 this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
             }
             console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
+            this._running = false;
         }
-        async getInputViews() {
+        getInputViews() {
             if (this.inputViews)
                 return this.inputViews;
             if (!this.descriptor)
@@ -1154,7 +1186,7 @@ var WebDNN;
             });
             return this.inputViews;
         }
-        async getOutputViews() {
+        getOutputViews() {
             if (this.outputViews)
                 return this.outputViews;
             if (!this.descriptor)
@@ -1184,7 +1216,6 @@ var WebDNN;
         'webassembly': WebDNN.DescriptorRunnerWebassembly,
         'fallback': WebDNN.DescriptorRunnerFallback,
     };
-    WebDNN.backendName = 'none';
     WebDNN.DEBUG = false;
     async function initBackend(backendName, option) {
         if (!(backendName in WebDNN.backends))
@@ -1196,37 +1227,17 @@ var WebDNN;
         }
         catch (ex) {
             console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
-            return false;
+            return null;
         }
-        WebDNN.runner = runner;
-        WebDNN.backendName = backendName;
-        return true;
+        return runner;
     }
-    async function init(backendOrder, backendOptions = {}) {
-        if (!backendOrder) {
-            backendOrder = ['webgpu', 'webassembly'];
-        }
-        else if (typeof backendOrder === 'string') {
-            backendOrder = [backendOrder];
-        }
-        backendOrder = backendOrder.slice();
-        if (backendOrder.indexOf('fallback') === -1)
-            backendOrder.concat(['fallback']);
-        while (backendOrder.length > 0) {
-            let backendName = backendOrder.shift();
-            if (await initBackend(backendName, backendOptions[backendName]))
-                return WebDNN.backendName;
-        }
-        throw new Error('No backend is available');
-    }
-    WebDNN.init = init;
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
      * @param initOption Initialize option
      * @return Interface to input/output data and run the model.
      */
-    async function prepareAll(directory, initOption = {}) {
+    async function load(directory, initOption = {}) {
         let backendOrder = initOption.backendOrder;
         if (!backendOrder) {
             backendOrder = ['webgpu', 'webassembly'];
@@ -1240,28 +1251,21 @@ var WebDNN;
         let backendOptions = initOption.backendOptions || {};
         while (backendOrder.length > 0) {
             let backendName = backendOrder.shift();
-            if (!(await initBackend(backendName, backendOptions[backendName])))
+            let runner = await initBackend(backendName, backendOptions[backendName]);
+            if (!runner)
                 continue;
-            if (!WebDNN.runner)
-                continue;
+            runner.ignoreCache = Boolean(initOption.ignoreCache);
             try {
-                await WebDNN.runner.load(directory, initOption.progressCallback);
+                await runner.load(directory, initOption.progressCallback);
             }
             catch (ex) {
                 console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
             }
-            let inputViews = await WebDNN.runner.getInputViews();
-            let outputViews = await WebDNN.runner.getOutputViews();
-            return {
-                backendName: backendName,
-                inputViews: inputViews,
-                outputViews: outputViews,
-                run: WebDNN.runner.run.bind(WebDNN.runner)
-            };
+            return runner;
         }
         throw new Error('No backend is available');
     }
-    WebDNN.prepareAll = prepareAll;
+    WebDNN.load = load;
 })(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {
@@ -1274,6 +1278,7 @@ var WebDNN;
          * @returns {number[]} indices of top-K largest samples
          */
         function argmax(arr, k = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace = {};
             while (stack.length > 0) {
@@ -1319,6 +1324,7 @@ var WebDNN;
          * @returns {number[]} indices of top-K smallest samples
          */
         function argmin(arr, k = 1) {
+            arr = arr.slice();
             let stack = [[0, arr.length]];
             let workspace = {};
             while (stack.length > 0) {

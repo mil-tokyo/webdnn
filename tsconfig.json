@@ -4,7 +4,8 @@
 		"removeComments": true,
 		"strictNullChecks": true,
 		"target": "es5",
-		"inlineSourceMap": false,
+		"jsx": "react",
+		"inlineSourceMap": true,
 		"sourceMap": false,
 		"lib": [
 			"es6",

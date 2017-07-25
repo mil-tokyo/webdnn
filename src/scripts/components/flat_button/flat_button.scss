@@ -1,0 +1,47 @@
+@import "../../../style/stylus/bootstrap-mixin";
+
+.flat-button {
+  border: 1px solid currentColor;
+  color: currentColor;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 2px;
+  background: none;
+  outline: none !important;
+  transition: 60ms ease-out;
+  min-height: 48px;
+  min-width: 48px;
+
+  @include media-breakpoint-down(sm) {
+    padding: 8px 8px;
+  }
+
+  &:focus, &:hover {
+    opacity: 0.8;
+  }
+  &:active {
+    transition: none;
+    opacity: 0.3;
+  }
+
+  &[disabled] {
+    cursor: default;
+    opacity: 0.3;
+    &:active, &:focus, &:hover {
+      opacity: 0.3;
+    }
+  }
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
+

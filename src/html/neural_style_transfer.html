@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#FF9900">
     <title>Neural Style Transfer - MIL WebDNN</title>
     <link rel="canonical" href="https://mil-tokyo.github.io/webdnn/neural_style_transfer.html">
-    <link rel="alternate" hreflang="en" href="https://mil-tokyo.github.io/webdnn/neural_style_transfer.html"/>
+    <link rel="alternate" hreflang="en" href="https://mil-tokyo.github.io/webdnn/neural_style_transfer.html" />
     <link rel="apple-touch-icon" sizes="180x180" href="/webdnn/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/webdnn/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/webdnn/favicon-16x16.png">
@@ -24,78 +24,27 @@
     <meta property="og:title" content="MIL WebDNN">
     <script async src="/webdnn/inflate.min.js"></script>
     <script async src="/webdnn/webdnn.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+        }
+
+        main {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+    </style>
 </head>
 
 <body>
-
-<div class="LaunchView" id="launchView">
-    <button id="runAppButton" class="Button-primary">
-        <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 5v14l11-7z"/>
-        </svg>
-        <span>Run</span>
-    </button>
-</div>
-
-<div class="InitializingView" id="initializingView">
-    <span class="InitializingView-Message">Initializing...</span>
-    <div class="InitializingView-ProgressBar ProgressBar">
-        <div class="ProgressBar-Inner"></div>
-    </div>
-</div>
-
-<main class="Flex-flex Flex-column Flex-stretch">
-
-    <div class="MainContainer">
-        <div class="InputContainer">
-            <div class="InputItemContainer">
-                <div class="Tip">Contents</div>
-                <div class="InputImageContainer" id="contentsContainer">
-                    <div class="CameraContainer" id="cameraContainer"></div>
-                    <div class="SampleContainer" id="sampleContainer">
-                        <canvas id="inputCanvas" width="192" height="144"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="InputItemContainer">
-                <div class="Tip">Style</div>
-                <div class="InputImageContainer">
-                    <img src="/webdnn/assets/neural_style_transfer-style.jpg">
-                </div>
-            </div>
-        </div>
-
-        <div class="OutputContainer">
-            <div class="Tip">Output</div>
-            <div class="OutputCanvasContainer">
-                <canvas id="outputCanvas" width="192" height="144"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="MessageBar">
-        <span class="Flex-flex" id="message">Initializing</span>
-    </div>
-    <div class="ControlBar">
-        <label class="Flex-column">
-            <span>Backend</span>
-            <select id="backend">
-                <option value="webgpu" selected>WebGPU</option>
-                <option value="webassembly">WebAssembly</option>
-            </select>
-        </label>
-        <label class="Flex-column">
-            <span>Contents Source</span>
-            <select id="dataSource">
-                <option value="sample" selected>Sample Image</option>
-                <option value="photo">WebCam Photo</option>
-                <option value="video">WebCam Video</option>
-            </select>
-        </label>
-        <span class="Flex-flex"></span>
-        <button class="Button-primary" id="runButton" disabled>Run</button>
-    </div>
-</main>
+<div id="root"></div>
 </body>
 
 </html>

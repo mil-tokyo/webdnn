@@ -1,0 +1,6 @@
+@import "../flat_button/flat_button";
+
+.link-button {
+  @extend .flat-button;
+  text-decoration: none;
+}
