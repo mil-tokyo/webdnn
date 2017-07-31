@@ -86,7 +86,7 @@ var WebDNN;
             configurable: true
         });
         PlaceholderContext.prototype.update = function (values) {
-            Object.assign(this.values, values);
+            this.values = Object.assign(this.values, values);
         };
         PlaceholderContext.prototype.resolve = function (placeholder) {
             var _this = this;
@@ -187,6 +187,9 @@ var WebDNN;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         SymbolicFloat32Array.prototype.toActual = function () {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
         };
         return SymbolicFloat32Array;
@@ -198,6 +201,9 @@ var WebDNN;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         SymbolicInt32Array.prototype.toActual = function () {
+            if (!this.arrayBuffer) {
+                throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
+            }
             return new Int32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Int32Array.BYTES_PER_ELEMENT, this.length);
         };
         return SymbolicInt32Array;
@@ -238,9 +244,21 @@ var WebDNN;
      */
     var DescriptorRunner = (function () {
         function DescriptorRunner() {
+            this._running = false;
             this.descriptor = null;
             this.ignoreCache = false;
         }
+        Object.defineProperty(DescriptorRunner.prototype, "running", {
+            /**
+             * Get if model is running.
+             * While running, calling run() again or modifying input is invalid.
+             */
+            get: function () {
+                return this._running;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return DescriptorRunner;
     }());
     WebDNN.DescriptorRunner = DescriptorRunner;
@@ -708,6 +726,7 @@ var WebDNN;
 /// <reference path="../graph_descriptor/graph_descriptor_webgpu.ts" />
 /// <reference path="../symbolic_array_buffer_view.ts" />
 /// <reference path="../placeholder.ts" />
+var IS_IOS = navigator.userAgent.includes('iPhone');
 var WebDNN;
 (function (WebDNN) {
     var DescriptorRunnerWebGPU = (function (_super) {
@@ -767,12 +786,17 @@ var WebDNN;
                             return [4 /*yield*/, this.initializeMetaBuffers()];
                         case 5:
                             _b.sent();
-                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 7];
-                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                            return [4 /*yield*/, this.setPlaceholderValue({
+                                    '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 512
+                                })];
                         case 6:
                             _b.sent();
-                            _b.label = 7;
-                        case 7: return [2 /*return*/];
+                            if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 8];
+                            return [4 /*yield*/, this.initializeDynamicBuffer()];
+                        case 7:
+                            _b.sent();
+                            _b.label = 8;
+                        case 8: return [2 /*return*/];
                     }
                 });
             });
@@ -937,46 +961,36 @@ var WebDNN;
             });
         };
         DescriptorRunnerWebGPU.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.inputViews)
-                        return [2 /*return*/, this.inputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.inputViews = descriptor.inputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
-                        return view;
-                    });
-                    return [2 /*return*/, this.inputViews];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerWebGPU.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.outputViews)
-                        return [2 /*return*/, this.outputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.outputViews = descriptor.outputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
-                        return view;
-                    });
-                    return [2 /*return*/, this.outputViews];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.outputViews;
         };
         DescriptorRunnerWebGPU.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -984,6 +998,8 @@ var WebDNN;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (this._running)
+                                throw new Error('Calling another run() while running.');
                             if (!this.executionInfos)
                                 throw new Error('ExecutionInfos is not loaded');
                             if (!this.inputViews || !this.outputViews)
@@ -1001,6 +1017,7 @@ var WebDNN;
                             staticBuffer = this.staticBuffer;
                             dynamicBuffer = this.dynamicBuffer;
                             metaBuffers = this.metaBuffers;
+                            this._running = true;
                             if (!WebDNN.DEBUG) return [3 /*break*/, 5];
                             records = [];
                             totalElapsedTime_1 = 0;
@@ -1051,7 +1068,9 @@ var WebDNN;
                         case 6:
                             _a.sent(); //wait to finish final kernel
                             _a.label = 7;
-                        case 7: return [2 /*return*/];
+                        case 7:
+                            this._running = false;
+                            return [2 /*return*/];
                     }
                 });
             });
@@ -1207,6 +1226,7 @@ var WebDNN;
             var worker = new Worker(this.worker_entry_js_path);
             worker.onerror = function (event) {
                 console.error(event);
+                _this._running = false;
                 // console.error('Worker Exception: ' + event.message);
                 if (_this.worker_promise_reject_func) {
                     _this.worker_promise_reject_func(event);
@@ -1270,53 +1290,45 @@ var WebDNN;
             });
         };
         DescriptorRunnerWebassembly.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.inputViews)
-                        return [2 /*return*/, this.inputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.inputViews = descriptor.inputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
-                        return view;
-                    });
-                    return [2 /*return*/, this.inputViews];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerWebassembly.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.outputViews)
-                        return [2 /*return*/, this.outputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.outputViews = descriptor.outputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
-                        return view;
-                    });
-                    return [2 /*return*/, this.outputViews];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext, true);
+                return view;
             });
+            return this.outputViews;
         };
         DescriptorRunnerWebassembly.prototype.run = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
                 var descriptor, worker, inputViews, outputViews, promise;
                 return __generator(this, function (_a) {
+                    if (this._running)
+                        throw new Error('Calling another run() while running.');
                     if (!this.descriptor)
                         throw new Error('Descriptor is not loaded');
                     if (!this.inputViews || !this.outputViews)
@@ -1335,11 +1347,13 @@ var WebDNN;
                                 for (var i = 0; i < event.data.length; i++) {
                                     outputViews[i].set(event.data[i]);
                                 }
+                                _this._running = false;
                                 resolve();
                             }
                             else {
                                 console.log(event.data);
                                 worker.terminate();
+                                _this._running = false;
                                 reject(new Error(event.data));
                             }
                         };
@@ -1371,6 +1385,7 @@ var WebDNN;
                                 }
                             }
                         }
+                        _this._running = true;
                         worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
                     });
                     return [2 /*return*/, promise];
@@ -1393,8 +1408,8 @@ var WebDNN;
 (function (WebDNN) {
     var DescriptorRunnerFallback = (function (_super) {
         __extends(DescriptorRunnerFallback, _super);
-        function DescriptorRunnerFallback() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function DescriptorRunnerFallback(option) {
+            var _this = _super.call(this) || this;
             _this.backendName = 'fallback';
             return _this;
         }
@@ -1560,6 +1575,8 @@ var WebDNN;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (this._running)
+                                throw new Error('Calling another run() while running.');
                             if (!this.descriptor)
                                 throw new Error('Descriptor is not loaded');
                             if (!this.placeholderContext)
@@ -1578,6 +1595,7 @@ var WebDNN;
                                 .map(function (executionInfo) { return placeholderContext.resolve(executionInfo); });
                             startDate = Date.now();
                             lastDate = Date.now();
+                            this._running = true;
                             i = 0;
                             _a.label = 1;
                         case 1:
@@ -1601,52 +1619,43 @@ var WebDNN;
                             return [3 /*break*/, 1];
                         case 5:
                             console.log("Processed " + executionInfos.length + "/" + executionInfos.length + " kernels in " + (Date.now() - startDate) + " ms");
+                            this._running = false;
                             return [2 /*return*/];
                     }
                 });
             });
         };
         DescriptorRunnerFallback.prototype.getInputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.inputViews)
-                        return [2 /*return*/, this.inputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.inputViews = descriptor.inputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
-                        return view;
-                    });
-                    return [2 /*return*/, this.inputViews];
-                });
+            if (this.inputViews)
+                return this.inputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.inputViews = descriptor.inputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.inputViews;
         };
         DescriptorRunnerFallback.prototype.getOutputViews = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var descriptor, placeholderContext;
-                return __generator(this, function (_a) {
-                    if (this.outputViews)
-                        return [2 /*return*/, this.outputViews];
-                    if (!this.descriptor)
-                        throw new Error('Descriptor is not loaded');
-                    if (!this.placeholderContext)
-                        throw new Error('PlaceholderContext is not initialized');
-                    descriptor = this.descriptor;
-                    placeholderContext = this.placeholderContext;
-                    this.outputViews = descriptor.outputs.map(function (name) {
-                        var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-                        var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
-                        return view;
-                    });
-                    return [2 /*return*/, this.outputViews];
-                });
+            if (this.outputViews)
+                return this.outputViews;
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            var descriptor = this.descriptor;
+            var placeholderContext = this.placeholderContext;
+            this.outputViews = descriptor.outputs.map(function (name) {
+                var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
+                var view = new WebDNN.SymbolicFloat32Array(allocation, placeholderContext);
+                return view;
             });
+            return this.outputViews;
         };
         return DescriptorRunnerFallback;
     }(WebDNN.DescriptorRunner));
@@ -1663,7 +1672,6 @@ var WebDNN;
         'webassembly': WebDNN.DescriptorRunnerWebassembly,
         'fallback': WebDNN.DescriptorRunnerFallback,
     };
-    WebDNN.backendName = 'none';
     WebDNN.DEBUG = false;
     function initBackend(backendName, option) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1684,56 +1692,22 @@ var WebDNN;
                     case 3:
                         ex_1 = _a.sent();
                         console.warn("Failed to initialize " + backendName + " backend: " + ex_1);
-                        return [2 /*return*/, false];
-                    case 4:
-                        WebDNN.runner = runner;
-                        WebDNN.backendName = backendName;
-                        return [2 /*return*/, true];
+                        return [2 /*return*/, null];
+                    case 4: return [2 /*return*/, runner];
                 }
             });
         });
     }
-    function init(backendOrder, backendOptions) {
-        if (backendOptions === void 0) { backendOptions = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            var backendName_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!backendOrder) {
-                            backendOrder = ['webgpu', 'webassembly'];
-                        }
-                        else if (typeof backendOrder === 'string') {
-                            backendOrder = [backendOrder];
-                        }
-                        backendOrder = backendOrder.slice();
-                        if (backendOrder.indexOf('fallback') === -1)
-                            backendOrder.concat(['fallback']);
-                        _a.label = 1;
-                    case 1:
-                        if (!(backendOrder.length > 0)) return [3 /*break*/, 3];
-                        backendName_1 = backendOrder.shift();
-                        return [4 /*yield*/, initBackend(backendName_1, backendOptions[backendName_1])];
-                    case 2:
-                        if (_a.sent())
-                            return [2 /*return*/, WebDNN.backendName];
-                        return [3 /*break*/, 1];
-                    case 3: throw new Error('No backend is available');
-                }
-            });
-        });
-    }
-    WebDNN.init = init;
     /**
      * Prepare backend interface and load model data at once. Internally calls init().
      * @param directory URL of directory that contains graph descriptor files (e.g. graph_fallback.json)
      * @param initOption Initialize option
      * @return Interface to input/output data and run the model.
      */
-    function prepareAll(directory, initOption) {
+    function load(directory, initOption) {
         if (initOption === void 0) { initOption = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var backendOrder, backendOptions, backendName_2, ex_2, inputViews, outputViews;
+            var backendOrder, backendOptions, backendName, runner, ex_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1750,43 +1724,32 @@ var WebDNN;
                         backendOptions = initOption.backendOptions || {};
                         _a.label = 1;
                     case 1:
-                        if (!(backendOrder.length > 0)) return [3 /*break*/, 9];
-                        backendName_2 = backendOrder.shift();
-                        return [4 /*yield*/, initBackend(backendName_2, backendOptions[backendName_2])];
+                        if (!(backendOrder.length > 0)) return [3 /*break*/, 7];
+                        backendName = backendOrder.shift();
+                        return [4 /*yield*/, initBackend(backendName, backendOptions[backendName])];
                     case 2:
-                        if (!(_a.sent()))
+                        runner = _a.sent();
+                        if (!runner)
                             return [3 /*break*/, 1];
-                        if (!WebDNN.runner)
-                            return [3 /*break*/, 1];
+                        runner.ignoreCache = Boolean(initOption.ignoreCache);
                         _a.label = 3;
                     case 3:
                         _a.trys.push([3, 5, , 6]);
-                        return [4 /*yield*/, WebDNN.runner.load(directory, initOption.progressCallback)];
+                        return [4 /*yield*/, runner.load(directory, initOption.progressCallback)];
                     case 4:
                         _a.sent();
                         return [3 /*break*/, 6];
                     case 5:
                         ex_2 = _a.sent();
-                        console.warn("Model loading failed for " + backendName_2 + " backend. Trying next backend: " + ex_2.message);
+                        console.warn("Model loading failed for " + backendName + " backend. Trying next backend: " + ex_2.message);
                         return [3 /*break*/, 6];
-                    case 6: return [4 /*yield*/, WebDNN.runner.getInputViews()];
-                    case 7:
-                        inputViews = _a.sent();
-                        return [4 /*yield*/, WebDNN.runner.getOutputViews()];
-                    case 8:
-                        outputViews = _a.sent();
-                        return [2 /*return*/, {
-                                backendName: backendName_2,
-                                inputViews: inputViews,
-                                outputViews: outputViews,
-                                run: WebDNN.runner.run.bind(WebDNN.runner)
-                            }];
-                    case 9: throw new Error('No backend is available');
+                    case 6: return [2 /*return*/, runner];
+                    case 7: throw new Error('No backend is available');
                 }
             });
         });
     }
-    WebDNN.prepareAll = prepareAll;
+    WebDNN.load = load;
 })(WebDNN || (WebDNN = {}));
 var WebDNN;
 (function (WebDNN) {
@@ -1800,6 +1763,7 @@ var WebDNN;
          */
         function argmax(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {
@@ -1846,6 +1810,7 @@ var WebDNN;
          */
         function argmin(arr, k) {
             if (k === void 0) { k = 1; }
+            arr = arr.slice();
             var stack = [[0, arr.length]];
             var workspace = {};
             while (stack.length > 0) {
