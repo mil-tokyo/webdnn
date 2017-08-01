@@ -1,5 +1,6 @@
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.space2depth import Space2Depth
+from webdnn.graph.operators.split_axis import SplitAxis
 
 try:
     import chainer
@@ -210,8 +211,14 @@ def _convert_spatial_transformer_sampler(converter: ChainerConverter,
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("SplitAxis")
 def _convert_split_axis(converter: ChainerConverter, c_op: "chainer.functions.SplitAxis"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SplitAxis is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+
+    if isinstance(c_op.indices_or_sections, int):
+        raise NotImplementedError("[ChainerConverter] SplitAxis with indices are not supported.")
+
+    ys = SplitAxis(None, sections=c_op.indices_or_sections, axis=x.order.axes[c_op.axis])(x)
+    for wref_c_y, w_y in zip(c_op.outputs, ys):
+        converter.set_variable(wref_c_y(), w_y)
 
 
 # noinspection PyUnusedLocal
