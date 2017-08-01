@@ -1,4 +1,5 @@
 from webdnn.graph.operators.broadcast import Broadcast
+from webdnn.graph.operators.space2depth import Space2Depth
 
 try:
     import chainer
@@ -186,8 +187,9 @@ def _convert_selected_item(converter: ChainerConverter, c_op: "chainer.functions
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Space2Depth")
 def _convert_space2depth(converter: ChainerConverter, c_op: "chainer.functions.Space2Depth"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Space2Depth is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Space2Depth(None, r=c_op.r)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

@@ -9,7 +9,6 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.order import OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import console
 
 
 # noinspection PyUnusedLocal

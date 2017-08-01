@@ -31,6 +31,7 @@ from webdnn.backend.webgpu.kernels import sigmoid
 from webdnn.backend.webgpu.kernels import softmax
 from webdnn.backend.webgpu.kernels import softplus
 from webdnn.backend.webgpu.kernels import softsign
+from webdnn.backend.webgpu.kernels import space2depth
 from webdnn.backend.webgpu.kernels import tanh
 from webdnn.backend.webgpu.kernels import threshold_relu
 from webdnn.backend.webgpu.kernels import transpose
