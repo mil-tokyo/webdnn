@@ -61,6 +61,36 @@ class OptimizeTranspose(OptimizeRule):
                 flag_changed |= _replace_input(op, "x", OrderNHWC)
                 flag_changed |= _replace_output(op, "y", OrderNHWC)
             elif isinstance(op, Softmax):
+                x = op.inputs["x"]
+                y = op.outputs["y"]
+
+                if x.ndim > 2:
+                    target_axis = op.parameters["axis"]
+                    temp_axes_nd = x.order.axes
+                    temp_axes_nd.remove(target_axis)
+                    temp_axes_nd.append(target_axis)
+                    temp_order_nd = Order(temp_axes_nd)
+                    temp_shape_nd = [x.shape_dict[axis] for axis in temp_axes_nd]
+
+                    temp_order_2d = OrderNC
+                    temp_shape_2d = [x.size // x.shape_dict[target_axis], x.shape_dict[target_axis]]
+
+                    flag_changed = True
+
+                    hx, = Transpose(None)(x)
+                    hx.change_order(temp_order_nd)
+                    hx, = Reshape(None, in_order=hx.order, out_order=temp_order_2d,
+                                  out_shape=temp_shape_2d)(hx)
+                    op.remove_input(x)
+                    op.append_input("x", hx)
+
+                    hy = Variable(hx.shape, hx.order)
+                    op.remove_output(y)
+                    op.append_output("y", hy)
+                    hy, = Reshape(None, in_order=temp_order_2d, out_order=temp_order_nd, out_shape=temp_shape_nd)(hy)
+                    y_dummy, = Transpose(None)(hy)
+                    y_dummy.replace(y)
+
                 flag_changed |= _replace_input(op, "x", OrderNC)
                 flag_changed |= _replace_output(op, "y", OrderNC)
 
