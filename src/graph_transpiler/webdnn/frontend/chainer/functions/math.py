@@ -1,3 +1,5 @@
+from webdnn.graph.operators.exp import Exp
+
 try:
     import chainer
 except ImportError:
@@ -37,8 +39,9 @@ def _convert_batch_det(converter: ChainerConverter, c_op: "chainer.functions.Bat
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Exp")
 def _convert_exp(converter: ChainerConverter, c_op: "chainer.functions.Exp"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Exp is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Exp(None)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

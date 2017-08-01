@@ -15,6 +15,7 @@ from webdnn.graph.operators import elementwise_pow
 from webdnn.graph.operators import elementwise_sum
 from webdnn.graph.operators import elu
 from webdnn.graph.operators import embedding
+from webdnn.graph.operators import exp
 from webdnn.graph.operators import hard_sigmoid
 from webdnn.graph.operators import leaky_relu
 from webdnn.graph.operators import linear
@@ -38,4 +39,3 @@ from webdnn.graph.operators import threshold_relu
 from webdnn.graph.operators import util
 from webdnn.graph.operators import zero_padding_1d
 from webdnn.graph.operators import zero_padding_2d
-

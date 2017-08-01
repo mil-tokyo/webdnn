@@ -10,6 +10,7 @@ from webdnn.backend.webassembly.kernels import elementwise_div
 from webdnn.backend.webassembly.kernels import elementwise_mul
 from webdnn.backend.webassembly.kernels import elementwise_pow
 from webdnn.backend.webassembly.kernels import elu
+from webdnn.backend.webassembly.kernels import exp
 from webdnn.backend.webassembly.kernels import embedding
 from webdnn.backend.webassembly.kernels import hard_sigmoid
 from webdnn.backend.webassembly.kernels import im2col
