@@ -1,3 +1,5 @@
+from webdnn.graph.operators.broadcast import Broadcast
+
 try:
     import chainer
 except ImportError:
@@ -5,8 +7,8 @@ except ImportError:
 
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.concat import Concat
-from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderC, OrderNC, OrderNCHW
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -22,8 +24,10 @@ def _convert_broadcast(converter: ChainerConverter, c_op: "chainer.functions.Bro
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("BroadcastTo")
 def _convert_broadcast_to(converter: ChainerConverter, c_op: "chainer.functions.BroadcastTo"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BroadcastTo is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    # noinspection PyProtectedMember
+    y, = Broadcast(None, out_shape=c_op._shape, out_order=x.order)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
