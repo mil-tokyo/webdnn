@@ -11,6 +11,7 @@ from webdnn.backend.webgpu.kernels import elementwise_mul
 from webdnn.backend.webgpu.kernels import elementwise_pow
 from webdnn.backend.webgpu.kernels import elu
 from webdnn.backend.webgpu.kernels import embedding
+from webdnn.backend.webgpu.kernels import exp
 from webdnn.backend.webgpu.kernels import hard_sigmoid
 from webdnn.backend.webgpu.kernels import im2col
 from webdnn.backend.webgpu.kernels import leaky_relu
