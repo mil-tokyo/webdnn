@@ -158,7 +158,15 @@ class ChainerConverter(Converter["chainer.Function"]):
             if isinstance(c_var, chainer.functions.normalization.batch_normalization.BatchNormalizationFunction):
                 # In chainer's BatchNormalization, mean and va (c_var.inputs[3] and c_var.inputs[4]) have no name, but
                 # they are trainable parameters.
-                if len(c_var.inputs) == 5:  # data, gamma, bias, mean, var
+                if len(c_var.inputs) == 5:  # data, gamma, beta, mean, var
+                    if c_var.inputs[1].name is None:
+                        # case: use_gamma is False
+                        self._convert_var(c_var.inputs[1], force_constant=True)
+
+                    if c_var.inputs[2].name is None:
+                        # case: use_beta is False
+                        self._convert_var(c_var.inputs[2], force_constant=True)
+
                     self._convert_var(c_var.inputs[3], force_constant=True)
                     self._convert_var(c_var.inputs[4], force_constant=True)
 
@@ -194,7 +202,13 @@ class ChainerConverter(Converter["chainer.Function"]):
         assert order.ndim == ndim, f"Number of dimension is mismatched: order.ndim={order.ndim}, len(shape)={ndim}"
 
         if c_var.name is not None or force_constant:
-            n_var = ConstantVariable(chainer.cuda.to_cpu(c_var.data), order)  # force on CPU
+            data = c_var.data
+
+            if chainer_v2 and data is None:
+                # noinspection PyProtectedMember
+                data = c_var._variable().data
+
+            n_var = ConstantVariable(chainer.cuda.to_cpu(data), order)  # force on CPU
         else:
             n_var = Variable(c_var.shape, order)
 
