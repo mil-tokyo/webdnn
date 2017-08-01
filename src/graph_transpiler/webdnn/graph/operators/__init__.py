@@ -35,6 +35,7 @@ from webdnn.graph.operators import sigmoid
 from webdnn.graph.operators import softmax
 from webdnn.graph.operators import softplus
 from webdnn.graph.operators import softsign
+from webdnn.graph.operators import space2depth
 from webdnn.graph.operators import tanh
 from webdnn.graph.operators import threshold_relu
 from webdnn.graph.operators import util

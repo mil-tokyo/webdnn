@@ -31,6 +31,7 @@ from webdnn.backend.webassembly.kernels import sigmoid
 from webdnn.backend.webassembly.kernels import softmax
 from webdnn.backend.webassembly.kernels import softplus
 from webdnn.backend.webassembly.kernels import softsign
+from webdnn.backend.webassembly.kernels import space2depth
 from webdnn.backend.webassembly.kernels import tanh
 from webdnn.backend.webassembly.kernels import threshold_relu
 from webdnn.backend.webassembly.kernels import transpose
