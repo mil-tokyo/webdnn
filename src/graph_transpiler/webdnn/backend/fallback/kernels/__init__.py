@@ -27,5 +27,6 @@ from webdnn.backend.fallback.kernels import sigmoid
 from webdnn.backend.fallback.kernels import softmax
 from webdnn.backend.fallback.kernels import softplus
 from webdnn.backend.fallback.kernels import softsign
+from webdnn.backend.fallback.kernels import split_axis
 from webdnn.backend.fallback.kernels import tanh
 from webdnn.backend.fallback.kernels import threshold_relu
