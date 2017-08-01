@@ -1,5 +1,6 @@
 from webdnn.backend.fallback.kernels import abs
 from webdnn.backend.fallback.kernels import average_pooling_2d
+from webdnn.backend.fallback.kernels import broadcast
 from webdnn.backend.fallback.kernels import clipped_relu
 from webdnn.backend.fallback.kernels import concat
 from webdnn.backend.fallback.kernels import convolution_2d

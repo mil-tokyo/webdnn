@@ -296,7 +296,7 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                     if stride_dicts[x][orders[x].axes[d]] == 1:
                         expression.append(f"d{d}")
                     else:
-                        expression.append(f"d{d}*s_{buffer_name}_{d}")
+                        expression.append(f"d{d}*{variable2stride_name[x][d]}")
 
                 buffer.declare(name, "float", f"{buffer_name}[{' + '.join(expression)}]", const=True)
                 name2variable[name] = x

@@ -1,5 +1,6 @@
 from webdnn.backend.webassembly.kernels import abs
 from webdnn.backend.webassembly.kernels import average_pooling_2d
+from webdnn.backend.webassembly.kernels import broadcast
 from webdnn.backend.webassembly.kernels import clipped_relu
 from webdnn.backend.webassembly.kernels import col2im
 from webdnn.backend.webassembly.kernels import concat
@@ -10,8 +11,8 @@ from webdnn.backend.webassembly.kernels import elementwise_div
 from webdnn.backend.webassembly.kernels import elementwise_mul
 from webdnn.backend.webassembly.kernels import elementwise_pow
 from webdnn.backend.webassembly.kernels import elu
-from webdnn.backend.webassembly.kernels import exp
 from webdnn.backend.webassembly.kernels import embedding
+from webdnn.backend.webassembly.kernels import exp
 from webdnn.backend.webassembly.kernels import hard_sigmoid
 from webdnn.backend.webassembly.kernels import im2col
 from webdnn.backend.webassembly.kernels import leaky_relu

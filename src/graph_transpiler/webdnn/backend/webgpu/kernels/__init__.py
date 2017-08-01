@@ -1,5 +1,6 @@
 from webdnn.backend.webgpu.kernels import abs
 from webdnn.backend.webgpu.kernels import average_pooling_2d
+from webdnn.backend.webgpu.kernels import broadcast
 from webdnn.backend.webgpu.kernels import clipped_relu
 from webdnn.backend.webgpu.kernels import col2im
 from webdnn.backend.webgpu.kernels import concat

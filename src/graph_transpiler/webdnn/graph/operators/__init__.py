@@ -2,6 +2,7 @@ from webdnn.graph.operators import abs
 from webdnn.graph.operators import attributes
 from webdnn.graph.operators import axiswise_bias
 from webdnn.graph.operators import axiswise_bias
+from webdnn.graph.operators import broadcast
 from webdnn.graph.operators import clipped_relu
 from webdnn.graph.operators import concat
 from webdnn.graph.operators import convolution2d
