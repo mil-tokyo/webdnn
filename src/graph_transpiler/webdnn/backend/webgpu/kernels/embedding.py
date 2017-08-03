@@ -14,8 +14,8 @@ template = """
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
                           const device int * %%META_BUFFER%% [[buffer(2)]],
-                          ushort global_index[[thread_position_in_grid]],
-                          ushort num_threads[[threads_per_grid]])
+                          uint global_index[[thread_position_in_grid]],
+                          uint num_threads[[threads_per_grid]])
 {
     const device float *X = %%LOAD_BUFFER(embedding_X)%%;
     device float       *Y = %%LOAD_BUFFER(embedding_Y)%%;
