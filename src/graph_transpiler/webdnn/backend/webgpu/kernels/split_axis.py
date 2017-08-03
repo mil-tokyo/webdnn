@@ -63,10 +63,7 @@ def split_axis(op: SplitAxis, memory_layout: MemoryLayout) -> List[Kernel]:
     y_shapes = [y.variable.shape for y in ys]
 
     # y_strides[i][j] is stride size of ys[i].order.axes[j] in x
-    y_strides_in_x = [[] for _ in ys]
-    for y, strides in zip(ys, y_strides_in_x):
-        for axis in y.variable.order.axes:
-            strides.append(x.variable.stride[x.variable.order.axes_dict[axis]])
+    y_strides_in_x = [[x.variable.stride_dict[axis] for axis in y.variable.order.axes] for y in ys]
 
     # x_offsets[i] is memory offset of ys[i]'s data in x.
     x_offsets = []

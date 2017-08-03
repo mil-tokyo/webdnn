@@ -21,8 +21,8 @@ def generate_template_NHWC(SH, SW, DH, DW, C1):
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
                           const device int * %%META_BUFFER%% [[buffer(2)]],
-                          ushort index_thread[[thread_position_in_threadgroup]],
-                          ushort index_group[[threadgroup_position_in_grid]])
+                          uint index_thread[[thread_position_in_threadgroup]],
+                          uint index_group[[threadgroup_position_in_grid]])
 {{
 #define SH_EQUAL_1 {SH_EQUAL_1}
 #define SW_EQUAL_1 {SW_EQUAL_1}
@@ -214,7 +214,7 @@ def im2col(op: Im2Col,
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.variable.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, C1, op.DH, op.DW)
+    source = template_CNHW if col.variable.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, op.DH, op.DW, C1)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

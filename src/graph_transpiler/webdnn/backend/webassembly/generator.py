@@ -27,7 +27,8 @@ from webdnn.util.json import json
 class GraphExecutionData(IGraphExecutionData):
     descriptor: GraphDescriptor
 
-    def __init__(self, descriptor: GraphDescriptor, constants: bytes):
+    def __init__(self, graph: Graph, descriptor: GraphDescriptor, constants: bytes):
+        self.graph = graph
         self.descriptor = descriptor
         self.constants = constants
         self.backend_suffix = "webassembly"
@@ -137,7 +138,7 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
             required_heap=required_heap,
             licenses=graph.licenses)
 
-        return GraphExecutionData(descriptor, constants_bytes)
+        return GraphExecutionData(graph, descriptor, constants_bytes)
 
 
 def generate(graph: Graph, **kwargs):

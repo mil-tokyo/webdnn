@@ -7,6 +7,7 @@ from unittest import SkipTest
 import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.graph import traverse
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC
@@ -151,7 +152,10 @@ class KernelTestCaseGenerator:
         cls.counter += 1
         testcase_dirname = f"testcase-{str(cls.counter)}"
 
-        graph_descriptor.save(path.join(cls.OUTPUT_ROOT, testcase_dirname))
+        output_root = path.join(cls.OUTPUT_ROOT, testcase_dirname)
+        graph_descriptor.save(output_root)
+        with open(path.join(output_root, "./cg.dot"), "w") as f:
+            f.write(traverse.dump_dot(graph_descriptor.graph))
 
         cls.cases.append({
             "description": description,

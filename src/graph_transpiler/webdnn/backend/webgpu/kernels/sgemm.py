@@ -13,8 +13,8 @@ def generate_template_64(transpose_A, transpose_B, M, N, K):
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
                           const device int * %%META_BUFFER%% [[buffer(2)]],
-                          ushort index[[thread_index_in_threadgroup]],
-                          ushort2 group_position[[threadgroup_position_in_grid]])
+                          uint index[[thread_index_in_threadgroup]],
+                          uint2 group_position[[threadgroup_position_in_grid]])
 {
 #define TRANSPOSE_A %%TRANSPOSE_A%%
 #define TRANSPOSE_B %%TRANSPOSE_B%%
