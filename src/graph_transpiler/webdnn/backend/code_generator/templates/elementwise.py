@@ -184,7 +184,6 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
     variable2constant_name = {}  # type: Dict[Variable, str]
     variable2stride_name = {}  # type: Dict[Variable, List[str]]
     variable2buffer_name = {}  # type: Dict[Variable, str]
-    reference_count = {}  # type: Dict[Variable, int]
 
     """
     head declaration
@@ -323,9 +322,6 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                 new_name = _generate_unique_name()
                 var_mapping[name] = new_name
 
-                buffer.declare(new_name, "float")
-                name2variable[new_name] = None
-
                 # load from buffer
                 buffer_name = variable2buffer_name[x]
                 expression = []
@@ -337,11 +333,9 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                         stride_name = variable2stride_name[x][d]
                         expression.append(f"d{d}*{stride_name}")
 
-                buffer.exec(f"{new_name} = {buffer_name}[{' + '.join(expression)}];")
-
+                buffer.declare(new_name, "float", initial_value=f"{buffer_name}[{' + '.join(expression)}]", const=True)
                 name2variable[new_name] = x
                 variable2name[x] = new_name
-                reference_count[x] = len(x.input_to)
 
         # y
         name = "y"
@@ -351,7 +345,6 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
         buffer.declare(new_name, "float")
         name2variable[new_name] = y
         variable2name[y] = new_name
-        reference_count[y] = len(y.input_to)
 
         # parameters
         buffer.enterBlockScope()
@@ -384,11 +377,6 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                 pos = span[0] + len(ma.group(1)) + len(value)
 
         buffer.exec(body_expression)
-
-        # release input reference
-        for x in op.inputs.values():
-            if x in reference_count:
-                reference_count[x] -= 1
 
         buffer.exitBlockScope()
 

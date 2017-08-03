@@ -19,7 +19,8 @@ from webdnn.util.json import json
 class GraphExecutionData(IGraphExecutionData[Kernel]):
     descriptor: GraphDescriptor
 
-    def __init__(self, descriptor: GraphDescriptor, constants: bytes):
+    def __init__(self, graph: Graph, descriptor: GraphDescriptor, constants: bytes):
+        self.graph = graph
         self.descriptor = descriptor
         self.constants = constants
         self.backend_suffix = "webgpu"
@@ -84,14 +85,14 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
                 f.write(traverse.dump_dot(graph))
 
         memory_layout = Allocator.allocate(graph)
-        console.debug(f"[WebGPUDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
-        console.debug(f"[WebGPUDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")
-        console.debug(f"[WebGPUDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}")
+        console.debug(f"[WebGPUDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}[B]")
+        console.debug(f"[WebGPUDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}[B]")
+        console.debug(f"[WebGPUDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}[B]")
 
         constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
         constants_bytes = constant_encoder.encode(memory_layout)
 
-        console.debug(f"[WebGPUDescriptorGenerator] constants encoded size: {len(constants_bytes)}")
+        console.debug(f"[WebGPUDescriptorGenerator] constants encoded size: {len(constants_bytes)}[B]")
 
         kernels = cls.generate_kernels(graph, memory_layout)
 
@@ -107,7 +108,7 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
         if flags.optimize.VALIDATE_GENERATED_SOURCE:
             validate_kernel_source(descriptor)
 
-        return GraphExecutionData(descriptor, constants_bytes)
+        return GraphExecutionData(graph, descriptor, constants_bytes)
 
 
 def generate(graph: Graph, **kwargs):

@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
@@ -24,7 +25,7 @@ class Broadcast(Elementwise):
         - **y** - Output variable.
     """
 
-    def __init__(self, name: Optional[str], out_shape, out_order):
+    def __init__(self, name: Optional[str], out_shape: List[int], out_order: Order):
         super(Broadcast, self).__init__(name)
         self.parameters["out_shape"] = out_shape
         self.parameters["out_order"] = out_order

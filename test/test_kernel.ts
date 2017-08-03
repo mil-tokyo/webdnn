@@ -118,6 +118,8 @@ const TestRunner = new class {
             testCase.inputs.forEach((data, i) => inputs[i].set(data));
             let startTime = performance.now();
             await runner.run();
+            await runner.run();
+            await runner.run();
             elapsedTime = performance.now() - startTime;
 
             testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual(), `outputs[${i}]`));
