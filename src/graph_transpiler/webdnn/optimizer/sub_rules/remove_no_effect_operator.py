@@ -59,164 +59,7 @@ def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):
         v.replace(y)
 
 
-def _remove_ScalarAdd(graph: Graph, op: Operator):
-    if isinstance(op, ScalarAdd) and op.value == 0:
-        _remove_unary_operator(graph, op)
-        return True
-
-    return False
-
-
-def _remove_ScalarMul(graph: Graph, op: Operator):
-    if isinstance(op, ScalarMul) and op.value == 1:
-        _remove_unary_operator(graph, op)
-        return True
-
-    return False
-
-
-def _remove_ScalarPow(graph: Graph, op: Operator):
-    if isinstance(op, ScalarPow) and op.value == 1:
-        _remove_unary_operator(graph, op)
-        return True
-
-    return False
-
-
-def _remove_ScalarAffine(graph: Graph, op: Operator):
-    if isinstance(op, ScalarAffine) and op.scale == 1 and op.bias == 0:
-        _remove_unary_operator(graph, op)
-        return True
-
-    return False
-
-
-def _remove_Reshape(graph: Graph, op: Operator):
-    if isinstance(op, Reshape):
-        x = op.inputs["x"]
-        y = op.outputs["y"]
-
-        if x.order == y.order and x.shape == y.shape:
-            _remove_unary_operator(graph, op)
-            return True
-
-        if all(
-                (axis in x.order.axes and y.shape_dict[axis] == x.shape_dict[axis]) or
-                (axis not in x.order.axes and y.shape_dict[axis] == 1) for axis in y.order.axes
-        ) and all(isinstance(op2, Elementwise) for op2 in y.input_to):
-            op.remove_all()
-            for op2 in list(y.input_to):
-                name = op2._get_input_name(y)
-                op2.remove_input(y)
-                op2.append_input(name, x)
-            return True
-
-    return False
-
-
-def _remove_Broadcast(graph: Graph, op: Operator):
-    if isinstance(op, Broadcast):
-        x = op.inputs["x0"]
-        y = op.outputs["y"]
-
-        if all(isinstance(op2, Elementwise) for op2 in y.input_to):
-            op.remove_all()
-            for op2 in list(y.input_to):
-                name = op2._get_input_name(y)
-                op2.remove_input(y)
-                op2.append_input(name, x)
-            return True
-
-
-def _remove_ElementwiseAdd(graph: Graph, op: Operator):
-    if not isinstance(op, ElementwiseAdd):
-        return False
-
-    if isinstance(op.inputs["x0"], ConstantVariable):
-        c = op.inputs["x0"]
-        v = op.inputs["x1"]
-
-    elif isinstance(op.inputs["x1"], ConstantVariable):
-        v = op.inputs["x0"]
-        c = op.inputs["x1"]
-
-    else:
-        return False
-
-    if np.all(c == 0):
-        _remove_binary_elementwise(graph, op, v)
-        return True
-
-    return False
-
-
-def _remove_ElementwiseMul(graph: Graph, op: Operator):
-    if not isinstance(op, ElementwiseMul):
-        return False
-
-    if isinstance(op.inputs["x0"], ConstantVariable):
-        c = op.inputs["x0"]
-        v = op.inputs["x1"]
-
-    elif isinstance(op.inputs["x1"], ConstantVariable):
-        v = op.inputs["x0"]
-        c = op.inputs["x1"]
-
-    else:
-        return False
-
-    if np.all(c == 1):
-        _remove_binary_elementwise(graph, op, v)
-        return True
-
-    return False
-
-
-def _remove_ElementwiseDiv(graph: Graph, op: Operator):
-    if not isinstance(op, ElementwiseDiv):
-        return False
-
-    if isinstance(op.inputs["x0"], ConstantVariable):
-        c = op.inputs["x0"]
-        v = op.inputs["x1"]
-
-    elif isinstance(op.inputs["x1"], ConstantVariable):
-        v = op.inputs["x0"]
-        c = op.inputs["x1"]
-
-    else:
-        return False
-
-    if np.all(c == 1):
-        _remove_binary_elementwise(graph, op, v)
-        return True
-
-    return False
-
-
-def _remove_ElementwisePow(graph: Graph, op: Operator):
-    if not isinstance(op, ElementwisePow):
-        return False
-
-    if isinstance(op.inputs["x0"], ConstantVariable):
-        c = op.inputs["x0"]
-        v = op.inputs["x1"]
-
-    elif isinstance(op.inputs["x1"], ConstantVariable):
-        v = op.inputs["x0"]
-        c = op.inputs["x1"]
-
-    else:
-        return False
-
-    if np.all(c == 1):
-        _remove_binary_elementwise(graph, op, v)
-        return True
-
-    return False
-
-
-class RemoveNoEffectOperator(OptimizeRule):
+class RemoveNoEffectOperatorBase(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
@@ -228,16 +71,201 @@ class RemoveNoEffectOperator(OptimizeRule):
         flag_changed = False
 
         for op in traverse.listup_operators(graph):
-            flag_changed |= \
-                _remove_ScalarAdd(graph, op) or \
-                _remove_ScalarMul(graph, op) or \
-                _remove_ScalarPow(graph, op) or \
-                _remove_ScalarAffine(graph, op) or \
-                _remove_Reshape(graph, op) or \
-                _remove_Broadcast(graph, op) or \
-                _remove_ElementwiseAdd(graph, op) or \
-                _remove_ElementwiseMul(graph, op) or \
-                _remove_ElementwiseDiv(graph, op) or \
-                _remove_ElementwisePow(graph, op)
+            flag_changed |= self.optimize_operator(graph, op)
 
         return graph, flag_changed
+
+    def optimize_operator(self, graph: Graph, op: Operator):
+        raise NotImplementedError
+
+
+class RemoveScalarAdd(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ScalarAdd):
+        if isinstance(op, ScalarAdd) and op.value == 0:
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveScalarMul(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ScalarMul):
+        if isinstance(op, ScalarMul) and op.value == 1:
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveScalarPow(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ScalarPow):
+        if isinstance(op, ScalarPow) and op.value == 1:
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveScalarAffine(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ScalarAffine):
+        if isinstance(op, ScalarAffine) and op.scale == 1 and op.bias == 0:
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveReshape(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: Reshape):
+        if isinstance(op, Reshape):
+            x = op.inputs["x"]
+            y = op.outputs["y"]
+
+            if x.order == y.order and x.shape == y.shape:
+                _remove_unary_operator(graph, op)
+                return True
+
+            if all([
+                all(x.stride_dict[axis] == y.stride_dict[axis] for axis in set(x.order.axes) and set(y.order.axes)),
+                all(isinstance(op2, Elementwise) for op2 in y.input_to),
+                    y not in graph.outputs
+            ]):
+                op.remove_all()
+                for op2 in list(y.input_to):
+                    name = op2._get_input_name(y)
+                    op2.remove_input(y)
+                    op2.append_input(name, x)
+                return True
+
+        return False
+
+
+class RemoveBroadcast(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: Broadcast):
+        if isinstance(op, Broadcast):
+            x = op.inputs["x0"]
+            y = op.outputs["y"]
+
+            if all(isinstance(op2, Elementwise) for op2 in y.input_to):
+                op.remove_all()
+                for op2 in list(y.input_to):
+                    name = op2._get_input_name(y)
+                    op2.remove_input(y)
+                    op2.append_input(name, x)
+                return True
+
+        return False
+
+
+class RemoveElementwiseAdd(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ElementwiseAdd):
+        if not isinstance(op, ElementwiseAdd):
+            return False
+
+        if isinstance(op.inputs["x0"], ConstantVariable):
+            c = op.inputs["x0"]
+            v = op.inputs["x1"]
+
+        elif isinstance(op.inputs["x1"], ConstantVariable):
+            v = op.inputs["x0"]
+            c = op.inputs["x1"]
+
+        else:
+            return False
+
+        if np.all(c == 0):
+            _remove_binary_elementwise(graph, op, v)
+            return True
+
+        return False
+
+
+class RemoveElementwiseMul(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ElementwiseMul):
+        if not isinstance(op, ElementwiseMul):
+            return False
+
+        if isinstance(op.inputs["x0"], ConstantVariable):
+            c = op.inputs["x0"]
+            v = op.inputs["x1"]
+
+        elif isinstance(op.inputs["x1"], ConstantVariable):
+            v = op.inputs["x0"]
+            c = op.inputs["x1"]
+
+        else:
+            return False
+
+        if np.all(c == 1):
+            _remove_binary_elementwise(graph, op, v)
+            return True
+
+        return False
+
+
+class RemoveElementwiseDiv(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ElementwiseDiv):
+        if not isinstance(op, ElementwiseDiv):
+            return False
+
+        if isinstance(op.inputs["x0"], ConstantVariable):
+            c = op.inputs["x0"]
+            v = op.inputs["x1"]
+
+        elif isinstance(op.inputs["x1"], ConstantVariable):
+            v = op.inputs["x0"]
+            c = op.inputs["x1"]
+
+        else:
+            return False
+
+        if np.all(c == 1):
+            _remove_binary_elementwise(graph, op, v)
+            return True
+
+        return False
+
+
+class RemoveElementwisePow(RemoveNoEffectOperatorBase):
+    def optimize_operator(self, graph: Graph, op: ElementwisePow):
+        if not isinstance(op, ElementwisePow):
+            return False
+
+        if isinstance(op.inputs["x0"], ConstantVariable):
+            c = op.inputs["x0"]
+            v = op.inputs["x1"]
+
+        elif isinstance(op.inputs["x1"], ConstantVariable):
+            v = op.inputs["x0"]
+            c = op.inputs["x1"]
+
+        else:
+            return False
+
+        if np.all(c == 1):
+            _remove_binary_elementwise(graph, op, v)
+            return True
+
+        return False
+
+
+class RemoveNoEffectOperator(OptimizeRule):
+    def __init__(self):
+        super(RemoveNoEffectOperator, self).__init__()
+        self.register(RemoveScalarAdd())
+        self.register(RemoveScalarMul())
+        self.register(RemoveScalarPow())
+        self.register(RemoveScalarAffine())
+        self.register(RemoveReshape())
+        self.register(RemoveBroadcast())
+        self.register(RemoveElementwiseAdd())
+        self.register(RemoveElementwiseMul())
+        self.register(RemoveElementwiseDiv())
+        self.register(RemoveElementwisePow())
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR
+        ]
