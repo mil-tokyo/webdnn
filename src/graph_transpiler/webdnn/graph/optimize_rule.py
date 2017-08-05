@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from webdnn.graph.graph import Graph
+from webdnn.util import flags, console
 
 
 class OptimizeRule:
@@ -44,11 +45,14 @@ class OptimizeRule:
         while flag_retry:
             flag_retry = False
 
-            for sub_rules in self.sub_rules:
-                if not all(sub_rules.flags()):
+            for sub_rule in self.sub_rules:
+                if not all(sub_rule.flags()):
                     continue
 
-                graph, flag_changed = sub_rules.optimize(graph)
+                graph, flag_changed = sub_rule.optimize(graph)
+                if flag_changed:
+                    console.debug(f"[OptimizeRule] apply: {sub_rule.__class__.__name__}")
+
                 flag_retry |= flag_changed
 
             flag_totally_changed |= flag_retry
