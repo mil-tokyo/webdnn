@@ -8,7 +8,7 @@ from webdnn.graph.variable import Variable
 def test_construction():
     v1 = Variable([1, 2, 3, 4], OrderNHWC)
 
-    assert v1.shape == [1, 2, 3, 4]
+    assert v1.shape == (1, 2, 3, 4)
     assert v1.order == OrderNHWC
 
 
@@ -39,7 +39,7 @@ def test_change_order():
     v.change_order(OrderHWCN)
 
     assert v.order == OrderHWCN
-    assert v.shape == [2, 3, 4, 1]
+    assert v.shape == (2, 3, 4, 1)
 
 
 def test_change_order_with_expansion():
@@ -47,7 +47,7 @@ def test_change_order_with_expansion():
     v.change_order(OrderCHWN)
 
     assert v.order == OrderCHWN
-    assert v.shape == [4, 1, 1, 3]
+    assert v.shape == (4, 1, 1, 3)
 
 
 def test_change_order_with_compression():
@@ -55,7 +55,7 @@ def test_change_order_with_compression():
     v.change_order(OrderCN)
 
     assert v.order == OrderCN
-    assert v.shape == [4, 3]
+    assert v.shape == (4, 3)
 
 
 @raises(AssertionError)

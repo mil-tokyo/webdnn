@@ -1,16 +1,16 @@
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.constraints import unify_order
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.order import OrderNCHW
 
 
 @ChainerConverter.register_handler("AveragePooling2D")
 def _convert_average_pooling2d(converter: ChainerConverter, c_op: "chainer.functions.AveragePooling2D"):
     x = converter.get_variable(c_op.inputs[0])
+    unify_order(x.order, OrderNCHW)
 
     pool_opr = AveragePooling2D(None,
                                 ksize=(c_op.kh, c_op.kw),
@@ -35,6 +35,7 @@ def _convert_max_pooling2d(converter: ChainerConverter, c_op: "chainer.functions
         raise NotImplementedError("'cover_all=False' property in 'MaxPooling2D' is not supported.")
 
     x = converter.get_variable(c_op.inputs[0])
+    unify_order(x.order, OrderNCHW)
 
     pool_opr = MaxPooling2D(None,
                             ksize=(c_op.kh, c_op.kw),

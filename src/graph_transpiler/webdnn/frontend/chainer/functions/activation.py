@@ -1,12 +1,10 @@
-from webdnn.graph.operators.concat import Concat
-
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.constraints import unify
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.clipped_relu import ClippedRelu
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.leaky_relu import LeakyRelu
@@ -15,6 +13,7 @@ from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.util import flags
 
 
 @ChainerConverter.register_handler("ClippedReLU")
@@ -110,6 +109,11 @@ def _convert_slstm(converter: ChainerConverter, c_op: "chainer.functions.SLSTM")
 def _convert_softmax(converter: ChainerConverter, c_op: "chainer.functions.Softmax"):
     x = converter.get_variable(c_op.inputs[0])
     y, = Softmax(None, axis=x.order.axes[c_op.axis])(x)
+
+    if flags.AGGRESSIVE_ORDER_INFERENCE:
+        # Most of all cast, softmax is performed along to Axis.C
+        unify(y.order.axes[c_op.axis], Axis.C)
+
     converter.set_variable(c_op.outputs[0](), y)
 
 

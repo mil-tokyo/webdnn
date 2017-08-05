@@ -193,7 +193,7 @@ def main():
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
     x = chainer.Variable(example_input)
     y = F.softmax(model.predictor(x))  # run model
-    graph = ChainerConverter().convert_from_inout_vars([x], [y])  # convert graph to intermediate representation
+    graph = ChainerConverter().convert([x], [y])  # convert graph to intermediate representation
     for backend in ["webgpu", "webassembly", "fallback"]:
         try:
             exec_info = generate_descriptor(backend, graph)

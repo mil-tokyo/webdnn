@@ -1,14 +1,10 @@
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
-import numpy as np
-
+from webdnn import Axis, ConstantVariable
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.constraints import unify_order, unify
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
-from webdnn.graph.order import OrderC
-from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.graph.order import OrderNCHW, OrderC
 
 
 # noinspection PyUnusedLocal
@@ -18,11 +14,11 @@ def _convert_normalize_l2(converter: ChainerConverter, c_op: "chainer.functions.
     raise NotImplementedError("[ChainerConverter] NormalizeL2 is not supported")
 
 
-# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("LocalResponseNormalization")
 def _convert_local_response_normalization(converter: ChainerConverter,
                                           c_op: "chainer.functions.normalization.local_response_normalization.LocalResponseNormalization"):
     x = converter.get_variable(c_op.inputs[0])
+    unify_order(x.order, OrderNCHW)
 
     n_opr = LocalResponseNormalization(None, n=c_op.n, k=c_op.k, alpha=c_op.alpha, beta=c_op.beta)
 
@@ -31,46 +27,40 @@ def _convert_local_response_normalization(converter: ChainerConverter,
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("BatchNormalizationFunction")
 def _convert_batch_normalization_function(converter: ChainerConverter,
                                           c_op: "chainer.functions.normalization.batch_normalization.BatchNormalizationFunction"):
+    if chainer.__version__ >= "2.":
+        # FIXME: Is it possible to detect in which mode this function was computed, train or test?
+        pass
+
+    else:
+        if not c_op.test:
+            raise NotImplementedError("[ChainerConverter] BatchNormalization with train mode is not supported")
+
     x = converter.get_variable(c_op.inputs[0])
+    unify(x.order.axes[0], Axis.N)
+    unify(x.order.axes[1], Axis.C)
+
     gamma = converter.get_variable(c_op.inputs[1])
+    unify_order(gamma.order, OrderC)
+
     beta = converter.get_variable(c_op.inputs[2])
+    unify_order(beta.order, OrderC)
 
     if len(c_op.inputs) == 5:
-        # noinspection PyUnresolvedReferences
-        mean_data = converter.get_variable(c_op.inputs[3]).data
-        # noinspection PyUnresolvedReferences
-        variance_data = converter.get_variable(c_op.inputs[4]).data
+        mean = converter.get_variable(c_op.inputs[3])
+        unify_order(mean.order, OrderC)
+
+        variance = converter.get_variable(c_op.inputs[4])
+        unify_order(variance.order, OrderC)
 
     elif len(c_op.inputs) == 3:
-        variance_data = c_op.running_var
-        mean_data = c_op.running_mean
-
+        mean = 0 if c_op.running_mean is None else ConstantVariable(c_op.running_mean, OrderC)
+        variance = 1 if c_op.running_var is None else ConstantVariable(c_op.running_var, OrderC)
+    # chainer.functions.batch_normalization()
     else:
         raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
 
-    # Simplify scale and bias
-    #
-    # from:
-    #   y = (x - mean) / sqrt(var + eps) * gamma + beta
-    #
-    # to:
-    #   y = x * gamma_div_std + beta_scaled
-    #
-    #   gamma_div_std = gamma / sqrt(var + eps)
-    #   beta_scaled   = beta - mean * gamma_div_std
-
-    # noinspection PyUnresolvedReferences
-    gamma_div_std = gamma.data / np.sqrt(variance_data + c_op.eps)
-    # noinspection PyUnresolvedReferences
-    beta_scaled = beta.data - mean_data * gamma_div_std
-
-    gamma_div_std_const = ConstantVariable(gamma_div_std, OrderC)
-    beta_scaled_const = ConstantVariable(beta_scaled, OrderC)
-
-    offset_out = x * gamma_div_std_const + beta_scaled_const
-
-    converter.set_variable(c_op.outputs[0](), offset_out)
+    y = (x - mean) / ((variance + c_op.eps) ** 0.5) * gamma + beta
+    converter.set_variable(c_op.outputs[0](), y)

@@ -1,4 +1,5 @@
 from typing import Optional
+
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.order import OrderNHWC
@@ -22,15 +23,15 @@ class Depth2Space(Operator):
         - **x** - Input variable.
         - **y** - Output variable. Its order is same as :code:`x`.
     """
+
     def __init__(self, name: Optional[str], r: int):
         super().__init__(name)
         self.parameters["r"] = int(r)
 
     def __call__(self, x: Variable):
-        assert set(x.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
-            "Input variable of Depth2Space must have N, C, H, and W axes.: " \
-            f"x.order.axes={x.order.axes}"
-        assert x.shape_dict[Axis.C] % (self.parameters["r"]*self.parameters["r"]) == 0, \
+        assert x.order.check_same_axes(OrderNHWC), "Input variable of Depth2Space must have N, C, H, and W axes.: " \
+                                                   f"x.order.axes={x.order.axes}"
+        assert x.shape_dict[Axis.C] % (self.parameters["r"] * self.parameters["r"]) == 0, \
             "Input variable C axis must be divisible by : " \
             f'r*r={self.parameters["r"]*self.parameters["r"]} ' \
             f"x.order.axes={x.order.axes}"
@@ -44,4 +45,3 @@ class Depth2Space(Operator):
         self.append_input("x", x)
         self.append_output("y", y)
         return y,
-

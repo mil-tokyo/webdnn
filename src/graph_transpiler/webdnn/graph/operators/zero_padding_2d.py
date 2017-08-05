@@ -32,8 +32,8 @@ class ZeroPadding2D(Operator):
     def __init__(self, name: Optional[str], padding: IntOrTuple):
         super().__init__(name)
         self.parameters["padding"] = to_tuple(padding)
-        self.attributes = {PostAxiswise(self, Axis.C),
-                           Axiswise(self, Axis.C)}
+        self.attributes.add(PostAxiswise(self, Axis.C))
+        self.attributes.add(Axiswise(self, Axis.C))
 
     def __call__(self, x: Variable):
         x_shape_dict = x.shape_dict

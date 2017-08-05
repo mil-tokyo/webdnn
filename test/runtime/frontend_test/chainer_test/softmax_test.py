@@ -18,7 +18,7 @@ def template(axis=1, ndim=2, description: str = ""):
     vx = chainer.Variable(np.arange(mul(shape)).reshape(shape).astype(np.float32))
     vy = chainer.functions.softmax(vx, axis)
 
-    graph = ChainerConverter().convert_from_inout_vars([vx], [vy])
+    graph = ChainerConverter().convert([vx], [vy])
 
     x = graph.inputs[0]
     y = graph.outputs[0]
@@ -26,8 +26,9 @@ def template(axis=1, ndim=2, description: str = ""):
     generate_kernel_test_case(
         description=f"[chainer] F.softmax {description}",
         graph=graph,
-        inputs={x: np.transpose(vx.data, [default_order[ndim].axes_dict[a] for a in x.order.axes])},
-        expected={y: np.transpose(vy.data, [default_order[ndim].axes_dict[a] for a in y.order.axes])},
+        inputs={x: vx.data},
+        backend=["webgpu", "webassembly"],
+        expected={y: vy.data},
     )
 
 

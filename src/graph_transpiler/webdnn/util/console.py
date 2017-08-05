@@ -1,6 +1,7 @@
 import shutil
 import sys
-from typing import List, Any
+import warnings
+from typing import Any, Type, Optional
 
 from webdnn.util import flags
 
@@ -22,8 +23,8 @@ def colorize(text: str, color: int, bright: bool = False):
     return f"{ESC}[{'1' if bright else '0'};3{color}m{text}{ESC}[0;39m"
 
 
-def warning(*texts: Any):
-    stderr(colorize("".join(map(str, texts)), Color.Yellow))
+def warning(message: str, category: Optional[Type[Warning]] = Warning):
+    warnings.warn(message, category)
 
 
 def error(*texts: Any):

@@ -1,3 +1,6 @@
+from typing import Generic, TypeVar, List, Iterable, Tuple
+
+
 class Axis:
     """
     Enum class for representing semantics of each dimension of variables.
@@ -9,7 +12,11 @@ class Axis:
     T = None  # type: "Axis"
 
     def __init__(self, name):
-        self.name = name
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
 
     def __str__(self):
         return f"<Axis.{self.name}>"
@@ -18,20 +25,66 @@ class Axis:
         return self.name
 
     def __eq__(self, other):
-        return isinstance(other, Axis) and self.name.__hash__() == other.name.__hash__()
+        # noinspection PyBroadException
+        try:
+            return other.name == self.name
 
-    def __hash__(self):
-        return self.name.__hash__()
+        except Exception:
+            return False
+
+    __hash__ = None
 
 
-N = Axis("N")  #: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
-C = Axis("C")  #: Number of features
-H = Axis("H")  #: Height of image
-W = Axis("W")  #: Width of image
-T = Axis("T")  #: Length of series
+T = TypeVar('T')
 
-Axis.N = N
-Axis.C = C
-Axis.H = H
-Axis.W = W
-Axis.T = T
+
+class AxisKeyDict(Generic[T]):
+    def __init__(self, keys: Iterable[Axis] = None, vals: Iterable[T] = None):
+        self._keys = list(keys if keys else [])  # type: List[Axis]
+        self._vals = list(vals if vals else [])  # type: List[T]
+
+    def __contains__(self, item: Axis) -> bool:
+        return item in self._keys
+
+    def __getitem__(self, item: Axis) -> T:
+        index = self._keys.index(item)
+        return self._vals[index]
+
+    def __setitem__(self, key: Axis, value: T):
+        if key in self:
+            index = self._keys.index(key)
+            self._vals[index] = value
+
+        else:
+            self._keys.append(key)
+            self._vals.append(value)
+
+    def __delitem__(self, key: Axis):
+        index = self._keys.index(key)
+        self._keys.pop(index)
+        self._vals.pop(index)
+
+    def __len__(self) -> int:
+        return len(self._keys)
+
+    def __iter__(self) -> Iterable[Axis]:
+        return self.keys()
+
+    def get(self, k: Axis, default: T) -> T:
+        return self[k] if k in self else default
+
+    def keys(self) -> Iterable[Axis]:
+        return self._keys.__iter__()
+
+    def values(self) -> Iterable[T]:
+        return self._vals.__iter__()
+
+    def items(self) -> Iterable[Tuple[Axis, T]]:
+        return zip(self.keys(), self.values())
+
+
+Axis.N = Axis("N")  #: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
+Axis.C = Axis("C")  #: Number of features
+Axis.H = Axis("H")  #: Height of image
+Axis.W = Axis("W")  #: Width of image
+Axis.T = Axis("T")  #: Length of series

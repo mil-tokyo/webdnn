@@ -1,4 +1,4 @@
-from typing import Dict, Union, Tuple, List, Any
+from typing import Dict, Union, Tuple, List, Any, Sequence
 
 import numpy as np
 
@@ -13,16 +13,16 @@ Content = Union[
     bytes,
     Allocation,
     Placeholder,
-    List[Union[int, Placeholder]],
+    Sequence[Union[int, Placeholder]],
     List[Allocation]
 ]
 
 
-def _flatten(l: List[Any]):
+def _flatten(l: Sequence[Any]):
     """
     _flatten([[1, 2], 3, [[4], 5, [[6, 7]]], [8, 9]] == [1, 2, 3, 4, 5, 6, 7, 8, 9]
     """
-    return sum([_flatten(v) if isinstance(v, list) else [v] for v in l], [])
+    return sum([_flatten(v) if isinstance(v, Sequence) else [v] for v in l], [])
 
 
 class BufferInjector(Injector):
@@ -144,7 +144,7 @@ class BufferInjector(Injector):
                 else:
                     return f"({self.dynamic_name} + {self.meta_name}[{self.offset_map[key]}])"
 
-            if isinstance(value, List):
+            if isinstance(value, Sequence):
 
                 value = _flatten(value)
 
@@ -216,7 +216,7 @@ class BufferInjector(Injector):
                     self.unresolved_value_list.append((len(buffer) // 4, value))
                     buffer += bytes(4)  # sizeof(int)
 
-            elif isinstance(value, List):
+            elif isinstance(value, Sequence):
                 value = _flatten(value)
 
                 if all([isinstance(p, int) or isinstance(p, Placeholder) for p in value]):

@@ -3,8 +3,6 @@ import numpy as np
 
 from test.util import generate_kernel_test_case
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.graph.order import OrderNCHW, OrderNC
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test():
@@ -31,7 +29,7 @@ def test():
     # implicit reshape to (1, 2*2*26)
     vy = linear1(h)
 
-    graph = ChainerConverter().convert_from_inout_vars([vx], [vy])
+    graph = ChainerConverter().convert([vx], [vy])
 
     x = graph.inputs[0]
     y = graph.outputs[0]
@@ -39,7 +37,7 @@ def test():
     generate_kernel_test_case(
         description=f"[chainer] insertion of transposition",
         graph=graph,
-        inputs={x: ConstantVariable(vx.data, OrderNCHW).change_order(x.order).data},
-        expected={y: ConstantVariable(vy.data, OrderNC).change_order(y.order).data},
+        inputs={x: vx.data},
+        expected={y: vy.data},
         backend=["webgpu", "webassembly"]
     )

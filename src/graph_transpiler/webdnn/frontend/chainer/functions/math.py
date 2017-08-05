@@ -1,11 +1,7 @@
-from webdnn.graph.operators.exp import Exp
-
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.graph.operators.exp import Exp
 
 
 # noinspection PyUnusedLocal

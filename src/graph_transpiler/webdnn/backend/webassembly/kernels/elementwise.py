@@ -51,7 +51,6 @@ def elementwise_kernel_base(op: Elementwise,
     return [kernel]
 
 
-# noinspection PyPep8Naming
 def register_elementwise_kernel(OperatorClass: Type[Elementwise],
                                 code: str,
                                 parameters: Dict[str, Callable[[Elementwise], Union[int, float]]] = None):

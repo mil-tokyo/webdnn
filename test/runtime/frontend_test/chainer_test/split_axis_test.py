@@ -3,14 +3,13 @@ import numpy as np
 
 from test.util import generate_kernel_test_case
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.graph.order import OrderNCHW
 
 
 def test():
     vx = chainer.Variable(np.random.rand(2, 8, 6, 12))
     vy1, vy2, vy3 = chainer.functions.split_axis(vx, [4, 10], 3)
 
-    graph = ChainerConverter().convert_from_inout_vars([vx], [vy1, vy2, vy3])
+    graph = ChainerConverter().convert([vx], [vy1, vy2, vy3])
 
     x = graph.inputs[0]
     y1 = graph.outputs[0]
@@ -20,10 +19,10 @@ def test():
     generate_kernel_test_case(
         description=f"[chainer] F.SplitAxis",
         graph=graph,
-        inputs={x: np.transpose(vx.data, [OrderNCHW.axes_dict[a] for a in x.order.axes])},
+        inputs={x: vx.data},
         expected={
-            y1: np.transpose(vy1.data, [OrderNCHW.axes_dict[a] for a in y1.order.axes]),
-            y2: np.transpose(vy2.data, [OrderNCHW.axes_dict[a] for a in y2.order.axes]),
-            y3: np.transpose(vy3.data, [OrderNCHW.axes_dict[a] for a in y3.order.axes])
+            y1: vy1.data,
+            y2: vy2.data,
+            y3: vy3.data
         },
     )

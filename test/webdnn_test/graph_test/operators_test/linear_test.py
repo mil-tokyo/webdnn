@@ -4,6 +4,7 @@ import numpy as np
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.linear import Linear
+from webdnn.graph.order import Order
 from webdnn.graph.order import OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderCNHW, \
     OrderCHWN, OrderNCHW
 from webdnn.graph.variable import Variable
@@ -12,8 +13,8 @@ from webdnn.graph.variable import Variable
 def test_every_order():
     orders = [OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
 
-    for order1, order2 in itertools.product(orders, orders):
-        if set(order1.axes) != set(order2.axes):
+    for order1, order2 in itertools.product(orders, orders):  # type: Order, Order
+        if not order1.check_same_axes(order2):
             continue
 
         default_order = {

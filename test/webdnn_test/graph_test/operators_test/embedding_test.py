@@ -1,5 +1,6 @@
 from test.util import assert_shape
 from webdnn import Variable, Axis
+from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.order import OrderNC, OrderNT, OrderCN
 
@@ -13,7 +14,7 @@ def template(N=2, T=3, vocabulary_size=4, feature_size=5, order_x=OrderNT, order
 
     y, = Embedding(None)(x, w)
 
-    assert_shape(y, {Axis.N: N, Axis.T: T, Axis.C: feature_size})
+    assert_shape(y, AxisKeyDict([Axis.N, Axis.T, Axis.C], [N, T, feature_size]))
 
 
 def test():

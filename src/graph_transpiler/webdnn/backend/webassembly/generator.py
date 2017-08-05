@@ -143,8 +143,3 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
 
 def generate(graph: Graph, **kwargs):
     return WebassemblyDescriptorGenerator.generate(graph, **kwargs)
-
-
-# noinspection PyUnresolvedReferences
-# NOTE: To register handlers into Generator, handler definitions must imported after Generator is defined.
-import webdnn.backend.webassembly.kernels

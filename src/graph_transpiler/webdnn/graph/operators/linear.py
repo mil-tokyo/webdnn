@@ -40,8 +40,8 @@ class Linear(Operator):
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
-        self.attributes = {PostAxiswise(self, Axis.C),
-                           HaveWeights(self)}
+        self.attributes.add(PostAxiswise(self, Axis.C))
+        self.attributes.add(HaveWeights(self))
 
     def __call__(self, x: Variable, w: Variable):
         if Placeholder.check_resolved(x.shape_dict[Axis.C]) and Placeholder.check_resolved(w.shape_dict[Axis.C]):
@@ -50,10 +50,10 @@ class Linear(Operator):
                                                                  f"size: x.shape_dict[Axis.C]={x.shape_dict[Axis.C]}, " \
                                                                  f"size: w.shape_dict[Axis.C]={w.shape_dict[Axis.C]}"
 
-        assert len(x.shape_dict) == len(w.shape_dict), "Input and Weight variable of Linear operator must be same dimension: " \
-                                                       f"len(x.ndim)={x.ndim}, len(w.ndim)={w.ndim}"
+        assert x.ndim == w.ndim, "Input and Weight variable of Linear operator must be same dimension: " \
+                                 f"len(x.ndim)={x.ndim}, len(w.ndim)={w.ndim}"
 
-        if len(x.shape_dict) == 4:
+        if x.ndim == 4:
             if Placeholder.check_resolved(x.shape_dict[Axis.H]) and Placeholder.check_resolved(w.shape_dict[Axis.H]):
                 assert x.shape_dict[Axis.C] == w.shape_dict[Axis.C], "Input and Weight variable of Linear operator must have same shape " \
                                                                      "except Axis.N " \

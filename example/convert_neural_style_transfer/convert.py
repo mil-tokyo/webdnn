@@ -43,15 +43,15 @@ chainer.serializers.load_npz(model_path, model)
 
 # Execute forward propagation to construct computation graph
 if chainer.__version__ >= "2.":
-    with chainer.using_config("train_and_save", False):  # fixes batch normalization
+    with chainer.using_config("train", False):  # fixes batch normalization
         x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
         y = model(x)
 else:
     x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
-    y = model(x)
+    y = model(x, test=False)
 
 # Convert chainer computation graph into IR
-graph = ChainerConverter().convert_from_inout_vars([x], [y])
+graph = ChainerConverter().convert([x], [y])
 
 # Generate graph descriptor
 generate_descriptor(args.backend, graph, constant_encoder_name=args.encoding).save(path.join(path.dirname(__file__), "./output"))

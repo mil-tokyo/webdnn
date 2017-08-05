@@ -5,6 +5,7 @@ from webdnn.graph import traverse
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -57,17 +58,17 @@ class MergeSgemmAndElementwiseMul(OptimizeRule):
 
             ... code-block::
 
-                                               w1       |   x
-                                          ==============|=========
-                SGEMM's inputs' shape is:  [2, 3, 4, 5] | [5, 15]
-                                          --------------+---------
-                SGEMM reshaped them as:         [24, 5] | [5, 15]
-                                          --------------+---------
-                SGEMM's output shape is:           [24, | 15]
-                                                --------+-------
-                SGEMM splits axes as:            [4, 6, | 5, 3]
-                                                        |
-                w2's shape is:                      [6] |
+                                                    w1          |     x
+                                          ======================|=============
+                SGEMM's inputs' shape is:  [N:2, H:3, W:4, C:5] | [N:5, C:15]
+                                          ----------------------+-------------
+                SGEMM reshaped them as:             [M:24, K:5] | [K:5, N:15]
+                                          ----------------------+-------------
+                SGEMM's output shape is:                 [M:24, | N:15]
+                                                     -----------+-------------
+                SGEMM splits axes as:                [N:4, C:6, | H:5, W:3]
+                                                                |
+                w2's shape is:                            [C:6] |
 
             In this case, it can be said that "all axes in :code:`w2` (:code:`C`) is derived from :code:`w1`".
 
@@ -199,15 +200,17 @@ class MergeSgemmAndElementwiseMul(OptimizeRule):
 
             y = elementwise_mul.outputs["y"]  # type: Variable
 
-            if not set(w2.order.axes).issubset(w1_virtual_order.axes):
+            if not all(axis in w1_virtual_order.axes for axis in w2.order.axes):
                 # w2's axes are derived from both w1 and x
                 continue
 
             elementwise_mul.remove_all()
-            sgemm.replace_output(h, y)
+            y_dummy, = Transpose(None)(h)
+            y_dummy.change_order(y.order)
+            y_dummy.replace(y)
 
             w2.change_order(w1_virtual_order)
-            w_new = ConstantVariable(w1.data.reshape(w1_virtual_shape), w1_virtual_order) * w2
+            w_new = ConstantVariable(w1.data.reshape(w1_virtual_shape), w1_virtual_order) * w2  # type: ConstantVariable
             w1.data = w_new.data.reshape(w1.shape)
 
             flag_changed = True

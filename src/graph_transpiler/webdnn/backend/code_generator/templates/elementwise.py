@@ -6,7 +6,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.command_buffer import CommandBuffer
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
 from webdnn.graph import traverse
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.elementwise import Elementwise
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -16,7 +16,7 @@ from webdnn.util.misc import mul
 RegisteredItem = namedtuple('RegisteredItem', ['OperatorClass', 'code', 'parameters'])
 
 
-def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], Dict[Variable, Dict[Axis, int]]]:
+def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], Dict[Variable, AxisKeyDict[int]]]:
     """
     Simplify variable orders based on follow rules
 
@@ -48,21 +48,21 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
     """
 
     orders = {}  # type: Dict[Variable, Order]
-    shape_dicts = {}  # type: Dict[Variable, Dict[Axis, int]]
+    shape_dicts = {}  # type: Dict[Variable, AxisKeyDict[int]]
     axis_scalar = Axis("Scalar")
 
     # remove all axes whose size is `1`.
     for v in variables:
         new_axes = [a for a in v.order.axes if v.shape_dict[a] != 1]
         orders[v] = Order(new_axes)
-        shape_dicts[v] = {a: v.shape_dict[a] for a in new_axes}
+        shape_dicts[v] = AxisKeyDict(new_axes, [v.shape_dict[a] for a in new_axes])
 
         if len(new_axes) == 0 and v.size == 1:
             orders[v] = Order([axis_scalar])
             shape_dicts[v] = {axis_scalar: 1}
 
     # list up all axes and variables which have the axis
-    var_dict = {}  # type: Dict[Axis, Set[Variable]]
+    var_dict = AxisKeyDict[Set[Variable]]()
     for v in variables:
         for axis in orders[v].axes:
             if axis in var_dict:
@@ -97,7 +97,7 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
                     del shape_dict[axis2]
 
                     order = orders[v]
-                    orders[v] = Order(order.axes[:order.axes_dict[axis1]] + [axis_new] + order.axes[order.axes_dict[axis2] + 1:])
+                    orders[v] = Order(order.axes[:order.axes_dict[axis1]] + (axis_new,) + order.axes[order.axes_dict[axis2] + 1:])
 
                 var_dict[axis_new] = vars1
                 del var_dict[axis1]
@@ -127,7 +127,7 @@ def _optimize_loop_structure(variables: List[Variable]):
     orders, shape_dicts = _simplify_orders(variables)
     shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
     strides = {v: [mul(shapes[v][i + 1:]) for i in range(v.ndim)] for v in variables}
-    stride_dicts = {v: dict(zip(orders[v].axes, strides[v])) for v in variables}
+    stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
 
     # re-ordering
     axes = []
@@ -231,23 +231,23 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
 
     for x in xs:
         variable2stride_name[x] = []
-        for i, axis in enumerate(orders[x].axes):
-            if stride_dicts[x][axis] == 1:
+        for d, axis2 in enumerate(iterate_order.axes):
+            if axis2 not in stride_dicts[x] or stride_dicts[x][axis2] == 1:
                 variable2stride_name[x].append("")
                 continue
 
             name = _generate_unique_name()
-            buffer.load(name, stride_dicts[x][axis], "int", const=True)
+            buffer.load(name, stride_dicts[x][axis2], "int", const=True)
             variable2stride_name[x].append(name)
 
     variable2stride_name[y] = []
-    for i, axis in enumerate(orders[y].axes):
-        if stride_dicts[y][axis] == 1:
+    for d, axis2 in enumerate(iterate_order.axes):
+        if axis2 not in stride_dicts[y] or stride_dicts[y][axis2] == 1:
             variable2stride_name[y].append("")
             continue
 
         name = _generate_unique_name()
-        buffer.load(name, stride_dicts[y][axis], "int", const=True)
+        buffer.load(name, stride_dicts[y][axis2], "int", const=True)
         variable2stride_name[y].append(name)
 
     for i, axis in enumerate(iterate_order.axes):
@@ -256,7 +256,6 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
 
     # open loop
 
-    x_cursor = 0
     xs = list(sorted(xs, key=lambda x: orders[x].ndim))
     for i, axis in enumerate(iterate_order.axes):
         # FIXME: 一般化
@@ -282,17 +281,23 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
         buffer.enterFor(f"d{i}", initial_value, f"D{i}", step_value)
 
         if i < iterate_order.ndim - 1:
-            while x_cursor < len(xs) and orders[xs[x_cursor]].ndim <= (i + 1):
-                x = xs[x_cursor]
-                x_cursor += 1
+            for x in xs:
+                if axis not in orders[x].axes:
+                    continue
+
+                if orders[x].axes[-1] != axis:
+                    continue
 
                 name = _generate_unique_name()
                 buffer_name = variable2buffer_name[x]
 
                 expression = []
-                for d in range(orders[x].ndim):
+                for d, axis2 in enumerate(iterate_order.axes[:i + 1]):
+                    if axis2 not in orders[x].axes:
+                        continue
+
                     # FIXME: インデックス計算の最適化
-                    if stride_dicts[x][orders[x].axes[d]] == 1:
+                    if stride_dicts[x][axis2] == 1:
                         expression.append(f"d{d}")
                     else:
                         expression.append(f"d{d}*{variable2stride_name[x][d]}")
@@ -325,13 +330,15 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                 # load from buffer
                 buffer_name = variable2buffer_name[x]
                 expression = []
-                for d in range(orders[x].ndim):
+                for d, axis2 in enumerate(iterate_order.axes):
+                    if axis2 not in orders[x].axes:
+                        continue
+
                     # FIXME: インデックス計算の最適化
-                    if stride_dicts[x][orders[x].axes[d]] == 1:
+                    if stride_dicts[x][axis2] == 1:
                         expression.append(f"d{d}")
                     else:
-                        stride_name = variable2stride_name[x][d]
-                        expression.append(f"d{d}*{stride_name}")
+                        expression.append(f"d{d}*{variable2stride_name[x][d]}")
 
                 buffer.declare(new_name, "float", initial_value=f"{buffer_name}[{' + '.join(expression)}]", const=True)
                 name2variable[new_name] = x
