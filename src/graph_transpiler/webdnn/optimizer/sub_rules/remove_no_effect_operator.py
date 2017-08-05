@@ -127,14 +127,19 @@ class RemoveReshape(RemoveNoEffectOperatorBase):
 
             if all([
                 all(x.stride_dict[axis] == y.stride_dict[axis] for axis in set(x.order.axes) and set(y.order.axes)),
-                all(isinstance(op2, Elementwise) for op2 in y.input_to),
-                    y not in graph.outputs
+                all(isinstance(op2, Elementwise) for op2 in y.input_to)
             ]):
                 op.remove_all()
+                if y in graph.outputs:
+                    index = graph.outputs.index(y)
+                    graph.outputs.remove(y)
+                    graph.outputs.insert(index, x)
+
                 for op2 in list(y.input_to):
                     name = op2._get_input_name(y)
                     op2.remove_input(y)
                     op2.append_input(name, x)
+
                 return True
 
         return False
