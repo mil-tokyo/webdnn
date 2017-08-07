@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Sequence
 
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
@@ -37,7 +37,7 @@ class Reshape(Operator):
         - **y** - Output variable.
     """
 
-    def __init__(self, name: Optional[str], in_order: Order, out_order: Order, out_shape: List[Union[int, Placeholder]]):
+    def __init__(self, name: Optional[str], in_order: Order, out_order: Order, out_shape: Sequence[Union[int, Placeholder]]):
         super().__init__(name)
 
         assert -1 not in out_shape, "-1 (wildcard) in reshape output shape is currently not supported"
@@ -57,8 +57,6 @@ class Reshape(Operator):
         assert x.size == mul(out_shape), f"Reshape operator must not change variable size: " \
                                          f"(x.shape)={in_shape}, (x.size)={mul(in_shape)}, " \
                                          f"(y.shape)={out_shape}, (y.size)={mul(out_shape)}"
-
-        removed_axes = set(in_order.axes).difference(set(out_order.axes))
 
         y = Variable(out_shape, out_order)
         self.append_input("x", x)

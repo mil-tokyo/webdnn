@@ -5,6 +5,7 @@ from webdnn.graph import traverse
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.linear import Linear
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, OrderHWCN, OrderNC, OrderCN
 

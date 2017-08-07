@@ -36,8 +36,8 @@ class Pooling2D(Operator):
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
-        self.attributes = {PostAxiswise(self, Axis.C),
-                           Axiswise(self, Axis.C)}
+        self.attributes.add(PostAxiswise(self, Axis.C))
+        self.attributes.add(Axiswise(self, Axis.C))
 
     def __call__(self, x: Variable):
         x_shape_dict = x.shape_dict
@@ -46,7 +46,7 @@ class Pooling2D(Operator):
         W2 = (x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) // self.parameters["stride"][1] + 1
         C2 = x_shape_dict[Axis.C]
         if ((x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) % self.parameters["stride"][0] != 0) or \
-           ((x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) % self.parameters["stride"][1] != 0):
+            ((x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) % self.parameters["stride"][1] != 0):
             # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
             console.warning(
                 "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +

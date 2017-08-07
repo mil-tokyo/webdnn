@@ -34,16 +34,15 @@ class ReinterpretAxis(Operator):
         self.parameters["out_order"] = out_order
         assert in_order.ndim == out_order.ndim, "ReinterpretAxis operator must not change variable's shape: " \
                                                 f"in_order.ndim={in_order.ndim}, out_order.ndim={out_order.ndim}"
-        self.attributes = {}
 
     def __call__(self, x: Variable):
-        assert set(x.order.axes) == set(self.parameters["in_order"].axes), \
-            "Shape mismatch: " \
-            f"op.in_order={self.parameters['in_order']}" \
-            f"x.order={x.order}"
-
         in_order = self.parameters["in_order"]  # type: Order
         out_order = self.parameters["out_order"]  # type: Order
+
+        assert in_order.check_same_axes(x.order), "Shape mismatch: " \
+                                                  f"op.in_order={self.parameters['in_order']}" \
+                                                  f"x.order={x.order}"
+
         y = Variable(x.shape, Order([out_order.axes[in_order.axes_dict[axis]] for axis in x.order.axes]))
         self.append_input("x", x)
         self.append_output("y", y)

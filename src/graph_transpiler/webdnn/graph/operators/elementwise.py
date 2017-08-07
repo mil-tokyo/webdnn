@@ -2,6 +2,7 @@ from abc import ABCMeta
 from typing import Optional
 
 from webdnn.graph import variable
+from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise as ElementwiseAttribute
 from webdnn.graph.operators.attributes.inplace import Inplace
@@ -44,25 +45,28 @@ class Elementwise(Operator, metaclass=ABCMeta):
     def __init__(self, name: Optional[str]):
         super().__init__(name)
 
-        # FIXME: attributes set may be overwritten in extended class's constructor
-        self.attributes = {ElementwiseAttribute(self),
-                           Inplace(self, "x0", "y")}
+        self.attributes.add(ElementwiseAttribute(self))
+        self.attributes.add(Inplace(self, "x0", "y"))
 
     def __call__(self, *xs: "variable.Variable"):
         y_axes = []
-        y_shape_dict = {}
+        y_shape_dict = AxisKeyDict()
         for i, x in enumerate(xs):
             for axis in x.order.axes:
-                if axis not in y_axes:
+                if axis in y_axes:
+                    if y_shape_dict[axis] == 1:
+                        # broadcast
+                        y_shape_dict[axis] = x.shape_dict[axis]
+                else:
                     y_axes.append(axis)
                     y_shape_dict[axis] = x.shape_dict[axis]
 
                 if Placeholder.check_resolved(x.shape_dict[axis]):
                     if Placeholder.check_resolved(y_shape_dict[axis]):
-                        assert y_shape_dict[axis] == x.shape_dict[axis], \
+                        assert y_shape_dict[axis] == x.shape_dict[axis] or x.shape_dict[axis] == 1, \
                             "All input variables of elementwise operator should be same shape: " \
-                            f"y.shape_dict[{axis}]=f{y_shape_dict[axis]}, " \
-                            f"x{i}.shape_dict[{axis}]=f{x.shape_dict[axis]}"
+                            f"y.shape_dict[{axis}]={y_shape_dict[axis]}, " \
+                            f"x{i}.shape_dict[{axis}]={x.shape_dict[axis]}"
                     else:
                         y_shape_dict[axis] = x.shape_dict[axis]
 

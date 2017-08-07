@@ -8,7 +8,7 @@ import numpy as np
 
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph import traverse
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC
 from webdnn.graph.variable import Variable
@@ -16,7 +16,7 @@ from webdnn.util import flags
 from webdnn.util.json import json
 
 
-def assert_shape(v: Variable, expected: Dict[Axis, int]) -> bool:
+def assert_shape(v: Variable, expected: AxisKeyDict[int]):
     """assert_shape(v, expected)
 
     Assert variable shape is correct. If shape is mismatched, exception with information message is raised.
@@ -28,14 +28,14 @@ def assert_shape(v: Variable, expected: Dict[Axis, int]) -> bool:
     Examples
 
         >>> x = Variable((2, 3), OrderNC)
-        >>> assert_shape(x, {Axis.N:2, Axis.C:3})
+        >>> assert_shape(x, AxisKeyDict([Axis.N, Axis.C], [2, 3]))
         # no exception is raised.
 
-        >>> assert_shape(x, {Axis.C:2, Axis.N:3})
+        >>> assert_shape(x, AxisKeyDict([Axis.C, Axis.N], [2, 3]))
         "AssertionError: Shape mismatch: (expected shape)={N: 3, C: 2}, (real shape)={N: 2, C: 3}"
 
     """
-    assert set(v.order.axes) == set(expected.keys()), \
+    assert all(axis in v.order.axes for axis in expected.keys()) and all(axis in expected for axis in v.order.axes), \
         f"Shape mismatch: (expected shape)={expected}, (real shape)={v.shape_dict}"
 
     for axis in v.order.axes:

@@ -27,21 +27,20 @@ class Concat(Operator):
     def __init__(self, name: Optional[str], axis: Axis):
         super().__init__(name)
         self.parameters["axis"] = axis
-        self.attributes = set()
 
     def __call__(self, *xs: Variable):
         axis = self.axis
         axis_index = xs[0].order.axes_dict[axis]
-        axes_set = set(xs[0].order.axes)
+        axes = xs[0].order.axes
 
         y_shape = list(xs[0].shape)  # type: List[Placeholder]
         y_shape[axis_index] = 0
 
         for i, x in enumerate(xs):
-            assert set(x.order.axes) == axes_set, "Input variable of Concat operator must have same axes: " \
-                                                  f"x0.order.axes={xs[0].order.axes}, x{i}.order.axes={xs[i].order.axes}"
+            assert x.order.check_same_axes(xs[0].order), "Input variable of Concat operator must have same axes: " \
+                                                         f"x0.order.axes={xs[0].order.axes}, x{i}.order.axes={xs[i].order.axes}"
 
-            for other_axis in [other_axis for other_axis in axes_set if other_axis != axis]:
+            for other_axis in [other_axis for other_axis in axes if other_axis != axis]:
                 if Placeholder.check_resolved(xs[0].shape_dict[other_axis]) and Placeholder.check_resolved(x.shape_dict[other_axis]):
                     assert xs[0].shape_dict[other_axis] == x.shape_dict[other_axis], "Input variable of Concat operator must be same " \
                                                                                      f"shape except the specified axis: " \

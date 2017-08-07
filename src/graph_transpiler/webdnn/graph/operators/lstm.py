@@ -30,7 +30,6 @@ class LSTM(Operator):
         self.parameters["activation"] = activation
         assert recurrent_activation in ["hard_sigmoid", "sigmoid"], "unknown recurrent activation function"
         self.parameters["recurrent_activation"] = recurrent_activation
-        self.attributes = set()
 
     def __call__(self, x: Variable, w_input: Variable, w_hidden: Variable, b: Optional[Variable] = None,
                  initial_c: Optional[Variable] = None, initial_h: Optional[Variable] = None):
@@ -66,9 +65,9 @@ class LSTM(Operator):
         w_input_shape_dict = w_input.shape_dict
         w_hidden_shape_dict = w_hidden.shape_dict
 
-        assert set(x.order.axes) == {Axis.N, Axis.T, Axis.C}
-        assert set(w_input.order.axes) == {Axis.N, Axis.C}
-        assert set(w_hidden.order.axes) == {Axis.N, Axis.C}
+        assert x.order.check_same_axes(OrderNTC)
+        assert w_input.order.check_same_axes(OrderNC)
+        assert w_hidden.order.check_same_axes(OrderNC)
         assert b.order == OrderC
 
         batch_size = x_shape_dict[Axis.N]
@@ -84,7 +83,7 @@ class LSTM(Operator):
             self.append_input("initial_c", initial_c)
             initial_c_shape_dict = initial_c.shape_dict
 
-            assert set(initial_c.order.axes) == {Axis.N, Axis.C}
+            assert initial_c.order.check_same_axes(OrderNC)
             assert initial_c_shape_dict[Axis.N] == batch_size
             assert initial_c_shape_dict[Axis.C] == hidden_dim
 
@@ -92,7 +91,7 @@ class LSTM(Operator):
             self.append_input("initial_h", initial_h)
             initial_h_shape_dict = initial_h.shape_dict
 
-            assert set(initial_h.order.axes) == {Axis.N, Axis.C}
+            assert initial_h.order.check_same_axes(OrderNC)
             assert initial_h_shape_dict[Axis.N] == batch_size
             assert initial_h_shape_dict[Axis.C] == hidden_dim
 

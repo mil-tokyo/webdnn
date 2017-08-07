@@ -12,20 +12,24 @@ class Operator(Node):
 
     Args:
         name (str): the name. If :code:`None`, automatically generated name is used.
-
-    Attributes:
-        inputs (dict of :class:`~webdnn.Variable`): input variables
-        outputs (dict of :class:`~webdnn.Variable`): output variable
     """
-    inputs: Dict[str, "variable.Variable"]
-    outputs: Dict[str, "variable.Variable"]
 
     def __init__(self, name: Optional[str] = None):
         super().__init__(name)
-        self.inputs = {}
-        self.outputs = {}
+        self._inputs = {}  # type: Dict[str, "variable.Variable"]
+        self._outputs = {}  # type: Dict[str, "variable.Variable"]
 
-    def _get_input_name(self, var: "variable.Variable"):
+    @property
+    def inputs(self) -> Dict[str, "variable.Variable"]:
+        """input variables"""
+        return dict(self._inputs)
+
+    @property
+    def outputs(self) -> Dict[str, "variable.Variable"]:
+        """output variables"""
+        return dict(self._outputs)
+
+    def get_input_name(self, var: "variable.Variable"):
         for name, v in self.inputs.items():
             if v is not var:
                 continue
@@ -33,9 +37,9 @@ class Operator(Node):
             return name
 
         else:
-            raise KeyError(f"'{name}' is not input of {self}")
+            raise KeyError(f"'{var}' is not input of {self}")
 
-    def _get_output_name(self, var: "variable.Variable"):
+    def get_output_name(self, var: "variable.Variable"):
         for name, v in self.outputs.items():
             if v is not var:
                 continue
@@ -43,7 +47,7 @@ class Operator(Node):
             return name
 
         else:
-            raise KeyError(f"'{name}' is not output of {self}")
+            raise KeyError(f"'{var}' is not output of {self}")
 
     def append_input(self, name: str, var: "variable.Variable"):
         """append_input(name, var)
@@ -54,11 +58,11 @@ class Operator(Node):
             name(str): the name of input variable
             var(:class:`~webdnn.Variable`): the variable
         """
-        # noinspection PyTypeChecker
-        self.append_prev(var)
+        if name in self.inputs:
+            raise KeyError(f"{name} is already used as key of input variable f{self.inputs[name]}.")
 
-        self.inputs[name] = var
-        var.input_to.add(self)
+        self.append_prev(var)
+        self._inputs[name] = var
 
     def remove_input(self, var: "variable.Variable"):
         """remove_input(var)
@@ -68,12 +72,13 @@ class Operator(Node):
         Args:
             var(:class:`~webdnn.Variable`): the variable
         """
-        # noinspection PyTypeChecker
-        self.remove_prev(var)
+        if var not in self.prevs:
+            raise KeyError(f"{var} is not registered in input variables.")
 
-        name = self._get_input_name(var)
-        self.inputs.pop(name)
-        var.input_to.remove(self)
+        name = self.get_input_name(var)
+
+        self.remove_prev(var)
+        self._inputs.pop(name)
 
     def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable"):
         """replace_input(v_old, v_new)
@@ -94,7 +99,7 @@ class Operator(Node):
             "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
             f"actual: v_old.order = {v_old.shape}, v_new.order = {v_new.shape}"
 
-        name = self._get_input_name(v_old)
+        name = self.get_input_name(v_old)
         self.remove_input(v_old)
         self.append_input(name, v_new)
 
@@ -107,14 +112,13 @@ class Operator(Node):
             name(str): the name of output variable
             var(:class:`~webdnn.Variable`): the variable
         """
+        if name in self.outputs:
+            raise KeyError(f"{name} is already used as key of output variable f{self.outputs[name]}.")
         if var.output_from is not None:
             raise KeyError(f"{var} has been registered as f{var.output_from}'s output already.")
 
-        # noinspection PyTypeChecker
         self.append_next(var)
-
-        self.outputs[name] = var
-        var.output_from = self
+        self._outputs[name] = var
 
     def remove_output(self, var: "variable.Variable"):
         """remove_output(var)
@@ -124,12 +128,12 @@ class Operator(Node):
         Args:
             var(:class:`~webdnn.Variable`): the variable
         """
-        # noinspection PyTypeChecker
-        self.remove_next(var)
+        if var not in self.nexts:
+            raise KeyError(f"{var} is not registered in input variables.")
+        name = self.get_output_name(var)
 
-        name = self._get_output_name(var)
-        self.outputs.pop(name)
-        var.output_from = None
+        self.remove_next(var)
+        self._outputs.pop(name)
 
     def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable"):
         """replace_output(v_old, v_new)
@@ -150,7 +154,7 @@ class Operator(Node):
             "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
             f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"
 
-        name = self._get_output_name(v_old)
+        name = self.get_output_name(v_old)
         self.remove_output(v_old)
         self.append_output(name, v_new)
 
@@ -192,7 +196,7 @@ class Operator(Node):
         return self.__repr__()
 
     def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
-        pass
+        raise NotImplementedError(f"Operator.__call__ must be override: (self.__class__)={self.__class__.__name__}")
 
     def get_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
         return [attr for attr in self.attributes if isinstance(attr, Attr)]

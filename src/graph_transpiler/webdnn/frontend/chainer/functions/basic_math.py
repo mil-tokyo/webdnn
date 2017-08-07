@@ -1,9 +1,13 @@
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.util import unary_op_handler, elementwise_binary_op_handler
+from webdnn.frontend.util import check_broadcast_constraints
+from webdnn.graph.operators.abs import Abs
+from webdnn.graph.operators.elementwise_add import ElementwiseAdd
+from webdnn.graph.operators.elementwise_div import ElementwiseDiv
+from webdnn.graph.operators.elementwise_mul import ElementwiseMul
+from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.order import OrderNC, OrderCN
@@ -17,20 +21,9 @@ def _convert_neg(converter: ChainerConverter, c_op: "chainer.functions.math.basi
     converter.set_variable(c_op.outputs[0](), y)
 
 
-@ChainerConverter.register_handler("Absolute")
-def _convert_absolute(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.Absolute"):
-    x = converter.get_variable(c_op.inputs[0])
-    # noinspection PyTypeChecker
-    y = abs(x)
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Absolute")(unary_op_handler(Abs))
 
-
-@ChainerConverter.register_handler("Add")
-def _convert_add(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.Add"):
-    x0 = converter.get_variable(c_op.inputs[0])
-    x1 = converter.get_variable(c_op.inputs[1])
-    y = x0 + x1
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Add")(elementwise_binary_op_handler(ElementwiseAdd))
 
 
 @ChainerConverter.register_handler("AddConstant")
@@ -44,6 +37,7 @@ def _convert_add_constant(converter: ChainerConverter, c_op: "chainer.functions.
 def _convert_sub(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.Sub"):
     x0 = converter.get_variable(c_op.inputs[0])
     x1 = converter.get_variable(c_op.inputs[1])
+    check_broadcast_constraints(x0, x1)
     y = x0 - x1
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -55,12 +49,7 @@ def _convert_sub_from_constant(converter: ChainerConverter, c_op: "chainer.funct
     converter.set_variable(c_op.outputs[0](), y)
 
 
-@ChainerConverter.register_handler("Mul")
-def _convert_mul(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.Mul"):
-    x0 = converter.get_variable(c_op.inputs[0])
-    x1 = converter.get_variable(c_op.inputs[1])
-    y = x0 * x1
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Mul")(elementwise_binary_op_handler(ElementwiseMul))
 
 
 @ChainerConverter.register_handler("MulConstant")
@@ -84,13 +73,7 @@ def _convert_mul(converter: ChainerConverter, c_op: "chainer.functions.math.basi
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Div")
-def _convert_div(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.Div"):
-    x0 = converter.get_variable(c_op.inputs[0])
-    x1 = converter.get_variable(c_op.inputs[1])
-    y = x0 / x1
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Div")(elementwise_binary_op_handler(ElementwiseDiv))
 
 
 # noinspection PyUnusedLocal
@@ -101,13 +84,7 @@ def _convert_div_from_constant(converter: ChainerConverter, c_op: "chainer.funct
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("PowVarVar")
-def _convert_pow_var_var(converter: ChainerConverter, c_op: "chainer.functions.math.basic_math.PowVarVar"):
-    x0 = converter.get_variable(c_op.inputs[0])
-    x1 = converter.get_variable(c_op.inputs[1])
-    y = x0 ** x1
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("PowVarVar")(elementwise_binary_op_handler(ElementwisePow))
 
 
 # noinspection PyUnusedLocal

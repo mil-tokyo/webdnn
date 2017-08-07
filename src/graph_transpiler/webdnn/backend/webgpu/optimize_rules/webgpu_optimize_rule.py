@@ -5,6 +5,7 @@ from webdnn.backend.webgpu.optimize_rules.optimize_lstm import OptimizeLSTM
 from webdnn.backend.webgpu.optimize_rules.optimize_transpose import OptimizeTranspose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.optimizer.sub_rules.merge_elementwise import MergeElementwise
+from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.remove_redundant_operator import RemoveRedundantOperator
 
 
@@ -18,4 +19,5 @@ class WebGPUOptimizeRule(OptimizeRule):
         self.register(OptimizeLinear())
         self.register(OptimizeLSTM())
         self.register(RemoveRedundantOperator())
+        self.register(RemoveNoEffectOperator())
         self.register(MergeElementwise())

@@ -113,8 +113,3 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
 
 def generate(graph: Graph, **kwargs):
     return WebGPUDescriptorGenerator.generate(graph, **kwargs)
-
-
-# noinspection PyUnresolvedReferences
-# NOTE: To register handlers into Generator, handler definitions must imported after Generator is defined.
-import webdnn.backend.webgpu.kernels

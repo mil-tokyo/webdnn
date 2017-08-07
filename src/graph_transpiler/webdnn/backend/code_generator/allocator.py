@@ -185,7 +185,7 @@ def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
                     inplace = op.get_attribute(Inplace)[0]  # type: Inplace
                     v_in = inplace.get_input()  # Use memory allocated for input variable
                     v_out = inplace.get_output()
-                    common_axes = set(v_in.order.axes).intersection(set(v_out.order.axes))
+                    common_axes = [axis for axis in v_in.order.axes if axis in v_out.order.axes]
 
                     if len(v_in.input_to) == 1 and \
                         all(v_in.stride_dict[axis] == v_out.stride_dict[axis] for axis in common_axes) and \

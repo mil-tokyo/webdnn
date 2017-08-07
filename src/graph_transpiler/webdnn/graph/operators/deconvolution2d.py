@@ -4,7 +4,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.have_weights import HaveWeights
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import OrderNHWC, OrderNCHW
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
@@ -39,14 +39,14 @@ class Deconvolution2D(Operator):
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
-        self.attributes = {HaveWeights(self)}
+        self.attributes.add(HaveWeights(self))
 
     def __call__(self, x: Variable, w: Variable):
-        assert set(x.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
+        assert x.order.check_same_axes(OrderNCHW), \
             "Input variable of Deconvolution2D must have N, C, H, and W axes.: " \
             f"x.order.axes={x.order.axes}"
 
-        assert set(w.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
+        assert w.order.check_same_axes(OrderNCHW), \
             "Kernel variable of Deconvolution2D must have N, C, H, and W axes.: " \
             f"w.order.axes={w.order.axes}"
 

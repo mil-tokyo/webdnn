@@ -1,30 +1,33 @@
-try:
-    import chainer
-except ImportError:
-    pass
+import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.constraints import unify_order
+from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.order import OrderNC, OrderNCHW
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
+from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.transpose import Transpose
+from webdnn.graph.order import OrderNC, OrderNCHW, OrderCNHW, Order, OrderCN, OrderC
+from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util.misc import mul
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
 @ChainerConverter.register_handler("BilinearFunction")
-def _convert_bilinear_function(converter: ChainerConverter,
-                               c_op: "chainer.functions.connection.bilinear.BilinearFunction"):
+def _convert_bilinear_function(converter: ChainerConverter, c_op: "chainer.functions.connection.bilinear.BilinearFunction"):
     # TODO
     raise NotImplementedError("[ChainerConverter] BilinearFunction is not supported")
 
 
-# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("Convolution2DFunction")
-def _convert_convolution_2d(converter: ChainerConverter,
-                            c_op: "chainer.functions.connection.convolution_2d.Convolution2DFunction"):
+def _convert_convolution_2d(converter: ChainerConverter, c_op: "chainer.functions.connection.convolution_2d.Convolution2DFunction"):
     x = converter.get_variable(c_op.inputs[0])
     w = converter.get_variable(c_op.inputs[1])
+
+    unify_order(x.order, OrderNCHW)
+    unify_order(w.order, OrderNCHW)
 
     conv_opr = Convolution2D(None,
                              ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
@@ -35,26 +38,28 @@ def _convert_convolution_2d(converter: ChainerConverter,
 
     if len(c_op.inputs) == 3:
         # with bias
-        bias = converter.get_variable(c_op.inputs[2])
-        y = y + bias
+        b = converter.get_variable(c_op.inputs[2])
+        unify_order(b.order, OrderC)
+        y = y + b
 
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
+# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("ConvolutionND")
-def _convert_convolution_nd(converter: ChainerConverter,
-                            c_op: "chainer.functions.connection.convolution_nd.ConvolutionND"):
+def _convert_convolution_nd(converter: ChainerConverter, c_op: "chainer.functions.connection.convolution_nd.ConvolutionND"):
     # TODO
     raise NotImplementedError("[ChainerConverter] ConvolutionND is not supported")
 
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Deconvolution2DFunction")
-def _convert_deconvolution_2d(converter: ChainerConverter,
-                              c_op: "chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction"):
+def _convert_deconvolution_2d(converter: ChainerConverter, c_op: "chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction"):
     x = converter.get_variable(c_op.inputs[0])
     w = converter.get_variable(c_op.inputs[1])
+
+    unify_order(x.order, OrderNCHW)
+    unify_order(w.order, OrderCNHW)
 
     deconv_opr = Deconvolution2D(None,
                                  ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
@@ -65,21 +70,21 @@ def _convert_deconvolution_2d(converter: ChainerConverter,
 
     if len(c_op.inputs) == 3:
         # with bias
-        bias = converter.get_variable(c_op.inputs[2])
-        y = y + bias
+        b = converter.get_variable(c_op.inputs[2])
+        unify_order(b.order, OrderC)
+        y = y + b
 
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
+# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("DeconvolutionND")
-def _convert_deconvolution_nd(converter: ChainerConverter,
-                              c_op: "chainer.functions.connection.deconvolution_nd.DeconvolutionND"):
+def _convert_deconvolution_nd(converter: ChainerConverter, c_op: "chainer.functions.connection.deconvolution_nd.DeconvolutionND"):
     # TODO
     raise NotImplementedError("[ChainerConverter] DeconvolutionND is not supported")
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
+# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("DepthwiseConvolution2D")
 def _convert_depthwise_convolution_2d(converter: ChainerConverter,
                                       c_op: "chainer.functions.connection.depthwise_convolution_2d.DepthwiseConvolution2D"):
@@ -92,6 +97,9 @@ def _convert_selected_item(converter: ChainerConverter,
                            c_op: "chainer.functions.connection.dilated_convolution_2d.DilatedConvolution2DFunction"):
     x = converter.get_variable(c_op.inputs[0])
     w = converter.get_variable(c_op.inputs[1])
+
+    unify_order(x.order, OrderNCHW)
+    unify_order(w.order, OrderNCHW)
 
     # when dx == 1, it means ordinary convolution.
     conv_opr = Convolution2D(None,
@@ -112,34 +120,29 @@ def _convert_selected_item(converter: ChainerConverter,
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("EmbedIDFunction")
-def _convert_embed_id_runcti(converter: ChainerConverter, c_op: "chainer.functions.connection.embed_id.EmbedIDFunction"):
+def _convert_embed_id(converter: ChainerConverter, c_op: "chainer.functions.connection.embed_id.EmbedIDFunction"):
     # TODO
     raise NotImplementedError("[ChainerConverter] EmbedIDFunction is not supported")
 
 
 @ChainerConverter.register_handler("LinearFunction")
 def _convert_linear_function(converter: ChainerConverter, c_op: "chainer.functions.connection.linear.LinearFunction"):
-    linear_opr = Linear(None)
-
     x = converter.get_variable(c_op.inputs[0])
-    w = converter.get_variable(c_op.inputs[1])
-    if x.ndim == 4 and w.ndim == 2:
-        # wを4次元に拡張 (NC -> NCHW)
-        x_shape_dict = x.shape_dict
-        w_shape_dict = w.shape_dict
-        assert x_shape_dict[Axis.C] * x_shape_dict[Axis.H] * x_shape_dict[Axis.W] == w_shape_dict[Axis.C]
-        assert w.order is OrderNC
-        w.order = OrderNCHW
-        w_new_shape = [w_shape_dict[Axis.N], x_shape_dict[Axis.C], x_shape_dict[Axis.H],
-                       x_shape_dict[Axis.W]]
-        w.shape = w_new_shape
-        w.data = w.data.reshape(w_new_shape)
+    w = converter.get_variable(c_op.inputs[1])  # type: ConstantVariable
 
-    y, = linear_opr(x, w)
+    x2, = Reshape(None, in_order=x.order, out_order=OrderNC, out_shape=[x.shape[0], mul(x.shape[1:])])(x)
+    w2, = ReinterpretAxis(None, in_order=w.order, out_order=OrderNC)(w)
+    w2, = Transpose(None)(w2)
+    w2.change_order(OrderCN)
+
+    y, = Linear(None)(x2, w2)
+    y, = ReinterpretAxis(None, in_order=y.order, out_order=Order([x.order.axes[0], w.order.axes[0]]))(y)
+
     if len(c_op.inputs) == 3:
         # with bias
-        bias = converter.get_variable(c_op.inputs[2])
-        y = y + bias
+        b = converter.get_variable(c_op.inputs[2])
+        check_broadcast_constraints(y, b)
+        y = y + b
 
     converter.set_variable(c_op.outputs[0](), y)
 

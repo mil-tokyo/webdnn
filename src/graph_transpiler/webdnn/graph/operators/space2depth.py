@@ -29,9 +29,8 @@ class Space2Depth(Operator):
         self.parameters["r"] = int(r)
 
     def __call__(self, x: Variable):
-        assert set(x.order.axes) == {Axis.N, Axis.C, Axis.H, Axis.W}, \
-            "Input variable of Depth2Space must have N, C, H, and W axes.: " \
-            f"x.order.axes={x.order.axes}"
+        assert x.order.check_same_axes(OrderNHWC), "Input variable of Depth2Space must have N, C, H, and W axes.: " \
+                                                   f"x.order.axes={x.order.axes}"
         assert x.shape_dict[Axis.H] % self.parameters["r"] == 0, \
             "Input variable H axis must be divisible by : " \
             f'r={self.parameters["r"]} ' \

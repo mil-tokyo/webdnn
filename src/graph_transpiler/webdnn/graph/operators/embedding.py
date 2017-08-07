@@ -2,7 +2,7 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.order import OrderNTC, OrderNT
+from webdnn.graph.order import OrderNTC, OrderNT, OrderNC
 from webdnn.graph.variable import Variable
 
 
@@ -42,8 +42,8 @@ class Embedding(Operator):
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert set(w.order.axes) == {Axis.N, Axis.C}, "Dictionary variable of Embedding operator must has only Axis.N and Axis.C: " \
-                                                      f"w.order.axes={w.order.axes}"
+        assert w.order.check_same_axes(OrderNC), "Dictionary variable of Embedding operator must has only Axis.N and Axis.C: " \
+                                                 f"w.order.axes={w.order.axes}"
 
         batch_size = x_shape_dict[Axis.N]
         sequence_len = x_shape_dict[Axis.T]

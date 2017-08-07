@@ -27,7 +27,7 @@ class Softmax(Operator):
     def __init__(self, name: Optional[str], axis: Axis):
         super().__init__(name)
         self.parameters["axis"] = axis
-        self.attributes = {Inplace(self, "x", "y")}
+        self.attributes.add(Inplace(self, "x", "y"))
 
     def __call__(self, x: Variable):
         y = Variable(x.shape, x.order)

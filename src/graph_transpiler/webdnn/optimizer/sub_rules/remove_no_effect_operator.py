@@ -1,7 +1,8 @@
-from typing import Tuple
+from typing import Tuple, Type
 
 import numpy as np
 
+from webdnn.frontend.constraints import AxisVar
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -11,11 +12,13 @@ from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_pow import ElementwisePow
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.scalar_pow import ScalarPow
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
@@ -26,8 +29,9 @@ def _remove_unary_operator(graph: Graph, op: Operator):
     x = list(op.inputs.values())[0]
     y = list(op.outputs.values())[0]
     op.remove_all()
-    y.change_order(x.order)
-    if x in graph.inputs:
+
+    if x.order == y.order and x.shape == y.shape:
+        x.change_order(y.order)
         if y in graph.outputs:
             index = graph.outputs.index(y)
             graph.outputs.remove(y)
@@ -37,7 +41,15 @@ def _remove_unary_operator(graph: Graph, op: Operator):
             y.replace(x)
 
     else:
-        x.replace(y)
+        if y in graph.outputs:
+            index = graph.outputs.index(y)
+            graph.outputs.remove(y)
+            graph.outputs.insert(index, x)
+
+        for op2 in list(y.input_to):
+            name = op2.get_input_name(y)
+            op2.remove_input(y)
+            op2.append_input(name, x)
 
 
 def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):
@@ -60,6 +72,8 @@ def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):
 
 
 class RemoveNoEffectOperatorBase(OptimizeRule):
+    pattern = Operator  # type: Type[Operator]
+
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
@@ -70,7 +84,7 @@ class RemoveNoEffectOperatorBase(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
 
-        for op in traverse.listup_operators(graph):
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), self.pattern):  # type: Operator
             flag_changed |= self.optimize_operator(graph, op)
 
         return graph, flag_changed
@@ -80,8 +94,10 @@ class RemoveNoEffectOperatorBase(OptimizeRule):
 
 
 class RemoveScalarAdd(RemoveNoEffectOperatorBase):
+    pattern = ScalarAdd
+
     def optimize_operator(self, graph: Graph, op: ScalarAdd):
-        if isinstance(op, ScalarAdd) and op.value == 0:
+        if op.value == 0:
             _remove_unary_operator(graph, op)
             return True
 
@@ -89,8 +105,10 @@ class RemoveScalarAdd(RemoveNoEffectOperatorBase):
 
 
 class RemoveScalarMul(RemoveNoEffectOperatorBase):
+    pattern = ScalarMul
+
     def optimize_operator(self, graph: Graph, op: ScalarMul):
-        if isinstance(op, ScalarMul) and op.value == 1:
+        if op.value == 1:
             _remove_unary_operator(graph, op)
             return True
 
@@ -98,8 +116,10 @@ class RemoveScalarMul(RemoveNoEffectOperatorBase):
 
 
 class RemoveScalarPow(RemoveNoEffectOperatorBase):
+    pattern = ScalarPow
+
     def optimize_operator(self, graph: Graph, op: ScalarPow):
-        if isinstance(op, ScalarPow) and op.value == 1:
+        if op.value == 1:
             _remove_unary_operator(graph, op)
             return True
 
@@ -107,8 +127,10 @@ class RemoveScalarPow(RemoveNoEffectOperatorBase):
 
 
 class RemoveScalarAffine(RemoveNoEffectOperatorBase):
+    pattern = ScalarAffine
+
     def optimize_operator(self, graph: Graph, op: ScalarAffine):
-        if isinstance(op, ScalarAffine) and op.scale == 1 and op.bias == 0:
+        if op.scale == 1 and op.bias == 0:
             _remove_unary_operator(graph, op)
             return True
 
@@ -116,57 +138,134 @@ class RemoveScalarAffine(RemoveNoEffectOperatorBase):
 
 
 class RemoveReshape(RemoveNoEffectOperatorBase):
+    pattern = Reshape
+
     def optimize_operator(self, graph: Graph, op: Reshape):
-        if isinstance(op, Reshape):
-            x = op.inputs["x"]
-            y = op.outputs["y"]
+        x = op.inputs["x"]
+        y = op.outputs["y"]
 
-            if x.order == y.order and x.shape == y.shape:
-                _remove_unary_operator(graph, op)
-                return True
+        if x.order == y.order and x.shape == y.shape:
+            _remove_unary_operator(graph, op)
+            return True
 
-            if all([
-                all(x.stride_dict[axis] == y.stride_dict[axis] for axis in set(x.order.axes) and set(y.order.axes)),
-                all(isinstance(op2, Elementwise) for op2 in y.input_to)
-            ]):
-                op.remove_all()
-                if y in graph.outputs:
-                    index = graph.outputs.index(y)
-                    graph.outputs.remove(y)
-                    graph.outputs.insert(index, x)
+        if x.shape == y.shape:
+            op.remove_all()
+            y_dummy, = ReinterpretAxis(None, in_order=x.order, out_order=y.order)(x)
+            y_dummy.replace(y)
+            return True
 
-                for op2 in list(y.input_to):
-                    name = op2._get_input_name(y)
-                    op2.remove_input(y)
-                    op2.append_input(name, x)
+        if isinstance(x, ConstantVariable) and x.output_from is None:
+            _remove_unary_operator(graph, op)
+            x.change_order(y.order)
+            return True
 
-                return True
+        if all([
+                y not in graph.outputs,
+            all(x.stride_dict[axis] == y.stride_dict[axis] for axis in [axis for axis in x.order.axes if axis in y.order.axes]),
+            all(isinstance(op2, Elementwise) for op2 in y.input_to)
+        ]):
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveTranspose(RemoveNoEffectOperatorBase):
+    pattern = Transpose
+
+    def optimize_operator(self, graph: Graph, op: Transpose):
+        x = op.inputs["x0"]
+        y = op.outputs["y"]
+
+        if x.order == y.order:
+            _remove_unary_operator(graph, op)
+            return True
+
+        if isinstance(x, ConstantVariable) and x.output_from is None:
+            _remove_unary_operator(graph, op)
+            x.change_order(y.order)
+            return True
+
+        if x not in graph.inputs and isinstance(x.output_from, Elementwise):
+            x.change_order(y.order)
+            _remove_unary_operator(graph, op)
+            return True
+
+        if y not in graph.outputs and all(isinstance(op2, Elementwise) for op2 in y.input_to):
+            _remove_unary_operator(graph, op)
+            return True
 
         return False
 
 
 class RemoveBroadcast(RemoveNoEffectOperatorBase):
-    def optimize_operator(self, graph: Graph, op: Broadcast):
-        if isinstance(op, Broadcast):
-            x = op.inputs["x0"]
-            y = op.outputs["y"]
+    pattern = Broadcast
 
-            if all(isinstance(op2, Elementwise) for op2 in y.input_to):
-                op.remove_all()
-                for op2 in list(y.input_to):
-                    name = op2._get_input_name(y)
-                    op2.remove_input(y)
-                    op2.append_input(name, x)
-                return True
+    def optimize_operator(self, graph: Graph, op: Broadcast):
+        y = op.outputs["y"]
+        if y not in graph.outputs and all(isinstance(op2, Elementwise) for op2 in y.input_to):
+            _remove_unary_operator(graph, op)
+            return True
+
+        return False
+
+
+class RemoveReinterpretAxis(RemoveNoEffectOperatorBase):
+    pattern = ReinterpretAxis
+
+    def optimize_operator(self, graph: Graph, op: ReinterpretAxis):
+        x = op.inputs["x"]
+        y = op.outputs["y"]
+
+        if len(x.input_to) == 1 and x.output_from is None:
+            op.remove_all()
+
+            if isinstance(x, ConstantVariable):
+                x = ConstantVariable(x.data, y.order)
+
+                if y in graph.outputs:
+                    index = graph.outputs.index(y)
+                    graph.outputs.remove(y)
+                    graph.outputs.insert(index, x)
+
+                else:
+                    y.replace(x)
+            else:
+                assert x in graph.inputs
+
+                index = graph.inputs.index(x)
+                graph.inputs.remove(x)
+                graph.inputs.insert(index, y)
+
+            return True
+
+        if op.parameters["in_order"] == op.parameters["out_order"]:
+            _remove_unary_operator(graph, op)
+            return True
+
+        flag_changed = False
+        for axis1, axis2 in zip(op.parameters["in_order"].axes, op.parameters["out_order"].axes):
+            is_resolved1 = not (isinstance(axis1, AxisVar) and axis1.value is None)
+            is_resolved2 = not (isinstance(axis2, AxisVar) and axis2.value is None)
+
+            if is_resolved1 and not is_resolved2:
+                axis2.unify(axis1)
+                flag_changed = True
+
+            elif not is_resolved1 and is_resolved2:
+                axis1.unify(axis2)
+                flag_changed = True
+
+        if flag_changed:
+            return True
 
         return False
 
 
 class RemoveElementwiseAdd(RemoveNoEffectOperatorBase):
-    def optimize_operator(self, graph: Graph, op: ElementwiseAdd):
-        if not isinstance(op, ElementwiseAdd):
-            return False
+    pattern = ElementwiseAdd
 
+    def optimize_operator(self, graph: Graph, op: ElementwiseAdd):
         if isinstance(op.inputs["x0"], ConstantVariable):
             c = op.inputs["x0"]
             v = op.inputs["x1"]
@@ -186,10 +285,9 @@ class RemoveElementwiseAdd(RemoveNoEffectOperatorBase):
 
 
 class RemoveElementwiseMul(RemoveNoEffectOperatorBase):
-    def optimize_operator(self, graph: Graph, op: ElementwiseMul):
-        if not isinstance(op, ElementwiseMul):
-            return False
+    pattern = ElementwiseMul
 
+    def optimize_operator(self, graph: Graph, op: ElementwiseMul):
         if isinstance(op.inputs["x0"], ConstantVariable):
             c = op.inputs["x0"]
             v = op.inputs["x1"]
@@ -209,10 +307,9 @@ class RemoveElementwiseMul(RemoveNoEffectOperatorBase):
 
 
 class RemoveElementwiseDiv(RemoveNoEffectOperatorBase):
-    def optimize_operator(self, graph: Graph, op: ElementwiseDiv):
-        if not isinstance(op, ElementwiseDiv):
-            return False
+    pattern = ElementwiseDiv
 
+    def optimize_operator(self, graph: Graph, op: ElementwiseDiv):
         if isinstance(op.inputs["x0"], ConstantVariable):
             c = op.inputs["x0"]
             v = op.inputs["x1"]
@@ -232,10 +329,9 @@ class RemoveElementwiseDiv(RemoveNoEffectOperatorBase):
 
 
 class RemoveElementwisePow(RemoveNoEffectOperatorBase):
-    def optimize_operator(self, graph: Graph, op: ElementwisePow):
-        if not isinstance(op, ElementwisePow):
-            return False
+    pattern = ElementwisePow
 
+    def optimize_operator(self, graph: Graph, op: ElementwisePow):
         if isinstance(op.inputs["x0"], ConstantVariable):
             c = op.inputs["x0"]
             v = op.inputs["x1"]
@@ -262,11 +358,13 @@ class RemoveNoEffectOperator(OptimizeRule):
         self.register(RemoveScalarPow())
         self.register(RemoveScalarAffine())
         self.register(RemoveReshape())
+        self.register(RemoveTranspose())
         self.register(RemoveBroadcast())
         self.register(RemoveElementwiseAdd())
         self.register(RemoveElementwiseMul())
         self.register(RemoveElementwiseDiv())
         self.register(RemoveElementwisePow())
+        self.register(RemoveReinterpretAxis())
 
     def flags(self):
         return [

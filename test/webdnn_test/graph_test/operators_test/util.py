@@ -4,6 +4,7 @@ from nose.tools import nottest
 
 from test.util import assert_shape
 from webdnn import Axis, Order, Variable
+from webdnn.graph.axis import AxisKeyDict
 
 
 @nottest
@@ -41,7 +42,7 @@ def template_test_unary_operator(OperatorClass, operator_kwargs=None, test1d=Tru
                 orders.append(Order(axis))
 
     if shape_dict is None:
-        shape_dict = {}
+        shape_dict = AxisKeyDict()
         for i, axis in enumerate(axes):
             shape_dict[axis] = i + 5
 

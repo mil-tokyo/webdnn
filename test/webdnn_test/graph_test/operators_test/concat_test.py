@@ -1,5 +1,4 @@
 import itertools
-from typing import Type
 
 import numpy as np
 from nose.tools import raises
@@ -10,7 +9,7 @@ from webdnn.graph.order import Order, OrderC, OrderNC, OrderCN, OrderNHWC, Order
 from webdnn.graph.variable import Variable
 
 
-def main(order1: Type[Order], order2: Type[Order], concat_axis: Axis):
+def main(order1: Order, order2: Order, concat_axis: Axis):
     default_order = {
         1: OrderC,
         2: OrderNC,
@@ -37,8 +36,8 @@ def test_every_order():
     orders = [OrderC, OrderNC, OrderCN, OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
     axes = [Axis.N, Axis.H, Axis.W, Axis.C]
 
-    for order1, order2, axis in itertools.product(orders, orders, axes):
-        if set(order1.axes) != set(order2.axes) or axis not in order1.axes:
+    for order1, order2, axis in itertools.product(orders, orders, axes):  # type: Order, Order, Axis
+        if not order1.check_same_axes(order2) or axis not in order1.axes:
             continue
 
         main(order1, order2, axis)

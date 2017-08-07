@@ -11,6 +11,7 @@ class PlaceholderOperator(Enum):
     Sub = auto()  # v1 - v2
     Mul = auto()  # v1 * v2
     Mod = auto()  # v1 % v2
+    EQ = auto()  # v1
     FloorDiv = auto()  # v1 // v2
 
 
@@ -416,10 +417,12 @@ class Placeholder(json.SerializableMixin):
         if self.is_resolved:
             if self.dependency:
                 if self._cache_value is None:
-                    self._cache_value = self.dependency.value
+                    value = self.dependency.value
+                    self._cache_value = value
+                    return value
 
-                # noinspection PyTypeChecker
-                return self._cache_value
+                else:
+                    return self._cache_value
 
             else:
                 return self._value
@@ -429,15 +432,15 @@ class Placeholder(json.SerializableMixin):
 
     @value.setter
     def value(self, new_v: int):
-        if not (isinstance(new_v, int) or isinstance(new_v, np.int32) or isinstance(new_v, np.int64)):
-            raise TypeError(f"Placeholder#value must be a int, not '{type(new_v)}'")
-
         if self.is_resolved:
             raise ValueError(f"{self} is already resolved")
 
-        else:
+        elif isinstance(new_v, int) or isinstance(new_v, np.int32) or isinstance(new_v, np.int64):
             # noinspection PyTypeChecker
             self._value = int(new_v)
+
+        else:
+            raise TypeError(f"Placeholder#value must be a int, not '{type(new_v)}'")
 
     @property
     def is_resolved(self) -> bool:

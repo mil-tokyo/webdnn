@@ -4,6 +4,7 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
+from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_mul import ScalarMul
@@ -121,6 +122,26 @@ class SimplifyScalarAddElementwiseMul(SimplifyOperatorBase):
         return True
 
 
+class SimplifyScalarAddElementwiseDiv(SimplifyOperatorBase):
+    pattern = [ScalarAdd, ElementwiseDiv]
+
+    def optimize_pair(self, op1: ScalarAdd, op2: ElementwiseDiv):
+        x0 = op1.inputs["x0"]
+        y1 = op1.outputs["y"]
+
+        if y1 == op2.inputs["x0"]:
+            w = op2.inputs["x1"]
+        else:
+            w = op2.inputs["x0"]
+        y2 = op2.outputs["y"]
+
+        op2.remove_all()
+        op1.remove_all()
+        y = (x0 / w) + (op1.value / w)  # type: Variable
+        y.replace(y2)
+        return True
+
+
 class SimplifyScalarMulScalarMul(SimplifyOperatorBase):
     pattern = [ScalarMul, ScalarMul]
 
@@ -150,6 +171,26 @@ class SimplifyScalarMulElementwiseMul(SimplifyOperatorBase):
         op2.remove_all()
         op1.remove_all()
         y = (x0 * w) * op1.value  # type: Variable
+        y.replace(y2)
+        return True
+
+
+class SimplifyScalarMulElementwiseDiv(SimplifyOperatorBase):
+    pattern = [ScalarMul, ElementwiseDiv]
+
+    def optimize_pair(self, op1: ScalarMul, op2: ElementwiseDiv):
+        x0 = op1.inputs["x0"]
+        y1 = op1.outputs["y"]
+
+        if y1 == op2.inputs["x0"]:
+            w = op2.inputs["x1"]
+        else:
+            w = op2.inputs["x0"]
+        y2 = op2.outputs["y"]
+
+        op2.remove_all()
+        op1.remove_all()
+        y = (x0 / w) * op1.value  # type: Variable
         y.replace(y2)
         return True
 
@@ -229,6 +270,26 @@ class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
         return True
 
 
+class SimplifyElementwiseAddElementwiseDiv(SimplifyOperatorBase):
+    pattern = [ElementwiseAdd, ElementwiseDiv]
+
+    def optimize_pair(self, op1: ElementwiseAdd, op2: ElementwiseDiv):
+        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
+        if c1 is None:
+            return False
+
+        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
+        if c2 is None:
+            return False
+
+        y2 = op2.outputs["y"]
+        op2.remove_all()
+        op1.remove_all()
+        y = (v1 / c2) + (c1 / c2)
+        y.replace(y2)
+        return True
+
+
 class SimplifyElementwiseMulScalarMul(SimplifyOperatorBase):
     pattern = [ElementwiseMul, ScalarMul]
 
@@ -261,6 +322,82 @@ class SimplifyElementwiseMulElementwiseMul(SimplifyOperatorBase):
         op2.remove_all()
         op1.remove_all()
         y = v1 * (c1 * c2)
+        y.replace(y2)
+        return True
+
+
+class SimplifyElementwiseMulElementwiseDiv(SimplifyOperatorBase):
+    pattern = [ElementwiseMul, ElementwiseDiv]
+
+    def optimize_pair(self, op1: ElementwiseMul, op2: ElementwiseDiv):
+        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
+        if c1 is None:
+            return False
+
+        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
+        if c2 is None:
+            return False
+
+        y2 = op2.outputs["y"]
+        op2.remove_all()
+        op1.remove_all()
+        y = v1 * (c1 / c2)
+        y.replace(y2)
+        return True
+
+
+class SimplifyElementwiseDivScalarMul(SimplifyOperatorBase):
+    pattern = [ElementwiseDiv, ScalarMul]
+
+    def optimize_pair(self, op1: ElementwiseDiv, op2: ScalarMul):
+        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
+        if c1 is None:
+            return False
+
+        y2 = op2.outputs["y"]
+        op1.remove_all()
+        op2.remove_all()
+        y = v1 * (op2.value / c1)  # type: Variable
+        y.replace(y2)
+        return True
+
+
+class SimplifyElementwiseDivElementwiseMul(SimplifyOperatorBase):
+    pattern = [ElementwiseDiv, ElementwiseMul]
+
+    def optimize_pair(self, op1: ElementwiseDiv, op2: ElementwiseMul):
+        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
+        if c1 is None:
+            return False
+
+        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
+        if c2 is None:
+            return False
+
+        y2 = op2.outputs["y"]
+        op2.remove_all()
+        op1.remove_all()
+        y = v1 * (c2 / c1)
+        y.replace(y2)
+        return True
+
+
+class SimplifyElementwiseDivElementwiseDiv(SimplifyOperatorBase):
+    pattern = [ElementwiseDiv, ElementwiseDiv]
+
+    def optimize_pair(self, op1: ElementwiseDiv, op2: ElementwiseDiv):
+        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
+        if c1 is None:
+            return False
+
+        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
+        if c2 is None:
+            return False
+
+        y2 = op2.outputs["y"]
+        op2.remove_all()
+        op1.remove_all()
+        y = v1 / (c1 * c2)
         y.replace(y2)
         return True
 
@@ -315,17 +452,25 @@ class SimplifyElementwiseSequential(OptimizeRule):
         self.register(SimplifyScalarAddScalarMul())
         self.register(SimplifyScalarAddElementwiseAdd())
         self.register(SimplifyScalarAddElementwiseMul())
+        self.register(SimplifyScalarAddElementwiseDiv())
 
         self.register(SimplifyScalarMulScalarMul())
         self.register(SimplifyScalarMulElementwiseMul())
+        self.register(SimplifyScalarMulElementwiseDiv())
 
         self.register(SimplifyElementwiseAddScalarAdd())
         self.register(SimplifyElementwiseAddScalarMul())
         self.register(SimplifyElementwiseAddElementwiseAdd())
         self.register(SimplifyElementwiseAddElementwiseMul())
+        self.register(SimplifyElementwiseAddElementwiseDiv())
 
         self.register(SimplifyElementwiseMulScalarMul())
         self.register(SimplifyElementwiseMulElementwiseMul())
+        self.register(SimplifyElementwiseMulElementwiseDiv())
+
+        self.register(SimplifyElementwiseDivScalarMul())
+        self.register(SimplifyElementwiseDivElementwiseMul())
+        self.register(SimplifyElementwiseDivElementwiseDiv())
 
         self.register(SimplifyConcatElementwiseMul())
 

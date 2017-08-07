@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import List
 
 from webdnn.frontend.converter import Converter
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
 from webdnn.graph.placeholder import Placeholder
@@ -70,9 +70,7 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         self._input_index_dict = defaultdict(lambda: 0)
         self._output_index_dict = defaultdict(lambda: 0)
-        self._placeholders = {
-            Axis.N: Placeholder(label=Axis.N.name, value=batch_size)
-        }
+        self._placeholders = AxisKeyDict([Axis.N], [Placeholder(label=Axis.N.name, value=batch_size)])
         self._input_tensor_cache = None  # type: List[tf.Tensor]
         self._output_tensor_cache = None  # type: List[tf.Tensor]
 
@@ -184,10 +182,10 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         if self.has_variable(tf_var):
             variable = self.get_variable(tf_var)
-            assert variable.shape == list(data.shape), f"[KerasConverter] {tf_var} is already registered before, and " \
-                                                       f"shape mismatch is detected: (registered shape)=" \
-                                                       f"{variable.shape}, (given tensorflow variable's shape)=" \
-                                                       f"{data.shape}"
+            assert variable.shape == tuple(data.shape), f"[KerasConverter] {tf_var} is already registered before, and " \
+                                                        f"shape mismatch is detected: (registered shape)=" \
+                                                        f"{variable.shape}, (given tensorflow variable's shape)=" \
+                                                        f"{data.shape}"
             assert variable.order == order, f"[KerasConverter] {tf_var} is already registered before, and order " \
                                             f"mismatch is detected: (registered order)={variable.order}, (given " \
                                             f"tensorflow variable's order)={order}"

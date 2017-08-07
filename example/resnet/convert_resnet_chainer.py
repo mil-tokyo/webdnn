@@ -33,18 +33,24 @@ def main():
     if args.model == "vgg16":
         link = chainer.links.model.vision.vgg.VGG16Layers()
         prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  # BGR, CHW
-        out_layer_name = "fc8"
 
     elif args.model == "resnet50":
         link = chainer.links.model.vision.resnet.ResNet50Layers()
         prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
-        out_layer_name = "fc6"
+
+    else:
+        raise NotImplementedError
 
     nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
-    nn_output = link(nn_input, layers=[out_layer_name])[out_layer_name]  # 'prob' is also possible (uses softmax)
-    chainer_cg = chainer.computational_graph.build_computational_graph([nn_output])
-    converter = ChainerConverter()
-    graph = converter.convert(chainer_cg, [nn_input], [nn_output])  # type: Graph
+
+    if chainer.__version__ >= "2.":
+        with chainer.using_config('train', False):
+            nn_output = link(nn_input, layers=['prob'])['prob']
+
+    else:
+        nn_output = link(nn_input, layers=['prob'], test=True)['prob']
+
+    graph = ChainerConverter().convert([nn_input], [nn_output])  # type: Graph
 
     any_backend_failed = False
     last_backend_exception = None

@@ -32,12 +32,15 @@ function load_image() {
     img.src = document.querySelector("input[name=image_url]").value;
 }
 
-let test_samples;
 let runners = {};
+
+function getFrameworkName() {
+    return document.querySelector('input[name=framework_name]:checked').value;
+}
 
 async function prepare_run() {
     let backend_name = document.querySelector('input[name=backend_name]:checked').value;
-    let framework_name = document.querySelector('input[name=framework_name]:checked').value;
+    let framework_name = getFrameworkName();
     let backend_key = backend_name + framework_name;
     if (!(backend_key in runners)) {
         log('Initializing and loading model');
@@ -54,7 +57,7 @@ async function prepare_run() {
 async function run() {
     let runner = await prepare_run();
 
-    let test_image = getImageData();
+    let test_image = getImageData(getFrameworkName() === 'chainer');
     let test_samples = [test_image];
 
     let total_elapsed_time = 0;
@@ -79,30 +82,29 @@ async function run() {
     log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
 }
 
-function makeMatFromJson(mat_data) {
-    var mat = new Float32Array(mat_data['data']);
-    return mat;
-}
-
-async function fetchImage(path) {
-    let response = await fetch(path);
-    let json = await response.json();
-
-    return new Float32Array(json);
-}
-
-function getImageData() {
+function getImageData(flagNCHW) {
     let ctx = document.getElementById('input_image').getContext('2d');
     let h = 224;
     let w = 224;
     let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)
     let pixeldata = imagedata.data;
     let data = new Float32Array(3 * h * w);//h,w,c(bgr)
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            data[(y * w + x) * 3] = pixeldata[(y * w + x) * 4 + 2] - 103.939;//b
-            data[(y * w + x) * 3 + 1] = pixeldata[(y * w + x) * 4 + 1] - 116.779;//g
-            data[(y * w + x) * 3 + 2] = pixeldata[(y * w + x) * 4 + 0] - 123.68;//r
+
+    if (flagNCHW) {
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                data[(0 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 2] - 103.939;//b
+                data[(1 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 1] - 116.779;//g
+                data[(2 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 0] - 123.68;//r
+            }
+        }
+    } else {
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                data[(y * w + x) * 3] = pixeldata[(y * w + x) * 4 + 2] - 103.939;//b
+                data[(y * w + x) * 3 + 1] = pixeldata[(y * w + x) * 4 + 1] - 116.779;//g
+                data[(y * w + x) * 3 + 2] = pixeldata[(y * w + x) * 4 + 0] - 123.68;//r
+            }
         }
     }
     return data;

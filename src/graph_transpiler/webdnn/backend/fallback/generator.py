@@ -73,8 +73,3 @@ class FallbackDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData
 
 def generate(graph: Graph, **kwargs):
     return FallbackDescriptorGenerator.generate(graph, **kwargs)
-
-
-# noinspection PyUnresolvedReferences
-# NOTE: To register handlers into Generator, handler definitions must imported after Generator is defined.
-import webdnn.backend.fallback.kernels

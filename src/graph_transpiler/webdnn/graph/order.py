@@ -1,6 +1,6 @@
-from typing import Dict, List
+from typing import Tuple, Sequence
 
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 
 
 class Order:
@@ -19,17 +19,22 @@ class Order:
 
     Args:
         axes(list of :class:`~webdnn.Axis`): list of axis.
-
-    Attributes:
-        ndim(int): number of dimensions
-        axes(list of :class:`~webdnn.Axis`): list of axis
-        axes_dict(dict of :class:`~webdnn.Axis` and int): dictionary of pairs of axis and order index
     """
 
-    def __init__(self, axes: List[Axis]):
-        self.ndim = len(axes)  # type: int
-        self.axes = axes  # type: List[Axis]
-        self.axes_dict = {a: i for i, a in enumerate(axes)}  # type: Dict[Axis, int]
+    def __init__(self, axes: Sequence[Axis]):
+        self._axes = tuple(axes)
+
+    @property
+    def axes(self) -> Tuple[Axis, ...]:
+        return self._axes
+
+    @property
+    def ndim(self) -> int:
+        return len(self.axes)
+
+    @property
+    def axes_dict(self) -> AxisKeyDict[int]:
+        return AxisKeyDict(self.axes, range(self.ndim))
 
     def __eq__(self, other):
         if isinstance(other, Order):
@@ -42,7 +47,18 @@ class Order:
         return self.__str__()
 
     def __str__(self):
-        return "".join([axis.name for axis in self.axes])
+        return f"[{', '.join([axis.name for axis in self.axes])}]"
+
+    def check_same_axes(self, other: "Order") -> bool:
+        """
+        check_same_axes(order)
+
+        check if 2 orders have same axes (the axis order is not considered)
+
+        Args:
+            other: other order
+        """
+        return all(axis in other.axes for axis in self.axes) and all(axis in self.axes for axis in other.axes)
 
 
 """
