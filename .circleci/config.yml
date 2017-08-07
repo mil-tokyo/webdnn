@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.1
+      - image: python:3.6.1
 
     steps:
       - checkout
@@ -13,12 +13,11 @@ jobs:
             - v1-dependencies-
 
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements/dev.txt
-
 
       - run:
           name: Install Python deps in a venv
@@ -33,6 +32,13 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
 
       - run:
+          name: Install WebDNN
+          command: |
+            . venv/bin/activate
+            python3 setup.py install
+
+      - run:
+          name: Run compile-time test
           command: |
             . venv/bin/activate
             nosetests
