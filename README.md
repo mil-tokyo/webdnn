@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/mil-tokyo/webdnn.svg?style=svg)](https://circleci.com/gh/mil-tokyo/webdnn)
+
 # WebDNN: Fastest DNN Execution Framework on Web Browser
 
 **WebDNN** is an open source software framework for executing deep neural network (DNN) pre-trained model on web browser.

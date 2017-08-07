@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/mil-tokyo/webdnn.svg?style=svg)](https://circleci.com/gh/mil-tokyo/webdnn)
+
 # WebDNN: Fastest DNN Execution Framework on Web Browser
 
 **WebDNN** は深層学習モデル(DNN)をウェブブラウザ上で高速実行するためのオープンソースフレームワークです。
