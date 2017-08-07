@@ -1,0 +1,42 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.1
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements/dev.txt" }}
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements/dev.txt
+
+
+      - run:
+          name: Install Python deps in a venv
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements/dev.txt
+
+      - save_cache:
+          paths:
+            - "venv"
+          key: deps1-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          command: |
+            . venv/bin/activate
+            nosetests
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
