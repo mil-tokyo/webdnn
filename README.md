@@ -91,6 +91,10 @@ For more information, please see [documents](https://mil-tokyo.github.io/webdnn/
 
 Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.html).
 
+# Applications / demos using WebDNN
+- [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
+- [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - Generating image caption demo
+
 ---
 
 - <i id=1></i>[1] Karen Simonyan and Andrew Zisserman. 2014. Very Deep Convolutional Networks for Large-Scale Image Recognition. 
