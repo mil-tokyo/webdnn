@@ -1,0 +1,38 @@
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  z-index: 65535;
+
+  &.running {
+    .inner {
+      display: block;
+      animation: ProgressBar-Animation-Running 1400ms linear infinite;
+    }
+  }
+}
+
+.inner {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #f90;
+  transform-origin: left;
+}
+
+@keyframes ProgressBar-Animation-Running {
+  0% {
+    transform: translateX(-80%) scaleX(0.1);
+  }
+  50% {
+    transform: translateX(10%) scaleX(0.9);
+  }
+  100% {
+    transform: translateX(100%)
+  }
+}

@@ -1,1 +1,1 @@
-export * from "../../style/stylus/bootstrap.scss";
+export * from "../../stylus/bootstrap.scss";

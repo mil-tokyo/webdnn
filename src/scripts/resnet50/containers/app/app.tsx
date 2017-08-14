@@ -1,37 +1,69 @@
 import * as React from "react";
-import MainContainer from "../main_container/main_container";
-import "./app.scss";
-import classNames = require("classnames");
+import InitializeLayer from "../../../common/components/initialize_layer/itnitialize_layer";
+import StartLayer from "../../../common/components/start_layer/start_layer";
+import MainLayer from "../../components/main_layer/main_layer";
 
-export interface Props extends React.HTMLAttributes<HTMLDivElement> {
+enum Status {
+    SLEEP,
+    INITIALIZING,
+    READY
 }
 
-export interface State {
-    isInitialized: boolean
+interface State {
+    runner: WebDNN.DescriptorRunner<WebDNN.GraphDescriptor> | null,
+    loadingProgressRate: number,
+    status: Status
 }
 
-export default class App extends React.Component<Props, State> {
+export default class App extends React.Component<React.HTMLAttributes<HTMLDivElement>, State> {
     constructor() {
         super();
         this.state = {
-            isInitialized: false
+            runner: null,
+            loadingProgressRate: 0,
+            status: location.search == '?run=1' ? Status.INITIALIZING : Status.SLEEP
         };
+
+        if (location.search == '?run=1') this.initAsync();
     }
 
-    onMainContainerInitialized() {
+    async initAsync() {
+        WebDNN.registerTransformDelegate((url: string) => {
+            let ma = url.match(/([^/]+)(?:\?.*)?$/);
+            return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
+        });
+
+        let runner = await WebDNN.load("./resnet", {
+            progressCallback: (loaded: number, total: number) => {
+                this.setState({
+                    loadingProgressRate: loaded / total
+                });
+            }
+        });
+
         this.setState({
-            isInitialized: true
+            runner: runner,
+            status: Status.READY
         });
     }
 
+    onStartButtonClick() {
+        this.setState({
+            status: Status.INITIALIZING
+        });
+        this.initAsync();
+    }
+
     render() {
-        return (
-            <div className={classNames('App', this.props.className)}>
-                { this.state.isInitialized ? null : (
-                    <div className="App-SplashScreen">Initializing...</div>
-                ) }
-                <MainContainer onInitialized={() => this.onMainContainerInitialized()}/>
-            </ div>
-        );
+        switch (this.state.status) {
+            case Status.SLEEP:
+                return <StartLayer onStart={() => this.onStartButtonClick()} />;
+
+            case Status.INITIALIZING:
+                return <InitializeLayer rate={this.state.loadingProgressRate} />;
+
+            case Status.READY:
+                return <MainLayer runner={this.state.runner!} />;
+        }
     }
 }

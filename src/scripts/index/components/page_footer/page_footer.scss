@@ -1,0 +1,23 @@
+@import "../../../../stylus/bootstrap-mixin";
+@import "../../../../stylus/z-index";
+
+$c-pageFooter-background: #0d1115;
+$c-pageFooter-foreground: #888;
+
+.pageFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  box-sizing: border-box;
+  background: $c-pageFooter-background;
+  color: $c-pageFooter-foreground;
+  padding: 32px 64px;
+  font-size: 14px;
+
+  @include media-breakpoint-down(md) {
+    font-size: 12px;
+    min-height: 0;
+    padding: 16px;
+  }
+}

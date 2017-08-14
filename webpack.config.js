@@ -1,9 +1,14 @@
 const path = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const { CheckerPlugin } = require('awesome-typescript-loader');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const PrerenderSpaPlugin = require('./libs/prerender-spa-plugin');
+const webpack = require('webpack');
+
+const DEBUG = process.env.DEBUG;
+
+const hashMap = new Map();
 
 const minifyOption = {
 	collapseBooleanAttributes: true,
@@ -18,9 +23,8 @@ const minifyOption = {
 	removeTagWhitespace: true
 };
 
-function generateConfig(tsxPath, ejsPath) {
+function generateConfig(tsxPath, ejsPath, outputName) {
 	let chunkName = path.basename(tsxPath, '.tsx');
-	let htmlPath = ejsPath.replace('ejs', 'html');
 	
 	let entry = {};
 	entry[chunkName] = tsxPath;
@@ -28,32 +32,47 @@ function generateConfig(tsxPath, ejsPath) {
 	return {
 		entry: entry,
 		output: {
-			path: path.resolve(__dirname, './build/webdnn'),
+			path: path.resolve(__dirname, './build/webdnn', path.dirname(outputName)),
 			filename: '[name].js'
 		},
 		module: {
 			rules: [{
 				test: /\.tsx?$/,
-				use: [{
-					loader: 'awesome-typescript-loader',
-				}]
+				use: [{ loader: 'awesome-typescript-loader' }]
 			}, {
 				test: /\.svg$/,
-				use: [{
-					loader: 'svg-react-loader',
-				}]
+				use: [{ loader: 'svg-react-loader' }]
 			}, {
 				test: /\.scss$/,
 				use: ExtractTextPlugin.extract({
 					fallback: 'style-loader',
-					use: [
-						'typings-for-css-modules-loader?module&camelCase&namedExport',
-						'postcss-loader',
-						'sass-loader'
+					use: [{
+						loader: 'typings-for-css-modules-loader',
+						options: {
+							modules: true,
+							camelCase: true,
+							namedExport: true,
+							minimize: false,
+							getLocalIdent: DEBUG ?
+								(context, localIdentName, localName, options) => {
+									if (!hashMap.has(context.resource)) hashMap.set(context.resource, hashMap.size.toString());
+									
+									return 'c' + hashMap.get(context.resource) + '_' + localName
+								} :
+								(context, localIdentName, localName, options) => {
+									if (!hashMap.has(context.resource)) hashMap.set(context.resource, hashMap.size.toString());
+									if (!hashMap.has(localName)) hashMap.set(localName, hashMap.size.toString());
+									
+									return 'c' + hashMap.get(context.resource) + '_' + hashMap.get(localName);
+								}
+						}
+					},
+						{ loader: 'postcss-loader' },
+						{ loader: 'sass-loader' }
 					]
 				})
 			}, {
-				test: /\.(png|json)$/,
+				test: /\.(png|jpg|json)$/,
 				use: [{
 					loader: 'file-loader',
 					query: {
@@ -70,30 +89,44 @@ function generateConfig(tsxPath, ejsPath) {
 			extensions: ['.ts', '.tsx', '.js', '.jsx', '.scss']
 		},
 		plugins: ([
+			DEBUG ? null : new webpack.DefinePlugin({
+				'process.env': {
+					NODE_ENV: JSON.stringify('production')
+				}
+			}),
 			new ExtractTextPlugin({
 				filename: getPath => getPath('[name].css'),
 				allChunks: true
 			}),
 			new CheckerPlugin(),
-			process.env.DEBUG ? null : new UglifyJSPlugin(),
+			DEBUG ? null : new webpack.optimize.UglifyJsPlugin(),
 			new HTMLWebpackPlugin({
-				filename: path.basename(htmlPath),
+				filename: path.basename(outputName) + '.html',
 				inject: 'head',
 				chunksSortMode: 'dependency',
 				template: ejsPath,
-				minify: process.env.DEBUG ? null : minifyOption
+				minify: DEBUG ? null : minifyOption
 			}),
 			new PrerenderSpaPlugin(
 				path.join(__dirname, './build/webdnn'),
-				['/' + path.basename(htmlPath)],
-				{ indexPath: path.basename(htmlPath) }
-			)
+				['/' + outputName + '.html'],
+				{
+					indexPath: outputName + '.html',
+					ignoreJSErrors: true
+				}
+			),
+			CopyWebpackPlugin([{
+				from: './src/static',
+				to: './'
+			}])
 		]).filter(v => !!v)
 	};
 }
 
 
 module.exports = [
-	generateConfig('./src/scripts/index.tsx', './src/html/index.ejs'),
-	generateConfig('./src/scripts/neural_style_transfer.tsx', './src/html/neural_style_transfer.ejs')
+	generateConfig('./src/scripts/index_ja.tsx', './src/html/index.ejs', 'ja/index'),
+	generateConfig('./src/scripts/index.tsx', './src/html/index.ejs', 'index'),
+	generateConfig('./src/scripts/neural_style_transfer.tsx', './src/html/app.ejs', 'neural_style_transfer'),
+	generateConfig('./src/scripts/resnet.tsx', './src/html/app.ejs', 'resnet')
 ];

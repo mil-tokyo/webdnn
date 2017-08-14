@@ -1,0 +1,14 @@
+@import "../../../../stylus/bootstrap-mixin";
+
+.figure {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+  height: 396px;
+  width: 824px;
+
+  @include media-breakpoint-down(md) {
+    width: 100%;
+    height: auto;
+  }
+}

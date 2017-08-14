@@ -1,0 +1,39 @@
+@import "../layer/layer";
+@import "../navbar/navbar";
+@import "../../../../stylus/color";
+
+.initialize_layer {
+  @extend .layer;
+  background: #000;
+}
+
+.message {
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  margin: 16px 0;
+}
+
+.progress {
+  display: block;
+  position: relative;
+  width: 100%;
+  //padding: 0 32px;
+}
+
+.progress-outer {
+  display: block;
+  position: relative;
+  width: 100%;
+  background: #361e00;
+}
+.progress-inner {
+  display: block;
+  height: 4px;
+  width: 100%;
+  background: $c-key;
+  will-change: transform;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: 100ms linear;
+}

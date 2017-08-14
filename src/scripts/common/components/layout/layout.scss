@@ -1,0 +1,97 @@
+@import "../../../../stylus/bootstrap-mixin";
+
+.frame {
+  position: relative;
+}
+
+.flexContainer {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.block {
+  display: block;
+  padding: inherit;
+}
+
+.block-inner {
+  @extend .fit;
+  padding: inherit;
+  margin: inherit;
+}
+
+@mixin layout-auto-row {
+  @include media-breakpoint-up(md) {
+    @content;
+  }
+
+  @include media-breakpoint-down(md) {
+    @media (orientation: landscape) {
+      @content;
+    }
+  }
+}
+
+@mixin layout-auto-column {
+  @include media-breakpoint-down(md) {
+    @media (orientation: portrait) {
+      @content;
+    }
+  }
+}
+
+@mixin layout-auto-reverse-column {
+  @include media-breakpoint-up(md) {
+    @content;
+  }
+
+  @include media-breakpoint-down(md) {
+    @media (orientation: landscape) {
+      @content;
+    }
+  }
+}
+
+@mixin layout-auto-reverse-row {
+  @include media-breakpoint-down(md) {
+    @media (orientation: portrait) {
+      @content;
+    }
+  }
+}
+
+.auto {
+  @include layout-auto-row { flex-direction: row; }
+  @include layout-auto-column { flex-direction: column; }
+}
+
+.auto-reverse {
+  @include layout-auto-reverse-row { flex-direction: row; }
+  @include layout-auto-reverse-column { flex-direction: column; }
+}
+
+.fit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.column {
+  flex-direction: column;
+}
+
+.row {
+  flex-direction: row;
+}
+
+.flex {
+  flex: 1 0 auto;
+}
+
+.center {
+  align-items: center;
+  justify-content: center;
+}
