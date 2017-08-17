@@ -1,0 +1,278 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>webdnn/math | WebDNN</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/style.css">
+	<link rel="stylesheet" href="../assets/css/prism.css">
+	<script src="../assets/js/prism.js"></script>
+	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
+</head>
+<body>
+<div class="sidenav">
+	<nav class="tsd-navigation secondary menu-sticky">
+		<ul>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="webdnn.html">webdnn</a>
+			</li>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="webdnn_image.html">webdnn/image</a>
+			</li>
+			<li class="current tsd-kind-external-module tsd-is-external">
+				<a href="webdnn_math.html">webdnn/math</a>
+			</li>
+		</ul>
+	</nav>
+</div>
+<main class="contents">
+	<header class="index-header">
+		<span class="index-header-kind">module</span>
+		<h1 class="index-header-name">
+			webdnn/math
+		</h1>
+	</header>
+	<div class="reflection-container">
+		<div class="reflection-main">
+			<section class="members-group members-group-comment tsd-kind-external-module tsd-is-external">
+				<div class="members-group-body">
+					<div class="tsd-comment tsd-typography">
+						<p>Module <code>WebDNN.Math</code> provides basic mathematics operations for pre/post-processing.</p>
+					</div>
+				</div>
+			</section>
+			<div style="display: none;">
+			</div>
+			<section class="members-group tsd-is-external">
+				<header class="members-group-header">Functions</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="argmax" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="argmax" class="anchor"></a>
+								<a href="#argmax" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										argmax
+									</h3>
+									<div>
+										<code>
+argmax<span class="tsd-signature-symbol">(</span>arr<span class="tsd-signature-symbol">: </span><code><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code><span class="signature-symbol"> | </span><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32Array</span>                    </code></code>, k<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/math/argsort.ts#L14">[math/argsort.ts:14]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Return indices of the top-K largest elements.
+												This implementation is not stable sort.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>arr</code>
+														</td>
+														<td>
+															<code>
+                <code>
+<code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">Float32Array</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">Int32Array</span>                    </code>
+															</code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>array</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>k</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+															<code>1</code>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>number of indices</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>
+											<div>
+												<p>indices of top-K largest samples</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="argmin" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="argmin" class="anchor"></a>
+								<a href="#argmin" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										argmin
+									</h3>
+									<div>
+										<code>
+argmin<span class="tsd-signature-symbol">(</span>arr<span class="tsd-signature-symbol">: </span><code><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code><span class="signature-symbol"> | </span><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32Array</span>                    </code></code>, k<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/math/argsort.ts#L69">[math/argsort.ts:69]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Return indices of the top-K smallest elements.
+												This implementation is not stable sort.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>arr</code>
+														</td>
+														<td>
+															<code>
+                <code>
+<code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">Float32Array</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">Int32Array</span>                    </code>
+															</code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>array</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>k</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+															<code>1</code>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>number of indices</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<code><span class="signature-type">number</span>                    </code><span class="signature-symbol">[]</span>                </code>
+											<div>
+												<p>indices of top-K smallest samples</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>
+			</section>
+		</div>
+		<div class="reflection-rightnav">
+			<ul class="toc">
+				<li>
+					<header class="toc-header">Functions</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_math.html#argmax" class="tsd-kind-icon">
+								argmax
+							</a>
+						</li>
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_math.html#argmin" class="tsd-kind-icon">
+								argmin
+							</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</main>
+</body>
+</html>

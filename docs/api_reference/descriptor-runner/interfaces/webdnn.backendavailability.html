@@ -1,0 +1,146 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>BackendAvailability | WebDNN</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/style.css">
+	<link rel="stylesheet" href="../assets/css/prism.css">
+	<script src="../assets/js/prism.js"></script>
+	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
+</head>
+<body>
+<div class="sidenav">
+	<nav class="tsd-navigation secondary menu-sticky">
+		<ul>
+			<li class="current tsd-kind-external-module tsd-is-external">
+				<a href="../modules/webdnn.html">webdnn</a>
+			</li>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="../modules/webdnn_image.html">webdnn/image</a>
+			</li>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="../modules/webdnn_math.html">webdnn/math</a>
+			</li>
+		</ul>
+	</nav>
+</div>
+<main class="contents">
+	<header class="index-header">
+		<span class="index-header-kind">Interface</span>
+		<h1 class="index-header-name">
+			BackendAvailability
+		</h1>
+	</header>
+	<div class="reflection-container">
+		<div class="reflection-main">
+			<section class="members-group members-group-comment tsd-kind-interface tsd-parent-kind-external-module">
+				<div class="members-group-body">
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Result structure of <a href="../modules/webdnn.html#getbackendavailability"><code>WebDNN.getBackendAvailability</code></a></p>
+						</div>
+					</div>
+				</div>
+			</section>
+			<div style="display: none;">
+				<section class="members-group ">
+					<header class="members-group-header">Inheritance hierarchy</header>
+					<div class="members-group-body">
+						<ul class="tsd-hierarchy">
+							<li>
+								<code class="target">BackendAvailability</code>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</div>
+			<section class="members-group ">
+				<header class="members-group-header">Properties</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-property tsd-parent-kind-interface">
+						<a name="defaultorder" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="defaultorder" class="anchor"></a>
+								<a href="#defaultorder" class="anchor-link">#</a>
+								<code>
+default<wbr>Order:                <code><code><a href="../modules/webdnn.html#backendname" class="signature-type">BackendName</a></code><span class="signature-symbol">[]</span>                </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/webdnn.ts#L68">[webdnn.ts:68]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>Default backend order WebDNN try to use</p>
+									</div>
+									<h3 id="examples">Examples</h3>
+									<pre><code class="lang-ts">WebDNN.getBackendAvailability().defaultOrder
+&gt;&gt;&gt; [<span class="hljs-string">'webassembly'</span>, <span class="hljs-string">'fallback'</span>]
+</code></pre>
+								</div>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface">
+						<a name="status" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="status" class="anchor"></a>
+								<a href="#status" class="anchor-link">#</a>
+								<code>
+status:                    <code><span class="signature-type">object</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/webdnn.ts#L56">[webdnn.ts:56]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>Whether each backend is available or not.</p>
+									</div>
+									<h3 id="example">Example</h3>
+									<pre><code class="lang-ts">WebDNN.getBackendAvailability().status
+&gt;&gt;&gt; {
+  <span class="hljs-string">'webgpu'</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-string">'webassembly'</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">'fallback'</span>: <span class="hljs-literal">true</span>
+}
+</code></pre>
+								</div>
+							</div>
+						</section>
+					</section>
+				</div>
+			</section>
+		</div>
+		<div class="reflection-rightnav">
+			<ul class="toc">
+				<li>
+					<header class="toc-header">Properties</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<a href="webdnn.backendavailability.html#defaultorder" class="tsd-kind-icon">
+								default<wbr>Order
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<a href="webdnn.backendavailability.html#status" class="tsd-kind-icon">
+								status
+							</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</main>
+</body>
+</html>

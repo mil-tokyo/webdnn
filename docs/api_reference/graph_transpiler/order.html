@@ -207,22 +207,18 @@ Popular data order is already defined in <code class="xref py py-mod docutils li
 </tr>
 </tbody>
 </table>
-<dl class="attribute">
-<dt id="Order.ndim">
-<code class="descname">ndim</code><a class="headerlink" href="#Order.ndim" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>int</em> &#8211; number of dimensions</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="Order.axes">
-<code class="descname">axes</code><a class="headerlink" href="#Order.axes" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of <a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> &#8211; list of axis</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="Order.axes_dict">
-<code class="descname">axes_dict</code><a class="headerlink" href="#Order.axes_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>dict of <a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> and int &#8211; dictionary of pairs of axis and order index</p>
+<dl class="method">
+<dt id="webdnn.Order.check_same_axes">
+<code class="descname">check_same_axes</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order.check_same_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Order.check_same_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if 2 orders have same axes (the axis order is not considered)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; other order</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

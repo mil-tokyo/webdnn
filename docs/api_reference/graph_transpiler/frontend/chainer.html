@@ -197,26 +197,39 @@
 <em class="property">class </em><code class="descclassname">webdnn.frontend.chainer.</code><code class="descname">ChainerConverter</code><a class="reference internal" href="../../../_modules/webdnn/frontend/chainer/converter.html#ChainerConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.chainer.ChainerConverter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="webdnn.frontend.chainer.ChainerConverter.convert">
-<code class="descname">convert</code><span class="sig-paren">(</span><em>chainer_computational_graph</em>, <em>input_c_vars</em>, <em>output_c_vars</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/chainer/converter.html#ChainerConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.chainer.ChainerConverter.convert" title="Permalink to this definition">¶</a></dt>
+<code class="descname">convert</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/chainer/converter.html#ChainerConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.chainer.ChainerConverter.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert chainer computational graph into WebDNN IR.</p>
-<p>Instead of using this method directly, you should use
-<a class="reference internal" href="#webdnn.frontend.chainer.ChainerConverter.convert_from_inout_vars" title="webdnn.frontend.chainer.ChainerConverter.convert_from_inout_vars"><code class="xref py py-func docutils literal"><span class="pre">convert_from_inout_vars</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chainer_computational_graph</strong> (<em>chainer.computational_graph.ComputationalGraph</em>) &#8211; chainer computational graph</li>
-<li><strong>input_c_vars</strong> (<em>list of chainer.Variable</em>) &#8211; input chainer variables</li>
-<li><strong>output_c_vars</strong> (<em>list of chainer.Variable</em>) &#8211; output chainer variables</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputs</strong> (<em>list of chainer.Variable</em>) &#8211; input chainer variables</li>
+<li><strong>outputs</strong> (<em>list of chainer.Variable</em>) &#8211; output chainer variables</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">WebDNN Graph</p>
-</td>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>
+
+<span class="c1"># Forward propagation with dummy input to build computational graph</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">])[</span><span class="s2">&quot;fc6&quot;</span><span class="p">]</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert_from_inout_vars</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">WebDNN Graph</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="../graph.html#webdnn.Graph" title="webdnn.Graph"><code class="xref py py-class docutils literal"><span class="pre">Graph</span></code></a>)</p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="../graph.html#webdnn.Graph" title="webdnn.Graph"><code class="xref py py-class docutils literal"><span class="pre">Graph</span></code></a>)</td>
 </tr>
 </tbody>
 </table>
@@ -238,6 +251,11 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method will be removed in the future version. Use <code class="xref py py-func docutils literal"><span class="pre">convert(inputs,</span>
+<span class="pre">outputs)()</span></code>.</p>
+</div>
 <div class="admonition-example admonition">
 <p class="first admonition-title">Example</p>
 <div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>

@@ -170,6 +170,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">AxisKeyDict</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.elementwise</span> <span class="k">import</span> <span class="n">Elementwise</span> <span class="k">as</span> <span class="n">ElementwiseAttribute</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.inplace</span> <span class="k">import</span> <span class="n">Inplace</span>
@@ -212,25 +213,28 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="c1"># FIXME: attributes set may be overwritten in extended class&#39;s constructor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="n">ElementwiseAttribute</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-                           <span class="n">Inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ElementwiseAttribute</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">xs</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="n">y_axes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">y_shape_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">y_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">y_axes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">y_axes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># broadcast</span>
+                        <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
                     <span class="n">y_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
                     <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]):</span>
                     <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]):</span>
-                        <span class="k">assert</span> <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> \
+                        <span class="k">assert</span> <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> \
                             <span class="s2">&quot;All input variables of elementwise operator should be same shape: &quot;</span> \
-                            <span class="n">f</span><span class="s2">&quot;y.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=f</span><span class="si">{y_shape_dict[axis]}</span><span class="s2">, &quot;</span> \
-                            <span class="n">f</span><span class="s2">&quot;x</span><span class="si">{i}</span><span class="s2">.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=f</span><span class="si">{x.shape_dict[axis]}</span><span class="s2">&quot;</span>
+                            <span class="n">f</span><span class="s2">&quot;y.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{y_shape_dict[axis]}</span><span class="s2">, &quot;</span> \
+                            <span class="n">f</span><span class="s2">&quot;x</span><span class="si">{i}</span><span class="s2">.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{x.shape_dict[axis]}</span><span class="s2">&quot;</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">y_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
 

@@ -206,30 +206,6 @@
 <span class="c1">#   x2 -+</span>
 </pre></div>
 </div>
-<dl class="attribute">
-<dt id="Variable.shape">
-<code class="descname">shape</code><a class="headerlink" href="#Variable.shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of int or <a class="reference internal" href="placeholder.html#webdnn.Placeholder" title="webdnn.Placeholder"><code class="xref py py-class docutils literal"><span class="pre">Placeholder</span></code></a> &#8211; shape of the variable.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="Variable.order">
-<code class="descname">order</code><a class="headerlink" href="#Variable.order" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a> &#8211; Data order such as OrderNHWC, OrderNC, and so on.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="Variable.input_to">
-<code class="descname">input_to</code><a class="headerlink" href="#Variable.input_to" title="Permalink to this definition">¶</a></dt>
-<dd><p>set of <a class="reference internal" href="operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> &#8211; operators to which this variable is input</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="Variable.output_from">
-<code class="descname">output_from</code><a class="headerlink" href="#Variable.output_from" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> &#8211; operator which generates this variable</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="webdnn.Variable.change_order">
 <code class="descname">change_order</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.change_order" title="Permalink to this definition">¶</a></dt>
@@ -247,6 +223,12 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 </dd></dl>
 
 <dl class="attribute">
+<dt id="webdnn.Variable.input_to">
+<code class="descname">input_to</code><a class="headerlink" href="#webdnn.Variable.input_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>operators which this variable is input to</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="webdnn.Variable.name">
 <code class="descname">name</code><a class="headerlink" href="#webdnn.Variable.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of this variable</p>
@@ -256,6 +238,18 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <dt id="webdnn.Variable.ndim">
 <code class="descname">ndim</code><a class="headerlink" href="#webdnn.Variable.ndim" title="Permalink to this definition">¶</a></dt>
 <dd><p>number of dimension</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.Variable.order">
+<code class="descname">order</code><a class="headerlink" href="#webdnn.Variable.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>data order</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.Variable.output_from">
+<code class="descname">output_from</code><a class="headerlink" href="#webdnn.Variable.output_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>operator which this variable is output from</p>
 </dd></dl>
 
 <dl class="method">
@@ -271,6 +265,12 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.Variable.shape">
+<code class="descname">shape</code><a class="headerlink" href="#webdnn.Variable.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable&#8217;s shape</p>
 </dd></dl>
 
 <dl class="attribute">

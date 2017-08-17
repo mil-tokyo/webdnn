@@ -62,9 +62,10 @@ pretrained in Keras [#f2]_ into WebDNN execution format.
     First, set input data.
 
     ```js
-    // loadImageData() returns image data as Float32Array
-    x.set(loadImageData());
+    x.set(await WebDNN.Image.getImageArray('/example/data/school_bus.jpg', { dstW: 224, dstH: 224 }));
     ```
+    
+    ``
 
     Next, run model.
 

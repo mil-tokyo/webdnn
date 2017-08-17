@@ -1,0 +1,653 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>webdnn/image | WebDNN</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/style.css">
+	<link rel="stylesheet" href="../assets/css/prism.css">
+	<script src="../assets/js/prism.js"></script>
+	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
+</head>
+<body>
+<div class="sidenav">
+	<nav class="tsd-navigation secondary menu-sticky">
+		<ul>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="webdnn.html">webdnn</a>
+			</li>
+			<li class="current tsd-kind-external-module tsd-is-external">
+				<a href="webdnn_image.html">webdnn/image</a>
+			</li>
+			<li class=" tsd-kind-external-module tsd-is-external">
+				<a href="webdnn_math.html">webdnn/math</a>
+			</li>
+		</ul>
+	</nav>
+</div>
+<main class="contents">
+	<header class="index-header">
+		<span class="index-header-kind">module</span>
+		<h1 class="index-header-name">
+			webdnn/image
+		</h1>
+	</header>
+	<div class="reflection-container">
+		<div class="reflection-main">
+			<section class="members-group members-group-comment tsd-kind-external-module tsd-is-external">
+				<div class="members-group-body">
+					<div class="tsd-comment tsd-typography">
+						<p>Module <code>WebDNN.Image</code> provides basic image processing operations like follows.</p>
+						<ul>
+							<li>Load image by various way (File picker dialog, url string, canvas, video, etc.)</li>
+							<li>Pack image data into TypedArray</li>
+							<li>Crop and resize.</li>
+							<li>Show result on canvas element</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+			<div style="display: none;">
+			</div>
+			<section class="members-group tsd-is-external">
+				<header class="members-group-header">Type aliases</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+						<a name="drawable" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="drawable" class="anchor"></a>
+								<a href="#drawable" class="anchor-link">#</a>
+								<code>
+Drawable:                <code><code><span class="signature-type">HTMLImageElement</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">HTMLVideoElement</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">ImageData</span>                    </code></code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_array.ts#L31">[image/image_array.ts:31]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>Types which are drawable at <code>HTMLCanvasElement</code></p>
+									</div>
+								</div>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+						<a name="imagesource" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="imagesource" class="anchor"></a>
+								<a href="#imagesource" class="anchor-link">#</a>
+								<code>
+Image<wbr>Source:                <code><code><span class="signature-type">string</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">HTMLInputElement</span>                    </code><span class="signature-symbol"> | </span><code><a href="webdnn_image.html#drawable" class="signature-type">Drawable</a></code></code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_array.ts#L36">[image/image_array.ts:36]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>All type of image source which <code>WebDNN.Image</code> can be handled. For <code>string</code>, only the url of image resource is valid.</p>
+									</div>
+								</div>
+							</div>
+						</section>
+					</section>
+				</div>
+			</section>
+			<section class="members-group tsd-is-external">
+				<header class="members-group-header">Functions</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="getimagearray" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="getimagearray" class="anchor"></a>
+								<a href="#getimagearray" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										get<wbr>Image<wbr>Array
+									</h3>
+									<div>
+										<code>
+get<wbr>Image<wbr>Array<span class="tsd-signature-symbol">(</span>image<span class="tsd-signature-symbol">: </span><code><a href="webdnn_image.html#imagesource" class="signature-type">ImageSource</a></code>, options<span class="tsd-signature-symbol">?: </span><code><code><a href="../interfaces/webdnn_image.sourcerect.html" class="signature-type">SourceRect</a></code><span class="signature-symbol"> &amp; </span><code><a href="../interfaces/webdnn_image.destinationrect.html" class="signature-type">DestinationRect</a></code><span class="signature-symbol"> &amp; </span><code><a href="../interfaces/webdnn_image.imagearrayoption.html" class="signature-type">ImageArrayOption</a></code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32Array</span>                    </code></code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_array.ts#L296">[image/image_array.ts:296]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Create typed array by packing image data from image source with specified options.</p>
+											</div>
+											<p>First, this method loads specified image resource. The behavior of this method depends on the <code>image</code> argument.</p>
+											<ul>
+												<li><p>If <code>image</code> is an instance of <code>string</code>, it will be regarded as image url, and this method fetches that url.</p>
+												</li>
+												<li><p>If <code>image</code> is an instance of <code>HTMLInputElement</code>, it will be regarded as file inpu,
+													and this method loads the selected image file.</p>
+												</li>
+												<li><p>Otherwise, <code>image</code> will be regarded as drawable object.</p>
+												</li>
+											</ul>
+											<p>Then, loaded images are packed into typed array based on <code>options</code> argument.</p>
+											<ul>
+												<li><p>The image is cropped based on <a href="../interfaces/webdnn_image.sourcerect.html"><code>{srcX, srcY, srcW, srcH}</code></a>.
+													As default, entire image is used.</p>
+												</li>
+												<li><p>The image is resized and translated into <a href="../interfaces/webdnn_image.destinationrect.html"><code>{dstX, dstY, dstW, dstH}</code></a>.
+													As default, no resize and translation is performed.</p>
+												</li>
+												<li><p><a href="../interfaces/webdnn_image.imagearrayoption.html#type"><code>options.type</code></a> is the type of packed typed array. As default, Float32Array is used.</p>
+												</li>
+												<li><p><a href="../interfaces/webdnn_image.imagearrayoption.html#type"><code>options.color</code></a> is the color format of packed typed array. As default, <a href="../enums/webdnn_image.color.html#rgb"><code>RGB</code></a> is used.</p>
+												</li>
+												<li><p><a href="../interfaces/webdnn_image.imagearrayoption.html#type"><code>options.order</code></a> is the data order of packed typed array. As default, <a href="../enums/webdnn_image.order.html#hwc"><code>HWC</code></a> is used.</p>
+												</li>
+												<li><p><a href="../interfaces/webdnn_image.imagearrayoption.html#bias"><code>options.bias</code></a> is the bias value.
+													If specified, this method <strong>subtracts</strong> this value from original pixel value.</p>
+												</li>
+											</ul>
+											<h3 id="examples">Examples</h3>
+											<ul>
+												<li><p>Load image of specified url</p>
+													<pre><code class="lang-ts"><span class="hljs-keyword">let</span> image = <span class="hljs-keyword">await</span> WebDNN.Image.load(<span class="hljs-string">'./cat.png'</span>);
+</code></pre>
+												</li>
+												<li><p>Load image selected in file input and resize it into 224 x 224</p>
+													<pre><code class="lang-ts"><span class="hljs-keyword">let</span> input = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'input[type=file]'</span>);
+<span class="hljs-keyword">let</span> image = <span class="hljs-keyword">await</span> WebDNN.Image.load(input, { dstW: <span class="hljs-number">224</span>, dstH: <span class="hljs-number">224</span> });
+</code></pre>
+												</li>
+												<li><p>Load image data from canvas, subtract bias value, and packed it as BGR order</p>
+													<pre><code class="lang-ts"><span class="hljs-keyword">let</span> canvas = <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'canvas'</span>)[<span class="hljs-number">0</span>];
+<span class="hljs-keyword">let</span> bias = [biasB, biasG, biasR]; <span class="hljs-comment">// bias values should be same color format.</span>
+
+<span class="hljs-keyword">let</span> image = <span class="hljs-keyword">await</span> WebDNN.Image.load(canvas, { color: Color.BGR, bias: bias });
+</code></pre>
+												</li>
+											</ul>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>image</code>
+														</td>
+														<td>
+															<code><a href="webdnn_image.html#imagesource" class="signature-type">ImageSource</a></code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>please see above descriptions</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>options</code>
+														</td>
+														<td>
+															<code>
+<code><a href="../interfaces/webdnn_image.sourcerect.html" class="signature-type">SourceRect</a></code>
+															<span class="signature-symbol"> &amp; </span>
+															<code><a href="../interfaces/webdnn_image.destinationrect.html" class="signature-type">DestinationRect</a></code>
+															<span class="signature-symbol"> &amp; </span>
+															<code><a href="../interfaces/webdnn_image.imagearrayoption.html" class="signature-type">ImageArrayOption</a></code>
+															</code>
+														</td>
+														<td>
+															<code> {}</code>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>please see above descriptions.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32Array</span>                    </code></code><span class="signature-symbol">&gt;</span>                    </code>
+											<div>
+												<p>Created typed array</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="loadimagebyurl" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="loadimagebyurl" class="anchor"></a>
+								<a href="#loadimagebyurl" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										load<wbr>Image<wbr>ByUrl
+									</h3>
+									<div>
+										<code>
+load<wbr>Image<wbr>ByUrl<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">HTMLImageElement</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_source.ts#L13">[image/image_source.ts:13]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Load image of specified url</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>url</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">string</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>the image url</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">HTMLImageElement</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+											<div>
+												<p>image element</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="loadimagefromfileinput" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="loadimagefromfileinput" class="anchor"></a>
+								<a href="#loadimagefromfileinput" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										load<wbr>Image<wbr>From<wbr>File<wbr>Input
+									</h3>
+									<div>
+										<code>
+load<wbr>Image<wbr>From<wbr>File<wbr>Input<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><code><span class="signature-type">HTMLInputElement</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">HTMLImageElement</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_source.ts#L31">[image/image_source.ts:31]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Load image file selected in <code>&lt;input type=&quot;file&quot;&gt;</code> element.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>input</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">HTMLInputElement</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>the <code>&lt;input type=&quot;file&quot;&gt;</code> element</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">HTMLImageElement</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+											<div>
+												<p>image element</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="setimagearraytocanvas" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="setimagearraytocanvas" class="anchor"></a>
+								<a href="#setimagearraytocanvas" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										set<wbr>Image<wbr>Array<wbr>ToCanvas
+									</h3>
+									<div>
+										<code>
+set<wbr>Image<wbr>Array<wbr>ToCanvas<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32Array</span>                    </code></code>, imageW<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, imageH<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, canvas<span class="tsd-signature-symbol">: </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code>, options<span class="tsd-signature-symbol">?: </span><code><code><a href="../interfaces/webdnn_image.sourcerect.html" class="signature-type">SourceRect</a></code><span class="signature-symbol"> &amp; </span><code><a href="../interfaces/webdnn_image.destinationrect.html" class="signature-type">DestinationRect</a></code><span class="signature-symbol"> &amp; </span><code><a href="../interfaces/webdnn_image.imagearrayoption.html" class="signature-type">ImageArrayOption</a></code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1fdb24/src/descriptor_runner/image/image_array.ts#L350">[image/image_array.ts:350]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Set image array data into canvas.</p>
+											</div>
+											<h3 id="examples">Examples</h3>
+											<ul>
+												<li><p>Show DNN model&#39;s result</p>
+													<pre><code class="lang-ts"><span class="hljs-keyword">let</span> runner = <span class="hljs-keyword">await</span> WebDNN.load(<span class="hljs-string">'./model'</span>);
+<span class="hljs-keyword">let</span> output = runner.getOutputViews()[<span class="hljs-number">0</span>];
+
+<span class="hljs-keyword">await</span> runner.run();
+
+WebDNN.Image.setImageArrayToCanvas(output.toActual(), <span class="hljs-number">256</span>, <span class="hljs-number">256</span>, <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'canvas'</span>))
+</code></pre>
+												</li>
+												<li><p>Generally image generation model&#39;s result contains noise pixel at their edge because of convolution&#39;s padding.
+													In follow example, these noise are cut off.</p>
+													<pre><code class="lang-ts">WebDNN.Image.setImageArrayToCanvas(output, <span class="hljs-number">256</span>, <span class="hljs-number">256</span>, canvas, {
+   srcX: <span class="hljs-number">16</span>, srcY: <span class="hljs-number">16</span>, srcH: <span class="hljs-number">256</span><span class="hljs-number">-16</span>*<span class="hljs-number">2</span>, srcW: <span class="hljs-number">256</span><span class="hljs-number">-16</span>*<span class="hljs-number">2</span>, <span class="hljs-comment">// Discard both ends 16px</span>
+   dstW: <span class="hljs-number">256</span>, dstH: <span class="hljs-number">256</span>  <span class="hljs-comment">// Resize cropped image into original output size.</span>
+});
+</code></pre>
+												</li>
+											</ul>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>array</code>
+														</td>
+														<td>
+															<code>
+                    <code>
+<span class="signature-type">Float32Array</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">Int32Array</span>                    </code>
+															</code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>array which contains image data</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>imageW</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>width of image</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>imageH</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>height of image. The length of <code>array</code> must be <code>imageW * imageH * (# of channels)</code></p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>canvas</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">HTMLCanvasElement</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>destination canvas</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>options</code>
+														</td>
+														<td>
+															<code>
+<code><a href="../interfaces/webdnn_image.sourcerect.html" class="signature-type">SourceRect</a></code>
+															<span class="signature-symbol"> &amp; </span>
+															<code><a href="../interfaces/webdnn_image.destinationrect.html" class="signature-type">DestinationRect</a></code>
+															<span class="signature-symbol"> &amp; </span>
+															<code><a href="../interfaces/webdnn_image.imagearrayoption.html" class="signature-type">ImageArrayOption</a></code>
+															</code>
+														</td>
+														<td>
+															<code> {}</code>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>please see above descriptions and descriptions in <a href="webdnn_image.html#getimagearray">getImageArray()</a>.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">void</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>
+			</section>
+		</div>
+		<div class="reflection-rightnav">
+			<ul class="toc">
+				<li>
+					<header class="toc-header">Enumerations</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-enum tsd-parent-kind-external-module tsd-is-external">
+							<a href="../enums/webdnn_image.color.html" class="tsd-kind-icon">
+								Color
+							</a>
+						</li>
+						<li class="tsd-kind-enum tsd-parent-kind-external-module tsd-is-external">
+							<a href="../enums/webdnn_image.order.html" class="tsd-kind-icon">
+								Order
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<header class="toc-header">Interfaces</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-interface tsd-parent-kind-external-module tsd-is-external">
+							<a href="../interfaces/webdnn_image.destinationrect.html" class="tsd-kind-icon">
+								Destination<wbr>Rect
+							</a>
+						</li>
+						<li class="tsd-kind-interface tsd-parent-kind-external-module tsd-is-external">
+							<a href="../interfaces/webdnn_image.imagearrayoption.html" class="tsd-kind-icon">
+								Image<wbr>Array<wbr>Option
+							</a>
+						</li>
+						<li class="tsd-kind-interface tsd-parent-kind-external-module tsd-is-external">
+							<a href="../interfaces/webdnn_image.sourcerect.html" class="tsd-kind-icon">
+								Source<wbr>Rect
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<header class="toc-header">Type aliases</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#drawable" class="tsd-kind-icon">
+								Drawable
+							</a>
+						</li>
+						<li class="tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#imagesource" class="tsd-kind-icon">
+								Image<wbr>Source
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<header class="toc-header">Functions</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#getimagearray" class="tsd-kind-icon">
+								get<wbr>Image<wbr>Array
+							</a>
+						</li>
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#loadimagebyurl" class="tsd-kind-icon">
+								load<wbr>Image<wbr>ByUrl
+							</a>
+						</li>
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#loadimagefromfileinput" class="tsd-kind-icon">
+								load<wbr>Image<wbr>From<wbr>File<wbr>Input
+							</a>
+						</li>
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn_image.html#setimagearraytocanvas" class="tsd-kind-icon">
+								set<wbr>Image<wbr>Array<wbr>ToCanvas
+							</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</main>
+</body>
+</html>

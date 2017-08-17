@@ -172,7 +172,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">AxisKeyDict</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNC</span><span class="p">,</span> <span class="n">Order</span><span class="p">,</span> <span class="n">OrderNHWC</span><span class="p">,</span> <span class="n">OrderNTC</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
@@ -238,9 +238,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_index_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_index_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_placeholders</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">:</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
-        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placeholders</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">],</span> <span class="p">[</span><span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_tensor_cache</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: List[tf.Tensor]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_tensor_cache</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: List[tf.Tensor]</span>
 
@@ -352,10 +350,10 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">tf_var</span><span class="p">):</span>
             <span class="n">variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tf_var</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">variable</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;[KerasConverter] </span><span class="si">{tf_var}</span><span class="s2"> is already registered before, and &quot;</span> \
-                                                       <span class="n">f</span><span class="s2">&quot;shape mismatch is detected: (registered shape)=&quot;</span> \
-                                                       <span class="n">f</span><span class="s2">&quot;</span><span class="si">{variable.shape}</span><span class="s2">, (given tensorflow variable&#39;s shape)=&quot;</span> \
-                                                       <span class="n">f</span><span class="s2">&quot;</span><span class="si">{data.shape}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">variable</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;[KerasConverter] </span><span class="si">{tf_var}</span><span class="s2"> is already registered before, and &quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;shape mismatch is detected: (registered shape)=&quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{variable.shape}</span><span class="s2">, (given tensorflow variable&#39;s shape)=&quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{data.shape}</span><span class="s2">&quot;</span>
             <span class="k">assert</span> <span class="n">variable</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">order</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;[KerasConverter] </span><span class="si">{tf_var}</span><span class="s2"> is already registered before, and order &quot;</span> \
                                             <span class="n">f</span><span class="s2">&quot;mismatch is detected: (registered order)=</span><span class="si">{variable.order}</span><span class="s2">, (given &quot;</span> \
                                             <span class="n">f</span><span class="s2">&quot;tensorflow variable&#39;s order)=</span><span class="si">{order}</span><span class="s2">&quot;</span>

@@ -222,10 +222,10 @@ compiled model data on the server.</p>
 <p>Let&#8217;s classify this image.</p>
 <p><img alt="sample image" src="../_images/sample_image2.jpeg" /></p>
 <p>First, set input data.</p>
-<div class="highlight-js"><div class="highlight"><pre><span></span><span class="c1">// loadImageData() returns image data as Float32Array</span>
-<span class="nx">x</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">loadImageData</span><span class="p">());</span>
+<div class="highlight-js"><div class="highlight"><pre><span></span><span class="nx">x</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">await</span> <span class="nx">WebDNN</span><span class="p">.</span><span class="nx">Image</span><span class="p">.</span><span class="nx">getImageArray</span><span class="p">(</span><span class="s1">&#39;/example/data/school_bus.jpg&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">dstW</span><span class="o">:</span> <span class="mi">224</span><span class="p">,</span> <span class="nx">dstH</span><span class="o">:</span> <span class="mi">224</span> <span class="p">}));</span>
 </pre></div>
 </div>
+<p>``</p>
 <p>Next, run model.</p>
 <div class="highlight-js"><div class="highlight"><pre><span></span><span class="nx">await</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">run</span><span class="p">();</span>
 </pre></div>

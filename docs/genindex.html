@@ -197,13 +197,9 @@
 </li>
       <li><a href="api_reference/graph_transpiler/operator.html#webdnn.Operator.append_output">append_output() (webdnn.Operator method)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/operators.html#webdnn.graph.operators.average_pooling_2d.AveragePooling2D">AveragePooling2D (class in webdnn.graph.operators.average_pooling_2d)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference/graph_transpiler/order.html#Order.axes">axes (Order attribute)</a>
-</li>
-      <li><a href="api_reference/graph_transpiler/order.html#Order.axes_dict">axes_dict (Order attribute)</a>
+      <li><a href="api_reference/graph_transpiler/operators.html#webdnn.graph.operators.average_pooling_2d.AveragePooling2D">AveragePooling2D (class in webdnn.graph.operators.average_pooling_2d)</a>
 </li>
       <li><a href="api_reference/graph_transpiler/axis.html#webdnn.Axis">Axis (class in webdnn)</a>
 </li>
@@ -227,14 +223,16 @@
       </ul></li>
       <li><a href="api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.check_resolved">check_resolved() (webdnn.Placeholder static method)</a>
 </li>
+      <li><a href="api_reference/graph_transpiler/order.html#webdnn.Order.check_same_axes">check_same_axes() (webdnn.Order method)</a>
+</li>
       <li><a href="api_reference/graph_transpiler/operators.html#webdnn.graph.operators.clipped_relu.ClippedRelu">ClippedRelu (class in webdnn.graph.operators.clipped_relu)</a>
 </li>
       <li><a href="api_reference/graph_transpiler/operators.html#webdnn.graph.operators.concat.Concat">Concat (class in webdnn.graph.operators.concat)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable">ConstantVariable (class in webdnn)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable">ConstantVariable (class in webdnn)</a>
+</li>
       <li><a href="api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter.convert">convert() (webdnn.frontend.chainer.ChainerConverter method)</a>
 
       <ul>
@@ -344,11 +342,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference/graph_transpiler/backend/index.html#webdnn.backend.interface.graph_descriptor.IGraphExecutionData">IGraphExecutionData (class in webdnn.backend.interface.graph_descriptor)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/variable.html#Variable.input_to">input_to (Variable attribute)</a>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.input_to">input_to (webdnn.ConstantVariable attribute)</a>
+
+      <ul>
+        <li><a href="api_reference/graph_transpiler/variable.html#webdnn.Variable.input_to">(webdnn.Variable attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference/graph_transpiler/operator.html#Operator.inputs">inputs (Operator attribute)</a>
+      <li><a href="api_reference/graph_transpiler/operator.html#webdnn.Operator.inputs">inputs (webdnn.Operator attribute)</a>
 </li>
       <li><a href="api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.is_resolved">is_resolved (webdnn.Placeholder attribute)</a>
 </li>
@@ -398,11 +400,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference/graph_transpiler/order.html#Order.ndim">ndim (Order attribute)</a>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.ndim">ndim (webdnn.ConstantVariable attribute)</a>
 
       <ul>
-        <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.ndim">(webdnn.ConstantVariable attribute)</a>
-</li>
         <li><a href="api_reference/graph_transpiler/variable.html#webdnn.Variable.ndim">(webdnn.Variable attribute)</a>
 </li>
       </ul></li>
@@ -418,15 +418,23 @@
 </li>
       <li><a href="api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule">OptimizeRule (class in webdnn)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference/graph_transpiler/order.html#webdnn.Order">Order (class in webdnn)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/variable.html#Variable.order">order (Variable attribute)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.order">order (webdnn.ConstantVariable attribute)</a>
+
+      <ul>
+        <li><a href="api_reference/graph_transpiler/variable.html#webdnn.Variable.order">(webdnn.Variable attribute)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/variable.html#Variable.output_from">output_from (Variable attribute)</a>
+      </ul></li>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.output_from">output_from (webdnn.ConstantVariable attribute)</a>
+
+      <ul>
+        <li><a href="api_reference/graph_transpiler/variable.html#webdnn.Variable.output_from">(webdnn.Variable attribute)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/operator.html#Operator.outputs">outputs (Operator attribute)</a>
+      </ul></li>
+      <li><a href="api_reference/graph_transpiler/operator.html#webdnn.Operator.outputs">outputs (webdnn.Operator attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -496,8 +504,12 @@
 </li>
       <li><a href="api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter.set_variable">set_variable() (webdnn.frontend.converter.Converter method)</a>
 </li>
-      <li><a href="api_reference/graph_transpiler/variable.html#Variable.shape">shape (Variable attribute)</a>
+      <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.shape">shape (webdnn.ConstantVariable attribute)</a>
+
+      <ul>
+        <li><a href="api_reference/graph_transpiler/variable.html#webdnn.Variable.shape">(webdnn.Variable attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.shape_dict">shape_dict (webdnn.ConstantVariable attribute)</a>
 
       <ul>

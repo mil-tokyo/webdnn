@@ -169,6 +169,7 @@
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">flags</span><span class="p">,</span> <span class="n">console</span>
 
 
 <div class="viewcode-block" id="OptimizeRule"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule">[docs]</a><span class="k">class</span> <span class="nc">OptimizeRule</span><span class="p">:</span>
@@ -212,11 +213,14 @@
         <span class="k">while</span> <span class="n">flag_retry</span><span class="p">:</span>
             <span class="n">flag_retry</span> <span class="o">=</span> <span class="kc">False</span>
 
-            <span class="k">for</span> <span class="n">sub_rules</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">sub_rules</span><span class="o">.</span><span class="n">flags</span><span class="p">()):</span>
+            <span class="k">for</span> <span class="n">sub_rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">sub_rule</span><span class="o">.</span><span class="n">flags</span><span class="p">()):</span>
                     <span class="k">continue</span>
 
-                <span class="n">graph</span><span class="p">,</span> <span class="n">flag_changed</span> <span class="o">=</span> <span class="n">sub_rules</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+                <span class="n">graph</span><span class="p">,</span> <span class="n">flag_changed</span> <span class="o">=</span> <span class="n">sub_rule</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">flag_changed</span><span class="p">:</span>
+                    <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[OptimizeRule] apply: </span><span class="si">{sub_rule.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
+
                 <span class="n">flag_retry</span> <span class="o">|=</span> <span class="n">flag_changed</span>
 
             <span class="n">flag_totally_changed</span> <span class="o">|=</span> <span class="n">flag_retry</span>

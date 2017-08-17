@@ -180,20 +180,24 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (str): the name. If :code:`None`, automatically generated name is used.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        inputs (dict of :class:`~webdnn.Variable`): input variables</span>
-<span class="sd">        outputs (dict of :class:`~webdnn.Variable`): output variable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">]</span>
-    <span class="n">outputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, &quot;variable.Variable&quot;]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, &quot;variable.Variable&quot;]</span>
 
-    <span class="k">def</span> <span class="nf">_get_input_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;input variables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;output variables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_input_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">var</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -201,9 +205,9 @@
             <span class="k">return</span> <span class="n">name</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{name}</span><span class="s2">&#39; is not input of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{var}</span><span class="s2">&#39; is not input of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_output_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_output_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">var</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -211,7 +215,7 @@
             <span class="k">return</span> <span class="n">name</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{name}</span><span class="s2">&#39; is not output of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{var}</span><span class="s2">&#39; is not output of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Operator.append_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.append_input">[docs]</a>    <span class="k">def</span> <span class="nf">append_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;append_input(name, var)</span>
@@ -222,11 +226,11 @@
 <span class="sd">            name(str): the name of input variable</span>
 <span class="sd">            var(:class:`~webdnn.Variable`): the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is already used as key of input variable f</span><span class="si">{self.inputs[name]}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
-        <span class="n">var</span><span class="o">.</span><span class="n">input_to</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span></div>
 
 <div class="viewcode-block" id="Operator.remove_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.remove_input">[docs]</a>    <span class="k">def</span> <span class="nf">remove_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove_input(var)</span>
@@ -236,12 +240,13 @@
 <span class="sd">        Args:</span>
 <span class="sd">            var(:class:`~webdnn.Variable`): the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">remove_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prevs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{var}</span><span class="s2"> is not registered in input variables.&quot;</span><span class="p">)</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_input_name</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">var</span><span class="o">.</span><span class="n">input_to</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_input_name</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Operator.replace_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.replace_input">[docs]</a>    <span class="k">def</span> <span class="nf">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace_input(v_old, v_new)</span>
@@ -262,7 +267,7 @@
             <span class="s2">&quot;[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape.&quot;</span> <span class="o">+</span> \
             <span class="n">f</span><span class="s2">&quot;actual: v_old.order = </span><span class="si">{v_old.shape}</span><span class="s2">, v_new.order = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_input_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_input_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_input</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v_new</span><span class="p">)</span></div>
 
@@ -275,14 +280,13 @@
 <span class="sd">            name(str): the name of output variable</span>
 <span class="sd">            var(:class:`~webdnn.Variable`): the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is already used as key of output variable f</span><span class="si">{self.outputs[name]}</span><span class="s2">.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">output_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{var}</span><span class="s2"> has been registered as f</span><span class="si">{var.output_from}</span><span class="s2">&#39;s output already.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># noinspection PyTypeChecker</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_next</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
-        <span class="n">var</span><span class="o">.</span><span class="n">output_from</span> <span class="o">=</span> <span class="bp">self</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span></div>
 
 <div class="viewcode-block" id="Operator.remove_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove_output(var)</span>
@@ -292,12 +296,12 @@
 <span class="sd">        Args:</span>
 <span class="sd">            var(:class:`~webdnn.Variable`): the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">remove_next</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{var}</span><span class="s2"> is not registered in input variables.&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_name</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_output_name</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">var</span><span class="o">.</span><span class="n">output_from</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_next</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Operator.replace_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.replace_output">[docs]</a>    <span class="k">def</span> <span class="nf">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace_output(v_old, v_new)</span>
@@ -318,7 +322,7 @@
             <span class="s2">&quot;[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape.&quot;</span> <span class="o">+</span> \
             <span class="n">f</span><span class="s2">&quot;actual: v_old.shape = </span><span class="si">{v_old.shape}</span><span class="s2">, v_new.shape = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_output_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v_new</span><span class="p">)</span></div>
 
@@ -360,7 +364,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
-        <span class="k">pass</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.__call__ must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Attr</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Attribute</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Attribute</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)]</span>
