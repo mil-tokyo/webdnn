@@ -20,6 +20,7 @@ const PageHeader = (props: React.HTMLAttributes<HTMLElement>) => (
                 <a href={'#' + CompatibilityAnchorID}>Compatibility</a>
                 <a href={'#' + BenchmarkAnchorID}>Benchmark</a>
                 <a href={'#' + ExampleSectionAnchorID}>Examples</a>
+                <a href={'/webdnn/docs'}>Docs</a>
             </p>
             <p className={style.link}>
                 <a href="/webdnn/ja"><span>日本語</span></a>
