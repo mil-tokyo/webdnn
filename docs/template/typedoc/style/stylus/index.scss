@@ -1,0 +1,42 @@
+.index {
+    position: relative;
+    padding: 16px;
+    height: 100%;
+    overflow: auto;
+}
+
+.index-header {
+    padding: 16px;
+    top: 0;
+    background: -webkit-linear-gradient(45deg, #f90 0%, #fc0 100%);
+    background: -moz-linear-gradient(45deg, #f90 0%, #fc0 100%);
+    background: linear-gradient(45deg, #f90 0%, #fc0 100%);
+    box-shadow: 0 1px 3px rgba(#000, 0.3);
+    z-index: 65535;
+    color: #fff;
+}
+
+.index-header-kind {
+    border: 1px solid #fff;
+    color: #fff;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.index-header-name {
+    display: inline-block;
+    font-size: 28px;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.index-section {
+    padding: 16px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}

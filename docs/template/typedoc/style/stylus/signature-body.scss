@@ -1,0 +1,71 @@
+.signatures-body {
+    padding: 16px 32px;
+}
+
+.signature-body-table {
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+
+    th {
+        text-align: center;
+        font-weight: normal;
+        color: #ccc;
+        background: #20232c;
+    }
+    tbody > tr {
+        border-bottom: 1px solid #ccc;
+    }
+    td {
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+
+        &:first-child {
+            border-left: 0;
+        }
+        &:last-child {
+            border-left: 0;
+        }
+    }
+    td, th {
+        padding: 8px 16px;
+    }
+    p {
+        margin: 0;
+    }
+}
+
+.signature-body-section {
+    margin: 16px 0;
+}
+
+.signature-body-section-header {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 16px 0 8px;
+}
+
+.signature-body-section-body {
+    padding-left: 16px;
+}
+
+.signature-body-comment {
+    margin-top: 4px;
+
+    p {
+        margin: 4px 0;
+    }
+}
+
+.signature-body-section-returns {
+    display: flex;
+    align-items: flex-start;
+
+    > div {
+        flex: 1;
+        margin-left: 16px;
+
+        p {
+            margin: 8px 0 0;
+        }
+    }
+}

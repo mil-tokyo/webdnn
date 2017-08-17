@@ -1,0 +1,63 @@
+<section class="signature-body-section signature-body-comment">
+    {{> comment}}
+</section>
+{{#if typeParameters}}
+    <section class="signature-body-section">
+        <header class="signature-body-section-header">Type Parameters</header>
+        <div class="signature-body-section-body">
+            {{> typeParameters}}
+        </div>
+    </section>
+{{/if}}
+
+{{#if parameters}}
+    <section class="signature-body-section">
+        <header class="signature-body-section-header">Parameters</header>
+        <div class="signature-body-section-body">
+            <table class="signature-body-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each parameters}}
+                    <tr>
+                        <td>
+                            <code>{{name}}</code>
+                        </td>
+                        <td>
+                            {{#with type}}{{>type}}{{/with}}
+                        </td>
+                        <td>
+                            {{#if defaultValue}}
+                                <code>{{defaultValue}}</code>
+                            {{/if}}
+                        </td>
+                        <td>
+                            {{> comment}}
+                        </td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{{/if}}
+
+{{#if type}}
+    <section class="signature-body-section">
+        <header class="signature-body-section-header">Returns</header>
+        <div class="signature-body-section-body signature-body-section-returns">
+            {{#with type}}{{>type}}{{/with}}
+            {{#if comment.returns}}
+                <div>
+                    {{#markdown}}{{{comment.returns}}}{{/markdown}}
+                </div>
+            {{/if}}
+        </div>
+    </section>
+{{/if}}

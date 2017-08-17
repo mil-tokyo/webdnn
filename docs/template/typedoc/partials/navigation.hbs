@@ -1,0 +1,20 @@
+{{#unless isLabel}}
+    {{#if isGlobals}}
+        <li class="{{#if isInPath}}current{{/if}} {{cssClasses}}">
+            <a href="{{relativeURL url}}"><em>{{{wbr title}}}</em></a>
+        </li>
+    {{else}}
+        <li class="{{#if isInPath}}current{{/if}} {{cssClasses}}">
+            <a href="{{relativeURL url}}">{{{wbr title}}}</a>
+            {{#if isInPath}}
+                {{#if children}}
+                    <ul>
+                        {{#each children}}
+                            {{> navigation}}
+                        {{/each}}
+                    </ul>
+                {{/if}}
+            {{/if}}
+        </li>
+    {{/if}}
+{{/unless}}

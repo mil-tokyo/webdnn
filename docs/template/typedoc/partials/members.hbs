@@ -1,0 +1,7 @@
+{{#each groups}}
+    {{#unless allChildrenHaveOwnDocument}}
+        {{#unless (isPrivateAll this)}}
+            {{> members.group}}
+        {{/unless}}
+    {{/unless}}
+{{/each}}

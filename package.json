@@ -12,8 +12,10 @@
         "test": "nosetests",
         "test-kernel": "echo '\"npm run test-kernel\" is removed. please use \"npm run test-runtime\"'",
         "test-runtime": "OPTIMIZE=0 nosetests -w ./test/runtime",
-        "build": "tsc -p ./src/descriptor_runner/tsconfig.json; tsc -p ./src/descriptor_runner/tsconfig.es5.json;",
-        "build-doc": "cd docs; make html"
+        "build": "rollup -c; rollup -c ./rollup.es5.config.js; dts-generator --name webdnn --project ./src/descriptor_runner --out ./dist/webdnn.d.ts --main 'webdnn/webdnn'",
+        "build-doc": "npm run build-doc-python; npm run build-doc-ts",
+        "build-doc-python": "cd docs; make html",
+        "build-doc-ts": "typedoc --out ./docs/build/html/api_reference/descriptor-runner --mode modules --target es2017 --lib 'lib.es2017.d.ts,lib.dom.d.ts' --excludePrivate --readme ./src/descriptor_runner/index.md --theme ./docs/template/typedoc ./src/descriptor_runner/webdnn.ts"
     },
     "repository": {
         "type": "git",
@@ -42,6 +44,16 @@
     },
     "homepage": "https://mil-tokyo.github.io/webdnn/",
     "devDependencies": {
-        "typedoc": "^0.7.1"
+        "babel-preset-es2015": "^6.24.1",
+        "babel-register": "^6.24.1",
+        "bootstrap": "4.0.0-alpha.6",
+        "dts-generator": "^2.1.0",
+        "gulp-sass": "^3.1.0",
+        "handlebars": "^4.0.10",
+        "rollup": "^0.47.4",
+        "rollup-plugin-typescript2": "^0.5.0",
+        "typedoc": "^0.8.0",
+        "typedoc-default-themes": "^0.5.0",
+        "typedoc-plugin-webdnn": "file:docs/template/typedoc/plugin"
     }
 }

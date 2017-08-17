@@ -1,0 +1,38 @@
+{{#with model}}
+    <header class="index-header">
+        <span class="index-header-kind">{{normalizeKind kindString}}</span>
+        <h1 class="index-header-name">
+            {{name}}
+        </h1>
+    </header>
+{{/with}}
+
+
+<div class="reflection-container">
+<div class="reflection-main">
+    {{#with model}}
+        {{#if hasComment}}
+            <section class="members-group members-group-comment {{cssClasses}}">
+                <div class="members-group-body">
+                    {{> comment}}
+                </div>
+            </section>
+        {{/if}}
+
+        <div style="display: none;">
+            {{#if typeHierarchy}}
+                {{#with typeHierarchy}}{{> hierarchy.root}}{{/with}}
+            {{/if}}
+        </div>
+
+        {{> members}}
+    {{/with}}
+</div>
+
+{{#with model}}
+    <div class="reflection-rightnav">
+        {{> toc}}
+    </div>
+{{/with}}
+</div>
+

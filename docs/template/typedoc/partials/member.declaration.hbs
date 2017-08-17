@@ -1,0 +1,33 @@
+<div class="signatures">
+    <header class="signatures-header">
+        <a id="{{anchor}}" class="anchor"></a>
+        <a href="#{{anchor}}" class="anchor-link">#</a>
+        <code>
+            {{#compact}}
+                {{{wbr name}}}
+                {{#if isOptional}}?{{/if}}
+                :{{#with type}}{{>type}}{{/with}}
+                {{#if defaultValue}}
+                    &nbsp;=&nbsp;{{defaultValue}}
+                {{/if}}
+            {{/compact}}
+        </code>
+        <span class="signatures-source">
+            {{#if sources}}
+                {{#each sources}}
+                    {{#if url}}
+                        <a href="{{url}}">[{{fileName}}:{{line}}]</a>
+                    {{else}}
+                        [{{fileName}}:{{line}}]
+                    {{/if}}
+                {{/each}}
+            {{/if}}
+        </span>
+    </header>
+</div>
+
+<section class="members-group members-group-comment {{cssClasses}}">
+    <div class="members-group-body">
+        {{> comment}}
+    </div>
+</section>

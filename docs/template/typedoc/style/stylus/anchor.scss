@@ -1,0 +1,15 @@
+.anchor {
+    display: block;
+    position: relative;
+    top: -48px;
+    visibility: hidden;
+}
+
+.anchor-link {
+    display: inline-block;
+    position: relative;
+    color: #888;
+    margin-right: 4px;
+    font-size: inherit;
+    visibility: hidden;
+}

@@ -1,0 +1,24 @@
+<ul class="toc">
+    {{#each groups}}
+        {{#unless (isPrivateAll this)}}
+            <li>
+                <header class="toc-header">{{title}}</header>
+                <ul class="toc-list">
+                    {{#each children}}
+                        {{#unless (isPrivate this)}}
+                            <li class="{{cssClasses}}">
+                                <a href="{{relativeURL url}}" class="tsd-kind-icon">
+                                    {{#if name}}
+                                        {{{wbr name}}}
+                                    {{else}}
+                                        <em>{{{wbr kindString}}}</em>
+                                    {{/if}}
+                                </a>
+                            </li>
+                        {{/unless}}
+                    {{/each}}
+                </ul>
+            </li>
+        {{/unless}}
+    {{/each}}
+</ul>

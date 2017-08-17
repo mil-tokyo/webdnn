@@ -1,13 +1,13 @@
 'use strict';
 
-var is_image_loaded = false;
-
-function run_entry() {
-    run().then(() => {
+async function run_entry() {
+    try {
+        await run();
         log('Run finished');
-    }).catch((error) => {
+
+    } catch (error) {
         log('Error: ' + error);
-    });
+    }
 }
 
 function log(msg) {
@@ -16,30 +16,22 @@ function log(msg) {
     msg_node.appendChild(document.createTextNode(msg));
 }
 
-function load_image() {
-    var img = new Image();
-    img.onload = function() {
-        var ctx = document.getElementById('input_image').getContext('2d');
-        // shrink instead of crop
-        ctx.drawImage(img, 0, 0, 224, 224);
-        is_image_loaded = true;
-        document.getElementById('run_button').disabled = false;
-        log('Image loaded to canvas');
-    }
-    img.onerror = function() {
-        log('Failed to load image');
-    }
-    img.src = document.querySelector("input[name=image_url]").value;
+async function loadImage() {
+    let imageData = await WebDNN.Image.getImageArray(document.getElementById("image_url").value, {dstW: 224, dstH: 224});
+    WebDNN.Image.setImageArrayToCanvas(imageData, 224, 224, document.getElementById('input_image'));
+
+    document.getElementById('run_button').disabled = false;
+    log('Image loaded to canvas');
 }
 
 let runners = {};
 
 function getFrameworkName() {
-    return document.querySelector('input[name=framework_name]:checked').value;
+    return document.querySelector('input[name=framework]:checked').value;
 }
 
 async function prepare_run() {
-    let backend_name = document.querySelector('input[name=backend_name]:checked').value;
+    let backend_name = document.querySelector('input[name=backend]:checked').value;
     let framework_name = getFrameworkName();
     let backend_key = backend_name + framework_name;
     if (!(backend_key in runners)) {
@@ -57,55 +49,25 @@ async function prepare_run() {
 async function run() {
     let runner = await prepare_run();
 
-    let test_image = getImageData(getFrameworkName() === 'chainer');
-    let test_samples = [test_image];
+    runner.getInputViews()[0].set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
+        order: getFrameworkName() === 'chainer' ? WebDNN.Image.Order.CHW : WebDNN.Image.Order.HWC,
+        color: WebDNN.Image.Color.BGR,
+        bias: [123.68, 116.779, 103.939]
+    }));
 
-    let total_elapsed_time = 0;
-    let pred_label;
-    for (let i = 0; i < test_samples.length; i++) {
-        let sample = test_samples[i];
-        runner.getInputViews()[0].set(sample);
+    let start = performance.now();
+    await runner.run();
+    let elapsed_time = performance.now() - start;
 
-        let start = performance.now();
-        await runner.run();
-        total_elapsed_time += performance.now() - start;
+    let out_vec = runner.getOutputViews()[0].toActual();
+    let top_labels = WebDNN.Math.argmax(out_vec, 5);
 
-        let out_vec = runner.getOutputViews()[0].toActual();
-        let top_labels = WebDNN.Math.argmax(out_vec, 5);
-        let predicted_str = 'Predicted:';
-        for (let j = 0; j < top_labels.length; j++) {
-            predicted_str += ` ${top_labels[j]}(${imagenet_labels[top_labels[j]]})`;
-        }
-        log(predicted_str);
-        console.log('output vector: ', out_vec);
+    let predicted_str = 'Predicted:';
+    for (let j = 0; j < top_labels.length; j++) {
+        predicted_str += ` ${top_labels[j]}(${imagenet_labels[top_labels[j]]})`;
     }
-    log(`Total Elapsed Time[ms/image]: ${(total_elapsed_time / test_samples.length).toFixed(2)}`);
-}
+    log(predicted_str);
 
-function getImageData(flagNCHW) {
-    let ctx = document.getElementById('input_image').getContext('2d');
-    let h = 224;
-    let w = 224;
-    let imagedata = ctx.getImageData(0, 0, h, w);//h,w,c(rgba)
-    let pixeldata = imagedata.data;
-    let data = new Float32Array(3 * h * w);//h,w,c(bgr)
-
-    if (flagNCHW) {
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                data[(0 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 2] - 103.939;//b
-                data[(1 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 1] - 116.779;//g
-                data[(2 * h + y) * w + x] = pixeldata[(y * w + x) * 4 + 0] - 123.68;//r
-            }
-        }
-    } else {
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                data[(y * w + x) * 3] = pixeldata[(y * w + x) * 4 + 2] - 103.939;//b
-                data[(y * w + x) * 3 + 1] = pixeldata[(y * w + x) * 4 + 1] - 116.779;//g
-                data[(y * w + x) * 3 + 2] = pixeldata[(y * w + x) * 4 + 0] - 123.68;//r
-            }
-        }
-    }
-    return data;
+    console.log('output vector: ', out_vec);
+    log(`Total Elapsed Time[ms/image]: ${elapsed_time.toFixed(2)}`);
 }

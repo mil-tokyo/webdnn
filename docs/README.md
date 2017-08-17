@@ -3,9 +3,8 @@
 ## build
 
 ```
-pip install sphinx sphinx_rtd_theme recommonmark
 npm install
-make html
+npm run build-doc
 ```
 
 HTML Document are generated in `/docs/build/html`

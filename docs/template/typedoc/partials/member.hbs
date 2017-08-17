@@ -1,0 +1,20 @@
+<section class="member {{cssClasses}}">
+    <a name="{{anchor}}" class="anchor"></a>
+    {{#if signatures}}
+        {{> member.signatures}}
+    {{else}}
+        {{#if hasGetterOrSetter}}
+            {{> member.getterSetter}}
+        {{else}}
+            {{> member.declaration}}
+        {{/if}}
+    {{/if}}
+
+    {{#each groups}}
+        {{#each children}}
+            {{#unless hasOwnDocument}}
+                {{> member}}
+            {{/unless}}
+        {{/each}}
+    {{/each}}
+</section>

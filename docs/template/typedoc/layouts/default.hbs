@@ -1,0 +1,34 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{#ifCond model.name '==' project.name}}{{project.name}}{{else}}{{model.name}} | {{project.name}}{{/ifCond}}</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{{relativeURL "assets/css/style.css"}}">
+    <link rel="stylesheet" href="{{relativeURL "assets/css/prism.css"}}">
+    <script src="{{relativeURL "assets/js/prism.js"}}"></script>
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
+</head>
+<body>
+
+<div class="sidenav">
+    <nav class="tsd-navigation secondary menu-sticky">
+        <ul>
+            {{#each navigation.children}}
+                {{#unless isGlobals}}
+                    {{> navigation}}
+                {{/unless}}
+            {{/each}}
+        </ul>
+    </nav>
+</div>
+
+<main class="contents">
+    {{{contents}}}
+</main>
+
+</body>
+</html>

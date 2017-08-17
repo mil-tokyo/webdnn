@@ -1,0 +1,21 @@
+@import "./color.scss";
+
+.sidenav {
+    position: relative;
+    background: $c-secondary;
+    overflow: scroll;
+    color: #fff;
+    padding: 16px 16px;
+    font-family: monospace;
+    flex: 0 0 auto;
+
+    ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    a {
+        color: #fff;
+    }
+}

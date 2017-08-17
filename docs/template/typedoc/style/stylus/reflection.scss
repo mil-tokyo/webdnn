@@ -1,0 +1,19 @@
+.reflection-container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1;
+}
+
+.reflection-main {
+    position: relative;
+    flex: 1 1;
+    overflow: auto;
+}
+
+.reflection-rightnav {
+    padding: 16px;
+    background: #fff;
+    border-left: 1px solid #40444c;
+    overflow: auto;
+}

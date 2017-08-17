@@ -75,7 +75,7 @@ async function init() {
 
 async function run() {
     // Set the value into input variable.
-    runner.getInputViews()[0].set(loadImageData());
+    runner.getInputViews()[0].set(WebDNN.Image.getImageArray('./input_image.png'));
     
     // Run
     await runner.run(); 

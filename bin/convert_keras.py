@@ -91,7 +91,7 @@ def main():
     any_backend_failed = False
     backends = args.backend.split(",")
     for i, backend in enumerate(backends):
-        console.stderr(f"[{path.basename(__file__)}] Backend: {console.colorize(backend, console.Color.Cyan)}")
+        console.stderr(f"[{path.basename(__file__)}] BackendName: {console.colorize(backend, console.Color.Cyan)}")
         try:
             graph_exec_data = generate_descriptor(backend, graph, constant_encoder_name=args.encoding)
             graph_exec_data.save(output_dir)

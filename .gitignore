@@ -13,3 +13,5 @@ cg.svg
 /src/graph_transpiler/webdnn.egg-info
 example/benchmark/keras-js
 example/convert_caffe/data/
+/tmp
+.rpt2_cache

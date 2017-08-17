@@ -1,0 +1,75 @@
+<div class="signatures">
+    <header class="signatures-header">
+        <a id="{{anchor}}" class="anchor"></a>
+        <a href="#{{anchor}}" class="anchor-link anchor-link-large">#</a>
+        <div class="signature-header-titles">
+            {{#unless hideName}}
+                <h3 class="signatures-header-title">
+                    {{{wbr name}}}
+                    {{#if typeParameters}}
+                        &lt;
+                        {{#each typeParameters}}
+                            {{#if @index}},&nbsp;{{/if}}
+                            {{name}}
+                        {{/each}}
+                        &gt;
+                    {{/if}}
+                </h3>
+            {{/unless}}
+
+            {{#each signatures}}
+                <div>
+                    <code>
+                        {{#compact}}
+                            {{#unless hideName}}{{{wbr name}}}{{/unless}}
+                            {{#if typeParameters}}
+                                &lt;
+                                {{#each typeParameters}}
+                                    {{#if @index}},&nbsp;{{/if}}
+                                    {{name}}
+                                {{/each}}
+                                &gt;
+                            {{/if}}
+                            <span class="tsd-signature-symbol">(</span>
+                            {{#each parameters}}
+                                {{#if @index}},&nbsp;{{/if}}
+                                {{#if flags.isRest}}<span class="tsd-signature-symbol">...</span>{{/if}}
+                                {{name}}
+                                <span class="tsd-signature-symbol">
+                            {{#if flags.isOptional}}?{{/if}}
+                                    {{#if defaultValue}}?{{/if}}
+                                    :&nbsp;
+                        </span>
+                                {{#with type}}{{>type}}{{/with}}
+                            {{/each}}
+                            <span class="tsd-signature-symbol">)</span>
+                            {{#if type}}
+                                <span class="tsd-signature-symbol">:&nbsp;</span>
+                                {{#with type}}{{>type}}{{/with}}
+                            {{/if}}
+                        {{/compact}}
+                    </code>
+
+                    <span class="signatures-source">
+                        {{#if sources}}
+                            {{#each sources}}
+                                {{#if url}}
+                                    <a href="{{url}}">[{{fileName}}:{{line}}]</a>
+                                {{else}}
+                                    [{{fileName}}:{{line}}]
+                                {{/if}}
+                            {{/each}}
+                        {{/if}}
+                    </span>
+                </div>
+            {{/each}}
+        </div>
+    </header>
+    <div class="signatures-body">
+        {{#each signatures}}
+            <div>
+                {{> member.signature.body }}
+            </div>
+        {{/each}}
+    </div>
+</div>
