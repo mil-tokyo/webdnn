@@ -1,0 +1,41 @@
+.signatures-header {
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    background: #ffffff;
+    z-index: 65533;
+    padding: 16px 16px 16px 11px;
+    border-bottom: 1px solid #eee;
+    border-left: 5px solid #f90;
+
+    &:hover {
+        .anchor-link {
+            visibility: visible;
+        }
+    }
+
+    .anchor-link-large {
+        height: 36px;
+        font-size: 24px;
+    }
+}
+
+.signatures-header-titles {
+    flex: 1;
+}
+
+.signatures-header-title {
+    font-size: 24px;
+    margin: 0;
+}
+
+.signatures-source {
+    position: relative;
+    height: 27px;
+    margin: 4px;
+    font-size: 12px;
+    line-height: 27px;
+}

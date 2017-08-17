@@ -1,7 +1,14 @@
-/// <reference path="./graph_descriptor.ts" />
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
 
-namespace WebDNN {
-    export interface GraphDescriptorWebassembly extends GraphDescriptor {
-        unresolved_value_lists: { offset: number, placeholder: Placeholder }[][];
-    }
+import { Placeholder } from "../placeholder";
+import { GraphDescriptor } from "./graph_descriptor";
+
+/**
+ * @protected
+ */
+export interface GraphDescriptorWebassembly extends GraphDescriptor {
+    unresolved_value_lists: { offset: number, placeholder: Placeholder }[][];
 }

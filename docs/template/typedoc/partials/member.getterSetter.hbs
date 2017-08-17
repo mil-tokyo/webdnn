@@ -1,0 +1,68 @@
+<div class="signatures">
+    <header class="signatures-header">
+        <a id="{{anchor}}" class="anchor"></a>
+        <a href="#{{anchor}}" class="anchor-link">#</a>
+        {{#if getSignature}}
+            {{#with getSignature}}
+                <code>
+                    {{#compact}}
+                        <span>get</span>&nbsp;
+                        {{{../name}}}
+                        {{> member.signature.title hideName=true }}
+                    {{/compact}}
+                </code>
+
+                <span class="signatures-source">
+                    {{#if sources}}
+                        {{#each sources}}
+                            {{#if url}}
+                                <a href="{{url}}">[{{fileName}}:{{line}}]</a>
+                            {{else}}
+                                [{{fileName}}:{{line}}]
+                            {{/if}}
+                        {{/each}}
+                    {{/if}}
+                </span>
+            {{/with}}
+        {{/if}}
+        {{#if setSignature}}
+            {{#with setSignature}}
+                <code>
+                    {{#compact}}
+                        <span>set</span>&nbsp;
+                        {{{../name}}}
+                        {{> member.signature.title hideName=true }}
+                    {{/compact}}
+                </code>
+
+                <span class="signatures-source">
+                    {{#if sources}}
+                        {{#each sources}}
+                            {{#if url}}
+                                <a href="{{url}}">[{{fileName}}:{{line}}]</a>
+                            {{else}}
+                                [{{fileName}}:{{line}}]
+                            {{/if}}
+                        {{/each}}
+                    {{/if}}
+                </span>
+            {{/with}}
+        {{/if}}
+    </header>
+</div>
+
+<section class="members-group members-group-comment {{cssClasses}}">
+    <div class="members-group-body">
+        {{#if getSignature}}
+            {{#with getSignature}}
+                {{> member.signature.body }}
+            {{/with}}
+        {{/if}}
+        {{#if setSignature}}
+            {{#with setSignature}}
+                {{> member.signature.body }}
+            {{/with}}
+        {{/if}}
+    </div>
+</section>
+

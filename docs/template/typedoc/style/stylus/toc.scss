@@ -1,0 +1,29 @@
+@import "./color";
+
+.toc {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: #444;
+    line-height: 1.5;
+
+    a {
+        color: inherit;
+    }
+
+    > li {
+        margin-bottom: 8px;
+
+        > ul {
+            padding-left: 8px;
+            list-style: none;
+        }
+    }
+
+    header {
+        color: #888;
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0;
+    }
+}

@@ -1,57 +1,75 @@
-namespace WebDNN {
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+
+/**
+ * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
+ *
+ * @protected
+ */
+export abstract class Buffer {
     /**
-     * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
+     * @property {number}
      */
-    export abstract class Buffer {
-        byteLength: number;
-        backed: string;
+    byteLength: number;
+    backed: string;
 
-        constructor(byteLength: number, backed: string) {
-            this.byteLength = byteLength;
-            this.backed = backed;
-        }
-
-        /**
-         * Write contents into specified position.
-         * @param src contents souce buffer.
-         * @param dst_offset position where contents are written on
-         */
-        abstract write(src: ArrayBufferView, dst_offset?: number): Promise<void>;
-
-        /**
-         * Read contents from specified position.
-         * @param dst buffer where contents are written on
-         * @param src_offset position where contents are read from
-         * @param length contents length
-         */
-        abstract read(dst: ArrayBufferView, src_offset?: number, length?: number): Promise<void>;
-
-        /**
-         * for a range which will be written from CPU iteratively, make view to avoid copy (if backend allows)
-         * if backend does not allow such operation, return newly allocated memory and send their contents to GPU when syncWriteViews is called
-         * @param offset position where buffer-view begin from
-         * @param length buffer-view length
-         * @param number_type data format such as Float32, UInt8, and so on.
-         */
-        abstract getWriteView(offset: number, length: number, number_type: any): ArrayBufferView;
-
-        /**
-         * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
-         * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
-         * @param offset position where buffer-view begin from
-         * @param length buffer-view length
-         * @param number_type data format such as Float32, UInt8, and so on.
-         */
-        abstract getReadView(offset: number, length: number, number_type: any): ArrayBufferView;
-
-        /**
-         * Sync buffered data into memory.
-         */
-        abstract syncWriteViews(): Promise<void>;
-
-        /**
-         * Sync memory data into buffer view.
-         */
-        abstract syncReadViews(): Promise<void>;
+    constructor(byteLength: number, backed: string) {
+        this.byteLength = byteLength;
+        this.backed = backed;
     }
+
+    /**
+     * Write contents onto specified position.
+     *
+     * @param {ArrayBufferView} src contents source buffer
+     * @param {number} offset position where contents are written on
+     */
+    abstract write(src: ArrayBufferView, offset?: number): Promise<void>;
+
+    /**
+     * Read contents from specified position.
+     *
+     * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
+     * @param {number} offset position where contents are read from
+     * @param {length} length contents length
+     */
+    abstract read(dst: Float32ArrayConstructor | Int32ArrayConstructor, offset?: number, length?: number): Promise<void>;
+
+    /**
+     * for a range which will be written from CPU iteratively, make view to avoid copy (if backend allows)
+     * if backend does not allow such operation, return newly allocated memory and send their contents to GPU when syncWriteViews is called
+     *
+     * @param {number} offset position where buffer-view begin from
+     * @param {number} length buffer-view length
+     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+     */
+    abstract getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
+    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Uint32Array;
+
+    /**
+     * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
+     * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
+     *
+     * @param {number} offset position where buffer-view begin from
+     * @param {number} length buffer-view length
+     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+     */
+    abstract getReadView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
+    abstract getReadView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
+
+    /**
+     * Sync buffered data into memory.
+     *
+     * @see Buffer#getWriteView
+     */
+    abstract syncWriteViews(): Promise<void>;
+
+    /**
+     * Sync memory data into buffer view.
+     *
+     * @see Buffer#getReadView
+     */
+    abstract syncReadViews(): Promise<void>;
 }

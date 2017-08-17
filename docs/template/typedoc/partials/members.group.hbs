@@ -1,0 +1,12 @@
+<section class="members-group {{cssClasses}}">
+    <header class="members-group-header">{{title}}</header>
+    <div class="members-group-body">
+        {{#each children}}
+            {{#unless hasOwnDocument}}
+                {{#unless (isPrivate this)}}
+                    {{> member}}
+                {{/unless}}
+            {{/unless}}
+        {{/each}}
+    </div>
+</section>

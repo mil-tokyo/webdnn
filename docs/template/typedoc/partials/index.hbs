@@ -1,0 +1,26 @@
+<header class="index-header">
+    <span class="index-header-kind">{{kindString}}</span>
+    <h1 class="index-header-name">{{name}}</h1>
+</header>
+
+{{#if typeHierarchy}}
+    <section class="index-section">
+        {{#with typeHierarchy}}{{> hierarchy}}{{/with}}
+    </section>
+{{/if}}
+
+<section class="index-section">
+    <ul class="index-toc">
+        {{#each groups}}
+            <li>
+                <header class="index-toc-header">{{title}}</header>
+                <ul class="tsd-index-list">
+                    {{#each children}}
+                        <li class="{{cssClasses}}"><a href="{{relativeURL url}}" class="tsd-kind-icon">{{#if name}}{{{wbr
+                            name}}}{{else}}<em>{{{wbr kindString}}}</em>{{/if}}</a></li>
+                    {{/each}}
+                </ul>
+            </li>
+        {{/each}}
+    </ul>
+</section>

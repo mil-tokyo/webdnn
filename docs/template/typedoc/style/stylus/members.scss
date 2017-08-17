@@ -1,0 +1,23 @@
+.members-group {
+    background: #fff;
+
+    > header {
+        padding: 0 16px;
+        height: 32px;
+        line-height: 32px;
+        position: sticky;
+        top: 0;
+        background: #40444c;
+        font-size: 14px;
+        color: #ccc;
+        font-weight: bold;
+        z-index: 65534;
+    }
+}
+
+.members-group-comment {
+    padding: 16px;
+    background: #fcfcfc;
+    z-index: 65535;
+    box-shadow: 0 1px 3px rgba(#000, 0.1);
+}

@@ -1,0 +1,8 @@
+{
+    "name": "typedoc-plugin-webdnn",
+    "version": "0.0.1",
+    "main": "index.js",
+    "keywords": [
+        "typedocplugin"
+    ]
+}

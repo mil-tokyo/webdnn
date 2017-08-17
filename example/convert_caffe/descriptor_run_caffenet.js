@@ -84,7 +84,7 @@ function makeMatFromJson(mat_data) {
 }
 
 async function fetchImage(path) {
-    let response = await fetch(path);
+    let response = await webdnnFetch(path);
     let json = await response.json();
 
     return new Float32Array(json);

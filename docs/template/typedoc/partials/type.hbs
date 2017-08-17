@@ -1,0 +1,91 @@
+{{#if this}}
+    {{#if reflection}}
+        {{#compact}}
+            <code>
+                <a href="{{relativeURL reflection.url}}" class="signature-type">
+                    {{reflection.name}}
+                </a>
+                {{#if typeArguments}}
+                    <span class="signature-symbol">&lt;</span>
+                    {{#each typeArguments}}
+                        {{#if @index}}
+                            <span class="signature-symbol">, </span>
+                        {{/if}}{{> type}}
+                    {{/each}}
+                    <span class="signature-symbol">&gt;</span>
+                {{/if}}
+            </code>
+        {{/compact}}
+    {{else}}
+        {{#if elementType}}
+            {{#with elementType}}
+                <code>
+                    {{#compact}}
+                        {{#if types}}
+                            <span>(</span>
+                        {{/if}}
+                        {{> type}}
+                        {{#if types}}
+                            <span class="signature-symbol">)</span>
+                        {{/if}}<span class="signature-symbol">[]</span>
+                    {{/compact}}
+                </code>
+            {{/with}}
+        {{else}}
+            {{#if types}}
+                <code>
+                    {{#each types}}
+                        {{#if @index}}
+                            <span class="signature-symbol"> {{#ifCond ../type '==' 'intersection'}}&amp;{{else}}|{{/ifCond}} </span>
+                        {{/if}}{{> type}}
+                    {{/each}}
+                </code>
+            {{else}}
+                {{#if elements}}
+                    <code>
+                        {{#compact}}
+                            <span class="signature-symbol">[</span>
+
+                            {{#each elements}}
+                                {{#if @index}}
+                                    <span class="signature-symbol">, </span>
+                                {{/if}}{{> type}}
+                            {{/each}}
+
+                            <span class="signature-symbol">]</span>
+                        {{/compact}}
+                    </code>
+                {{else}}
+                    <code>
+                        {{#compact}}
+                            <span class="signature-type">
+                                {{#if name}}
+                                    {{name}}
+                                {{else}}
+                                    {{#if value}}
+                                        "{{value}}"
+                                    {{else}}
+                                        {{this}}
+                                    {{/if}}
+                                {{/if}}
+                            </span>
+                            {{#if typeArguments}}
+                                <span class="signature-symbol">&lt;</span>
+
+                                {{#each typeArguments}}
+                                    {{#if @index}}
+                                        <span class="signature-symbol">, </span>
+                                    {{/if}}{{> type}}
+                                {{/each}}
+
+                                <span class="signature-symbol">&gt;</span>
+                            {{/if}}
+                        {{/compact}}
+                    </code>
+                {{/if}}
+            {{/if}}
+        {{/if}}
+    {{/if}}
+{{else}}
+    <code class="signature-type">void</code>
+{{/if}}
