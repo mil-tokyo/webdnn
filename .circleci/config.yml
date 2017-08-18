@@ -109,7 +109,7 @@ jobs:
           command: |
             mkdir -p ~/docs
             cd ~/docs
-            git clone "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
+            git clone -b gh-pages "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
             git checkout -b "docs-update"
             git config user.name "CircleCI"
             git config user.email "circleci@mi.t.u-tokyo.ac.jp"
@@ -121,7 +121,7 @@ jobs:
       - run:
           name: Send PR
           command: |
-            curl -X POST -u "Kiikurage:$GITHUB_ACCESS_TOKEN" -d "{'base':'gh-pages','head':'docs-update','title':'Update docs'}" https://api.github.com/repos/mil-tokyo/webdnn/pulls
+            curl -X POST -u "Kiikurage:$GITHUB_ACCESS_TOKEN" -d '{"base":"gh-pages","head":"docs-update","title":"Update docs"}' https://api.github.com/repos/mil-tokyo/webdnn/pulls
 
 workflows:
   version: 2
