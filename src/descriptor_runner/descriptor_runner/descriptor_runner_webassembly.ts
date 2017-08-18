@@ -182,7 +182,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
                 }
             };
 
-            worker.postMessage({type: 'weight', data: weight_data});
+            worker.postMessage({type: 'weight', data: weight_data}, [weight_data.buffer]);
         });
 
         return promise;
