@@ -10,7 +10,7 @@ In colusion, you need to insert the following statements in the html.
 
 ```
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.23.0/polyfill.min.js"></script>
-<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch"></script>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch&flags=gated"></script>
 <script src="../../lib/inflate.min.js"></script>
 <script src="../../dist/webdnn.es5.js"></script>
 ```
