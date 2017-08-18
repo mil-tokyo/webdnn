@@ -68,6 +68,8 @@ jobs:
             apt-get update
             apt-get install -y build-essential libssl-dev
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | NVM_DIR=/usr/local/nvm bash
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install v8
             nvm alias default v8
 
