@@ -14,7 +14,8 @@ let transformDelegate: (base: string) => string = url => url;
  * @protected
  */
 export interface WebDNNRequestInit extends RequestInit {
-    ignoreCache: boolean
+    ignoreCache: boolean,
+    progressCallback?: (loaded: number, total: number) => any
 }
 
 /**
@@ -53,7 +54,14 @@ export default async function webdnnFetch(input: RequestInfo, init?: WebDNNReque
         });
     }
 
-    let res = await fetch(input, init);
+    let res;
+    if (typeof input == 'string' && isXHR2WithBlobSupported()) {
+        res = await fetchUsingXHR(input, init && init.progressCallback);
+    }
+    else {
+        res = await fetch(input, init);
+    }
+
     if (!res.ok) throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
     return res;
 }
@@ -94,4 +102,51 @@ export function readArrayBufferProgressively(res: Response, callback?: (loaded: 
     }
 
     return reader.read().then(accumulateLoadedSize);
+}
+
+export function isXHR2WithBlobSupported() {
+    if (!window.hasOwnProperty('ProgressEvent') || !window.hasOwnProperty('FormData')) {
+        return false;
+    }
+
+    let xhr = new XMLHttpRequest();
+
+    if (typeof xhr.responseType === 'string') {
+        try {
+            xhr.responseType = 'blob';
+            return xhr.responseType === 'blob';
+        } catch (e) {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+}
+
+export function fetchUsingXHR(url, callback): Promise<Response> {
+    return new Promise(function (resolve, reject) {
+        let req = new XMLHttpRequest();
+        req.open("GET", url, true);
+        req.responseType = "blob";
+        let callbackScheduler = new DispatchScheduler();
+
+        req.onload = function (event) {
+            callbackScheduler.forceDispatch();
+            let res = new Response(req.response);
+            resolve(res);
+        };
+
+        req.onprogress = function (event) {
+            if (callback) {
+                callbackScheduler.request(function () { return callback(event.loaded, event.total); });
+            }
+        };
+
+        req.onerror = function (event) {
+            reject(event);
+        };
+
+        req.send(null);
+    });
 }

@@ -42,7 +42,7 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
 
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
         let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache, progressCallback: progressCallback})
                 .then(res => res.json() as Promise<GraphDescriptorFallback>),
 
             webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
