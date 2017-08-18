@@ -147,7 +147,22 @@ export interface InitOption {
     progressCallback?: (loaded: number, total: number) => any,
 
     /**
-     * URL of directory that contains weight files (e.g. weight_webgpu.bin)
+     * URL of directory that contains weight binary files. 
+     * 
+     * If both 
+     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
+     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
+     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
+     * 
+     * ### Examples
+     * 
+     * ```js
+     * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
+     * // model binary data will be loaded from 'custom.host.com/model'.
+     * WebDNN.load('https://original.host.com/model', {
+     *     weightDirectory: 'https://custom.host.com/model'
+     * });
+     * ```
      */
     weightDirectory?: string,
 
@@ -155,23 +170,27 @@ export interface InitOption {
      * Delegate function which will be called with original url, and must return converted url strings.
      * This function is called before WebDNN fetch any data (descriptor json file, and binary data)
      * You can modified url to fetch data from other domain, for example.
+     * 
+     * If both 
+     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
+     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
+     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
      *
      * ### Examples
      *
      * Fetch binary data from other domain
      *
      * ```js
-     * // Register delegate function before loading
-     * WebDNN.registerTransformUrlDelegate((url) => {
-     *     if ((/\.bin/).test(url)) {
-     *         url = url.replace('original.host.com', 'custom.host.com');
-     *     }
-     *     return url;
-     * })
-     *
      * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
      * // model binary data will be loaded from 'custom.host.com/model'.
-     * WebDNN.load('https://original.host.com/model');
+     * WebDNN.load('https://original.host.com/model', {
+     *     transformUrlDelegate: (url) => {
+     *         if ((/\.bin/).test(url)) {
+     *             url = url.replace('original.host.com', 'custom.host.com');
+     *         }
+     *         return url;
+     *     }
+     * });
      * ```
      */
     transformUrlDelegate?: (url: string) => string
