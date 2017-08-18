@@ -912,12 +912,19 @@ declare module 'webdnn/image/image_source' {
 declare module 'webdnn/image/image_array' {
 	import { Color, Order } from 'webdnn/image/enums';
 	import { DestinationRect, SourceRect } from 'webdnn/image/image_data';
+	/**
+	 * Option structure of [[webdnn/image.getImageArray|`WebDNN.Image.getImageArray`]]
+	 */
 	export interface ImageArrayOption {
+	    /** Type of packed array */
 	    type?: {
 	        new (length: number): (Float32Array | Int32Array);
 	    };
+	    /** The color format */
 	    color?: Color;
+	    /** The data order */
 	    order?: Order;
+	    /** Bias value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
 	    bias?: number[];
 	}
 	/**
@@ -1020,8 +1027,7 @@ declare module 'webdnn/image/image_array' {
 	 *
 	 * - Otherwise, `image` will be regarded as drawable object.
 	 *
-	 * Then, loaded images based on `options` argument.
-	 * As default, whole image is used as `SourceRect` and same rect is also used as `DestinationRect`.
+	 * Then, loaded images are packed into typed array based on `options` argument.
 	 *
 	 * - The image is cropped based on [[SourceRect|`{srcX, srcY, srcW, srcH}`]].
 	 *   As default, entire image is used.

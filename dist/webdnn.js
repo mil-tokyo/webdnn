@@ -51,7 +51,10 @@ function __awaiter(thisArg, _arguments, P, generator) {
 class WeightDecoderEightbit {
     decode(data, memory_layout) {
         return __awaiter(this, void 0, void 0, function* () {
-            let dst = new Float32Array(memory_layout.static.size);
+            // FIXME: store decoded total size in 'data'
+            // currently, decoding each block and concatenating them at the end are needed.
+            let decoded_arrays = [];
+            let total_dst_length = 0;
             let data_view = new DataView(data.buffer, data.byteOffset);
             let src_offset = 0;
             while (src_offset < data.length) {
@@ -70,10 +73,19 @@ class WeightDecoderEightbit {
                 let inflate = new Zlib.Inflate(src_data_view);
                 let decompressed = inflate.decompress();
                 let dec_size = decompressed.length;
+                let decoded_array = new Float32Array(dec_size);
                 for (let s = 0; s < dec_size; s++) {
-                    dst[dst_offset++] = scaled_table[decompressed[s]];
+                    decoded_array[s] = scaled_table[decompressed[s]];
                 }
+                decoded_arrays.push(decoded_array);
+                total_dst_length += dec_size;
                 src_offset += body_size;
+            }
+            let dst = new Float32Array(total_dst_length);
+            let dst_offset = 0;
+            for (let i = 0; i < decoded_arrays.length; i++) {
+                dst.set(decoded_arrays[i], dst_offset);
+                dst_offset += decoded_arrays[i].length;
             }
             return dst;
         });
@@ -823,7 +835,7 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
                         reject(new Error(event.data));
                     }
                 };
-                worker.postMessage({ type: 'weight', data: weight_data });
+                worker.postMessage({ type: 'weight', data: weight_data }, [weight_data.buffer]);
             });
             return promise;
         });
@@ -1730,8 +1742,7 @@ function getImageArrayFromDrawable(drawable, options = {}) {
  *
  * - Otherwise, `image` will be regarded as drawable object.
  *
- * Then, loaded images based on `options` argument.
- * As default, whole image is used as `SourceRect` and same rect is also used as `DestinationRect`.
+ * Then, loaded images are packed into typed array based on `options` argument.
  *
  * - The image is cropped based on [[SourceRect|`{srcX, srcY, srcW, srcH}`]].
  *   As default, entire image is used.
