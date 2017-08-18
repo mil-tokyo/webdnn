@@ -102,7 +102,8 @@ jobs:
             . venv/bin/activate
             export NVM_DIR="/usr/local/nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            npm run build-doc
+            npm run build-doc-python
+            npm run build-doc-ts
 
       - run:
           name: Update docs

@@ -15,7 +15,7 @@
         "build": "rollup -c; rollup -c ./rollup.es5.config.js; dts-generator --name webdnn --project ./src/descriptor_runner --out ./dist/webdnn.d.ts --main 'webdnn/webdnn'",
         "build-doc": "npm run build-doc-python; npm run build-doc-ts",
         "build-doc-python": "cd docs; make html",
-        "build-doc-ts": "typedoc --out ./docs/build/html/api_reference/descriptor-runner --mode modules --target es2017 --lib 'lib.es2017.d.ts,lib.dom.d.ts' --excludePrivate --readme ./src/descriptor_runner/index.md --theme ./docs/template/typedoc ./src/descriptor_runner/webdnn.ts"
+        "build-doc-ts": "typedoc --disableOutputCheck --out ./docs/build/html/api_reference/descriptor-runner --mode modules --target es2017 --lib 'lib.es2017.d.ts,lib.dom.d.ts' --excludePrivate --readme ./src/descriptor_runner/index.md --theme ./docs/template/typedoc ./src/descriptor_runner/webdnn.ts"
     },
     "repository": {
         "type": "git",
