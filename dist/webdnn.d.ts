@@ -450,29 +450,8 @@ declare module 'webdnn/fetch' {
 	export function transformUrl(url: string): string;
 	/**
 	 * Register delegate function for transform url.
-	 *
-	 * Registered delegate function is called before WebDNN fetch any data (descriptor json file, and binary data).
-	 * You can modified url to fetch data from other domain, for example.
-	 *
-	 * ### Examples
-	 *
-	 * Fetch binary data from other domain
-	 *
-	 * ```js
-	 * // Register delegate function before loading
-	 * WebDNN.registerTransformUrlDelegate((url) => {
-	 *     if ((/\.bin/).test(url)) {
-	 *         url = url.replace('original.host.com', 'custom.host.com');
-	 *     }
-	 *     return url;
-	 * })
-	 *
-	 * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
-	 * // model binary data will be loaded from 'custom.host.com/model'.
-	 * WebDNN.load('https://original.host.com/model');
-	 * ```
-	 *
 	 * @param delegate Delegate function which will be called with original url, and must return converted url strings.
+	 * @protected
 	 */
 	export function registerTransformUrlDelegate(delegate: (base: string) => string): void;
 	/**
@@ -1271,6 +1250,30 @@ declare module 'webdnn/webdnn' {
 	     * URL of directory that contains weight files (e.g. weight_webgpu.bin)
 	     */
 	    weightDirectory?: string;
+	    /**
+	     * Delegate function which will be called with original url, and must return converted url strings.
+	     * This function is called before WebDNN fetch any data (descriptor json file, and binary data)
+	     * You can modified url to fetch data from other domain, for example.
+	     *
+	     * ### Examples
+	     *
+	     * Fetch binary data from other domain
+	     *
+	     * ```js
+	     * // Register delegate function before loading
+	     * WebDNN.registerTransformUrlDelegate((url) => {
+	     *     if ((/\.bin/).test(url)) {
+	     *         url = url.replace('original.host.com', 'custom.host.com');
+	     *     }
+	     *     return url;
+	     * })
+	     *
+	     * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
+	     * // model binary data will be loaded from 'custom.host.com/model'.
+	     * WebDNN.load('https://original.host.com/model');
+	     * ```
+	     */
+	    transformUrlDelegate?: (url: string) => string;
 	}
 	/**
 	 * Initialize descriptor runner. This function performs follow things.
