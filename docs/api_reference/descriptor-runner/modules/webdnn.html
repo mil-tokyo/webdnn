@@ -57,7 +57,7 @@
 								<code>
 Backend<wbr>Name:                <code><code><span class="signature-type">"webgpu"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"webassembly"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"fallback"</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L26">[webdnn.ts:26]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L27">[webdnn.ts:27]</a>
 								</span>
 							</header>
 						</div>
@@ -76,6 +76,83 @@ Backend<wbr>Name:                <code><code><span class="signature-type">"webgp
 			<section class="members-group ">
 				<header class="members-group-header">Functions</header>
 				<div class="members-group-body">
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="fetchusingxhr" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="fetchusingxhr" class="anchor"></a>
+								<a href="#fetchusingxhr" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										fetch<wbr>UsingXHR
+									</h3>
+									<div>
+										<code>
+fetch<wbr>UsingXHR<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><code><span class="signature-type">any</span>                    </code>, callback<span class="tsd-signature-symbol">: </span><code><span class="signature-type">any</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">Response</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/fetch.ts#L127">[fetch.ts:127]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>url</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">any</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>callback</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">any</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">Response</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
 					<section class="member tsd-kind-function tsd-parent-kind-external-module">
 						<a name="getbackendavailability" class="anchor"></a>
 						<div class="signatures">
@@ -90,7 +167,7 @@ Backend<wbr>Name:                <code><code><span class="signature-type">"webgp
 										<code>
 get<wbr>Backend<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.backendavailability.html" class="signature-type">BackendAvailability</a></code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L77">[webdnn.ts:77]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L78">[webdnn.ts:78]</a>
 										</span>
 									</div>
 								</div>
@@ -118,6 +195,40 @@ get<wbr>Backend<wbr>Availability<span class="tsd-signature-symbol">(</span><span
 							</div>
 						</div>
 					</section>
+					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+						<a name="isxhr2withblobsupported" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="isxhr2withblobsupported" class="anchor"></a>
+								<a href="#isxhr2withblobsupported" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										isXHR2<wbr>With<wbr>Blob<wbr>Supported
+									</h3>
+									<div>
+										<code>
+isXHR2<wbr>With<wbr>Blob<wbr>Supported<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">boolean</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/fetch.ts#L107">[fetch.ts:107]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">boolean</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
 					<section class="member tsd-kind-function tsd-parent-kind-external-module">
 						<a name="load" class="anchor"></a>
 						<div class="signatures">
@@ -132,7 +243,7 @@ get<wbr>Backend<wbr>Availability<span class="tsd-signature-symbol">(</span><span
 										<code>
 load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, initOption<span class="tsd-signature-symbol">?: </span><code><a href="../interfaces/webdnn.initoption.html" class="signature-type">InitOption</a></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><a href="../classes/webdnn.descriptorrunner.html" class="signature-type">DescriptorRunner</a><span class="signature-symbol">&lt;</span><code><a href="../interfaces/webdnn.graphdescriptor.html" class="signature-type">GraphDescriptor</a></code><span class="signature-symbol">&gt;</span></code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L179">[webdnn.ts:179]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L229">[webdnn.ts:229]</a>
 										</span>
 									</div>
 								</div>
@@ -231,94 +342,6 @@ load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signatu
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
-						<a name="registertransformurldelegate" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="registertransformurldelegate" class="anchor"></a>
-								<a href="#registertransformurldelegate" class="anchor-link anchor-link-large">#</a>
-								<div class="signature-header-titles">
-									<h3 class="signatures-header-title">
-										register<wbr>Transform<wbr>Url<wbr>Delegate
-									</h3>
-									<div>
-										<code>
-register<wbr>Transform<wbr>Url<wbr>Delegate<span class="tsd-signature-symbol">(</span>delegate<span class="tsd-signature-symbol">: </span><code><span class="signature-type">function</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
-										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/fetch.ts#L55">[fetch.ts:55]</a>
-										</span>
-									</div>
-								</div>
-							</header>
-							<div class="signatures-body">
-								<div>
-									<section class="signature-body-section signature-body-comment">
-										<div class="tsd-comment tsd-typography">
-											<div class="lead">
-												<p>Register delegate function for transform url.</p>
-											</div>
-											<p>Registered delegate function is called before WebDNN fetch any data (descriptor json file, and binary data).
-											You can modified url to fetch data from other domain, for example.</p>
-											<h3 id="examples">Examples</h3>
-											<p>Fetch binary data from other domain</p>
-											<pre><code class="lang-js"><span class="hljs-comment">// Register delegate function before loading</span>
-WebDNN.registerTransformUrlDelegate(<span class="hljs-function">(<span class="hljs-params">url</span>) =&gt;</span> {
-    <span class="hljs-keyword">if</span> ((<span class="hljs-regexp">/\.bin/</span>).test(url)) {
-        url = url.replace(<span class="hljs-string">'original.host.com'</span>, <span class="hljs-string">'custom.host.com'</span>);
-    }
-    <span class="hljs-keyword">return</span> url;
-})
-
-<span class="hljs-comment">// Graph descriptor JSON file will be loaded from 'original.host.com/model', and</span>
-<span class="hljs-comment">// model binary data will be loaded from 'custom.host.com/model'.</span>
-WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>);
-</code></pre>
-										</div>
-									</section>
-									<section class="signature-body-section">
-										<header class="signature-body-section-header">Parameters</header>
-										<div class="signature-body-section-body">
-											<table class="signature-body-table">
-												<thead>
-													<tr>
-														<th>Name</th>
-														<th>Type</th>
-														<th>Default</th>
-														<th>Description</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr>
-														<td>
-															<code>delegate</code>
-														</td>
-														<td>
-															<code>
-<span class="signature-type">function</span>                    </code>
-														</td>
-														<td>
-														</td>
-														<td>
-															<div class="tsd-comment tsd-typography">
-																<p>Delegate function which will be called with original url, and must return converted url strings.</p>
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-									</section>
-									<section class="signature-body-section">
-										<header class="signature-body-section-header">Returns</header>
-										<div class="signature-body-section-body signature-body-section-returns">
-											<code>
-<span class="signature-type">void</span>                    </code>
-										</div>
-									</section>
-								</div>
-							</div>
-						</div>
-					</section>
 				</div>
 			</section>
 		</div>
@@ -367,19 +390,24 @@ WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>);
 				<li>
 					<header class="toc-header">Functions</header>
 					<ul class="toc-list">
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn.html#fetchusingxhr" class="tsd-kind-icon">
+								fetch<wbr>UsingXHR
+							</a>
+						</li>
 						<li class="tsd-kind-function tsd-parent-kind-external-module">
 							<a href="webdnn.html#getbackendavailability" class="tsd-kind-icon">
 								get<wbr>Backend<wbr>Availability
 							</a>
 						</li>
+						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+							<a href="webdnn.html#isxhr2withblobsupported" class="tsd-kind-icon">
+								isXHR2<wbr>With<wbr>Blob<wbr>Supported
+							</a>
+						</li>
 						<li class="tsd-kind-function tsd-parent-kind-external-module">
 							<a href="webdnn.html#load" class="tsd-kind-icon">
 								load
-							</a>
-						</li>
-						<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
-							<a href="webdnn.html#registertransformurldelegate" class="tsd-kind-icon">
-								register<wbr>Transform<wbr>Url<wbr>Delegate
 							</a>
 						</li>
 					</ul>

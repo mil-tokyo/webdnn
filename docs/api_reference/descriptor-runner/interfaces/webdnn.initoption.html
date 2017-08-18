@@ -69,7 +69,7 @@
 								<code>
 backend<wbr>Options:                    <code><span class="signature-type">object</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L124">[webdnn.ts:124]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L125">[webdnn.ts:125]</a>
 								</span>
 							</header>
 						</div>
@@ -92,7 +92,7 @@ backend<wbr>Options:                    <code><span class="signature-type">objec
 								<code>
 backend<wbr>Order:                <code><code><a href="../modules/webdnn.html#backendname" class="signature-type">BackendName</a></code><span class="signature-symbol"> | </span><code><span class="signature-type">Array</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L119">[webdnn.ts:119]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L120">[webdnn.ts:120]</a>
 								</span>
 							</header>
 						</div>
@@ -115,7 +115,7 @@ backend<wbr>Order:                <code><code><a href="../modules/webdnn.html#ba
 								<code>
 ignore<wbr>Cache:                    <code><span class="signature-type">boolean</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L130">[webdnn.ts:130]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L131">[webdnn.ts:131]</a>
 								</span>
 							</header>
 						</div>
@@ -139,7 +139,7 @@ ignore<wbr>Cache:                    <code><span class="signature-type">boolean<
 								<code>
 progress<wbr>Callback:                    <code><span class="signature-type">function</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/fe0a2c0/src/descriptor_runner/webdnn.ts#L146">[webdnn.ts:146]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L147">[webdnn.ts:147]</a>
 								</span>
 							</header>
 						</div>
@@ -154,6 +154,82 @@ progress<wbr>Callback:                    <code><span class="signature-type">fun
 									<h3 id="examples">Examples</h3>
 									<pre><code class="lang-js">let runner = await WebDNN.load('./model', {
     progressCallback: (loaded, total) =&gt; console.log(`${ (loaded/total*100).toFixed(1) }% Loaded`);
+});
+</code></pre>
+								</div>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface">
+						<a name="transformurldelegate" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="transformurldelegate" class="anchor"></a>
+								<a href="#transformurldelegate" class="anchor-link">#</a>
+								<code>
+transform<wbr>Url<wbr>Delegate:                    <code><span class="signature-type">function</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L196">[webdnn.ts:196]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>Delegate function which will be called with original url, and must return converted url strings.
+											This function is called before WebDNN fetch any data (descriptor json file, and binary data)
+										You can modified url to fetch data from other domain, for example.</p>
+									</div>
+									<p>If both
+										<a href="webdnn.initoption.html#weightdirectory"><code>InitOption.weightDirectory</code></a> and
+										<a href="webdnn.initoption.html#transformurldelegate"><code>InitOption.transformUrlDelegate</code></a> are specified,
+									<a href="webdnn.initoption.html#weightdirectory"><code>InitOption.weightDirectory</code></a> is used.</p>
+									<h3 id="examples">Examples</h3>
+									<p>Fetch binary data from other domain</p>
+									<pre><code class="lang-js"><span class="hljs-comment">// Graph descriptor JSON file will be loaded from 'original.host.com/model', and</span>
+<span class="hljs-comment">// model binary data will be loaded from 'custom.host.com/model'.</span>
+WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>, {
+    <span class="hljs-attr">transformUrlDelegate</span>: <span class="hljs-function">(<span class="hljs-params">url</span>) =&gt;</span> {
+        <span class="hljs-keyword">if</span> ((<span class="hljs-regexp">/\.bin/</span>).test(url)) {
+            url = url.replace(<span class="hljs-string">'original.host.com'</span>, <span class="hljs-string">'custom.host.com'</span>);
+        }
+        <span class="hljs-keyword">return</span> url;
+    }
+});
+</code></pre>
+								</div>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface">
+						<a name="weightdirectory" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="weightdirectory" class="anchor"></a>
+								<a href="#weightdirectory" class="anchor-link">#</a>
+								<code>
+weight<wbr>Directory:                    <code><span class="signature-type">string</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/3fd3535/src/descriptor_runner/webdnn.ts#L167">[webdnn.ts:167]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>URL of directory that contains weight binary files.</p>
+									</div>
+									<p>If both
+										<a href="webdnn.initoption.html#weightdirectory"><code>InitOption.weightDirectory</code></a> and
+										<a href="webdnn.initoption.html#transformurldelegate"><code>InitOption.transformUrlDelegate</code></a> are specified,
+									<a href="webdnn.initoption.html#weightdirectory"><code>InitOption.weightDirectory</code></a> is used.</p>
+									<h3 id="examples">Examples</h3>
+									<pre><code class="lang-js"><span class="hljs-comment">// Graph descriptor JSON file will be loaded from 'original.host.com/model', and</span>
+<span class="hljs-comment">// model binary data will be loaded from 'custom.host.com/model'.</span>
+WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>, {
+    <span class="hljs-attr">weightDirectory</span>: <span class="hljs-string">'https://custom.host.com/model'</span>
 });
 </code></pre>
 								</div>
@@ -186,6 +262,16 @@ progress<wbr>Callback:                    <code><span class="signature-type">fun
 						<li class="tsd-kind-property tsd-parent-kind-interface">
 							<a href="webdnn.initoption.html#progresscallback" class="tsd-kind-icon">
 								progress<wbr>Callback
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<a href="webdnn.initoption.html#transformurldelegate" class="tsd-kind-icon">
+								transform<wbr>Url<wbr>Delegate
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<a href="webdnn.initoption.html#weightdirectory" class="tsd-kind-icon">
+								weight<wbr>Directory
 							</a>
 						</li>
 					</ul>
