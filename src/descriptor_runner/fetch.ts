@@ -104,7 +104,10 @@ export function readArrayBufferProgressively(res: Response, callback?: (loaded: 
     return reader.read().then(accumulateLoadedSize);
 }
 
-export function isXHR2WithBlobSupported() {
+/**
+ * check whether XMLHttpRequest with Blob type is supported or not
+ */
+function isXHR2WithBlobSupported() {
     if (!window.hasOwnProperty('ProgressEvent') || !window.hasOwnProperty('FormData')) {
         return false;
     }
@@ -124,7 +127,10 @@ export function isXHR2WithBlobSupported() {
     }
 }
 
-export function fetchUsingXHR(url, callback): Promise<Response> {
+/**
+ * fetch with XMLHttpRequest
+ */
+function fetchUsingXHR(url, callback): Promise<Response> {
     return new Promise(function (resolve, reject) {
         let req = new XMLHttpRequest();
         req.open("GET", url, true);

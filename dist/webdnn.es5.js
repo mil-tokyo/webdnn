@@ -238,7 +238,13 @@ function webdnnFetch(input, init) {
                 url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
             });
         }
-        let res = yield fetch(input, init);
+        let res;
+        if (typeof input == 'string' && isXHR2WithBlobSupported()) {
+            res = yield fetchUsingXHR(input, init && init.progressCallback);
+        }
+        else {
+            res = yield fetch(input, init);
+        }
         if (!res.ok)
             throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
         return res;
@@ -277,6 +283,52 @@ function readArrayBufferProgressively(res, callback) {
         }
     }
     return reader.read().then(accumulateLoadedSize);
+}
+/**
+ * check whether XMLHttpRequest with Blob type is supported or not
+ */
+function isXHR2WithBlobSupported() {
+    if (!window.hasOwnProperty('ProgressEvent') || !window.hasOwnProperty('FormData')) {
+        return false;
+    }
+    let xhr = new XMLHttpRequest();
+    if (typeof xhr.responseType === 'string') {
+        try {
+            xhr.responseType = 'blob';
+            return xhr.responseType === 'blob';
+        }
+        catch (e) {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+}
+/**
+ * fetch with XMLHttpRequest
+ */
+function fetchUsingXHR(url, callback) {
+    return new Promise(function (resolve, reject) {
+        let req = new XMLHttpRequest();
+        req.open("GET", url, true);
+        req.responseType = "blob";
+        let callbackScheduler = new DispatchScheduler();
+        req.onload = function (event) {
+            callbackScheduler.forceDispatch();
+            let res = new Response(req.response);
+            resolve(res);
+        };
+        req.onprogress = function (event) {
+            if (callback) {
+                callbackScheduler.request(function () { return callback(event.loaded, event.total); });
+            }
+        };
+        req.onerror = function (event) {
+            reject(event);
+        };
+        req.send(null);
+    });
 }
 
 /**
@@ -497,7 +549,7 @@ class DescriptorRunnerFallback extends DescriptorRunner {
     load(directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function* () {
             let [descriptor, weightRawArray] = yield Promise.all([
-                webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
+                webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache, progressCallback: progressCallback })
                     .then(res => res.json()),
                 webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
                     .then(res => readArrayBufferProgressively(res, progressCallback))
@@ -703,7 +755,7 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
             this.worker_entry_js_path = worker_entry_js_path;
             yield this.compile();
             let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            let weight_fetch = yield webdnnFetch(weight_url, { ignoreCache: this.ignoreCache });
+            let weight_fetch = yield webdnnFetch(weight_url, { ignoreCache: this.ignoreCache, progressCallback: progressCallback });
             let weights_data_ab = yield readArrayBufferProgressively(weight_fetch, progressCallback);
             yield this.loadWeights(new Uint8Array(weights_data_ab));
             //assign buffer to input/output buffer view

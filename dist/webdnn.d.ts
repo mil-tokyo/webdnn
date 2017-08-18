@@ -473,8 +473,6 @@ declare module 'webdnn/fetch' {
 	 * @protected
 	 */
 	export function readArrayBufferProgressively(res: Response, callback?: (loaded: number, total: number) => any): Promise<ArrayBuffer>;
-	export function isXHR2WithBlobSupported(): boolean;
-	export function fetchUsingXHR(url: any, callback: any): Promise<Response>;
 
 }
 declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {
@@ -1250,7 +1248,22 @@ declare module 'webdnn/webdnn' {
 	     */
 	    progressCallback?: (loaded: number, total: number) => any;
 	    /**
-	     * URL of directory that contains weight files (e.g. weight_webgpu.bin)
+	     * URL of directory that contains weight binary files.
+	     *
+	     * If both
+	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
+	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
+	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
+	     *
+	     * ### Examples
+	     *
+	     * ```js
+	     * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
+	     * // model binary data will be loaded from 'custom.host.com/model'.
+	     * WebDNN.load('https://original.host.com/model', {
+	     *     weightDirectory: 'https://custom.host.com/model'
+	     * });
+	     * ```
 	     */
 	    weightDirectory?: string;
 	    /**
@@ -1258,22 +1271,26 @@ declare module 'webdnn/webdnn' {
 	     * This function is called before WebDNN fetch any data (descriptor json file, and binary data)
 	     * You can modified url to fetch data from other domain, for example.
 	     *
+	     * If both
+	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
+	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
+	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
+	     *
 	     * ### Examples
 	     *
 	     * Fetch binary data from other domain
 	     *
 	     * ```js
-	     * // Register delegate function before loading
-	     * WebDNN.registerTransformUrlDelegate((url) => {
-	     *     if ((/\.bin/).test(url)) {
-	     *         url = url.replace('original.host.com', 'custom.host.com');
-	     *     }
-	     *     return url;
-	     * })
-	     *
 	     * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
 	     * // model binary data will be loaded from 'custom.host.com/model'.
-	     * WebDNN.load('https://original.host.com/model');
+	     * WebDNN.load('https://original.host.com/model', {
+	     *     transformUrlDelegate: (url) => {
+	     *         if ((/\.bin/).test(url)) {
+	     *             url = url.replace('original.host.com', 'custom.host.com');
+	     *         }
+	     *         return url;
+	     *     }
+	     * });
 	     * ```
 	     */
 	    transformUrlDelegate?: (url: string) => string;
