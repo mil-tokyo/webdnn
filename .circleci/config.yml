@@ -106,7 +106,7 @@ jobs:
           command: |
             mkdir -p ~/docs
             cd ~/docs
-            git clone git@github.com:mil-tokyo/webdnn.git
+            git clone git@github.com:mil-tokyo/webdnn.git .
             git checkout -b "docs-update"
             cp -r ~/webdnn/webdnn/docs/build/html/* ./docs/
             git add .
