@@ -28,13 +28,6 @@ jobs:
             . venv/bin/activate
             pip install -r requirements/dev.txt
 
-      - run:
-          name: Install Python deps in a venv
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements/dev.txt
-
       - save_cache:
           paths:
             - "venv"
@@ -70,18 +63,21 @@ jobs:
             - v1-dependencies-
 
       - run:
+          name: Setup node
+          command: |
+            apt-get update
+            apt-get install build-essential libssl-dev
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | NVM_DIR=/usr/local/nvm bash
+            nvm install v8
+            nvm alias default v8
+
+      - run:
           name: Install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements/dev.txt
-
-      - run:
-          name: Install Python deps in a venv
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements/dev.txt
+            npm install
 
       - save_cache:
           paths:
@@ -90,6 +86,12 @@ jobs:
 
       - run:
           name: Install WebDNN
+          command: |
+            . venv/bin/activate
+            python3 setup.py install
+
+      - run:
+          name: Build docs
           command: |
             . venv/bin/activate
             python3 setup.py install
