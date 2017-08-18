@@ -99,7 +99,7 @@ jobs:
           command: |
             export NVM_DIR="/usr/local/nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            npm build-docs
+            npm run build-docs
 
       - run:
           name: Update docs
