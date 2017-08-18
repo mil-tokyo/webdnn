@@ -442,6 +442,7 @@ declare module 'webdnn/fetch' {
 	 */
 	export interface WebDNNRequestInit extends RequestInit {
 	    ignoreCache: boolean;
+	    progressCallback?: (loaded: number, total: number) => any;
 	}
 	/**
 	 * Transform url generated based on current active backend
@@ -485,7 +486,7 @@ declare module 'webdnn/fetch' {
 	 * @returns Response
 	 * @protected
 	 */
-	export default function webdnnFetch(input: RequestInfo, init?: WebDNNRequestInit): Promise<Response>;
+	export default function webdnnFetch(input: RequestInfo, init?: WebDNNRequestInit): Promise<any>;
 	/**
 	 * Read `Response.body` stream as ArrayBuffer. This function provide progress information by callback.
 	 * @param res Response object
@@ -494,6 +495,8 @@ declare module 'webdnn/fetch' {
 	 * @protected
 	 */
 	export function readArrayBufferProgressively(res: Response, callback?: (loaded: number, total: number) => any): Promise<ArrayBuffer>;
+	export function isXHR2WithBlobSupported(): boolean;
+	export function fetchUsingXHR(url: any, callback: any): Promise<Response>;
 
 }
 declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {

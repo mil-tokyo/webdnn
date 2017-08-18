@@ -64,7 +64,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         await this.compile();
 
         let weight_url = `${weightDirectory || directory}/weight_${this.backendName}.bin`;
-        let weight_fetch = await webDNNFetch(weight_url, {ignoreCache: this.ignoreCache});
+        let weight_fetch = await webDNNFetch(weight_url, {ignoreCache: this.ignoreCache, progressCallback: progressCallback});
         let weights_data_ab = await readArrayBufferProgressively(weight_fetch, progressCallback);
         await this.loadWeights(new Uint8Array(weights_data_ab));
 

@@ -63,7 +63,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
             webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
                 .then(res => res.json() as Promise<GraphDescriptorWebGPU>),
 
-            webdnnFetch(`${weightDirectory || directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${weightDirectory || directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache, progressCallback: progressCallback})
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 
