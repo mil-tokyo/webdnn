@@ -926,6 +926,8 @@ declare module 'webdnn/image/image_array' {
 	    order?: Order;
 	    /** Bias value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
 	    bias?: number[];
+	    /** Scale value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
+	    scale?: number[];
 	}
 	/**
 	 * Types which are drawable at `HTMLCanvasElement`
@@ -1044,6 +1046,13 @@ declare module 'webdnn/image/image_array' {
 	 * - [[ImageArrayOption.bias|`options.bias`]] is the bias value.
 	 *   If specified, this method **subtracts** this value from original pixel value.
 	 *
+	 * - [[ImageArrayOption.scale|`options.scale`]] is the scale value. If specified, original pixel values are **divided** by this value.
+	 *   [[ImageArrayOption.scale|`options.scale`]] and [[ImageArrayOption.bias|`options.bias`]] is used for converting pixel value `x` and
+	 *   packed value `y` as follows:
+	 *
+	 *   - `y = (x - bias) / scale`
+	 *   - `x= y * scale + bias`
+	 *
 	 * ### Examples
 	 *
 	 * - Load image of specified url
@@ -1059,13 +1068,12 @@ declare module 'webdnn/image/image_array' {
 	 *   let image = await WebDNN.Image.load(input, { dstW: 224, dstH: 224 });
 	 *   ```
 	 *
-	 * - Load image data from canvas, subtract bias value, and packed it as BGR order
+	 * - Load image data from canvas, normalize it into range `[-1, 1)`. In this case, normalized value `y` can be
+	 *   calculated from pixel value `x` as follows: `y = (x - 128) / 128`.
 	 *
 	 *   ```ts
 	 *   let canvas = document.getElementsByTagName('canvas')[0];
-	 *   let bias = [biasB, biasG, biasR]; // bias values should be same color format.
-	 *
-	 *   let image = await WebDNN.Image.load(canvas, { color: Color.BGR, bias: bias });
+	 *   let image = await WebDNN.Image.load(canvas, { bias: [128, 128, 128], scale: [128, 128, 128] });
 	 *   ```
 	 *
 	 * @param image please see above descriptions
