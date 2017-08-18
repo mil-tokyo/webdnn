@@ -1,4 +1,10 @@
 version: 2
+
+branches:
+  ignore:
+    - gh-pages
+    - webpage-src
+
 jobs:
   build:
     docker:
