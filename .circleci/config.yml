@@ -102,22 +102,21 @@ jobs:
             . venv/bin/activate
             export NVM_DIR="/usr/local/nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            npm run build-doc-python
-            npm run build-doc-ts
+            npm run build-doc
 
       - run:
           name: Update docs
           command: |
             mkdir -p ~/docs
             cd ~/docs
-            git clone github-url-with-token "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
+            git clone "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
             git checkout -b "docs-update"
             git config user.name "CircleCI"
             git config user.email "circleci@mi.t.u-tokyo.ac.jp"
             cp -r ~/webdnn/docs/build/html/* ./docs/
             git add .
             git commit -m "update docs"
-            git push -u github-url-with-token docs-update
+            git push -u origin docs-update
 
       - run:
           name: Send PR
