@@ -11,6 +11,7 @@ import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fall
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
 import DescriptorRunnerWebGPU from "./descriptor_runner/descriptor_runner_webgpu";
 import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
+import { registerTransformUrlDelegate } from "./fetch";
 import * as Image from "./image";
 import * as Math from "./math";
 
@@ -191,6 +192,18 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
     backendOrder = backendOrder.slice();
     if (backendOrder.indexOf('fallback') === -1) backendOrder.concat(['fallback']);
 
+    // FIXME: User-defined transformDelegate is overridden
+    if (initOption.weightDirectory) {
+        registerTransformUrlDelegate((url) => {
+            if ((/\.bin/).test(url)) {
+                if (initOption.weightDirectory !== undefined) {
+                    url = url.replace(directory, initOption.weightDirectory);
+                }
+            }
+            return url;
+        });
+    }
+
     let backendOptions = initOption.backendOptions || {};
 
     while (backendOrder.length > 0) {
@@ -200,7 +213,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
         runner.ignoreCache = Boolean(initOption.ignoreCache);
 
         try {
-            await runner.load(directory, initOption.progressCallback, initOption.weightDirectory);
+            await runner.load(directory, initOption.progressCallback);
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
         }

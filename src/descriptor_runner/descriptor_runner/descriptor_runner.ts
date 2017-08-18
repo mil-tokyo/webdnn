@@ -87,10 +87,9 @@ export abstract class DescriptorRunner<D extends GraphDescriptor> {
      * However sometimes it can't because of Cross-Origin-Resource-Security policy.
      *
      * @param progressCallback callback which is called to notice the loading is progressing.
-     * @param weightDirectory URL of directory that contains weight files (e.g. weight_webgpu.bin)
      * @protected
      */
-    abstract async load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string): Promise<void>;
+    abstract async load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 
     /**
      * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.

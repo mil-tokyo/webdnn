@@ -237,7 +237,9 @@ function transformUrl(url) {
  *
  * @param delegate Delegate function which will be called with original url, and must return converted url strings.
  */
-
+function registerTransformUrlDelegate(delegate) {
+    transformDelegate = delegate;
+}
 /**
  * Fetch function. WebDNN API use this function instead of original `fetch` function.
  * FIXME
@@ -513,12 +515,12 @@ class DescriptorRunnerFallback extends DescriptorRunner {
             //nothing to do
         });
     }
-    load(directory, progressCallback, weightDirectory) {
+    load(directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function* () {
             let [descriptor, weightRawArray] = yield Promise.all([
                 webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
                     .then(res => res.json()),
-                webdnnFetch(`${weightDirectory || directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
+                webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
                     .then(res => readArrayBufferProgressively(res, progressCallback))
             ]);
             this.setDescriptor(descriptor);
@@ -706,7 +708,7 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
         //nothing to do
         return Promise.resolve();
     }
-    load(directory, progressCallback, weightDirectory) {
+    load(directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function* () {
             let graph_url = `${directory}/graph_${this.backendName}.json`;
             let graph_fetch = yield webdnnFetch(graph_url, { ignoreCache: this.ignoreCache });
@@ -721,7 +723,7 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
             worker_entry_js_path = transformUrl(worker_entry_js_path);
             this.worker_entry_js_path = worker_entry_js_path;
             yield this.compile();
-            let weight_url = `${weightDirectory || directory}/weight_${this.backendName}.bin`;
+            let weight_url = `${directory}/weight_${this.backendName}.bin`;
             let weight_fetch = yield webdnnFetch(weight_url, { ignoreCache: this.ignoreCache });
             let weights_data_ab = yield readArrayBufferProgressively(weight_fetch, progressCallback);
             yield this.loadWeights(new Uint8Array(weights_data_ab));
@@ -1147,12 +1149,12 @@ class DescriptorRunnerWebGPU extends DescriptorRunner {
     initializeBasicKernels() {
         this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
     }
-    load(directory, progressCallback, weightDirectory) {
+    load(directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function* () {
             let [descriptor, weightRawArray] = yield Promise.all([
                 webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
                     .then(res => res.json()),
-                webdnnFetch(`${weightDirectory || directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
+                webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
                     .then(res => readArrayBufferProgressively(res, progressCallback))
             ]);
             yield this.setDescriptor(descriptor);
@@ -2152,6 +2154,17 @@ function load(directory, initOption = {}) {
         backendOrder = backendOrder.slice();
         if (backendOrder.indexOf('fallback') === -1)
             backendOrder.concat(['fallback']);
+        // FIXME: User-defined transformDelegate is overridden
+        if (initOption.weightDirectory) {
+            registerTransformUrlDelegate((url) => {
+                if ((/\.bin/).test(url)) {
+                    if (initOption.weightDirectory !== undefined) {
+                        url = url.replace(directory, initOption.weightDirectory);
+                    }
+                }
+                return url;
+            });
+        }
         let backendOptions = initOption.backendOptions || {};
         while (backendOrder.length > 0) {
             let backendName = backendOrder.shift();
@@ -2160,7 +2173,7 @@ function load(directory, initOption = {}) {
                 continue;
             runner.ignoreCache = Boolean(initOption.ignoreCache);
             try {
-                yield runner.load(directory, initOption.progressCallback, initOption.weightDirectory);
+                yield runner.load(directory, initOption.progressCallback);
             }
             catch (ex) {
                 console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
