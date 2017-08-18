@@ -66,7 +66,7 @@ jobs:
           name: Setup node
           command: |
             apt-get update
-            apt-get install build-essential libssl-dev
+            apt-get install -y build-essential libssl-dev
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | NVM_DIR=/usr/local/nvm bash
             nvm install v8
             nvm alias default v8
