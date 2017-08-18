@@ -79,6 +79,8 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements/dev.txt
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             npm install
 
       - save_cache:
@@ -95,13 +97,8 @@ jobs:
       - run:
           name: Build docs
           command: |
-            . venv/bin/activate
-            python3 setup.py install
-
-      - run:
-          name: Build docs
-          command: |
-            npm install
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             npm build-docs
 
       - run:
