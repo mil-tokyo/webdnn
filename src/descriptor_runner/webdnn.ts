@@ -143,7 +143,12 @@ export interface InitOption {
      * });
      * ```
      */
-    progressCallback?: (loaded: number, total: number) => any
+    progressCallback?: (loaded: number, total: number) => any,
+
+    /**
+     * URL of directory that contains weight files (e.g. weight_webgpu.bin)
+     */
+    weightDirectory?: string
 }
 
 /**
@@ -195,7 +200,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
         runner.ignoreCache = Boolean(initOption.ignoreCache);
 
         try {
-            await runner.load(directory, initOption.progressCallback);
+            await runner.load(directory, initOption.progressCallback, initOption.weightDirectory);
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
         }

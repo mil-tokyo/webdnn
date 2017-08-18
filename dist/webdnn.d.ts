@@ -314,9 +314,10 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	     * However sometimes it can't because of Cross-Origin-Resource-Security policy.
 	     *
 	     * @param progressCallback callback which is called to notice the loading is progressing.
+	     * @param weightDirectory URL of directory that contains weight files (e.g. weight_webgpu.bin)
 	     * @protected
 	     */
-	    abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+	    abstract load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string): Promise<void>;
 	    /**
 	     * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
 	     *
@@ -539,7 +540,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	    private dynamicBuffer;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
-	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+	    load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string): Promise<void>;
 	    private setDescriptor(descriptor);
 	    private compile();
 	    private initializeStaticBuffer(weightRawArray);
@@ -589,7 +590,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    static checkAvailability(): boolean;
 	    constructor();
 	    init(): Promise<void>;
-	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+	    load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string): Promise<void>;
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
@@ -776,7 +777,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	    constructor(option?: any);
 	    init(): Promise<void>;
 	    private initializeBasicKernels();
-	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+	    load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string): Promise<void>;
 	    private initializeStaticBuffer(weightRawArray);
 	    private initializeMetaBuffers();
 	    private initializeDynamicBuffer();
@@ -1267,6 +1268,10 @@ declare module 'webdnn/webdnn' {
 	     * ```
 	     */
 	    progressCallback?: (loaded: number, total: number) => any;
+	    /**
+	     * URL of directory that contains weight files (e.g. weight_webgpu.bin)
+	     */
+	    weightDirectory?: string;
 	}
 	/**
 	 * Initialize descriptor runner. This function performs follow things.

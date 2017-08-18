@@ -45,7 +45,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         return Promise.resolve();
     }
 
-    async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
+    async load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string) {
         let graph_url = `${directory}/graph_${this.backendName}.json`;
         let graph_fetch = await webDNNFetch(graph_url, {ignoreCache: this.ignoreCache});
 
@@ -63,7 +63,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
 
         await this.compile();
 
-        let weight_url = `${directory}/weight_${this.backendName}.bin`;
+        let weight_url = `${weightDirectory || directory}/weight_${this.backendName}.bin`;
         let weight_fetch = await webDNNFetch(weight_url, {ignoreCache: this.ignoreCache});
         let weights_data_ab = await readArrayBufferProgressively(weight_fetch, progressCallback);
         await this.loadWeights(new Uint8Array(weights_data_ab));

@@ -58,12 +58,12 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
     }
 
-    async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
+    async load(directory: string, progressCallback?: (loaded: number, total: number) => any, weightDirectory?: string) {
         let [descriptor, weightRawArray] = await Promise.all([
             webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
                 .then(res => res.json() as Promise<GraphDescriptorWebGPU>),
 
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${weightDirectory || directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 
