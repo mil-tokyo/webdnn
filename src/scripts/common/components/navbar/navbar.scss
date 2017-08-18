@@ -1,0 +1,33 @@
+@import "../../../../stylus/bootstrap-mixin";
+@import "../../../../stylus/color";
+@import "../../../../stylus/z-index";
+
+$navbar-background: rgb(46, 48, 56);
+
+.navbar {
+  display: flex;
+  background: $navbar-background;
+  color: #fff;
+  flex: 0 auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 32px;
+  min-height: 56px;
+  z-index: $z-Header;
+  box-shadow: 0 1px 3px rgba(#000, 0.3);
+
+  @include media-breakpoint-down(sm) {
+    min-height: 48px;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+
+  @include media-breakpoint-down(sm) {
+    font-size: 18px;
+  }
+}

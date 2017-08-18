@@ -1,0 +1,109 @@
+@import "../../../common/components/layout/layout";
+@import "../../../common/components/layer/layer";
+@import "../../../../stylus/z-index";
+@import "../../../../stylus/color";
+
+.content-canvas,
+.output-canvas {
+  box-sizing: border-box;
+}
+
+.main-layer {
+  @extend .layer;
+}
+
+.panel {
+  padding: 1px;
+  box-shadow: 0 1px 3px rgba(#000, 0.3);
+  z-index: $z-Header;
+
+  button {
+    background: rgb(46, 48, 56);
+    border-right: 1px solid rgb(28, 29, 35);
+    border-top: 1px solid rgb(28, 29, 35);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+.panel-button {
+  position: relative;
+  width: 100% / 3 * 1;
+}
+
+.input-image-container,
+.information-container {
+  overflow: hidden;
+  margin: 8px;
+
+  @include layout-auto-reverse-column {
+    height: 50%;
+  }
+  @include layout-auto-reverse-row {
+    width: 50%;
+  }
+}
+
+.information-container {
+  padding: 8px 16px;
+  border: 1px solid #aaa;
+}
+
+.input-and-information-container {
+  @include layout-auto-column {
+    height: 50%;
+  }
+  @include layout-auto-row {
+    width: 50%;
+  }
+}
+
+.result-container {
+  overflow: hidden;
+  margin: 8px;
+
+  @include layout-auto-column {
+    height: 50%;
+  }
+  @include layout-auto-row {
+    width: 50%;
+  }
+}
+
+.result-table {
+  position: relative;
+  width: 100%;
+  vertical-align: middle;
+  overflow: auto;
+
+  th {
+    line-height: 1.2;
+    width: 128px;
+    padding: 4px 8px;
+    font-weight: normal;
+    border-right: 1px solid #888;
+    text-align: right;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  td {
+    padding: 0;
+  }
+}
+
+.result-prob {
+  color: $c-key;
+}
+
+.result-bar {
+  display: inline-block;
+  position: relative;
+  height: 8px;
+  width: 100%;
+  background: $c-key;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: 120ms;
+}

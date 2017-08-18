@@ -1,14 +1,14 @@
-const glob = require('glob');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const {CheckerPlugin} = require('awesome-typescript-loader');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
+const { CheckerPlugin } = require('awesome-typescript-loader');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
-const PurifyCSSPlugin = require('purifycss-webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const PrerenderSpaPlugin = require('./libs/prerender-spa-plugin');
+const webpack = require('webpack');
 
-const path = require('path');
+const DEBUG = process.env.DEBUG;
+
+const hashMap = new Map();
 
 const minifyOption = {
 	collapseBooleanAttributes: true,
@@ -23,111 +23,110 @@ const minifyOption = {
 	removeTagWhitespace: true
 };
 
-module.exports = {
-	entry: {
-		'index': './src/scripts/index.ts',
-		'resnet50': './src/scripts/resnet50.ts',
-		'neural_style_transfer': './src/scripts/neural_style_transfer.ts',
-		'sw': './src/scripts/sw.ts',
-	},
-	output: {
-		path: path.resolve(__dirname, './build/webdnn'),
-		filename: '[name].js'
-	},
-	module: {
-		rules: [{
-			test: /\.tsx?$/,
-			use: [{
-				loader: 'awesome-typescript-loader',
+function generateConfig(tsxPath, ejsPath, outputName) {
+	let chunkName = path.basename(tsxPath, '.tsx');
+	
+	let entry = {};
+	entry[chunkName] = tsxPath;
+	
+	return {
+		entry: entry,
+		output: {
+			path: path.resolve(__dirname, './build/webdnn', path.dirname(outputName)),
+			filename: '[name].js'
+		},
+		module: {
+			rules: [{
+				test: /\.tsx?$/,
+				use: [{ loader: 'awesome-typescript-loader' }]
+			}, {
+				test: /\.svg$/,
+				use: [{ loader: 'svg-react-loader' }]
+			}, {
+				test: /\.scss$/,
+				use: ExtractTextPlugin.extract({
+					fallback: 'style-loader',
+					use: [{
+						loader: 'typings-for-css-modules-loader',
+						options: {
+							modules: true,
+							camelCase: true,
+							namedExport: true,
+							minimize: false,
+							getLocalIdent: DEBUG ?
+								(context, localIdentName, localName, options) => {
+									if (!hashMap.has(context.resource)) hashMap.set(context.resource, hashMap.size.toString());
+									
+									return 'c' + hashMap.get(context.resource) + '_' + localName
+								} :
+								(context, localIdentName, localName, options) => {
+									if (!hashMap.has(context.resource)) hashMap.set(context.resource, hashMap.size.toString());
+									if (!hashMap.has(localName)) hashMap.set(localName, hashMap.size.toString());
+									
+									return 'c' + hashMap.get(context.resource) + '_' + hashMap.get(localName);
+								}
+						}
+					},
+						{ loader: 'postcss-loader' },
+						{ loader: 'sass-loader' }
+					]
+				})
+			}, {
+				test: /\.(png|jpg|json)$/,
+				use: [{
+					loader: 'file-loader',
+					query: {
+						name: '[name].[ext]'
+					}
+				}]
 			}]
-		}, {
-			test: /\.scss?$/,
-			use: ExtractTextPlugin.extract({
-				fallback: 'style-loader',
-				use: ['css-loader', 'postcss-loader', 'sass-loader']
-			})
-		}]
-	},
-	resolve: {
-		modules: [
-			path.join(__dirname, './src'),
-			path.join(__dirname, './node_modules'),
-		],
-		extensions: ['.ts', '.tsx', '.js', '.jsx', '.scss']
-	},
-	plugins: [
-		new ExtractTextPlugin({
-			filename: getPath => getPath('[name].css'),
-			allChunks: true
-		}),
-		new PurifyCSSPlugin({
-			paths: {
-				'index': glob.sync(path.join(__dirname, 'src/html/index*.html')),
-				'resnet50': glob.sync(path.join(__dirname, 'src/html/resnet50.html')),
-				'neural_style_transfer': glob.sync(path.join(__dirname, 'src/html/neural_style_transfer.html'))
-			},
-			minimize: true,
-			purifyOptions: {
-				whitelist: ['canvas']
-			}
-		}),
-		new CheckerPlugin(),
-		// new UglifyJSPlugin(),
-		new HTMLWebpackPlugin({
-			filename: 'index_ja.html',
-			inject: 'head',
-			template: 'src/html/index_ja.html',
-			chunks: ['index'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HTMLWebpackPlugin({
-			filename: 'index.html',
-			inject: 'head',
-			template: 'src/html/index.html',
-			chunks: ['index'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HTMLWebpackPlugin({
-			filename: 'resnet50.html',
-			inject: 'head',
-			template: 'src/html/resnet50.html',
-			chunks: ['resnet50'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HTMLWebpackPlugin({
-			filename: 'neural_style_transfer.html',
-			inject: 'head',
-			template: 'src/html/neural_style_transfer.html',
-			chunks: ['neural_style_transfer'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HTMLWebpackPlugin({
-			filename: 'resnet50.es5.html',
-			inject: 'head',
-			template: 'src/html/resnet50.es5.html',
-			chunks: ['resnet50'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HTMLWebpackPlugin({
-			filename: 'neural_style_transfer.es5.html',
-			inject: 'head',
-			template: 'src/html/neural_style_transfer.es5.html',
-			chunks: ['neural_style_transfer'],
-			inlineSource: '.(css)$',
-			minify: minifyOption
-		}),
-		new HtmlWebpackInlineSourcePlugin(),
-		new ScriptExtHtmlWebpackPlugin({
-			defaultAttribute: 'async'
-		}),
-		new CopyWebpackPlugin([{
-			from: './src/static',
-			to: './'
-		}]),
-	]
-};
+		},
+		resolve: {
+			modules: [
+				path.join(__dirname, './src'),
+				path.join(__dirname, './node_modules'),
+			],
+			extensions: ['.ts', '.tsx', '.js', '.jsx', '.scss']
+		},
+		plugins: ([
+			DEBUG ? null : new webpack.DefinePlugin({
+				'process.env': {
+					NODE_ENV: JSON.stringify('production')
+				}
+			}),
+			new ExtractTextPlugin({
+				filename: getPath => getPath('[name].css'),
+				allChunks: true
+			}),
+			new CheckerPlugin(),
+			DEBUG ? null : new webpack.optimize.UglifyJsPlugin(),
+			new HTMLWebpackPlugin({
+				filename: path.basename(outputName) + '.html',
+				inject: 'head',
+				chunksSortMode: 'dependency',
+				template: ejsPath,
+				minify: DEBUG ? null : minifyOption
+			}),
+			new PrerenderSpaPlugin(
+				path.join(__dirname, './build/webdnn'),
+				['/' + outputName + '.html'],
+				{
+					indexPath: outputName + '.html',
+					ignoreJSErrors: true
+				}
+			),
+			CopyWebpackPlugin([{
+				from: './src/static',
+				to: './'
+			}])
+		]).filter(v => !!v)
+	};
+}
+
+
+module.exports = [
+	generateConfig('./src/scripts/index_ja.tsx', './src/html/index.ejs', 'ja/index'),
+	generateConfig('./src/scripts/index.tsx', './src/html/index.ejs', 'index'),
+	generateConfig('./src/scripts/neural_style_transfer.tsx', './src/html/app.ejs', 'neural_style_transfer'),
+	generateConfig('./src/scripts/resnet.tsx', './src/html/app.ejs', 'resnet')
+];

@@ -1,0 +1,118 @@
+@import "../../../common/components/layout/layout";
+@import "../../../common/components/layer/layer";
+@import "../../../../stylus/z-index";
+
+.canvas-container,
+.content-canvas,
+.style-canvas,
+.output-canvas {
+  box-sizing: border-box;
+}
+
+.main-layer {
+  @extend .layer;
+}
+
+.panel {
+  padding: 1px;
+  box-shadow: 0 1px 3px rgba(#000, 0.3);
+  z-index: $z-Header;
+
+  button {
+    background: rgb(46, 48, 56);
+    border-right: 1px solid rgb(28, 29, 35);
+    border-top: 1px solid rgb(28, 29, 35);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+.panel-button {
+  position: relative;
+  width: 25%;
+}
+
+.content-image-container,
+.style-image-container {
+  overflow: hidden;
+
+  @include layout-auto-reverse-column {
+    height: 50%;
+  }
+  @include layout-auto-reverse-row {
+    width: 50%;
+  }
+}
+
+.content-image-container {
+  @include layout-auto-reverse-column {
+    border-bottom: 1px solid #000;
+  }
+  @include layout-auto-reverse-row {
+    border-right: 1px solid #000;
+  }
+}
+
+.input-image-container {
+  @include layout-auto-column {
+    height: 100% / 3 * 1;
+    border-bottom: 1px solid #000;
+  }
+  @include layout-auto-row {
+    width: 100% / 3 * 1;
+    border-right: 1px solid #000;
+  }
+}
+
+.output-image-container {
+  overflow: hidden;
+
+  @include layout-auto-column {
+    height: 100% / 3 * 2;
+  }
+  @include layout-auto-row {
+    width: 100% / 3 * 2;
+  }
+}
+
+.canvas-label {
+  position: absolute;
+  background: rgba(#000, 0.8);
+  color: #aaa;
+  left: 50%;
+  right: 50%;
+  margin: 0 -40px;
+  border-radius: 2em;
+  width: 80px;
+  bottom: 8px;
+  padding: 0.5em 0;
+  line-height: 1;
+  text-align: center;
+}
+
+.preview-video {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  &.active {
+    display: block;
+  }
+}
+
+.snap-button,
+.retake-button {
+  color: #0080ff;
+  fill: #0080ff;
+}
+
+.use-this-photo-button,
+.retake-button {
+  position: relative;
+  width: 50%;
+}
