@@ -11,6 +11,7 @@ import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fall
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
 import DescriptorRunnerWebGPU from "./descriptor_runner/descriptor_runner_webgpu";
 import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
+import { registerTransformUrlDelegate } from "./fetch";
 import * as Image from "./image";
 import * as Math from "./math";
 
@@ -148,7 +149,32 @@ export interface InitOption {
     /**
      * URL of directory that contains weight files (e.g. weight_webgpu.bin)
      */
-    weightDirectory?: string
+    weightDirectory?: string,
+
+    /**
+     * Delegate function which will be called with original url, and must return converted url strings.
+     * This function is called before WebDNN fetch any data (descriptor json file, and binary data)
+     * You can modified url to fetch data from other domain, for example.
+     *
+     * ### Examples
+     *
+     * Fetch binary data from other domain
+     *
+     * ```js
+     * // Register delegate function before loading
+     * WebDNN.registerTransformUrlDelegate((url) => {
+     *     if ((/\.bin/).test(url)) {
+     *         url = url.replace('original.host.com', 'custom.host.com');
+     *     }
+     *     return url;
+     * })
+     *
+     * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
+     * // model binary data will be loaded from 'custom.host.com/model'.
+     * WebDNN.load('https://original.host.com/model');
+     * ```
+     */
+    transformUrlDelegate?: (url: string) => string
 }
 
 /**
@@ -191,6 +217,18 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
     backendOrder = backendOrder.slice();
     if (backendOrder.indexOf('fallback') === -1) backendOrder.concat(['fallback']);
 
+    registerTransformUrlDelegate((url) => {
+        if (initOption.weightDirectory) {
+            if ((/\.bin/).test(url)) {
+                url = url.replace(directory, initOption.weightDirectory);
+            }
+        }
+        if (initOption.transformUrlDelegate) {
+            url = initOption.transformUrlDelegate(url);
+        }
+        return url;
+    });
+
     let backendOptions = initOption.backendOptions || {};
 
     while (backendOrder.length > 0) {
@@ -200,7 +238,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
         runner.ignoreCache = Boolean(initOption.ignoreCache);
 
         try {
-            await runner.load(directory, initOption.progressCallback, initOption.weightDirectory);
+            await runner.load(directory, initOption.progressCallback);
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
         }
