@@ -19,8 +19,11 @@ export interface GraphDescriptorWebGL extends GraphDescriptor {
  */
 export interface GraphDescriptorWebGLExecInfos {
     shader_name: string,
-    uniforms: { [name: string]: { type: 'int' | 'float', value: number } }
-    inputs: { [name: string]: string }
+    uniforms: { [name: string]: { type: 'int' | 'float' | 'sampler2D', value: number } }
+    inputs: [{
+        variable_name: string,
+        uniform_name: string
+    }]
     output: string
     width: number
 }

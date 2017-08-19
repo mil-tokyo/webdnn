@@ -606,13 +606,14 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	    shader_name: string;
 	    uniforms: {
 	        [name: string]: {
-	            type: 'int' | 'float';
+	            type: 'int' | 'float' | 'sampler2D';
 	            value: number;
 	        };
 	    };
-	    inputs: {
-	        [name: string]: string;
-	    };
+	    inputs: [{
+	        variable_name: string;
+	        uniform_name: string;
+	    }];
 	    output: string;
 	    width: number;
 	}

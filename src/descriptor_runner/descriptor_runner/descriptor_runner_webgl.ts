@@ -257,25 +257,21 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             gl.useProgram(program);
 
             // inputs
-            Object.keys(execInfo.inputs).forEach((name, i) => {
-                let texture = checkNull(textures.get(execInfo.inputs[name]));
-                gl.activeTexture(gl.TEXTURE1 + i);  // Bind input as slot "1", "2", ...
+            execInfo.inputs.forEach((input, i) => {
+                let texture = checkNull(textures.get(input.variable_name));
+                gl.activeTexture(gl.TEXTURE1 + i); // Bind input as unit "1", "2", ... . Unit "0" is reserved for output.
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-                gl.uniform1i(gl.getUniformLocation(program, name), i + 1);
             });
 
             // output
+            let texture = checkNull(textures.get(execInfo.output));
             gl.activeTexture(gl.TEXTURE0 + 0); // Bind output as slot "0"
-            gl.bindTexture(gl.TEXTURE_2D, checkNull(textures.get(execInfo.output)));
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, checkNull(textures.get(execInfo.output)), 0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
             // uniforms
-            let uniforms = Object.assign(execInfo.uniforms, {
-                '_W': {type: 'float', value: width}, // FIXME
-                '_H': {type: 'float', value: 1}, // FIXME
-            });
-
+            let uniforms = execInfo.uniforms;
             Object.keys(uniforms).forEach(name => {
                 let {type, value} = uniforms[name];
                 switch (type) {
@@ -285,6 +281,11 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
                     case 'float':
                         gl.uniform1f(gl.getUniformLocation(program, name), value);
+                        break;
+
+                    case 'sampler2D':
+                        // Bind input as unit "1", "2", ... . Unit "0" is reserved for output.
+                        gl.uniform1i(gl.getUniformLocation(program, name), 1 + value);
                         break;
 
                     default:
