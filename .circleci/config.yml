@@ -121,7 +121,7 @@ workflows:
   version: 2
   build_and_docs:
     jobs:
-      - build
+      - build:
           filters:
             branches:
               ignore:
