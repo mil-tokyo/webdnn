@@ -57,6 +57,9 @@ def get_generator(backend: str):
     if backend == "webgpu":
         from webdnn.backend.webgpu.generator import generate as generate_webgpu
         return generate_webgpu
+    elif backend == "webgl":
+        from webdnn.backend.webgl.generator import generate as generate_webgl
+        return generate_webgl
     elif backend == "webassembly":
         from webdnn.backend.webassembly.generator import generate as generate_webassembly
         return generate_webassembly

@@ -139,7 +139,7 @@ var imagenet_labels=[
 "American coot, marsh hen, mud hen, water hen, Fulica americana",
 "bustard",
 "ruddy turnstone, Arenaria interpres",
-"red-backed sandpiper, dunlin, Erolia alpina",
+"red-backend sandpiper, dunlin, Erolia alpina",
 "redshank, Tringa totanus",
 "dowitcher",
 "oystercatcher, oyster catcher",

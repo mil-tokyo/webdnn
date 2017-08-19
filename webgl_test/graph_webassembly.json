@@ -1,0 +1,47 @@
+{
+  "weight_encoding": "raw",
+  "memory_layout": {
+    "static": {
+      "size": 29,
+      "allocations": {
+        "v0": {
+          "name": "v0",
+          "offset": 0,
+          "size": 5
+        },
+        "v3": {
+          "name": "v3",
+          "offset": 8,
+          "size": 5
+        },
+        "v1": {
+          "name": "v1",
+          "offset": 16,
+          "size": 5
+        },
+        "v2": {
+          "name": "v2",
+          "offset": 24,
+          "size": 5
+        }
+      }
+    },
+    "dynamic": {
+      "size": 0,
+      "allocations": {}
+    }
+  },
+  "placeholders": {},
+  "unresolved_value_lists": [
+    []
+  ],
+  "inputs": [
+    "v2"
+  ],
+  "outputs": [
+    "v1"
+  ],
+  "licenses": {
+    "webdnn": "(C) Machine Intelligence Laboratory (The University of Tokyo), MIT License"
+  }
+}

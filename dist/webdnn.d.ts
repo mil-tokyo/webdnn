@@ -203,6 +203,10 @@ declare module 'webdnn/symbolic_typed_array/symbolic_typed_array' {
 	    /**
 	     * @protected
 	     */
+	    readonly name: string;
+	    /**
+	     * @protected
+	     */
 	    readonly isDynamic: boolean;
 	    /**
 	     * @protected
@@ -480,13 +484,11 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { MemoryLayout } from 'webdnn/graph_descriptor/memory_layout';
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
 	/**
 	 * @protected
 	 */
 	export interface GraphDescriptorFallback extends GraphDescriptor {
-	    memory_layout: MemoryLayout;
 	    kernel_source: string;
 	    exec_infos: GraphDescriptorFallbackExecInfo[];
 	}
@@ -582,6 +584,72 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	}
 
 }
+declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
+	/**
+	 * @protected
+	 */
+	export interface GraphDescriptorWebGL extends GraphDescriptor {
+	    shader_sources: {
+	        [name: string]: string;
+	    };
+	    exec_infos: GraphDescriptorWebGLExecInfos[];
+	}
+	/**
+	 * @protected
+	 */
+	export interface GraphDescriptorWebGLExecInfos {
+	    shader_name: string;
+	    uniforms: {
+	        [name: string]: {
+	            type: 'int' | 'float';
+	            value: number;
+	        };
+	    };
+	    inputs: {
+	        [name: string]: string;
+	    };
+	    output: string;
+	    width: number;
+	}
+
+}
+declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
+	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
+	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
+	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	/**
+	 * @protected
+	 */
+	export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
+	    readonly backendName: string;
+	    private gl;
+	    private vertexShader;
+	    private programs;
+	    private textures;
+	    private inputViews;
+	    private outputViews;
+	    private executionInfos;
+	    static checkAvailability(): boolean;
+	    init(): Promise<void>;
+	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+	    private initializeStaticBuffer(weightRawArray);
+	    private initializeDynamicBuffer();
+	    private setDescriptor(descriptor);
+	    private compile();
+	    setPlaceholderValue(values: {
+	        [key: string]: number;
+	    }): Promise<void>;
+	    getInputViews(): SymbolicFloat32Array[];
+	    getOutputViews(): SymbolicFloat32Array[];
+	    run(): Promise<void>;
+	}
+
+}
 declare module 'webdnn/webgpu_handler' {
 	/**
 	 * @module webdnn
@@ -625,8 +693,8 @@ declare module 'webdnn/buffer/buffer' {
 	     * @property {number}
 	     */
 	    byteLength: number;
-	    backed: string;
-	    constructor(byteLength: number, backed: string);
+	    backend: string;
+	    constructor(byteLength: number, backend: string);
 	    /**
 	     * Write contents onto specified position.
 	     *
@@ -651,7 +719,7 @@ declare module 'webdnn/buffer/buffer' {
 	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
 	     */
 	    abstract getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-	    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Uint32Array;
+	    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
 	    /**
 	     * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
 	     * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
@@ -696,7 +764,7 @@ declare module 'webdnn/buffer/buffer_webgpu' {
 	    read(dst: any, src_offset?: number, length?: number): Promise<void>;
 	    static init(webgpuHandler: WebGPUHandler): void;
 	    getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-	    getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Uint32Array;
+	    getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
 	    getReadView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
 	    getReadView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
 	    syncWriteViews(): Promise<void>;
@@ -709,14 +777,12 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { MemoryLayout } from 'webdnn/graph_descriptor/memory_layout';
 	import { Placeholder } from 'webdnn/placeholder';
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
 	/**
 	 * @protected
 	 */
 	export interface GraphDescriptorWebGPU extends GraphDescriptor {
-	    memory_layout: MemoryLayout;
 	    kernel_source: string;
 	    exec_infos: GraphDescriptorWebGPUExecInfos[];
 	}
@@ -1172,7 +1238,7 @@ declare module 'webdnn/webdnn' {
 	/**
 	 * Backend names supported in WebDNN
 	 */
-	export type BackendName = 'webgpu' | 'webassembly' | 'fallback';
+	export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';
 	/**
 	 * Result structure of [[getBackendAvailability|`WebDNN.getBackendAvailability`]]
 	 */

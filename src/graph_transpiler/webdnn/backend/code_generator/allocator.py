@@ -145,7 +145,7 @@ class Allocator:
 
             allocation = layout[var]
             layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-            constant_size += var.data.size
+            constant_size = allocation.offset + allocation.size
         layout.data = layout.data[:constant_size]
         if flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(ops, variables, layout, lifetime, offsets)

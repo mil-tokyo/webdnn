@@ -55,6 +55,13 @@ export abstract class SymbolicTypedArray<T extends Float32Array | Int32Array> {
     /**
      * @protected
      */
+    get name() {
+        return this.allocation.name;
+    }
+
+    /**
+     * @protected
+     */
     get isDynamic() {
         return (typeof this.allocation.offset !== 'number' || typeof this.allocation.size !== 'number')
     }

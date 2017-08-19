@@ -3,14 +3,12 @@
  */
 /** Don't Remove This comment block */
 
-import { MemoryLayout } from "./memory_layout";
 import { GraphDescriptor } from "./graph_descriptor";
 
 /**
  * @protected
  */
 export interface GraphDescriptorFallback extends GraphDescriptor {
-    memory_layout: MemoryLayout;
     kernel_source: string;
     exec_infos: GraphDescriptorFallbackExecInfo[];
 }

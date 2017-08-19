@@ -13,11 +13,11 @@ class KernelNameInjector(Injector):
 
     def inject(self, text: str) -> str:
         self._text = text
+        self.name = f"{self.base_name}_{hashlib.sha224(self._text.encode('utf-8')).hexdigest()}"
         return super(KernelNameInjector, self).inject(text)
 
     def inject_tag(self, tag: Tag):
         if tag.name == "FUNC_NAME":
-            self.name = f"{self.base_name}_{hashlib.sha224(self._text.encode('utf-8')).hexdigest()}"
             return self.name
 
         else:
