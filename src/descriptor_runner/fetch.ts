@@ -106,6 +106,7 @@ export function readArrayBufferProgressively(res: Response, callback?: (loaded: 
 
 /**
  * check whether XMLHttpRequest with Blob type is supported or not
+ * @protected
  */
 function isXHR2WithBlobSupported() {
     if (!window.hasOwnProperty('ProgressEvent') || !window.hasOwnProperty('FormData')) {
@@ -129,6 +130,7 @@ function isXHR2WithBlobSupported() {
 
 /**
  * fetch with XMLHttpRequest
+ * @protected
  */
 function fetchUsingXHR(url, callback): Promise<Response> {
     return new Promise(function (resolve, reject) {
