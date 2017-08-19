@@ -1,13 +1,13 @@
 version: 2
 
-general:
-  branches:
-    ignore:
-      - gh-pages
-      - webpage-src
-
 jobs:
   build:
+    branches:
+      ignore:
+        - gh-pages
+        - webpage-src
+        - docs-update
+
     working_directory: ~/webdnn
 
     docker:
@@ -51,6 +51,10 @@ jobs:
 
   build-docs:
     working_directory: ~/webdnn
+
+    branches:
+      only:
+        - master
 
     docker:
       - image: python:3.6.1
