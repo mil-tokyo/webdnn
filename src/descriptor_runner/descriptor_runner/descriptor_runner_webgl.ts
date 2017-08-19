@@ -23,6 +23,13 @@ const vertexArray = new Float32Array([
     +1, -1
 ]);
 
+interface WebGLTextureContainer {
+    texture: WebGLTexture,
+    width: number,
+    height: number,
+    length: number
+}
+
 /**
  * @protected
  */
@@ -32,7 +39,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     private gl: WebGLRenderingContext;
     private vertexShader: WebGLShader;
     private programs: Map<string, WebGLProgram>;
-    private textures: Map<string, WebGLTexture>;
+    private textureContainers: Map<string, WebGLTextureContainer>;
 
     private inputViews: SymbolicFloat32Array[] | null;
     private outputViews: SymbolicFloat32Array[] | null;
@@ -48,7 +55,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let vertexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
-        this.textures = new Map();
+        this.textureContainers = new Map();
     }
 
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
@@ -73,16 +80,23 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let decoder = get_weight_decoder(this.descriptor.weight_encoding);
         let weight = await decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout);
-        let textures = this.textures;
+        let textureContainers = this.textureContainers;
 
         Object.entries(descriptor.memory_layout.static.allocations)
             .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let value = allocation.offset + allocation.size <= weight.length ?
-                    packToRGBA(new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size)) :
-                    null;
+                let textureContainer = createTextureBuffer(this.gl, allocation.size);
 
-                let texture = createTextureBuffer(this.gl, allocation.size, 1, value);
-                textures.set(name, texture);
+                if (allocation.offset + allocation.size <= weight.length) {
+                    let array = packToRGBA(
+                        new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size),
+                        textureContainer.width * textureContainer.height
+                    );
+
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, textureContainer.texture);
+                    this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, this.gl.RGBA, this.gl.FLOAT, array);
+                }
+
+                textureContainers.set(name, textureContainer);
             });
 
         (await this.getInputViews())
@@ -99,13 +113,13 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         if (!this.placeholderContext) throw Error("PlaceholderContext is not initialized.");
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
-        let textures = this.textures;
+        let textureContainers = this.textureContainers;
 
         Object.entries(descriptor.memory_layout.dynamic.allocations)
             .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let texture = createTextureBuffer(this.gl, placeholderContext.resolve(allocation.size), 1);
+                let textureContainer = createTextureBuffer(this.gl, placeholderContext.resolve(allocation.size));
 
-                textures.set(name, texture);
+                textureContainers.set(name, textureContainer);
             });
 
         (await this.getInputViews())
@@ -193,7 +207,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         this.inputViews = descriptor.inputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            allocation.offset = 0; // FIXME なんかきもい
             let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
 
             return view;
@@ -229,21 +242,22 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         if (!this.placeholderContext.isResolved) throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
 
         let gl = this.gl;
-        let textures = this.textures;
+        let textureContainers = this.textureContainers;
 
         //Upload all input values to GPU
         for (let view of this.getInputViews()) {
-            let texture = checkNull(textures.get(view.name));
-            let array = view.toActual();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, array.length, 1, gl.RGBA, gl.FLOAT, packToRGBA(array));
+            let textureContainer = checkNull(textureContainers.get(view.name));
+            let array = packToRGBA(view.toActual(), textureContainer.height * textureContainer.width);
+            gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, array);
         }
 
         this._running = true;
         for (let i = 0; i < this.executionInfos.length; i++) {
             let execInfo = this.executionInfos[i];
-            const width = execInfo.width;
-            const height = 1;
+            let outputTextureContainer = checkNull(textureContainers.get(execInfo.output));
+            const width = outputTextureContainer.width;
+            const height = outputTextureContainer.height;
 
             gl.viewport(0, 0, width, height);
             gl.scissor(0, 0, width, height);
@@ -258,17 +272,16 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
             // inputs
             execInfo.inputs.forEach((input, i) => {
-                let texture = checkNull(textures.get(input.variable_name));
+                let textureContainer = checkNull(textureContainers.get(input.variable_name));
                 gl.activeTexture(gl.TEXTURE1 + i); // Bind input as unit "1", "2", ... . Unit "0" is reserved for output.
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureContainer.texture, 0);
             });
 
             // output
-            let texture = checkNull(textures.get(execInfo.output));
             gl.activeTexture(gl.TEXTURE0 + 0); // Bind output as slot "0"
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            gl.bindTexture(gl.TEXTURE_2D, outputTextureContainer.texture);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTextureContainer.texture, 0);
 
             // uniforms
             let uniforms = execInfo.uniforms;
@@ -301,35 +314,44 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             // run
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
         }
-        gl.flush();
 
         //Download all output values to CPU
         for (let view of this.getOutputViews()) {
-            let texture = checkNull(textures.get(view.name));
-            let array = view.toActual();
-            let tmp = new Float32Array(array.length * 4);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.readPixels(0, 0, array.length, 1, gl.RGBA, gl.FLOAT, tmp);
-            view.setArrayBuffer(unpackFromRGBA(tmp));
+            let textureContainer = checkNull(textureContainers.get(view.name));
+            let tmp = new Float32Array(textureContainer.width * textureContainer.height * 4);
+            gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+            gl.readPixels(0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, tmp);
+            view.setArrayBuffer(unpackFromRGBA(tmp, textureContainer.length));
         }
 
         this._running = false;
     }
 }
 
-function packToRGBA(array: Float32Array) {
-    let result = new Float32Array(array.length * 4);
+function packToRGBA(array: Float32Array, size: number) {
+    let result = new Float32Array(size * 4);
     for (let i = 0; i < array.length; i++) result[i * 4] = array[i];
     return result;
 }
 
-function unpackFromRGBA(array: Float32Array) {
-    let result = new Float32Array(array.length / 4);
-    for (let i = 0; i < result.length; i++) result[i] = array[i * 4];
+function unpackFromRGBA(array: Float32Array, size: number) {
+    let result = new Float32Array(size);
+    for (let i = 0; i < size; i++) result[i] = array[i * 4];
     return result;
 }
 
-function createTextureBuffer(gl: WebGLRenderingContext, width: number, height: number, value: Float32Array | null = null) {
+function createTextureBuffer(gl: WebGLRenderingContext, size: number, value: Float32Array | null = null) {
+    // width is fixed as 1024, height is flexible.
+    // FIXME: flexible width for efficient memory allocation
+    const width = size < 1024 ? size : 1024;
+    const height = Math.ceil(size / 1024);
+
+    if (value && value.length != width * height) {
+        let newValue = new Float32Array(width * height);
+        newValue.set(value, 0);
+        value = newValue;
+    }
+
     let texture = checkNull(gl.createTexture());
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, value);
@@ -337,7 +359,13 @@ function createTextureBuffer(gl: WebGLRenderingContext, width: number, height: n
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    return texture;
+
+    return {
+        texture: texture,
+        width: width,
+        height: height,
+        length: size
+    };
 }
 
 function initializeWebGLRenderingContext() {

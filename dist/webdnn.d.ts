@@ -631,7 +631,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	    private gl;
 	    private vertexShader;
 	    private programs;
-	    private textures;
+	    private textureContainers;
 	    private inputViews;
 	    private outputViews;
 	    private executionInfos;

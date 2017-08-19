@@ -25,8 +25,7 @@ class KernelExecutionInfo(json.SerializableMixin):
             "shader_name": self.shader_name,
             "inputs": self.inputs,
             "uniforms": self.uniforms,
-            "output": self.output.parameters["name"],
-            "width": self.output.size
+            "output": self.output.parameters["name"]
         }
 
 

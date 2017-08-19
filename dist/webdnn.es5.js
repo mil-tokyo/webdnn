@@ -1241,7 +1241,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                 vertexBuffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
                 this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
-                this.textures = new Map();
+                this.textureContainers = new Map();
                 return [2 /*return*/];
             });
         });
@@ -1281,7 +1281,7 @@ var DescriptorRunnerWebGL = (function (_super) {
     DescriptorRunnerWebGL.prototype.initializeStaticBuffer = function (weightRawArray) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var descriptor, decoder, weight, textures;
+            var descriptor, decoder, weight, textureContainers;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1292,15 +1292,17 @@ var DescriptorRunnerWebGL = (function (_super) {
                         return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout)];
                     case 1:
                         weight = _a.sent();
-                        textures = this.textures;
+                        textureContainers = this.textureContainers;
                         Object.entries(descriptor.memory_layout.static.allocations)
                             .forEach(function (_a) {
                             var name = _a[0], allocation = _a[1];
-                            var value = allocation.offset + allocation.size <= weight.length ?
-                                packToRGBA(new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size)) :
-                                null;
-                            var texture = createTextureBuffer(_this.gl, allocation.size, 1, value);
-                            textures.set(name, texture);
+                            var textureContainer = createTextureBuffer(_this.gl, allocation.size);
+                            if (allocation.offset + allocation.size <= weight.length) {
+                                var array = packToRGBA(new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size), textureContainer.width * textureContainer.height);
+                                _this.gl.bindTexture(_this.gl.TEXTURE_2D, textureContainer.texture);
+                                _this.gl.texSubImage2D(_this.gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, _this.gl.RGBA, _this.gl.FLOAT, array);
+                            }
+                            textureContainers.set(name, textureContainer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
                     case 2:
@@ -1320,7 +1322,7 @@ var DescriptorRunnerWebGL = (function (_super) {
     DescriptorRunnerWebGL.prototype.initializeDynamicBuffer = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var descriptor, placeholderContext, textures;
+            var descriptor, placeholderContext, textureContainers;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1330,12 +1332,12 @@ var DescriptorRunnerWebGL = (function (_super) {
                             throw Error("PlaceholderContext is not initialized.");
                         descriptor = this.descriptor;
                         placeholderContext = this.placeholderContext;
-                        textures = this.textures;
+                        textureContainers = this.textureContainers;
                         Object.entries(descriptor.memory_layout.dynamic.allocations)
                             .forEach(function (_a) {
                             var name = _a[0], allocation = _a[1];
-                            var texture = createTextureBuffer(_this.gl, placeholderContext.resolve(allocation.size), 1);
-                            textures.set(name, texture);
+                            var textureContainer = createTextureBuffer(_this.gl, placeholderContext.resolve(allocation.size));
+                            textureContainers.set(name, textureContainer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
                     case 1:
@@ -1435,7 +1437,6 @@ var DescriptorRunnerWebGL = (function (_super) {
         var placeholderContext = this.placeholderContext;
         this.inputViews = descriptor.inputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            allocation.offset = 0; // FIXME なんかきもい
             var view = new SymbolicFloat32Array(allocation, placeholderContext, true);
             return view;
         });
@@ -1459,7 +1460,7 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     DescriptorRunnerWebGL.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, textures, _i, _a, view, texture, array, _loop_1, this_1, i, _b, _c, view, texture, array, tmp;
+            var gl, textureContainers, _i, _a, view, textureContainer, array, _loop_1, this_1, i, _b, _c, view, textureContainer, tmp;
             return __generator(this, function (_d) {
                 if (this._running)
                     throw new Error('Calling another run() while running.');
@@ -1472,20 +1473,21 @@ var DescriptorRunnerWebGL = (function (_super) {
                 if (!this.placeholderContext.isResolved)
                     throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
                 gl = this.gl;
-                textures = this.textures;
+                textureContainers = this.textureContainers;
                 //Upload all input values to GPU
                 for (_i = 0, _a = this.getInputViews(); _i < _a.length; _i++) {
                     view = _a[_i];
-                    texture = checkNull(textures.get(view.name));
-                    array = view.toActual();
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, array.length, 1, gl.RGBA, gl.FLOAT, packToRGBA(array));
+                    textureContainer = checkNull(textureContainers.get(view.name));
+                    array = packToRGBA(view.toActual(), textureContainer.height * textureContainer.width);
+                    gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+                    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, array);
                 }
                 this._running = true;
                 _loop_1 = function (i) {
                     var execInfo = this_1.executionInfos[i];
-                    var width = execInfo.width;
-                    var height = 1;
+                    var outputTextureContainer = checkNull(textureContainers.get(execInfo.output));
+                    var width = outputTextureContainer.width;
+                    var height = outputTextureContainer.height;
                     gl.viewport(0, 0, width, height);
                     gl.scissor(0, 0, width, height);
                     // frameBuffer
@@ -1496,16 +1498,15 @@ var DescriptorRunnerWebGL = (function (_super) {
                     gl.useProgram(program);
                     // inputs
                     execInfo.inputs.forEach(function (input, i) {
-                        var texture = checkNull(textures.get(input.variable_name));
+                        var textureContainer = checkNull(textureContainers.get(input.variable_name));
                         gl.activeTexture(gl.TEXTURE1 + i); // Bind input as unit "1", "2", ... . Unit "0" is reserved for output.
-                        gl.bindTexture(gl.TEXTURE_2D, texture);
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                        gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureContainer.texture, 0);
                     });
                     // output
-                    var texture = checkNull(textures.get(execInfo.output));
                     gl.activeTexture(gl.TEXTURE0 + 0); // Bind output as slot "0"
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                    gl.bindTexture(gl.TEXTURE_2D, outputTextureContainer.texture);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTextureContainer.texture, 0);
                     // uniforms
                     var uniforms = execInfo.uniforms;
                     Object.keys(uniforms).forEach(function (name) {
@@ -1536,16 +1537,14 @@ var DescriptorRunnerWebGL = (function (_super) {
                 for (i = 0; i < this.executionInfos.length; i++) {
                     _loop_1(i);
                 }
-                gl.flush();
                 //Download all output values to CPU
                 for (_b = 0, _c = this.getOutputViews(); _b < _c.length; _b++) {
                     view = _c[_b];
-                    texture = checkNull(textures.get(view.name));
-                    array = view.toActual();
-                    tmp = new Float32Array(array.length * 4);
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.readPixels(0, 0, array.length, 1, gl.RGBA, gl.FLOAT, tmp);
-                    view.setArrayBuffer(unpackFromRGBA(tmp));
+                    textureContainer = checkNull(textureContainers.get(view.name));
+                    tmp = new Float32Array(textureContainer.width * textureContainer.height * 4);
+                    gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
+                    gl.readPixels(0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, tmp);
+                    view.setArrayBuffer(unpackFromRGBA(tmp, textureContainer.length));
                 }
                 this._running = false;
                 return [2 /*return*/];
@@ -1554,20 +1553,29 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     return DescriptorRunnerWebGL;
 }(DescriptorRunner));
-function packToRGBA(array) {
-    var result = new Float32Array(array.length * 4);
+function packToRGBA(array, size) {
+    var result = new Float32Array(size * 4);
     for (var i = 0; i < array.length; i++)
         result[i * 4] = array[i];
     return result;
 }
-function unpackFromRGBA(array) {
-    var result = new Float32Array(array.length / 4);
-    for (var i = 0; i < result.length; i++)
+function unpackFromRGBA(array, size) {
+    var result = new Float32Array(size);
+    for (var i = 0; i < size; i++)
         result[i] = array[i * 4];
     return result;
 }
-function createTextureBuffer(gl, width, height, value) {
+function createTextureBuffer(gl, size, value) {
     if (value === void 0) { value = null; }
+    // width is fixed as 1024, height is flexible.
+    // FIXME: flexible width for efficient memory allocation
+    var width = size < 1024 ? size : 1024;
+    var height = Math.ceil(size / 1024);
+    if (value && value.length != width * height) {
+        var newValue = new Float32Array(width * height);
+        newValue.set(value, 0);
+        value = newValue;
+    }
     var texture = checkNull(gl.createTexture());
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, value);
@@ -1575,7 +1583,12 @@ function createTextureBuffer(gl, width, height, value) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    return texture;
+    return {
+        texture: texture,
+        width: width,
+        height: height,
+        length: size
+    };
 }
 function initializeWebGLRenderingContext() {
     var canvas = document.createElement('canvas');

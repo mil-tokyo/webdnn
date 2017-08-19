@@ -8,8 +8,8 @@ from webdnn.graph.variable import Variable
 
 @wrap_template
 def template(x1_order=OrderNHWC, x2_order=OrderNHWC, y_order=OrderNHWC, description: str = ""):
-    vx1 = np.random.rand(2, 3, 4, 5) - 0.5
-    vx2 = np.random.rand(2, 3, 4, 5) - 0.5
+    vx1 = np.random.rand(2, 3, 4, 1023) - 0.5
+    vx2 = np.random.rand(2, 3, 4, 1023) - 0.5
     vy = vx1 + vx2
 
     x1 = Variable(vx1.shape, order=OrderNHWC)
