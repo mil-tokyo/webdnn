@@ -151,10 +151,10 @@ void main() {
     vec2 pos0 = vec2(float(x) / W, float(y) / H);
     vec2 pos1 = vec2(float(x) / W, float(y) / H);
     
-    float v0 = texture2D(X0, pos0).r;
-    float v1 = texture2D(X1, pos1).r;
+    vec4 v0 = texture2D(X0, pos0);
+    vec4 v1 = texture2D(X1, pos1);
     
-    gl_FragColor = vec4(v0 + v1, 0, 0, 0);
+    gl_FragColor = v0 + v1;
 }
 """
 
@@ -170,11 +170,13 @@ def elementwise_add(op: ElementwiseAdd, memory_layout: MemoryLayout) -> List[Ker
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
+
+    textureLength = (y.size + 4 - 1) // 4
     uniform_injector.register({
         "X0": x0.variable,
         "X1": x1.variable,
-        "W": y.size if y.size < 1024 else 1024,
-        "H": (y.size + 1024 - 1) // 1024
+        "W": textureLength if textureLength < 1024 else 1024,
+        "H": (textureLength + 1024 - 1) // 1024
     })
 
     source = template

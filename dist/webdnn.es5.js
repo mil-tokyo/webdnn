@@ -1298,7 +1298,11 @@ var DescriptorRunnerWebGL = (function (_super) {
                             var name = _a[0], allocation = _a[1];
                             var textureContainer = createTextureBuffer(_this.gl, allocation.size);
                             if (allocation.offset + allocation.size <= weight.length) {
-                                var array = packToRGBA(new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size), textureContainer.width * textureContainer.height);
+                                // FIXME: Support packed type
+                                // let array = alignLength(packToRGBA(
+                                //     new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size)
+                                // ));
+                                var array = alignLength(new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size), textureContainer.width);
                                 _this.gl.bindTexture(_this.gl.TEXTURE_2D, textureContainer.texture);
                                 _this.gl.texSubImage2D(_this.gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, _this.gl.RGBA, _this.gl.FLOAT, array);
                             }
@@ -1478,7 +1482,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                 for (_i = 0, _a = this.getInputViews(); _i < _a.length; _i++) {
                     view = _a[_i];
                     textureContainer = checkNull(textureContainers.get(view.name));
-                    array = packToRGBA(view.toActual(), textureContainer.height * textureContainer.width);
+                    array = alignLength(view.toActual(), textureContainer.width);
                     gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
                     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, array);
                 }
@@ -1541,10 +1545,12 @@ var DescriptorRunnerWebGL = (function (_super) {
                 for (_b = 0, _c = this.getOutputViews(); _b < _c.length; _b++) {
                     view = _c[_b];
                     textureContainer = checkNull(textureContainers.get(view.name));
-                    tmp = new Float32Array(textureContainer.width * textureContainer.height * 4);
+                    tmp = new Float32Array(textureContainer.textureSize * 4);
                     gl.bindTexture(gl.TEXTURE_2D, textureContainer.texture);
                     gl.readPixels(0, 0, textureContainer.width, textureContainer.height, gl.RGBA, gl.FLOAT, tmp);
-                    view.setArrayBuffer(unpackFromRGBA(tmp, textureContainer.length));
+                    // FIXME: Support packed type
+                    // view.setArrayBuffer(unpackFromRGBA(tmp).slice(0, textureContainer.length);
+                    view.setArrayBuffer(tmp.slice(0, textureContainer.length));
                 }
                 this._running = false;
                 return [2 /*return*/];
@@ -1553,24 +1559,24 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     return DescriptorRunnerWebGL;
 }(DescriptorRunner));
-function packToRGBA(array, size) {
-    var result = new Float32Array(size * 4);
-    for (var i = 0; i < array.length; i++)
-        result[i * 4] = array[i];
-    return result;
-}
-function unpackFromRGBA(array, size) {
-    var result = new Float32Array(size);
-    for (var i = 0; i < size; i++)
-        result[i] = array[i * 4];
-    return result;
-}
-function createTextureBuffer(gl, size, value) {
+// function packToRGBA(array: Float32Array) {
+//     let result = new Float32Array(array.length * 4);
+//     for (let i = 0; i < array.length; i++) result[i * 4] = array[i];
+//     return result;
+// }
+// function unpackFromRGBA(array: Float32Array) {
+//     let result = new Float32Array(array.length / 4);
+//     for (let i = 0; i < array.length / 4; i++) result[i] = array[i * 4];
+//     return result;
+// }
+function createTextureBuffer(gl, length, value) {
     if (value === void 0) { value = null; }
+    // FIXME: Support packed type: textureLength = (length // 4) * 4
+    var textureLength = Math.ceil(length / 4);
     // width is fixed as 1024, height is flexible.
     // FIXME: flexible width for efficient memory allocation
-    var width = size < 1024 ? size : 1024;
-    var height = Math.ceil(size / 1024);
+    var width = textureLength < 1024 ? textureLength : 1024;
+    var height = Math.ceil(textureLength / 1024);
     if (value && value.length != width * height) {
         var newValue = new Float32Array(width * height);
         newValue.set(value, 0);
@@ -1587,7 +1593,9 @@ function createTextureBuffer(gl, size, value) {
         texture: texture,
         width: width,
         height: height,
-        length: size
+        textureSize: width * height,
+        textureLength: textureLength,
+        length: length
     };
 }
 function initializeWebGLRenderingContext() {
@@ -1604,6 +1612,11 @@ function checkNull(v) {
     if (!v)
         throw Error('null error');
     return v;
+}
+function alignLength(array, unit) {
+    var result = new Float32Array(Math.ceil(array.length / unit) * unit);
+    result.set(array, 0);
+    return result;
 }
 var IS_WEBGL_SUPPORTED = false;
 document.addEventListener('DOMContentLoaded', function () {
