@@ -2,12 +2,6 @@ version: 2
 
 jobs:
   build:
-    branches:
-      ignore:
-        - gh-pages
-        - webpage-src
-        - docs-update
-
     working_directory: ~/webdnn
 
     docker:
@@ -128,6 +122,13 @@ workflows:
   build_and_docs:
     jobs:
       - build
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - webpage-src
+                - docs-update
+
       - build-docs:
           requires:
             - build
