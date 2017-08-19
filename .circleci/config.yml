@@ -52,10 +52,6 @@ jobs:
   build-docs:
     working_directory: ~/webdnn
 
-    branches:
-      only:
-        - master
-
     docker:
       - image: python:3.6.1
       - image: node:latest
