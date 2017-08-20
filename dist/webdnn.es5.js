@@ -286,6 +286,7 @@ function readArrayBufferProgressively(res, callback) {
 }
 /**
  * check whether XMLHttpRequest with Blob type is supported or not
+ * @protected
  */
 function isXHR2WithBlobSupported() {
     if (!window.hasOwnProperty('ProgressEvent') || !window.hasOwnProperty('FormData')) {
@@ -307,6 +308,7 @@ function isXHR2WithBlobSupported() {
 }
 /**
  * fetch with XMLHttpRequest
+ * @protected
  */
 function fetchUsingXHR(url, callback) {
     return new Promise(function (resolve, reject) {
@@ -2208,6 +2210,7 @@ function load(directory, initOption = {}) {
             }
             catch (ex) {
                 console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
+                continue;
             }
             return runner;
         }
