@@ -1253,7 +1253,8 @@ declare module 'webdnn/webdnn' {
 	     * If both
 	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
 	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
-	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
+	     * At first, all urls of binary weights' are replaced by [[InitOption.weightDirectory|`InitOption.weightDirectory`]], and then
+	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are applied.
 	     *
 	     * ### Examples
 	     *
@@ -1274,7 +1275,8 @@ declare module 'webdnn/webdnn' {
 	     * If both
 	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
 	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
-	     * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] is used.
+	     * At first, all urls of binary weights' are replaced by [[InitOption.weightDirectory|`InitOption.weightDirectory`]], and then
+	     * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are applied.
 	     *
 	     * ### Examples
 	     *

@@ -262,6 +262,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
             await runner.load(directory, initOption.progressCallback);
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
+            continue;
         }
 
         return runner;
