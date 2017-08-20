@@ -16,17 +16,18 @@ This is just an experimental implementation.
 
 ### Not implemented yet
 
+- sgemm
+- im2col
+- depth2space
+
 - average_pooling_2d
 - col2im
 - concat
-- depth2space
 - embedding
-- im2col
 - linear
 - local_response_normalization
 - lstm
 - max_pooling_2d
-- sgemm
 - softmax
 - space2depth
 - split_axis
