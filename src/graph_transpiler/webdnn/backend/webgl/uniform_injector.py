@@ -26,6 +26,18 @@ class UniformInjector(Injector):
             elif typename == "int":
                 pass
 
+            elif typename == "vec2":
+                pass
+
+            elif typename == "ivec2":
+                pass
+
+            elif typename == "vec4":
+                pass
+
+            elif typename == "ivec4":
+                pass
+
             elif typename == "sampler2D":
                 assert isinstance(value, Variable), f"Value for sampler2D must be Variable instance: type(value)={type(value)}"
                 variable = value  # type: Variable

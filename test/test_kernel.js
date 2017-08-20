@@ -1,4 +1,5 @@
-///<reference path="../dist/webdnn.d.ts" />
+class Warning extends Error {
+}
 const assert = new class {
     constructor() {
         this.EPS = 1e-4;
@@ -49,18 +50,31 @@ const TestRunner = new class {
         let results = this.results;
         console.group('Result');
         let failedResults = results.filter(result => !result.result);
+        let warningResults = results.filter(result => result.result && result.err);
         if (failedResults.length == 0) {
             console.info(`- ${results.length} PASSED / 0 FAILED`);
         }
         else {
             console.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
-        }
-        failedResults.forEach(result => {
-            console.group(result.name);
-            console.log(`In: ${result.testCase.dirname}`);
-            console.log('- ' + result.err.message);
+            console.group('Failed');
+            failedResults.forEach(result => {
+                console.group(result.name);
+                console.log(`In: ${result.testCase.dirname}`);
+                console.log('- ' + result.err.message);
+                console.groupEnd();
+            });
             console.groupEnd();
-        });
+        }
+        if (warningResults.length > 0) {
+            console.group('Warning');
+            warningResults.forEach(result => {
+                console.group(result.name);
+                console.log(`In: ${result.testCase.dirname}`);
+                console.log('- ' + result.err.message);
+                console.groupEnd();
+            });
+            console.groupEnd();
+        }
         console.groupEnd();
     }
     async mainLoop() {
@@ -100,14 +114,26 @@ const TestRunner = new class {
             console.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
         }
         catch (err) {
-            this.results.push({
-                name: testName,
-                testCase: testCase,
-                result: false,
-                elapsedTime: -1,
-                err: err
-            });
-            console.error(err);
+            if (err instanceof Warning) {
+                this.results.push({
+                    name: testName,
+                    testCase: testCase,
+                    result: true,
+                    elapsedTime: elapsedTime,
+                    err: err
+                });
+                console.warn(err.message);
+            }
+            else {
+                this.results.push({
+                    name: testName,
+                    testCase: testCase,
+                    result: false,
+                    elapsedTime: -1,
+                    err: err
+                });
+                console.error(err);
+            }
         }
         console.groupEnd();
     }

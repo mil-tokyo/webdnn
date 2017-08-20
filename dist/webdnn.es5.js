@@ -1256,7 +1256,7 @@ var WebGLBuffer = (function () {
         // width is fixed as 1024, height is flexible.
         // FIXME: flexible width for efficient memory allocation
         var packedLength = Math.ceil(length / this.elementsPerPixel);
-        this.textureWidth = packedLength < 1024 ? packedLength : 1024;
+        this.textureWidth = packedLength <= 1024 ? packedLength : 1024;
         this.textureHeight = Math.ceil(packedLength / 1024);
         var texture = checkNull(gl.createTexture());
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -1597,6 +1597,16 @@ var DescriptorRunnerWebGL = (function (_super) {
                         case 'float':
                             return {
                                 func: gl.uniform1f,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'vec2':
+                            return {
+                                func: gl.uniform2fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'vec4':
+                            return {
+                                func: gl.uniform4fv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
                         case 'sampler2D':

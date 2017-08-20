@@ -135,28 +135,56 @@ def _optimize_loop_structure(variables: List[Variable]):
     return orders, shape_dicts, stride_dicts
 
 
+# ref
+# https://stackoverflow.com/questions/5879403/opengl-texture-coordinates-in-pixel-space
+
 template = """
 precision mediump float;
 
-%%UNIFORM(float, W)%%;
-%%UNIFORM(float, H)%%;
 %%UNIFORM(sampler2D, X0)%%;
 %%UNIFORM(sampler2D, X1)%%;
 
+%%UNIFORM(vec2, dy)%%;
+%%UNIFORM(vec2, sy)%%;
+%%UNIFORM(vec4, sY)%%;
+%%UNIFORM(vec4, dY)%%;
+
+%%UNIFORM(vec4, sX0)%%;
+%%UNIFORM(vec2, sx0)%%;
+%%UNIFORM(vec2, dx0)%%;
+
+%%UNIFORM(vec4, sX1)%%;
+%%UNIFORM(vec2, sx1)%%;
+%%UNIFORM(vec2, dx1)%%;
+
 void main() {
-    int x = int(gl_FragCoord.x - 0.5);
-    int y = int(gl_FragCoord.y - 0.5);
-    int index = y * int(W) + x; 
-    
-    vec2 pos0 = vec2(float(x) / W, float(y) / H);
-    vec2 pos1 = vec2(float(x) / W, float(y) / H);
-    
-    vec4 v0 = texture2D(X0, pos0);
-    vec4 v1 = texture2D(X1, pos1);
+    vec4 p = mod(floor(dot(gl_FragCoord.xy-0.5, sy)/sY), dY);
+    vec2 px0 = mod(floor(dot(p, sX0)/sx0), dx0);
+    vec2 px1 = mod(floor(dot(p, sX1)/sx1), dx1);
+
+    vec4 v0 = texture2D(X0, px0 / dx0);
+    vec4 v1 = texture2D(X1, px1 / dx1);
     
     gl_FragColor = v0 + v1;
 }
 """
+
+
+def texture_shape(v: Variable):
+    texture_length = (v.size + 4 - 1) // 4
+    return [
+        texture_length if texture_length < 1024 else 1024,
+        (texture_length + 1024 - 1) // 1024
+    ]
+
+
+def texture_stride(v: Variable):
+    result = []
+    s = 1
+    for d in reversed(texture_shape(v)):
+        result.insert(0, s)
+        s *= d
+    return result
 
 
 @WebGLDescriptorGenerator.register_handler(ElementwiseAdd)
@@ -171,12 +199,22 @@ def elementwise_add(op: ElementwiseAdd, memory_layout: MemoryLayout) -> List[Ker
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
 
-    textureLength = (y.size + 4 - 1) // 4
     uniform_injector.register({
         "X0": x0.variable,
         "X1": x1.variable,
-        "W": textureLength if textureLength < 1024 else 1024,
-        "H": (textureLength + 1024 - 1) // 1024
+
+        "sy": texture_stride(y.variable),
+        "dy": texture_shape(y.variable),
+        "dY": y.variable.shape,
+        "sY": y.variable.stride,
+
+        "sX0": x0.variable.stride,
+        "sx0": texture_stride(x0.variable),
+        "dx0": texture_shape(x0.variable),
+
+        "sX1": x1.variable.stride,
+        "sx1": texture_stride(x1.variable),
+        "dx1": texture_shape(x1.variable),
     })
 
     source = template
