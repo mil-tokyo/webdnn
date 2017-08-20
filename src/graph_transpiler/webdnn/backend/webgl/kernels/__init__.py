@@ -9,7 +9,9 @@ from webdnn.backend.webgl.kernels import elu
 from webdnn.backend.webgl.kernels import exp
 from webdnn.backend.webgl.kernels import hard_sigmoid
 from webdnn.backend.webgl.kernels import leaky_relu
+from webdnn.backend.webgl.kernels import reinterpret_axis
 from webdnn.backend.webgl.kernels import relu
+from webdnn.backend.webgl.kernels import reshape
 from webdnn.backend.webgl.kernels import scalar_add
 from webdnn.backend.webgl.kernels import scalar_affine
 from webdnn.backend.webgl.kernels import scalar_mul
