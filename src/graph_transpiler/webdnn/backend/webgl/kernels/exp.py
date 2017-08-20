@@ -6,7 +6,7 @@ from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import AxisKeyDict, Axis
-from webdnn.graph.operators.elementwise_add import ElementwiseAdd
+from webdnn.graph.operators.exp import Exp
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 from webdnn.util.misc import mul
@@ -150,7 +150,6 @@ template = """
 precision highp float;
 
 %%UNIFORM(sampler2D, X0)%%;
-%%UNIFORM(sampler2D, X1)%%;
 
 %%UNIFORM(vec2, d_y)%%;
 %%UNIFORM(vec2, s_y)%%;
@@ -162,21 +161,14 @@ precision highp float;
 %%UNIFORM(vec4, d_X0)%%;
 %%UNIFORM(vec4, s_X0)%%;
 
-%%UNIFORM(vec2, d_x1)%%;
-%%UNIFORM(vec2, s_x1)%%;
-%%UNIFORM(vec4, d_X1)%%;
-%%UNIFORM(vec4, s_X1)%%;
-
 void main() {
     vec4 p_Y = mod(floor(dot(gl_FragCoord.xy-0.5, s_y)/s_Y), d_Y);
     vec2 p_x0 = mod(floor(dot(mod(p_Y, d_X0), s_X0)/s_x0), d_x0) + 0.5;
-    vec2 p_x1 = mod(floor(dot(mod(p_Y, d_X1), s_X1)/s_x1), d_x1) + 0.5;
 
     float x0 = texture2D(X0, p_x0 / d_x0).r;
-    float x1 = texture2D(X1, p_x1 / d_x1).r;
     float y;
     
-    y = x0 + x1;
+    y = exp(x0);
     
     gl_FragColor = vec4(y, 0, 0, 0);
 }
@@ -201,20 +193,18 @@ def texture_stride(v: Variable):
     return result
 
 
-@WebGLDescriptorGenerator.register_handler(ElementwiseAdd)
-def elementwise_add(op: ElementwiseAdd, _: MemoryLayout) -> List[Kernel]:
+@WebGLDescriptorGenerator.register_handler(Exp)
+def elementwise_add(op: Exp, _: MemoryLayout) -> List[Kernel]:
     x0 = op.inputs["x0"]
-    x1 = op.inputs["x1"]
     y = op.outputs["y"]
 
-    shapes, strides = _optimize_loop_structure([x0, x1, y], y)
+    shapes, strides = _optimize_loop_structure([x0, y], y)
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
 
     uniform_injector.register({
         "X0": x0,
-        "X1": x1,
 
         "s_y": texture_stride(y),
         "d_y": texture_shape(y),
@@ -225,11 +215,6 @@ def elementwise_add(op: ElementwiseAdd, _: MemoryLayout) -> List[Kernel]:
         "s_x0": texture_stride(x0),
         "d_X0": shapes[x0],
         "s_X0": strides[x0],
-
-        "d_x1": texture_shape(x1),
-        "s_x1": texture_stride(x1),
-        "d_X1": shapes[x1],
-        "s_X1": strides[x1],
     })
 
     source = template

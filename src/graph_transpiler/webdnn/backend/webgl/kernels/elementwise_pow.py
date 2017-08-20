@@ -6,7 +6,7 @@ from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import AxisKeyDict, Axis
-from webdnn.graph.operators.elementwise_add import ElementwiseAdd
+from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 from webdnn.util.misc import mul
@@ -176,7 +176,7 @@ void main() {
     float x1 = texture2D(X1, p_x1 / d_x1).r;
     float y;
     
-    y = x0 + x1;
+    y = pow(x0, x1);
     
     gl_FragColor = vec4(y, 0, 0, 0);
 }
@@ -201,8 +201,8 @@ def texture_stride(v: Variable):
     return result
 
 
-@WebGLDescriptorGenerator.register_handler(ElementwiseAdd)
-def elementwise_add(op: ElementwiseAdd, _: MemoryLayout) -> List[Kernel]:
+@WebGLDescriptorGenerator.register_handler(ElementwisePow)
+def elementwise_add(op: ElementwisePow, _: MemoryLayout) -> List[Kernel]:
     x0 = op.inputs["x0"]
     x1 = op.inputs["x1"]
     y = op.outputs["y"]
