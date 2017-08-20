@@ -628,13 +628,13 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	 */
 	export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
 	    readonly backendName: string;
+	    private runtimeInfo;
 	    private gl;
 	    private vertexShader;
 	    private programs;
-	    private textureContainers;
+	    private buffers;
 	    private inputViews;
 	    private outputViews;
-	    private executionInfos;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
 	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
@@ -647,6 +647,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	    }): Promise<void>;
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
+	    private buildPipeline();
 	    run(): Promise<void>;
 	}
 
