@@ -1011,7 +1011,7 @@ var ChannelMode;
  * @protected
  */
 class WebGLBuffer {
-    constructor(gl, length, array = null, channelMode = ChannelMode.RGBA) {
+    constructor(gl, length, array = null, channelMode = ChannelMode.R) {
         this.channelMode = ChannelMode.RGBA;
         this.gl = gl;
         this.channelMode = channelMode;
@@ -1030,8 +1030,8 @@ class WebGLBuffer {
         // width is fixed as 1024, height is flexible.
         // FIXME: flexible width for efficient memory allocation
         const packedLength = Math.ceil(length / this.elementsPerPixel);
-        this.textureWidth = packedLength <= 1024 ? packedLength : 1024;
-        this.textureHeight = Math.ceil(packedLength / 1024);
+        this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
+        this.textureHeight = Math.ceil(packedLength / 2048);
         let texture = checkNull(gl.createTexture());
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.textureWidth, this.textureHeight, 0, gl.RGBA, gl.FLOAT, null);
@@ -1402,8 +1402,9 @@ function initializeWebGLRenderingContext() {
     let gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
     if (!gl)
         return null;
-    let ext = gl.getExtension('OES_texture_float');
-    if (!ext)
+    if (!gl.getExtension('OES_texture_float'))
+        return null;
+    if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
         return null;
     return gl;
 }

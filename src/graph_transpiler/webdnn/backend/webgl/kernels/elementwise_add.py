@@ -108,21 +108,19 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
     return orders, shape_dicts
 
 
-def _optimize_loop_structure(variables: List[Variable]):
+def _optimize_loop_structure(variables: List[Variable], key_variable: Variable):
     """
     Optimize loop structure to iterate each element in variables
 
     Returns:
-        (tuple): three elements are returned
+        (tuple): two elements are returned
 
-        - First element is dictionary of orders with key of each variable and value of each variable's order. This order is
-        simplified to avoid unnecessary deep loop.
-        - Second element is shape dictionary of all variables.
-        - The last element is stride dictionary of all variables.
+        - First one is shape dictionary of all variables.
+        - Second one is stride dictionary of all variables.
     """
-    orders, shape_dicts = _simplify_orders(variables)
+    orders, shape_dicts = _simplify_orders(variables)  # type: Dict[Variable, Order], Dict[Variable, AxisKeyDict[list[int]]]
     shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
-    strides = {v: [mul(shapes[v][i + 1:]) for i in range(v.ndim)] for v in variables}
+    strides = {v: [mul(shapes[v][orders[v].axes_dict[a] + 1:]) for a in orders[v].axes] for v in variables}
     stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
 
     # re-ordering
@@ -131,90 +129,113 @@ def _optimize_loop_structure(variables: List[Variable]):
         axes += [axis for axis in orders[v].axes if axis not in axes]
 
     orders = {v: Order(list(filter(lambda x: x in orders[v].axes, axes))) for v in variables}
+    shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
+    strides = {v: [stride_dicts[v][a] for a in orders[v].axes] for v in variables}
 
-    return orders, shape_dicts, stride_dicts
+    key_order = orders[key_variable]
+    if key_order.ndim > 4:
+        raise NotImplementedError('Currently, loop nest depth larger than 4 is not supported')
 
+    print('==========================================')
+    for v in variables:
+        shape = shapes[v]
+        stride = strides[v]
+        while len(shape) < 4:
+            stride.append(1)
+            shape.append(1)
 
-# ref
-# https://stackoverflow.com/questions/5879403/opengl-texture-coordinates-in-pixel-space
+        print('------------------------------------------')
+        print(v.name, orders[v])
+        print(v.name, shape)
+        print(v.name, stride)
+
+    return shapes, strides
+
 
 template = """
-precision mediump float;
+precision highp float;
 
 %%UNIFORM(sampler2D, X0)%%;
 %%UNIFORM(sampler2D, X1)%%;
 
-%%UNIFORM(vec2, dy)%%;
-%%UNIFORM(vec2, sy)%%;
-%%UNIFORM(vec4, sY)%%;
-%%UNIFORM(vec4, dY)%%;
+%%UNIFORM(vec2, d_y)%%;
+%%UNIFORM(vec2, s_y)%%;
+%%UNIFORM(vec4, d_Y)%%;
+%%UNIFORM(vec4, s_Y)%%;
 
-%%UNIFORM(vec4, sX0)%%;
-%%UNIFORM(vec2, sx0)%%;
-%%UNIFORM(vec2, dx0)%%;
+%%UNIFORM(vec2, d_x0)%%;
+%%UNIFORM(vec2, s_x0)%%;
+%%UNIFORM(vec4, d_X0)%%;
+%%UNIFORM(vec4, s_X0)%%;
 
-%%UNIFORM(vec4, sX1)%%;
-%%UNIFORM(vec2, sx1)%%;
-%%UNIFORM(vec2, dx1)%%;
+%%UNIFORM(vec2, d_x1)%%;
+%%UNIFORM(vec2, s_x1)%%;
+%%UNIFORM(vec4, d_X1)%%;
+%%UNIFORM(vec4, s_X1)%%;
 
 void main() {
-    vec4 p = mod(floor(dot(gl_FragCoord.xy-0.5, sy)/sY), dY);
-    vec2 px0 = mod(floor(dot(p, sX0)/sx0), dx0);
-    vec2 px1 = mod(floor(dot(p, sX1)/sx1), dx1);
+    vec4 p_Y = mod(floor(dot(gl_FragCoord.xy-0.5, s_y)/s_Y), d_Y);
+    vec2 p_x0 = mod(floor(dot(mod(p_Y, d_X0), s_X0)/s_x0), d_x0) + 0.5;
+    vec2 p_x1 = mod(floor(dot(mod(p_Y, d_X1), s_X1)/s_x1), d_x1) + 0.5;
 
-    vec4 v0 = texture2D(X0, px0 / dx0);
-    vec4 v1 = texture2D(X1, px1 / dx1);
+    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float x1 = texture2D(X1, p_x1 / d_x1).r;
+    float y;
     
-    gl_FragColor = v0 + v1;
+    y = x0 + x1;
+    
+    gl_FragColor = vec4(y, 0, 0, 0);
 }
 """
 
 
 def texture_shape(v: Variable):
-    texture_length = (v.size + 4 - 1) // 4
+    # texture_length = (v.size + 4 - 1) // 4
+    texture_length = v.size
     return [
-        texture_length if texture_length < 1024 else 1024,
-        (texture_length + 1024 - 1) // 1024
+        texture_length if texture_length < 2048 else 2048,
+        (texture_length + 2048 - 1) // 2048
     ]
 
 
 def texture_stride(v: Variable):
     result = []
     s = 1
-    for d in reversed(texture_shape(v)):
-        result.insert(0, s)
+    for d in texture_shape(v):
+        result.append(s)
         s *= d
     return result
 
 
 @WebGLDescriptorGenerator.register_handler(ElementwiseAdd)
-def elementwise_add(op: ElementwiseAdd, memory_layout: MemoryLayout) -> List[Kernel]:
-    x0 = memory_layout[op.inputs["x0"]]
-    x1 = memory_layout[op.inputs["x1"]]
-    y = memory_layout[op.outputs["y"]]
+def elementwise_add(op: ElementwiseAdd, _: MemoryLayout) -> List[Kernel]:
+    x0 = op.inputs["x0"]
+    x1 = op.inputs["x1"]
+    y = op.outputs["y"]
 
-    orders, shape_dicts, stride_dicts = _optimize_loop_structure(list(op.inputs.values()) + list(op.outputs.values()))
-    print(orders, shape_dicts, stride_dicts)
+    shapes, strides = _optimize_loop_structure([x0, x1, y], y)
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
 
     uniform_injector.register({
-        "X0": x0.variable,
-        "X1": x1.variable,
+        "X0": x0,
+        "X1": x1,
 
-        "sy": texture_stride(y.variable),
-        "dy": texture_shape(y.variable),
-        "dY": y.variable.shape,
-        "sY": y.variable.stride,
+        "s_y": texture_stride(y),
+        "d_y": texture_shape(y),
+        "d_Y": shapes[y],
+        "s_Y": strides[y],
 
-        "sX0": x0.variable.stride,
-        "sx0": texture_stride(x0.variable),
-        "dx0": texture_shape(x0.variable),
+        "d_x0": texture_shape(x0),
+        "s_x0": texture_stride(x0),
+        "d_X0": shapes[x0],
+        "s_X0": strides[x0],
 
-        "sX1": x1.variable.stride,
-        "sx1": texture_stride(x1.variable),
-        "dx1": texture_shape(x1.variable),
+        "d_x1": texture_shape(x1),
+        "s_x1": texture_stride(x1),
+        "d_X1": shapes[x1],
+        "s_X1": strides[x1],
     })
 
     source = template
@@ -226,7 +247,7 @@ def elementwise_add(op: ElementwiseAdd, memory_layout: MemoryLayout) -> List[Ker
         name_injector.name,
         uniform_injector.samplers,
         uniform_injector.uniforms,
-        y.variable
+        y
     )
 
     return [kernel]

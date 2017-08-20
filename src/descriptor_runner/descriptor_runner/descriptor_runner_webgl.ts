@@ -9,6 +9,7 @@ import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl
 import { ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import { DEBUG } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -79,7 +80,7 @@ class WebGLBuffer {
 
     constructor(gl: WebGLRenderingContext, length: number,
                 array: Float32Array | null = null,
-                channelMode: ChannelMode = ChannelMode.RGBA) {
+                channelMode: ChannelMode = ChannelMode.R) {
         this.gl = gl;
         this.channelMode = channelMode;
         switch (this.channelMode) {
@@ -101,8 +102,8 @@ class WebGLBuffer {
         // width is fixed as 1024, height is flexible.
         // FIXME: flexible width for efficient memory allocation
         const packedLength = Math.ceil(length / this.elementsPerPixel);
-        this.textureWidth = packedLength <= 1024 ? packedLength : 1024;
-        this.textureHeight = Math.ceil(packedLength / 1024);
+        this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
+        this.textureHeight = Math.ceil(packedLength / 2048);
 
         let texture = checkNull(gl.createTexture());
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -521,8 +522,8 @@ function initializeWebGLRenderingContext() {
     let gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext;
     if (!gl) return null;
 
-    let ext = gl.getExtension('OES_texture_float');
-    if (!ext) return null;
+    if (!gl.getExtension('OES_texture_float')) return null;
+    if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
     return gl;
 }
