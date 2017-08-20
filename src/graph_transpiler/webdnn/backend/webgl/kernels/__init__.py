@@ -8,6 +8,7 @@ from webdnn.backend.webgl.kernels import elementwise_pow
 from webdnn.backend.webgl.kernels import elu
 from webdnn.backend.webgl.kernels import exp
 from webdnn.backend.webgl.kernels import hard_sigmoid
+from webdnn.backend.webgl.kernels import im2col
 from webdnn.backend.webgl.kernels import leaky_relu
 from webdnn.backend.webgl.kernels import reinterpret_axis
 from webdnn.backend.webgl.kernels import relu

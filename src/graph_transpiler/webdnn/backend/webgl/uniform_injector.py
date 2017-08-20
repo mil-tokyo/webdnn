@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, Sequence
 
 from webdnn.backend.code_generator.injector import Tag, Injector
 from webdnn.graph.variable import Variable
@@ -29,12 +29,12 @@ class UniformInjector(Injector):
                 assert int(value) == value, f"Uniform value of 'int' must be integer: value={value}"
 
             elif typename == "vec2" or typename == "vec3" or typename == "vec4":
-                assert isinstance(value, List), f"Uniform value of '{typename}' must be list: type(value)={type(value)}"
+                assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
 
             elif typename == "ivec2" or typename == "ivec3" or typename == "ivec4":
-                assert isinstance(value, List), f"Uniform value of '{typename}' must be list: type(value)={type(value)}"
+                assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
                 for i, v in enumerate(value):
-                    assert int(v) == v, f"Uniform value of '{typename}' must be list of integer: value[{i}]={value[i]}"
+                    assert int(v) == v, f"Uniform value of '{typename}' must be sequence of integer: value[{i}]={value[i]}"
 
             elif typename == "sampler2D":
                 assert isinstance(value, Variable), f"Uniform value for sampler2D must be Variable instance: type(value)={type(value)}"
