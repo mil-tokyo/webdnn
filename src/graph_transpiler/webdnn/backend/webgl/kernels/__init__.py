@@ -25,3 +25,4 @@ from webdnn.backend.webgl.kernels import softsign
 from webdnn.backend.webgl.kernels import tanh
 from webdnn.backend.webgl.kernels import threshold_relu
 from webdnn.backend.webgl.kernels import transpose
+from webdnn.backend.webgl.kernels import space2depth

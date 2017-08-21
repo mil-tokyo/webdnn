@@ -17,8 +17,6 @@ This is just an experimental implementation.
 ### Not implemented yet
 
 - max_pooling_2d
-- space2depth
-
 - average_pooling_2d
 - col2im
 - concat
