@@ -41,8 +41,16 @@ def test_irregular_stride_size():
     template(stride=(2, 3))
 
 
-def test_irregular_padding_size():
+def test_irregular_padding_size1():
     template(pad=(1, 2))
+
+
+def test_irregular_padding_size2():
+    template(pad=2)
+
+
+def test_irregular_padding_size3():
+    template(pad=2, ksize=5)
 
 
 def test_irregular_size():

@@ -37,14 +37,14 @@ precision highp float;
 %%UNIFORM(float, PW)%%;
 
 void main() {
-    vec4 p_Col = mod(floor(dot(gl_FragCoord.xy-0.5, s_col) / s_Col), d_Col);
+    vec4 p_Col = mod(floor((dot(gl_FragCoord.xy-0.5, s_col) + 0.5) / s_Col), d_Col);
 """
 
 template_NHWC = template_preamble + """
     float n = p_Col.x;
     float h2 = p_Col.y;
     float w2 = p_Col.z; 
-    float kh = floor(p_Col.w / (C1 * KW));
+    float kh = floor(floor(p_Col.w / C1) / KW);
     float kw = mod(floor(p_Col.w / C1), KW);
     float c1 = mod(p_Col.w, C1);
 
@@ -56,7 +56,7 @@ template_NHWC = template_preamble + """
         v = 0.0;
     } else {
         vec4 p_Im = vec4(n, h1, w1, c1);
-        vec2 p_im = mod(floor(dot(mod(p_Im, d_Im), s_Im) / s_im), d_im) + 0.5;
+        vec2 p_im = mod(floor((dot(p_Im, s_Im) + 0.5) / s_im), d_im) + 0.5;
 
         v = texture2D(im, p_im / d_im).r;
     }
@@ -66,7 +66,7 @@ template_NHWC = template_preamble + """
 """
 
 template_CNHW = template_preamble + """
-    float kh = floor(p_Col.x / (C1 * KW));
+    float kh = floor(floor(p_Col.x / C1) / KW);
     float kw = mod(floor(p_Col.x / C1), KW);
     float c1 = mod(p_Col.x, C1);
     float n = p_Col.y;
@@ -81,7 +81,7 @@ template_CNHW = template_preamble + """
         v = 0.0;
     } else {
         vec4 p_Im = vec4(n, h1, w1, c1);
-        vec2 p_im = mod(floor(dot(mod(p_Im, d_Im), s_Im) / s_im), d_im) + 0.5;
+        vec2 p_im = mod(floor((dot(p_Im, s_Im) + 0.5) / s_im), d_im) + 0.5;
 
         v = texture2D(im, p_im / d_im).r;
     }

@@ -33,7 +33,7 @@ def test_general():
     y, = MaxPooling2D(None, ksize=(KH, KW), stride=(SH, SW), padding=(PH, PW))(x)
 
     generate_kernel_test_case(
-        description=f"Average Pooling",
+        description=f"Max Pooling",
         backend=["webgpu", "webgl", "webassembly", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
@@ -65,8 +65,8 @@ def test_irregular_size():
     y, = MaxPooling2D(None, ksize=(KH, KW), stride=(SH, SW), padding=(PH, PW))(x)
 
     generate_kernel_test_case(
-        description=f"Average Pooling with irregular window size",
-        backend=["webgpu", "webassembly", "fallback"],
+        description=f"Max Pooling with irregular window size",
+        backend=["webgpu", "webgl", "webassembly", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy}

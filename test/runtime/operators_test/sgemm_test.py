@@ -12,10 +12,8 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 
 @wrap_template
 def template(transpose_A=False, transpose_B=False, M=5, N=8, K=6, description: str = ""):
-    # va = np.random.rand(M, K).astype(np.float32)
-    # vb = np.random.rand(K, N).astype(np.float32)
-    va = np.ones((M, K)).astype(np.float32)
-    vb = np.ones((K, N)).astype(np.float32)
+    va = np.random.rand(M, K).astype(np.float32)
+    vb = np.random.rand(K, N).astype(np.float32)
 
     vc = np.dot(va, vb)
 
@@ -53,6 +51,10 @@ def template(transpose_A=False, transpose_B=False, M=5, N=8, K=6, description: s
         inputs={a: (va if transpose_A else va.transpose())},
         expected={c3: vc}
     )
+
+
+def test_large():
+    template(M=208, N=10, K=36, transpose_A=True, transpose_B=True)
 
 
 def test_NN():
