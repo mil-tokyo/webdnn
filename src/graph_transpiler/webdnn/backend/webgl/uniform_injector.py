@@ -41,7 +41,6 @@ class UniformInjector(Injector):
                 variable = value  # type: Variable
                 value = len(self.samplers)
                 self.samplers.append({
-                    "uniform_name": "name",
                     "variable_name": variable.name,
                     "value": value
                 })

@@ -34,7 +34,7 @@ def test_general():
 
     generate_kernel_test_case(
         description=f"Average Pooling",
-        backend=["webgpu", "webassembly", "fallback"],
+        backend=["webgpu", "webgl", "webassembly", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy}
@@ -66,7 +66,7 @@ def test_irregular_size():
 
     generate_kernel_test_case(
         description=f"Average Pooling with irregular window size",
-        backend=["webgpu", "webassembly", "fallback"],
+        backend=["webgpu", "webgl", "webassembly", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy}

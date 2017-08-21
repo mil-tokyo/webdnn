@@ -19,7 +19,7 @@ def test_NC_CN():
 
     generate_kernel_test_case(
         description=f"Linear: NC*CN",
-        backend=["fallback", "webassembly", "webgpu"],
+        backend=["fallback", "webgl", "webassembly", "webgpu"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy},
@@ -38,7 +38,7 @@ def test_NHWC_HWCN():
 
     generate_kernel_test_case(
         description=f"Linear: NHWC*HWCN",
-        backend=["fallback", "webassembly", "webgpu"],
+        backend=["fallback", "webgl", "webassembly", "webgpu"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy},

@@ -17,6 +17,7 @@ from webdnn.backend.webgl.kernels import scalar_add
 from webdnn.backend.webgl.kernels import scalar_affine
 from webdnn.backend.webgl.kernels import scalar_mul
 from webdnn.backend.webgl.kernels import scalar_pow
+from webdnn.backend.webgl.kernels import sgemm
 from webdnn.backend.webgl.kernels import sigmoid
 from webdnn.backend.webgl.kernels import softplus
 from webdnn.backend.webgl.kernels import softsign

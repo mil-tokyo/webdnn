@@ -192,16 +192,12 @@ def main():
 
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
     x = chainer.Variable(example_input)
-    y = F.softmax(model.predictor(x))  # run model
+    # y = F.softmax(model.predictor(x))  # run model
+    y = model.predictor(x)
     graph = ChainerConverter().convert([x], [y])  # convert graph to intermediate representation
-    for backend in ["webgpu", "webassembly", "fallback"]:
-        try:
-            exec_info = generate_descriptor(backend, graph)
-            exec_info.save(args.out)
-        except Exception as ex:
-            print(f"Failed generating descriptor for backend {backend}: {str(ex)}\n")
-        else:
-            print(f"Backend {backend} ok\n")
+    for backend in ["webgpu", "webgl", "webassembly", "fallback"]:
+        exec_info = generate_descriptor(backend, graph)
+        exec_info.save(args.out)
 
     print('Exporting test samples (for demo purpose)')
     test_samples_json = []

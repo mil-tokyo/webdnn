@@ -1266,6 +1266,8 @@ var WebGLBuffer = (function () {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         this.texture = texture;
+        if (array)
+            this.uploadToGPU();
     }
     WebGLBuffer.prototype.uploadToGPU = function () {
         var gl = this.gl;
@@ -1576,9 +1578,9 @@ var DescriptorRunnerWebGL = (function (_super) {
                 // frame buffer
                 var frameBuffer = gl.createFramebuffer();
                 // inputs
-                var inputs = execInfo.inputs.map(function (input, i) { return ({
+                var inputs = execInfo.inputs.map(function (input) { return ({
                     buffer: buffers.get(input.variable_name),
-                    uniformIndex: 1 + i
+                    uniformIndex: 1 + input.value
                 }); });
                 //output
                 var output = buffers.get(execInfo.output);

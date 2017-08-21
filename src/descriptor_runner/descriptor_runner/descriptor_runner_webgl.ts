@@ -113,6 +113,8 @@ class WebGLBuffer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         this.texture = texture;
+
+        if (array) this.uploadToGPU();
     }
 
     uploadToGPU() {
@@ -393,9 +395,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 let frameBuffer = gl.createFramebuffer()!;
 
                 // inputs
-                let inputs = execInfo.inputs.map((input, i) => ({
+                let inputs = execInfo.inputs.map(input => ({
                     buffer: buffers.get(input.variable_name)!,
-                    uniformIndex: 1 + i
+                    uniformIndex: 1 + input.value
                 }));
 
                 //output

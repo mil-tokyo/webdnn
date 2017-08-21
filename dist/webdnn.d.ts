@@ -613,6 +613,7 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	    inputs: [{
 	        variable_name: string;
 	        uniform_name: string;
+	        value: number;
 	    }];
 	    output: string;
 	    width: number;

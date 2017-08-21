@@ -16,9 +16,9 @@ This is just an experimental implementation.
 
 ### Not implemented yet
 
-- sgemm
-- im2col
+- max_pooling_2d
 - depth2space
+- space2depth
 
 - average_pooling_2d
 - col2im
@@ -27,8 +27,6 @@ This is just an experimental implementation.
 - linear
 - local_response_normalization
 - lstm
-- max_pooling_2d
 - softmax
-- space2depth
 - split_axis
 - zero_padding_1d

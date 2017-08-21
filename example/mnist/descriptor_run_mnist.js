@@ -75,6 +75,7 @@ async function fetchSamples(path) {
 }
 
 function resetResult() {
+    if (!table) return;
     while (table.rows.length >= 2) table.deleteRow(-1);
 }
 

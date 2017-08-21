@@ -11,11 +11,11 @@ from webdnn.graph.variable import Variable
 template = """
 precision highp float;
 
-%%UNIFORM(sampler2D, X0)%%;
+%%UNIFORM(sampler2D, X)%%;
 %%UNIFORM(vec2, texture_shape)%%;
 
 void main() {
-    gl_FragColor = texture2D(X0, gl_FragCoord.xy / texture_shape);
+    gl_FragColor = texture2D(X, gl_FragCoord.xy / texture_shape);
 }
 """
 
@@ -31,14 +31,14 @@ def texture_shape(v: Variable):
 
 @WebGLDescriptorGenerator.register_handler(Reshape)
 def elementwise_add(op: Reshape, _: MemoryLayout) -> List[Kernel]:
-    x0 = op.inputs["x0"]
+    x = op.inputs["x"]
     y = op.outputs["y"]
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
 
     uniform_injector.register({
-        "X0": x0,
+        "X": x,
         "texture_shape": texture_shape(y),
     })
 

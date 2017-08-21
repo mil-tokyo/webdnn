@@ -27,7 +27,8 @@ export interface GraphDescriptorWebGLExecInfos {
     }
     inputs: [{
         variable_name: string,
-        uniform_name: string
+        uniform_name: string,
+        value: number
     }]
     output: string
     width: number

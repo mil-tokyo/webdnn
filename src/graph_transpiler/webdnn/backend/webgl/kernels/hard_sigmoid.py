@@ -161,8 +161,6 @@ precision highp float;
 %%UNIFORM(vec4, d_X0)%%;
 %%UNIFORM(vec4, s_X0)%%;
 
-%%UNIFORM(float, slope)%%;
-
 void main() {
     vec4 p_Y = mod(floor(dot(gl_FragCoord.xy-0.5, s_y)/s_Y), d_Y);
     vec2 p_x0 = mod(floor(dot(mod(p_Y, d_X0), s_X0)/s_x0), d_x0) + 0.5;
@@ -171,7 +169,7 @@ void main() {
     float y;
 
     y = x0 * 0.2 + 0.5;
-    y = (y < 0.0) ? 0.0 : (y > 1.0) > 1.0 : y;
+    y = (y < 0.0) ? 0.0 : (y > 1.0) ? 1.0 : y;
 
     gl_FragColor = vec4(y, 0, 0, 0);
 }
