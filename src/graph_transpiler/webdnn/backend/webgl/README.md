@@ -17,7 +17,6 @@ This is just an experimental implementation.
 ### Not implemented yet
 
 - max_pooling_2d
-- depth2space
 - space2depth
 
 - average_pooling_2d
