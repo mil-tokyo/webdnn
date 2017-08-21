@@ -17,7 +17,7 @@ import { DescriptorRunner } from "./descriptor_runner";
  */
 interface RuntimeProgramInfo {
     program: WebGLProgram,
-    frameBuffer,
+    frameBuffer: WebGLFramebuffer,
     width: number,
     height: number,
     inputs: {
@@ -46,7 +46,7 @@ interface RuntimeInfo {
     programs: RuntimeProgramInfo[]
 }
 
-// [x y z] * [upper-left, lower-left, upper-right, lower-right]
+// [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 /**
  * @protected
  */
@@ -54,7 +54,7 @@ const vertexArray = new Float32Array([
     -1, +1,
     -1, -1,
     +1, +1,
-    +1, -1
+    +1, -1,
 ]);
 
 /**
@@ -112,6 +112,7 @@ class WebGLBuffer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
         this.texture = texture;
 
         if (array) this.uploadToGPU();
@@ -129,14 +130,21 @@ class WebGLBuffer {
 
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     downloadToCPU() {
         let gl = this.gl;
         let tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
+        let frameBuffer = gl.createFramebuffer()!;
 
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+        this.bindTextureToCurrentFrameBuffer();
+
         gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+
+        this.unbindTextureFromCurrentFrameBuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         this.array.set(this.unpack(tmp).slice(0, this.length), 0);
     }
@@ -146,7 +154,25 @@ class WebGLBuffer {
 
         gl.activeTexture(gl.TEXTURE0 + unit);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    }
+
+    unbindTextureFromUnit(unit: number) {
+        let gl = this.gl;
+
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    bindTextureToCurrentFrameBuffer() {
+        let gl = this.gl;
+
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    }
+
+    unbindTextureFromCurrentFrameBuffer() {
+        let gl = this.gl;
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
     }
 
     private pack(array: Float32Array) {
@@ -196,14 +222,22 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     private outputViews: SymbolicFloat32Array[] | null;
 
     static checkAvailability() {
-        return IS_WEBGL_SUPPORTED;
+        //TODO(Kiikurage)
+        // Safari supports WebGL with OES_TEXTURE_FLOAT extension. However,
+        // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
+        const IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 &&
+            navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
+        return IS_WEBGL_SUPPORTED && !IS_SAFARI;
     }
 
     async init() {
+        if (!DescriptorRunnerWebGL.checkAvailability()) throw Error('WebGL backend is not supported in this browser.');
+
         this.gl = initializeWebGLRenderingContext()!;
         let vertexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
+
         this.buffers = new Map();
     }
 
@@ -390,14 +424,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             inputs: this.getInputViews().map(view => buffers.get(view.name)!),
             outputs: this.getOutputViews().map(view => buffers.get(view.name)!),
             programs: this.descriptor.exec_infos.map(execInfo => {
-
-                // frame buffer
-                let frameBuffer = gl.createFramebuffer()!;
-
                 // inputs
                 let inputs = execInfo.inputs.map(input => ({
                     buffer: buffers.get(input.variable_name)!,
-                    uniformIndex: 1 + input.value
+                    uniformIndex: input.value
                 }));
 
                 //output
@@ -436,10 +466,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                             };
 
                         case 'sampler2D':
-                            // Bind input as unit "1", "2", ... . Unit "0" is reserved for output.
                             return {
                                 func: gl.uniform1i,
-                                args: [gl.getUniformLocation(program, name), 1 + value]
+                                args: [gl.getUniformLocation(program, name), value]
                             };
 
                         default:
@@ -458,7 +487,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 // run
                 return {
                     program: program,
-                    frameBuffer: frameBuffer,
+                    frameBuffer: gl.createFramebuffer()!,
                     width: output.textureWidth,
                     height: output.textureHeight,
                     inputs: inputs,
@@ -485,16 +514,16 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         for (let buffer of runtimeInfo.inputs) buffer.uploadToGPU();
 
         for (let runtimeProgramInfo of runtimeInfo.programs) {
-            gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-
             // frameBuffer
             gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+            gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+            gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
 
             // inputs
             for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.bindTextureToUnit(uniformIndex);
 
             // output
-            runtimeProgramInfo.output.bindTextureToUnit(0);
+            runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
 
             // shader
             gl.useProgram(runtimeProgramInfo.program);
@@ -510,6 +539,15 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
             // run
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+
+            // wait until done
+            gl.finish();
+
+            // clean up
+            for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
+            runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         }
 
         //Download all output values to CPU
@@ -527,7 +565,23 @@ function initializeWebGLRenderingContext() {
     if (!gl.getExtension('OES_texture_float')) return null;
     if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.STENCIL_TEST);
+    gl.disable(gl.BLEND);
+    gl.disable(gl.DITHER);
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.disable(gl.SAMPLE_COVERAGE);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
     return gl;
+}
+
+function checkBrowserSupportStatus() {
+    let gl = initializeWebGLRenderingContext();
+    if (!gl) return;
+
+    IS_WEBGL_SUPPORTED = true;
 }
 
 function checkNull<T>(v: T | null | undefined): T {
@@ -536,5 +590,4 @@ function checkNull<T>(v: T | null | undefined): T {
 }
 
 let IS_WEBGL_SUPPORTED: boolean = false;
-
-document.addEventListener('DOMContentLoaded', () => IS_WEBGL_SUPPORTED = !!initializeWebGLRenderingContext());
+document.addEventListener('DOMContentLoaded', checkBrowserSupportStatus);

@@ -105,13 +105,16 @@ const TestRunner = new class {
             await runner.run();
             elapsedTime = performance.now() - startTime;
             testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual(), `outputs[${i}]`));
-            this.results.push({
+            let result = {
                 name: testName,
                 testCase: testCase,
                 result: true,
                 elapsedTime: elapsedTime,
-            });
+                outputs: outputs.map(v => v.toActual())
+            };
+            this.results.push(result);
             console.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
+            console.log(result);
         }
         catch (err) {
             if (err instanceof Warning) {

@@ -46,6 +46,8 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
     }
 
     async init() {
+        if (!DescriptorRunnerWebGPU.checkAvailability()) throw Error('WebGPU backend is not supported in this browser.');
+
         // initialize webgpu, build kernels
         this.shaderLanguage = 'metal';
         this.webgpuHandler = new WebGPUHandler();

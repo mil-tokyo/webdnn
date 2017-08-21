@@ -85,7 +85,7 @@ export function getBackendAvailability(): BackendAvailability {
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
 
-    let order = (['webgpu', 'webassembly', 'fallback'] as BackendName[]).filter(backend => status[backend]);
+    let order = (['webgpu', 'webgl', 'webassembly', 'fallback'] as BackendName[]).filter(backend => status[backend]);
 
     return {
         status: status,
@@ -234,7 +234,7 @@ export interface InitOption {
 export async function load(directory: string, initOption: InitOption = {}): Promise<DescriptorRunner<GraphDescriptor>> {
     let backendOrder = initOption.backendOrder;
     if (!backendOrder) {
-        backendOrder = ['webgpu', 'webgl', 'webassembly', 'fallback'];
+        backendOrder = getBackendAvailability().defaultOrder;
     } else if (typeof backendOrder === 'string') {
         backendOrder = [backendOrder];
     }

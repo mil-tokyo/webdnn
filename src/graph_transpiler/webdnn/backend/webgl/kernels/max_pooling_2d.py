@@ -44,11 +44,19 @@ def generate_template(ksize):
     
         float v = 0.0;
         
-        for (float kh = 0.0; kh < %%KSIZE_H%%; kh += 1.0) {
+        // NOTE: In FireFox, for-loop with incremental counter generate wrong result
+        // (Maybe there're a bug in implementation of loop-unrolling optimization phase).
+        //
+        // Therefore, loop counter must be decremented!!
+        //
+        // I observed this bug in follow version of FF:
+        //   (navigator.userAgent)="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0"
+
+        for (float kh = %%KSIZE_H%% - 1.0; kh >= 0.0; kh -= 1.0) {
             float h1 = h2 * SH - PH + kh;
             if (h1 < 0.0 || h1 >= H1) continue;
     
-            for (float kw = 0.0; kw < %%KSIZE_W%%; kw += 1.0) {
+            for (float kw = %%KSIZE_W%% - 1.0; kw >= 0.0 ; kw -= 1.0) {
                 float w1 = w2 * SW - PW + kw;
                 if (w1 < 0.0 || w1 >= W1) continue;
 

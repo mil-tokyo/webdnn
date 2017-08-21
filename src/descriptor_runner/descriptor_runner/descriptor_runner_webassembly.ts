@@ -41,6 +41,8 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
     }
 
     init(): Promise<void> {
+        if (!DescriptorRunnerWebassembly.checkAvailability()) throw Error('WebAssembly backend is not supported in this browser.');
+
         //nothing to do
         return Promise.resolve();
     }

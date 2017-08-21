@@ -16,14 +16,10 @@ This is just an experimental implementation.
 
 ### Not implemented yet
 
-- max_pooling_2d
-- average_pooling_2d
-
 - col2im
 - concat
 - embedding
 - local_response_normalization
 - lstm
-- softmax
 - split_axis
 - zero_padding_1d
