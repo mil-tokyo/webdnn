@@ -193,7 +193,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="fc", choices=["fc", "conv", "dilated_conv", "residual", "complex"])
     parser.add_argument("--out", default="output_keras")
-    parser.add_argument("--backend", default="webgpu,webassembly,fallback")
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
     args = parser.parse_args()
 
     model_path = os.path.join(args.out, f"./keras_model/{args.model}.h5")

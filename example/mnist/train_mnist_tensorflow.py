@@ -12,7 +12,7 @@ from webdnn.frontend.tensorflow import TensorFlowConverter
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default="output_tensorflow")
-    parser.add_argument("--backends", action="append", default=["webgpu", "webassembly", "fallback"])
+    parser.add_argument("--backends", action="append", default=["webgpu", "webgl", "webassembly", "fallback"])
     args = parser.parse_args()
 
     session_path = os.path.join(args.out, "session")
