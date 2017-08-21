@@ -18,10 +18,10 @@ This is just an experimental implementation.
 
 - max_pooling_2d
 - average_pooling_2d
+
 - col2im
 - concat
 - embedding
-- linear
 - local_response_normalization
 - lstm
 - softmax
