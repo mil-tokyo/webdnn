@@ -591,6 +591,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	/** Don't Remove This comment block */
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
 	/**
+	 * @protecte
+	 */
+	export type ChannelMode = 'RGBA' | 'R';
+	/**
 	 * @protected
 	 */
 	export interface GraphDescriptorWebGL extends GraphDescriptor {
@@ -598,6 +602,9 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	        [name: string]: string;
 	    };
 	    exec_infos: GraphDescriptorWebGLExecInfos[];
+	    channel_mode: {
+	        [name: string]: ChannelMode;
+	    };
 	}
 	/**
 	 * @protected

@@ -6,13 +6,18 @@
 import { GraphDescriptor } from "./graph_descriptor";
 
 /**
+ * @protecte
+ */
+export type ChannelMode = 'RGBA' | 'R';
+
+/**
  * @protected
  */
 export interface GraphDescriptorWebGL extends GraphDescriptor {
     shader_sources: { [name: string]: string }
-    exec_infos: GraphDescriptorWebGLExecInfos[]
+    exec_infos: GraphDescriptorWebGLExecInfos[],
+    channel_mode: { [name: string]: ChannelMode }
 }
-
 
 /**
  * @protected

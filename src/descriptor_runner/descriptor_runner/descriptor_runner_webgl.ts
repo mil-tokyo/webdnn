@@ -5,7 +5,7 @@
 
 import get_weight_decoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
-import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
+import { ChannelMode, GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
 import { ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
@@ -59,19 +59,13 @@ const vertexArray = new Float32Array([
 ]);
 
 /**
- * Channel usage for WebGLBuffer
- * @protected
- */
-enum ChannelMode {R, RGBA}
-
-/**
  * Buffer wrapper for WebGL backend
  * @TODO: Move this into `/buffer/buffer_webgl.ts` and implement `Buffer` interface.
  * @protected
  */
 class WebGLBuffer {
     private gl: WebGLRenderingContext;
-    readonly channelMode: ChannelMode = ChannelMode.RGBA;
+    readonly channelMode: ChannelMode;
     readonly elementsPerPixel: number;
     readonly length: number;
     readonly array: Float32Array;
@@ -80,19 +74,16 @@ class WebGLBuffer {
     private texture: WebGLTexture;
     readonly name: string;
 
-    constructor(gl: WebGLRenderingContext, length: number,
-                name: string,
-                array: Float32Array | null = null,
-                channelMode: ChannelMode = ChannelMode.R) {
+    constructor(gl: WebGLRenderingContext, length: number, name: string, array: Float32Array | null, channelMode: ChannelMode) {
         this.gl = gl;
         this.name = name;
         this.channelMode = channelMode;
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 this.elementsPerPixel = 4;
                 break;
 
-            case ChannelMode.R:
+            case 'R':
                 this.elementsPerPixel = 1;
                 break;
 
@@ -181,10 +172,10 @@ class WebGLBuffer {
 
     private pack(array: Float32Array) {
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 return new Float32Array(array);
 
-            case ChannelMode.R:
+            case 'R':
                 let result = new Float32Array(array.length * 4);
                 for (let i = 0; i < array.length; i++) result[i * 4] = array[i];
                 return result;
@@ -196,10 +187,10 @@ class WebGLBuffer {
 
     private unpack(array: Float32Array) {
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 return new Float32Array(array);
 
-            case ChannelMode.R:
+            case 'R':
                 let result = new Float32Array(array.length / 4);
                 for (let i = 0; i < array.length / 4; i++) result[i] = array[i * 4];
                 return result;
@@ -275,7 +266,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
                     null;
 
-                let buffer = new WebGLBuffer(this.gl, allocation.size, name, array);
+                let buffer = new WebGLBuffer(this.gl, allocation.size, name, array, descriptor.channel_mode[name]);
                 buffers.set(name, buffer);
             });
 
@@ -298,7 +289,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         Object.entries(descriptor.memory_layout.dynamic.allocations)
             .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size), name);
+                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size), name, null, descriptor.channel_mode[name]);
                 buffers.set(name, buffer);
             });
 
@@ -566,12 +557,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 console.log('Input:');
                 for (let {buffer} of runtimeProgramInfo.inputs) {
                     buffer.downloadToCPU();
-                    console.log(buffer.name, buffer.array);
+                    console.log(`${buffer.name}: ${buffer.channelMode}`, buffer.array);
                 }
 
                 console.log('Output:');
                 runtimeProgramInfo.output.downloadToCPU();
-                console.log(runtimeProgramInfo.output.name, runtimeProgramInfo.output.array);
+                console.log(`${runtimeProgramInfo.output.name}: ${runtimeProgramInfo.output.channelMode}`, runtimeProgramInfo.output.array);
 
                 console.groupEnd();
             }

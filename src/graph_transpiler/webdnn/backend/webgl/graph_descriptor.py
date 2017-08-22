@@ -3,6 +3,7 @@ from typing import Iterable, Dict
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
@@ -69,5 +70,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "placeholders": placeholders,
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
-            "licenses": self.licenses
+            "licenses": self.licenses,
+            "channel_mode": {name: a.variable.get_attribute(ChannelMode)[0].mode.name for name, a in self.memory_layout.allocations.items()}
         }

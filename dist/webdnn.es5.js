@@ -1223,32 +1223,20 @@ var vertexArray = new Float32Array([
     +1, -1,
 ]);
 /**
- * Channel usage for WebGLBuffer
- * @protected
- */
-var ChannelMode;
-(function (ChannelMode) {
-    ChannelMode[ChannelMode["R"] = 0] = "R";
-    ChannelMode[ChannelMode["RGBA"] = 1] = "RGBA";
-})(ChannelMode || (ChannelMode = {}));
-/**
  * Buffer wrapper for WebGL backend
  * @TODO: Move this into `/buffer/buffer_webgl.ts` and implement `Buffer` interface.
  * @protected
  */
 var WebGLBuffer = (function () {
     function WebGLBuffer(gl, length, name, array, channelMode) {
-        if (array === void 0) { array = null; }
-        if (channelMode === void 0) { channelMode = ChannelMode.R; }
-        this.channelMode = ChannelMode.RGBA;
         this.gl = gl;
         this.name = name;
         this.channelMode = channelMode;
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 this.elementsPerPixel = 4;
                 break;
-            case ChannelMode.R:
+            case 'R':
                 this.elementsPerPixel = 1;
                 break;
             default:
@@ -1316,9 +1304,9 @@ var WebGLBuffer = (function () {
     };
     WebGLBuffer.prototype.pack = function (array) {
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 return new Float32Array(array);
-            case ChannelMode.R:
+            case 'R':
                 var result = new Float32Array(array.length * 4);
                 for (var i = 0; i < array.length; i++)
                     result[i * 4] = array[i];
@@ -1329,9 +1317,9 @@ var WebGLBuffer = (function () {
     };
     WebGLBuffer.prototype.unpack = function (array) {
         switch (this.channelMode) {
-            case ChannelMode.RGBA:
+            case 'RGBA':
                 return new Float32Array(array);
-            case ChannelMode.R:
+            case 'R':
                 var result = new Float32Array(array.length / 4);
                 for (var i = 0; i < array.length / 4; i++)
                     result[i] = array[i * 4];
@@ -1428,7 +1416,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                             var array = (allocation.offset + allocation.size <= weight.length) ?
                                 new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
                                 null;
-                            var buffer = new WebGLBuffer(_this.gl, allocation.size, name, array);
+                            var buffer = new WebGLBuffer(_this.gl, allocation.size, name, array, descriptor.channel_mode[name]);
                             buffers.set(name, buffer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
@@ -1463,7 +1451,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                         Object.entries(descriptor.memory_layout.dynamic.allocations)
                             .forEach(function (_a) {
                             var name = _a[0], allocation = _a[1];
-                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation.size), name);
+                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation.size), name, null, descriptor.channel_mode[name]);
                             buffers.set(name, buffer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
@@ -1740,11 +1728,11 @@ var DescriptorRunnerWebGL = (function (_super) {
                         for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
                             buffer = _q[_p].buffer;
                             buffer.downloadToCPU();
-                            console.log(buffer.name, buffer.array);
+                            console.log(buffer.name + ": " + buffer.channelMode, buffer.array);
                         }
                         console.log('Output:');
                         runtimeProgramInfo.output.downloadToCPU();
-                        console.log(runtimeProgramInfo.output.name, runtimeProgramInfo.output.array);
+                        console.log(runtimeProgramInfo.output.name + ": " + runtimeProgramInfo.output.channelMode, runtimeProgramInfo.output.array);
                         console.groupEnd();
                     }
                 }

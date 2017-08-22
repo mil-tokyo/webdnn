@@ -6,3 +6,6 @@ class Attribute:
 
     def __init__(self, base: "node.Node"):
         self.base = base
+
+    def __str__(self):
+        return self.__class__.__name__

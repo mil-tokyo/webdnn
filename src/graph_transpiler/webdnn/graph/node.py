@@ -1,4 +1,4 @@
-from typing import Dict, Set, Type, Optional
+from typing import Dict, Set, Type, Optional, List, TypeVar
 
 from webdnn.graph import attribute
 
@@ -13,6 +13,9 @@ def _generate_name(node: "Node"):
     name = f"{klass.__name__}{_node_serial_counter_dict[klass]}"
     _node_serial_counter_dict[klass] += 1
     return name
+
+
+_TAttr = TypeVar("T", bound="attribute.Attribute")
 
 
 class Node:
@@ -52,3 +55,9 @@ class Node:
 
     def __str__(self):
         return self.__repr__()
+
+    def get_attribute(self, Attr: Type[_TAttr]) -> List[_TAttr]:
+        return [attr for attr in self.attributes if isinstance(attr, Attr)]
+
+    def has_attribute(self, Attr: Type["attribute.Attribute"]) -> bool:
+        return len(self.get_attribute(Attr)) > 0

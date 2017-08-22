@@ -35,13 +35,13 @@ void main() {
     vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
     vec2 p_x1 = convert_position(p_X1, s_X1, s_x1, d_x1);
 
-    float x0 = texture2D(X0, p_x0 / d_x0).r;
-    float x1 = texture2D(X1, p_x1 / d_x1).r;
-    float y;
+    vec4 x0 = texture2D(X0, p_x0 / d_x0);
+    vec4 x1 = texture2D(X1, p_x1 / d_x1);
+    vec4 y;
     
     y = x0 / x1;
     
-    gl_FragColor = vec4(y, 0, 0, 0);
+    gl_FragColor = y;
 }
 """
 

@@ -13,7 +13,7 @@ template = FragmentShaderPreamble + """
 %%UNIFORM(vec2, texture_shape)%%;
 
 void main() {
-    gl_FragColor = texture2D(X, gl_FragCoord.xy / texture_shape);
+    gl_FragColor = texture2D(X, gl_FragCoord.xy / texture_shape); 
 }
 """
 

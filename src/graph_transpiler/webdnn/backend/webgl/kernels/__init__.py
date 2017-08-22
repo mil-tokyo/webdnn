@@ -2,6 +2,8 @@ from webdnn.backend.webgl.kernels import abs
 from webdnn.backend.webgl.kernels import average_pooling_2d
 from webdnn.backend.webgl.kernels import broadcast
 from webdnn.backend.webgl.kernels import clipped_relu
+from webdnn.backend.webgl.kernels import convert_r_to_rgba
+from webdnn.backend.webgl.kernels import convert_rgba_to_r
 from webdnn.backend.webgl.kernels import depth2space
 from webdnn.backend.webgl.kernels import elementwise_add
 from webdnn.backend.webgl.kernels import elementwise_div

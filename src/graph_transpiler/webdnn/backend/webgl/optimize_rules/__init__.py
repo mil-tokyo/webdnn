@@ -1,3 +1,4 @@
+from webdnn.backend.webgl.optimize_rules import optimize_channel_mode
 from webdnn.backend.webgl.optimize_rules import optimize_convolution2d
 from webdnn.backend.webgl.optimize_rules import optimize_transpose
 from webdnn.backend.webgl.optimize_rules import sub_rules

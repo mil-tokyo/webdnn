@@ -1,5 +1,6 @@
 from typing import List, Dict, Tuple, Set
 
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -126,7 +127,7 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
         - First one is shape dictionary of all variables.
         - Second one is stride dictionary of all variables.
     """
-    orders, shape_dicts = _simplify_orders(variables)  # type: Dict[Variable, Order], Dict[Variable, AxisKeyDict[list[int]]]
+    orders, shape_dicts = _simplify_orders(variables)  # type: Dict[Variable, Order], Dict[Variable, AxisKeyDict[List[int]]]
     shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
     strides = {v: [mul(shapes[v][orders[v].axes_dict[a] + 1:]) for a in orders[v].axes] for v in variables}
     stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
@@ -155,8 +156,16 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
 
 
 def texture_shape(v: Variable):
-    # texture_length = (v.size + 4 - 1) // 4
-    texture_length = v.size
+    channel_mode = v.get_attribute(ChannelMode)[0].mode
+    if channel_mode == ChannelModeEnum.R:
+        texture_length = v.size
+
+    elif channel_mode == ChannelModeEnum.RGBA:
+        texture_length = (v.size + 4 - 1) // 4
+
+    else:
+        raise NotImplementedError(f"Unknown channel mode: {channel_mode}")
+
     return [
         texture_length if texture_length < 2048 else 2048,
         (texture_length + 2048 - 1) // 2048
@@ -165,7 +174,16 @@ def texture_shape(v: Variable):
 
 def texture_stride(v: Variable):
     result = []
-    s = 1
+    channel_mode = v.get_attribute(ChannelMode)[0].mode
+    if channel_mode == ChannelModeEnum.R:
+        s = 1
+
+    elif channel_mode == ChannelModeEnum.RGBA:
+        s = 4
+
+    else:
+        raise NotImplementedError(f"Unknown channel mode: {channel_mode}")
+
     for d in texture_shape(v):
         result.append(s)
         s *= d
