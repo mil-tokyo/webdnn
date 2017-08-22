@@ -43,6 +43,13 @@ def validate_kernel_source(descriptor: GraphDescriptor):
 
     source = descriptor.concat_kernel_sources()
 
+    if os.name != 'posix':
+        # os.name in mac is 'posix', and xcrun command is only in mac
+        console.warning(
+            "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
+            "skipped.")
+        return
+
     with tmp.TemporaryDirectory() as tmpdir:
         source_path = path.join(tmpdir, "kernel.metal")
         lib_path = path.join(tmpdir, "kernel.air")
@@ -51,7 +58,7 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             f.write(source)
 
         with open(os.devnull, "w") as f:
-            result = subprocess.run(["type", "xcrun"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(["command", "-V", "xcrun"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if result.returncode != 0:
                 console.warning(
                     "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
