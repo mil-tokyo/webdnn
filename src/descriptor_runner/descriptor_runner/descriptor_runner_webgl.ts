@@ -542,8 +542,17 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 gl.enableVertexAttribArray(attribute.loc);
             }
 
+            let elapsedTime = 0;
             // run
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+            if (DEBUG) {
+                let tStart = performance.now();
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                gl.finish();
+                elapsedTime = performance.now() - tStart;
+
+            } else {
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+            }
 
             // clean up
             for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
@@ -552,7 +561,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
             if (DEBUG) {
-                console.groupCollapsed(runtimeProgramInfo.name);
+                console.groupCollapsed(`${runtimeProgramInfo.name} (${elapsedTime.toFixed(5)})`);
 
                 console.log('Input:');
                 for (let {buffer} of runtimeProgramInfo.inputs) {

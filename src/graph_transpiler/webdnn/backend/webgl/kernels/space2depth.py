@@ -4,12 +4,11 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.order import OrderNHWC
-from webdnn.graph.variable import Variable
 
 template = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X)%%;
@@ -46,24 +45,6 @@ void main() {
     gl_FragColor = vec4(v, 0, 0, 0);
 }
 """
-
-
-def texture_shape(v: Variable):
-    # texture_length = (v.size + 4 - 1) // 4
-    texture_length = v.size
-    return [
-        texture_length if texture_length < 2048 else 2048,
-        (texture_length + 2048 - 1) // 2048
-    ]
-
-
-def texture_stride(v: Variable):
-    result = []
-    s = 1
-    for d in texture_shape(v):
-        result.append(s)
-        s *= d
-    return result
 
 
 @WebGLDescriptorGenerator.register_handler(Space2Depth)

@@ -4,12 +4,11 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.order import OrderNHWC
-from webdnn.graph.variable import Variable
 
 
 def generate_template(ksize):
@@ -22,7 +21,6 @@ def generate_template(ksize):
     
     %%UNIFORM(vec2, d_x)%%;
     %%UNIFORM(vec2, s_x)%%;
-    %%UNIFORM(vec4, d_X)%%;
     %%UNIFORM(vec4, s_X)%%;
     
     %%UNIFORM(float, C1)%%;
@@ -73,24 +71,6 @@ def generate_template(ksize):
         .replace("%%KSIZE_W%%", f"{ksize[1]:.1f}")
 
 
-def texture_shape(v: Variable):
-    # texture_length = (v.size + 4 - 1) // 4
-    texture_length = v.size
-    return [
-        texture_length if texture_length < 2048 else 2048,
-        (texture_length + 2048 - 1) // 2048
-    ]
-
-
-def texture_stride(v: Variable):
-    result = []
-    s = 1
-    for d in texture_shape(v):
-        result.append(s)
-        s *= d
-    return result
-
-
 @WebGLDescriptorGenerator.register_handler(MaxPooling2D)
 def elementwise_add(op: MaxPooling2D, _: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
@@ -111,7 +91,6 @@ def elementwise_add(op: MaxPooling2D, _: MemoryLayout) -> List[Kernel]:
 
         "d_x": texture_shape(x),
         "s_x": texture_stride(x),
-        "d_X": x.shape,
         "s_X": x.stride,
 
         "C1": x.shape_dict[Axis.C],

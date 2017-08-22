@@ -1416,15 +1416,24 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
                     gl.enableVertexAttribArray(attribute.loc);
                 }
+                let elapsedTime = 0;
                 // run
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                if (exports.DEBUG) {
+                    let tStart = performance.now();
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    gl.finish();
+                    elapsedTime = performance.now() - tStart;
+                }
+                else {
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                }
                 // clean up
                 for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
                     buffer.unbindTextureFromUnit(uniformIndex);
                 runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 if (exports.DEBUG) {
-                    console.groupCollapsed(runtimeProgramInfo.name);
+                    console.groupCollapsed(`${runtimeProgramInfo.name} (${elapsedTime.toFixed(5)})`);
                     console.log('Input:');
                     for (let { buffer } of runtimeProgramInfo.inputs) {
                         buffer.downloadToCPU();
@@ -2632,7 +2641,7 @@ function getBackendAvailability() {
         'webassembly': descriptorRunners['webassembly'].checkAvailability(),
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
-    let order = ['webgpu', 'webgl', 'webassembly', 'fallback'].filter(backend => status[backend]);
+    let order = ['webgpu', 'webassembly', 'webgl', 'fallback'].filter(backend => status[backend]);
     return {
         status: status,
         defaultOrder: order

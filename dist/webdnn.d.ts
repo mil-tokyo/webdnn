@@ -1261,6 +1261,7 @@ declare module 'webdnn/webdnn' {
 	     * >>> {
 	     *   'webgpu': false,
 	     *   'webassembly': true,
+	     *   'webgl': true,
 	     *   'fallback': true
 	     * }
 	     * ```
@@ -1275,7 +1276,7 @@ declare module 'webdnn/webdnn' {
 	     *
 	     * ```ts
 	     * WebDNN.getBackendAvailability().defaultOrder
-	     * >>> ['webassembly', 'fallback']
+	     * >>> ['webassembly', 'webgl', 'fallback']
 	     * ```
 	     */
 	    defaultOrder: BackendName[];

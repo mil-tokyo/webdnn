@@ -1670,7 +1670,7 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     DescriptorRunnerWebGL.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, runtimeInfo, _i, _a, buffer, _b, _c, runtimeProgramInfo, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, _j, _k, attribute, _l, _m, _o, buffer, uniformIndex, _p, _q, buffer, _r, _s, buffer;
+            var gl, runtimeInfo, _i, _a, buffer, _b, _c, runtimeProgramInfo, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, _j, _k, attribute, elapsedTime, tStart, _l, _m, _o, buffer, uniformIndex, _p, _q, buffer, _r, _s, buffer;
             return __generator(this, function (_t) {
                 if (this._running)
                     throw new Error('Calling another run() while running.');
@@ -1716,8 +1716,17 @@ var DescriptorRunnerWebGL = (function (_super) {
                         gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
                         gl.enableVertexAttribArray(attribute.loc);
                     }
+                    elapsedTime = 0;
                     // run
-                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    if (exports.DEBUG) {
+                        tStart = performance.now();
+                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                        gl.finish();
+                        elapsedTime = performance.now() - tStart;
+                    }
+                    else {
+                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    }
                     // clean up
                     for (_l = 0, _m = runtimeProgramInfo.inputs; _l < _m.length; _l++) {
                         _o = _m[_l], buffer = _o.buffer, uniformIndex = _o.uniformIndex;
@@ -1726,7 +1735,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
                     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                     if (exports.DEBUG) {
-                        console.groupCollapsed(runtimeProgramInfo.name);
+                        console.groupCollapsed(runtimeProgramInfo.name + " (" + elapsedTime.toFixed(5) + ")");
                         console.log('Input:');
                         for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
                             buffer = _q[_p].buffer;
@@ -3125,7 +3134,7 @@ function getBackendAvailability() {
         'webassembly': descriptorRunners['webassembly'].checkAvailability(),
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
-    var order = ['webgpu', 'webgl', 'webassembly', 'fallback'].filter(function (backend) { return status[backend]; });
+    var order = ['webgpu', 'webassembly', 'webgl', 'fallback'].filter(function (backend) { return status[backend]; });
     return {
         status: status,
         defaultOrder: order
