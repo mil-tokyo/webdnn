@@ -18,6 +18,7 @@ import { DescriptorRunner } from "./descriptor_runner";
 interface RuntimeProgramInfo {
     program: WebGLProgram,
     frameBuffer: WebGLFramebuffer,
+    name: string,
     width: number,
     height: number,
     inputs: {
@@ -77,11 +78,14 @@ class WebGLBuffer {
     readonly textureWidth: number;
     readonly textureHeight: number;
     private texture: WebGLTexture;
+    readonly name: string;
 
     constructor(gl: WebGLRenderingContext, length: number,
+                name: string,
                 array: Float32Array | null = null,
                 channelMode: ChannelMode = ChannelMode.R) {
         this.gl = gl;
+        this.name = name;
         this.channelMode = channelMode;
         switch (this.channelMode) {
             case ChannelMode.RGBA:
@@ -271,7 +275,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
                     null;
 
-                let buffer = new WebGLBuffer(this.gl, allocation.size, array);
+                let buffer = new WebGLBuffer(this.gl, allocation.size, name, array);
                 buffers.set(name, buffer);
             });
 
@@ -294,7 +298,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         Object.entries(descriptor.memory_layout.dynamic.allocations)
             .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size));
+                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size), name);
                 buffers.set(name, buffer);
             });
 
@@ -480,7 +484,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 let attributes = [{
                     loc: gl.getAttribLocation(program, '_xy'),
                     size: 2,
-                    stride: 0,
+                    stride: 8,
                     offset: 0
                 }];
 
@@ -488,6 +492,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 return {
                     program: program,
                     frameBuffer: gl.createFramebuffer()!,
+                    name: execInfo.shader_name,
                     width: output.textureWidth,
                     height: output.textureHeight,
                     inputs: inputs,
@@ -533,22 +538,36 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
             // attributes
             for (let attribute of runtimeProgramInfo.attributes) {
+                gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
                 gl.enableVertexAttribArray(attribute.loc);
-                gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, false, attribute.stride, attribute.offset);
             }
 
             // run
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-
-            // wait until done
-            gl.finish();
 
             // clean up
             for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
             runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            if (DEBUG) {
+                console.groupCollapsed(runtimeProgramInfo.name);
+
+                console.log('Input:');
+                for (let {buffer} of runtimeProgramInfo.inputs) {
+                    buffer.downloadToCPU();
+                    console.log(buffer.name, buffer.array);
+                }
+
+                console.log('Output:');
+                runtimeProgramInfo.output.downloadToCPU();
+                console.log(runtimeProgramInfo.output.name, runtimeProgramInfo.output.array);
+
+                console.groupEnd();
+            }
         }
+        gl.finish();
 
         //Download all output values to CPU
         for (let buffer of runtimeInfo.outputs) buffer.downloadToCPU();

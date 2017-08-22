@@ -28,21 +28,22 @@ precision highp float;
 %%UNIFORM(float, C2)%%;
 
 void main() {
-    vec4 p_Col = mod(floor(dot(gl_FragCoord.xy-0.5, s_y) / s_Y), d_Y);
+    vec2 p_y = gl_FragCoord.xy - 0.5;
+    vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
     
-    float n = p_Col.x;
-    float h2 = p_Col.y;
-    float w2 = p_Col.z;
-    float c2 = p_Col.w;
+    float n = p_Y.x;
+    float h2 = p_Y.y;
+    float w2 = p_Y.z;
+    float c2 = p_Y.w;
     
     float c1 = c2 + mod(w2, r) * C2 + mod(h2, r) * C2 * r;
     float h1 = floor(h2 / r);
     float w1 = floor(w2 / r);
 
     vec4 p_X = vec4(n, h1, w1, c1);
-    vec2 p_x = mod(floor(dot(mod(p_X, d_X), s_X) / s_x), d_x) + 0.5;
+    vec2 p_x = mod(floor((dot(p_X, s_X) + 0.5) / s_x) + 0.5, d_x) - 0.5;
 
-    float v = texture2D(X, p_x / d_x).r;
+    float v = texture2D(X, (p_x + 0.5) / d_x).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 }

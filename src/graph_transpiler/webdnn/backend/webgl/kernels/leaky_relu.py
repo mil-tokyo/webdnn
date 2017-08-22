@@ -164,10 +164,13 @@ precision highp float;
 %%UNIFORM(float, slope)%%;
 
 void main() {
-    vec4 p_Y = mod(floor(dot(gl_FragCoord.xy-0.5, s_y)/s_Y), d_Y);
-    vec2 p_x0 = mod(floor(dot(mod(p_Y, d_X0), s_X0)/s_x0), d_x0) + 0.5;
+    vec2 p_y = gl_FragCoord.xy - 0.5;
+    vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
+    
+    vec4 p_X0 = mod(p_Y + 0.5, d_X0) - 0.5; // for broadcasting
+    vec2 p_x0 = mod(floor((dot(p_X0, s_X0) + 0.5) / s_x0) + 0.5, d_x0) - 0.5;
 
-    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float x0 = texture2D(X0, (p_x0 + 0.5) / d_x0).r;
     float y;
 
     y = x0 > 0.0 ? x0 : (x0 * slope);

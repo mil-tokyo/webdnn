@@ -1239,6 +1239,11 @@ declare module 'webdnn/webdnn' {
 	 */
 	export let DEBUG: boolean;
 	/**
+	 * set DEBUG flag for developing WebDNN
+	 * @private
+	 */
+	export function setDebugMode(flag: any): void;
+	/**
 	 * Backend names supported in WebDNN
 	 */
 	export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';

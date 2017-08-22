@@ -1237,11 +1237,12 @@ var ChannelMode;
  * @protected
  */
 var WebGLBuffer = (function () {
-    function WebGLBuffer(gl, length, array, channelMode) {
+    function WebGLBuffer(gl, length, name, array, channelMode) {
         if (array === void 0) { array = null; }
         if (channelMode === void 0) { channelMode = ChannelMode.R; }
         this.channelMode = ChannelMode.RGBA;
         this.gl = gl;
+        this.name = name;
         this.channelMode = channelMode;
         switch (this.channelMode) {
             case ChannelMode.RGBA:
@@ -1427,7 +1428,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                             var array = (allocation.offset + allocation.size <= weight.length) ?
                                 new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
                                 null;
-                            var buffer = new WebGLBuffer(_this.gl, allocation.size, array);
+                            var buffer = new WebGLBuffer(_this.gl, allocation.size, name, array);
                             buffers.set(name, buffer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
@@ -1462,7 +1463,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                         Object.entries(descriptor.memory_layout.dynamic.allocations)
                             .forEach(function (_a) {
                             var name = _a[0], allocation = _a[1];
-                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation.size));
+                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation.size), name);
                             buffers.set(name, buffer);
                         });
                         return [4 /*yield*/, this.getInputViews()];
@@ -1649,13 +1650,14 @@ var DescriptorRunnerWebGL = (function (_super) {
                 var attributes = [{
                         loc: gl.getAttribLocation(program, '_xy'),
                         size: 2,
-                        stride: 0,
+                        stride: 8,
                         offset: 0
                     }];
                 // run
                 return {
                     program: program,
                     frameBuffer: gl.createFramebuffer(),
+                    name: execInfo.shader_name,
                     width: output.textureWidth,
                     height: output.textureHeight,
                     inputs: inputs,
@@ -1668,8 +1670,8 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     DescriptorRunnerWebGL.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, runtimeInfo, _i, _a, buffer, _b, _c, runtimeProgramInfo, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, _j, _k, attribute, _l, _m, _o, buffer, uniformIndex, _p, _q, buffer;
-            return __generator(this, function (_r) {
+            var gl, runtimeInfo, _i, _a, buffer, _b, _c, runtimeProgramInfo, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, _j, _k, attribute, _l, _m, _o, buffer, uniformIndex, _p, _q, buffer, _r, _s, buffer;
+            return __generator(this, function (_t) {
                 if (this._running)
                     throw new Error('Calling another run() while running.');
                 if (!this.descriptor)
@@ -1711,13 +1713,11 @@ var DescriptorRunnerWebGL = (function (_super) {
                     // attributes
                     for (_j = 0, _k = runtimeProgramInfo.attributes; _j < _k.length; _j++) {
                         attribute = _k[_j];
+                        gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
                         gl.enableVertexAttribArray(attribute.loc);
-                        gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, false, attribute.stride, attribute.offset);
                     }
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                    // wait until done
-                    gl.finish();
                     // clean up
                     for (_l = 0, _m = runtimeProgramInfo.inputs; _l < _m.length; _l++) {
                         _o = _m[_l], buffer = _o.buffer, uniformIndex = _o.uniformIndex;
@@ -1725,10 +1725,24 @@ var DescriptorRunnerWebGL = (function (_super) {
                     }
                     runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
                     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    if (exports.DEBUG) {
+                        console.groupCollapsed(runtimeProgramInfo.name);
+                        console.log('Input:');
+                        for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
+                            buffer = _q[_p].buffer;
+                            buffer.downloadToCPU();
+                            console.log(buffer.name, buffer.array);
+                        }
+                        console.log('Output:');
+                        runtimeProgramInfo.output.downloadToCPU();
+                        console.log(runtimeProgramInfo.output.name, runtimeProgramInfo.output.array);
+                        console.groupEnd();
+                    }
                 }
+                gl.finish();
                 //Download all output values to CPU
-                for (_p = 0, _q = runtimeInfo.outputs; _p < _q.length; _p++) {
-                    buffer = _q[_p];
+                for (_r = 0, _s = runtimeInfo.outputs; _r < _s.length; _r++) {
+                    buffer = _s[_r];
                     buffer.downloadToCPU();
                 }
                 this._running = false;
@@ -1745,7 +1759,7 @@ function initializeWebGLRenderingContext() {
         return null;
     if (!gl.getExtension('OES_texture_float'))
         return null;
-    if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
+    if (exports.DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
         return null;
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
@@ -2280,7 +2294,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
                         dynamicBuffer = this.dynamicBuffer;
                         metaBuffers = this.metaBuffers;
                         this._running = true;
-                        if (!DEBUG) return [3 /*break*/, 5];
+                        if (!exports.DEBUG) return [3 /*break*/, 5];
                         records = [];
                         totalElapsedTime_1 = 0;
                         i = 0;
@@ -3080,7 +3094,14 @@ var math = Object.freeze({
  * DEBUG flag for developing WebDNN
  * @private
  */
-var DEBUG = false;
+exports.DEBUG = false;
+/**
+ * set DEBUG flag for developing WebDNN
+ * @private
+ */
+function setDebugMode(flag) {
+    exports.DEBUG = flag;
+}
 /**
  * Backend constructor map
  * @private
@@ -3226,7 +3247,7 @@ function load(directory, initOption) {
     });
 }
 
-exports.DEBUG = DEBUG;
+exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
 exports.Math = math;

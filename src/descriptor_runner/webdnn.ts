@@ -23,6 +23,14 @@ import * as Math from "./math";
 export let DEBUG: boolean = false;
 
 /**
+ * set DEBUG flag for developing WebDNN
+ * @private
+ */
+export function setDebugMode(flag) {
+    DEBUG = flag;
+}
+
+/**
  * Backend names supported in WebDNN
  */
 export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';

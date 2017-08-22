@@ -35,16 +35,17 @@ def generate_template(ksize):
     %%UNIFORM(float, PW)%%;
     
     void main() {
-        vec4 p_Y = mod(floor(dot(gl_FragCoord.xy-0.5, s_y) / s_Y), d_Y);
+        vec2 p_y = gl_FragCoord.xy - 0.5;
+        vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
     
         float n = p_Y.x;
         float h2 = p_Y.y;
         float w2 = p_Y.z; 
         float c = p_Y.w;
     
-        float v = 0.0;
+        float v = -1e10;
         
-        // NOTE: In FireFox, for-loop with incremental counter generate wrong result
+        // NOTE(Kiikurage): In FireFox, for-loop with incremental counter generate wrong result
         // (Maybe there're a bug in implementation of loop-unrolling optimization phase).
         //
         // Therefore, loop counter must be decremented!!
@@ -56,14 +57,14 @@ def generate_template(ksize):
             float h1 = h2 * SH - PH + kh;
             if (h1 < 0.0 || h1 >= H1) continue;
     
-            for (float kw = %%KSIZE_W%% - 1.0; kw >= 0.0 ; kw -= 1.0) {
+            for (float kw = %%KSIZE_W%% - 1.0; kw >= 0.0; kw -= 1.0) {
                 float w1 = w2 * SW - PW + kw;
                 if (w1 < 0.0 || w1 >= W1) continue;
 
                 vec4 p_X = vec4(n, h1, w1, c);
-                vec2 p_x = mod(floor(dot(mod(p_X, d_X), s_X) / s_x), d_x) + 0.5;
+                vec2 p_x = mod(floor((dot(p_X, s_X) + 0.5) / s_x) + 0.5, d_x) - 0.5;
         
-                v = max(texture2D(X, p_x / d_x).r, v);
+                v = max(texture2D(X, (p_x + 0.5) / d_x).r, v);
             }
         }
         

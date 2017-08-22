@@ -1013,9 +1013,10 @@ var ChannelMode;
  * @protected
  */
 class WebGLBuffer {
-    constructor(gl, length, array = null, channelMode = ChannelMode.R) {
+    constructor(gl, length, name, array = null, channelMode = ChannelMode.R) {
         this.channelMode = ChannelMode.RGBA;
         this.gl = gl;
+        this.name = name;
         this.channelMode = channelMode;
         switch (this.channelMode) {
             case ChannelMode.RGBA:
@@ -1169,7 +1170,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 let array = (allocation.offset + allocation.size <= weight.length) ?
                     new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
                     null;
-                let buffer = new WebGLBuffer(this.gl, allocation.size, array);
+                let buffer = new WebGLBuffer(this.gl, allocation.size, name, array);
                 buffers.set(name, buffer);
             });
             (yield this.getInputViews())
@@ -1191,7 +1192,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             let buffers = this.buffers;
             Object.entries(descriptor.memory_layout.dynamic.allocations)
                 .forEach(([name, allocation]) => {
-                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size));
+                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size), name);
                 buffers.set(name, buffer);
             });
             (yield this.getInputViews())
@@ -1359,13 +1360,14 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 let attributes = [{
                         loc: gl.getAttribLocation(program, '_xy'),
                         size: 2,
-                        stride: 0,
+                        stride: 8,
                         offset: 0
                     }];
                 // run
                 return {
                     program: program,
                     frameBuffer: gl.createFramebuffer(),
+                    name: execInfo.shader_name,
                     width: output.textureWidth,
                     height: output.textureHeight,
                     inputs: inputs,
@@ -1411,19 +1413,30 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     uniform.func.apply(gl, uniform.args);
                 // attributes
                 for (let attribute of runtimeProgramInfo.attributes) {
+                    gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
                     gl.enableVertexAttribArray(attribute.loc);
-                    gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, false, attribute.stride, attribute.offset);
                 }
                 // run
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                // wait until done
-                gl.finish();
                 // clean up
                 for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
                     buffer.unbindTextureFromUnit(uniformIndex);
                 runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                if (exports.DEBUG) {
+                    console.groupCollapsed(runtimeProgramInfo.name);
+                    console.log('Input:');
+                    for (let { buffer } of runtimeProgramInfo.inputs) {
+                        buffer.downloadToCPU();
+                        console.log(buffer.name, buffer.array);
+                    }
+                    console.log('Output:');
+                    runtimeProgramInfo.output.downloadToCPU();
+                    console.log(runtimeProgramInfo.output.name, runtimeProgramInfo.output.array);
+                    console.groupEnd();
+                }
             }
+            gl.finish();
             //Download all output values to CPU
             for (let buffer of runtimeInfo.outputs)
                 buffer.downloadToCPU();
@@ -1438,7 +1451,7 @@ function initializeWebGLRenderingContext() {
         return null;
     if (!gl.getExtension('OES_texture_float'))
         return null;
-    if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
+    if (exports.DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
         return null;
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
@@ -1837,7 +1850,7 @@ class DescriptorRunnerWebGPU extends DescriptorRunner {
             let dynamicBuffer = this.dynamicBuffer;
             let metaBuffers = this.metaBuffers;
             this._running = true;
-            if (DEBUG) {
+            if (exports.DEBUG) {
                 let records = [];
                 let totalElapsedTime = 0;
                 for (let i = 0; i < this.executionInfos.length; i++) {
@@ -2588,7 +2601,14 @@ var math = Object.freeze({
  * DEBUG flag for developing WebDNN
  * @private
  */
-let DEBUG = false;
+exports.DEBUG = false;
+/**
+ * set DEBUG flag for developing WebDNN
+ * @private
+ */
+function setDebugMode(flag) {
+    exports.DEBUG = flag;
+}
 /**
  * Backend constructor map
  * @private
@@ -2711,7 +2731,7 @@ function load(directory, initOption = {}) {
     });
 }
 
-exports.DEBUG = DEBUG;
+exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
 exports.Math = math;

@@ -29,7 +29,8 @@ def generate_template(K):
     %%UNIFORM(vec2, s_B)%%;
     
     void main() {
-        vec2 p_C = mod(floor(dot(gl_FragCoord.xy - 0.5, s_c) / s_C), d_C);
+        vec2 p_c = gl_FragCoord.xy - 0.5;
+        vec2 p_C = mod(floor((dot(p_c, s_c) + 0.5) / s_C) + 0.5, d_C) - 0.5;
         
         float m = p_C.x;
         float n = p_C.y;
@@ -38,7 +39,7 @@ def generate_template(K):
         float v_a;
         float v_b;
         
-        // NOTE: In FireFox, for-loop with incremental counter generate wrong result
+        // NOTE(Kiikurage): In FireFox, for-loop with incremental counter generate wrong result
         // (Maybe there're a bug in implementation of loop-unrolling optimization phase).
         //
         // Therefore, loop counter must be decremented!!
@@ -47,8 +48,15 @@ def generate_template(K):
         //   (navigator.userAgent)="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0"
 
         for (float k = %%LOOP_SIZE%% - 1.0; k >= 0.0; k -= 1.0) {
-            v_a = texture2D(A, (mod(floor(dot(vec2(m, k), s_A) / s_a), d_a) + 0.5) / d_a).r;
-            v_b = texture2D(B, (mod(floor(dot(vec2(k, n), s_B) / s_b), d_b) + 0.5) / d_b).r;
+            vec2 p_A = vec2(m, k);
+            vec2 p_B = vec2(k, n);
+
+            vec2 p_a = mod(floor((dot(p_A, s_A) + 0.5) / s_a) + 0.5, d_a) - 0.5;
+            vec2 p_b = mod(floor((dot(p_B, s_B) + 0.5) / s_b) + 0.5, d_b) - 0.5;
+
+            v_a = texture2D(A, (p_a + 0.5) / d_a).r;
+            v_b = texture2D(B, (p_b + 0.5) / d_b).r;
+
             v += v_a * v_b;
         }
         

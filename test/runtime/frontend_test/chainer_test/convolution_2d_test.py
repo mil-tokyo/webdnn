@@ -20,8 +20,7 @@ def template(ksize=3, stride=1, pad=0, nobias=True, description=""):
         description=f"[chainer] L.Convolution2D {description}",
         graph=graph,
         inputs={x: vx.data},
-        expected={y: vy.data},
-        EPS=1e-2
+        expected={y: vy.data}
     )
 
 
@@ -31,6 +30,10 @@ def test():
 
 def test_nobias():
     template(nobias=True)
+
+
+def test_nopadding():
+    template(pad=0)
 
 
 def test_irregular_kernel_size():
@@ -51,6 +54,10 @@ def test_irregular_padding_size2():
 
 def test_irregular_padding_size3():
     template(pad=2, ksize=5)
+
+
+def test_irregular_padding_size4():
+    template(pad=(1, 0))
 
 
 def test_irregular_size():
