@@ -60,6 +60,7 @@ export interface BackendAvailability {
      * >>> {
      *   'webgpu': false,
      *   'webassembly': true,
+     *   'webgl': true,
      *   'fallback': true
      * }
      * ```
@@ -73,7 +74,7 @@ export interface BackendAvailability {
      *
      * ```ts
      * WebDNN.getBackendAvailability().defaultOrder
-     * >>> ['webassembly', 'fallback']
+     * >>> ['webassembly', 'webgl', 'fallback']
      * ```
      */
     defaultOrder: BackendName[]
@@ -93,7 +94,7 @@ export function getBackendAvailability(): BackendAvailability {
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
 
-    let order = (['webgpu', 'webgl', 'webassembly', 'fallback'] as BackendName[]).filter(backend => status[backend]);
+    let order = (['webgpu', 'webassembly', 'webgl', 'fallback'] as BackendName[]).filter(backend => status[backend]);
 
     return {
         status: status,
