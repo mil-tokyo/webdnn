@@ -6,11 +6,11 @@ This is just an experimental implementation.
 
 - WebGL Context release 
 
-    Browser cannot hold so many rendering context. It becomes a problem for unit tests.
+    Browser cannot hold so many rendering context. It becomes a problem during unit tests.
 
 - Mix Channel Mode
 
-    Currently all RGBA channel are used.
+    Currently only R channel is used.
 
 ## Operators
 

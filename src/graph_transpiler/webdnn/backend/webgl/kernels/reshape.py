@@ -4,13 +4,12 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.variable import Variable
 
-template = """
-precision highp float;
-
+template = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X)%%;
 %%UNIFORM(vec2, texture_shape)%%;
 

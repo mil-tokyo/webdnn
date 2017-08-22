@@ -4,15 +4,14 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
 
-template = """
-precision highp float;
-
+template = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X)%%;
 
 %%UNIFORM(vec2, s_y)%%;
@@ -28,8 +27,7 @@ precision highp float;
 %%UNIFORM(float, C1)%%;
 
 void main() {
-    vec2 p_y = gl_FragCoord.xy - 0.5;
-    vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
+    vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y) - 0.5;    
     
     float n = p_Y.x;
     float h2 = p_Y.y;
@@ -40,10 +38,10 @@ void main() {
     float h1 = h2 * r + floor(floor(c2 / C1) / r); 
     float w1 = w2 * r + mod(floor(c2 / C1), r); 
 
-    vec4 p_X = vec4(n, h1, w1, c1);
-    vec2 p_x = mod(floor((dot(p_X, s_X) + 0.5) / s_x) + 0.5, d_x) - 0.5;
+    vec4 p_X = vec4(n, h1, w1, c1) + 0.5;
+    vec2 p_x = convert_position(p_X, s_X, s_x, d_x);
 
-    float v = texture2D(X, (p_x + 0.5) / d_x).r;
+    float v = texture2D(X, p_x / d_x).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 }

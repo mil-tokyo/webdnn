@@ -4,6 +4,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.operators.relu import Relu
@@ -146,9 +147,7 @@ def _optimize_loop_structure(variables: List[Variable], key_variable: Variable):
     return shapes, strides
 
 
-template = """
-precision highp float;
-
+template = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X0)%%;
 
 %%UNIFORM(vec2, d_y)%%;
@@ -162,13 +161,11 @@ precision highp float;
 %%UNIFORM(vec4, s_X0)%%;
 
 void main() {
-    vec2 p_y = gl_FragCoord.xy - 0.5;
-    vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
-    
-    vec4 p_X0 = mod(p_Y + 0.5, d_X0) - 0.5; // for broadcasting
-    vec2 p_x0 = mod(floor((dot(p_X0, s_X0) + 0.5) / s_x0) + 0.5, d_x0) - 0.5;
+    vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
+    vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
+    vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
 
-    float x0 = texture2D(X0, (p_x0 + 0.5) / d_x0).r;
+    float x0 = texture2D(X0, p_x0 / d_x0).r;
     float y;
 
     y = x0 > 0.0 ? x0 : 0.0;

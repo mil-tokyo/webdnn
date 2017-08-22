@@ -4,15 +4,14 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
 from webdnn.backend.webgl.operators.sgemm import Sgemm
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.variable import Variable
 
 
 def generate_template(K):
-    return """
-    precision highp float;
-    
+    return FragmentShaderPreamble + """
     %%UNIFORM(sampler2D, A)%%;
     %%UNIFORM(sampler2D, B)%%;
     
@@ -29,8 +28,7 @@ def generate_template(K):
     %%UNIFORM(vec2, s_B)%%;
     
     void main() {
-        vec2 p_c = gl_FragCoord.xy - 0.5;
-        vec2 p_C = mod(floor((dot(p_c, s_c) + 0.5) / s_C) + 0.5, d_C) - 0.5;
+        vec2 p_C = convert_position(gl_FragCoord.xy, s_c, s_C, d_C) - 0.5;
         
         float m = p_C.x;
         float n = p_C.y;
@@ -48,14 +46,14 @@ def generate_template(K):
         //   (navigator.userAgent)="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0"
 
         for (float k = %%LOOP_SIZE%% - 1.0; k >= 0.0; k -= 1.0) {
-            vec2 p_A = vec2(m, k);
-            vec2 p_B = vec2(k, n);
+            vec2 p_A = vec2(m, k) + 0.5;
+            vec2 p_B = vec2(k, n) + 0.5;
 
-            vec2 p_a = mod(floor((dot(p_A, s_A) + 0.5) / s_a) + 0.5, d_a) - 0.5;
-            vec2 p_b = mod(floor((dot(p_B, s_B) + 0.5) / s_b) + 0.5, d_b) - 0.5;
+            vec2 p_a = convert_position(p_A, s_A, s_a, d_a);
+            vec2 p_b = convert_position(p_B, s_B, s_b, d_b);
 
-            v_a = texture2D(A, (p_a + 0.5) / d_a).r;
-            v_b = texture2D(B, (p_b + 0.5) / d_b).r;
+            v_a = texture2D(A, p_a / d_a).r;
+            v_b = texture2D(B, p_b / d_b).r;
 
             v += v_a * v_b;
         }

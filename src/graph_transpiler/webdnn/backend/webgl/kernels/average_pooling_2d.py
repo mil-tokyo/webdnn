@@ -4,6 +4,7 @@ from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -12,9 +13,7 @@ from webdnn.graph.variable import Variable
 
 
 def generate_template(ksize):
-    return """
-    precision highp float;
-    
+    return FragmentShaderPreamble + """
     %%UNIFORM(sampler2D, X)%%;
     
     %%UNIFORM(vec2, s_y)%%;
@@ -35,8 +34,7 @@ def generate_template(ksize):
     %%UNIFORM(float, PW)%%;
     
     void main() {
-        vec2 p_y = gl_FragCoord.xy - 0.5;
-        vec4 p_Y = mod(floor((dot(p_y, s_y) + 0.5) / s_Y) + 0.5, d_Y) - 0.5;
+        vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y) - 0.5;    
     
         float n = p_Y.x;
         float h2 = p_Y.y;
@@ -61,10 +59,10 @@ def generate_template(ksize):
                 float w1 = w2 * SW - PW + kw;
                 if (w1 < 0.0 || w1 >= W1) continue;
 
-                vec4 p_X = vec4(n, h1, w1, c);
-                vec2 p_x = mod(floor((dot(p_X, s_X) + 0.5) / s_x) + 0.5, d_x) - 0.5;
+                vec4 p_X = vec4(n, h1, w1, c) + 0.5;
+                vec2 p_x = convert_position(p_X, s_X, s_x, d_x);
         
-                sum += texture2D(X, (p_x + 0.5) / d_x).r;
+                sum += texture2D(X, p_x / d_x).r;
             }
         }
         
