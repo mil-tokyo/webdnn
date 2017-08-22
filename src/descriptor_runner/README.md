@@ -38,7 +38,7 @@ let runner = await WebDNN.load('./model');
 
 ```ts
 // ES2015
-WebDNN.load('./model)
+WebDNN.load('./model')
     .then(function(runner) { /* do something */ });
 ```
 
