@@ -58,28 +58,27 @@ def validate_kernel_source(descriptor: GraphDescriptor):
             f.write(source)
 
         with open(os.devnull, "w") as f:
-            result = subprocess.run(["command", "-V", "xcrun"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if result.returncode != 0:
+            try:
+                result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if result.returncode == 0:
+                    if result.stderr == b"":
+                        console.debug("[WebGPUDescriptorGenerator] Generated kernel source is valid.")
+
+                    else:
+                        console.warning(
+                            "[WebGPUDescriptorGenerator] In validating kernel source, warnings are generated.")
+                        console.stderr(result.stderr.decode("utf-8"))
+
+                else:
+                    console.error("[WebGPUDescriptorGenerator] Generated kernel source is invalid.")
+                    console.stderr(result.stderr.decode("utf-8"))
+                    exit(result.returncode)
+            except FileNotFoundError:
                 console.warning(
                     "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
                     "skipped.")
                 return
-
-        with open(os.devnull, "w") as f:
-            result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path],
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if result.returncode == 0:
-                if result.stderr == b"":
-                    console.debug("[WebGPUDescriptorGenerator] Generated kernel source is valid.")
-
-                else:
-                    console.warning("[WebGPUDescriptorGenerator] In validating kernel source, warnings are generated.")
-                    console.stderr(result.stderr.decode("utf-8"))
-
-            else:
-                console.error("[WebGPUDescriptorGenerator] Generated kernel source is invalid.")
-                console.stderr(result.stderr.decode("utf-8"))
-                exit(result.returncode)
 
 
 class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
