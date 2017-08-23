@@ -2,6 +2,7 @@ from typing import Dict, Any, Sequence, Union
 
 from webdnn.backend.code_generator.injector import Tag, Injector
 from webdnn.graph.variable import Variable
+from webdnn.util import flags
 
 
 class UniformInjector(Injector):
@@ -55,15 +56,15 @@ class UniformInjector(Injector):
             else:
                 raise TypeError(f"Unknown uniform type: {typename}")
 
-            if injected_value_literal == "":
+            if flags.optimize.OPTIMIZE and flags.optimize.EXTRACT_UNIFORM_LITERAL and injected_value_literal != "":
+                return f"{typename} {name}{injected_value_literal}"
+
+            else:
                 self.uniforms[name] = {
                     "type": typename,
                     "value": value
                 }
                 return f"uniform {typename} {name}"
-
-            else:
-                return f"{typename} {name}{injected_value_literal}"
 
         else:
             return tag.original

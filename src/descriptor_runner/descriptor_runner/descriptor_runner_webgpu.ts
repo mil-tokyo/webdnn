@@ -88,7 +88,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         this.staticBuffer = staticBuffer;
 
         let decoder = get_weight_decoder(descriptor.weight_encoding);
-        await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray), descriptor.memory_layout));
+        await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray)));
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)

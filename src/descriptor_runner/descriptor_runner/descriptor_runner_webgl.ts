@@ -522,33 +522,96 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         //Upload all input values to GPU
         for (let buffer of runtimeInfo.inputs) buffer.uploadToGPU();
 
-        for (let runtimeProgramInfo of runtimeInfo.programs) {
-            //vao
-            vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+        if (isDebugMode()) {
+            let records: any = [];
+            let totalElapsedTime = 0;
 
-            // frameBuffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
-            gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-            gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+            for (let runtimeProgramInfo of runtimeInfo.programs) {
+                let start = performance.now();
 
-            // inputs
-            for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
-                gl.activeTexture(gl.TEXTURE0 + uniformIndex);
-                gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                //vao
+                vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+
+                // frameBuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+
+                // inputs
+                for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
+                    gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                    gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                }
+
+                // output
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+
+                // shader
+                gl.useProgram(runtimeProgramInfo.program);
+
+                // uniforms
+                for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
+
+                // run
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+
+                let elapsedTime = performance.now() - start;
+                records.push({
+                    'Kernel': runtimeProgramInfo.name,
+                    'Elapsed time [ms]': elapsedTime
+                });
+                totalElapsedTime += elapsedTime;
             }
 
-            // output
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+            let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                if (!(record['Kernel'] in summary)) {
+                    summary[record['Kernel']] = {
+                        'Kernel': record['Kernel'],
+                        'Count': 0,
+                        'Elapsed time [ms]': 0,
+                    };
+                }
 
-            // shader
-            gl.useProgram(runtimeProgramInfo.program);
+                summary[record['Kernel']]['Count']++;
+                summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
 
-            // uniforms
-            for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
+                return summary;
+            }, {})));
+            summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
 
-            // run
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+            console.table(records);
+            console.table(summary);
+
+        } else {
+            for (let runtimeProgramInfo of runtimeInfo.programs) {
+                //vao
+                vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+
+                // frameBuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+
+                // inputs
+                for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
+                    gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                    gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                }
+
+                // output
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+
+                // shader
+                gl.useProgram(runtimeProgramInfo.program);
+
+                // uniforms
+                for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
+
+                // run
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+            }
         }
+
 
         for (let buffer of runtimeInfo.outputs) buffer.downloadToCPU();
 
