@@ -73,7 +73,7 @@ class ChangeOperatorChannelModeToRGBA(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.OPTIMIZE_CHANNEL_NODE
+            flags.optimize.OPTIMIZE_CHANNEL_MODE
         ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
@@ -151,7 +151,7 @@ class RemoveConvertWithInput(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.OPTIMIZE_CHANNEL_NODE
+            flags.optimize.OPTIMIZE_CHANNEL_MODE
         ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
@@ -208,7 +208,7 @@ class RemoveRedundantConversion(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.OPTIMIZE_CHANNEL_NODE
+            flags.optimize.OPTIMIZE_CHANNEL_MODE
         ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
