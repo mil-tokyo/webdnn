@@ -1,4 +1,4 @@
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, List
 
 from webdnn.graph.axis import Axis, AxisKeyDict
 
@@ -59,6 +59,17 @@ class Order:
             other: other order
         """
         return all(axis in other.axes for axis in self.axes) and all(axis in self.axes for axis in other.axes)
+
+    def get_common_axes(self, other: "Order") -> Sequence[Axis]:
+        """
+        get_common_axes(order)
+
+        return axes which are included in both two order.
+
+        Args:
+            other: other order
+        """
+        return [axis for axis in self.axes if axis in other.axes]
 
 
 """

@@ -1,6 +1,5 @@
 from typing import List
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
@@ -27,18 +26,18 @@ void main() {
     vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
     vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
 
-    vec4 x0 = texture2D(X0, p_x0 / d_x0);
-    vec4 y;
+    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float y;
     
     y = pow(x0, value);
     
-    gl_FragColor = y;
+    gl_FragColor = vec4(y, 0, 0, 0);
 }
 """
 
 
 @WebGLDescriptorGenerator.register_handler(ScalarPow)
-def elementwise_add(op: ScalarPow, _: MemoryLayout) -> List[Kernel]:
+def elementwise_add(op: ScalarPow) -> List[Kernel]:
     x0 = op.inputs["x0"]
     y = op.outputs["y"]
 

@@ -3,7 +3,6 @@
  */
 /** Don't Remove This comment block */
 
-import { MemoryLayout } from "../graph_descriptor/memory_layout";
 import WeightDecoder from "./weight_decoder";
 
 /**
@@ -38,7 +37,7 @@ export default class WeightDecoderEightbit implements WeightDecoder {
         9.054686427e-01, 9.226561785e-01, 9.398436546e-01, 9.570311308e-01, 9.742186666e-01, 9.914061427e-01, 1.0,
     ];
 
-    async decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array> {
+    async decode(data: Uint8Array): Promise<Float32Array> {
         // FIXME: store decoded total size in 'data'
         // currently, decoding each block and concatenating them at the end are needed.
         let decoded_arrays: Float32Array[] = [];

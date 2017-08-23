@@ -9,7 +9,7 @@ import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGPU, GraphDescriptorWebGPUExecInfos } from "../graph_descriptor/graph_descriptor_webgpu";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import { DEBUG } from "../webdnn";
+import { isDebugMode } from "../webdnn";
 import WebGPUHandler, { IS_WEBGPU_SUPPORTED } from "../webgpu_handler";
 import { DescriptorRunner } from "./descriptor_runner";
 
@@ -231,7 +231,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         let metaBuffers = this.metaBuffers;
 
         this._running = true;
-        if (DEBUG) {
+        if (isDebugMode()) {
             let records: any = [];
             let totalElapsedTime = 0;
 

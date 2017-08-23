@@ -16,7 +16,24 @@ export type ChannelMode = 'RGBA' | 'R';
 export interface GraphDescriptorWebGL extends GraphDescriptor {
     shader_sources: { [name: string]: string }
     exec_infos: GraphDescriptorWebGLExecInfos[],
-    channel_mode: { [name: string]: ChannelMode }
+    variables: {
+        [variable_name: string]: {
+            variable_size: number
+            allocation_name: string
+        }
+    },
+    allocations: {
+        [allocation_name: string]: {
+            allocation_size: number,
+            channel_mode: ChannelMode
+        }
+    },
+    constants_map: {
+        [variable_name: string]: {
+            size: number,
+            byte_offset: number
+        }
+    }
 }
 
 /**

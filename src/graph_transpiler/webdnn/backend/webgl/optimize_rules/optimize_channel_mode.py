@@ -20,19 +20,17 @@ from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.scalar_mul import ScalarMul
-from webdnn.graph.operators.scalar_pow import ScalarPow
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import flags
 
 _rgba_support_operators = [
     # Elementwise
     ElementwiseAdd, ElementwiseDiv, ElementwiseMul, ElementwisePow, Exp, LeakyRelu, Relu, ScalarAdd, ScalarAffine,
-    ScalarMul, ScalarPow, Sigmoid, Softplus, SoftSign, Tanh,
+    ScalarMul, Sigmoid, Softplus, SoftSign, Tanh,
 
     # Other
     Reshape, ReinterpretAxis
@@ -73,13 +71,26 @@ class InitializeChannelMode(OptimizeRule):
 
 class ChangeOperatorChannelModeToRGBA(OptimizeRule):
     def flags(self):
-        return [flags.optimize.OPTIMIZE]
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_CHANNEL_NODE
+        ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         global _rgba_support_operators
         flag_changed = False
         for op in traverse.listup_operators(graph):
-            if op.__class__ not in _rgba_support_operators or op.get_attribute(ChannelMode)[0].mode == ChannelModeEnum.RGBA:
+            if op.__class__ not in _rgba_support_operators:
+                # This operator doesn't support RGBA mode
+                continue
+
+            if op.get_attribute(ChannelMode)[0].mode == ChannelModeEnum.RGBA:
+                # This operator is configured as RGBA mode already
+                continue
+
+            y = list(op.outputs.values())[0]
+            if any(x.shape != y.shape for x in op.inputs.values()):
+                # FIXME: ブロードキャストがあるとRGBAは無理
                 continue
 
             op.get_attribute(ChannelMode)[0].mode = ChannelModeEnum.RGBA
@@ -121,7 +132,7 @@ def _remove_convert_with_input(x: Variable):
             return False
 
     if requested_mode is None:
-        raise NotImplementedError("This variable is not connected any operator")
+        return False
 
     x.get_attribute(ChannelMode)[0].mode = requested_mode
     for op in list(x.input_to):
@@ -138,19 +149,15 @@ class RemoveConvertWithInput(OptimizeRule):
     """
 
     def flags(self):
-        return [flags.optimize.OPTIMIZE]
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_CHANNEL_NODE
+        ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        variables = traverse.filter_nodes(traverse.listup_nodes(graph), Variable)
-        while len(variables) > 0:
-            v = variables.pop()  # type: ConstantVariable
-            if v.output_from is not None:
-                continue
-
-            if _remove_convert_with_input(v):
-                variables = traverse.filter_nodes(traverse.listup_nodes(graph), Variable)
-                flag_changed = True
+        for v in graph.inputs:
+            flag_changed |= _remove_convert_with_input(v)
 
         return graph, flag_changed
 
@@ -199,7 +206,10 @@ class RemoveRedundantConversion(OptimizeRule):
     """
 
     def flags(self):
-        return [flags.optimize.OPTIMIZE]
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_CHANNEL_NODE
+        ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False

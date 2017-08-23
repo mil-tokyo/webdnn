@@ -20,7 +20,15 @@ import * as Math from "./math";
  * DEBUG flag for developing WebDNN
  * @private
  */
-export let DEBUG: boolean = false;
+let DEBUG: boolean = false;
+
+/**
+ * get DEBUG flag for developing WebDNN
+ * @private
+ */
+export function isDebugMode() {
+    return DEBUG;
+}
 
 /**
  * set DEBUG flag for developing WebDNN

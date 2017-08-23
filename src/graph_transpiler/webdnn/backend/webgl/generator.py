@@ -1,16 +1,19 @@
 import os
 import os.path as path
+from typing import List
 
-from webdnn.backend.code_generator.allocator import Allocator
+import numpy as np
+
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
+from webdnn.backend.webgl.allocator import allocate
 from webdnn.backend.webgl.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.optimize_rules.webgl_optimize_rule import WebGLOptimizeRule
-from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.util import flags, console
+from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import flags
 from webdnn.util.json import json
 
 
@@ -42,28 +45,55 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             with open("cg.dot", "w") as f:
                 f.write(traverse.dump_dot(graph))
 
-        memory_layout = Allocator.allocate(graph)
-        console.debug(f"[WebGLDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}[B]")
-        console.debug(f"[WebGLDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}[B]")
-        console.debug(f"[WebGLDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}[B]")
+        allocations = allocate(graph)
 
-        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
-        constants_bytes = constant_encoder.encode(memory_layout)
+        data = []
+        byte_offset = 0
+        constants_map = {}
+        for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
+            data.append(constant.data.flatten())
+            constants_map[constant.name] = {
+                "byte_offset": byte_offset,
+                "size": constant.size
+            }
+            byte_offset += constant.size * 4
 
-        console.debug(f"[WebGLDescriptorGenerator] constants encoded size: {len(constants_bytes)}[B]")
+        if len(data) > 0:
+            data = np.concatenate(data)
 
-        kernels = cls.generate_kernels(graph, memory_layout)
+            # constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
+            # constants_bytes = constant_encoder.encode(memory_layout)
+            constants_bytes = data.tobytes("C")
+        else:
+            constants_bytes = bytes()
+
+        kernels = cls.generate_kernels(graph)
 
         descriptor = GraphDescriptor(
             kernels=kernels,
-            memory_layout=memory_layout,
             inputs=graph.inputs,
             outputs=graph.outputs,
-            constants_encoding=constant_encoder.name,
+            constants_encoding="raw",
+            allocations=allocations,
+            constants_map=constants_map,
             licenses=graph.licenses
         )
 
         return GraphExecutionData(graph, descriptor, constants_bytes)
+
+    # noinspection PyMethodOverriding
+    @classmethod
+    def generate_kernels(cls, graph: Graph) -> List[Kernel]:
+        kernels = []  # Type: List[T_KERNEL]
+
+        for op in traverse.listup_operators(graph):
+            key = cls.serialize_operator_type(op)
+            if key not in cls._handler_map[cls.__name__]:
+                raise NotImplementedError(f"[{cls.__name__}] Operator {op} is not handled by any generator handler")
+
+            kernels += cls._handler_map[cls.__name__][key](op)
+
+        return kernels
 
 
 def generate(graph: Graph, **kwargs):

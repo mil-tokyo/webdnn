@@ -1,6 +1,5 @@
 from typing import List
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
@@ -75,7 +74,7 @@ template_CNHW = header + """
 
 
 @WebGLDescriptorGenerator.register_handler(Im2Col)
-def elementwise_add(op: Im2Col, _: MemoryLayout) -> List[Kernel]:
+def elementwise_add(op: Im2Col) -> List[Kernel]:
     im = op.inputs["im"]
     col = op.outputs["col"]
 

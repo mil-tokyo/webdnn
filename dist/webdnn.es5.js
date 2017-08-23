@@ -84,6 +84,7 @@ function __generator(thisArg, body) {
 /**
  * @protected
  */
+<<<<<<< HEAD
 var WeightDecoderEightbit = (function () {
     function WeightDecoderEightbit() {
     }
@@ -117,6 +118,27 @@ var WeightDecoderEightbit = (function () {
                     decoded_arrays.push(decoded_array);
                     total_dst_length += dec_size;
                     src_offset += body_size;
+=======
+class WeightDecoderEightbit {
+    decode(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // FIXME: store decoded total size in 'data'
+            // currently, decoding each block and concatenating them at the end are needed.
+            let decoded_arrays = [];
+            let total_dst_length = 0;
+            let data_view = new DataView(data.buffer, data.byteOffset);
+            let src_offset = 0;
+            while (src_offset < data.length) {
+                let dst_offset = data_view.getInt32(src_offset, true);
+                src_offset += 4;
+                let body_size = data_view.getInt32(src_offset, true);
+                src_offset += 4;
+                let scale = data_view.getFloat32(src_offset, true);
+                src_offset += 8;
+                let scaled_table = new Float32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    scaled_table[i] = WeightDecoderEightbit.decode_table[i & 0x7F] * scale * (i < 128 ? 1.0 : -1.0);
+>>>>>>> wip: optimize buffer allocation
                 }
                 dst = new Float32Array(total_dst_length);
                 dst_offset = 0;
@@ -160,8 +182,16 @@ var WeightDecoderEightbit = (function () {
 /**
  * @protected
  */
+<<<<<<< HEAD
 var WeightDecoderRaw = (function () {
     function WeightDecoderRaw() {
+=======
+class WeightDecoderRaw {
+    decode(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4);
+        });
+>>>>>>> wip: optimize buffer allocation
     }
     WeightDecoderRaw.prototype.decode = function (data, memory_layout) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1256,7 +1286,7 @@ var WebGLBuffer = (function () {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
         this.texture = texture;
         if (array)
             this.uploadToGPU();
@@ -1271,17 +1301,26 @@ var WebGLBuffer = (function () {
         }
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+<<<<<<< HEAD
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     WebGLBuffer.prototype.downloadToCPU = function () {
         var gl = this.gl;
         var tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
         var frameBuffer = gl.createFramebuffer();
+=======
+        // gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+    downloadToCPU() {
+        let gl = this.gl;
+        let tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
+        let frameBuffer = gl.createFramebuffer();
+>>>>>>> wip: optimize buffer allocation
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
         this.bindTextureToCurrentFrameBuffer();
         gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
         this.unbindTextureFromCurrentFrameBuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         this.array.set(this.unpack(tmp).slice(0, this.length), 0);
     };
     WebGLBuffer.prototype.bindTextureToUnit = function (unit) {
@@ -1394,6 +1433,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                 }
             });
         });
+<<<<<<< HEAD
     };
     DescriptorRunnerWebGL.prototype.initializeStaticBuffer = function (weightRawArray) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1467,6 +1507,51 @@ var DescriptorRunnerWebGL = (function (_super) {
                         this.buildPipeline();
                         return [2 /*return*/];
                 }
+=======
+    }
+    initializeStaticBuffer(weightRawArray) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            let descriptor = this.descriptor;
+            let decoder = get_weight_decoder(this.descriptor.weight_encoding);
+            let weight = yield decoder.decode(new Uint8Array(weightRawArray));
+            let buffers = this.buffers;
+            Object.entries(descriptor.allocations)
+                .forEach(([name, { allocation_size, channel_mode }]) => {
+                let buffer = new WebGLBuffer(this.gl, allocation_size, name, null, channel_mode);
+                buffers.set(name, buffer);
+            });
+            Object.entries(descriptor.constants_map)
+                .forEach(([variable_name, { size, byte_offset }]) => {
+                let buffer = buffers.get(descriptor.variables[variable_name].allocation_name);
+                buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+                buffer.uploadToGPU();
+            });
+            (yield this.getInputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+            (yield this.getOutputViews())
+                .filter(view => !view.isDynamic)
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+        });
+    }
+    initializeDynamicBuffer() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.descriptor)
+                throw Error("GraphDescriptor is not loaded.");
+            if (!this.placeholderContext)
+                throw Error("PlaceholderContext is not initialized.");
+            let descriptor = this.descriptor;
+            let placeholderContext = this.placeholderContext;
+            let buffers = this.buffers;
+            Object.entries(descriptor.allocations)
+                .forEach(([name, { allocation_size, channel_mode }]) => {
+                if (typeof allocation_size == 'number')
+                    return;
+                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode);
+                buffers.set(name, buffer);
+>>>>>>> wip: optimize buffer allocation
             });
         });
     };
@@ -1552,11 +1637,23 @@ var DescriptorRunnerWebGL = (function (_super) {
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
+<<<<<<< HEAD
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         this.inputViews = descriptor.inputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
             var view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+=======
+        let descriptor = this.descriptor;
+        let placeholderContext = this.placeholderContext;
+        this.inputViews = descriptor.inputs.map(name => {
+            let { variable_size, allocation_name } = descriptor.variables[name];
+            let view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
+>>>>>>> wip: optimize buffer allocation
             return view;
         });
         return this.inputViews;
@@ -1568,11 +1665,23 @@ var DescriptorRunnerWebGL = (function (_super) {
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
+<<<<<<< HEAD
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         this.outputViews = descriptor.outputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
             var view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+=======
+        let descriptor = this.descriptor;
+        let placeholderContext = this.placeholderContext;
+        this.outputViews = descriptor.outputs.map(name => {
+            let { variable_size, allocation_name } = descriptor.variables[name];
+            let view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
+>>>>>>> wip: optimize buffer allocation
             return view;
         });
         return this.outputViews;
@@ -1584,20 +1693,36 @@ var DescriptorRunnerWebGL = (function (_super) {
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         if (!this.placeholderContext.isResolved)
+<<<<<<< HEAD
             throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
         var gl = this.gl;
         var buffers = this.buffers;
+=======
+            throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+        let gl = this.gl;
+        let buffers = this.buffers;
+        let descriptor = this.descriptor;
+>>>>>>> wip: optimize buffer allocation
         this.runtimeInfo = {
             inputs: this.getInputViews().map(function (view) { return buffers.get(view.name); }),
             outputs: this.getOutputViews().map(function (view) { return buffers.get(view.name); }),
             programs: this.descriptor.exec_infos.map(function (execInfo) {
                 // inputs
+<<<<<<< HEAD
                 var inputs = execInfo.inputs.map(function (input) { return ({
                     buffer: buffers.get(input.variable_name),
+=======
+                let inputs = execInfo.inputs.map(input => ({
+                    buffer: buffers.get(descriptor.variables[input.variable_name].allocation_name),
+>>>>>>> wip: optimize buffer allocation
                     uniformIndex: input.value
                 }); });
                 //output
+<<<<<<< HEAD
                 var output = buffers.get(execInfo.output);
+=======
+                let output = buffers.get(descriptor.variables[execInfo.output].allocation_name);
+>>>>>>> wip: optimize buffer allocation
                 // shader
                 var program = _this.programs.get(execInfo.shader_name);
                 gl.useProgram(program);
@@ -1655,6 +1780,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                 };
             })
         };
+<<<<<<< HEAD
     };
     DescriptorRunnerWebGL.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -1734,6 +1860,77 @@ var DescriptorRunnerWebGL = (function (_super) {
                         runtimeProgramInfo.output.downloadToCPU();
                         console.log(runtimeProgramInfo.output.name + ": " + runtimeProgramInfo.output.channelMode, runtimeProgramInfo.output.array);
                         console.groupEnd();
+=======
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
+            if (!this.descriptor)
+                throw new Error('Descriptor is not loaded');
+            if (!this.inputViews || !this.outputViews)
+                throw new Error('getInputViews and getOutputViews must be called prior to run');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            if (!this.placeholderContext.isResolved)
+                throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+            let gl = this.gl;
+            let runtimeInfo = this.runtimeInfo;
+            this._running = true;
+            //Upload all input values to GPU
+            for (let buffer of runtimeInfo.inputs)
+                buffer.uploadToGPU();
+            let tStart = 0;
+            let elapsedTime = 0;
+            for (let runtimeProgramInfo of runtimeInfo.programs) {
+                if (isDebugMode()) {
+                    tStart = performance.now();
+                }
+                // frameBuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                // inputs
+                for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
+                    buffer.bindTextureToUnit(uniformIndex);
+                // output
+                runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
+                // shader
+                gl.useProgram(runtimeProgramInfo.program);
+                // uniforms
+                for (let uniform of runtimeProgramInfo.uniforms)
+                    uniform.func.apply(gl, uniform.args);
+                // attributes
+                for (let attribute of runtimeProgramInfo.attributes) {
+                    gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
+                    gl.enableVertexAttribArray(attribute.loc);
+                }
+                if (isDebugMode()) {
+                    elapsedTime = performance.now() - tStart;
+                    console.log(`setup: (${elapsedTime.toFixed(5)})`);
+                }
+                // run
+                if (isDebugMode()) {
+                    tStart = performance.now();
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    gl.finish();
+                    elapsedTime = performance.now() - tStart;
+                }
+                else {
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                }
+                // clean up
+                // for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
+                // runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
+                //
+                // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                if (isDebugMode()) {
+                    console.groupCollapsed(`${runtimeProgramInfo.name} (${elapsedTime.toFixed(5)})`);
+                    console.log('Input:');
+                    for (let { buffer } of runtimeProgramInfo.inputs) {
+                        buffer.downloadToCPU();
+                        console.log(`${buffer.name}: ${buffer.channelMode}`, buffer.array);
+>>>>>>> wip: optimize buffer allocation
                     }
                 }
                 gl.finish();
@@ -1756,7 +1953,7 @@ function initializeWebGLRenderingContext() {
         return null;
     if (!gl.getExtension('OES_texture_float'))
         return null;
-    if (exports.DEBUG && !gl.getExtension('WEBGL_debug_renderer_info'))
+    if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
         return null;
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
@@ -2264,6 +2461,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
             return view;
         });
         return this.outputViews;
+<<<<<<< HEAD
     };
     DescriptorRunnerWebGPU.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -2344,6 +2542,67 @@ var DescriptorRunnerWebGPU = (function (_super) {
                     case 7:
                         this._running = false;
                         return [2 /*return*/];
+=======
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._running)
+                throw new Error('Calling another run() while running.');
+            if (!this.executionInfos)
+                throw new Error('ExecutionInfos is not loaded');
+            if (!this.inputViews || !this.outputViews)
+                throw new Error('getInputViews and getOutputViews must be called prior to run');
+            if (!this.staticBuffer)
+                throw new Error('StaticBuffer is not initialized');
+            if (!this.dynamicBuffer)
+                throw new Error('DynamicBuffer is not initialized');
+            if (!this.metaBuffers)
+                throw new Error('MetaBuffer is not initialized');
+            if (!this.placeholderContext)
+                throw new Error('PlaceholderContext is not initialized');
+            if (!this.placeholderContext.isResolved)
+                throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+            let staticBuffer = this.staticBuffer;
+            let dynamicBuffer = this.dynamicBuffer;
+            let metaBuffers = this.metaBuffers;
+            this._running = true;
+            if (isDebugMode()) {
+                let records = [];
+                let totalElapsedTime = 0;
+                for (let i = 0; i < this.executionInfos.length; i++) {
+                    let exec_info = this.executionInfos[i];
+                    let start = performance.now();
+                    yield this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true);
+                    let elapsedTime = performance.now() - start;
+                    records.push({
+                        'Kernel': exec_info.entry_func_name,
+                        'Elapsed time [ms]': elapsedTime
+                    });
+                    totalElapsedTime += elapsedTime;
+                }
+                let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                    if (!(record['Kernel'] in summary)) {
+                        summary[record['Kernel']] = {
+                            'Kernel': record['Kernel'],
+                            'Count': 0,
+                            'Elapsed time [ms]': 0,
+                        };
+                    }
+                    summary[record['Kernel']]['Count']++;
+                    summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+                    return summary;
+                }, {})));
+                summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
+                console.table(records);
+                console.table(summary);
+            }
+            else {
+                let complete_promise = null;
+                for (let i = 0; i < this.executionInfos.length; i++) {
+                    let exec_info = this.executionInfos[i];
+                    let is_last = i == this.executionInfos.length - 1;
+                    complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
+>>>>>>> wip: optimize buffer allocation
                 }
             });
         });
@@ -3091,13 +3350,20 @@ var math = Object.freeze({
  * DEBUG flag for developing WebDNN
  * @private
  */
-exports.DEBUG = false;
+let DEBUG = false;
+/**
+ * get DEBUG flag for developing WebDNN
+ * @private
+ */
+function isDebugMode() {
+    return DEBUG;
+}
 /**
  * set DEBUG flag for developing WebDNN
  * @private
  */
 function setDebugMode(flag) {
-    exports.DEBUG = flag;
+    DEBUG = flag;
 }
 /**
  * Backend constructor map
@@ -3244,6 +3510,7 @@ function load(directory, initOption) {
     });
 }
 
+exports.isDebugMode = isDebugMode;
 exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;

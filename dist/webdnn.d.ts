@@ -360,12 +360,11 @@ declare module 'webdnn/decoder/weight_decoder' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { MemoryLayout } from 'webdnn/graph_descriptor/memory_layout';
 	/**
 	 * @protected
 	 */
 	interface WeightDecoder {
-	    decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
+	    decode(data: Uint8Array): Promise<Float32Array>;
 	}
 	export default WeightDecoder;
 
@@ -375,14 +374,13 @@ declare module 'webdnn/decoder/weight_decoder_eightbit' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { MemoryLayout } from 'webdnn/graph_descriptor/memory_layout';
 	import WeightDecoder from 'webdnn/decoder/weight_decoder';
 	/**
 	 * @protected
 	 */
 	export default class WeightDecoderEightbit implements WeightDecoder {
 	    static decode_table: number[];
-	    decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
+	    decode(data: Uint8Array): Promise<Float32Array>;
 	}
 
 }
@@ -391,13 +389,12 @@ declare module 'webdnn/decoder/weight_decoder_raw' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { MemoryLayout } from 'webdnn/graph_descriptor/memory_layout';
 	import WeightDecoder from 'webdnn/decoder/weight_decoder';
 	/**
 	 * @protected
 	 */
 	export default class WeightDecoderRaw implements WeightDecoder {
-	    decode(data: Uint8Array, memory_layout: MemoryLayout): Promise<Float32Array>;
+	    decode(data: Uint8Array): Promise<Float32Array>;
 	}
 
 }
@@ -602,8 +599,23 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	        [name: string]: string;
 	    };
 	    exec_infos: GraphDescriptorWebGLExecInfos[];
-	    channel_mode: {
-	        [name: string]: ChannelMode;
+	    variables: {
+	        [variable_name: string]: {
+	            variable_size: number;
+	            allocation_name: string;
+	        };
+	    };
+	    allocations: {
+	        [allocation_name: string]: {
+	            allocation_size: number;
+	            channel_mode: ChannelMode;
+	        };
+	    };
+	    constants_map: {
+	        [variable_name: string]: {
+	            size: number;
+	            byte_offset: number;
+	        };
 	    };
 	}
 	/**
@@ -1241,10 +1253,10 @@ declare module 'webdnn/webdnn' {
 	import * as Image from 'webdnn/image';
 	import * as Math from 'webdnn/math';
 	/**
-	 * DEBUG flag for developing WebDNN
+	 * get DEBUG flag for developing WebDNN
 	 * @private
 	 */
-	export let DEBUG: boolean;
+	export function isDebugMode(): boolean;
 	/**
 	 * set DEBUG flag for developing WebDNN
 	 * @private

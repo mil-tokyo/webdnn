@@ -1,6 +1,5 @@
 from typing import List
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
@@ -47,7 +46,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(ElementwiseMul)
-def elementwise_add(op: ElementwiseMul, _: MemoryLayout) -> List[Kernel]:
+def elementwise_add(op: ElementwiseMul) -> List[Kernel]:
     x0 = op.inputs["x0"]
     x1 = op.inputs["x1"]
     y = op.outputs["y"]

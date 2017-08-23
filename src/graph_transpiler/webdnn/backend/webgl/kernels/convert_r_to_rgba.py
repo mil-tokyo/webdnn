@@ -1,6 +1,5 @@
 from typing import List
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
@@ -29,7 +28,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(ConvertRtoRGBA)
-def convert_r_to_rgba(op: ConvertRtoRGBA, _: MemoryLayout) -> List[Kernel]:
+def convert_r_to_rgba(op: ConvertRtoRGBA) -> List[Kernel]:
     x0 = op.inputs["x0"]
     y = op.outputs["y"]
 

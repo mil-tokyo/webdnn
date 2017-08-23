@@ -1,6 +1,5 @@
 from typing import List
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
@@ -72,7 +71,7 @@ def generate_template(ksize):
 
 
 @WebGLDescriptorGenerator.register_handler(MaxPooling2D)
-def elementwise_add(op: MaxPooling2D, _: MemoryLayout) -> List[Kernel]:
+def elementwise_add(op: MaxPooling2D) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

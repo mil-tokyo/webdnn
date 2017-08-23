@@ -6,10 +6,9 @@
 import get_weight_decoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { ChannelMode, GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
-import { ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import { DEBUG } from "../webdnn";
+import { isDebugMode } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -107,7 +106,7 @@ class WebGLBuffer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
         this.texture = texture;
 
         if (array) this.uploadToGPU();
@@ -125,7 +124,7 @@ class WebGLBuffer {
 
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     downloadToCPU() {
@@ -139,7 +138,7 @@ class WebGLBuffer {
         gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
 
         this.unbindTextureFromCurrentFrameBuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         this.array.set(this.unpack(tmp).slice(0, this.length), 0);
     }
@@ -257,17 +256,21 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let descriptor = this.descriptor;
 
         let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-        let weight = await decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout);
+        let weight = await decoder.decode(new Uint8Array(weightRawArray));
         let buffers = this.buffers;
 
-        Object.entries(descriptor.memory_layout.static.allocations)
-            .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let array = (allocation.offset + allocation.size <= weight.length) ?
-                    new Float32Array(weight.buffer, 4 * allocation.offset, allocation.size) :
-                    null;
-
-                let buffer = new WebGLBuffer(this.gl, allocation.size, name, array, descriptor.channel_mode[name]);
+        Object.entries(descriptor.allocations)
+            .forEach(([name, {allocation_size, channel_mode}]) => {
+                let buffer = new WebGLBuffer(this.gl, allocation_size, name, null, channel_mode);
                 buffers.set(name, buffer);
+            });
+
+        Object.entries(descriptor.constants_map)
+            .forEach(([variable_name, {size, byte_offset}]) => {
+                let buffer = buffers.get(descriptor.variables[variable_name].allocation_name)!;
+
+                buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+                buffer.uploadToGPU();
             });
 
         (await this.getInputViews())
@@ -287,9 +290,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
         let buffers = this.buffers;
 
-        Object.entries(descriptor.memory_layout.dynamic.allocations)
-            .forEach(([name, allocation]: [string, ResolvedAllocation]) => {
-                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation.size), name, null, descriptor.channel_mode[name]);
+        Object.entries(descriptor.allocations)
+            .forEach(([name, {allocation_size, channel_mode}]) => {
+                if (typeof allocation_size == 'number') return;
+                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode);
                 buffers.set(name, buffer);
             });
 
@@ -379,8 +383,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
 
         this.inputViews = descriptor.inputs.map(name => {
-            let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            let {variable_size, allocation_name} = descriptor.variables[name];
+            let view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
 
             return view;
         });
@@ -398,8 +406,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
 
         this.outputViews = descriptor.outputs.map(name => {
-            let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            let {variable_size, allocation_name} = descriptor.variables[name];
+            let view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
 
             return view;
         });
@@ -414,6 +426,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let gl = this.gl;
         let buffers = this.buffers;
+        let descriptor = this.descriptor;
 
         this.runtimeInfo = {
             inputs: this.getInputViews().map(view => buffers.get(view.name)!),
@@ -421,12 +434,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             programs: this.descriptor.exec_infos.map(execInfo => {
                 // inputs
                 let inputs = execInfo.inputs.map(input => ({
-                    buffer: buffers.get(input.variable_name)!,
+                    buffer: buffers.get(descriptor.variables[input.variable_name].allocation_name)!,
                     uniformIndex: input.value
                 }));
 
                 //output
-                let output = buffers.get(execInfo.output)!;
+                let output = buffers.get(descriptor.variables[execInfo.output].allocation_name)!;
 
                 // shader
                 let program = this.programs.get(execInfo.shader_name)!;
@@ -509,7 +522,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         //Upload all input values to GPU
         for (let buffer of runtimeInfo.inputs) buffer.uploadToGPU();
 
+        let tStart = 0;
+        let elapsedTime = 0;
         for (let runtimeProgramInfo of runtimeInfo.programs) {
+            if (isDebugMode()) {
+                tStart = performance.now();
+            }
             // frameBuffer
             gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
             gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
@@ -533,10 +551,14 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 gl.enableVertexAttribArray(attribute.loc);
             }
 
-            let elapsedTime = 0;
+            if (isDebugMode()) {
+                elapsedTime = performance.now() - tStart;
+                console.log(`setup: (${elapsedTime.toFixed(5)})`);
+            }
+
             // run
-            if (DEBUG) {
-                let tStart = performance.now();
+            if (isDebugMode()) {
+                tStart = performance.now();
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
                 gl.finish();
                 elapsedTime = performance.now() - tStart;
@@ -546,12 +568,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             }
 
             // clean up
-            for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
-            runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
+            // for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) buffer.unbindTextureFromUnit(uniformIndex);
+            // runtimeProgramInfo.output.unbindTextureFromCurrentFrameBuffer();
+            //
+            // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-            if (DEBUG) {
+            if (isDebugMode()) {
                 console.groupCollapsed(`${runtimeProgramInfo.name} (${elapsedTime.toFixed(5)})`);
 
                 console.log('Input:');
@@ -582,7 +604,7 @@ function initializeWebGLRenderingContext() {
     if (!gl) return null;
 
     if (!gl.getExtension('OES_texture_float')) return null;
-    if (DEBUG && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+    if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
