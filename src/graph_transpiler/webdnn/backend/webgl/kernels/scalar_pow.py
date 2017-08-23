@@ -62,9 +62,8 @@ def elementwise_add(op: ScalarPow) -> List[Kernel]:
     })
 
     source = template
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,

@@ -103,9 +103,8 @@ def elementwise_add(op: AveragePooling2D) -> List[Kernel]:
     })
 
     source = generate_template(ksize=op.parameters["ksize"])
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,

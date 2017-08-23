@@ -1,4 +1,4 @@
-from typing import Dict, Any, Sequence
+from typing import Dict, Any, Sequence, Union
 
 from webdnn.backend.code_generator.injector import Tag, Injector
 from webdnn.graph.variable import Variable
@@ -19,22 +19,29 @@ class UniformInjector(Injector):
             if name not in self.uniform_values:
                 raise KeyError(f"Uniform '{name}' is requested, but it's not registered.")
 
-            value = self.uniform_values[name]
+            value = self.uniform_values[name]  # type: Union[float, int]
+            injected_value_literal = ""
+
             if typename == "float":
-                # noinspection PyTypeChecker
                 assert float(value) == value, f"Uniform value of 'float' must be float: value={value}"
+                if float(value).is_integer():
+                    injected_value_literal = f" = {float(value):.1f}"
+                else:
+                    injected_value_literal = f" = {float(value)}"
 
             elif typename == "int":
-                # noinspection PyTypeChecker
                 assert int(value) == value, f"Uniform value of 'int' must be integer: value={value}"
+                injected_value_literal = f" = {value}"
 
             elif typename == "vec2" or typename == "vec3" or typename == "vec4":
                 assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
+                injected_value_literal = f" = {typename}({', '.join([str(v) for v in value])})"
 
             elif typename == "ivec2" or typename == "ivec3" or typename == "ivec4":
                 assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
                 for i, v in enumerate(value):
                     assert int(v) == v, f"Uniform value of '{typename}' must be sequence of integer: value[{i}]={value[i]}"
+                    injected_value_literal = f" = {typename}({', '.join([str(v) for v in value])})"
 
             elif typename == "sampler2D":
                 assert isinstance(value, Variable), f"Uniform value for sampler2D must be Variable instance: type(value)={type(value)}"
@@ -48,12 +55,15 @@ class UniformInjector(Injector):
             else:
                 raise TypeError(f"Unknown uniform type: {typename}")
 
-            self.uniforms[name] = {
-                "type": typename,
-                "value": value
-            }
+            if injected_value_literal == "":
+                self.uniforms[name] = {
+                    "type": typename,
+                    "value": value
+                }
+                return f"uniform {typename} {name}"
 
-            return f"uniform {typename} {name}"
+            else:
+                return f"{typename} {name}{injected_value_literal}"
 
         else:
             return tag.original

@@ -655,6 +655,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	    private buffers;
 	    private inputViews;
 	    private outputViews;
+	    private extensions;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
 	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;

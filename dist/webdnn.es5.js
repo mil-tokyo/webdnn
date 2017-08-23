@@ -1386,6 +1386,7 @@ var DescriptorRunnerWebGL = (function (_super) {
         var IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 &&
             navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
         return IS_WEBGL_SUPPORTED && !IS_SAFARI;
+<<<<<<< HEAD
     };
     DescriptorRunnerWebGL.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -1400,6 +1401,20 @@ var DescriptorRunnerWebGL = (function (_super) {
                 this.buffers = new Map();
                 return [2 /*return*/];
             });
+=======
+    }
+    init() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!DescriptorRunnerWebGL.checkAvailability())
+                throw Error('WebGL backend is not supported in this browser.');
+            let { gl, extensions } = initializeWebGLRenderingContext();
+            this.gl = gl;
+            this.extensions = extensions;
+            let vertexBuffer = this.gl.createBuffer();
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+            this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
+            this.buffers = new Map();
+>>>>>>> wip: optimize uniform injection
         });
     };
     DescriptorRunnerWebGL.prototype.load = function (directory, progressCallback) {
@@ -1759,13 +1774,22 @@ var DescriptorRunnerWebGL = (function (_super) {
                             throw TypeError("Incompatible type for uniform parameter: " + type);
                     }
                 });
+                // vao
+                let vao = this.extensions.vao.createVertexArrayOES();
+                this.extensions.vao.bindVertexArrayOES(vao);
                 // attributes
+<<<<<<< HEAD
                 var attributes = [{
                         loc: gl.getAttribLocation(program, '_xy'),
                         size: 2,
                         stride: 8,
                         offset: 0
                     }];
+=======
+                let loc = gl.getAttribLocation(program, '_xy');
+                gl.vertexAttribPointer(loc, 2, gl.FLOAT, true, 8, 0);
+                gl.enableVertexAttribArray(loc);
+>>>>>>> wip: optimize uniform injection
                 // run
                 return {
                     program: program,
@@ -1775,8 +1799,8 @@ var DescriptorRunnerWebGL = (function (_super) {
                     height: output.textureHeight,
                     inputs: inputs,
                     output: output,
+                    vao: vao,
                     uniforms: uniforms,
-                    attributes: attributes
                 };
             })
         };
@@ -1874,42 +1898,34 @@ var DescriptorRunnerWebGL = (function (_super) {
                 throw new Error('PlaceholderContext is not initialized');
             if (!this.placeholderContext.isResolved)
                 throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+            this._running = true;
             let gl = this.gl;
             let runtimeInfo = this.runtimeInfo;
-            this._running = true;
+            let vaoExtension = this.extensions.vao;
             //Upload all input values to GPU
             for (let buffer of runtimeInfo.inputs)
                 buffer.uploadToGPU();
-            let tStart = 0;
-            let elapsedTime = 0;
             for (let runtimeProgramInfo of runtimeInfo.programs) {
-                if (isDebugMode()) {
-                    tStart = performance.now();
-                }
+                //vao
+                vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
                 // frameBuffer
                 gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
                 gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
                 gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
                 // inputs
-                for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
-                    buffer.bindTextureToUnit(uniformIndex);
+                for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs) {
+                    gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                    gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                }
                 // output
-                runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
                 // shader
                 gl.useProgram(runtimeProgramInfo.program);
                 // uniforms
                 for (let uniform of runtimeProgramInfo.uniforms)
                     uniform.func.apply(gl, uniform.args);
-                // attributes
-                for (let attribute of runtimeProgramInfo.attributes) {
-                    gl.vertexAttribPointer(attribute.loc, attribute.size, gl.FLOAT, true, attribute.stride, attribute.offset);
-                    gl.enableVertexAttribArray(attribute.loc);
-                }
-                if (isDebugMode()) {
-                    elapsedTime = performance.now() - tStart;
-                    console.log(`setup: (${elapsedTime.toFixed(5)})`);
-                }
                 // run
+<<<<<<< HEAD
                 if (isDebugMode()) {
                     tStart = performance.now();
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
@@ -1942,6 +1958,13 @@ var DescriptorRunnerWebGL = (function (_super) {
                 this._running = false;
                 return [2 /*return*/];
             });
+=======
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+            }
+            for (let buffer of runtimeInfo.outputs)
+                buffer.downloadToCPU();
+            this._running = false;
+>>>>>>> wip: optimize uniform injection
         });
     };
     return DescriptorRunnerWebGL;
@@ -1951,7 +1974,10 @@ function initializeWebGLRenderingContext() {
     var gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
     if (!gl)
         return null;
+    let vao;
     if (!gl.getExtension('OES_texture_float'))
+        return null;
+    if (!(vao = gl.getExtension('OES_vertex_array_object')))
         return null;
     if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
         return null;
@@ -1964,11 +1990,20 @@ function initializeWebGLRenderingContext() {
     gl.enable(gl.SCISSOR_TEST);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
-    return gl;
+    return {
+        gl: gl,
+        extensions: {
+            vao: vao
+        }
+    };
 }
 function checkBrowserSupportStatus() {
+<<<<<<< HEAD
     var gl = initializeWebGLRenderingContext();
     if (!gl)
+=======
+    if (!initializeWebGLRenderingContext())
+>>>>>>> wip: optimize uniform injection
         return;
     IS_WEBGL_SUPPORTED = true;
 }

@@ -110,9 +110,8 @@ def elementwise_add(op: Im2Col) -> List[Kernel]:
     })
 
     source = template_CNHW if col.order == OrderCNHW else template_NHWC
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,

@@ -53,9 +53,8 @@ def convert_rgba_to_r(op: ConvertRGBAtoR) -> List[Kernel]:
     })
 
     source = template
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,

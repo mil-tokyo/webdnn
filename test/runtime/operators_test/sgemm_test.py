@@ -53,8 +53,16 @@ def template(transpose_A=False, transpose_B=False, M=5, N=8, K=6, description: s
     )
 
 
-def test_large():
-    template(M=208, N=10, K=36, transpose_A=True, transpose_B=True)
+# def test_large():
+#     template(M=1024, N=1024, K=1024, transpose_A=True, transpose_B=True)
+
+
+def test_vector_inner_product():
+    template(M=10, N=20, K=1, transpose_A=True, transpose_B=True)
+
+
+def test_vector_outer_product():
+    template(M=1, N=1, K=20, transpose_A=True, transpose_B=True)
 
 
 def test_NN():

@@ -89,9 +89,8 @@ def elementwise_add(op: Sgemm) -> List[Kernel]:
     })
 
     source = generate_template(op.K)
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,

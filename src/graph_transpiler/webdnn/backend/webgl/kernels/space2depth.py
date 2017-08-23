@@ -75,9 +75,8 @@ def elementwise_add(op: Space2Depth) -> List[Kernel]:
     })
 
     source = template
-    source = name_injector.inject(source)
     source = uniform_injector.inject(source)
-
+    source = name_injector.inject(source)
     kernel = Kernel(
         source,
         name_injector.name,
