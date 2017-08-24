@@ -69,7 +69,7 @@
 								<code>
 default<wbr>Order:                <code><code><a href="../modules/webdnn.html#backendname" class="signature-type">BackendName</a></code><span class="signature-symbol">[]</span>                </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/308097c/src/descriptor_runner/webdnn.ts#L69">[webdnn.ts:69]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/webdnn.ts#L88">[webdnn.ts:88]</a>
 								</span>
 							</header>
 						</div>
@@ -81,7 +81,7 @@ default<wbr>Order:                <code><code><a href="../modules/webdnn.html#ba
 									</div>
 									<h3 id="examples">Examples</h3>
 									<pre><code class="lang-ts">WebDNN.getBackendAvailability().defaultOrder
-&gt;&gt;&gt; [<span class="hljs-string">'webassembly'</span>, <span class="hljs-string">'fallback'</span>]
+&gt;&gt;&gt; [<span class="hljs-string">'webassembly'</span>, <span class="hljs-string">'webgl'</span>, <span class="hljs-string">'fallback'</span>]
 </code></pre>
 								</div>
 							</div>
@@ -96,7 +96,7 @@ default<wbr>Order:                <code><code><a href="../modules/webdnn.html#ba
 								<code>
 status:                    <code><span class="signature-type">object</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/308097c/src/descriptor_runner/webdnn.ts#L57">[webdnn.ts:57]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/webdnn.ts#L76">[webdnn.ts:76]</a>
 								</span>
 							</header>
 						</div>
@@ -111,6 +111,7 @@ status:                    <code><span class="signature-type">object</span>     
 &gt;&gt;&gt; {
   <span class="hljs-string">'webgpu'</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-string">'webassembly'</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">'webgl'</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-string">'fallback'</span>: <span class="hljs-literal">true</span>
 }
 </code></pre>

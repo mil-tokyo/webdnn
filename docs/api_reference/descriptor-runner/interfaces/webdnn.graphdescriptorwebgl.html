@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>GraphDescriptorWebassembly | WebDNN</title>
+	<title>GraphDescriptorWebGL | WebDNN</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/style.css">
@@ -31,7 +31,7 @@
 	<header class="index-header">
 		<span class="index-header-kind">Interface</span>
 		<h1 class="index-header-name">
-			GraphDescriptorWebassembly
+			GraphDescriptorWebGL
 		</h1>
 	</header>
 	<div class="reflection-container">
@@ -51,7 +51,7 @@
 								<code><a href="webdnn.graphdescriptor.html" class="signature-type">GraphDescriptor</a></code>
 								<ul class="tsd-hierarchy">
 									<li>
-										<code class="target">GraphDescriptorWebassembly</code>
+										<code class="target">GraphDescriptorWebGL</code>
 									</li>
 								</ul>
 							</li>
@@ -62,6 +62,60 @@
 			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Properties</header>
 				<div class="members-group-body">
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="allocations" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="allocations" class="anchor"></a>
+								<a href="#allocations" class="anchor-link">#</a>
+								<code>
+allocations:                    <code><span class="signature-type">object</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L25">[graph_descriptor/graph_descriptor_webgl.ts:25]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="constants_map" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="constants_map" class="anchor"></a>
+								<a href="#constants_map" class="anchor-link">#</a>
+								<code>
+constants_<wbr>map:                    <code><span class="signature-type">object</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L31">[graph_descriptor/graph_descriptor_webgl.ts:31]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="exec_infos" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="exec_infos" class="anchor"></a>
+								<a href="#exec_infos" class="anchor-link">#</a>
+								<code>
+exec_<wbr>infos:                <code><code><a href="webdnn.graphdescriptorwebglexecinfos.html" class="signature-type">GraphDescriptorWebGLExecInfos</a></code><span class="signature-symbol">[]</span>                </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L18">[graph_descriptor/graph_descriptor_webgl.ts:18]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
 						<a name="inputs" class="anchor"></a>
 						<div class="signatures">
@@ -155,15 +209,33 @@ placeholders:                    <code><span class="signature-type">object</span
 						</section>
 					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-						<a name="unresolved_value_lists" class="anchor"></a>
+						<a name="shader_sources" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="unresolved_value_lists" class="anchor"></a>
-								<a href="#unresolved_value_lists" class="anchor-link">#</a>
+								<a id="shader_sources" class="anchor"></a>
+								<a href="#shader_sources" class="anchor-link">#</a>
 								<code>
-unresolved_<wbr>value_<wbr>lists:                <code><code><code><span class="signature-type">object</span>                    </code><span class="signature-symbol">[]</span>                </code><span class="signature-symbol">[]</span>                </code>        </code>
+shader_<wbr>sources:                    <code><span class="signature-type">object</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webassembly.ts#L13">[graph_descriptor/graph_descriptor_webassembly.ts:13]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L17">[graph_descriptor/graph_descriptor_webgl.ts:17]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="variables" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="variables" class="anchor"></a>
+								<a href="#variables" class="anchor-link">#</a>
+								<code>
+variables:                    <code><span class="signature-type">object</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L19">[graph_descriptor/graph_descriptor_webgl.ts:19]</a>
 								</span>
 							</header>
 						</div>
@@ -203,33 +275,53 @@ weight_<wbr>encoding:                    <code><span class="signature-type">stri
 				<li>
 					<header class="toc-header">Properties</header>
 					<ul class="toc-list">
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebgl.html#allocations" class="tsd-kind-icon">
+								allocations
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebgl.html#constants_map" class="tsd-kind-icon">
+								constants_<wbr>map
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebgl.html#exec_infos" class="tsd-kind-icon">
+								exec_<wbr>infos
+							</a>
+						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#inputs" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebgl.html#inputs" class="tsd-kind-icon">
 								inputs
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#memory_layout" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebgl.html#memory_layout" class="tsd-kind-icon">
 								memory_<wbr>layout
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#outputs" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebgl.html#outputs" class="tsd-kind-icon">
 								outputs
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#placeholders" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebgl.html#placeholders" class="tsd-kind-icon">
 								placeholders
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#unresolved_value_lists" class="tsd-kind-icon">
-								unresolved_<wbr>value_<wbr>lists
+							<a href="webdnn.graphdescriptorwebgl.html#shader_sources" class="tsd-kind-icon">
+								shader_<wbr>sources
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebgl.html#variables" class="tsd-kind-icon">
+								variables
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
-							<a href="webdnn.graphdescriptorwebassembly.html#weight_encoding" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebgl.html#weight_encoding" class="tsd-kind-icon">
 								weight_<wbr>encoding
 							</a>
 						</li>

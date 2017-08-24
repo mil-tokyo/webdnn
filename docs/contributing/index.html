@@ -237,7 +237,7 @@ $ nosetests test/runtime/operators_test/average_pooling_2d_test.py
 </div>
 <p>Also you can specify target backends. For example, follow command generates test code of only webgpu backend.</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span><span class="c1"># generate test code only for WebGPU backend</span>
-$ <span class="nv">TEST_WEBGPU</span><span class="o">=</span><span class="m">1</span> <span class="nv">TEST_WEBASSEMBLY</span><span class="o">=</span><span class="m">0</span>, <span class="nv">TEST_FALLBACK</span><span class="o">=</span><span class="m">0</span> nosetests test/runtime
+$ <span class="nv">TEST_WEBGPU</span><span class="o">=</span><span class="m">1</span> <span class="nv">TEST_WEBASSEMBLY</span><span class="o">=</span><span class="m">0</span>, <span class="nv">TEST_WEBGL</span><span class="o">=</span><span class="m">0</span>, <span class="nv">TEST_FALLBACK</span><span class="o">=</span><span class="m">0</span> nosetests test/runtime
 </pre></div>
 </div>
 </div>
