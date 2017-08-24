@@ -109,9 +109,6 @@ def test_NHWC():
     col_webgpu, = WebGPUIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
     col_webgpu.change_order(OrderNHWC)
 
-    col_webgl, = WebGLIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
-    col_webgl.change_order(OrderNHWC)
-
     generate_kernel_test_case(
         description=f"Im2Col output=NHWC",
         backend=["webassembly"],
@@ -127,15 +124,6 @@ def test_NHWC():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: v_col},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: v_col}
     )
 
 
@@ -153,9 +141,6 @@ def test_CNHW():
     col_webgpu, = WebGPUIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
     col_webgpu.change_order(OrderCNHW)
 
-    col_webgl, = WebGLIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
-    col_webgl.change_order(OrderCNHW)
-
     generate_kernel_test_case(
         description=f"Im2Col output=CNHW",
         backend=["webassembly"],
@@ -171,15 +156,6 @@ def test_CNHW():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: col_dummy.data},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: col_dummy.data}
     )
 
 
@@ -193,9 +169,6 @@ def test_wide_stride_NHWC():
 
     col_webgpu, = WebGPUIm2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
     col_webgpu.change_order(OrderNHWC)
-
-    col_webgl, = WebGLIm2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
-    col_webgl.change_order(OrderNHWC)
 
     generate_kernel_test_case(
         description=f"Im2Col output=NHWC stride=2",
@@ -212,15 +185,6 @@ def test_wide_stride_NHWC():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: v_col},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC stride=2",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: v_col}
     )
 
 
@@ -238,9 +202,6 @@ def test_wide_stride_CNHW():
     col_webgpu, = WebGPUIm2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
     col_webgpu.change_order(OrderCNHW)
 
-    col_webgl, = WebGLIm2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
-    col_webgl.change_order(OrderCNHW)
-
     generate_kernel_test_case(
         description=f"Im2Col output=CNHW stride=2",
         backend=["webassembly"],
@@ -256,15 +217,6 @@ def test_wide_stride_CNHW():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: col_dummy.data},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW stride=2",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: col_dummy.data}
     )
 
 
@@ -333,9 +285,6 @@ def test_dilated_NHWC():
     col_webgpu, = WebGPUIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
     col_webgpu.change_order(OrderNHWC)
 
-    col_webgl, = WebGLIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
-    col_webgl.change_order(OrderNHWC)
-
     generate_kernel_test_case(
         description=f"Im2Col output=NHWC dilation_rate=2",
         backend=["webassembly"],
@@ -351,15 +300,6 @@ def test_dilated_NHWC():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: v_col},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC dilation_rate=2",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: v_col}
     )
 
 
@@ -395,13 +335,4 @@ def test_dilated_CNHW():
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
         expected={col_webgpu: col_dummy.data},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW dilation_rate=2",
-        backend=["webgl"],
-        graph=Graph([im], [col_webgl]),
-        inputs={im: v_im},
-        expected={col_webgl: col_dummy.data}
     )
