@@ -554,13 +554,21 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
                 // run
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-
+                gl.finish();
                 let elapsedTime = performance.now() - start;
                 records.push({
                     'Kernel': runtimeProgramInfo.name,
                     'Elapsed time [ms]': elapsedTime
                 });
                 totalElapsedTime += elapsedTime;
+
+                for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
+                    buffer.downloadToCPU();
+                    console.log(uniformIndex, buffer.array);
+                }
+
+                runtimeProgramInfo.output.downloadToCPU();
+                console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
             }
 
             let summary = Array.from(Object.values(records.reduce((summary, record) => {

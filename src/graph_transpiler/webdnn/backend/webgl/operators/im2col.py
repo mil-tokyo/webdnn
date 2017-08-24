@@ -25,7 +25,10 @@ class Im2Col(Operator):
         W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
         C1 = im.shape_dict[Axis.C]
 
-        col = Variable([N, H2, W2, self.KH * self.KW * C1], OrderNHWC)
+        # NOTE(Kiikurage):
+        # For optimizing SGEMM after Im2Col, size `K` of SGEMM (=KH*KW*C1) is aligned with multiple of 4 and
+        # data is packed as RGBA channel mode
+        col = Variable([N, H2, W2, ((self.KH * self.KW * C1 + 4 - 1) // 4) * 4], OrderNHWC)
 
         self.append_input("im", im)
         self.append_output("col", col)

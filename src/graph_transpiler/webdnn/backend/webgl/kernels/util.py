@@ -156,7 +156,7 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
 
 
 def texture_shape(v: Variable):
-    channel_mode = v.get_attribute(ChannelMode)[0].mode
+    channel_mode = ChannelMode.get_mode(v)
     if channel_mode == ChannelModeEnum.R:
         texture_length = v.size
 
@@ -174,7 +174,7 @@ def texture_shape(v: Variable):
 
 def texture_stride(v: Variable):
     result = []
-    channel_mode = v.get_attribute(ChannelMode)[0].mode
+    channel_mode = ChannelMode.get_mode(v)
     if channel_mode == ChannelModeEnum.R:
         s = 1
 

@@ -1,7 +1,5 @@
 from typing import Tuple
 
-from torch.legacy.nn import SoftSign
-
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum, SupportedChannelMode
 from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA
 from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR
@@ -22,6 +20,7 @@ from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softplus import Softplus
+from webdnn.graph.operators.softsign import Softsign
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
@@ -30,7 +29,7 @@ from webdnn.util import flags
 _rgba_support_operators = [
     # Elementwise
     ElementwiseAdd, ElementwiseDiv, ElementwiseMul, ElementwisePow, Exp, LeakyRelu, Relu, ScalarAdd, ScalarAffine,
-    ScalarMul, Sigmoid, Softplus, SoftSign, Tanh,
+    ScalarMul, Sigmoid, Softplus, Softsign, Tanh,
 
     # Other
     Reshape, ReinterpretAxis
