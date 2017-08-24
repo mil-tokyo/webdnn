@@ -48,7 +48,7 @@ export default class BufferWebGPU extends Buffer {
     }
 
     getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-    getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Uint32Array;
+    getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
     getWriteView(offset: number, length: number, type): any {
         let viewSameType = new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
         return viewSameType;

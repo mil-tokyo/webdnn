@@ -2,6 +2,7 @@ import numpy as np
 
 from test.util import generate_kernel_test_case
 from webdnn.backend.webassembly.operators.im2col import Im2Col as WasmIm2Col
+from webdnn.backend.webgl.operators.im2col import Im2Col as WebGLIm2Col
 from webdnn.backend.webgpu.operators.im2col import Im2Col as WebGPUIm2Col
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNHWC, OrderCNHW
@@ -122,7 +123,7 @@ def test_NHWC():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: v_col}
+        expected={col_webgpu: v_col},
     )
 
 
@@ -154,7 +155,7 @@ def test_CNHW():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: col_dummy.data}
+        expected={col_webgpu: col_dummy.data},
     )
 
 
@@ -183,7 +184,7 @@ def test_wide_stride_NHWC():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: v_col}
+        expected={col_webgpu: v_col},
     )
 
 
@@ -215,7 +216,7 @@ def test_wide_stride_CNHW():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: col_dummy.data}
+        expected={col_webgpu: col_dummy.data},
     )
 
 
@@ -298,7 +299,7 @@ def test_dilated_NHWC():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: v_col}
+        expected={col_webgpu: v_col},
     )
 
 
@@ -316,6 +317,9 @@ def test_dilated_CNHW():
     col_webgpu, = WebGPUIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
     col_webgpu.change_order(OrderCNHW)
 
+    col_webgl, = WebGLIm2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
+    col_webgl.change_order(OrderCNHW)
+
     generate_kernel_test_case(
         description=f"Im2Col output=CNHW dilation_rate=2",
         backend=["webassembly"],
@@ -330,5 +334,5 @@ def test_dilated_CNHW():
         backend=["webgpu"],
         graph=Graph([im], [col_webgpu]),
         inputs={im: v_im},
-        expected={col_webgpu: col_dummy.data}
+        expected={col_webgpu: col_dummy.data},
     )

@@ -22,6 +22,8 @@ class Allocation(json.SerializableMixin):
     variable: Variable
     offset: Union[int, Placeholder]
     buffer_type: BufferType
+    begin: int
+    end: int
 
     def __init__(self,
                  variable: Variable,
@@ -44,10 +46,11 @@ class Allocation(json.SerializableMixin):
 
 
 class MemoryLayout(json.SerializableMixin):
-    data: np.array
-
-    def __init__(self):
-        self.allocations = {}  # type: Dict[str, Allocation]
+    def __init__(self,
+                 allocations: Dict[Variable, Allocation] = None,
+                 data: np.array = None):
+        self.allocations = {} if allocations is None else allocations  # type: Dict[Variable, Allocation]
+        self.data = data  # type: np.array
 
     def _to_serializable_(self):
         return {
@@ -66,15 +69,15 @@ class MemoryLayout(json.SerializableMixin):
     def __len__(self):
         return len(self.allocations)
 
-    def __getitem__(self, var: Variable):
-        return self.allocations[var.name]
+    def __getitem__(self, v: Variable):
+        return self.allocations[v]
 
-    def __contains__(self, var: Variable):
-        return var.name in self.allocations
+    def __contains__(self, v: Variable):
+        return v in self.allocations
 
-    def append(self, var: Variable, offset: Union[int, Placeholder] = -1, buffer_type: Optional[BufferType] = None):
+    def append(self, v: Variable, offset: Union[int, Placeholder] = -1, buffer_type: Optional[BufferType] = None):
         if buffer_type is None:
-            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(var.size):
+            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(v.size):
                 buffer_type = BufferType.Static
             else:
                 buffer_type = BufferType.Dynamic
@@ -85,7 +88,7 @@ class MemoryLayout(json.SerializableMixin):
             else:
                 offset = self.dynamic_size
 
-        self.allocations[var.name] = Allocation(var, offset, buffer_type)
+        self.allocations[v] = Allocation(v, offset, buffer_type)
 
     @property
     def total_size(self) -> Union[int, Placeholder]:
@@ -137,6 +140,7 @@ class Allocator:
         for variable, offset in offsets.items():
             layout.append(variable, offset)
 
+        # temporally, allocate all static buffer
         layout.data = np.zeros(layout.static_size, dtype=np.float32)
         constant_size = 0
         for var in variables:
@@ -145,7 +149,9 @@ class Allocator:
 
             allocation = layout[var]
             layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-            constant_size += var.data.size
+            constant_size = max(constant_size, allocation.offset + allocation.size)
+
+        # truncate
         layout.data = layout.data[:constant_size]
         if flags.VISUALIZE_MEMORY_ALLOCATION:
             _visualize_allocation(ops, variables, layout, lifetime, offsets)

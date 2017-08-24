@@ -9,9 +9,10 @@
 import { DescriptorRunner, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
 import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fallback";
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
+import DescriptorRunnerWebGL from "./descriptor_runner/descriptor_runner_webgl";
 import DescriptorRunnerWebGPU from "./descriptor_runner/descriptor_runner_webgpu";
-import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
 import { registerTransformUrlDelegate } from "./fetch";
+import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
 import * as Image from "./image";
 import * as Math from "./math";
 
@@ -19,12 +20,28 @@ import * as Math from "./math";
  * DEBUG flag for developing WebDNN
  * @private
  */
-export let DEBUG: boolean = false;
+let DEBUG: boolean = false;
+
+/**
+ * get DEBUG flag for developing WebDNN
+ * @private
+ */
+export function isDebugMode() {
+    return DEBUG;
+}
+
+/**
+ * set DEBUG flag for developing WebDNN
+ * @private
+ */
+export function setDebugMode(flag) {
+    DEBUG = flag;
+}
 
 /**
  * Backend names supported in WebDNN
  */
-export type BackendName = 'webgpu' | 'webassembly' | 'fallback';
+export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';
 
 /**
  * Backend constructor map
@@ -32,6 +49,7 @@ export type BackendName = 'webgpu' | 'webassembly' | 'fallback';
  */
 const descriptorRunners: { [k in BackendName]: DescriptorRunnerConstructor<GraphDescriptor> } = {
     webgpu: DescriptorRunnerWebGPU,
+    webgl: DescriptorRunnerWebGL,
     webassembly: DescriptorRunnerWebassembly,
     fallback: DescriptorRunnerFallback
 };
@@ -50,6 +68,7 @@ export interface BackendAvailability {
      * >>> {
      *   'webgpu': false,
      *   'webassembly': true,
+     *   'webgl': true,
      *   'fallback': true
      * }
      * ```
@@ -63,7 +82,7 @@ export interface BackendAvailability {
      *
      * ```ts
      * WebDNN.getBackendAvailability().defaultOrder
-     * >>> ['webassembly', 'fallback']
+     * >>> ['webassembly', 'webgl', 'fallback']
      * ```
      */
     defaultOrder: BackendName[]
@@ -78,11 +97,12 @@ export interface BackendAvailability {
 export function getBackendAvailability(): BackendAvailability {
     let status: { [name in BackendName]: boolean } = {
         'webgpu': descriptorRunners['webgpu'].checkAvailability(),
+        'webgl': descriptorRunners['webgl'].checkAvailability(),
         'webassembly': descriptorRunners['webassembly'].checkAvailability(),
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
 
-    let order = (['webgpu', 'webassembly', 'fallback'] as BackendName[]).filter(backend => status[backend]);
+    let order = (['webgpu', 'webassembly', 'webgl', 'fallback'] as BackendName[]).filter(backend => status[backend]);
 
     return {
         status: status,
@@ -147,16 +167,16 @@ export interface InitOption {
     progressCallback?: (loaded: number, total: number) => any,
 
     /**
-     * URL of directory that contains weight binary files. 
-     * 
-     * If both 
+     * URL of directory that contains weight binary files.
+     *
+     * If both
      * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
      * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
      * At first, all urls of binary weights' are replaced by [[InitOption.weightDirectory|`InitOption.weightDirectory`]], and then
      * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are applied.
-     * 
+     *
      * ### Examples
-     * 
+     *
      * ```js
      * // Graph descriptor JSON file will be loaded from 'original.host.com/model', and
      * // model binary data will be loaded from 'custom.host.com/model'.
@@ -171,8 +191,8 @@ export interface InitOption {
      * Delegate function which will be called with original url, and must return converted url strings.
      * This function is called before WebDNN fetch any data (descriptor json file, and binary data)
      * You can modified url to fetch data from other domain, for example.
-     * 
-     * If both 
+     *
+     * If both
      * [[InitOption.weightDirectory|`InitOption.weightDirectory`]] and
      * [[InitOption.transformUrlDelegate|`InitOption.transformUrlDelegate`]] are specified,
      * At first, all urls of binary weights' are replaced by [[InitOption.weightDirectory|`InitOption.weightDirectory`]], and then
@@ -231,7 +251,7 @@ export interface InitOption {
 export async function load(directory: string, initOption: InitOption = {}): Promise<DescriptorRunner<GraphDescriptor>> {
     let backendOrder = initOption.backendOrder;
     if (!backendOrder) {
-        backendOrder = ['webgpu', 'webassembly'];
+        backendOrder = getBackendAvailability().defaultOrder;
     } else if (typeof backendOrder === 'string') {
         backendOrder = [backendOrder];
     }

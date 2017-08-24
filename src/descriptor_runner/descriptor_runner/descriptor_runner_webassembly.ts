@@ -41,6 +41,8 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
     }
 
     init(): Promise<void> {
+        if (!DescriptorRunnerWebassembly.checkAvailability()) throw Error('WebAssembly backend is not supported in this browser.');
+
         //nothing to do
         return Promise.resolve();
     }
@@ -167,7 +169,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         if (!this.worker) throw new Error('Worker is not initialized');
 
         let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-        let weight_data = await decoder.decode(weightsData, this.descriptor.memory_layout);
+        let weight_data = await decoder.decode(weightsData);
         let worker = this.worker;
 
         let promise = new Promise<void>((resolve, reject) => {

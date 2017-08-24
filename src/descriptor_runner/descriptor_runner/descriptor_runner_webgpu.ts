@@ -9,7 +9,7 @@ import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGPU, GraphDescriptorWebGPUExecInfos } from "../graph_descriptor/graph_descriptor_webgpu";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import { DEBUG } from "../webdnn";
+import { isDebugMode } from "../webdnn";
 import WebGPUHandler, { IS_WEBGPU_SUPPORTED } from "../webgpu_handler";
 import { DescriptorRunner } from "./descriptor_runner";
 
@@ -46,6 +46,8 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
     }
 
     async init() {
+        if (!DescriptorRunnerWebGPU.checkAvailability()) throw Error('WebGPU backend is not supported in this browser.');
+
         // initialize webgpu, build kernels
         this.shaderLanguage = 'metal';
         this.webgpuHandler = new WebGPUHandler();
@@ -86,7 +88,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         this.staticBuffer = staticBuffer;
 
         let decoder = get_weight_decoder(descriptor.weight_encoding);
-        await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray), descriptor.memory_layout));
+        await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray)));
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
@@ -229,7 +231,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         let metaBuffers = this.metaBuffers;
 
         this._running = true;
-        if (DEBUG) {
+        if (isDebugMode()) {
             let records: any = [];
             let totalElapsedTime = 0;
 

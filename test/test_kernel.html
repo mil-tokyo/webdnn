@@ -14,13 +14,13 @@
     Click <b>RUN</b> button and check console logs.
 </p>
 
-<form onsubmit="TestRunner.run(); return false">
+<div>
     <label>
         <span>Master JSON File</span>
         <input type="text" id="masterJSONUrl" value="../build/test/master.json">
     </label>
-    <input type="submit" value="RUN">
-</form>
+    <button onclick="TestRunner.run()">RUN</button>
+</div>
 
 <script src="../dist/webdnn.js"></script>
 <script src="./test_kernel.js"></script>

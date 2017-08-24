@@ -20,7 +20,7 @@ class ConstantVariable(Variable):
 
     def __init__(self, data: np.array, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
-        self.data = data
+        self.data = data.astype(np.float32)
         self.attributes.add(Constant(self))
 
     def change_order(self, order: Order) -> "ConstantVariable":

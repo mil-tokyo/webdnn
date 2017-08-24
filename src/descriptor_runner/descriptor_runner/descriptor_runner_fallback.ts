@@ -102,7 +102,7 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
             });
 
         let decoder = get_weight_decoder(this.descriptor.weight_encoding);
-        staticBuffer.set(await decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout));
+        staticBuffer.set(await decoder.decode(new Uint8Array(weightRawArray)));
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)

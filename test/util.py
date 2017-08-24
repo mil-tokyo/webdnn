@@ -119,7 +119,7 @@ class KernelTestCaseGenerator:
             cls.setup()
 
         if backend is None:
-            backend = ["webgpu", "webassembly", "fallback"]
+            backend = ["webgpu", "webgl", "webassembly", "fallback"]
 
         if not isinstance(backend, str):
             for b in backend:
@@ -140,6 +140,7 @@ class KernelTestCaseGenerator:
 
         backend_flag_map = {
             "webgpu": flags.test.TEST_WEBGPU,
+            "webgl": flags.test.TEST_WEBGL,
             "webassembly": flags.test.TEST_WEBASSEMBLY,
             "fallback": flags.test.TEST_FALLBACK
         }

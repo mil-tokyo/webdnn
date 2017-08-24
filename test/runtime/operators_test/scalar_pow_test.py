@@ -7,7 +7,8 @@ from webdnn.graph.variable import Variable
 
 
 @wrap_template
-def template(x_order=OrderNHWC, y_order=OrderNHWC, value=4, description: str = ""):
+def template(x_order=OrderNHWC, y_order=OrderNHWC, value=4, backend=["webgpu", "webgl", "webassembly", "fallback"],
+             description: str = ""):
     vx = np.random.rand(2, 3, 4, 5) - 0.5
     vy = vx.copy() ** value
 
@@ -20,6 +21,7 @@ def template(x_order=OrderNHWC, y_order=OrderNHWC, value=4, description: str = "
     generate_kernel_test_case(
         description=f"ScalarPow {description}",
         graph=Graph([x], [y]),
+        backend=backend,
         inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
         expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},
     )
@@ -34,7 +36,27 @@ def test_different_order():
 
 
 def test_value_1():
-    template(value=1)
+    template(value=1, backend=["webgpu", "webassembly", "fallback"])
+
+
+def test_value_1_webgl():
+    # NOTE: webgl calculate x^1 as abs(x), therefore, if x contains negative element, result is wrong.
+    vx = np.random.rand(2, 3, 4, 5) + 0.5
+    vy = vx.copy()
+
+    x = Variable(vx.shape, order=OrderNHWC)
+    y = x ** 1  # type: Variable
+
+    x.change_order(OrderNHWC)
+    y.change_order(OrderNHWC)
+
+    generate_kernel_test_case(
+        description=f"ScalarPow value=1",
+        graph=Graph([x], [y]),
+        backend=["webgl"],
+        inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
+        expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},
+    )
 
 
 def test_value_0():

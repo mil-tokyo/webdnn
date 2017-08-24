@@ -13,11 +13,11 @@ export abstract class Buffer {
      * @property {number}
      */
     byteLength: number;
-    backed: string;
+    backend: string;
 
-    constructor(byteLength: number, backed: string) {
+    constructor(byteLength: number, backend: string) {
         this.byteLength = byteLength;
-        this.backed = backed;
+        this.backend = backend;
     }
 
     /**
@@ -46,7 +46,7 @@ export abstract class Buffer {
      * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
      */
     abstract getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Uint32Array;
+    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
 
     /**
      * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)

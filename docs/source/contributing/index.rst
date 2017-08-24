@@ -82,7 +82,7 @@ Also you can specify target backends. For example, follow command generates test
 .. code-block:: shell
 
     # generate test code only for WebGPU backend
-    $ TEST_WEBGPU=1 TEST_WEBASSEMBLY=0, TEST_FALLBACK=0 nosetests test/runtime
+    $ TEST_WEBGPU=1 TEST_WEBASSEMBLY=0, TEST_WEBGL=0, TEST_FALLBACK=0 nosetests test/runtime
 
 License
 -------

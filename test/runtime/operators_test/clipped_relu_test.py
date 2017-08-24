@@ -19,7 +19,7 @@ def template(x_order=OrderNHWC, y_order=OrderNHWC, cap=0.25, description: str = 
     y.change_order(y_order)
 
     generate_kernel_test_case(
-        description=f"Softplus {description}",
+        description=f"ClippedRelu {description}",
         graph=Graph([x], [y]),
         inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
         expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},

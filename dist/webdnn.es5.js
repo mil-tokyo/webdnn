@@ -87,7 +87,7 @@ function __generator(thisArg, body) {
 var WeightDecoderEightbit = (function () {
     function WeightDecoderEightbit() {
     }
-    WeightDecoderEightbit.prototype.decode = function (data, memory_layout) {
+    WeightDecoderEightbit.prototype.decode = function (data) {
         return __awaiter(this, void 0, void 0, function () {
             var decoded_arrays, total_dst_length, data_view, src_offset, dst_offset_1, body_size, scale, scaled_table, i, src_data_view, inflate, decompressed, dec_size, decoded_array, s, dst, dst_offset, i;
             return __generator(this, function (_a) {
@@ -163,7 +163,7 @@ var WeightDecoderEightbit = (function () {
 var WeightDecoderRaw = (function () {
     function WeightDecoderRaw() {
     }
-    WeightDecoderRaw.prototype.decode = function (data, memory_layout) {
+    WeightDecoderRaw.prototype.decode = function (data) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4)];
@@ -474,6 +474,16 @@ var SymbolicTypedArray = (function () {
     SymbolicTypedArray.prototype.setArrayBuffer = function (arrayBuffer) {
         this.arrayBuffer = arrayBuffer;
     };
+    Object.defineProperty(SymbolicTypedArray.prototype, "name", {
+        /**
+         * @protected
+         */
+        get: function () {
+            return this.allocation.name;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(SymbolicTypedArray.prototype, "isDynamic", {
         /**
          * @protected
@@ -714,7 +724,7 @@ var DescriptorRunnerFallback = (function (_super) {
                         });
                         decoder = get_weight_decoder(this.descriptor.weight_encoding);
                         _b = (_a = staticBuffer).set;
-                        return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray), this.descriptor.memory_layout)];
+                        return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray))];
                     case 1:
                         _b.apply(_a, [_c.sent()]);
                         return [4 /*yield*/, this.getInputViews()];
@@ -904,6 +914,8 @@ var DescriptorRunnerWebassembly = (function (_super) {
         return 'Worker' in window;
     };
     DescriptorRunnerWebassembly.prototype.init = function () {
+        if (!DescriptorRunnerWebassembly.checkAvailability())
+            throw Error('WebAssembly backend is not supported in this browser.');
         //nothing to do
         return Promise.resolve();
     };
@@ -1067,7 +1079,7 @@ var DescriptorRunnerWebassembly = (function (_super) {
                         if (!this.worker)
                             throw new Error('Worker is not initialized');
                         decoder = get_weight_decoder(this.descriptor.weight_encoding);
-                        return [4 /*yield*/, decoder.decode(weightsData, this.descriptor.memory_layout)];
+                        return [4 /*yield*/, decoder.decode(weightsData)];
                     case 1:
                         weight_data = _a.sent();
                         worker = this.worker;
@@ -1200,15 +1212,643 @@ var DescriptorRunnerWebassembly = (function (_super) {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+// [x y u v] * [upper-left, lower-left, upper-right, lower-right]
+/**
+ * @protected
+ */
+var vertexArray = new Float32Array([
+    -1, +1,
+    -1, -1,
+    +1, +1,
+    +1, -1,
+]);
+/**
+ * Buffer wrapper for WebGL backend
+ * @TODO: Move this into `/buffer/buffer_webgl.ts` and implement `Buffer` interface.
+ * @protected
+ */
+var WebGLBuffer = (function () {
+    function WebGLBuffer(gl, length, name, array, channelMode) {
+        this.gl = gl;
+        this.name = name;
+        this.channelMode = channelMode;
+        switch (this.channelMode) {
+            case 'RGBA':
+                this.elementsPerPixel = 4;
+                break;
+            case 'R':
+                this.elementsPerPixel = 1;
+                break;
+            default:
+                throw Error('Unknown channel mode');
+        }
+        this.length = length;
+        this.array = array || new Float32Array(this.length);
+        // width is fixed as 1024, height is flexible.
+        // FIXME: flexible width for efficient memory allocation
+        var packedLength = Math.ceil(length / this.elementsPerPixel);
+        this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
+        this.textureHeight = Math.ceil(packedLength / 2048);
+        var texture = checkNull(gl.createTexture());
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.textureWidth, this.textureHeight, 0, gl.RGBA, gl.FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
+        this.texture = texture;
+        if (array)
+            this.uploadToGPU();
+    }
+    WebGLBuffer.prototype.uploadToGPU = function () {
+        var gl = this.gl;
+        var tmp = this.pack(this.array);
+        if (tmp.length != this.textureWidth * this.textureHeight * 4) {
+            var tmp2 = new Float32Array(this.textureWidth * this.textureHeight * 4);
+            tmp2.set(tmp, 0);
+            tmp = tmp2;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
+    };
+    WebGLBuffer.prototype.downloadToCPU = function () {
+        var gl = this.gl;
+        var tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
+        var frameBuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+        this.bindTextureToCurrentFrameBuffer();
+        gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+        this.unbindTextureFromCurrentFrameBuffer();
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        this.array.set(this.unpack(tmp).slice(0, this.length), 0);
+    };
+    WebGLBuffer.prototype.bindTextureToUnit = function (unit) {
+        var gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    };
+    WebGLBuffer.prototype.unbindTextureFromUnit = function (unit) {
+        var gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    };
+    WebGLBuffer.prototype.bindTextureToCurrentFrameBuffer = function () {
+        var gl = this.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    };
+    WebGLBuffer.prototype.unbindTextureFromCurrentFrameBuffer = function () {
+        var gl = this.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    };
+    WebGLBuffer.prototype.pack = function (array) {
+        switch (this.channelMode) {
+            case 'RGBA':
+                return new Float32Array(array);
+            case 'R':
+                var result = new Float32Array(array.length * 4);
+                for (var i = 0; i < array.length; i++)
+                    result[i * 4] = array[i];
+                return result;
+            default:
+                throw Error('Unknown channel mode');
+        }
+    };
+    WebGLBuffer.prototype.unpack = function (array) {
+        switch (this.channelMode) {
+            case 'RGBA':
+                return new Float32Array(array);
+            case 'R':
+                var result = new Float32Array(array.length / 4);
+                for (var i = 0; i < array.length / 4; i++)
+                    result[i] = array[i * 4];
+                return result;
+            default:
+                throw Error('Unknown channel mode');
+        }
+    };
+    return WebGLBuffer;
+}());
+/**
+ * @protected
+ */
+var DescriptorRunnerWebGL = (function (_super) {
+    __extends(DescriptorRunnerWebGL, _super);
+    function DescriptorRunnerWebGL() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.backendName = 'webgl';
+        return _this;
+    }
+    DescriptorRunnerWebGL.checkAvailability = function () {
+        //TODO(Kiikurage)
+        // Safari supports WebGL with OES_TEXTURE_FLOAT extension. However,
+        // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
+        var IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 &&
+            navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
+        return IS_WEBGL_SUPPORTED && !IS_SAFARI;
+    };
+    DescriptorRunnerWebGL.prototype.init = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, gl, extensions, vertexBuffer;
+            return __generator(this, function (_b) {
+                if (!DescriptorRunnerWebGL.checkAvailability())
+                    throw Error('WebGL backend is not supported in this browser.');
+                _a = initializeWebGLRenderingContext(), gl = _a.gl, extensions = _a.extensions;
+                this.gl = gl;
+                this.extensions = extensions;
+                vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
+                this.buffers = new Map();
+                return [2 /*return*/];
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.load = function (directory, progressCallback) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, descriptor, weightRawArray;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, Promise.all([
+                            webdnnFetch(directory + "/graph_" + this.backendName + ".json", { ignoreCache: this.ignoreCache })
+                                .then(function (res) { return res.json(); }),
+                            webdnnFetch(directory + "/weight_" + this.backendName + ".bin", { ignoreCache: this.ignoreCache })
+                                .then(function (res) { return readArrayBufferProgressively(res, progressCallback); })
+                        ])];
+                    case 1:
+                        _a = _b.sent(), descriptor = _a[0], weightRawArray = _a[1];
+                        return [4 /*yield*/, this.setDescriptor(descriptor)];
+                    case 2:
+                        _b.sent();
+                        return [4 /*yield*/, this.compile()];
+                    case 3:
+                        _b.sent();
+                        return [4 /*yield*/, this.initializeStaticBuffer(weightRawArray)];
+                    case 4:
+                        _b.sent();
+                        if (!(this.placeholderContext && this.placeholderContext.isResolved)) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.initializeDynamicBuffer()];
+                    case 5:
+                        _b.sent();
+                        _b.label = 6;
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.initializeStaticBuffer = function (weightRawArray) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var descriptor, decoder, weight, buffers;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.descriptor)
+                            throw new Error('Descriptor is not loaded');
+                        descriptor = this.descriptor;
+                        decoder = get_weight_decoder(this.descriptor.weight_encoding);
+                        return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray))];
+                    case 1:
+                        weight = _a.sent();
+                        buffers = this.buffers;
+                        Object.entries(descriptor.allocations)
+                            .forEach(function (_a) {
+                            var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
+                            var buffer = new WebGLBuffer(_this.gl, allocation_size, name, null, channel_mode);
+                            buffers.set(name, buffer);
+                        });
+                        Object.entries(descriptor.constants_map)
+                            .forEach(function (_a) {
+                            var variable_name = _a[0], _b = _a[1], size = _b.size, byte_offset = _b.byte_offset;
+                            var buffer = buffers.get(descriptor.variables[variable_name].allocation_name);
+                            buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+                            buffer.uploadToGPU();
+                        });
+                        return [4 /*yield*/, this.getInputViews()];
+                    case 2:
+                        (_a.sent())
+                            .filter(function (view) { return !view.isDynamic; })
+                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(view.name).array.buffer); });
+                        return [4 /*yield*/, this.getOutputViews()];
+                    case 3:
+                        (_a.sent())
+                            .filter(function (view) { return !view.isDynamic; })
+                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(view.name).array.buffer); });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.initializeDynamicBuffer = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var descriptor, placeholderContext, buffers;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.descriptor)
+                            throw Error("GraphDescriptor is not loaded.");
+                        if (!this.placeholderContext)
+                            throw Error("PlaceholderContext is not initialized.");
+                        descriptor = this.descriptor;
+                        placeholderContext = this.placeholderContext;
+                        buffers = this.buffers;
+                        Object.entries(descriptor.allocations)
+                            .forEach(function (_a) {
+                            var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
+                            if (typeof allocation_size == 'number')
+                                return;
+                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode);
+                            buffers.set(name, buffer);
+                        });
+                        return [4 /*yield*/, this.getInputViews()];
+                    case 1:
+                        (_a.sent())
+                            .filter(function (view) { return view.isDynamic; })
+                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(view.name).array.buffer); });
+                        return [4 /*yield*/, this.getOutputViews()];
+                    case 2:
+                        (_a.sent())
+                            .filter(function (view) { return view.isDynamic; })
+                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(view.name).array.buffer); });
+                        this.buildPipeline();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.setDescriptor = function (descriptor) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.descriptor = descriptor;
+                //reset all datum depend on old descriptor
+                this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
+                return [2 /*return*/];
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.compile = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var descriptor;
+            return __generator(this, function (_a) {
+                if (!this.descriptor)
+                    throw new Error('Descriptor is not loaded');
+                descriptor = this.descriptor;
+                this.programs = new Map();
+                this.vertexShader = checkNull(this.gl.createShader(this.gl.VERTEX_SHADER));
+                this.gl.shaderSource(this.vertexShader, "\n            precision highp float;\n            attribute vec2 _xy;\n            void main() { \n              gl_Position = vec4(_xy, 0, 1); \n            }\n        ");
+                this.gl.compileShader(this.vertexShader);
+                if (!this.gl.getShaderParameter(this.vertexShader, this.gl.COMPILE_STATUS)) {
+                    console.error(this.gl.getShaderInfoLog(this.vertexShader));
+                    throw Error("Shader Compile failed: " + this.gl.getShaderInfoLog(this.vertexShader));
+                }
+                Object.keys(descriptor.shader_sources)
+                    .forEach(function (name) {
+                    var shader = checkNull(_this.gl.createShader(_this.gl.FRAGMENT_SHADER));
+                    _this.gl.shaderSource(shader, descriptor.shader_sources[name]);
+                    _this.gl.compileShader(shader);
+                    if (!_this.gl.getShaderParameter(shader, _this.gl.COMPILE_STATUS)) {
+                        console.error(_this.gl.getShaderInfoLog(shader));
+                        throw Error("Shader Compile failed: " + _this.gl.getShaderInfoLog(shader));
+                    }
+                    var program = checkNull(_this.gl.createProgram());
+                    _this.gl.attachShader(program, shader);
+                    _this.gl.attachShader(program, _this.vertexShader);
+                    _this.gl.linkProgram(program);
+                    if (!_this.gl.getProgramParameter(program, _this.gl.LINK_STATUS)) {
+                        console.error(_this.gl.getProgramInfoLog(program));
+                        throw Error('ShaderProgram Initialization failed.');
+                    }
+                    _this.programs.set(name, program);
+                });
+                return [2 /*return*/];
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.setPlaceholderValue = function (values) {
+        return __awaiter(this, void 0, void 0, function () {
+            var placeholderContext;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.placeholderContext)
+                            throw new Error('PlaceholderContext is not initialized.');
+                        placeholderContext = this.placeholderContext;
+                        placeholderContext.update(values);
+                        if (!placeholderContext.isResolved)
+                            return [2 /*return*/];
+                        if (!this.descriptor)
+                            throw new Error('Descriptor is not loaded');
+                        return [4 /*yield*/, this.initializeDynamicBuffer()];
+                    case 1:
+                        _a.sent();
+                        // resolve placeholders in execution info
+                        // TODO:
+                        if (Object.keys(this.descriptor.placeholders).length > 0)
+                            throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    DescriptorRunnerWebGL.prototype.getInputViews = function () {
+        if (this.inputViews)
+            return this.inputViews;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        var descriptor = this.descriptor;
+        var placeholderContext = this.placeholderContext;
+        this.inputViews = descriptor.inputs.map(function (name) {
+            var _a = descriptor.variables[name], variable_size = _a.variable_size, allocation_name = _a.allocation_name;
+            var view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
+            return view;
+        });
+        return this.inputViews;
+    };
+    DescriptorRunnerWebGL.prototype.getOutputViews = function () {
+        if (this.outputViews)
+            return this.outputViews;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        var descriptor = this.descriptor;
+        var placeholderContext = this.placeholderContext;
+        this.outputViews = descriptor.outputs.map(function (name) {
+            var _a = descriptor.variables[name], variable_size = _a.variable_size, allocation_name = _a.allocation_name;
+            var view = new SymbolicFloat32Array({
+                name: allocation_name,
+                size: variable_size,
+                offset: 0
+            }, placeholderContext, true);
+            return view;
+        });
+        return this.outputViews;
+    };
+    DescriptorRunnerWebGL.prototype.buildPipeline = function () {
+        var _this = this;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        if (!this.placeholderContext.isResolved)
+            throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
+        var gl = this.gl;
+        var buffers = this.buffers;
+        var descriptor = this.descriptor;
+        this.runtimeInfo = {
+            inputs: this.getInputViews().map(function (view) { return buffers.get(view.name); }),
+            outputs: this.getOutputViews().map(function (view) { return buffers.get(view.name); }),
+            programs: this.descriptor.exec_infos.map(function (execInfo) {
+                // inputs
+                var inputs = execInfo.inputs.map(function (input) { return ({
+                    buffer: buffers.get(descriptor.variables[input.variable_name].allocation_name),
+                    uniformIndex: input.value
+                }); });
+                //output
+                var output = buffers.get(descriptor.variables[execInfo.output].allocation_name);
+                // shader
+                var program = _this.programs.get(execInfo.shader_name);
+                gl.useProgram(program);
+                // uniforms
+                var uniforms = Object.keys(execInfo.uniforms).map(function (name) {
+                    var _a = execInfo.uniforms[name], type = _a.type, value = _a.value;
+                    switch (type) {
+                        case 'int':
+                            return {
+                                func: gl.uniform1i,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'float':
+                            return {
+                                func: gl.uniform1f,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'vec2':
+                            return {
+                                func: gl.uniform2fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'vec4':
+                            return {
+                                func: gl.uniform4fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'sampler2D':
+                            return {
+                                func: gl.uniform1i,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        default:
+                            throw TypeError("Incompatible type for uniform parameter: " + type);
+                    }
+                });
+                // vao
+                var vao = _this.extensions.vao.createVertexArrayOES();
+                _this.extensions.vao.bindVertexArrayOES(vao);
+                // attributes
+                var loc = gl.getAttribLocation(program, '_xy');
+                gl.vertexAttribPointer(loc, 2, gl.FLOAT, true, 8, 0);
+                gl.enableVertexAttribArray(loc);
+                // run
+                return {
+                    program: program,
+                    frameBuffer: gl.createFramebuffer(),
+                    name: execInfo.shader_name,
+                    width: output.textureWidth,
+                    height: output.textureHeight,
+                    inputs: inputs,
+                    output: output,
+                    vao: vao,
+                    uniforms: uniforms,
+                };
+            })
+        };
+    };
+    DescriptorRunnerWebGL.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var gl, runtimeInfo, vaoExtension, _i, _a, buffer, records, totalElapsedTime_1, _b, _c, runtimeProgramInfo, start, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, elapsedTime, _j, _k, _l, buffer, uniformIndex, summary, _m, _o, runtimeProgramInfo, _p, _q, _r, buffer, uniformIndex, _s, _t, uniform, _u, _v, buffer;
+            return __generator(this, function (_w) {
+                if (this._running)
+                    throw new Error('Calling another run() while running.');
+                if (!this.descriptor)
+                    throw new Error('Descriptor is not loaded');
+                if (!this.inputViews || !this.outputViews)
+                    throw new Error('getInputViews and getOutputViews must be called prior to run');
+                if (!this.placeholderContext)
+                    throw new Error('PlaceholderContext is not initialized');
+                if (!this.placeholderContext.isResolved)
+                    throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
+                this._running = true;
+                gl = this.gl;
+                runtimeInfo = this.runtimeInfo;
+                vaoExtension = this.extensions.vao;
+                //Upload all input values to GPU
+                for (_i = 0, _a = runtimeInfo.inputs; _i < _a.length; _i++) {
+                    buffer = _a[_i];
+                    buffer.uploadToGPU();
+                }
+                if (isDebugMode()) {
+                    records = [];
+                    totalElapsedTime_1 = 0;
+                    for (_b = 0, _c = runtimeInfo.programs; _b < _c.length; _b++) {
+                        runtimeProgramInfo = _c[_b];
+                        start = performance.now();
+                        //vao
+                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+                        // frameBuffer
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        // inputs
+                        for (_d = 0, _e = runtimeProgramInfo.inputs; _d < _e.length; _d++) {
+                            _f = _e[_d], buffer = _f.buffer, uniformIndex = _f.uniformIndex;
+                            gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                            gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                        }
+                        // output
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+                        // shader
+                        gl.useProgram(runtimeProgramInfo.program);
+                        // uniforms
+                        for (_g = 0, _h = runtimeProgramInfo.uniforms; _g < _h.length; _g++) {
+                            uniform = _h[_g];
+                            uniform.func.apply(gl, uniform.args);
+                        }
+                        // run
+                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                        gl.finish();
+                        elapsedTime = performance.now() - start;
+                        records.push({
+                            'Kernel': runtimeProgramInfo.name,
+                            'Elapsed time [ms]': elapsedTime
+                        });
+                        totalElapsedTime_1 += elapsedTime;
+                        for (_j = 0, _k = runtimeProgramInfo.inputs; _j < _k.length; _j++) {
+                            _l = _k[_j], buffer = _l.buffer, uniformIndex = _l.uniformIndex;
+                            buffer.downloadToCPU();
+                            console.log(uniformIndex, buffer.array);
+                        }
+                        runtimeProgramInfo.output.downloadToCPU();
+                        console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
+                    }
+                    summary = Array.from(Object.values(records.reduce(function (summary, record) {
+                        if (!(record['Kernel'] in summary)) {
+                            summary[record['Kernel']] = {
+                                'Kernel': record['Kernel'],
+                                'Count': 0,
+                                'Elapsed time [ms]': 0,
+                            };
+                        }
+                        summary[record['Kernel']]['Count']++;
+                        summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+                        return summary;
+                    }, {})));
+                    summary.forEach(function (record) { return record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime_1).toFixed(2); });
+                    console.table(records);
+                    console.table(summary);
+                }
+                else {
+                    for (_m = 0, _o = runtimeInfo.programs; _m < _o.length; _m++) {
+                        runtimeProgramInfo = _o[_m];
+                        //vao
+                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+                        // frameBuffer
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        // inputs
+                        for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
+                            _r = _q[_p], buffer = _r.buffer, uniformIndex = _r.uniformIndex;
+                            gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                            gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                        }
+                        // output
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+                        // shader
+                        gl.useProgram(runtimeProgramInfo.program);
+                        // uniforms
+                        for (_s = 0, _t = runtimeProgramInfo.uniforms; _s < _t.length; _s++) {
+                            uniform = _t[_s];
+                            uniform.func.apply(gl, uniform.args);
+                        }
+                        // run
+                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    }
+                }
+                for (_u = 0, _v = runtimeInfo.outputs; _u < _v.length; _u++) {
+                    buffer = _v[_u];
+                    buffer.downloadToCPU();
+                }
+                this._running = false;
+                return [2 /*return*/];
+            });
+        });
+    };
+    return DescriptorRunnerWebGL;
+}(DescriptorRunner));
+function initializeWebGLRenderingContext() {
+    var canvas = document.createElement('canvas');
+    var gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
+    if (!gl)
+        return null;
+    var vao;
+    if (!gl.getExtension('OES_texture_float'))
+        return null;
+    if (!(vao = gl.getExtension('OES_vertex_array_object')))
+        return null;
+    if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+        return null;
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.STENCIL_TEST);
+    gl.disable(gl.BLEND);
+    gl.disable(gl.DITHER);
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.disable(gl.SAMPLE_COVERAGE);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    return {
+        gl: gl,
+        extensions: {
+            vao: vao
+        }
+    };
+}
+function checkBrowserSupportStatus() {
+    if (!initializeWebGLRenderingContext())
+        return;
+    IS_WEBGL_SUPPORTED = true;
+}
+function checkNull(v) {
+    if (!v)
+        throw Error('null error');
+    return v;
+}
+var IS_WEBGL_SUPPORTED = false;
+document.addEventListener('DOMContentLoaded', checkBrowserSupportStatus);
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
 /**
  * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
  *
  * @protected
  */
 var Buffer = (function () {
-    function Buffer(byteLength, backed) {
+    function Buffer(byteLength, backend) {
         this.byteLength = byteLength;
-        this.backed = backed;
+        this.backend = backend;
     }
     return Buffer;
 }());
@@ -1433,6 +2073,8 @@ var DescriptorRunnerWebGPU = (function (_super) {
     DescriptorRunnerWebGPU.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
+                if (!DescriptorRunnerWebGPU.checkAvailability())
+                    throw Error('WebGPU backend is not supported in this browser.');
                 // initialize webgpu, build kernels
                 this.shaderLanguage = 'metal';
                 this.webgpuHandler = new WebGPUHandler();
@@ -1498,7 +2140,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
                         this.staticBuffer = staticBuffer;
                         decoder = get_weight_decoder(descriptor.weight_encoding);
                         _b = (_a = staticBuffer).write;
-                        return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray), descriptor.memory_layout)];
+                        return [4 /*yield*/, decoder.decode(new Uint8Array(weightRawArray))];
                     case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
                     case 2:
                         _c.sent();
@@ -1702,7 +2344,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
                         dynamicBuffer = this.dynamicBuffer;
                         metaBuffers = this.metaBuffers;
                         this._running = true;
-                        if (!DEBUG) return [3 /*break*/, 5];
+                        if (!isDebugMode()) return [3 /*break*/, 5];
                         records = [];
                         totalElapsedTime_1 = 0;
                         i = 0;
@@ -2504,11 +3146,26 @@ var math = Object.freeze({
  */
 var DEBUG = false;
 /**
+ * get DEBUG flag for developing WebDNN
+ * @private
+ */
+function isDebugMode() {
+    return DEBUG;
+}
+/**
+ * set DEBUG flag for developing WebDNN
+ * @private
+ */
+function setDebugMode(flag) {
+    DEBUG = flag;
+}
+/**
  * Backend constructor map
  * @private
  */
 var descriptorRunners = {
     webgpu: DescriptorRunnerWebGPU,
+    webgl: DescriptorRunnerWebGL,
     webassembly: DescriptorRunnerWebassembly,
     fallback: DescriptorRunnerFallback
 };
@@ -2521,10 +3178,11 @@ var descriptorRunners = {
 function getBackendAvailability() {
     var status = {
         'webgpu': descriptorRunners['webgpu'].checkAvailability(),
+        'webgl': descriptorRunners['webgl'].checkAvailability(),
         'webassembly': descriptorRunners['webassembly'].checkAvailability(),
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
-    var order = ['webgpu', 'webassembly', 'fallback'].filter(function (backend) { return status[backend]; });
+    var order = ['webgpu', 'webassembly', 'webgl', 'fallback'].filter(function (backend) { return status[backend]; });
     return {
         status: status,
         defaultOrder: order
@@ -2598,7 +3256,7 @@ function load(directory, initOption) {
                 case 0:
                     backendOrder = initOption.backendOrder;
                     if (!backendOrder) {
-                        backendOrder = ['webgpu', 'webassembly'];
+                        backendOrder = getBackendAvailability().defaultOrder;
                     }
                     else if (typeof backendOrder === 'string') {
                         backendOrder = [backendOrder];
@@ -2646,7 +3304,8 @@ function load(directory, initOption) {
     });
 }
 
-exports.DEBUG = DEBUG;
+exports.isDebugMode = isDebugMode;
+exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
 exports.Math = math;

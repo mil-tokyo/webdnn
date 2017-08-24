@@ -197,9 +197,3 @@ class Operator(Node):
 
     def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
         raise NotImplementedError(f"Operator.__call__ must be override: (self.__class__)={self.__class__.__name__}")
-
-    def get_attribute(self, Attr: Type[Attribute]) -> List[Attribute]:
-        return [attr for attr in self.attributes if isinstance(attr, Attr)]
-
-    def has_attribute(self, Attr: Type[Attribute]) -> bool:
-        return len(self.get_attribute(Attr)) > 0

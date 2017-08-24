@@ -5,7 +5,7 @@ from test.util import generate_kernel_test_case, wrap_template
 
 
 @wrap_template
-def template(activation, description: str = ""):
+def template(activation="", description: str = ""):
     x = keras.layers.Input((4,))
     y = keras.layers.Activation(activation)(x)
     model = keras.models.Model([x], [y])
@@ -24,36 +24,36 @@ def template(activation, description: str = ""):
 
 
 def test_softmax():
-    template("softmax")
+    template(activation="softmax")
 
 
 def test_elu():
-    template("elu")
+    template(activation="elu")
 
 
 def test_softplus():
-    template("softplus")
+    template(activation="softplus")
 
 
 def test_softsign():
-    template("softsign")
+    template(activation="softsign")
 
 
 def test_relu():
-    template("relu")
+    template(activation="relu")
 
 
 def test_tanh():
-    template("tanh")
+    template(activation="tanh")
 
 
 def test_sigmoid():
-    template("sigmoid")
+    template(activation="sigmoid")
 
 
 def test_hard_sigmoid():
-    template("hard_sigmoid")
+    template(activation="hard_sigmoid")
 
 
 def test_linear():
-    template("linear")
+    template(activation="linear")

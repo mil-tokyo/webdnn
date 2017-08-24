@@ -32,7 +32,7 @@ def main():
     sys.setrecursionlimit(10000)  # workaround for deep copying large graph
     parser = argparse.ArgumentParser()
     parser.add_argument("kerasmodel")
-    parser.add_argument("--backend", default="webgpu,webassembly,fallback",
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback",
                         help="comma-separated list of backends")
     parser.add_argument("--input_shape", required=True, action="append",
                         help="shape of blobs for inputs (example: '(1,3,224,224)'), can be specified multiple times")

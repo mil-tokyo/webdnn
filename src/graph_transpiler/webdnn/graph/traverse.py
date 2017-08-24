@@ -122,7 +122,7 @@ def dump(graph: Graph):
         console.debug(f"{indent}{op.__class__.__name__} : {op.name}")
         console.debug(f"{indent}    In  : {op.inputs}")
         console.debug(f"{indent}    Out : {op.outputs}")
-        console.debug(f"{indent}    Attr: {sorted([attr.__class__.__name__ for attr in op.attributes])}")
+        console.debug(f"{indent}    Attr: {', '.join(sorted(str(attr) for attr in op.attributes))}")
         console.debug(f"{indent}    Parameters: {{{', '.join(parameters_sorted)}}}")
 
 

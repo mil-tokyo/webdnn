@@ -167,7 +167,7 @@ class MergeSgemmAndElementwiseMul(OptimizeRule):
                     shape = [sgemm.K]
                     axes = [axis_k]
                     for axis, size in reversed(list(zip(out_order.axes, out_shape))):
-                        shape.insert(0, axis)
+                        shape.insert(0, size)
                         axes.insert(0, axis)
 
                         if mul(shape) >= w1.size:

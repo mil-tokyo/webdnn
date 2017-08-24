@@ -1,5 +1,13 @@
 from typing import Generic, TypeVar, List, Iterable, Tuple
 
+_i = 0
+
+
+def _unique():
+    global _i
+    _i += 1
+    return f"__UNIQUE_{_i}__"
+
 
 class Axis:
     """
@@ -12,6 +20,8 @@ class Axis:
     T = None  # type: "Axis"
 
     def __init__(self, name):
+        if name is None:
+            name = _unique()
         self._name = name
 
     @property

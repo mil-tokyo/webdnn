@@ -7,9 +7,12 @@ from webdnn.graph.variable import Variable
 
 
 @wrap_template
-def template(x1_order=OrderNHWC, x2_order=OrderNHWC, y_order=OrderNHWC, description: str = ""):
-    vx1 = np.random.rand(2, 3, 4, 5) - 0.5
-    vx2 = np.random.rand(2, 3, 4, 5) - 0.5
+def template(shape=(2, 3, 4, 5), x1_order=OrderNHWC, x2_order=OrderNHWC, y_order=OrderNHWC,
+             description: str = ""):
+    # vx1 = np.random.rand(*shape).astype(np.float32) - 0.5
+    # vx2 = np.random.rand(*shape).astype(np.float32) - 0.5
+    vx1 = np.arange(np.prod(shape)).reshape(shape).astype(np.float32)
+    vx2 = np.arange(np.prod(shape)).reshape(shape).astype(np.float32)
     vy = vx1 + vx2
 
     x1 = Variable(vx1.shape, order=OrderNHWC)
@@ -32,6 +35,10 @@ def template(x1_order=OrderNHWC, x2_order=OrderNHWC, y_order=OrderNHWC, descript
 
 def test():
     template()
+
+
+def test_large():
+    template(shape=(2, 3, 4, 2047))
 
 
 def test_different_order():

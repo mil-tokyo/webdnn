@@ -300,6 +300,10 @@ document.addEventListener('DOMContentLoaded', function(event) {
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU)', 'webgpu', false));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', 'webassembly', true));
     benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly)', 'webassembly', false));
+    if (typeof WebGLRenderingContext !== 'undefined') {
+        benchmarks.push(new WebDNNBenchmark('WebDNN(WebGL) + Optimize', 'webgl', true));
+        benchmarks.push(new WebDNNBenchmark('WebDNN(WebGL)', 'webgl', false));
+    }
     benchmarks.push(new KerasJSBenchmark('Keras.js(CPU)', false));
     benchmarks.push(new KerasJSBenchmark('Keras.js(GPU)', true));
 
@@ -315,6 +319,9 @@ document.addEventListener('DOMContentLoaded', function(event) {
     }
     if (typeof WebAssembly === 'undefined') {
         environment_note += "This browser does not support WebAssembly. WebAssembly backend will run in asm.js mode.\n";
+    }
+    if (typeof WebGLRenderingContext === 'undefined') {
+        environment_note += "This browser does not support WebGL. WebGL backend will be skipped.\n";
     }
     document.getElementById('environment_note').innerHTML = environment_note;
 

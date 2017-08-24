@@ -9,8 +9,8 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def test_NC_CN():
-    vx = np.random.rand(3, 4)
-    vw = np.random.rand(4, 5)
+    vx = np.random.rand(3, 4).astype(np.float32)
+    vw = np.random.rand(4, 5).astype(np.float32)
     vy = np.dot(vx, vw)
 
     x = Variable(vx.shape, order=OrderNC)
@@ -19,7 +19,7 @@ def test_NC_CN():
 
     generate_kernel_test_case(
         description=f"Linear: NC*CN",
-        backend=["fallback", "webassembly", "webgpu"],
+        backend=["fallback", "webgl", "webassembly", "webgpu"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy},
@@ -28,8 +28,8 @@ def test_NC_CN():
 
 
 def test_NHWC_HWCN():
-    vx = np.random.rand(2, 3, 4, 5)
-    vw = np.random.rand(3, 4, 5, 2)
+    vx = np.random.rand(2, 3, 4, 5).astype(np.float32)
+    vw = np.random.rand(3, 4, 5, 2).astype(np.float32)
     vy = np.tensordot(vx, vw, ((1, 2, 3), (0, 1, 2)))
 
     x = Variable(vx.shape, order=OrderNHWC)
@@ -38,7 +38,7 @@ def test_NHWC_HWCN():
 
     generate_kernel_test_case(
         description=f"Linear: NHWC*HWCN",
-        backend=["fallback", "webassembly", "webgpu"],
+        backend=["fallback", "webgl", "webassembly", "webgpu"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy},

@@ -18,7 +18,7 @@ class Softmax(Operator):
     Signature
         .. code::
 
-            y, = op(x0)
+            y, = op(x)
 
         - **x0** - Input variable.
         - **y** - Output variable. Its order and shape is same as :code:`x0`.

@@ -18,7 +18,7 @@ def template(r=2, description=""):
     generate_kernel_test_case(
         description=f"[chainer] F.Depth2Space {description}",
         graph=graph,
-        backend=["webgpu", "webassembly"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={x: vx.data},
         expected={y: vy.data},
     )
