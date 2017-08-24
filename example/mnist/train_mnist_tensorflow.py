@@ -43,19 +43,20 @@ def main():
 
         mnist = input_data.read_data_sets(data_path, one_hot=True)
 
-        tf.global_variables_initializer().run()
+        with sess.as_default():
+            tf.global_variables_initializer().run()
 
-        for step in range(1000):
-            batch_xs, batch_ys = mnist.train.next_batch(100)
-            _, loss_val = sess.run([optimizer, loss], feed_dict={x: batch_xs, t: batch_ys})
+            for step in range(1000):
+                batch_xs, batch_ys = mnist.train.next_batch(100)
+                _, loss_val = sess.run([optimizer, loss], feed_dict={x: batch_xs, t: batch_ys})
 
-            if step % 100 == 0:
-                print(f"Step {step}: loss = {loss_val}")
+                if step % 100 == 0:
+                    print(f"Step {step}: loss = {loss_val}")
 
-        print(f"accuracy: {sess.run(accuracy, feed_dict={x: mnist.test.images, t: mnist.test.labels})}")
+            print(f"accuracy: {sess.run(accuracy, feed_dict={x: mnist.test.images, t: mnist.test.labels})}")
 
-        saver = tf.train.Saver()
-        saver.save(sess, os.path.join(session_path, "session"))
+            saver = tf.train.Saver()
+            saver.save(sess, os.path.join(session_path, "session"))
 
         with open(sample_path, "w") as f:
             json.dump([{"x": mnist.test.images[i].flatten().tolist(), "y": int(mnist.test.labels[i].argmax())} for i in range(10)], f)
