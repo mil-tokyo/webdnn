@@ -14,7 +14,7 @@ export default {
     plugins: [
         typescript({
             typescript: require('typescript'),
-            tsconfig: './src/descriptor_runner/tsconfig.json'
+            tsconfig: './src/descriptor_runner/tsconfig.es5.json'
         })
     ]
 }
