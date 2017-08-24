@@ -172,7 +172,7 @@ def _listup_operations(inputs, outputs):
     result = []  # type: List[tf.Operation]
 
     while len(stack) > 0:
-        node = stack.pop(0)
+        node = stack.pop()
         if node in resolved:
             continue
 
