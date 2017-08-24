@@ -225,6 +225,9 @@
     <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;webgpu&quot;</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">webdnn.backend.webgpu.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_webgpu</span>
         <span class="k">return</span> <span class="n">generate_webgpu</span>
+    <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;webgl&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">webdnn.backend.webgl.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_webgl</span>
+        <span class="k">return</span> <span class="n">generate_webgl</span>
     <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;webassembly&quot;</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">webdnn.backend.webassembly.generator</span> <span class="k">import</span> <span class="n">generate</span> <span class="k">as</span> <span class="n">generate_webassembly</span>
         <span class="k">return</span> <span class="n">generate_webassembly</span>

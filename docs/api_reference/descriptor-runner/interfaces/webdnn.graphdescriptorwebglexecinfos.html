@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>GraphDescriptorFallbackExecInfo | WebDNN</title>
+	<title>GraphDescriptorWebGLExecInfos | WebDNN</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/style.css">
@@ -31,7 +31,7 @@
 	<header class="index-header">
 		<span class="index-header-kind">Interface</span>
 		<h1 class="index-header-name">
-			GraphDescriptorFallbackExecInfo
+			GraphDescriptorWebGLExecInfos
 		</h1>
 	</header>
 	<div class="reflection-container">
@@ -48,7 +48,7 @@
 					<div class="members-group-body">
 						<ul class="tsd-hierarchy">
 							<li>
-								<code class="target">GraphDescriptorFallbackExecInfo</code>
+								<code class="target">GraphDescriptorWebGLExecInfos</code>
 							</li>
 						</ul>
 					</div>
@@ -58,51 +58,15 @@
 				<header class="members-group-header">Properties</header>
 				<div class="members-group-body">
 					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-						<a name="call_option" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="call_option" class="anchor"></a>
-								<a href="#call_option" class="anchor-link">#</a>
-								<code>
-call_<wbr>option:                    <code><span class="signature-type">any</span>                    </code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L24">[graph_descriptor/graph_descriptor_fallback.ts:24]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<div class="members-group-body">
-							</div>
-						</section>
-					</section>
-					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-						<a name="entry_func_name" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="entry_func_name" class="anchor"></a>
-								<a href="#entry_func_name" class="anchor-link">#</a>
-								<code>
-entry_<wbr>func_<wbr>name:                    <code><span class="signature-type">string</span>                    </code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L20">[graph_descriptor/graph_descriptor_fallback.ts:20]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<div class="members-group-body">
-							</div>
-						</section>
-					</section>
-					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
 						<a name="inputs" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
 								<a id="inputs" class="anchor"></a>
 								<a href="#inputs" class="anchor-link">#</a>
 								<code>
-inputs:                <code><code><span class="signature-type">string</span>                    </code><span class="signature-symbol">[]</span>                </code>        </code>
+inputs:                    <code><span class="signature-symbol">[</span><code><span class="signature-type">object</span>                    </code><span class="signature-symbol">]</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L21">[graph_descriptor/graph_descriptor_fallback.ts:21]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L50">[graph_descriptor/graph_descriptor_webgl.ts:50]</a>
 								</span>
 							</header>
 						</div>
@@ -112,15 +76,15 @@ inputs:                <code><code><span class="signature-type">string</span>   
 						</section>
 					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-						<a name="outputs" class="anchor"></a>
+						<a name="output" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="outputs" class="anchor"></a>
-								<a href="#outputs" class="anchor-link">#</a>
+								<a id="output" class="anchor"></a>
+								<a href="#output" class="anchor-link">#</a>
 								<code>
-outputs:                <code><code><span class="signature-type">string</span>                    </code><span class="signature-symbol">[]</span>                </code>        </code>
+output:                    <code><span class="signature-type">string</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L22">[graph_descriptor/graph_descriptor_fallback.ts:22]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L55">[graph_descriptor/graph_descriptor_webgl.ts:55]</a>
 								</span>
 							</header>
 						</div>
@@ -130,15 +94,51 @@ outputs:                <code><code><span class="signature-type">string</span>  
 						</section>
 					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-						<a name="weights" class="anchor"></a>
+						<a name="shader_name" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="weights" class="anchor"></a>
-								<a href="#weights" class="anchor-link">#</a>
+								<a id="shader_name" class="anchor"></a>
+								<a href="#shader_name" class="anchor-link">#</a>
 								<code>
-weights:                <code><code><span class="signature-type">string</span>                    </code><span class="signature-symbol">[]</span>                </code>        </code>
+shader_<wbr>name:                    <code><span class="signature-type">string</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_fallback.ts#L23">[graph_descriptor/graph_descriptor_fallback.ts:23]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L43">[graph_descriptor/graph_descriptor_webgl.ts:43]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="uniforms" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="uniforms" class="anchor"></a>
+								<a href="#uniforms" class="anchor-link">#</a>
+								<code>
+uniforms:                    <code><span class="signature-type">object</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L44">[graph_descriptor/graph_descriptor_webgl.ts:44]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+						<a name="width" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="width" class="anchor"></a>
+								<a href="#width" class="anchor-link">#</a>
+								<code>
+width:                    <code><span class="signature-type">number</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/4fbcc8b/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L56">[graph_descriptor/graph_descriptor_webgl.ts:56]</a>
 								</span>
 							</header>
 						</div>
@@ -156,28 +156,28 @@ weights:                <code><code><span class="signature-type">string</span>  
 					<header class="toc-header">Properties</header>
 					<ul class="toc-list">
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorfallbackexecinfo.html#call_option" class="tsd-kind-icon">
-								call_<wbr>option
-							</a>
-						</li>
-						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorfallbackexecinfo.html#entry_func_name" class="tsd-kind-icon">
-								entry_<wbr>func_<wbr>name
-							</a>
-						</li>
-						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorfallbackexecinfo.html#inputs" class="tsd-kind-icon">
+							<a href="webdnn.graphdescriptorwebglexecinfos.html#inputs" class="tsd-kind-icon">
 								inputs
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorfallbackexecinfo.html#outputs" class="tsd-kind-icon">
-								outputs
+							<a href="webdnn.graphdescriptorwebglexecinfos.html#output" class="tsd-kind-icon">
+								output
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
-							<a href="webdnn.graphdescriptorfallbackexecinfo.html#weights" class="tsd-kind-icon">
-								weights
+							<a href="webdnn.graphdescriptorwebglexecinfos.html#shader_name" class="tsd-kind-icon">
+								shader_<wbr>name
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebglexecinfos.html#uniforms" class="tsd-kind-icon">
+								uniforms
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+							<a href="webdnn.graphdescriptorwebglexecinfos.html#width" class="tsd-kind-icon">
+								width
 							</a>
 						</li>
 					</ul>
