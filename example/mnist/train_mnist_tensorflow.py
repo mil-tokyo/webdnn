@@ -85,7 +85,7 @@ def main():
         # Load pretrained model
 
         saver = tf.train.Saver()
-        saver.restore(sess, os.path.join(session_path, "session"))
+        saver.restore(sess, os.path.join(session_path, f"session_{args.model}"))
 
     else:
         # -------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ def main():
             print(f"accuracy: {sess.run(accuracy, feed_dict={x: mnist.test.images, t: mnist.test.labels})}")
 
             saver = tf.train.Saver()
-            saver.save(sess, os.path.join(session_path, "session"))
+            saver.save(sess, os.path.join(session_path, f"session_{args.model}"))
 
         with open(sample_path, "w") as f:
             json.dump([{"x": mnist.test.images[i].flatten().tolist(), "y": int(mnist.test.labels[i].argmax())} for i in range(10)], f)

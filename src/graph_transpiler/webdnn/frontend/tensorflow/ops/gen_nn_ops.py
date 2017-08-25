@@ -2,7 +2,7 @@ from typing import List
 
 import tensorflow as tf
 
-from webdnn.frontend.constraints import unify
+from webdnn.frontend.constraints import unify, unify_order
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import unary_op_handler
 from webdnn.graph.axis import Axis
@@ -84,8 +84,8 @@ def conv2_d_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     w = converter.get_variable(tf_op.inputs[1])  # HWCN
     assert tf_op.get_attr("data_format") == b"NHWC"
-    x._order = OrderNHWC  # FIXME
-    w._order = OrderHWCN  # FIXME
+    unify_order(x.order, OrderNHWC)
+    unify_order(w.order, OrderHWCN)
     ksize = (w.shape_dict[Axis.H], w.shape_dict[Axis.W])
 
     stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
@@ -246,7 +246,7 @@ def max_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     assert tf_op.get_attr("data_format") == b"NHWC"
-    x._order = OrderNHWC  # FIXME
+    unify_order(x.order, OrderNHWC)
     ksize_nhwc = tf_op.get_attr("ksize")  # type: List[int]
     assert ksize_nhwc[0] == 1
     assert ksize_nhwc[3] == 1
