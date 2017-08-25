@@ -1,5 +1,12 @@
 import tensorflow as tf
 
+from webdnn.frontend.constraints import AxisVar
+from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.variable import Variable
+from webdnn.graph.axis import Axis
+from webdnn.graph.graph import Graph
+from webdnn.graph.order import Order, OrderNC, OrderNTC, OrderNHWC, OrderC
+from webdnn.graph.placeholder import Placeholder
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 
 
@@ -60,7 +67,10 @@ def concat_v2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Const")
 def const_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    # FIXME: should output ConstantVariable?
+    tensor = tf_op.outputs[0]
+    shape = [Placeholder() if dim.value is None else dim.value for dim in tensor.shape.dims]
+    converter.set_variable(tensor, Variable(shape, Order([AxisVar() for _ in shape])))
 
 
 @TensorFlowConverter.register_handler("DepthToSpace")
@@ -295,7 +305,34 @@ def ref_identity_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Reshape")
 def reshape_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    # input: data, output_shape
+    # output: reshaped_data
+    # Currently, ignores output_shape.
+    in_var = converter.get_variable(tf_op.inputs[0])
+    out_tf_var = tf_op.outputs[0]
+    # calculate output shape from out_tf_var.shape and in_var.shape
+    # out_tf_var.shape can have at most one placeholder.
+    out_placeholder_count = 0
+    out_placeholder_idx = None
+    out_constant_prod = 1
+    out_shape = []
+    for i, dim_size in enumerate(out_tf_var.shape.dims):
+        out_shape.append(dim_size.value)
+        if dim_size.value is None:
+            out_placeholder_count += 1
+            out_placeholder_idx = i
+        else:
+            out_constant_prod *= dim_size.value
+    if out_placeholder_count > 1:
+        raise NotImplementedError(
+            "[TensorFlowConverter] Reshape: output with more than one placeholder is not supported yet.")
+    elif out_placeholder_count == 1:
+        if in_var.size % out_constant_prod != 0:
+            raise ValueError("[TensorFlowConverter] Reshape: invalid reshape output value.")
+        out_shape[out_placeholder_idx] = in_var.size // out_constant_prod
+    out_var, = Reshape(None, in_order=in_var.order, out_order=Order([AxisVar() for _ in out_shape]),
+                       out_shape=out_shape)(in_var)
+    converter.set_variable(out_tf_var, out_var)
 
 
 @TensorFlowConverter.register_handler("ResourceStridedSliceAssign")
