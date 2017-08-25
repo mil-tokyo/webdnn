@@ -170,7 +170,7 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Chainer Link -&gt; Graph object converters</span>
-<span class="sd">Assuming Chainer 1.23 or 2.0</span>
+<span class="sd">Assuming Chainer 1.23-1.24 or 2.0</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span>
@@ -221,7 +221,7 @@
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[Function]</span>
 
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">node</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">resolved</span><span class="p">:</span>
             <span class="k">continue</span>
 
@@ -319,11 +319,16 @@
                           <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">),</span> <span class="n">chainer_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)))</span>  <span class="c1"># type: List[VariableNode]</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+        <span class="n">input_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">c_vars</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">c_var</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># If :code:`creator is None` and it&#39;s not input variable, it&#39;s parameter.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="n">c_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">)</span>
+
+                <span class="c1"># NOTE(Kiikurage):</span>
+                <span class="c1"># In chainer v1.x, `Variable` doesn&#39;t support `__eq__` method and `list.__contains__` cannot be used for</span>
+                <span class="c1"># Variable list. However, `Variable.__hash__` is implemented and `set.__contains__` is available.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="n">c_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_set</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">c_opr</span> <span class="ow">in</span> <span class="n">_listup_functions</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_convert_operator</span><span class="p">(</span><span class="n">c_opr</span><span class="p">)</span>
