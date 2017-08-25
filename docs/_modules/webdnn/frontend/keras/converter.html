@@ -177,6 +177,8 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNC</span><span class="p">,</span> <span class="n">Order</span><span class="p">,</span> <span class="n">OrderNHWC</span><span class="p">,</span> <span class="n">OrderNTC</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.input</span> <span class="k">import</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.output</span> <span class="k">import</span> <span class="n">Output</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
 <span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
 
@@ -290,6 +292,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_tensor_cache</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_tensor_cache</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
         <span class="k">return</span> <span class="n">graph</span></div>
 
     <span class="k">def</span> <span class="nf">_convert_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k_op</span><span class="p">:</span> <span class="s2">&quot;keras.layers.Layer&quot;</span><span class="p">):</span>

@@ -182,6 +182,8 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.input</span> <span class="k">import</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.output</span> <span class="k">import</span> <span class="n">Output</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
 <span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
 
@@ -335,6 +337,12 @@
 
         <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">],</span>
                       <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">graph</span></div>
 
