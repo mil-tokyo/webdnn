@@ -10,8 +10,11 @@ def template(description=""):
     link = chainer.links.BatchNormalization(size=4)
     vx = chainer.Variable(np.random.rand(2, 4, 6, 8).astype(np.float32))
 
-    with chainer.using_config('train', False):
-        vy = link(vx)
+    if chainer.__version__ >= "2.":
+        with chainer.using_config('train', False):
+            vy = link(vx)
+    else:
+        vy = link(vx, test=True)
 
     graph = ChainerConverter().convert([vx], [vy])
 
