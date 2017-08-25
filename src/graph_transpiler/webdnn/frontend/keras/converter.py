@@ -9,6 +9,8 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.attributes.input import Input
+from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
@@ -122,6 +124,13 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         self._input_tensor_cache = None
         self._output_tensor_cache = None
+
+        for v in graph.inputs:
+            v.attributes.add(Input(v))
+
+        for v in graph.outputs:
+            v.attributes.add(Output(v))
+
         return graph
 
     def _convert_operator(self, k_op: "keras.layers.Layer"):

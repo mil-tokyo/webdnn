@@ -371,17 +371,16 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 
 @WebGPUDescriptorGenerator.register_handler(Sgemm)
-def sgemm(op: Sgemm,
-          memory_layout: MemoryLayout) -> List[Kernel]:
-    A = memory_layout[op.inputs["A"]]
-    B = memory_layout[op.inputs["B"]]
-    C = memory_layout[op.outputs["C"]]
+def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
+    A = op.inputs["A"]
+    B = op.inputs["B"]
+    C = op.outputs["C"]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "sgemm_A": A,
-        "sgemm_B": B,
-        "sgemm_C": C,
+        "sgemm_A": memory_layout[A],
+        "sgemm_B": memory_layout[B],
+        "sgemm_C": memory_layout[C],
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K

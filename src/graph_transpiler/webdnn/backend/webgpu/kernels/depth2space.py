@@ -1,13 +1,13 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
-from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.axis import Axis
+from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.order import OrderNHWC
 
 template = """
@@ -45,25 +45,25 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 @WebGPUDescriptorGenerator.register_handler(Depth2Space)
 def depth2space(op: Depth2Space, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
     r = op.parameters['r']
 
-    assert x.variable.order == OrderNHWC
-    assert y.variable.order == OrderNHWC
+    assert x.order == OrderNHWC
+    assert y.order == OrderNHWC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "depth2space_x": x,
-        "depth2space_y": y,
+        "depth2space_x": memory_layout[x],
+        "depth2space_y": memory_layout[y],
         'depth2space_r': r,
-        "depth2space_N": x.variable.shape_dict[Axis.N],
-        "depth2space_C1": x.variable.shape_dict[Axis.C],
-        "depth2space_C2": y.variable.shape_dict[Axis.C],
-        "depth2space_H1": x.variable.shape_dict[Axis.H],
-        "depth2space_H2": y.variable.shape_dict[Axis.H],
-        "depth2space_W1": x.variable.shape_dict[Axis.W],
-        "depth2space_W2": y.variable.shape_dict[Axis.W],
+        "depth2space_N": x.shape_dict[Axis.N],
+        "depth2space_C1": x.shape_dict[Axis.C],
+        "depth2space_C2": y.shape_dict[Axis.C],
+        "depth2space_H1": x.shape_dict[Axis.H],
+        "depth2space_H2": y.shape_dict[Axis.H],
+        "depth2space_W1": x.shape_dict[Axis.W],
+        "depth2space_W2": y.shape_dict[Axis.W],
     })
 
     name_injector = KernelNameInjector(op)

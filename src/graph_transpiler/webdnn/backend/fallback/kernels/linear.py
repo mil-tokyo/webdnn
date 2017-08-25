@@ -105,8 +105,8 @@ def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
     kernel = Kernel(
         {"linear": source},
         "linear",
-        inputs=[x, w],
-        outputs=[y],
+        inputs=[memory_layout[x], memory_layout[w]],
+        outputs=[memory_layout[y]],
         call_option={"m": m,
                      "n": n,
                      "k": k,

@@ -39,20 +39,20 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(ZeroPadding1D)
 def zero_padding_1d(op: ZeroPadding1D, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNTC
-    assert y.variable.order == OrderNTC
+    assert x.order == OrderNTC
+    assert y.order == OrderNTC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "zero_padding_1d_X": x,
-        "zero_padding_1d_Y": y,
-        "zero_padding_1d_N": x.variable.shape_dict[Axis.N],
-        "zero_padding_1d_T1": x.variable.shape_dict[Axis.T],
-        "zero_padding_1d_C": x.variable.shape_dict[Axis.C],
-        "zero_padding_1d_T2": y.variable.shape_dict[Axis.T],
+        "zero_padding_1d_X": memory_layout[x],
+        "zero_padding_1d_Y": memory_layout[y],
+        "zero_padding_1d_N": x.shape_dict[Axis.N],
+        "zero_padding_1d_T1": x.shape_dict[Axis.T],
+        "zero_padding_1d_C": x.shape_dict[Axis.C],
+        "zero_padding_1d_T2": y.shape_dict[Axis.T],
         "zero_padding_1d_Pad1L": op.parameters["padding"][0],
     })
     # "zero_padding_1d_Pad1H": op.parameters["padding"][1] # unused in kernel

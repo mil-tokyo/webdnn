@@ -20,7 +20,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="resnet50", choices=["vgg16", "resnet50"])
-    parser.add_argument("--backend", default="webgpu,webassembly,fallback")
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
     parser.add_argument("--encoding")
     parser.add_argument('--out', '-o', default='output_chainer',
                         help='Directory to output the graph descriptor')

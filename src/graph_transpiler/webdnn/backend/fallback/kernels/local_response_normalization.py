@@ -79,8 +79,8 @@ def local_response_normalization(op: LocalResponseNormalization, memory_layout: 
     kernel = Kernel(
         {"local_response_normalization": source},
         "local_response_normalization",
-        inputs=[x],
-        outputs=[y],
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y]],
         call_option={"out_spatial": [y.shape_dict[Axis.H], y.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],

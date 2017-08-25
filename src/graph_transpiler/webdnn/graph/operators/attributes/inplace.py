@@ -1,3 +1,4 @@
+from webdnn.graph import operator
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.node import Node
 
@@ -13,9 +14,9 @@ class Inplace(Attribute):
         self.output_name = output_name
 
     def get_input(self):
-        op = self.base
+        op = self.base  # type: operator.Operator
         return op.inputs[self.input_name]
 
     def get_output(self):
-        op = self.base
+        op = self.base  # type: operator.Operator
         return op.outputs[self.output_name]

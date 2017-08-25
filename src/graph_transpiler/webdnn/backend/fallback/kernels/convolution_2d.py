@@ -87,8 +87,8 @@ def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kerne
     kernel = Kernel(
         {"convolution_2d": source},
         "convolution_2d",
-        inputs=[x, w],
-        outputs=[y],
+        inputs=[memory_layout[x], memory_layout[w]],
+        outputs=[memory_layout[y]],
         call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],

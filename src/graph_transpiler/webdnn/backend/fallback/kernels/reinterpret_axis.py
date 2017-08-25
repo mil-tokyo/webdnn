@@ -35,8 +35,8 @@ def reinterpret_axis(op: ReinterpretAxis, memory_layout: MemoryLayout) -> List[K
     kernel = Kernel(
         {"reinterpret_axis": source},
         "reinterpret_axis",
-        inputs=[x],
-        outputs=[y],
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y]],
         call_option={"length": x.size}
     )
 

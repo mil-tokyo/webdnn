@@ -62,22 +62,22 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 @WebGPUDescriptorGenerator.register_handler(AveragePooling2D)
 def average_pooling_2d(op: AveragePooling2D,
                        memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNHWC
-    assert y.variable.order == OrderNHWC
+    assert x.order == OrderNHWC
+    assert y.order == OrderNHWC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "average_pooling_2d_X": x,
-        "average_pooling_2d_Y": y,
-        "average_pooling_2d_N": x.variable.shape_dict[Axis.N],
-        "average_pooling_2d_H1": x.variable.shape_dict[Axis.H],
-        "average_pooling_2d_W1": x.variable.shape_dict[Axis.W],
-        "average_pooling_2d_C": x.variable.shape_dict[Axis.C],
-        "average_pooling_2d_H2": y.variable.shape_dict[Axis.H],
-        "average_pooling_2d_W2": y.variable.shape_dict[Axis.W],
+        "average_pooling_2d_X": memory_layout[x],
+        "average_pooling_2d_Y": memory_layout[y],
+        "average_pooling_2d_N": x.shape_dict[Axis.N],
+        "average_pooling_2d_H1": x.shape_dict[Axis.H],
+        "average_pooling_2d_W1": x.shape_dict[Axis.W],
+        "average_pooling_2d_C": x.shape_dict[Axis.C],
+        "average_pooling_2d_H2": y.shape_dict[Axis.H],
+        "average_pooling_2d_W2": y.shape_dict[Axis.W],
         "average_pooling_2d_KH": op.parameters["ksize"][0],
         "average_pooling_2d_KW": op.parameters["ksize"][1],
         "average_pooling_2d_SH": op.parameters["stride"][0],

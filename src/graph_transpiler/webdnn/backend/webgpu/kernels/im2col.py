@@ -176,32 +176,31 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 
 @WebGPUDescriptorGenerator.register_handler(Im2Col)
-def im2col(op: Im2Col,
-           memory_layout: MemoryLayout) -> List[Kernel]:
-    im = memory_layout[op.inputs["im"]]
-    col = memory_layout[op.outputs["col"]]
+def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
+    im = op.inputs["im"]
+    col = op.outputs["col"]
 
-    assert im.variable.order == OrderNHWC
-    assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
+    assert im.order == OrderNHWC
+    assert col.order == OrderNHWC or col.order == OrderCNHW
 
-    N = im.variable.shape_dict[Axis.N]
-    C1 = im.variable.shape_dict[Axis.C]
-    H1 = im.variable.shape_dict[Axis.H]
-    W1 = im.variable.shape_dict[Axis.W]
+    N = im.shape_dict[Axis.N]
+    C1 = im.shape_dict[Axis.C]
+    H1 = im.shape_dict[Axis.H]
+    W1 = im.shape_dict[Axis.W]
 
     H1P = H1 + 2 * op.PH
     W1P = W1 + 2 * op.PW
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "im2col_im": im,
-        "im2col_col": col,
+        "im2col_im": memory_layout[im],
+        "im2col_col": memory_layout[col],
         "im2col_N": N,
         "im2col_C1": C1,
-        "im2col_H1": im.variable.shape_dict[Axis.H],
-        "im2col_W1": im.variable.shape_dict[Axis.W],
-        "im2col_H2": col.variable.shape_dict[Axis.H],
-        "im2col_W2": col.variable.shape_dict[Axis.W],
+        "im2col_H1": im.shape_dict[Axis.H],
+        "im2col_W1": im.shape_dict[Axis.W],
+        "im2col_H2": col.shape_dict[Axis.H],
+        "im2col_W2": col.shape_dict[Axis.W],
         "im2col_KH": op.KH,
         "im2col_KW": op.KW,
         "im2col_DH": op.DH,
@@ -214,7 +213,7 @@ def im2col(op: Im2Col,
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.variable.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, op.DH, op.DW, C1)
+    source = template_CNHW if col.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, op.DH, op.DW, C1)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

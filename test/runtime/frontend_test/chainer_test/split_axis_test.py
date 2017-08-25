@@ -20,6 +20,7 @@ def test():
         description=f"[chainer] F.SplitAxis",
         graph=graph,
         inputs={x: vx.data},
+        backend=["webgpu", "webassembly", "fallback"],
         expected={
             y1: vy1.data,
             y2: vy2.data,

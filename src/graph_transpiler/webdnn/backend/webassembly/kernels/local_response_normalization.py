@@ -55,20 +55,20 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(LocalResponseNormalization)
 def local_response_normalization(op: LocalResponseNormalization, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNHWC
-    assert y.variable.order == OrderNHWC
+    assert x.order == OrderNHWC, x.order
+    assert y.order == OrderNHWC, y.order
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "local_response_normalization_X": x,
-        "local_response_normalization_Y": y,
-        "local_response_normalization_N": x.variable.shape_dict[Axis.N],
-        "local_response_normalization_H": x.variable.shape_dict[Axis.H],
-        "local_response_normalization_W": x.variable.shape_dict[Axis.W],
-        "local_response_normalization_C": x.variable.shape_dict[Axis.C],
+        "local_response_normalization_X": memory_layout[x],
+        "local_response_normalization_Y": memory_layout[y],
+        "local_response_normalization_N": x.shape_dict[Axis.N],
+        "local_response_normalization_H": x.shape_dict[Axis.H],
+        "local_response_normalization_W": x.shape_dict[Axis.W],
+        "local_response_normalization_C": x.shape_dict[Axis.C],
         "local_response_normalization_param_half_n": int(op.parameters["n"] // 2),
         "local_response_normalization_param_k": float(op.parameters["k"]),
         "local_response_normalization_param_alpha": float(op.parameters["alpha"]),

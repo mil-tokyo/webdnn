@@ -3,7 +3,7 @@ import os.path as path
 import subprocess
 import tempfile as tmp
 
-from webdnn.backend.code_generator.allocator import Allocator
+from webdnn.backend.code_generator.allocator import allocate
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webgpu.graph_descriptor import GraphDescriptor
@@ -90,7 +90,7 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
             with open("cg.dot", "w") as f:
                 f.write(traverse.dump_dot(graph))
 
-        memory_layout = Allocator.allocate(graph)
+        memory_layout = allocate(graph)
         console.debug(f"[WebGPUDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}[B]")
         console.debug(f"[WebGPUDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}[B]")
         console.debug(f"[WebGPUDescriptorGenerator] memory_layout dynamic size: {memory_layout.dynamic_size * 4}[B]")

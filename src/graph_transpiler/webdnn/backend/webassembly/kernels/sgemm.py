@@ -70,15 +70,15 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Sgemm)
 def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
-    A = memory_layout[op.inputs["A"]]
-    B = memory_layout[op.inputs["B"]]
-    C = memory_layout[op.outputs["C"]]
+    A = op.inputs["A"]
+    B = op.inputs["B"]
+    C = op.outputs["C"]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "sgemm_A": A,
-        "sgemm_B": B,
-        "sgemm_C": C,
+        "sgemm_A": memory_layout[A],
+        "sgemm_B": memory_layout[B],
+        "sgemm_C": memory_layout[C],
         "sgemm_M": op.M,
         "sgemm_N": op.N,
         "sgemm_K": op.K
@@ -87,17 +87,17 @@ def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
     if op.parameters["eigen"]:
         source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
         buffer_injector.register({
-            "sgemm_A": A,
-            "sgemm_B": B,
-            "sgemm_C": C
+            "sgemm_A": memory_layout[A],
+            "sgemm_B": memory_layout[B],
+            "sgemm_C": memory_layout[C]
         })
 
     else:
         source = generate_template(op.transpose_A, op.transpose_B)
         buffer_injector.register({
-            "sgemm_A": A,
-            "sgemm_B": B,
-            "sgemm_C": C,
+            "sgemm_A": memory_layout[A],
+            "sgemm_B": memory_layout[B],
+            "sgemm_C": memory_layout[C],
             "sgemm_M": op.M,
             "sgemm_N": op.N,
             "sgemm_K": op.K

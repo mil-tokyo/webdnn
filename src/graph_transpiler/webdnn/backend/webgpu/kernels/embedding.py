@@ -40,22 +40,22 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 @WebGPUDescriptorGenerator.register_handler(Embedding)
 def embedding(op: Embedding, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    w = memory_layout[op.inputs["w"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    w = op.inputs["w"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNT
-    assert w.variable.order == OrderCN
-    assert y.variable.order == OrderNTC
+    assert x.order == OrderNT
+    assert w.order == OrderCN
+    assert y.order == OrderNTC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "embedding_X": x,
-        "embedding_Y": y,
-        "embedding_W": w,
-        "embedding_T": x.variable.shape_dict[Axis.T],
-        "embedding_N": x.variable.shape_dict[Axis.N],
-        "embedding_C": w.variable.shape_dict[Axis.N]
+        "embedding_X": memory_layout[x],
+        "embedding_Y": memory_layout[y],
+        "embedding_W": memory_layout[w],
+        "embedding_T": x.shape_dict[Axis.T],
+        "embedding_N": x.shape_dict[Axis.N],
+        "embedding_C": w.shape_dict[Axis.N]
     })
 
     name_injector = KernelNameInjector(op)

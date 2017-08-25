@@ -107,33 +107,33 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(LSTM)
 def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    w_input = memory_layout[op.inputs["w_input"]]
-    w_hidden = memory_layout[op.inputs["w_hidden"]]
-    y = memory_layout[op.outputs["y"]]
-    final_c = memory_layout[op.outputs["final_c"]]
+    x = op.inputs["x"]
+    w_input = op.inputs["w_input"]
+    w_hidden = op.inputs["w_hidden"]
+    y = op.outputs["y"]
+    final_c = op.outputs["final_c"]
 
-    assert x.variable.order == OrderNTC
-    assert w_input.variable.order == OrderCN
-    assert w_hidden.variable.order == OrderCN
+    assert x.order == OrderNTC
+    assert w_input.order == OrderCN
+    assert w_hidden.order == OrderCN
     if op.parameters["return_sequences"]:
-        assert y.variable.order == OrderNTC
+        assert y.order == OrderNTC
     else:
-        assert y.variable.order == OrderNC
-    assert final_c.variable.order == OrderNC
+        assert y.order == OrderNC
+    assert final_c.order == OrderNC
 
     # W is for updating i, f, c, o
-    hidden_dim = w_hidden.variable.shape_dict[Axis.C]
+    hidden_dim = w_hidden.shape_dict[Axis.C]
 
     buffer_injector_items = {
-        "lstm_X": x,
-        "lstm_Y": y,
-        "lstm_final_c": final_c,
-        "lstm_W_input": w_input,
-        "lstm_W_hidden": w_hidden,
-        "lstm_input_dim": x.variable.shape_dict[Axis.C],
-        "lstm_sequence_len": x.variable.shape_dict[Axis.T],
-        "lstm_batch_size": x.variable.shape_dict[Axis.N],
+        "lstm_X": memory_layout[x],
+        "lstm_Y": memory_layout[y],
+        "lstm_final_c": memory_layout[final_c],
+        "lstm_W_input": memory_layout[w_input],
+        "lstm_W_hidden": memory_layout[w_hidden],
+        "lstm_input_dim": x.shape_dict[Axis.C],
+        "lstm_sequence_len": x.shape_dict[Axis.T],
+        "lstm_batch_size": x.shape_dict[Axis.N],
         "lstm_hidden_dim": hidden_dim
     }
 
@@ -144,17 +144,18 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         source = source.replace("%%DEFINE_SEQUENCE_OUTPUT%%", "")
 
     if op.parameters["use_bias"]:
-        b = memory_layout[op.inputs["b"]]
-        buffer_injector_items["lstm_b"] = b
-        source = source.replace("%%BIAS_INITIALIZER%%", "float *b = %%LOAD_BUFFER(lstm_b)%%;\nEigen::Map<Eigen::RowVectorXf > vec_b(b, hidden_dim4);")
+        b = op.inputs["b"]
+        buffer_injector_items["lstm_b"] = memory_layout[b]
+        source = source.replace("%%BIAS_INITIALIZER%%",
+                                "float *b = %%LOAD_BUFFER(lstm_b)%%;\nEigen::Map<Eigen::RowVectorXf > vec_b(b, hidden_dim4);")
         source = source.replace("%%BIAS_APPLIER%%", "mat_v.rowwise() += vec_b;")
     else:
         source = source.replace("%%BIAS_INITIALIZER%%", "")
         source = source.replace("%%BIAS_APPLIER%%", "")
 
     if op.parameters["use_initial_c"]:
-        initial_c = memory_layout[op.inputs["initial_c"]]
-        buffer_injector_items["lstm_initial_c"] = initial_c
+        initial_c = op.inputs["initial_c"]
+        buffer_injector_items["lstm_initial_c"] = memory_layout[initial_c]
         source = source.replace("%%INITIAL_C_COPIER%%", """
         const float *initial_c = %%LOAD_BUFFER(lstm_initial_c)%%;
         for (int i = 0; i < hidden_dim * batch_size; i++) {
@@ -169,8 +170,8 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
         """)
 
     if op.parameters["use_initial_h"]:
-        initial_h = memory_layout[op.inputs["initial_h"]]
-        buffer_injector_items["lstm_initial_h"] = initial_h
+        initial_h = op.inputs["initial_h"]
+        buffer_injector_items["lstm_initial_h"] = memory_layout[initial_h]
         source = source.replace("%%INITIAL_H_COPIER%%", """
         const float *initial_h = %%LOAD_BUFFER(lstm_initial_h)%%;
         for (int i = 0; i < hidden_dim * batch_size; i++) {

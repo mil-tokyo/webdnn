@@ -12,12 +12,11 @@ from webdnn.util.misc import mul
 
 
 @WebGPUDescriptorGenerator.register_handler(LocalResponseNormalization)
-def local_response_normalization(op: LocalResponseNormalization,
-                                 memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+def local_response_normalization(op: LocalResponseNormalization, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    if x.variable.order == y.variable.order:
+    if x.order == y.order:
         return local_response_normalization_same_order(op, memory_layout)
 
     else:
@@ -65,21 +64,20 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
-def local_response_normalization_same_order(op: LocalResponseNormalization,
-                                            memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+def local_response_normalization_same_order(op: LocalResponseNormalization, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
     target_axis = Axis.C  # FIXME
-    target_axis_index = x.variable.order.axes_dict[target_axis]
-    D1 = mul(x.variable.shape[:target_axis_index])
-    D2 = x.variable.shape[target_axis_index]
-    D3 = mul(x.variable.shape[target_axis_index + 1:])
+    target_axis_index = x.order.axes_dict[target_axis]
+    D1 = mul(x.shape[:target_axis_index])
+    D2 = x.shape[target_axis_index]
+    D3 = mul(x.shape[target_axis_index + 1:])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "local_response_normalization_X": x,
-        "local_response_normalization_Y": y,
+        "local_response_normalization_X": memory_layout[x],
+        "local_response_normalization_Y": memory_layout[y],
         "local_response_normalization_D1": D1,
         "local_response_normalization_D2": D2,
         "local_response_normalization_D3": D3,
@@ -168,29 +166,28 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
-def local_response_normalization_general(op: LocalResponseNormalization,
-                                         memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+def local_response_normalization_general(op: LocalResponseNormalization, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
     target_axis = Axis.C
 
-    x_shape = x.variable.shape
+    x_shape = x.shape
 
     y_strides = []
     stride = 1
-    for s in reversed(y.variable.shape):
+    for s in reversed(y.shape):
         y_strides.insert(0, stride)
         stride *= s
 
-    x_stride_in_y = [y_strides[y.variable.order.axes_dict[axis]] for axis in x.variable.order.axes]
+    x_stride_in_y = [y_strides[y.order.axes_dict[axis]] for axis in x.order.axes]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "local_response_normalization_X": x,
-        "local_response_normalization_Y": y,
-        "local_response_normalization_D": x.variable.ndim,
-        "local_response_normalization_d_target": x.variable.order.axes_dict[target_axis],
+        "local_response_normalization_X": memory_layout[x],
+        "local_response_normalization_Y": memory_layout[y],
+        "local_response_normalization_D": x.ndim,
+        "local_response_normalization_d_target": x.order.axes_dict[target_axis],
         "local_response_normalization_x_shape": x_shape,
         "local_response_normalization_x_stride_in_y": x_stride_in_y,
         "local_response_normalization_param_half_n": int(op.parameters["n"] // 2),

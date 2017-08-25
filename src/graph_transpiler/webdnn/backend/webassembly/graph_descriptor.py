@@ -163,7 +163,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "memory_layout": self.memory_layout,
             "placeholders": placeholders,
             "unresolved_value_lists": unresolved_value_lists,
-            "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
-            "outputs": [v.parameters["name"] for v in self.outputs],
+            "inputs": [self.memory_layout[v].name for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
+            "outputs": [self.memory_layout[v].name for v in self.outputs],
             "licenses": self.licenses
         }

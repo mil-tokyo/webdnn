@@ -54,22 +54,22 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(MaxPooling2D)
 def max_pooling_2d(op: MaxPooling2D, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNHWC
-    assert y.variable.order == OrderNHWC
+    assert x.order == OrderNHWC
+    assert y.order == OrderNHWC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "max_pooling_2d_X": x,
-        "max_pooling_2d_Y": y,
-        "max_pooling_2d_N": x.variable.shape_dict[Axis.N],
-        "max_pooling_2d_H1": x.variable.shape_dict[Axis.H],
-        "max_pooling_2d_W1": x.variable.shape_dict[Axis.W],
-        "max_pooling_2d_C": x.variable.shape_dict[Axis.C],
-        "max_pooling_2d_H2": y.variable.shape_dict[Axis.H],
-        "max_pooling_2d_W2": y.variable.shape_dict[Axis.W],
+        "max_pooling_2d_X": memory_layout[x],
+        "max_pooling_2d_Y": memory_layout[y],
+        "max_pooling_2d_N": x.shape_dict[Axis.N],
+        "max_pooling_2d_H1": x.shape_dict[Axis.H],
+        "max_pooling_2d_W1": x.shape_dict[Axis.W],
+        "max_pooling_2d_C": x.shape_dict[Axis.C],
+        "max_pooling_2d_H2": y.shape_dict[Axis.H],
+        "max_pooling_2d_W2": y.shape_dict[Axis.W],
         "max_pooling_2d_KH": op.parameters["ksize"][0],
         "max_pooling_2d_KW": op.parameters["ksize"][1],
         "max_pooling_2d_SH": op.parameters["stride"][0],

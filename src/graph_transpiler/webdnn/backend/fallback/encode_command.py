@@ -27,10 +27,10 @@ def encode_command(builder: CommandBuffer):
 
             if isinstance(value, Allocation):
                 if value in inputs:
-                    index = inputs.index(value.variable)
+                    index = inputs.index(value)
 
                 else:
-                    inputs.append(value.variable)
+                    inputs.append(value)
                     index = len(inputs) - 1
 
                 if typename is None:

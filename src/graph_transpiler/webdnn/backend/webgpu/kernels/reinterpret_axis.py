@@ -29,17 +29,17 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 @WebGPUDescriptorGenerator.register_handler(ReinterpretAxis)
 def reinterpret_axis(op: ReinterpretAxis,
                      memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == op.parameters["in_order"]
-    assert y.variable.order == op.parameters["out_order"]
+    assert x.order == op.parameters["in_order"]
+    assert y.order == op.parameters["out_order"]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "reinterpret_axis_x": x,
-        "reinterpret_axis_y": y,
-        "reinterpret_axis_N": y.variable.size,
+        "reinterpret_axis_x": memory_layout[x],
+        "reinterpret_axis_y": memory_layout[y],
+        "reinterpret_axis_N": y.size,
     })
 
     name_injector = KernelNameInjector(op)

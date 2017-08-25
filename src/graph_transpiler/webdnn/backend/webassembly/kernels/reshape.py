@@ -26,22 +26,22 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%% )
 @WebassemblyDescriptorGenerator.register_handler(Reshape)
 def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
     # Operation without need for transposition is currently supported
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    if x.offset == y.offset:
+    if memory_layout[x].offset == memory_layout[y].offset:
         # Inplace
         return []
 
-    assert x.variable.order == op.parameters["in_order"]
-    assert y.variable.order == op.parameters["out_order"]
-    assert y.variable.size == mul(op.parameters["out_shape"])
+    assert x.order == op.parameters["in_order"]
+    assert y.order == op.parameters["out_order"]
+    assert y.size == mul(op.parameters["out_shape"])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "reshape_x": x,
-        "reshape_y": y,
-        "reshape_N": y.variable.size,
+        "reshape_x": memory_layout[x],
+        "reshape_y": memory_layout[y],
+        "reshape_N": y.size,
     })
 
     name_injector = KernelNameInjector(op)

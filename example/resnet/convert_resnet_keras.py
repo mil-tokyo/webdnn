@@ -18,7 +18,7 @@ def main():
     parser.add_argument('--out', '-o', default='output_keras',
                         help='Directory to output the graph descriptor')
     parser.add_argument("--encoding", help="name of weight encoder")
-    parser.add_argument("--backend", default="webgpu,webassembly,fallback", help="backend")
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()
 
     model = resnet50.ResNet50(include_top=True, weights='imagenet')

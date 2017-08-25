@@ -1,8 +1,8 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.operators.col2im import Col2Im
@@ -60,22 +60,22 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Col2Im)
 def col2im(op: Col2Im, memory_layout: MemoryLayout) -> List[Kernel]:
-    col = memory_layout[op.inputs["col"]]
-    im = memory_layout[op.outputs["im"]]
+    col = op.inputs["col"]
+    im = op.outputs["im"]
 
-    assert col.variable.order == OrderNHWC
-    assert im.variable.order == OrderNHWC
+    assert col.order == OrderNHWC
+    assert im.order == OrderNHWC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "col2im_im": im,
-        "col2im_col": col,
-        "col2im_N": col.variable.shape_dict[Axis.N],
-        "col2im_H2": col.variable.shape_dict[Axis.H],
-        "col2im_W2": col.variable.shape_dict[Axis.W],
-        "col2im_C1": im.variable.shape_dict[Axis.C],
-        "col2im_H1": im.variable.shape_dict[Axis.H],
-        "col2im_W1": im.variable.shape_dict[Axis.W],
+        "col2im_im": memory_layout[im],
+        "col2im_col": memory_layout[col],
+        "col2im_N": col.shape_dict[Axis.N],
+        "col2im_H2": col.shape_dict[Axis.H],
+        "col2im_W2": col.shape_dict[Axis.W],
+        "col2im_C1": im.shape_dict[Axis.C],
+        "col2im_H1": im.shape_dict[Axis.H],
+        "col2im_W1": im.shape_dict[Axis.W],
         "col2im_KH": op.KH,
         "col2im_KW": op.KW,
         "col2im_SH": op.SH,

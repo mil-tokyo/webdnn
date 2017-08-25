@@ -42,21 +42,21 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Softmax)
 def softmax(op: Softmax, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    assert y.variable.order == x.variable.order
-    assert y.variable.shape == x.variable.shape
+    assert y.order == x.order
+    assert y.shape == x.shape
 
     axis = op.parameters["axis"]
-    assert axis == x.variable.order.axes[-1], "[Webassembly] Softmax supports only for aggregating last axis."
+    assert axis == x.order.axes[-1], "[Webassembly] Softmax supports only for aggregating last axis."
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "softmax_X": x,
-        "softmax_Y": y,
-        "softmax_N": y.variable.size // y.variable.shape_dict[axis],
-        "softmax_C": y.variable.shape_dict[axis],
+        "softmax_X": memory_layout[x],
+        "softmax_Y": memory_layout[y],
+        "softmax_N": y.size // y.shape_dict[axis],
+        "softmax_C": y.shape_dict[axis],
     })
 
     name_injector = KernelNameInjector(op)

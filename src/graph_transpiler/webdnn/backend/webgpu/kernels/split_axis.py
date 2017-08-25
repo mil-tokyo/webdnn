@@ -56,28 +56,28 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 @WebGPUDescriptorGenerator.register_handler(SplitAxis)
 def split_axis(op: SplitAxis, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    ys = [memory_layout[op.outputs[f"y{str(i)}"]] for i in range(len(op.outputs))]
+    x = op.inputs["x"]
+    ys = [op.outputs[f"y{str(i)}"] for i in range(len(op.outputs))]
     target_axis = op.parameters["axis"]
 
-    y_shapes = [y.variable.shape for y in ys]
+    y_shapes = [y.shape for y in ys]
 
     # y_strides[i][j] is stride size of ys[i].order.axes[j] in x
-    y_strides_in_x = [[x.variable.stride_dict[axis] for axis in y.variable.order.axes] for y in ys]
+    y_strides_in_x = [[x.stride_dict[axis] for axis in y.order.axes] for y in ys]
 
     # x_offsets[i] is memory offset of ys[i]'s data in x.
     x_offsets = []
     target_axis_offset = 0
     for y in ys:
-        x_offsets.append(target_axis_offset * x.variable.stride[x.variable.order.axes_dict[target_axis]])
-        target_axis_offset += y.variable.shape_dict[target_axis]
+        x_offsets.append(target_axis_offset * x.stride[x.order.axes_dict[target_axis]])
+        target_axis_offset += y.shape_dict[target_axis]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "split_axis_x": x,
-        "split_axis_D": len(x.variable.shape),
+        "split_axis_x": memory_layout[x],
+        "split_axis_D": len(x.shape),
         "split_axis_N": len(ys),
-        "split_axis_ys": ys,
+        "split_axis_ys": [memory_layout[y] for y in ys],
         "split_axis_y_strides_in_x": y_strides_in_x,
         "split_axis_y_shapes": y_shapes,
         "split_axis_x_offsets": x_offsets
