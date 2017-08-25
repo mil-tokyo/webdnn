@@ -56,31 +56,31 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 @WebGPUDescriptorGenerator.register_handler(Concat)
 def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
-    xs = [memory_layout[op.inputs[f"x{str(i)}"]] for i in range(len(op.inputs))]
-    y = memory_layout[op.outputs["y"]]
+    xs = [op.inputs[f"x{str(i)}"] for i in range(len(op.inputs))]
+    y = op.outputs["y"]
     target_axis = op.parameters["axis"]
 
-    x_shapes = [x.variable.shape for x in xs]
+    x_shapes = [x.shape for x in xs]
 
     # x_strides[i][j] is stride size of xs[i].order.axes[j] in y
     x_strides_in_y = [[] for _ in xs]
     for x, strides in zip(xs, x_strides_in_y):
-        for axis in x.variable.order.axes:
-            strides.append(y.variable.stride[y.variable.order.axes_dict[axis]])
+        for axis in x.order.axes:
+            strides.append(y.stride[y.order.axes_dict[axis]])
 
     # y_offsets[i] is memory offset of xs[i]'s data in y.
     y_offsets = []
     target_axis_offset = 0
     for x in xs:
-        y_offsets.append(target_axis_offset * y.variable.stride[y.variable.order.axes_dict[target_axis]])
-        target_axis_offset += x.variable.shape_dict[target_axis]
+        y_offsets.append(target_axis_offset * y.stride[y.order.axes_dict[target_axis]])
+        target_axis_offset += x.shape_dict[target_axis]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "concat_y": y,
-        "concat_D": len(y.variable.shape),
+        "concat_y": memory_layout[y],
+        "concat_D": len(y.shape),
         "concat_N": len(xs),
-        "concat_xs": xs,
+        "concat_xs": [memory_layout[x] for x in xs],
         "concat_x_strides_in_y": x_strides_in_y,
         "concat_x_shapes": x_shapes,
         "concat_y_offsets": y_offsets

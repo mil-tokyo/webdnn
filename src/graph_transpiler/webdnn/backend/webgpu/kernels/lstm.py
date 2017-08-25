@@ -148,50 +148,50 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
 @WebGPUDescriptorGenerator.register_handler(LSTM)
 def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    b = memory_layout[op.inputs["b"]]
-    y = memory_layout[op.outputs["y"]]
-    x_and_h = memory_layout[op.inputs["x_and_h"]]
-    w_all = memory_layout[op.inputs["w_all"]]
-    workspace = memory_layout[op.inputs["workspace"]]
-    final_c = memory_layout[op.outputs["final_c"]]
+    x = op.inputs["x"]
+    b = op.inputs["b"]
+    y = op.outputs["y"]
+    x_and_h = op.inputs["x_and_h"]
+    w_all = op.inputs["w_all"]
+    workspace = op.inputs["workspace"]
+    final_c = op.outputs["final_c"]
 
     use_initial_c = op.parameters["use_initial_c"]
     use_initial_h = op.parameters["use_initial_h"]
     return_sequences = op.parameters["return_sequences"]
 
-    assert x.variable.order == OrderNTC, \
-        f"Current implementation supports only OrderNTC for input variable order: x.order = {x.variable.order}"
+    assert x.order == OrderNTC, \
+        f"Current implementation supports only OrderNTC for input variable order: x.order = {x.order}"
 
     if return_sequences:
-        assert y.variable.order == OrderNTC, f"Current implementation supports only OrderNTC for output variable of " + \
-                                             f"LSTM in return_sequences=True mode: y.order = {y.variable.order}"
+        assert y.order == OrderNTC, f"Current implementation supports only OrderNTC for output variable of " + \
+                                    f"LSTM in return_sequences=True mode: y.order = {y.order}"
     else:
-        assert y.variable.order == OrderNC, \
+        assert y.order == OrderNC, \
             f"Current implementation supports only OrderNC for output variable of LSTM " + \
-            f"in return_sequences=False mode: y.order = {y.variable.order}"
+            f"in return_sequences=False mode: y.order = {y.order}"
 
-    assert w_all.variable.order == OrderCN
-    assert final_c.variable.order == OrderNC
+    assert w_all.order == OrderCN
+    assert final_c.order == OrderNC
 
-    N = x.variable.shape_dict[Axis.N]
-    T = x.variable.shape_dict[Axis.T]
-    C1 = x.variable.shape_dict[Axis.C]
-    C2 = y.variable.shape_dict[Axis.C]
+    N = x.shape_dict[Axis.N]
+    T = x.shape_dict[Axis.T]
+    C1 = x.shape_dict[Axis.C]
+    C2 = y.shape_dict[Axis.C]
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "lstm_X": x,
-        "lstm_Y": y,
-        "lstm_b": b,
+        "lstm_X": memory_layout[x],
+        "lstm_Y": memory_layout[y],
+        "lstm_b": memory_layout[b],
         "lstm_N": N,
         "lstm_T": T,
         "lstm_C1": C1,
         "lstm_C2": C2,
-        "lstm_X_and_H": x_and_h,
-        "lstm_W_all": w_all,
-        "lstm_workspace": workspace,
-        "lstm_final_C": final_c,
+        "lstm_X_and_H": memory_layout[x_and_h],
+        "lstm_W_all": memory_layout[w_all],
+        "lstm_workspace": memory_layout[workspace],
+        "lstm_final_C": memory_layout[final_c],
         "lstm_initial_C": memory_layout[op.inputs["initial_c"]] if use_initial_c else 0,
         "lstm_initial_H": memory_layout[op.inputs["initial_h"]] if use_initial_h else 0,
     })
@@ -210,8 +210,7 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     else:
         raise NotImplementedError
 
-    source = generate_template_general(use_initial_c, use_initial_h, return_sequences,
-                                       activation_function, recurrent_activation_function)
+    source = generate_template_general(use_initial_c, use_initial_h, return_sequences, activation_function, recurrent_activation_function)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

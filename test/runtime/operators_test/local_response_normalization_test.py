@@ -32,7 +32,7 @@ def test_major_axis():
 
     generate_kernel_test_case(
         description=f"LocalResponseNormalization for major axis",
-        backend=["webgpu", "webgl", "fallback"],
+        backend=["webgpu", "fallback"],
         graph=Graph([x], [y]),
         inputs={x: vx},
         expected={y: vy}

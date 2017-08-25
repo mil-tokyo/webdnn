@@ -18,6 +18,7 @@ def template(axis=1, description: str = ""):
     generate_kernel_test_case(
         description=f"[chainer] F.crelu {description}",
         graph=graph,
+        backend=["webgpu", "webassembly", "fallback"],
         inputs={x: vx.data},
         expected={y: vy.data},
     )

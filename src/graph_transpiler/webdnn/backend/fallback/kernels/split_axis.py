@@ -94,8 +94,8 @@ def split_axis(op: SplitAxis, memory_layout: MemoryLayout) -> List[Kernel]:
     kernel = Kernel(
         {"concat": source},
         "concat",
-        inputs=[x],
-        outputs=ys,
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y] for y in ys],
         call_option={"y_shapes": y_shapes,
                      "y_strides": y_strides,
                      "y_offsets": y_offsets}

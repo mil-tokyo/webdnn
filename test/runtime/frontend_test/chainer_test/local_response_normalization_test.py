@@ -18,6 +18,7 @@ def template(n=5, k=2.0, alpha=1e-4, beta=.75, description=""):
     generate_kernel_test_case(
         description=f"[chainer] L.local_response_normalization {description}",
         graph=graph,
+        backend=["webgpu", "webassembly", "fallback"],
         inputs={x: vx.data},
         expected={y: vy.data}
     )

@@ -37,8 +37,8 @@ def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
     kernel = Kernel(
         {"reshape": source},
         "reshape",
-        inputs=[x],
-        outputs=[y],
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y]],
         call_option={"length": x.size}
     )
 

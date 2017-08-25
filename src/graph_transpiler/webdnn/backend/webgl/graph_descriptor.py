@@ -1,8 +1,9 @@
 from collections import OrderedDict
 from typing import Iterable, Dict, Any
 
+from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
-from webdnn.backend.webgl.allocator import Allocation
+from webdnn.backend.webgl import generator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
@@ -20,14 +21,15 @@ using namespace metal;
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     def __init__(self,
                  kernels: Iterable[Kernel],
+                 memory_layout: MemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  constants_encoding: str,
-                 allocations: Dict[Variable, Allocation],
+                 allocations: Dict[Variable, "generator.WebGLAllocation"],
                  constants_map: Any,
                  licenses: Dict[str, str]):
         self.kernels = kernels
-        self.memory_layout = {}
+        self.memory_layout = memory_layout
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
@@ -69,7 +71,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "variables": {v.name: {
                 "variable_size": v.size,
                 "allocation_name": a.name
-            } for v, a in self.allocations.items()},  # type: Variable, Allocation
+            } for v, a in self.allocations.items()},  # type: Variable, generator.WebGLAllocation
             "allocations": {a.name: {
                 "allocation_size": a.size,
                 "channel_mode": a.channel_mode.name

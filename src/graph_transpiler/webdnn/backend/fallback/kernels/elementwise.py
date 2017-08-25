@@ -18,18 +18,18 @@ _registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
 @FallbackDescriptorGenerator.register_handler(MergedElementwise)
 def merged_elementwise_kernel(op: MergedElementwise, memory_layout: MemoryLayout) -> List[Kernel]:
     ops = traverse.listup_operators(op.sub_graph)
-    builder, buffer_injector = generate_elementwise_command_buffer(ops,
-                                                                   [_registered_items[op.__class__] for op in ops],
-                                                                   memory_layout,
-                                                                   dummy2real=op.dummy2real)
-    return elementwise_kernel_base(op, builder, buffer_injector)
+    command_buffer, buffer_injector = generate_elementwise_command_buffer(ops,
+                                                                          [_registered_items[op.__class__] for op in ops],
+                                                                          memory_layout,
+                                                                          dummy2real=op.dummy2real)
+    return elementwise_kernel_base(op, command_buffer, buffer_injector)
 
 
 def elementwise_kernel(op: Elementwise, memory_layout: MemoryLayout) -> List[Kernel]:
-    builder, buffer_injector = generate_elementwise_command_buffer([op],
-                                                                   [_registered_items[op.__class__]],
-                                                                   memory_layout)
-    return elementwise_kernel_base(op, builder, buffer_injector)
+    command_buffer, buffer_injector = generate_elementwise_command_buffer([op],
+                                                                          [_registered_items[op.__class__]],
+                                                                          memory_layout)
+    return elementwise_kernel_base(op, command_buffer, buffer_injector)
 
 
 def elementwise_kernel_base(op: Elementwise,

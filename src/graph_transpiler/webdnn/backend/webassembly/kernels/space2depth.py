@@ -40,25 +40,25 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Space2Depth)
 def space2depth(op: Space2Depth, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
     r = op.parameters['r']
 
-    assert x.variable.order == OrderNHWC
-    assert y.variable.order == OrderNHWC
+    assert x.order == OrderNHWC
+    assert y.order == OrderNHWC
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "space2depth_x": x,
-        "space2depth_y": y,
+        "space2depth_x": memory_layout[x],
+        "space2depth_y": memory_layout[y],
         'space2depth_r': r,
-        "space2depth_N": x.variable.shape_dict[Axis.N],
-        "space2depth_C1": x.variable.shape_dict[Axis.C],
-        "space2depth_C2": y.variable.shape_dict[Axis.C],
-        "space2depth_H1": x.variable.shape_dict[Axis.H],
-        "space2depth_H2": y.variable.shape_dict[Axis.H],
-        "space2depth_W1": x.variable.shape_dict[Axis.W],
-        "space2depth_W2": y.variable.shape_dict[Axis.W],
+        "space2depth_N": x.shape_dict[Axis.N],
+        "space2depth_C1": x.shape_dict[Axis.C],
+        "space2depth_C2": y.shape_dict[Axis.C],
+        "space2depth_H1": x.shape_dict[Axis.H],
+        "space2depth_H2": y.shape_dict[Axis.H],
+        "space2depth_W1": x.shape_dict[Axis.W],
+        "space2depth_W2": y.shape_dict[Axis.W],
     })
 
     name_injector = KernelNameInjector(op)

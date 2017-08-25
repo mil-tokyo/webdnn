@@ -11,7 +11,7 @@ import platform
 import subprocess
 import sys
 
-from webdnn.backend.code_generator.allocator import Allocator
+from webdnn.backend.code_generator.allocator import allocate
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
 from webdnn.backend.webassembly.graph_descriptor import GraphDescriptor
@@ -106,7 +106,7 @@ class WebassemblyDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionD
         if flags.DEBUG:
             traverse.dump(graph)
 
-        memory_layout = Allocator.allocate(graph)
+        memory_layout = allocate(graph)
 
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
         console.debug(f"[WebassemblyDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")

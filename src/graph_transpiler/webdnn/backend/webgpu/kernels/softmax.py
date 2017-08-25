@@ -11,12 +11,11 @@ from webdnn.util.misc import mul
 
 
 @WebGPUDescriptorGenerator.register_handler(Softmax)
-def softmax(op: Softmax,
-            memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+def softmax(op: Softmax, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
-    if x.variable.order == y.variable.order:
+    if x.order == y.order:
         return softmax_same_order(op, memory_layout)
 
     else:
@@ -64,21 +63,20 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
-def softmax_same_order(op: Softmax,
-                       memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    y = memory_layout[op.outputs["y"]]
+def softmax_same_order(op: Softmax, memory_layout: MemoryLayout) -> List[Kernel]:
+    x = op.inputs["x"]
+    y = op.outputs["y"]
 
     target_axis = op.parameters["axis"]
-    target_axis_index = x.variable.order.axes_dict[target_axis]
-    D1 = mul(x.variable.shape[:target_axis_index])
-    D2 = x.variable.shape[target_axis_index]
-    D3 = mul(x.variable.shape[target_axis_index + 1:])
+    target_axis_index = x.order.axes_dict[target_axis]
+    D1 = mul(x.shape[:target_axis_index])
+    D2 = x.shape[target_axis_index]
+    D3 = mul(x.shape[target_axis_index + 1:])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "softmax_X": x,
-        "softmax_Y": y,
+        "softmax_X": memory_layout[x],
+        "softmax_Y": memory_layout[y],
         "softmax_D1": D1,
         "softmax_D2": D2,
         "softmax_D3": D3

@@ -1,5 +1,5 @@
 from enum import auto, Enum
-from typing import Dict, List, Set, Tuple, Union, Optional
+from typing import Dict, List, Set, Union, Tuple
 
 import numpy as np
 
@@ -9,8 +9,28 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import json, flags
+from webdnn.util import json, flags, console
+
+IntLike = Union[int, Placeholder]
+AllocationDict = Dict[Variable, "Allocation"]
+_T_UNKNOWN = -1
+
+_count = 0
+
+
+def _name(prefix: str):
+    global _count
+    _count += 1
+    return f"{prefix}{_count}"
+
+
+def _align(offset: int, unit: int = 1):
+    return ((offset + unit - 1) // unit) * unit
+
+
+_check_resolved = Placeholder.check_resolved
 
 
 class BufferType(Enum):
@@ -19,50 +39,36 @@ class BufferType(Enum):
 
 
 class Allocation(json.SerializableMixin):
-    variable: Variable
-    offset: Union[int, Placeholder]
-    buffer_type: BufferType
-    begin: int
-    end: int
-
-    def __init__(self,
-                 variable: Variable,
-                 offset: Union[int, Placeholder],
-                 buffer_type: BufferType):
-        self.variable = variable
+    def __init__(self, size: IntLike, offset: IntLike = 0, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN, name: str = None):
         self.offset = offset
-        self.buffer_type = buffer_type
-
-    @property
-    def size(self) -> Union[int, Placeholder]:
-        return self.variable.size
+        self.size = size
+        self.buffer_type = BufferType.Static if _check_resolved(offset) and _check_resolved(size) else BufferType.Dynamic
+        self.begin = begin
+        self.end = end
+        self.name = _name('a') if name is None else name
 
     def _to_serializable_(self):
         return {
-            "name": self.variable.name,
+            "name": self.name,
             "offset": self.offset,
             "size": self.size
         }
 
 
 class MemoryLayout(json.SerializableMixin):
-    def __init__(self,
-                 allocations: Dict[Variable, Allocation] = None,
-                 data: np.array = None):
-        self.allocations = {} if allocations is None else allocations  # type: Dict[Variable, Allocation]
+    def __init__(self, allocations: AllocationDict = None, data: np.array = None):
+        self.allocations = {} if allocations is None else allocations  # type: AllocationDict
         self.data = data  # type: np.array
 
     def _to_serializable_(self):
         return {
             "static": {
                 "size": self.static_size,
-                "allocations": {a.variable.name: a for a in self.allocations.values() if
-                                a.buffer_type == BufferType.Static}
+                "allocations": {a.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Static}
             },
             "dynamic": {
                 "size": self.dynamic_size,
-                "allocations": {a.variable.name: a for a in self.allocations.values() if
-                                a.buffer_type == BufferType.Dynamic}
+                "allocations": {a.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Dynamic}
             }
         }
 
@@ -75,23 +81,17 @@ class MemoryLayout(json.SerializableMixin):
     def __contains__(self, v: Variable):
         return v in self.allocations
 
-    def append(self, v: Variable, offset: Union[int, Placeholder] = -1, buffer_type: Optional[BufferType] = None):
-        if buffer_type is None:
-            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(v.size):
-                buffer_type = BufferType.Static
-            else:
-                buffer_type = BufferType.Dynamic
-
+    def append(self, v: Variable, offset: IntLike = -1):
         if offset == -1:
-            if buffer_type is BufferType.Static:
+            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(v.size):
                 offset = self.static_size
             else:
                 offset = self.dynamic_size
 
-        self.allocations[v] = Allocation(v, offset, buffer_type)
+        self.allocations[v] = Allocation(offset, v.size)
 
     @property
-    def total_size(self) -> Union[int, Placeholder]:
+    def total_size(self) -> IntLike:
         return self.static_size + self.dynamic_size
 
     @property
@@ -104,7 +104,7 @@ class MemoryLayout(json.SerializableMixin):
         return size
 
     @property
-    def dynamic_size(self) -> Union[int, Placeholder]:
+    def dynamic_size(self) -> IntLike:
         size = 0
         for a in self.allocations.values():
             if a.buffer_type == BufferType.Dynamic:
@@ -113,226 +113,326 @@ class MemoryLayout(json.SerializableMixin):
         return size
 
 
-class Allocator:
-    layout: MemoryLayout
+def allocate(graph: Graph) -> MemoryLayout:
+    nodes = traverse.listup_nodes(graph)
+    operators = traverse.filter_nodes(nodes, Operator)  # type: List[Operator]
+    variables = traverse.filter_nodes(nodes, Variable)  # type: List[Variable]
 
-    @classmethod
-    def allocate(cls, graph: Graph) -> MemoryLayout:
-        variables = set(traverse.listup_variables(graph))
-        for i, v in enumerate(variables):
-            v.name = f"v{i}"
+    for i, v in enumerate(variables):
+        if v.name is None:
+            v.name = _name("v")
 
-        return cls.allocate_variables(graph, list(variables))
+    dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)], ConstantVariable)
+    assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
 
-    @classmethod
-    def allocate_variables(cls, graph: Graph, variables: List[Variable]):
-        # check if constant variable with shape with unresolved placeholder.
-        dynamic_constants = traverse.filter_nodes([v for v in variables if not Placeholder.check_resolved(v.size)],
-                                                  ConstantVariable)
-        assert len(
-            dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
+    allocations = _get_allocations(graph, operators, variables)
+    # _optimize_inplace(operators, allocations)
 
-        ops = traverse.listup_operators(graph)
-        layout = MemoryLayout()
+    variable_allocations = {v: allocations[v] for v in variables if not isinstance(v, ConstantVariable)}
+    constant_allocations = {v: allocations[v] for v in variables if isinstance(v, ConstantVariable)}
 
-        lifetime = get_lifetime(graph, ops, variables)  # type: Dict[Variable, Tuple[int, int]]
-        offsets = generate_allocation_info(variables, lifetime)  # type: Dict[Variable, Union[int, Placeholder]]
-        for variable, offset in offsets.items():
-            layout.append(variable, offset)
+    _update_offset(variable_allocations)
+    _optimize_buffer_reuse(variable_allocations)
 
-        # temporally, allocate all static buffer
-        layout.data = np.zeros(layout.static_size, dtype=np.float32)
-        constant_size = 0
-        for var in variables:
-            if not isinstance(var, ConstantVariable):
-                continue
+    data = _update_constant_offset(constant_allocations)
 
-            allocation = layout[var]
-            layout.data[allocation.offset:allocation.offset + allocation.size] = var.data.flatten()
-            constant_size = max(constant_size, allocation.offset + allocation.size)
+    for allocation in set(variable_allocations.values()):
+        allocation.offset += data.size
 
-        # truncate
-        layout.data = layout.data[:constant_size]
-        if flags.VISUALIZE_MEMORY_ALLOCATION:
-            _visualize_allocation(ops, variables, layout, lifetime, offsets)
+    allocations = variable_allocations
+    allocations.update(constant_allocations)
 
-        return layout
+    layout = MemoryLayout(allocations, data)
+
+    if flags.VISUALIZE_MEMORY_ALLOCATION:
+        _visualize_allocation(operators, variables, layout)
+
+    return layout
 
 
-def get_lifetime(graph: Graph, ops: List[Operator], variables: List[Variable]):
-    LIFETIME_FOREVER = len(ops) + 1
+def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Variable]) -> AllocationDict:
+    T_LAST = len(operators)
 
-    lifetime = {}  # type: Dict[Variable, Tuple[int, int]]
+    allocations = {}  # type: AllocationDict
     retain_count = {v: 0 for v in variables}  # type: Dict[Variable, int]
     allocated = set()  # type: Set[Variable]
 
-    for var in variables:
-        if isinstance(var, ConstantVariable):
-            lifetime[var] = (0, LIFETIME_FOREVER)
-            allocated.add(var)
+    for v in traverse.filter_nodes(variables, ConstantVariable):  # type: ConstantVariable
+        # Constant variable cannot be released
+        allocations[v] = Allocation(size=v.size, begin=0, end=T_LAST)
+        allocated.add(v)
 
-    for var in graph.inputs:
-        lifetime[var] = (0, LIFETIME_FOREVER)
-        allocated.add(var)
+    for v in graph.inputs:
+        # Input variable cannot be released
+        allocations[v] = Allocation(size=v.size, begin=0, end=T_LAST)
+        allocated.add(v)
 
-    for t, op in enumerate(ops):
-        for var in op.outputs.values():
-            if isinstance(var, ConstantVariable):
-                continue
+    for v in graph.outputs:
+        # Output variable cannot be released, but it's not needed to be allocated from the begin
+        allocations[v] = Allocation(size=v.size, begin=_T_UNKNOWN, end=T_LAST)
+        allocated.add(v)
 
-            if var not in allocated:
-                flag_allocated = False
-
-                if flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_INPLACE_OPERATION \
-                    and not flag_allocated \
-                    and traverse.check_attribute_match(op, Inplace):
-
-                    # Inplace optimization
-                    inplace = op.get_attribute(Inplace)[0]  # type: Inplace
-                    v_in = inplace.get_input()  # Use memory allocated for input variable
-                    v_out = inplace.get_output()
-                    common_axes = [axis for axis in v_in.order.axes if axis in v_out.order.axes]
-
-                    if len(v_in.input_to) == 1 and \
-                        all(v_in.stride_dict[axis] == v_out.stride_dict[axis] for axis in common_axes) and \
-                            v_in.output_from is not None and \
-                            len(v_out.input_to) != 0:
-                        while "inplace_src" in v_in.parameters:
-                            v_in = v_in.parameters["inplace_src"]
-
-                        var.parameters["inplace_src"] = v_in
-                        retain_count[v_in] += len(var.input_to)
-
-                        allocated.add(var)
-                        flag_allocated = True
-
-                if not flag_allocated:
-                    lifetime[var] = (t, LIFETIME_FOREVER)
-                    retain_count[var] = len(var.input_to)
-
-                    allocated.add(var)
-                    flag_allocated = True
-
-                if not flag_allocated:
-                    raise ValueError("[Allocator] Memory Allocation Failed.")
-
-        for var in op.inputs.values():
-            if isinstance(var, ConstantVariable) or var in graph.inputs:
-                continue
-
-            while "inplace_src" in var.parameters:
-                var = var.parameters["inplace_src"]
-
-            if retain_count[var] == 0:
-                # var is temporally workspace memory
-                lifetime[var] = (t, t + 1)
+    for t, op in enumerate(operators):
+        for v in op.outputs.values():
+            if v in allocated:
+                # Allocation object is already created (output variable, etc.)
+                if allocations[v].begin == _T_UNKNOWN:
+                    allocations[v].begin = t
 
             else:
-                retain_count[var] -= 1
+                # Create new allocation object
+                allocations[v] = Allocation(size=v.size, begin=t, end=_T_UNKNOWN)
+                retain_count[v] = len(v.input_to)
+                allocated.add(v)
 
-                if retain_count[var] == 0:
-                    # `t + 1` means that `var` will be released AFTER `op` will be finished.
-                    lifetime[var] = (lifetime[var][0], t + 1)
+        for v in op.inputs.values():
+            if v not in allocated:
+                # Allocate
+                allocations[v] = Allocation(size=v.size, begin=t, end=_T_UNKNOWN)
+                retain_count[v] = len(v.input_to)
+                allocated.add(v)
 
-    for var in graph.outputs:
-        lifetime[var] = (lifetime[var][0], LIFETIME_FOREVER)
+            if allocations[v].end != _T_UNKNOWN:
+                # Release timing is already determined (input, output, or constant variable).
+                continue
 
-    return lifetime
+            # Release input variable
+            retain_count[v] -= 1
+            if retain_count[v] == 0:
+                # `t + 1` means that `v` will be released *AFTER* `op` will be finished.
+                allocations[v].end = t + 1
+
+    return allocations
 
 
-def generate_allocation_info(variables: List[Variable],
-                             lifetime: Dict[Variable, Tuple[int, int]]) -> Dict[Variable, int]:
+def _update_offset(allocations: AllocationDict):
+    static_offset = 0
+    dynamic_offset = 0
+
+    for allocation in allocations.values():
+        if allocation.buffer_type == BufferType.Static:
+            allocation.offset = static_offset
+            static_offset = _align(static_offset + allocation.size)
+
+        else:
+            allocation.offset = dynamic_offset
+            dynamic_offset += _align(dynamic_offset + allocation.size)
+
+
+def _update_constant_offset(allocations: AllocationDict):
+    offset = 0
+    data = []
+
+    for v, a in allocations.items():  # type: ConstantVariable, Allocation
+        data.append(v.data.flatten())
+        a.offset = offset
+        offset = _align(offset + v.size)
+
+    return np.concatenate(data) if len(data) > 0 else np.empty((0,))
+
+
+def _optimize_inplace(operators: List[Operator], allocations_dict: AllocationDict):
+    if not (flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION and flags.optimize.OPTIMIZE_INPLACE_OPERATION):
+        console.debug('_optimize_buffer_reuse is skipped')
+        return
+
+    for op in operators:
+        for attr in op.get_attribute(Inplace):
+            v_in = attr.get_input()
+            v_out = attr.get_output()
+
+            if v_in.has_attribute(Input):
+                continue
+
+            if isinstance(v_in, ConstantVariable):
+                continue
+
+            if any(v_in.stride_dict[a] != v_out.stride_dict[a] for a in v_out.order.axes if a in v_in.order.axes):
+                continue
+
+            _merge_allocation(allocations_dict, allocations_dict[v_in], allocations_dict[v_out])
+
+
+def _optimize_buffer_reuse(allocations_dict: AllocationDict):
     """
-    heuristic-based optimization
+    Optimize memory size by reusing buffer if available
 
-        1. allocate constant variables first
-        2. allocate unresolved shape variables last
-        3. allocate variables which lives longer first
-        4. allocate variables which released earlier first
-        5. allocate larger variables first
+    Algorithm:
+
+    Considering 4 variables with follow size and lifetime.
+
+        Size and Lifetime)
+
+          var |size| Lifetime (t=0 -> ...)
+          ----+----+---------------
+            a |  5 | [0, 2)
+            b |  4 | [2, 4)
+            c |  2 | [3, 5)
+            d |  1 | [6, 8)
+            e |  3 | [0, 5)
+          ----+----+---------------
+
+    In this case, we want to get follow optimized allocation:
+
+         ---------> address
+    time
+     |    aaaaa_e
+     |    aaaaa_e
+     |    bbbb__e
+     |    bbbbcce
+     |    ____cce
+     V    d______
+          d______
+
+    First, construct "Merge Offset Table".
+
+    table = {
+        a: {},
+        b: { a: 0 },
+        c: { a: 0, b: 4, e: 3 },
+        d: { a: 0, b: 0, c: 0, e: 0 },
+        e: { a: 5, b: 4 }
+    }
+
+    `table[x][y]` means offset value in case that variable `x` is merged into variable `y`. For example, when `b` is merged into
+    (=reused the memory allocated for) `a`, offset value is `0` because they are not exist at same time. However, when `c` is merged into
+    `b`, offset value is `4` because they are exist at same time (t=3).
+
+    Next, for each mergeable pair, calculate the reduced size if two variables are merged. For example, if `b` is merged into `a`, the
+    reduced size is `4`.
+
+    Then merge the pair which has the largest reduced size. In this case such pair is `a` and `b`, and update the table.
+
+    table = {
+        ab: {},
+        c: { ab: 4, e: 3 },
+        d: { ab: 0, c: 0, e: 0 },
+        e: { ab: 5 }
+    }
+
+    Iterate this procedure until all variables are merged into single allocation.
+
+    Merge `d` into `ab` with offset `0`:
+
+        table = {
+            abd: {},
+            c: { abd: 4, e: 3 },
+            e: { abd: 5 }
+        }
+
+    Merge `c` into `abd` with offset `4`:
+
+        table = {
+            abcd: {},
+            e: { abcd: 5 }
+        }
+
+    Merge `e` into `abcd` with offset `5`:
+
+        table = {
+            abcde: {},
+        }
+
+    Finish.
+
+    Time order:
+        Build Table: O(N^2)
+        Iteration: O(N) times
+            update table: O(N)
+
+        Total: O(N^2)
     """
+    if not flags.optimize.OPTIMIZE:
+        console.debug('_optimize_buffer_reuse is skipped')
+        return
 
-    static_variables = [v for v in variables if Placeholder.check_resolved(v.size)]
-    dynamic_variables = [v for v in variables if not Placeholder.check_resolved(v.size)]
+    allocations = list(set(filter(lambda x: Placeholder.check_resolved(x), allocations_dict.values())))
+    allocations = sorted(allocations, key=lambda a: a.size, reverse=True)
 
-    queue = filter(lambda x: x in lifetime, static_variables)
-    queue = sorted(queue, key=lambda x: x.size, reverse=True)
-    queue = sorted(queue, key=lambda x: lifetime[x][1])
-    queue = sorted(queue, key=lambda x: lifetime[x][1] - lifetime[x][0], reverse=True)
-    queue = sorted(queue, key=lambda x: isinstance(x, ConstantVariable), reverse=True)
-    queue = list(queue)
+    # Construct offset table
+    offset_table = {a2: {} for a2 in allocations}
+    for i1, a1 in enumerate(allocations):
+        for i2, a2 in enumerate(allocations[i1 + 1:]):
+            # align offset as 16-byte alignment
+            offset_table[a2][a1] = 0 if (a1.end <= a2.begin or a2.end <= a1.begin) else _align(a1.size)
 
-    allocated_range = {}  # type: Dict[int, List[Tuple[Union[int, Placeholder], Union[int, Placeholder]]]]
-    workspace = {v: [0, lifetime[v][0], lifetime[v][1]] for v in queue}
-    result = {}  # type: Dict[Variable, int]
+    # Merge
+    merge_tree = {}  # type: Dict[Allocation, Tuple[Allocation, int]]
+    while len(offset_table) > 1:
+        # Get max score pair
+        max_score = -1
+        max_a1 = None
+        max_a2 = None
+        for a2, a1s in offset_table.items():
+            for a1, offset in a1s.items():
+                score = max(min(a1.size - offset, a2.size), 0)
+                if max_score < score:
+                    max_score = score
+                    max_a1 = a1
+                    max_a2 = a2
 
-    while len(queue) > 0:
-        min_offset = +float("inf")
-        min_offset_v = None
+        # Merge
+        a1 = max_a1
+        a2 = max_a2
+        offset12 = offset_table[a2][a1]
+        merge_tree[a2] = (a1, offset12)
 
-        # find space
-        for v1 in queue:
-            info1 = workspace[v1]
-            offset1, start1, end1 = info1
+        # Update offset table
+        for a3, offset23 in offset_table[a2].items():
+            if a1 in offset_table[a3]:
+                # a2->a3->a1
+                # |       |
+                # +-------+
+                #
+                # a1      |/////a1///////|
+                # a2      <----offset12-->|//a2//|
+                #             <-offset32->
+                # a3          |////a3////|
+                offset_table[a3][a1] = max(offset_table[a3][a1], _align(offset12 + a2.size))
 
-            flag_retry = True
-            while flag_retry:
-                flag_retry = False
+        del offset_table[a2]
+        for a3, a4s in offset_table.items():
+            if a3 == a1:
+                continue
 
-                for t in range(start1, end1):
-                    if t not in allocated_range:
-                        continue
+            if a2 in a4s:
+                if a1 in a4s:
+                    # a3->a2->a1
+                    # |       |
+                    # +-------+
 
-                    for offset2, size2 in allocated_range[t]:
-                        if offset2 + size2 <= offset1 or offset1 + v1.size <= offset2:
-                            continue
+                    a4s[a1] = max(a4s[a1], offset12 + a4s[a2])
+                    del a4s[a2]
 
-                        else:
-                            # align for 16byte
-                            offset1 = ((offset2 + size2 + 4 - 1) // 4) * 4
-                            flag_retry = True
-                            break
+                else:
+                    a4s[a1] = offset12 + a4s[a2]
+                    del a4s[a2]
 
-                    if flag_retry:
-                        break
+    # Update all allocation offset value
+    list(offset_table.keys())[0].offset = 0
 
-            info1[0] = offset1
-            if offset1 < min_offset:
-                min_offset = offset1
-                min_offset_v = v1
-
-        queue.remove(min_offset_v)
-        _, start1, end1 = workspace[min_offset_v]
-
-        result[min_offset_v] = min_offset
-        for t in range(start1, end1):
-            if t not in allocated_range:
-                allocated_range[t] = []
-
-            allocated_range[t].append((min_offset, min_offset_v.size))
-
-        min_offset += min_offset_v.size
-
-    for v in dynamic_variables:
-        result[v] = -1  # FIXME: optimize dynamic allocation
-
-    for v1 in variables:
-        v2 = v1
-        while "inplace_src" in v2.parameters:
-            v2 = v2.parameters["inplace_src"]
-
-        result[v1] = result[v2]
-
-    return result
+    for a2, (a1, offset) in merge_tree.items():
+        while a1 in merge_tree:
+            a1, offset2 = merge_tree[a1]
+            offset += offset2
+        a2.offset = offset
 
 
-def _visualize_allocation(ops: List[Operator],
-                          variables: List[Variable],
-                          layout: MemoryLayout,
-                          lifetime: Dict[Variable, Tuple[int, int]],
-                          offsets: Dict[Variable, Union[int, Placeholder]]):
+def _merge_allocation(allocations: AllocationDict, a1: Allocation, a2: Allocation, a_new: Allocation = None):
+    """
+    merge two allocations into one new allocation
+    """
+    if a_new is None:
+        a_new = Allocation(size=max(a1.size, a2.size), begin=min(a1.begin, a2.begin), end=max(a1.end, a2.end))
+
+    for v, lifetime in allocations.items():
+        if lifetime == a1 or lifetime == a2:
+            allocations[v] = a_new
+
+
+def _visualize_allocation(operators: List[Operator], variables: List[Variable], layout: MemoryLayout):
     UNIT_HEIGHT = 14
-    total_size = layout.total_size
+    total_size = layout.total_size - layout.data.size
     rendering_dict = {}  # type: Dict[Variable, RenderingInfo]
 
     class RenderingInfo:
@@ -342,11 +442,11 @@ def _visualize_allocation(ops: List[Operator],
         lifetime: Tuple[int, int]
 
         # noinspection PyShadowingNames
-        def __init__(self, variable: Variable, offset: int, lifetime: Tuple[int, int]):
+        def __init__(self, variable: Variable, allocation: Allocation):
             self.names = []
             self.variable = variable
-            self.offset = offset
-            self.lifetime = lifetime
+            self.offset = allocation.offset - layout.data.size
+            self.lifetime = (allocation.begin, allocation.end)
 
         @property
         def size(self):
@@ -385,18 +485,15 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
         html, body {
             margin: 0;
         }
-
         body {
             padding: 32px;
             box-sizing: border-box;
         }
-
         .MemoryLayout {
             position: relative;
             background: #888;
             font-size: 8px;
         }
-
         .Allocation {
             position: absolute;
             border: 1px solid #000;
@@ -423,12 +520,11 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
         <p># of allocated variables: """ + str(len(layout)) + """</p>
     </div>
     <div style="margin: 32px 0">
-        <p>縦軸：時間経過（上から下へ）</p>
-        <p>横軸：メモリアドレス</p>
-        <p>各要素はカーソルホバーで詳細が見られます。</p>
+        <p>Vertical axis：time(from top(t=0) to bottom)</p>
+        <p>Horizontal axis：memory address</p>
     </div>
 </header>
-    <div class="MemoryLayout" style="height: """ + str(UNIT_HEIGHT * (len(ops) + 1) + 1) + """px;">
+    <div class="MemoryLayout" style="height: """ + str(UNIT_HEIGHT * len(operators) + 1) + """px;">
 """
 
     for v1 in variables:
@@ -437,7 +533,10 @@ lifetime: {self.lifetime[0]} - {self.lifetime[1]}
             v2 = v2.parameters["inplace_src"]
 
         if v2 not in rendering_dict:
-            rendering_dict[v2] = RenderingInfo(v2, offsets[v2], lifetime[v2])
+            if isinstance(v2, ConstantVariable):
+                continue
+
+            rendering_dict[v2] = RenderingInfo(v2, layout[v2])
 
         rendering_dict[v2].names.append(v1.name)
 

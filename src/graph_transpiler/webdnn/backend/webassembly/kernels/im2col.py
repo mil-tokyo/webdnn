@@ -1,8 +1,8 @@
 from typing import List
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.injectors.buffer_injector import BufferInjector
+from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.operators.im2col import Im2Col
@@ -86,22 +86,22 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Im2Col)
 def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
-    im = memory_layout[op.inputs["im"]]
-    col = memory_layout[op.outputs["col"]]
+    im = op.inputs["im"]
+    col = op.outputs["col"]
 
-    assert im.variable.order == OrderNHWC
-    assert col.variable.order == OrderNHWC or col.variable.order == OrderCNHW
+    assert im.order == OrderNHWC
+    assert col.order == OrderNHWC or col.order == OrderCNHW
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "im2col_im": im,
-        "im2col_col": col,
-        "im2col_N": col.variable.shape_dict[Axis.N],
-        "im2col_C1": im.variable.shape_dict[Axis.C],
-        "im2col_H1": im.variable.shape_dict[Axis.H],
-        "im2col_W1": im.variable.shape_dict[Axis.W],
-        "im2col_H2": col.variable.shape_dict[Axis.H],
-        "im2col_W2": col.variable.shape_dict[Axis.W],
+        "im2col_im": memory_layout[im],
+        "im2col_col": memory_layout[col],
+        "im2col_N": col.shape_dict[Axis.N],
+        "im2col_C1": im.shape_dict[Axis.C],
+        "im2col_H1": im.shape_dict[Axis.H],
+        "im2col_W1": im.shape_dict[Axis.W],
+        "im2col_H2": col.shape_dict[Axis.H],
+        "im2col_W2": col.shape_dict[Axis.W],
         "im2col_KH": op.KH,
         "im2col_KW": op.KW,
         "im2col_DH": op.DH,
@@ -114,7 +114,7 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.variable.order == OrderCNHW else template_NHWC
+    source = template_CNHW if col.order == OrderCNHW else template_NHWC
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

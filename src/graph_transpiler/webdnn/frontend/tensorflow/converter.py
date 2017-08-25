@@ -8,6 +8,8 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order, OrderNC, OrderNTC, OrderNHWC, OrderC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.attributes.input import Input
+from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.optimizer.tensorflow_frontend_optimize_rule import TensorFlowFrontendOptimizeRule
 from webdnn.util import console
@@ -113,6 +115,12 @@ class TensorFlowConverter(Converter["tf.Operation"]):
         # Remove redundant ReinterpretAxis operators
         graph = Graph([self.get_variable(tensor) for tensor in inputs], [self.get_variable(tensor) for tensor in outputs])
         graph, _ = TensorFlowFrontendOptimizeRule().optimize(graph)
+
+        for v in graph.inputs:
+            v.attributes.add(Input(v))
+
+        for v in graph.outputs:
+            v.attributes.add(Output(v))
 
         return graph
 

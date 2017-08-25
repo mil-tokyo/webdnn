@@ -14,6 +14,8 @@ from webdnn.frontend.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.attributes.input import Input
+from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
@@ -167,6 +169,12 @@ class ChainerConverter(Converter["Function"]):
 
         graph = Graph([self.get_variable(c_var) for c_var in inputs],
                       [self.get_variable(c_var) for c_var in outputs])
+
+        for v in graph.inputs:
+            v.attributes.add(Input(v))
+
+        for v in graph.outputs:
+            v.attributes.add(Output(v))
 
         return graph
 

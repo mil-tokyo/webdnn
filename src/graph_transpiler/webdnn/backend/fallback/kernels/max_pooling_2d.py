@@ -77,8 +77,8 @@ def max_pooling_2d(op: MaxPooling2D, memory_layout: MemoryLayout) -> List[Kernel
     kernel = Kernel(
         {"max_pooling_2d": source},
         "max_pooling_2d",
-        inputs=[x],
-        outputs=[y],
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y]],
         call_option={"in_spatial": [x.shape_dict[Axis.H], x.shape_dict[Axis.W]],
                      "n": x.shape_dict[Axis.N],
                      "out_size": y.shape_dict[Axis.C],

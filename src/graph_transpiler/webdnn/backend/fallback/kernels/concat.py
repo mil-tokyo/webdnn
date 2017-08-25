@@ -100,8 +100,8 @@ def concat(op: Concat, memory_layout: MemoryLayout) -> List[Kernel]:
     kernel = Kernel(
         {"concat": source},
         "concat",
-        inputs=xs,
-        outputs=[y],
+        inputs=[memory_layout[x] for x in xs],
+        outputs=[memory_layout[y]],
         call_option={"x_shapes": x_shapes,
                      "x_strides": x_strides,
                      "x_offsets": x_offsets}

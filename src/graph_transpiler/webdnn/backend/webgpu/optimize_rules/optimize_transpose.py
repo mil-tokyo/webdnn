@@ -8,6 +8,7 @@ from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.softmax import Softmax
@@ -62,7 +63,10 @@ class OptimizeTranspose(OptimizeRule):
                 flag_changed |= _replace_output(op, "y", op.parameters["out_order"])
                 continue
 
-            elif isinstance(op, (Convolution2D, MaxPooling2D, AveragePooling2D, Deconvolution2D, Space2Depth, Depth2Space)):
+            elif isinstance(op, (Convolution2D, Deconvolution2D,
+                                 MaxPooling2D, AveragePooling2D,
+                                 Space2Depth, Depth2Space,
+                                 LocalResponseNormalization)):
                 flag_changed |= _replace_input(op, "x", OrderNHWC)
                 flag_changed |= _replace_output(op, "y", OrderNHWC)
                 continue

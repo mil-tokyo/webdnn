@@ -9,7 +9,7 @@ Kernel Builder for Fallback (pure js)
 import os
 import os.path as path
 
-from webdnn.backend.code_generator.allocator import Allocator
+from webdnn.backend.code_generator.allocator import allocate
 from webdnn.backend.fallback.graph_descriptor import GraphDescriptor
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.backend.interface.generator import DescriptorGenerator
@@ -49,7 +49,7 @@ class FallbackDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData
         if flags.DEBUG:
             traverse.dump(graph)
 
-        memory_layout = Allocator.allocate(graph)
+        memory_layout = allocate(graph)
 
         console.debug(f"[FallbackDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}")
         console.debug(f"[FallbackDescriptorGenerator] memory_layout static size: {memory_layout.static_size * 4}")

@@ -2,19 +2,29 @@ import os
 import os.path as path
 from typing import List
 
-import numpy as np
-
+from webdnn.backend.code_generator.allocator import Allocation, allocate
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
-from webdnn.backend.webgl.allocator import allocate
+from webdnn.backend.webgl.attributes.channel_mode import ChannelModeEnum, ChannelMode
 from webdnn.backend.webgl.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.optimize_rules.webgl_optimize_rule import WebGLOptimizeRule
+from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import flags
 from webdnn.util.json import json
+
+
+class WebGLAllocation(Allocation):
+    def __init__(self, allocation: Allocation, channel_mode: ChannelModeEnum):
+        super(WebGLAllocation, self).__init__(
+            size=allocation.size, offset=allocation.offset,
+            begin=allocation.begin, end=allocation.end,
+            name=allocation.name
+        )
+        self.channel_mode = channel_mode
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):
@@ -45,32 +55,27 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             with open("cg.dot", "w") as f:
                 f.write(traverse.dump_dot(graph))
 
-        allocations = allocate(graph)
+        memory_layout = allocate(graph)
 
-        data = []
-        byte_offset = 0
+        allocations = {}
+        for v, a in memory_layout.allocations.items():
+            allocations[v] = WebGLAllocation(allocation=a, channel_mode=ChannelMode.get_mode(v))
+
         constants_map = {}
         for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
-            data.append(constant.data.flatten())
             constants_map[constant.name] = {
-                "byte_offset": byte_offset,
+                "byte_offset": memory_layout[constant].offset * 4,
                 "size": constant.size
             }
-            byte_offset += constant.size * 4
 
-        if len(data) > 0:
-            data = np.concatenate(data)
-
-            # constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
-            # constants_bytes = constant_encoder.encode(memory_layout)
-            constants_bytes = data.tobytes("C")
-        else:
-            constants_bytes = bytes()
+        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
+        constants_bytes = constant_encoder.encode(memory_layout)
 
         kernels = cls.generate_kernels(graph)
 
         descriptor = GraphDescriptor(
             kernels=kernels,
+            memory_layout=memory_layout,
             inputs=graph.inputs,
             outputs=graph.outputs,
             constants_encoding="raw",

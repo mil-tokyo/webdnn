@@ -36,23 +36,23 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 @WebassemblyDescriptorGenerator.register_handler(Linear)
 def linear(op: Linear, memory_layout: MemoryLayout) -> List[Kernel]:
-    x = memory_layout[op.inputs["x"]]
-    w = memory_layout[op.inputs["w"]]
-    y = memory_layout[op.outputs["y"]]
+    x = op.inputs["x"]
+    w = op.inputs["w"]
+    y = op.outputs["y"]
 
-    assert x.variable.order == OrderNC or x.variable.order == OrderNHWC
-    assert w.variable.order == OrderCN or w.variable.order == OrderHWCN
-    assert y.variable.order == OrderNC or y.variable.order == OrderNHWC
-    assert w.variable.ndim == x.variable.ndim
+    assert x.order == OrderNC or x.order == OrderNHWC
+    assert w.order == OrderCN or w.order == OrderHWCN
+    assert y.order == OrderNC or y.order == OrderNHWC
+    assert w.ndim == x.ndim
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "linear_X": x,
-        "linear_Y": y,
-        "linear_W": w,
-        "linear_M": y.variable.shape_dict[Axis.N],
-        "linear_N": y.variable.size // y.variable.shape_dict[Axis.N],
-        "linear_K": x.variable.size // x.variable.shape_dict[Axis.N],
+        "linear_X": memory_layout[x],
+        "linear_Y": memory_layout[y],
+        "linear_W": memory_layout[w],
+        "linear_M": y.shape_dict[Axis.N],
+        "linear_N": y.size // y.shape_dict[Axis.N],
+        "linear_K": x.size // x.shape_dict[Axis.N],
     })
 
     name_injector = KernelNameInjector(op)

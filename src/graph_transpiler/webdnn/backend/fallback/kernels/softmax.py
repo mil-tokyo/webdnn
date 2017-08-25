@@ -55,8 +55,8 @@ def softmax(op: Softmax, memory_layout: MemoryLayout) -> List[Kernel]:
     kernel = Kernel(
         {"softmax": source},
         "softmax",
-        inputs=[x],
-        outputs=[y],
+        inputs=[memory_layout[x]],
+        outputs=[memory_layout[y]],
         call_option={
             "N": y.size // y.shape_dict[axis],
             "C": y.shape_dict[axis]}
