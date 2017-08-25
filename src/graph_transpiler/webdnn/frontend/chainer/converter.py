@@ -2,7 +2,7 @@
 
 """
 Chainer Link -> Graph object converters
-Assuming Chainer 1.23 or 2.0
+Assuming Chainer 1.23-1.24 or 2.0
 """
 import warnings
 from typing import List, Union, Sequence, Set
@@ -53,7 +53,7 @@ def _listup_functions(inputs: Sequence["VariableNode"], outputs: Sequence["Varia
     result = []  # type: List[Function]
 
     while len(stack) > 0:
-        node = stack.pop(0)
+        node = stack.pop()
         if node in resolved:
             continue
 
@@ -151,11 +151,16 @@ class ChainerConverter(Converter["Function"]):
                           filter(lambda v: isinstance(v, VariableNode), chainer_graph.nodes)))  # type: List[VariableNode]
         inputs = [_to_variable_node(v) for v in inputs]
         outputs = [_to_variable_node(v) for v in outputs]
+        input_set = set(inputs)
 
         for c_var in c_vars:
             if c_var.creator is None:
                 # If :code:`creator is None` and it's not input variable, it's parameter.
-                self._convert_var(c_var, constant=c_var not in inputs)
+
+                # NOTE(Kiikurage):
+                # In chainer v1.x, `Variable` doesn't support `__eq__` method and `list.__contains__` cannot be used for
+                # Variable list. However, `Variable.__hash__` is implemented and `set.__contains__` is available.
+                self._convert_var(c_var, constant=c_var not in input_set)
 
         for c_opr in _listup_functions(inputs, outputs):
             self._convert_operator(c_opr)

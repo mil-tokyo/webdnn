@@ -7,7 +7,6 @@ from webdnn.graph.operators.local_response_normalization import LocalResponseNor
 from webdnn.graph.order import OrderNCHW, OrderC
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("NormalizeL2")
 def _convert_normalize_l2(converter: ChainerConverter, c_op: "chainer.functions.NormalizeL2"):
     # TODO
@@ -30,14 +29,6 @@ def _convert_local_response_normalization(converter: ChainerConverter,
 @ChainerConverter.register_handler("BatchNormalizationFunction")
 def _convert_batch_normalization_function(converter: ChainerConverter,
                                           c_op: "chainer.functions.normalization.batch_normalization.BatchNormalizationFunction"):
-    if chainer.__version__ >= "2.":
-        # FIXME: Is it possible to detect in which mode this function was computed, train or test?
-        pass
-
-    else:
-        if not c_op.test:
-            raise NotImplementedError("[ChainerConverter] BatchNormalization with train mode is not supported")
-
     x = converter.get_variable(c_op.inputs[0])
     unify(x.order.axes[0], Axis.N)
     unify(x.order.axes[1], Axis.C)
@@ -58,7 +49,7 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
     elif len(c_op.inputs) == 3:
         mean = 0 if c_op.running_mean is None else ConstantVariable(c_op.running_mean, OrderC)
         variance = 1 if c_op.running_var is None else ConstantVariable(c_op.running_var, OrderC)
-    # chainer.functions.batch_normalization()
+
     else:
         raise ValueError("inputs to BatchNormalizationFunction have to be 5 or 3.")
 
