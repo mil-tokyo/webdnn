@@ -8,14 +8,7 @@ from webdnn.backend.webgl.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.constant import Constant
-from webdnn.util import json, flags
-
-source_header = f"""
-#include <metal_stdlib>
-using namespace metal;
-
-#define OPTIMIZE {"1" if flags.optimize.OPTIMIZE else "0"}
-"""
+from webdnn.util import json
 
 
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
