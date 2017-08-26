@@ -1005,6 +1005,8 @@ const vertexArray = new Float32Array([
  */
 class WebGLBuffer {
     constructor(gl, length, name, array, channelMode) {
+        this._texture = null;
+        this.textureUnit = -1;
         this.gl = gl;
         this.name = name;
         this.channelMode = channelMode;
@@ -1025,19 +1027,34 @@ class WebGLBuffer {
         const packedLength = Math.ceil(length / this.elementsPerPixel);
         this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
         this.textureHeight = Math.ceil(packedLength / 2048);
+    }
+    get texture() {
+        return this._texture;
+    }
+    initializeTexture() {
+        let gl = this.gl;
         let texture = checkNull(gl.createTexture());
+        gl.activeTexture(gl.TEXTURE0 + 9); // TODO
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.textureWidth, this.textureHeight, 0, gl.RGBA, gl.FLOAT, null);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        // gl.bindTexture(gl.TEXTURE_2D, null);
-        this.texture = texture;
-        if (array)
-            this.uploadToGPU();
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        this._texture = texture;
+    }
+    disposeTexture() {
+        this.unbindTextureFromUnit();
+        this.gl.deleteTexture(this.texture);
+        this._texture = null;
+    }
+    allocateOnGPU() {
+        if (!this.texture)
+            this.initializeTexture();
     }
     uploadToGPU() {
+        this.allocateOnGPU();
         let gl = this.gl;
         let tmp = this.pack(this.array);
         if (tmp.length != this.textureWidth * this.textureHeight * 4) {
@@ -1045,32 +1062,44 @@ class WebGLBuffer {
             tmp2.set(tmp, 0);
             tmp = tmp2;
         }
+        gl.activeTexture(gl.TEXTURE0 + 9); // TODO
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
-        // gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     downloadToCPU() {
         let gl = this.gl;
         let tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
-        let frameBuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-        this.bindTextureToCurrentFrameBuffer();
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
         gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
-        this.unbindTextureFromCurrentFrameBuffer();
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
         this.array.set(this.unpack(tmp).slice(0, this.length), 0);
+        this.disposeTexture();
+    }
+    releaseGPUMemory() {
+        this.disposeTexture();
     }
     bindTextureToUnit(unit) {
+        if (!this.texture)
+            this.uploadToGPU();
         let gl = this.gl;
-        gl.activeTexture(gl.TEXTURE0 + unit);
+        this.textureUnit = unit;
+        gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
-    unbindTextureFromUnit(unit) {
+    unbindTextureFromUnit() {
+        if (this.textureUnit === -1)
+            return;
         let gl = this.gl;
-        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
         gl.bindTexture(gl.TEXTURE_2D, null);
+        this.textureUnit = -1;
     }
     bindTextureToCurrentFrameBuffer() {
+        if (this.textureUnit !== -1)
+            throw ('This buffer is already registered as input texture. Please unbind first.');
+        if (!this.texture)
+            this.allocateOnGPU();
         let gl = this.gl;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     }
@@ -1166,7 +1195,6 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 .forEach(([variable_name, { size, byte_offset }]) => {
                 let buffer = buffers.get(descriptor.variables[variable_name].allocation_name);
                 buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
-                buffer.uploadToGPU();
             });
             (yield this.getInputViews())
                 .filter(view => !view.isDynamic)
@@ -1315,15 +1343,22 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
         let gl = this.gl;
         let buffers = this.buffers;
         let descriptor = this.descriptor;
+        let referenceCount = new Map();
         this.runtimeInfo = {
             inputs: this.getInputViews().map(view => buffers.get(view.name)),
             outputs: this.getOutputViews().map(view => buffers.get(view.name)),
             programs: this.descriptor.exec_infos.map(execInfo => {
                 // inputs
-                let inputs = execInfo.inputs.map(input => ({
-                    buffer: buffers.get(descriptor.variables[input.variable_name].allocation_name),
-                    uniformIndex: input.value
-                }));
+                let inputs = execInfo.inputs.map(input => {
+                    let buffer = buffers.get(descriptor.variables[input.variable_name].allocation_name);
+                    if (!referenceCount.has(buffer))
+                        referenceCount.set(buffer, 0);
+                    referenceCount.set(buffer, referenceCount.get(buffer) + 1);
+                    return {
+                        buffer: buffer,
+                        uniformIndex: input.value
+                    };
+                });
                 //output
                 let output = buffers.get(descriptor.variables[execInfo.output].allocation_name);
                 // shader
@@ -1380,9 +1415,19 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     output: output,
                     vao: vao,
                     uniforms: uniforms,
+                    disposable: []
                 };
             })
         };
+        for (let runtimeProgramInfo of this.runtimeInfo.programs) {
+            runtimeProgramInfo.inputs.forEach(({ buffer }) => {
+                let count = referenceCount.get(buffer) - 1;
+                if (count == 0) {
+                    runtimeProgramInfo.disposable.push(buffer);
+                }
+                referenceCount.set(buffer, count);
+            });
+        }
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1468,11 +1513,10 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
                     // inputs
                     for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs) {
-                        gl.activeTexture(gl.TEXTURE0 + uniformIndex);
-                        gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                        buffer.bindTextureToUnit(uniformIndex);
                     }
                     // output
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+                    runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
                     // shader
                     gl.useProgram(runtimeProgramInfo.program);
                     // uniforms
@@ -1480,6 +1524,10 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                         uniform.func.apply(gl, uniform.args);
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    // release buffers
+                    for (let buffer of runtimeProgramInfo.disposable)
+                        buffer.releaseGPUMemory();
+                    // runtimeProgramInfo.output.downloadToCPU();
                 }
             }
             for (let buffer of runtimeInfo.outputs)

@@ -78,7 +78,7 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             memory_layout=memory_layout,
             inputs=graph.inputs,
             outputs=graph.outputs,
-            constants_encoding="raw",
+            constants_encoding=constant_encoder.name,
             allocations=allocations,
             constants_map=constants_map,
             licenses=graph.licenses
