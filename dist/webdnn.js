@@ -1188,8 +1188,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             let buffers = this.buffers;
             Object.entries(descriptor.allocations)
                 .forEach(([name, { allocation_size, channel_mode }]) => {
-                let buffer = new WebGLBuffer(this.gl, allocation_size, name, null, channel_mode);
-                buffers.set(name, buffer);
+                buffers.set(name, new WebGLBuffer(this.gl, allocation_size, name, null, channel_mode));
             });
             Object.entries(descriptor.constants_map)
                 .forEach(([variable_name, { size, byte_offset }]) => {
@@ -1217,8 +1216,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 .forEach(([name, { allocation_size, channel_mode }]) => {
                 if (typeof allocation_size == 'number')
                     return;
-                let buffer = new WebGLBuffer(this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode);
-                buffers.set(name, buffer);
+                buffers.set(name, new WebGLBuffer(this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode));
             });
             (yield this.getInputViews())
                 .filter(view => view.isDynamic)
