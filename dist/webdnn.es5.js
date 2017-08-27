@@ -1448,8 +1448,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                         Object.entries(descriptor.allocations)
                             .forEach(function (_a) {
                             var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
-                            var buffer = new WebGLBuffer(_this.gl, allocation_size, name, null, channel_mode);
-                            buffers.set(name, buffer);
+                            buffers.set(name, new WebGLBuffer(_this.gl, allocation_size, name, null, channel_mode));
                         });
                         Object.entries(descriptor.constants_map)
                             .forEach(function (_a) {
@@ -1491,8 +1490,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                             var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
                             if (typeof allocation_size == 'number')
                                 return;
-                            var buffer = new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode);
-                            buffers.set(name, buffer);
+                            buffers.set(name, new WebGLBuffer(_this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode));
                         });
                         return [4 /*yield*/, this.getInputViews()];
                     case 1:

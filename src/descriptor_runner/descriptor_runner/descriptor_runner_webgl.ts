@@ -660,7 +660,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
 
                 // release buffers
-                for (let buffer of runtimeProgramInfo.dis) buffer.releaseGPUMemory();
+                for (let buffer of runtimeProgramInfo.disposable) buffer.releaseGPUMemory();
                 // runtimeProgramInfo.output.downloadToCPU();
             }
         }
