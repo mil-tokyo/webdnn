@@ -113,6 +113,7 @@ def _convert_selected_item(converter: ChainerConverter,
     if len(c_op.inputs) == 3:
         # with bias
         bias = converter.get_variable(c_op.inputs[2])
+        unify_order(bias.order, OrderC)
         y = y + bias
 
     converter.set_variable(c_op.outputs[0](), y)
