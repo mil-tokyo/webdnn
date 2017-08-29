@@ -59,7 +59,7 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
 
         if len(new_axes) == 0 and v.size == 1:
             orders[v] = Order([axis_scalar])
-            shape_dicts[v] = {axis_scalar: 1}
+            shape_dicts[v] = AxisKeyDict([axis_scalar], [1])
 
     # list up all axes and variables which have the axis
     var_dict = AxisKeyDict[Set[Variable]]()

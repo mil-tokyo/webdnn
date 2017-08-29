@@ -1,7 +1,12 @@
+from typing import List
+
+import numpy as np
 import tensorflow as tf
 
-from webdnn.frontend.constraints import AxisVar
+from webdnn import ConstantVariable
+from webdnn.frontend.constraints import AxisVar, unify_order
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.variable import Variable
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
@@ -70,7 +75,14 @@ def const_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     # FIXME: should output ConstantVariable?
     tensor = tf_op.outputs[0]
     shape = [Placeholder() if dim.value is None else dim.value for dim in tensor.shape.dims]
-    converter.set_variable(tensor, Variable(shape, Order([AxisVar() for _ in shape])))
+    if len(shape) == 0:
+        # Scalar variable
+        # WebDNN's variable should have at least 1 dimension
+        variable = ConstantVariable(np.array([tf_op.get_attr("value").float_val._values[0]], dtype=np.float32),
+                                    Order([Axis.C]))
+    else:
+        variable = Variable(shape, Order([AxisVar() for _ in shape]))
+    converter.set_variable(tensor, variable)
 
 
 @TensorFlowConverter.register_handler("DepthToSpace")
@@ -225,7 +237,32 @@ def pack_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Pad")
 def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    # Zero padding
+    # FIXME: currently, determining padding from shape of input / output. Originally, determining by inputs[1] is correct.
+
+    in_var = converter.get_variable(tf_op.inputs[0])
+    unify_order(in_var.order, OrderNHWC)  # FIXME: assuming input order as NHWC
+    out_tf_var = tf_op.outputs[0]
+    # calculate output shape from out_tf_var.shape and in_var.shape
+    # ZeroPadding2D operator only accepts padding for H and W axes.
+    padding = [0, 0]
+    for dim in range(in_var.ndim):
+        in_size = in_var.shape[dim]
+        out_size = out_tf_var.shape.dims[dim].value
+        assert isinstance(in_size, int), "[TensorFlowConverter] Pad: Placeholder for input shape is not supported yet."
+        assert isinstance(out_size, int), "[TensorFlowConverter] Pad: Placeholder for output shape is not supported yet."
+        axis = in_var.order.axes[dim]
+        if axis in [Axis.H, Axis.W]:
+            assert (out_size - in_size % 2) != 0, "[TensorFlowConverter] Pad: Uneven padding is not supported yet."
+            pad_size = (out_size - in_size) // 2
+            if axis == Axis.H:
+                padding[0] = pad_size
+            elif axis == Axis.W:
+                padding[1] = pad_size
+        else:
+            assert out_size == in_size, "[TensorFlowConverter] Pad: padding for axis other than H and W is not supported yet."
+    out_var, = ZeroPadding2D(None, padding=tuple(padding))(in_var)
+    converter.set_variable(out_tf_var, out_var)
 
 
 @TensorFlowConverter.register_handler("PadV2")
@@ -412,7 +449,22 @@ def split_v_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Squeeze")
 def squeeze_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    squeeze_dims = tf_op.get_attr("squeeze_dims")  # type: List[int]
+
+    in_var = converter.get_variable(tf_op.inputs[0])
+    in_var_shape = in_var.shape
+    out_var_shape = []  # type: List[int]
+    out_var_order = []  # type: List[Axis]
+    for dim in range(len(in_var_shape)):
+        if dim in squeeze_dims:
+            assert in_var_shape[dim] == 1, f"[TensorFlowConverter] {tf_op.type}: dimension to be squeezed have to be 1."
+        else:
+            out_var_shape.append(in_var_shape[dim])
+            out_var_order.append(in_var.order.axes[dim])
+
+    out_var, = Reshape(None, in_order=in_var.order, out_order=Order(out_var_order), out_shape=out_var_shape)(in_var)
+    out_tf_var = tf_op.outputs[0]
+    converter.set_variable(out_tf_var, out_var)
 
 
 @TensorFlowConverter.register_handler("StopGradient")

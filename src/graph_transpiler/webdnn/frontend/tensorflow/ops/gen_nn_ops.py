@@ -14,7 +14,7 @@ from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
-from webdnn.graph.order import OrderHWCN, OrderNHWC
+from webdnn.graph.order import OrderHWCN, OrderNHWC, OrderC
 from webdnn.util import flags
 
 
@@ -63,8 +63,11 @@ def batch_norm_with_global_normalization_grad_handler(converter: TensorFlowConve
 
 @TensorFlowConverter.register_handler("BiasAdd")
 def bias_add_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # FIXME
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    b = converter.get_variable(tf_op.inputs[1])
+    unify_order(b.order, OrderC)
+    y = x + b
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("BiasAddGrad")

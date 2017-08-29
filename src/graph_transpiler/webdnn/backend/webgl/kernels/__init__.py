@@ -18,6 +18,7 @@ from webdnn.backend.webgl.kernels import max_pooling_2d
 from webdnn.backend.webgl.kernels import reinterpret_axis
 from webdnn.backend.webgl.kernels import relu
 from webdnn.backend.webgl.kernels import reshape
+from webdnn.backend.webgl.kernels import rsqrt
 from webdnn.backend.webgl.kernels import scalar_add
 from webdnn.backend.webgl.kernels import scalar_affine
 from webdnn.backend.webgl.kernels import scalar_mul

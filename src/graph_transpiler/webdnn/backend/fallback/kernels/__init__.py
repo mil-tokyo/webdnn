@@ -19,6 +19,7 @@ from webdnn.backend.fallback.kernels import max_pooling_2d
 from webdnn.backend.fallback.kernels import reinterpret_axis
 from webdnn.backend.fallback.kernels import relu
 from webdnn.backend.fallback.kernels import reshape
+from webdnn.backend.fallback.kernels import rsqrt
 from webdnn.backend.fallback.kernels import scalar_add
 from webdnn.backend.fallback.kernels import scalar_affine
 from webdnn.backend.fallback.kernels import scalar_mul
