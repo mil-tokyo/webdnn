@@ -94,7 +94,8 @@ class TensorFlowConverter(Converter["tf.Operation"]):
                 shape[0] = self._batch_size
             self.set_variable(tensor, Variable(shape, Order([AxisVar() for _ in shape])))
 
-        for op in _listup_operations(inputs, outputs):
+        ops = _listup_operations(inputs, outputs)
+        for op in ops:
             self._convert_operator(op)
 
         if order_hints:
@@ -172,7 +173,7 @@ def _listup_operations(inputs, outputs):
     result = []  # type: List[tf.Operation]
 
     while len(stack) > 0:
-        node = stack.pop(0)
+        node = stack.pop()
         if node in resolved:
             continue
 
