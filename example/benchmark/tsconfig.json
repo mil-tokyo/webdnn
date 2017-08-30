@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
+        "moduleResolution": "node",
         "target": "es2015",
         "strictNullChecks": false,
-        "outFile": "test_kernel.js",
+        "module": "commonjs",
         "lib": [
             "es2017",
             "es2016",
@@ -12,6 +13,6 @@
         "sourceMap": false
     },
     "files": [
-        "test_kernel.ts"
+        "index.ts"
     ]
 }

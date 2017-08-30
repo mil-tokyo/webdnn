@@ -1,4 +1,4 @@
-declare const WebDNN;
+///<reference path="../dist/webdnn.umd.d.ts" />
 
 class Warning extends Error {
 }
@@ -17,7 +17,7 @@ const assert = new class {
         }
     }
 
-    floatArrayEqual(expected: ArrayLike<number>, real: ArrayLike<number>, description?: string) {
+    floatArrayEqual(expected: ArrayLike<number>, real: ArrayLike<number>) {
         for (let i = 0; i < expected.length; i++) {
             try {
                 this.floatEqual(expected[i], real[i]);
@@ -32,7 +32,7 @@ const assert = new class {
 
 interface TestCase {
     description: string,
-    backend: string,
+    backend: WebDNN.BackendName,
     dirname: string,
     inputs: number[][],
     expected: number[][],
@@ -48,7 +48,7 @@ interface Result {
     elapsedTime: number
 }
 
-//noinspection JSUnusedGlobalSymbols
+//noinspection JSUnusedLocalSymbols
 const TestRunner = new class {
     testCases: TestCase[] = [];
     rootUrl: string;
@@ -140,14 +140,14 @@ const TestRunner = new class {
             await runner.run();
             elapsedTime = performance.now() - startTime;
 
-            testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual(), `outputs[${i}]`));
+            testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual()));
 
             let result = {
                 name: testName,
                 testCase: testCase,
                 result: true,
                 elapsedTime: elapsedTime,
-                outputs: outputs.map(v=>v.toActual())
+                outputs: outputs.map(v => v.toActual())
             };
             this.results.push(result);
 

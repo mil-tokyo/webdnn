@@ -504,12 +504,13 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {
 declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	import { GraphDescriptorFallback } from 'webdnn/graph_descriptor/graph_descriptor_fallback';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
+	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
 	export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
-	    readonly backendName: string;
+	    readonly backendName: BackendName;
 	    private kernelObj;
 	    private variableMap;
 	    private inputViews;
@@ -553,12 +554,13 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webassembly' {
 declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	import { GraphDescriptorWebassembly } from 'webdnn/graph_descriptor/graph_descriptor_webassembly';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
+	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
 	export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
-	    readonly backendName: string;
+	    readonly backendName: BackendName;
 	    private inputViews;
 	    private outputViews;
 	    private worker;
@@ -642,12 +644,13 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
+	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
 	export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
-	    readonly backendName: string;
+	    readonly backendName: BackendName;
 	    private runtimeInfo;
 	    private gl;
 	    private vertexShader;
@@ -827,12 +830,13 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	import { GraphDescriptorWebGPU } from 'webdnn/graph_descriptor/graph_descriptor_webgpu';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
+	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
 	export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU> {
-	    readonly backendName: string;
+	    readonly backendName: BackendName;
 	    private webgpuHandler;
 	    private shaderLanguage;
 	    private staticBuffer;
@@ -1423,6 +1427,7 @@ declare module 'webdnn/webdnn' {
 	 * @return DescriptorRunner instance, which is the interface to input/output data and run the model.
 	 */
 	export function load(directory: string, initOption?: InitOption): Promise<DescriptorRunner<GraphDescriptor>>;
+	export { DescriptorRunner, GraphDescriptor };
 	export { Math, Image };
 
 }
