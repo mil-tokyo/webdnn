@@ -1,13 +1,14 @@
 from typing import List
 
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, optimize_loop_structure, texture_stride, texture_shape
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.operators.scalar_add import ScalarAdd
 
-template = FragmentShaderPreamble + """
+header = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X0)%%;
 
 %%UNIFORM(vec2, s_y)%%;
@@ -25,15 +26,29 @@ void main() {
     vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
     vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
     vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
+"""
 
+footer = """
+}
+"""
+
+template_R = header + """
+    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float y;
+
+    y = x0 + value;
+
+    gl_FragColor = vec4(y, 0, 0, 0);
+""" + footer
+
+template_RGBA = header + """
     vec4 x0 = texture2D(X0, p_x0 / d_x0);
     vec4 y;
     
     y = x0 + value;
     
     gl_FragColor = y;
-}
-"""
+""" + footer
 
 
 @WebGLDescriptorGenerator.register_handler(ScalarAdd)
@@ -61,7 +76,7 @@ def elementwise_add(op: ScalarAdd) -> List[Kernel]:
         "value": op.parameters["value"],
     })
 
-    source = template
+    source = template_R if ChannelMode.get_mode(y) == ChannelModeEnum.R else template_RGBA
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(

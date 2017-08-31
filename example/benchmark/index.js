@@ -49,9 +49,13 @@ class BaseBenchmark {
                 .catch((err) => console_error(err));
         });
     }
+    /**
+     * Setup model
+     * @returns {Promise<void>}
+     */
     setupAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            return Promise.resolve();
+            throw Error("Not Implemented");
         });
     }
     executeAsync() {
@@ -66,11 +70,19 @@ class BaseBenchmark {
             }
         });
     }
+    /**
+     * Execute model
+     * @returns {Promise<void>}
+     */
     executeSingleAsync() {
         return __awaiter(this, void 0, void 0, function* () {
             throw Error('Not Implemented');
         });
     }
+    /**
+     * Release resources if needed.
+     * @returns {Promise<void>}
+     */
     finalizeAsync() {
         return Promise.resolve();
     }
@@ -174,7 +186,7 @@ class DeepLearnJSBenchmark extends BaseBenchmark {
                 throw Error('Only ResNet50 is supported in benchmark of deeplearn.js');
             }
             let graph = new deeplearn.Graph();
-            let x = graph.placeholder('input', [221, 221, 3]);
+            let x = graph.placeholder('input', [225, 225, 3]);
             function bn(x) {
                 let scale = graph.variable('s', deeplearn.Array4D.zeros(x.shape));
                 let bias = graph.variable('b', deeplearn.Array4D.zeros(x.shape));
@@ -201,41 +213,37 @@ class DeepLearnJSBenchmark extends BaseBenchmark {
                 let w = graph.variable('w', deeplearn.Array2D.zeros([x.shape[0], outChannel]));
                 return graph.matmul(x, w);
             }
-            // Conv 1.x
+            // Conv 1.x 225 -> 112
             let h11 = relu(bn(conv2d(x, 64, 7, 2, 3)));
-            //Conv 2.x
+            //Conv 2.x 112 -> 56
             let h20 = graph.maxPool(h11, 3, 2, 0);
             let h21 = block(h20, 256);
             let h22 = block(h21, 256);
-            //Conv 3.x
-            let h31 = block(h22, 512, 1, 2, 0);
+            //Conv 3.x 56 -> 28
+            let h31 = block(h22, 512, 2, 2, 0); // original ksize is 3
             let h32 = block(h31, 512);
             let h33 = block(h32, 512);
             let h34 = block(h33, 512);
-            //Conv 4.x
-            let h41 = block(h34, 1024, 2, 2, 0);
+            //Conv 4.x 28 -> 14
+            let h41 = block(h34, 1024, 2, 2, 0); // original ksize is 3
             let h42 = block(h41, 1024);
             let h43 = block(h42, 1024);
             let h44 = block(h43, 1024);
             let h45 = block(h44, 1024);
             let h46 = block(h45, 1024);
-            //Conv 5.x
-            let h51 = block(h46, 2048, 2, 2, 0);
+            //Conv 5.x 14 -> 7
+            let h51 = block(h46, 2048, 2, 2, 0); // original ksize is 3
             let h52 = block(h51, 2048);
             let h53 = block(h52, 2048);
             //fc
-            // Because deeplearn.js doesn't support average pool, use maxpool instead.
-            let h6 = graph.reshape(graph.maxPool(h53, 7, 7, 0), [2048]);
+            let h6 = graph.reshape(graph.maxPool(h53, 7, 7, 0), [2048]); // Because deeplearn.js doesn't support average pooling, use max pooling instead.
             let y = dense(h6, 1000);
-            let math = this.flagUsingGPU ?
-                new deeplearn.NDArrayMathGPU() :
-                new deeplearn.NDArrayMathCPU();
-            let session = new deeplearn.Session(graph, math);
-            this.session = session;
-            this.math = math;
+            this.math = this.flagUsingGPU ? new deeplearn.NDArrayMathGPU() : new deeplearn.NDArrayMathCPU();
+            this.session = new deeplearn.Session(graph, this.math);
+            // dummy input
             this.feeds = [{
                     tensor: x,
-                    data: deeplearn.Array3D.zeros([221, 221, 3])
+                    data: deeplearn.Array3D.zeros([225, 225, 3])
                 }];
             this.y = y;
         });
@@ -243,7 +251,8 @@ class DeepLearnJSBenchmark extends BaseBenchmark {
     executeSingleAsync() {
         return __awaiter(this, void 0, void 0, function* () {
             this.math.scope(() => {
-                let yVal = this.session.eval(this.y, this.feeds).getValues();
+                // getValues() is required for downloading result from GPU to CPU
+                this.session.eval(this.y, this.feeds).getValues();
             });
         });
     }

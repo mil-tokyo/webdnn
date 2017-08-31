@@ -1,13 +1,14 @@
 from typing import List
 
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, optimize_loop_structure, texture_stride, texture_shape
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 
-template = FragmentShaderPreamble + """
+header = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X0)%%;
 %%UNIFORM(sampler2D, X1)%%;
 
@@ -33,7 +34,23 @@ void main() {
     
     vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
     vec2 p_x1 = convert_position(p_X1, s_X1, s_x1, d_x1);
+"""
 
+footer = """
+}
+"""
+
+template_R = header + """
+    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float x1 = texture2D(X1, p_x1 / d_x1).r;
+    float y;
+
+    y = x0 / x1;
+
+    gl_FragColor = vec4(y, 0, 0, 0);
+""" + footer
+
+template_RGBA = header + """
     vec4 x0 = texture2D(X0, p_x0 / d_x0);
     vec4 x1 = texture2D(X1, p_x1 / d_x1);
     vec4 y;
@@ -41,8 +58,7 @@ void main() {
     y = x0 / x1;
     
     gl_FragColor = y;
-}
-"""
+""" + footer
 
 
 @WebGLDescriptorGenerator.register_handler(ElementwiseDiv)
@@ -75,7 +91,7 @@ def elementwise_add(op: ElementwiseDiv) -> List[Kernel]:
         "s_X1": strides[x1],
     })
 
-    source = template
+    source = template_R if ChannelMode.get_mode(y) == ChannelModeEnum.R else template_RGBA
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(
