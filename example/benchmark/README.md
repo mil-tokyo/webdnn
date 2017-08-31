@@ -14,6 +14,8 @@ The benchmark for computing speed of DNN model on web browser
     - WebDNN (WebAssembly)
     - Keras.js (GPU)
     - Keras.js (CPU)
+    - deeplearn.js (GPU) (Only ResNet50 is supported)
+    - deeplearn.js (CPU) (Only ResNet50 is supported)
 
 ## How to run
 
