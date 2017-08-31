@@ -8,6 +8,7 @@ import webDNNFetch, { readArrayBufferProgressively, transformUrl } from "../fetc
 import { GraphDescriptorWebassembly } from "../graph_descriptor/graph_descriptor_webassembly";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import { BackendName } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -19,7 +20,7 @@ declare let WebAssembly: any;
  * @protected
  */
 export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
-    readonly backendName = 'webassembly';
+    readonly backendName: BackendName = 'webassembly';
 
     private inputViews: SymbolicFloat32Array[] | null;
     private outputViews: SymbolicFloat32Array[] | null;

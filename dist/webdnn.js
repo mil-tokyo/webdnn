@@ -46,6 +46,60 @@ function __awaiter(thisArg, _arguments, P, generator) {
  */
 /** Don't Remove This comment block */
 /**
+ * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
+ */
+class DescriptorRunner {
+    constructor() {
+        /**
+         * For Developper:
+         *
+         * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+         *
+         * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+         *
+         * 1. Initialize static configurations
+         *
+         *    Initialize things independent from runtime configuration.
+         *
+         *      - `init()`
+         *      - `load()`
+         *
+         * 2. Initialize dynamic configurations
+         *
+         *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+         *
+         *      - `setPlaceholderValue()`
+         *      - `getInputViews()`
+         *      - `getOutputViews()`
+         *
+         * 3. Execute the model
+         *
+         *      - `run()`
+         *
+         * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+         * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
+         */
+        this._running = false;
+        this.descriptor = null;
+        /**
+         * @protected
+         */
+        this.ignoreCache = false;
+    }
+    /**
+     * Return `true` if model is running.
+     * While running, calling run() again or modifying input is invalid.
+     */
+    get running() {
+        return this._running;
+    }
+}
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+/**
  * @protected
  */
 class WeightDecoderEightbit {
@@ -470,60 +524,6 @@ class SymbolicFloat32Array extends SymbolicTypedArray {
             throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
         }
         return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
-    }
-}
-
-/**
- * @module webdnn
- */
-/** Don't Remove This comment block */
-/**
- * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
- */
-class DescriptorRunner {
-    constructor() {
-        /**
-         * For Developper:
-         *
-         * `DescriptorRunner` executes computation based on `GraphDescriptor`.
-         *
-         * Typically, DescriptorRunner takes 3 steps to execute DNN model.
-         *
-         * 1. Initialize static configurations
-         *
-         *    Initialize things independent from runtime configuration.
-         *
-         *      - `init()`
-         *      - `load()`
-         *
-         * 2. Initialize dynamic configurations
-         *
-         *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
-         *
-         *      - `setPlaceholderValue()`
-         *      - `getInputViews()`
-         *      - `getOutputViews()`
-         *
-         * 3. Execute the model
-         *
-         *      - `run()`
-         *
-         * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
-         * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
-         */
-        this._running = false;
-        this.descriptor = null;
-        /**
-         * @protected
-         */
-        this.ignoreCache = false;
-    }
-    /**
-     * Return `true` if model is running.
-     * While running, calling run() again or modifying input is invalid.
-     */
-    get running() {
-        return this._running;
     }
 }
 
@@ -2695,6 +2695,14 @@ var math = Object.freeze({
 });
 
 /**
+ * @module webdnn
+ * @preferred
+ *
+ * Module `WebDNN` provides main features of WebDNN.
+ */
+/** Don't Remove This comment block */
+/// <reference path="./webgpu.d.ts" />
+/**
  * DEBUG flag for developing WebDNN
  * @private
  */
@@ -2839,6 +2847,7 @@ exports.isDebugMode = isDebugMode;
 exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
+exports.DescriptorRunner = DescriptorRunner;
 exports.Math = math;
 exports.Image = image;
 

@@ -9,6 +9,7 @@ import { GraphDescriptorFallback } from "../graph_descriptor/graph_descriptor_fa
 import { Allocation, ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import { BackendName } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -23,7 +24,7 @@ function wait(duration: number = 10) {
  * @protected
  */
 export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
-    readonly backendName = 'fallback';
+    readonly backendName: BackendName = 'fallback';
 
     private kernelObj: any;
     private variableMap: Map<string, Float32Array> | null;

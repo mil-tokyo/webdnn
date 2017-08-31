@@ -16,6 +16,7 @@ import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
 import * as Image from "./image";
 import * as Math from "./math";
 
+
 /**
  * DEBUG flag for developing WebDNN
  * @private
@@ -290,6 +291,8 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
 
     throw new Error('No backend is available');
 }
+
+export { DescriptorRunner, GraphDescriptor }
 
 // Export support (not-dependent) functions
 export { Math, Image }

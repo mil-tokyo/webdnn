@@ -37,6 +37,12 @@ _rgba_support_operators = [
 
 
 class InitializeChannelMode(OptimizeRule):
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_CHANNEL_MODE
+        ]
+
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         global _rgba_support_operators
         flag_changed = False
@@ -219,6 +225,12 @@ class RemoveRedundantConversion(OptimizeRule):
 
 
 class OptimizeChannelMode(OptimizeRule):
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_CHANNEL_MODE
+        ]
+
     def __init__(self):
         super(OptimizeChannelMode, self).__init__()
         self.register(InitializeChannelMode())

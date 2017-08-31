@@ -8,7 +8,7 @@ import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { ChannelMode, GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import { isDebugMode } from "../webdnn";
+import { BackendName, isDebugMode } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -225,7 +225,7 @@ class WebGLBuffer {
  * @protected
  */
 export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
-    readonly backendName = 'webgl';
+    readonly backendName: BackendName = 'webgl';
 
     private runtimeInfo: RuntimeInfo;
     private gl: WebGLRenderingContext;

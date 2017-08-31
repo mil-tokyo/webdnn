@@ -82,6 +82,65 @@ function __generator(thisArg, body) {
  */
 /** Don't Remove This comment block */
 /**
+ * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
+ */
+var DescriptorRunner = (function () {
+    function DescriptorRunner() {
+        /**
+         * For Developper:
+         *
+         * `DescriptorRunner` executes computation based on `GraphDescriptor`.
+         *
+         * Typically, DescriptorRunner takes 3 steps to execute DNN model.
+         *
+         * 1. Initialize static configurations
+         *
+         *    Initialize things independent from runtime configuration.
+         *
+         *      - `init()`
+         *      - `load()`
+         *
+         * 2. Initialize dynamic configurations
+         *
+         *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
+         *
+         *      - `setPlaceholderValue()`
+         *      - `getInputViews()`
+         *      - `getOutputViews()`
+         *
+         * 3. Execute the model
+         *
+         *      - `run()`
+         *
+         * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
+         * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
+         */
+        this._running = false;
+        this.descriptor = null;
+        /**
+         * @protected
+         */
+        this.ignoreCache = false;
+    }
+    Object.defineProperty(DescriptorRunner.prototype, "running", {
+        /**
+         * Return `true` if model is running.
+         * While running, calling run() again or modifying input is invalid.
+         */
+        get: function () {
+            return this._running;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return DescriptorRunner;
+}());
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+/**
  * @protected
  */
 var WeightDecoderEightbit = (function () {
@@ -557,65 +616,6 @@ var SymbolicFloat32Array = (function (_super) {
     };
     return SymbolicFloat32Array;
 }(SymbolicTypedArray));
-
-/**
- * @module webdnn
- */
-/** Don't Remove This comment block */
-/**
- * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
- */
-var DescriptorRunner = (function () {
-    function DescriptorRunner() {
-        /**
-         * For Developper:
-         *
-         * `DescriptorRunner` executes computation based on `GraphDescriptor`.
-         *
-         * Typically, DescriptorRunner takes 3 steps to execute DNN model.
-         *
-         * 1. Initialize static configurations
-         *
-         *    Initialize things independent from runtime configuration.
-         *
-         *      - `init()`
-         *      - `load()`
-         *
-         * 2. Initialize dynamic configurations
-         *
-         *    Initialize things depend on runtime configuration such as batch size, input image size, etc.
-         *
-         *      - `setPlaceholderValue()`
-         *      - `getInputViews()`
-         *      - `getOutputViews()`
-         *
-         * 3. Execute the model
-         *
-         *      - `run()`
-         *
-         * You need to do step 1 and 2 only once. We recommend to call `WebDNN.prepareAll()` instead
-         * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
-         */
-        this._running = false;
-        this.descriptor = null;
-        /**
-         * @protected
-         */
-        this.ignoreCache = false;
-    }
-    Object.defineProperty(DescriptorRunner.prototype, "running", {
-        /**
-         * Return `true` if model is running.
-         * While running, calling run() again or modifying input is invalid.
-         */
-        get: function () {
-            return this._running;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return DescriptorRunner;
-}());
 
 /**
  * @module webdnn
@@ -3198,6 +3198,14 @@ var math = Object.freeze({
 });
 
 /**
+ * @module webdnn
+ * @preferred
+ *
+ * Module `WebDNN` provides main features of WebDNN.
+ */
+/** Don't Remove This comment block */
+/// <reference path="./webgpu.d.ts" />
+/**
  * DEBUG flag for developing WebDNN
  * @private
  */
@@ -3365,6 +3373,7 @@ exports.isDebugMode = isDebugMode;
 exports.setDebugMode = setDebugMode;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
+exports.DescriptorRunner = DescriptorRunner;
 exports.Math = math;
 exports.Image = image;
 

@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
@@ -9,7 +10,7 @@ from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
 from webdnn.graph.order import OrderNHWC, OrderCNHW
 
-template = FragmentShaderPreamble + """
+header = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, im)%%;
 
 %%UNIFORM(vec2, s_col)%%;
@@ -45,14 +46,25 @@ void main() {
 
     float h1 = h2 * SH - PH + kh * DH;
     float w1 = w2 * SW - PW + kw * DW;
+"""
+footer = """
+}
+"""
 
+template_R = header + """
+    float v = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im) / d_im).r;
+
+    gl_FragColor = vec4(v, 0, 0, 0);
+""" + footer
+
+template_RGBA = header + """
     float v0 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 0.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
     float v1 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 1.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
     float v2 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 2.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
     float v3 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 3.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
     
     gl_FragColor = vec4(v0, v1, v2, v3);
-}"""
+""" + footer
 
 
 @WebGLDescriptorGenerator.register_handler(Im2Col)
@@ -91,7 +103,7 @@ def elementwise_add(op: Im2Col) -> List[Kernel]:
         "PW": op.PW,
     })
 
-    source = template
+    source = template_R if ChannelMode.get_mode(col) == ChannelModeEnum.R else template_RGBA
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(

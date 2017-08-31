@@ -3,13 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>Benchmark</title>
-    <script src="./keras-js/dist/keras.js"></script>
     <script src="../../dist/webdnn.js"></script>
+    <script src="./kerasjs/dist/keras.js"></script>
+    <script src="https://storage.googleapis.com/learnjs-data/deeplearn-latest.js"></script>
     <script src="index.js"></script>
 </head>
 <body>
-
-<a href="./index.es5.html">For IE11</a>
 
 <h1>Benchmark</h1>
 
@@ -20,21 +19,24 @@
         <label><input type="radio" name="model_name" value="vgg16">VGG16</label>
         <label><input type="radio" name="model_name" value="inception_v3">Inception v3</label>
     </div>
-<div id="modelist">
-    Framework and backends:<br>
-</div>
-Iterations: <input type="text" name="iterations" size="4" value="3"> + 1 proceeding run <br>
+    <div id="modelist">
+        Framework and backends:<br>
+    </div>
+    <p>
+        Iterations: 1(warm up)+<input type="text" name="iterations" size="4" value="3"> proceeding run <br>
+    </p>
 
-<button type="button" id="run_button" onclick="run();return false" disabled>run</button> (It will take several minutes)
+    <button type="button" id="run_button" disabled>run</button>
+    (It will take several minutes)
 
-<pre id="environment_note">
+    <pre id="environment_note">
 </pre>
 
-<div>
+    <div>
 <pre id="message">
 
 </pre>
-</div>
+    </div>
 </form>
 
 </body>

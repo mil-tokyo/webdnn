@@ -12,6 +12,7 @@ cg.svg
 .coverage
 /src/graph_transpiler/webdnn.egg-info
 example/benchmark/keras-js
+example/benchmark2/keras-js
 example/convert_caffe/data/
 /tmp
 .rpt2_cache
