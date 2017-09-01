@@ -1,10 +1,5 @@
 """
 Example of converting ResNet-50 Tensorflow model
-
-TODO:
-clone https://github.com/tensorflow/models in output_tensorflow
-wget and extract http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz in output_tensorflow
-
 """
 import argparse
 import numpy as np
