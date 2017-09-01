@@ -51,7 +51,12 @@ class Elementwise(Operator, metaclass=ABCMeta):
     def __call__(self, *xs: "variable.Variable"):
         y_axes = []
         y_shape_dict = AxisKeyDict()
-        for i, x in enumerate(xs):
+        # Check variable in descent order of the number of dimensions.
+        # Without this, inputs (C, NC) produces output order CN.
+        xs_order = [(i, x) for i, x in enumerate(xs)]
+        xs_order.sort(key=lambda d: -d[1].ndim)
+
+        for i, x in xs_order:
             for axis in x.order.axes:
                 if axis in y_axes:
                     if y_shape_dict[axis] == 1:
