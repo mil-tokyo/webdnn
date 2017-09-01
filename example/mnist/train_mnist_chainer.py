@@ -187,9 +187,10 @@ def main():
     trainer.run()
 
     # conversion
-
     print('Transpiling model to WebDNN graph descriptor')
 
+    if args.gpu >= 0:
+        model.to_cpu()
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
     x = chainer.Variable(example_input)
     # y = F.softmax(model.predictor(x))  # run model
