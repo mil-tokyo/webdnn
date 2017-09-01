@@ -359,6 +359,9 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
     # Merge
     merge_tree = {}  # type: Dict[Allocation, Tuple[Allocation, int]]
     while len(offset_table) > 1:
+        if len(offset_table) % 10 == 0:
+            console.debug(f"Memory allocation optimization: {(1-len(offset_table)/len(allocations)) * 100:4.1f}% complete.")
+
         # Get max score pair
         max_score = -1
         max_a1 = None
@@ -473,6 +476,7 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
                     # a4s[a1] = offset12 + a4s[a2]
                     # del a4s[a2]
 
+    console.debug(f"Memory allocation optimization: 100.0% complete.")
     # Update all allocation offset value
     list(offset_table.keys())[0].offset = 0
 
