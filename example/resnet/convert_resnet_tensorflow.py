@@ -22,8 +22,36 @@ from tensorflow.contrib import slim
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.tensorflow import TensorFlowConverter
 import sys
-sys.path.append("output_tensorflow/models/slim")
-from nets import resnet_v1
+import subprocess
+
+SLIM_GITHUB = "https://github.com/tensorflow/models"
+SLIM_COMMIT = "09a32f3"
+PRETRAINED_MODEL_URL = "http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz"
+PRETRAINED_MODEL_FILENAME = "resnet_v1_50.ckpt"
+
+
+def clone_slim(out_dir):
+    console.stderr(f"Git cloning {SLIM_GITHUB} into {out_dir}...")
+    subprocess.check_call(["git", "clone", SLIM_GITHUB], cwd=out_dir)
+    subprocess.check_call(["git", "checkout", SLIM_COMMIT], cwd=out_dir)
+
+
+def download_model(out_dir):
+    import urllib
+    model_dir = os.path.join(out_dir, "pretrained_model")
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    model_path = os.path.join(model_dir, PRETRAINED_MODEL_FILENAME)
+    if not os.path.exists(model_path):
+        console.stderr(f"Downloading ResNet pretrained model...")
+        tgz_filename, _ = urllib.request.urlretrieve(PRETRAINED_MODEL_URL)
+        console.stderr(f"Extracting ResNet pretrained model (tar.gz)...")
+        subprocess.check_call(["tar", "xf", tgz_filename], cwd=model_dir)
+        os.remove(tgz_filename)
+    else:
+        console.stderr(f"Using already downloaded pretrained model {model_path}")
+    return model_path
+
 
 def main():
     sys.setrecursionlimit(10000)
@@ -36,6 +64,15 @@ def main():
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()
 
+    os.makedirs(args.out, exist_ok=True)
+    slim_dir = os.path.join(args.out, "models/slim")
+    if not os.path.exists(slim_dir):
+        clone_slim(args.out)
+
+    model_path = download_model(args.out)
+
+    sys.path.append(slim_dir)
+    from nets import resnet_v1
     image_size = resnet_v1.resnet_v1.default_image_size
 
     checkpoints_dir = args.out
@@ -47,9 +84,7 @@ def main():
         logits, _ = resnet_v1.resnet_v1_50(processed_images, num_classes=1000, is_training=False)
     probabilities = tf.nn.softmax(logits)
 
-    init_fn = slim.assign_from_checkpoint_fn(
-        os.path.join(checkpoints_dir, 'resnet_v1_50.ckpt'),
-        slim.get_model_variables())
+    init_fn = slim.assign_from_checkpoint_fn(model_path, slim.get_model_variables())
 
     init_fn(sess)
 
