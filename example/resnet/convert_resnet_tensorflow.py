@@ -27,8 +27,8 @@ PRETRAINED_MODEL_FILENAME = "resnet_v1_50.ckpt"
 
 def clone_slim(out_dir):
     console.stderr(f"Git cloning {SLIM_GITHUB} into {out_dir}...")
-    subprocess.check_call(["git", "clone", SLIM_GITHUB], cwd=out_dir)
-    subprocess.check_call(["git", "checkout", SLIM_COMMIT], cwd=out_dir)
+    subprocess.check_call(["git", "clone", SLIM_GITHUB, "models"], cwd=out_dir)
+    subprocess.check_call(["git", "checkout", SLIM_COMMIT], cwd=os.path.join(out_dir, './models'))
 
 
 def download_model(out_dir):
