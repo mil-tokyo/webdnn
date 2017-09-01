@@ -22,6 +22,7 @@ from webdnn.backend.webgpu.kernels import max_pooling_2d
 from webdnn.backend.webgpu.kernels import reinterpret_axis
 from webdnn.backend.webgpu.kernels import relu
 from webdnn.backend.webgpu.kernels import reshape
+from webdnn.backend.webgpu.kernels import rsqrt
 from webdnn.backend.webgpu.kernels import scalar_add
 from webdnn.backend.webgpu.kernels import scalar_affine
 from webdnn.backend.webgpu.kernels import scalar_mul

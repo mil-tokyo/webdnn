@@ -233,7 +233,7 @@ def _update_constant_offset(allocations: AllocationDict):
 
 def _optimize_inplace(operators: List[Operator], allocations_dict: AllocationDict):
     if not (flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION and flags.optimize.OPTIMIZE_INPLACE_OPERATION):
-        console.debug('_optimize_buffer_reuse is skipped')
+        console.debug('_optimize_inplace is skipped')
         return
 
     for op in operators:
@@ -342,7 +342,7 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
         Total: O(N^2)
     """
-    if not flags.optimize.OPTIMIZE:
+    if not (flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION):
         console.debug('_optimize_buffer_reuse is skipped')
         return
 
@@ -378,17 +378,79 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
         merge_tree[a2] = (a1, offset12)
 
         # Update offset table
-        for a3, offset23 in offset_table[a2].items():
+        for a3, offset32 in offset_table[a2].items():
             if a1 in offset_table[a3]:
-                # a2->a3->a1
-                # |       |
                 # +-------+
+                # |       V
+                # a2->a3->a1
                 #
-                # a1      |/////a1///////|
-                # a2      <----offset12-->|//a2//|
-                #             <-offset32->
-                # a3          |////a3////|
+                # condition
+                # - min(a1.size - offset12, a2.size) > min(a1.size - offset13, a3.size)
+                # - a2.size < a3.size < a1.size
+                #
+                # ==========================================================
+                # case 1) offset13 < offset12 + a2.size
+                #
+                # before)
+                # a1      |a1...................|
+                # a2      <-offset12---->|a2...|
+                # a3      <-offset13--------->|a3............|
+                #                             <-offset23->|a2...|
+                #
+                # after)
+                # a1      |a1...................|
+                # a3      <-offset13------------>|a3............|
+                #
+                # ==========================================================
+                #
+                # before 2) offset13 > offset12 + a2.size
+                # a1      |a1...................|
+                # a2      <-offset12---->|a2...|
+                # a3      <-offset13------------->|a3............|
+                #                                 <-offset23->|a2...|
+                #
+                # after)
+                # a1      |a1...................|
+                # a3      <-offset13------------->|a3............|
+                #
                 offset_table[a3][a1] = max(offset_table[a3][a1], _align(offset12 + a2.size))
+
+            elif a3 in offset_table[a1]:
+                # +-------+
+                # |       V
+                # a2->a1->a3
+                #
+                # condition
+                # - min(a1.size - offset12, a2.size) > min(a1.size - offset13, a3.size)
+                # - a2.size < a1.size < a3.size
+                #
+                # ==========================================================
+                # case 1) offset32 > offset31 + offset12
+                #
+                # before)
+                #         <-offset32----------->|a2...|
+                # a3      |a3..........|
+                # a1      <-offset31--->|a1........|
+                # a2                    <-offset12->|a2...|
+                #
+                # after) nothing changed
+                # a3      |a3..........|
+                # a1      <-offset31--->|a1........||a2...|
+                #
+                # ==========================================================
+                # case 2) offset32 > offset31 + offset12
+                #
+                # before)
+                #              <-offset32------------------->|a2...........................|
+                # a3           |a3.........................|
+                # a1           <-offset31->|a1........................................|
+                # a2                        <-offset12->|a2...........................|
+                #
+                # after) offset31 = offset32 - offset12
+                # a3      |a3.........................|
+                # a1      <------offset31->|a1........................................|
+                #
+                offset_table[a1][a3] = max(offset_table[a1][a3], _align(offset32 - offset12))
 
         del offset_table[a2]
         for a3, a4s in offset_table.items():
@@ -397,16 +459,19 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
             if a2 in a4s:
                 if a1 in a4s:
-                    # a3->a2->a1
-                    # |       |
                     # +-------+
+                    # |       V
+                    # a3->a2->a1
 
                     a4s[a1] = max(a4s[a1], offset12 + a4s[a2])
                     del a4s[a2]
 
                 else:
-                    a4s[a1] = offset12 + a4s[a2]
-                    del a4s[a2]
+                    raise NotImplementedError
+                    # # a3->a2->a1
+                    #
+                    # a4s[a1] = offset12 + a4s[a2]
+                    # del a4s[a2]
 
     # Update all allocation offset value
     list(offset_table.keys())[0].offset = 0

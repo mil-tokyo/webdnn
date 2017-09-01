@@ -1,10 +1,11 @@
 import tensorflow as tf
 
-from webdnn.frontend.constraints import unify, AxisVar
+from webdnn.frontend.constraints import unify, AxisVar, unify_order
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import elementwise_binary_op_handler, unary_op_handler
 from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.operators.abs import Abs
+from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
@@ -12,9 +13,12 @@ from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
+from webdnn.graph.operators.rsqrt import Rsqrt
+from webdnn.graph.operators.scalar_add import ScalarAdd
+from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.tanh import Tanh
-from webdnn.graph.order import OrderNC, OrderCN, Order
+from webdnn.graph.order import OrderNC, OrderCN, Order, OrderNHWC
 from webdnn.util import flags
 
 TensorFlowConverter.register_handler("Abs")(unary_op_handler(Abs))
@@ -30,9 +34,9 @@ def acosh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-TensorFlowConverter.register_handler("Add")(elementwise_binary_op_handler(ElementwiseAdd))
+TensorFlowConverter.register_handler("Add")(elementwise_binary_op_handler(ElementwiseAdd, ScalarAdd))
 
-TensorFlowConverter.register_handler("AddN")(elementwise_binary_op_handler(ElementwiseAdd))
+TensorFlowConverter.register_handler("AddN")(elementwise_binary_op_handler(ElementwiseAdd, ScalarAdd))
 
 
 @TensorFlowConverter.register_handler("All")
@@ -363,7 +367,23 @@ def maximum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Mean")
 def mean_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    # FIXME: currently supports only the operation is meaning global average pooling.
+    # (1, 7, 7, 2048) -> (1, 1, 1, 2048)
+    assert tf_op.get_attr("keep_dims") is True
+
+    in_var = converter.get_variable(tf_op.inputs[0])
+    unify_order(in_var.order, OrderNHWC)  # FIXME: assuming input order as NHWC
+    out_tf_var = tf_op.outputs[0]
+    in_shape = in_var.shape
+    out_shape = [s.value for s in out_tf_var.shape.dims]
+    assert len(in_shape) == len(out_shape)
+    assert out_shape[1] == 1
+    assert out_shape[2] == 1
+    assert out_shape[0] == in_shape[0]
+    assert out_shape[3] == in_shape[3]
+
+    out_var, = AveragePooling2D(None, ksize=tuple(in_shape[1:3]), stride=tuple(in_shape[1:3]), padding=(0, 0))(in_var)
+    converter.set_variable(out_tf_var, out_var)
 
 
 @TensorFlowConverter.register_handler("Min")
@@ -381,7 +401,7 @@ def mod_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-TensorFlowConverter.register_handler("Mul")(elementwise_binary_op_handler(ElementwiseMul))
+TensorFlowConverter.register_handler("Mul")(elementwise_binary_op_handler(ElementwiseMul, ScalarMul))
 
 
 @TensorFlowConverter.register_handler("Neg")
@@ -474,7 +494,11 @@ def round_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Rsqrt")
 def rsqrt_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    # Used for batch normalization
+    x = converter.get_variable(tf_op.inputs[0])
+    y, = Rsqrt(None)(x)
+    # noinspection PyTypeChecker
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("RsqrtGrad")

@@ -45,8 +45,12 @@ class SimplifyOperatorBase(OptimizeRule):
 
         matches = search_sub_structure(graph, [self.pattern[0], Variable, self.pattern[1]])
         while len(matches) > 0:
-            match = matches.pop()
-            if self.optimize_pair(match[0], match[2]):
+            op1, v1, op2 = matches.pop()  # type: Operator, Variable, Operator
+
+            if len(v1.input_to) > 1:
+                continue
+
+            if self.optimize_pair(op1, op2):
                 flag_changed = True
                 matches = search_sub_structure(graph, [self.pattern[0], Variable, self.pattern[1]])
 
