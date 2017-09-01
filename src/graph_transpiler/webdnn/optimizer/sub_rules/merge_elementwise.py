@@ -133,7 +133,7 @@ def _find_elementwise_sub_graph(graph: Graph) -> List[Graph]:
                 new_inputs.extend(sub_graphs[x.output_from].inputs)
                 flag_changed = True
 
-        sub_graph.inputs = new_inputs
+        sub_graph.inputs = list(set(new_inputs))
 
         if flag_changed:
             queue.append(out_node)
