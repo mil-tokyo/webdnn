@@ -302,6 +302,9 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                     else:
                         expression.append(f"d{d}*{variable2stride_name[x][d]}")
 
+                if len(expression) == 0:
+                    expression.append("0")
+
                 buffer.declare(name, "float", f"{buffer_name}[{' + '.join(expression)}]", const=True)
                 name2variable[name] = x
                 variable2constant_name[x] = name
@@ -339,6 +342,9 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                         expression.append(f"d{d}")
                     else:
                         expression.append(f"d{d}*{variable2stride_name[x][d]}")
+
+                if len(expression) == 0:
+                    expression.append("0")
 
                 buffer.declare(new_name, "float", initial_value=f"{buffer_name}[{' + '.join(expression)}]", const=True)
                 name2variable[new_name] = x
