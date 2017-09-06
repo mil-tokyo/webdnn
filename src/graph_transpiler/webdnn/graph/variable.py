@@ -109,7 +109,7 @@ class Variable(Node):
             if axis not in order.axes:
                 if Placeholder.check_resolved(size):
                     assert size == 1, "[Variable.change_order()] The size of axes which will be removed must be one: " \
-                                      f"variable={self}, shape_dict[{axis}]={size}."
+                                      f"variable={self}, shape_dict[{axis}]={size}, new_order={order}."
         self._order = order
         self._shape = new_shape
 

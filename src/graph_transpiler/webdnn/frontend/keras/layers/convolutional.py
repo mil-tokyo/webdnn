@@ -6,9 +6,10 @@ except ImportError as e:
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.operators.convolution2d import Convolution2D
+from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN, OrderNTC
+from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN, OrderNTC, OrderHWNC
 
 
 # noinspection PyUnusedLocal
@@ -65,8 +66,48 @@ def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.Sep
 # noinspection PyUnusedLocal
 @KerasConverter.register_handler("Conv2DTranspose")
 def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Conv2DTranspose"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.Conv2DTranspose is not supported')
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    if k_op.data_format == "channels_first":
+        assert x.order == OrderNCHW
+
+    elif k_op.data_format == "channels_last":
+        assert x.order == OrderNHWC
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
+
+    w = converter.convert_to_constant_variable(k_op.kernel, OrderHWNC)
+
+    ksize = tuple(k_op.kernel_size)
+    stride = tuple(k_op.strides)
+
+    if k_op.padding == "valid":
+        padding = (0, 0)
+
+    elif k_op.padding == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+
+    w = converter.convert_to_constant_variable(k_op.kernel, OrderHWNC)
+
+    ksize = tuple(k_op.kernel_size)
+    stride = tuple(k_op.strides)
+
+    if k_op.padding == "valid":
+        padding = (0, 0)
+
+    elif k_op.padding == "same":
+        padding = (ksize[0] // 2, ksize[1] // 2)
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
+
+    y, = Deconvolution2D(None, ksize=ksize, stride=stride, padding=padding)(x, w)
+    if k_op.use_bias:
+        b = converter.convert_to_constant_variable(k_op.bias, OrderC)
+        y = y + b
+
+    y = do_activation(k_op.activation, y)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
 # noinspection PyUnusedLocal

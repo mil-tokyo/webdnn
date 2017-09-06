@@ -87,9 +87,11 @@ class ConstantVariable(Variable):
     def __add__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(self.data + v2.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(self.data + v2.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(self.data + other, self.order)
@@ -100,9 +102,11 @@ class ConstantVariable(Variable):
     def __radd__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(v2.data + self.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data + self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(other + self.data, self.order)
@@ -113,9 +117,11 @@ class ConstantVariable(Variable):
     def __sub__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(self.data - v2.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(self.data - v2.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(self.data - other, self.order)
@@ -126,9 +132,11 @@ class ConstantVariable(Variable):
     def __rsub__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(v2.data - self.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data - self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(other - self.data, self.order)
@@ -139,9 +147,11 @@ class ConstantVariable(Variable):
     def __mul__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(self.data * v2.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data * self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(self.data * other, self.order)
@@ -152,9 +162,11 @@ class ConstantVariable(Variable):
     def __rmul__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(v2.data * self.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data * self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(other * self.data, self.order)
@@ -165,9 +177,11 @@ class ConstantVariable(Variable):
     def __truediv__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(self.data / v2.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(self.data / v2.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(self.data / other, self.order)
@@ -178,9 +192,11 @@ class ConstantVariable(Variable):
     def __rtruediv__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(v2.data / self.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data / self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(other / self.data, self.order)
@@ -194,9 +210,11 @@ class ConstantVariable(Variable):
 
         elif isinstance(power, ConstantVariable):
             v2 = ConstantVariable(power.data.copy(), power.shape)
-            v2.change_order(self.order)
 
-            return ConstantVariable(self.data ** v2.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(self.data ** v2.data, order)
 
         elif isinstance(power, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(self.data ** power, self.order)
@@ -207,12 +225,20 @@ class ConstantVariable(Variable):
     def __rpow__(self, other) -> "Variable":
         if isinstance(other, ConstantVariable):
             v2 = ConstantVariable(other.data.copy(), other.order)
-            v2.change_order(self.order)
 
-            return ConstantVariable(v2.data ** self.data, self.order)
+            order = _broadcasted_order(self.order, v2.order)
+            self.change_order(order)
+            v2.change_order(order)
+            return ConstantVariable(v2.data ** self.data, order)
 
         elif isinstance(other, (int, float, np.int, np.int32, np.int64, np.float, np.float32, np.float64)):
             return ConstantVariable(other ** self.data, self.order)
 
         else:
             return super(ConstantVariable, self).__rpow__(other)
+
+
+def _broadcasted_order(order1: Order, order2: Order):
+    axes = list(order1.axes)
+    axes.extend([a for a in order2.axes if a not in order1.axes])
+    return Order(axes)
