@@ -277,7 +277,7 @@
             <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
                     <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;[Variable.change_order()] The size of axes which will be removed must be one: &quot;</span> \
-                                      <span class="n">f</span><span class="s2">&quot;variable=</span><span class="si">{self}</span><span class="s2">, shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{size}</span><span class="s2">.&quot;</span>
+                                      <span class="n">f</span><span class="s2">&quot;variable=</span><span class="si">{self}</span><span class="s2">, shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{size}</span><span class="s2">, new_order=</span><span class="si">{order}</span><span class="s2">.&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">new_shape</span>
 
