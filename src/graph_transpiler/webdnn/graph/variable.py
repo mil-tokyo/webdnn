@@ -92,6 +92,9 @@ class Variable(Node):
         """dictionary of axis and stride size pairs"""
         return AxisKeyDict(self.order.axes, self.stride)
 
+    def copy(self) -> "Variable":
+        return Variable(self.shape, self.order)
+
     def change_order(self, order: Order) -> "Variable":
         """change_order(order)
 

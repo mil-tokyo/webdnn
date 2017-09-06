@@ -1,7 +1,6 @@
-from typing import Dict, Tuple, Type, List, Optional
+from typing import Dict, Tuple, Optional
 
 from webdnn.graph import variable
-from webdnn.graph.attribute import Attribute
 from webdnn.graph.node import Node
 
 
@@ -197,3 +196,6 @@ class Operator(Node):
 
     def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
         raise NotImplementedError(f"Operator.__call__ must be override: (self.__class__)={self.__class__.__name__}")
+
+    def fold_constance(self):
+        raise NotImplementedError(f"Operator.fold_constance must be override: (self.__class__)={self.__class__.__name__}")
