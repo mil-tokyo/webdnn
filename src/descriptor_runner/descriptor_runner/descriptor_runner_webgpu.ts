@@ -54,18 +54,58 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
         BufferWebGPU.init(this.webgpuHandler);
 
         this.initializeBasicKernels();
+        await this.checkIncompatibleGPU();
     }
 
     private initializeBasicKernels() {
         this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
     }
 
+    private async checkIncompatibleGPU() {
+        /*
+        It is reported that AMD GPU crashes when performing sgemm (matrix multiplication).
+        Until this problem is solved, blocking WebGPU backend in the environment is needed.
+        API in WebGPU does not directly gives hardware information, so trying to determine hardware heuristically.
+
+        Criteria: thread_execution_width == 32 is required
+        (on AMD FirePro D500, thread_execution_width == 64)
+        */
+        this.webgpuHandler.loadKernel(`
+#include <metal_stdlib>
+using namespace metal;
+        kernel void check_compatibility(
+            device float *A[[buffer(0)]],
+            uint global_index[[thread_position_in_grid]],
+            uint thread_execution_width[[thread_execution_width]]
+        ){
+            if (global_index == 0) {
+                A[0] = thread_execution_width;
+            }
+        }`, 'basic');
+        let trans_buf = this.webgpuHandler.createBuffer(new Float32Array(1));
+        await this.webgpuHandler.executeSinglePipelineState('basic.check_compatibility',
+            {
+                width: 1,
+                height: 1,
+                depth: 1
+            }, {
+                width: 1,
+                height: 1,
+                depth: 1
+            }, [trans_buf], true);
+        let trans_array_view = new Float32Array(trans_buf.contents);
+        let thread_execution_width = trans_array_view[0];
+        if (thread_execution_width != 32) {
+            throw new Error(`Sorry, this GPU does not compatible with WebGPU (thread_execution_width == ${thread_execution_width}. See checkIncompatibleGPU method of https://github.com/mil-tokyo/webdnn/blob/master/src/descriptor_runner/descriptor_runner/descriptor_runner_webgpu.ts`);
+        }
+    }
+
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
         let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
                 .then(res => res.json() as Promise<GraphDescriptorWebGPU>),
 
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 

@@ -849,6 +849,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	    constructor(option?: any);
 	    init(): Promise<void>;
 	    private initializeBasicKernels();
+	    private checkIncompatibleGPU();
 	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
 	    private initializeStaticBuffer(weightRawArray);
 	    private initializeMetaBuffers();

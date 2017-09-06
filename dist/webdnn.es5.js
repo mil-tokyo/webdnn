@@ -2130,19 +2130,62 @@ var DescriptorRunnerWebGPU = (function (_super) {
     DescriptorRunnerWebGPU.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                if (!DescriptorRunnerWebGPU.checkAvailability())
-                    throw Error('WebGPU backend is not supported in this browser.');
-                // initialize webgpu, build kernels
-                this.shaderLanguage = 'metal';
-                this.webgpuHandler = new WebGPUHandler();
-                BufferWebGPU.init(this.webgpuHandler);
-                this.initializeBasicKernels();
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        if (!DescriptorRunnerWebGPU.checkAvailability())
+                            throw Error('WebGPU backend is not supported in this browser.');
+                        // initialize webgpu, build kernels
+                        this.shaderLanguage = 'metal';
+                        this.webgpuHandler = new WebGPUHandler();
+                        BufferWebGPU.init(this.webgpuHandler);
+                        this.initializeBasicKernels();
+                        return [4 /*yield*/, this.checkIncompatibleGPU()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
             });
         });
     };
     DescriptorRunnerWebGPU.prototype.initializeBasicKernels = function () {
         this.webgpuHandler.loadKernel('kernel void sync(){}', 'basic');
+    };
+    DescriptorRunnerWebGPU.prototype.checkIncompatibleGPU = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var trans_buf, trans_array_view, thread_execution_width;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        /*
+                        It is reported that AMD GPU crashes when performing sgemm (matrix multiplication).
+                        Until this problem is solved, blocking WebGPU backend in the environment is needed.
+                        API in WebGPU does not directly gives hardware information, so trying to determine hardware heuristically.
+                
+                        Criteria: thread_execution_width == 32 is required
+                        (on AMD FirePro D500, thread_execution_width == 64)
+                        */
+                        this.webgpuHandler.loadKernel("\n#include <metal_stdlib>\nusing namespace metal;\n        kernel void check_compatibility(\n            device float *A[[buffer(0)]],\n            uint global_index[[thread_position_in_grid]],\n            uint thread_execution_width[[thread_execution_width]]\n        ){\n            if (global_index == 0) {\n                A[0] = thread_execution_width;\n            }\n        }", 'basic');
+                        trans_buf = this.webgpuHandler.createBuffer(new Float32Array(1));
+                        return [4 /*yield*/, this.webgpuHandler.executeSinglePipelineState('basic.check_compatibility', {
+                                width: 1,
+                                height: 1,
+                                depth: 1
+                            }, {
+                                width: 1,
+                                height: 1,
+                                depth: 1
+                            }, [trans_buf], true)];
+                    case 1:
+                        _a.sent();
+                        trans_array_view = new Float32Array(trans_buf.contents);
+                        thread_execution_width = trans_array_view[0];
+                        if (thread_execution_width != 32) {
+                            throw new Error("Sorry, this GPU does not compatible with WebGPU (thread_execution_width == " + thread_execution_width + ". See checkIncompatibleGPU method of https://github.com/mil-tokyo/webdnn/blob/master/src/descriptor_runner/descriptor_runner/descriptor_runner_webgpu.ts");
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     DescriptorRunnerWebGPU.prototype.load = function (directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function () {
