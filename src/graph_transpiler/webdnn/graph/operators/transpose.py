@@ -1,16 +1,7 @@
-from typing import Optional, List
-
-import numpy as np
-
-from webdnn.graph.axis import Axis
-from webdnn.graph.operator import Operator
 from webdnn.graph.operators.elementwise import Elementwise
-from webdnn.graph.order import Order
-from webdnn.graph.variable import Variable
 
 
 # FIXME: improve documentation
-from webdnn.util.misc import mul
 
 
 class Transpose(Elementwise):
@@ -21,4 +12,10 @@ class Transpose(Elementwise):
     Args:
         name (str): Operator name.
     """
-    pass
+
+    def fold_constance(self):
+        x0 = self.inputs["x0"]
+        y = self.outputs["y"]
+
+        y.replace(x0.copy().change_order(y.order))
+        self.remove_all()

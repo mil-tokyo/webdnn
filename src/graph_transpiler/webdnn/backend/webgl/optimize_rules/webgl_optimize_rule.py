@@ -1,4 +1,3 @@
-from webdnn.backend.webgl.optimize_rules.optimize_channel_mode import OptimizeChannelMode
 from webdnn.backend.webgl.optimize_rules.optimize_convolution2d import OptimizeConvolution2D
 from webdnn.backend.webgl.optimize_rules.optimize_linear import OptimizeLinear
 from webdnn.backend.webgl.optimize_rules.optimize_transpose import OptimizeTranspose
@@ -36,5 +35,4 @@ class WebGLOptimizeRule(OptimizeRule):
         self.register(OptimizeTranspose())
         self.register(OptimizeConvolution2D())
         self.register(OptimizeLinear())
-        self.register(OptimizeChannelMode())
         self.register(RemoveLastSoftmax())

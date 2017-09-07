@@ -66,7 +66,7 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
             orders[v] = Order([axis_scalar])
             shape_dicts[v] = AxisKeyDict([axis_scalar], [1])
 
-    # list up all axes and variables which have the axis
+    # list up all pair of axes and variables which have the corresponding axis
     var_dict = AxisKeyDict[Set[Variable]]()
     for v in variables:
         for axis in orders[v].axes:
@@ -75,7 +75,7 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
             else:
                 var_dict[axis] = {v}
 
-    # find pair of axes which can be merged
+    # find pair of two axes which can be merged
     counter = 0
     flag_continue = True
     while flag_continue:
@@ -138,12 +138,13 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
         axes += [axis for axis in orders[v].axes if axis not in axes]
 
     orders = {v: Order(list(filter(lambda x: x in orders[v].axes, axes))) for v in variables}
-    shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
-    strides = {v: [stride_dicts[v][a] for a in orders[v].axes] for v in variables}
-
     key_order = orders[key_variable]
+
     if key_order.ndim > 4:
         raise NotImplementedError('Currently, loop nest depth larger than 4 is not supported')
+
+    shapes = {v: [shape_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
+    strides = {v: [stride_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
 
     for v in variables:
         shape = shapes[v]

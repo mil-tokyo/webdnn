@@ -4,7 +4,7 @@ from webdnn.backend.webassembly.optimize_rules.optimize_linear import OptimizeLi
 from webdnn.backend.webassembly.optimize_rules.optimize_sgemm_eigen import OptimizeSgemmEigen
 from webdnn.backend.webassembly.optimize_rules.optimize_transpose import OptimizeTranspose
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.optimizer.sub_rules.merge_elementwise import MergeElementwise
+from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
 
 
 class WebassemblyOptimizeRule(OptimizeRule):
@@ -16,4 +16,4 @@ class WebassemblyOptimizeRule(OptimizeRule):
         self.register(OptimizeDeconvolution2D())
         self.register(OptimizeLinear())
         self.register(OptimizeSgemmEigen())
-        self.register(MergeElementwise())
+        self.register(ElementwiseKernelFusion())

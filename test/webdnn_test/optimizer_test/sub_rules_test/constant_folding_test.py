@@ -68,7 +68,7 @@ def test_fold_mul():
     c0 -+
         +{Mul}-h1-+
     c1 -+         +-{Add}-h3
-              h2-+
+               h2-+
 
     after)
 

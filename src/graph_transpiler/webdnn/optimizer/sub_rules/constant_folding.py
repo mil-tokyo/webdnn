@@ -23,7 +23,8 @@ class ConstantFolding(OptimizeRule):
         flag_changed = False
 
         for op in traverse.listup_operators(graph):
-            if op.fold_constance == Operator.fold_constance:
+            if getattr(op.fold_constance, '__func__', None) is Operator.fold_constance:
+                # fold_constance is not implemented
                 continue
 
             if all(isinstance(v, ConstantVariable) for v in op.inputs.values()):
