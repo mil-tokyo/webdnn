@@ -1,4 +1,4 @@
-from typing import Tuple, Sequence, List
+from typing import Tuple, Sequence
 
 from webdnn.graph.axis import Axis, AxisKeyDict
 
@@ -70,6 +70,17 @@ class Order:
             other: other order
         """
         return [axis for axis in self.axes if axis in other.axes]
+
+    def get_all_axes(self, other: "Order") -> Sequence[Axis]:
+        """
+        get_all_axes(order)
+
+        return axes which are included in either two order.
+
+        Args:
+            other: other order
+        """
+        return list(self.axes) + [axis for axis in other.axes if axis not in self.axes]
 
 
 """

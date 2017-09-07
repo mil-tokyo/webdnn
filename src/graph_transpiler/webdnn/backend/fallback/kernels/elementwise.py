@@ -10,13 +10,13 @@ from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.operators.elementwise import Elementwise
-from webdnn.graph.operators.merged_elementwise import MergedElementwise
+from webdnn.graph.operators.fused_elementwise import FusedElementwise
 
 _registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
 
 
-@FallbackDescriptorGenerator.register_handler(MergedElementwise)
-def merged_elementwise_kernel(op: MergedElementwise, memory_layout: MemoryLayout) -> List[Kernel]:
+@FallbackDescriptorGenerator.register_handler(FusedElementwise)
+def merged_elementwise_kernel(op: FusedElementwise, memory_layout: MemoryLayout) -> List[Kernel]:
     ops = traverse.listup_operators(op.sub_graph)
     command_buffer, buffer_injector = generate_elementwise_command_buffer(ops,
                                                                           [_registered_items[op.__class__] for op in ops],

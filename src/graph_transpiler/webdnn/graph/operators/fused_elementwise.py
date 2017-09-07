@@ -7,9 +7,9 @@ from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-class MergedElementwise(Elementwise):
+class FusedElementwise(Elementwise):
     """
-    Merge elementwise sub graph into single MergedElementwise operator
+    Fused elementwise operator
 
     Before:
 
@@ -24,7 +24,7 @@ class MergedElementwise(Elementwise):
 
     ... code-block:: text
 
-        -{op0}-> v1 -{_______MergedElementwise_______}-> v4 -{op4}->
+        -{op0}-> v1 -{________FusedElementwise_______}-> v4 -{op4}->
 
                  A                                       A
                  :                                       :
@@ -77,4 +77,4 @@ class MergedElementwise(Elementwise):
         return dummy
 
     def __call__(self):
-        raise TypeError("MergedElementwise is not callable")
+        raise TypeError("FusedElementwise is not callable")

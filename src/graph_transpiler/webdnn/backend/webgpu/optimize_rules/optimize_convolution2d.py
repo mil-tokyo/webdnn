@@ -8,4 +8,4 @@ class OptimizeConvolution2D(OptimizeRule):
         super(OptimizeConvolution2D, self).__init__()
 
         self.register(ReplaceConvolutionByIm2Col())
-        self.register(MergeSgemmAndElementwiseMul())
+        # self.register(MergeSgemmAndElementwiseMul())

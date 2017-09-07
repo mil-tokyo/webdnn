@@ -234,26 +234,6 @@ class SimplifyElementwiseAddScalarMul(SimplifyOperatorBase):
         return True
 
 
-class SimplifyElementwiseAddElementwiseAdd(SimplifyOperatorBase):
-    pattern = [ElementwiseAdd, ElementwiseAdd]
-
-    def optimize_pair(self, op1: ElementwiseAdd, op2: ElementwiseAdd):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
-        if c2 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = v1 + (c1 + c2)
-        y.replace(y2)
-        return True
-
-
 class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
     pattern = [ElementwiseAdd, ElementwiseMul]
 
@@ -310,26 +290,6 @@ class SimplifyElementwiseMulScalarMul(SimplifyOperatorBase):
         return True
 
 
-class SimplifyElementwiseMulElementwiseMul(SimplifyOperatorBase):
-    pattern = [ElementwiseMul, ElementwiseMul]
-
-    def optimize_pair(self, op1: ElementwiseMul, op2: ElementwiseMul):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
-        if c2 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = v1 * (c1 * c2)
-        y.replace(y2)
-        return True
-
-
 class SimplifyElementwiseMulElementwiseDiv(SimplifyOperatorBase):
     pattern = [ElementwiseMul, ElementwiseDiv]
 
@@ -382,26 +342,6 @@ class SimplifyElementwiseDivElementwiseMul(SimplifyOperatorBase):
         op2.remove_all()
         op1.remove_all()
         y = v1 * (c2 / c1)
-        y.replace(y2)
-        return True
-
-
-class SimplifyElementwiseDivElementwiseDiv(SimplifyOperatorBase):
-    pattern = [ElementwiseDiv, ElementwiseDiv]
-
-    def optimize_pair(self, op1: ElementwiseDiv, op2: ElementwiseDiv):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        c2, v2 = _get_constant_and_variable(op2, "x0", "x1")
-        if c2 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = v1 / (c1 * c2)
         y.replace(y2)
         return True
 
@@ -464,17 +404,14 @@ class SimplifyElementwiseSequential(OptimizeRule):
 
         self.register(SimplifyElementwiseAddScalarAdd())
         self.register(SimplifyElementwiseAddScalarMul())
-        self.register(SimplifyElementwiseAddElementwiseAdd())
         self.register(SimplifyElementwiseAddElementwiseMul())
         self.register(SimplifyElementwiseAddElementwiseDiv())
 
         self.register(SimplifyElementwiseMulScalarMul())
-        self.register(SimplifyElementwiseMulElementwiseMul())
         self.register(SimplifyElementwiseMulElementwiseDiv())
 
         self.register(SimplifyElementwiseDivScalarMul())
         self.register(SimplifyElementwiseDivElementwiseMul())
-        self.register(SimplifyElementwiseDivElementwiseDiv())
 
         self.register(SimplifyConcatElementwiseMul())
 

@@ -3,7 +3,7 @@ from typing import Tuple, List
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
-from webdnn.graph.operators.merged_elementwise import MergedElementwise
+from webdnn.graph.operators.fused_elementwise import FusedElementwise
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.util import flags
 
@@ -154,7 +154,7 @@ def _check_condition2(v, sub_graph):
     return True
 
 
-class MergeElementwise(OptimizeRule):
+class ElementwiseKernelFusion(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
@@ -168,6 +168,6 @@ class MergeElementwise(OptimizeRule):
             return graph, False
 
         for sub_graph in sub_graphs:
-            MergedElementwise(None, sub_graph)
+            FusedElementwise(None, sub_graph)
 
         return graph, True

@@ -1,7 +1,8 @@
 from typing import List, Tuple
 
 from webdnn.graph.graph import Graph
-from webdnn.util import flags, console
+from webdnn.graph.variable import Variable
+from webdnn.util import console
 
 
 class OptimizeRule:
@@ -15,6 +16,20 @@ class OptimizeRule:
 
     def __init__(self):
         self.sub_rules = []  # type:List["OptimizeRule"]
+
+    @staticmethod
+    def replace_variable(graph: Graph, old_var: Variable, new_var: Variable):
+        old_var.replace(new_var)
+
+        if old_var in graph.inputs:
+            i = graph.inputs.index(old_var)
+            graph.inputs.remove(old_var)
+            graph.inputs.insert(i, new_var)
+
+        if old_var in graph.outputs:
+            i = graph.outputs.index(old_var)
+            graph.outputs.remove(old_var)
+            graph.outputs.insert(i, new_var)
 
     def flags(self):
         """optimize(graph)

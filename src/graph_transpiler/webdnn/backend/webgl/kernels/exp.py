@@ -25,9 +25,6 @@ void main() {
     vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
     vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
     vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
-
-    vec4 x0 = texture2D(X0, p_x0 / d_x0);
-    vec4 y;
 """
 
 footer = """
@@ -36,20 +33,18 @@ footer = """
 
 template_R = header + """
     float x0 = texture2D(X0, p_x0 / d_x0).r;
-    float x1 = texture2D(X1, p_x1 / d_x1).r;
     float y;
 
-    y = exp(x0, x1);
+    y = exp(x0);
 
     gl_FragColor = vec4(y, 0, 0, 0);
 """ + footer
 
 template_RGBA = header + """
     vec4 x0 = texture2D(X0, p_x0 / d_x0);
-    vec4 x1 = texture2D(X1, p_x1 / d_x1);
     vec4 y;
     
-    y = exp(x0, x1);
+    y = exp(x0);
     
     gl_FragColor = y;
 """ + footer

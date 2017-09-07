@@ -1743,107 +1743,108 @@ var DescriptorRunnerWebGL = (function (_super) {
                 gl = this.gl;
                 runtimeInfo = this.runtimeInfo;
                 vaoExtension = this.extensions.vao;
-                //Upload all input values to GPU
-                for (_i = 0, _a = runtimeInfo.inputs; _i < _a.length; _i++) {
-                    buffer = _a[_i];
-                    buffer.uploadToGPU();
-                }
-                if (isDebugMode()) {
-                    records = [];
-                    totalElapsedTime_1 = 0;
-                    for (_b = 0, _c = runtimeInfo.programs; _b < _c.length; _b++) {
-                        runtimeProgramInfo = _c[_b];
-                        start = performance.now();
-                        //vao
-                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
-                        // frameBuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
-                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        // inputs
-                        for (_d = 0, _e = runtimeProgramInfo.inputs; _d < _e.length; _d++) {
-                            _f = _e[_d], buffer = _f.buffer, uniformIndex = _f.uniformIndex;
-                            gl.activeTexture(gl.TEXTURE0 + uniformIndex);
-                            gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
-                        }
-                        // output
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
-                        // shader
-                        gl.useProgram(runtimeProgramInfo.program);
-                        // uniforms
-                        for (_g = 0, _h = runtimeProgramInfo.uniforms; _g < _h.length; _g++) {
-                            uniform = _h[_g];
-                            uniform.func.apply(gl, uniform.args);
-                        }
-                        // run
-                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                        gl.finish();
-                        elapsedTime = performance.now() - start;
-                        records.push({
-                            'Kernel': runtimeProgramInfo.name,
-                            'Elapsed time [ms]': elapsedTime
-                        });
-                        totalElapsedTime_1 += elapsedTime;
-                        for (_j = 0, _k = runtimeProgramInfo.inputs; _j < _k.length; _j++) {
-                            _l = _k[_j], buffer = _l.buffer, uniformIndex = _l.uniformIndex;
-                            buffer.downloadToCPU();
-                            console.log(uniformIndex, buffer.array);
-                        }
-                        runtimeProgramInfo.output.downloadToCPU();
-                        console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
+                if (this.runtimeInfo.programs.length > 0) {
+                    for (_i = 0, _a = runtimeInfo.inputs; _i < _a.length; _i++) {
+                        buffer = _a[_i];
+                        buffer.uploadToGPU();
                     }
-                    summary = Array.from(Object.values(records.reduce(function (summary, record) {
-                        if (!(record['Kernel'] in summary)) {
-                            summary[record['Kernel']] = {
-                                'Kernel': record['Kernel'],
-                                'Count': 0,
-                                'Elapsed time [ms]': 0,
-                            };
+                    if (isDebugMode()) {
+                        records = [];
+                        totalElapsedTime_1 = 0;
+                        for (_b = 0, _c = runtimeInfo.programs; _b < _c.length; _b++) {
+                            runtimeProgramInfo = _c[_b];
+                            start = performance.now();
+                            //vao
+                            vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+                            // frameBuffer
+                            gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                            gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                            gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                            // inputs
+                            for (_d = 0, _e = runtimeProgramInfo.inputs; _d < _e.length; _d++) {
+                                _f = _e[_d], buffer = _f.buffer, uniformIndex = _f.uniformIndex;
+                                gl.activeTexture(gl.TEXTURE0 + uniformIndex);
+                                gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
+                            }
+                            // output
+                            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+                            // shader
+                            gl.useProgram(runtimeProgramInfo.program);
+                            // uniforms
+                            for (_g = 0, _h = runtimeProgramInfo.uniforms; _g < _h.length; _g++) {
+                                uniform = _h[_g];
+                                uniform.func.apply(gl, uniform.args);
+                            }
+                            // run
+                            gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                            gl.finish();
+                            elapsedTime = performance.now() - start;
+                            records.push({
+                                'Kernel': runtimeProgramInfo.name,
+                                'Elapsed time [ms]': elapsedTime
+                            });
+                            totalElapsedTime_1 += elapsedTime;
+                            for (_j = 0, _k = runtimeProgramInfo.inputs; _j < _k.length; _j++) {
+                                _l = _k[_j], buffer = _l.buffer, uniformIndex = _l.uniformIndex;
+                                buffer.downloadToCPU();
+                                console.log(uniformIndex, buffer.array);
+                            }
+                            runtimeProgramInfo.output.downloadToCPU();
+                            console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
                         }
-                        summary[record['Kernel']]['Count']++;
-                        summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
-                        return summary;
-                    }, {})));
-                    summary.forEach(function (record) { return record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime_1).toFixed(2); });
-                    console.table(records);
-                    console.table(summary);
-                }
-                else {
-                    for (_m = 0, _o = runtimeInfo.programs; _m < _o.length; _m++) {
-                        runtimeProgramInfo = _o[_m];
-                        //vao
-                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
-                        // frameBuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
-                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        // inputs
-                        for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
-                            _r = _q[_p], buffer = _r.buffer, uniformIndex = _r.uniformIndex;
-                            buffer.bindTextureToUnit(uniformIndex);
-                        }
-                        // output
-                        runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
-                        // shader
-                        gl.useProgram(runtimeProgramInfo.program);
-                        // uniforms
-                        for (_s = 0, _t = runtimeProgramInfo.uniforms; _s < _t.length; _s++) {
-                            uniform = _t[_s];
-                            uniform.func.apply(gl, uniform.args);
-                        }
-                        // run
-                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                        // release buffers
-                        for (_u = 0, _v = runtimeProgramInfo.disposable; _u < _v.length; _u++) {
-                            buffer = _v[_u];
-                            buffer.releaseGPUMemory();
-                        }
-                        // runtimeProgramInfo.output.downloadToCPU();
+                        summary = Array.from(Object.values(records.reduce(function (summary, record) {
+                            if (!(record['Kernel'] in summary)) {
+                                summary[record['Kernel']] = {
+                                    'Kernel': record['Kernel'],
+                                    'Count': 0,
+                                    'Elapsed time [ms]': 0,
+                                };
+                            }
+                            summary[record['Kernel']]['Count']++;
+                            summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+                            return summary;
+                        }, {})));
+                        summary.forEach(function (record) { return record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime_1).toFixed(2); });
+                        console.table(records);
+                        console.table(summary);
                     }
-                }
-                for (_w = 0, _x = runtimeInfo.outputs; _w < _x.length; _w++) {
-                    buffer = _x[_w];
-                    buffer.downloadToCPU();
+                    else {
+                        for (_m = 0, _o = runtimeInfo.programs; _m < _o.length; _m++) {
+                            runtimeProgramInfo = _o[_m];
+                            //vao
+                            vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
+                            // frameBuffer
+                            gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
+                            gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                            gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                            // inputs
+                            for (_p = 0, _q = runtimeProgramInfo.inputs; _p < _q.length; _p++) {
+                                _r = _q[_p], buffer = _r.buffer, uniformIndex = _r.uniformIndex;
+                                buffer.bindTextureToUnit(uniformIndex);
+                            }
+                            // output
+                            runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
+                            // shader
+                            gl.useProgram(runtimeProgramInfo.program);
+                            // uniforms
+                            for (_s = 0, _t = runtimeProgramInfo.uniforms; _s < _t.length; _s++) {
+                                uniform = _t[_s];
+                                uniform.func.apply(gl, uniform.args);
+                            }
+                            // run
+                            gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                            // release buffers
+                            for (_u = 0, _v = runtimeProgramInfo.disposable; _u < _v.length; _u++) {
+                                buffer = _v[_u];
+                                buffer.releaseGPUMemory();
+                            }
+                            // runtimeProgramInfo.output.downloadToCPU();
+                        }
+                    }
+                    for (_w = 0, _x = runtimeInfo.outputs; _w < _x.length; _w++) {
+                        buffer = _x[_w];
+                        buffer.downloadToCPU();
+                    }
                 }
                 this._running = false;
                 return [2 /*return*/];

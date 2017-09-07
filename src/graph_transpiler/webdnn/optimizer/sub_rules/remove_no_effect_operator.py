@@ -30,29 +30,26 @@ def _remove_unary_operator(graph: Graph, op: Operator):
     y = list(op.outputs.values())[0]
     op.remove_all()
 
-    if x.order == y.order and x.shape == y.shape:
-        x.change_order(y.order)
-        if y in graph.outputs:
-            index = graph.outputs.index(y)
-            graph.outputs.remove(y)
-            graph.outputs.insert(index, x)
-
-        else:
-            y.replace(x)
-
-    else:
-        if y in graph.outputs:
-            index = graph.outputs.index(y)
-            graph.outputs.remove(y)
-            graph.outputs.insert(index, x)
-
-        for op2 in list(y.input_to):
-            name = op2.get_input_name(y)
-            op2.remove_input(y)
-            op2.append_input(name, x)
+    OptimizeRule.replace_variable(graph, y, x)
 
 
 def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):
+    """
+    before)
+
+    x1 -+
+        +-{op}- y -
+    x2 -+
+
+    after)
+
+                v -
+
+    Args:
+        graph: the graph
+        op: the operator which will be removed
+        v: variable with which output variable is replaced
+    """
     y = op.outputs["y"]
     op.remove_all()
     y.change_order(v.order)
@@ -145,26 +142,15 @@ class RemoveReshape(RemoveNoEffectOperatorBase):
         y = op.outputs["y"]
 
         if x.order == y.order and x.shape == y.shape:
+            # no reshape is occurred
             _remove_unary_operator(graph, op)
             return True
 
         if x.shape == y.shape:
+            # only reinterpret_axis is occurred
             op.remove_all()
             y_dummy, = ReinterpretAxis(None, in_order=x.order, out_order=y.order)(x)
             y_dummy.replace(y)
-            return True
-
-        if isinstance(x, ConstantVariable) and x.output_from is None:
-            _remove_unary_operator(graph, op)
-            x.change_order(y.order)
-            return True
-
-        if all([
-                y not in graph.outputs,
-            all(x.stride_dict[axis] == y.stride_dict[axis] for axis in [axis for axis in x.order.axes if axis in y.order.axes]),
-            all(isinstance(op2, Elementwise) for op2 in y.input_to)
-        ]):
-            _remove_unary_operator(graph, op)
             return True
 
         return False
@@ -181,17 +167,15 @@ class RemoveTranspose(RemoveNoEffectOperatorBase):
             _remove_unary_operator(graph, op)
             return True
 
-        if isinstance(x, ConstantVariable) and x.output_from is None:
-            _remove_unary_operator(graph, op)
-            x.change_order(y.order)
-            return True
-
         if x not in graph.inputs and isinstance(x.output_from, Elementwise):
+            # If x is output from elementwise operator, transpose is not needed.
             x.change_order(y.order)
             _remove_unary_operator(graph, op)
             return True
 
         if y not in graph.outputs and all(isinstance(op2, Elementwise) for op2 in y.input_to):
+            # If y is input to only elementwise operators, transpose is not needed.
+            y.change_order(x.order)
             _remove_unary_operator(graph, op)
             return True
 

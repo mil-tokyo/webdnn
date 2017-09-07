@@ -1,5 +1,5 @@
 from webdnn.optimizer.sub_rules import concat_zero_padding
-from webdnn.optimizer.sub_rules import merge_elementwise
+from webdnn.optimizer.sub_rules import elementwise_kernel_fusion
 from webdnn.optimizer.sub_rules import remove_no_effect_operator
 from webdnn.optimizer.sub_rules import remove_redundant_operator
 from webdnn.optimizer.sub_rules import replace_scalar_affine
