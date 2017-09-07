@@ -21,7 +21,7 @@ export abstract class Buffer {
     }
 
     /**
-     * Write contents onto specified position.
+     * Write contents onto specified position synchronously.
      *
      * @param {ArrayBufferView} src contents source buffer
      * @param {number} offset position where contents are written on
@@ -29,7 +29,7 @@ export abstract class Buffer {
     abstract write(src: ArrayBufferView, offset?: number): Promise<void>;
 
     /**
-     * Read contents from specified position.
+     * Read contents from specified position synchronously.
      *
      * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
      * @param {number} offset position where contents are read from
@@ -45,8 +45,8 @@ export abstract class Buffer {
      * @param {number} length buffer-view length
      * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
      */
-    abstract getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
+    abstract getWriteView(offset?: number, length?: number, type?: Int32ArrayConstructor): Int32Array;
+    abstract getWriteView(offset?: number, length?: number, type?: Float32ArrayConstructor): Float32Array;
 
     /**
      * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
@@ -56,8 +56,8 @@ export abstract class Buffer {
      * @param {number} length buffer-view length
      * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
      */
-    abstract getReadView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-    abstract getReadView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
+    abstract getReadView(offset?: number, length?: number, type?: Int32ArrayConstructor): Int32Array;
+    abstract getReadView(offset?: number, length?: number, type?: Float32ArrayConstructor): Float32Array;
 
     /**
      * Sync buffered data into memory.

@@ -1,3 +1,5 @@
+///<reference path="./webgpu.d.ts" />
+
 /**
  * @module webdnn
  */
