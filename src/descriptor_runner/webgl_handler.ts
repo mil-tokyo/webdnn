@@ -5,7 +5,7 @@
 
 import { isDebugMode } from "./webdnn";
 
-export declare interface WebGLVertexArrayObject {
+export declare interface WebGLVertexArray {
 }
 
 /**
@@ -13,12 +13,34 @@ export declare interface WebGLVertexArrayObject {
  */
 export default class WebGLHandler {
     readonly gl: WebGLRenderingContext;
-    readonly vao: any;
+    readonly vao: any | null;
+    readonly isWebGL2: boolean;
 
     constructor() {
-        let {gl, vao} = checkNull(WebGLHandler.initializeContext());
+        let {gl, vao, isWebGL2} = checkNull(WebGLHandler.initializeContext());
         this.gl = gl;
         this.vao = vao;
+        this.isWebGL2 = isWebGL2;
+    }
+
+    createTexture(textureWidth: number, textureHeight: number) {
+        let gl = this.gl;
+
+        let texture = checkNull(gl.createTexture());
+        let internalFormat = this.isWebGL2 ? (gl as any).R32F : gl.RGBA;
+        let format = this.isWebGL2 ? (gl as any).RED : gl.RGBA;
+        let type = gl.FLOAT;
+
+        gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, textureWidth, textureHeight, 0, format, type, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
+        return texture;
     }
 
     createVertexShader(source: string) {
@@ -64,8 +86,12 @@ export default class WebGLHandler {
         return buffer
     }
 
-    createVertexArrayObject(): WebGLVertexArrayObject {
-        return checkNull(this.vao.createVertexArrayOES() as WebGLVertexArrayObject | null);
+    createVertexArray(): WebGLVertexArray {
+        if (this.isWebGL2) {
+            return checkNull((this.gl as any).createVertexArray() as WebGLVertexArray | null);
+        } else {
+            return checkNull(this.vao.createVertexArrayOES() as WebGLVertexArray | null);
+        }
     }
 
     createFrameBuffer(): WebGLFramebuffer {
@@ -86,19 +112,64 @@ export default class WebGLHandler {
         this.gl.useProgram(program);
     }
 
-    bindVertexArray(vao: WebGLVertexArrayObject) {
-        this.vao.bindVertexArrayOES(vao);
+    bindVertexArray(vao: WebGLVertexArray) {
+        if (this.isWebGL2) {
+            (this.gl as any).bindVertexArray(vao);
+        } else {
+            this.vao.bindVertexArrayOES(vao);
+        }
+    }
+
+    deleteTexture(texture: WebGLTexture) {
+        this.gl.deleteTexture(texture);
+    }
+
+    static initializeWebGL2Context(canvas: HTMLCanvasElement) {
+        let gl: WebGLRenderingContext | null;
+
+        gl = (canvas.getContext('webgl2')) as WebGLRenderingContext | null;
+
+        if (!gl) return null;
+        if (!gl.getExtension('EXT_color_buffer_float')) return null;
+        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+
+        return gl;
+    }
+
+    static initializeWebGL1Context(canvas: HTMLCanvasElement) {
+        let gl: WebGLRenderingContext | null;
+        let vao: any | null;
+
+        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext;
+
+        if (!gl) return null;
+        if (!gl.getExtension('OES_texture_float')) return null;
+        if (!(vao = gl.getExtension('OES_vertex_array_object'))) return null;
+        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+
+        return {gl, vao};
     }
 
     static initializeContext() {
         let canvas = document.createElement('canvas');
-        let gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext;
-        if (!gl) return null;
+        let gl: WebGLRenderingContext | null;
+        let isWebGL2: boolean = false;
+        let vao: any | null;
 
-        let vao;
-        if (!gl.getExtension('OES_texture_float')) return null;
-        if (!(vao = gl.getExtension('OES_vertex_array_object'))) return null;
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+        gl = WebGLHandler.initializeWebGL2Context(canvas);
+        if (gl) {
+            isWebGL2 = true;
+        } else {
+            let res = WebGLHandler.initializeWebGL1Context(canvas);
+
+            if (res) {
+                gl = res.gl;
+                vao = res.vao;
+                isWebGL2 = false;
+            } else {
+                return null;
+            }
+        }
 
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.STENCIL_TEST);
@@ -110,10 +181,7 @@ export default class WebGLHandler {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.BACK);
 
-        return {
-            gl: gl,
-            vao: vao
-        };
+        return {gl, vao, isWebGL2};
     }
 
     /**

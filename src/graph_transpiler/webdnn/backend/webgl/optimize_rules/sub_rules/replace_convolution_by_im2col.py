@@ -37,7 +37,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
 
             col, = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding, dilation_rate=op.dilation_rate)(x)
             col.change_order(OrderNHWC)
-            ChannelMode.set_mode(col, ChannelModeEnum.RGBA)
+            ChannelMode.set_mode(col, ChannelModeEnum.R)
 
             M = col.shape_dict[Axis.N] * col.shape_dict[Axis.H] * col.shape_dict[Axis.W]
             N = w.shape_dict[Axis.N]
@@ -49,7 +49,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
                 w2_data = w.data.reshape(N, w.size // N)
 
             w = ConstantVariable(w2_data, OrderNC)
-            ChannelMode.set_mode(w, ChannelModeEnum.RGBA)
+            ChannelMode.set_mode(w, ChannelModeEnum.R)
 
             sgemm = Sgemm(None, M=M, N=N, K=K,
                           out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],

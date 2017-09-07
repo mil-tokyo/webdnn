@@ -10,7 +10,7 @@ import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName, isDebugMode } from "../webdnn";
-import WebGLHandler, { WebGLVertexArrayObject } from "../webgl_handler";
+import WebGLHandler, { WebGLVertexArray } from "../webgl_handler";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -30,7 +30,7 @@ interface RuntimeProgramInfo {
         func: (...args: any[]) => void,
         args: any[]
     }[],
-    vao: WebGLVertexArrayObject,
+    vao: WebGLVertexArray,
     output: BufferWebGL,
     disposable: BufferWebGL[]
 }
@@ -84,7 +84,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         this.handler = new WebGLHandler();
 
-        TextureManager.init(this.handler.gl);
+        TextureManager.init(this.handler);
 
         let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
         this.handler.bindArrayBuffer(vertexBuffer);
@@ -327,7 +327,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 });
 
                 // vao
-                let vao = this.handler.createVertexArrayObject();
+                let vao = this.handler.createVertexArray();
                 this.handler.bindVertexArray(vao);
 
                 // attributes

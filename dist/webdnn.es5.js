@@ -1247,15 +1247,23 @@ var BufferWebGL = (function (_super) {
         _this.gl = gl;
         _this.name = name;
         _this.channelMode = channelMode;
-        switch (_this.channelMode) {
-            case 'RGBA':
-                _this.elementsPerPixel = 4;
-                break;
-            case 'R':
-                _this.elementsPerPixel = 1;
-                break;
-            default:
-                throw Error('Unknown channel mode');
+        // switch (this.channelMode) {
+        //     case 'RGBA':
+        //         this.elementsPerPixel = 4;
+        //         break;
+        //
+        //     case 'R':
+        //         this.elementsPerPixel = 1;
+        //         break;
+        //
+        //     default:
+        //         throw Error('Unknown channel mode');
+        // }
+        if (TextureManager.handler.isWebGL2) {
+            _this.elementsPerPixel = 1;
+        }
+        else {
+            _this.elementsPerPixel = 4;
         }
         _this.array = array || new Float32Array(_this.length);
         // width is fixed as 1024, height is flexible.
@@ -1337,7 +1345,7 @@ var BufferWebGL = (function (_super) {
      */
     BufferWebGL.prototype.syncWriteViews = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, tmp, tmp2;
+            var gl, tmp, tmp2, format;
             return __generator(this, function (_a) {
                 gl = this.gl;
                 if (!this.texture)
@@ -1348,8 +1356,9 @@ var BufferWebGL = (function (_super) {
                     tmp2.set(tmp, 0);
                     tmp = tmp2;
                 }
+                format = TextureManager.handler.isWebGL2 ? gl.RED : gl.RGBA;
                 this.bindToReadTexture(9); //TODO: texture unit 9 is always available?
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, format, gl.FLOAT, tmp);
                 this.unbindFromReadTexture();
                 return [2 /*return*/];
             });
@@ -1362,12 +1371,13 @@ var BufferWebGL = (function (_super) {
      */
     BufferWebGL.prototype.syncReadViews = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, tmp;
+            var gl, tmp, format;
             return __generator(this, function (_a) {
                 gl = this.gl;
                 tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
+                format = gl.RGBA;
                 this.bindToDrawTexture();
-                gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
+                gl.readPixels(0, 0, this.textureWidth, this.textureHeight, format, gl.FLOAT, tmp);
                 this.unbindFromDrawTexture();
                 tmp = this.unpack(tmp);
                 this.array.set(tmp.slice(0, this.length), 0);
@@ -1434,30 +1444,53 @@ var BufferWebGL = (function (_super) {
         this.isBoundToDrawFrameBuffer = false;
     };
     BufferWebGL.prototype.pack = function (array) {
-        switch (this.channelMode) {
-            case 'RGBA':
-                return new Float32Array(array);
-            case 'R':
-                var result = new Float32Array(array.length * 4);
-                for (var i = 0; i < array.length; i++)
-                    result[i * 4] = array[i];
-                return result;
-            default:
-                throw Error('Unknown channel mode');
+        if (TextureManager.handler.isWebGL2) {
+            return new Float32Array(array);
         }
+        else {
+            var result = new Float32Array(array.length * 4);
+            for (var i = 0; i < array.length; i++)
+                result[i * 4] = array[i];
+            return result;
+        }
+        //     switch (this.channelMode) {
+        //         case 'RGBA':
+        //             return new Float32Array(array);
+        //
+        //         case 'R':
+        //             let result = new Float32Array(array.length * 4);
+        //             for (let i = 0; i < array.length; i++) result[i * 4] = array[i];
+        //             return result;
+        //
+        //         default:
+        //             throw Error('Unknown channel mode');
+        //     }
     };
     BufferWebGL.prototype.unpack = function (array) {
-        switch (this.channelMode) {
-            case 'RGBA':
-                return new Float32Array(array);
-            case 'R':
-                var result = new Float32Array(array.length / 4);
-                for (var i = 0; i < array.length / 4; i++)
-                    result[i] = array[i * 4];
-                return result;
-            default:
-                throw Error('Unknown channel mode');
+        if (TextureManager.handler.isWebGL2) {
+            var result = new Float32Array(array.length / 4);
+            for (var i = 0; i < array.length / 4; i++)
+                result[i] = array[i * 4];
+            return result;
         }
+        else {
+            var result = new Float32Array(array.length / 4);
+            for (var i = 0; i < array.length / 4; i++)
+                result[i] = array[i * 4];
+            return result;
+        }
+        // switch (this.channelMode) {
+        //     case 'RGBA':
+        //         return new Float32Array(array);
+        //
+        //     case 'R':
+        //         let result = new Float32Array(array.length / 4);
+        //         for (let i = 0; i < array.length / 4; i++) result[i] = array[i * 4];
+        //         return result;
+        //
+        //     default:
+        //         throw Error('Unknown channel mode');
+        // }
     };
     BufferWebGL.prototype.allocateTexture = function () {
         if (this.texture)
@@ -1469,26 +1502,14 @@ var BufferWebGL = (function (_super) {
 var TextureManager = new (function () {
     function TextureManagerConstructor() {
     }
-    TextureManagerConstructor.prototype.init = function (gl) {
-        this.gl = gl;
+    TextureManagerConstructor.prototype.init = function (handler) {
+        this.handler = handler;
     };
     TextureManagerConstructor.prototype.allocate = function (textureWidth, textureHeight) {
-        var gl = this.gl;
-        var texture = gl.createTexture();
-        if (!texture)
-            throw Error('Texture allocation is failed.');
-        gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, textureWidth, textureHeight, 0, gl.RGBA, gl.FLOAT, null);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        return texture;
+        return this.handler.createTexture(textureWidth, textureHeight);
     };
     TextureManagerConstructor.prototype.release = function (texture) {
-        this.gl.deleteTexture(texture);
+        this.handler.gl.deleteTexture(texture);
     };
     return TextureManagerConstructor;
 }())();
@@ -1502,10 +1523,27 @@ var TextureManager = new (function () {
  */
 var WebGLHandler = (function () {
     function WebGLHandler() {
-        var _a = checkNull(WebGLHandler.initializeContext()), gl = _a.gl, vao = _a.vao;
+        var _a = checkNull(WebGLHandler.initializeContext()), gl = _a.gl, vao = _a.vao, isWebGL2 = _a.isWebGL2;
         this.gl = gl;
         this.vao = vao;
+        this.isWebGL2 = isWebGL2;
     }
+    WebGLHandler.prototype.createTexture = function (textureWidth, textureHeight) {
+        var gl = this.gl;
+        var texture = checkNull(gl.createTexture());
+        var internalFormat = this.isWebGL2 ? gl.R32F : gl.RGBA;
+        var format = this.isWebGL2 ? gl.RED : gl.RGBA;
+        var type = gl.FLOAT;
+        gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, textureWidth, textureHeight, 0, format, type, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return texture;
+    };
     WebGLHandler.prototype.createVertexShader = function (source) {
         return this.createShader(this.gl.VERTEX_SHADER, source);
     };
@@ -1539,8 +1577,13 @@ var WebGLHandler = (function () {
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
         return buffer;
     };
-    WebGLHandler.prototype.createVertexArrayObject = function () {
-        return checkNull(this.vao.createVertexArrayOES());
+    WebGLHandler.prototype.createVertexArray = function () {
+        if (this.isWebGL2) {
+            return checkNull(this.gl.createVertexArray());
+        }
+        else {
+            return checkNull(this.vao.createVertexArrayOES());
+        }
     };
     WebGLHandler.prototype.createFrameBuffer = function () {
         return checkNull(this.gl.createFramebuffer());
@@ -1557,20 +1600,61 @@ var WebGLHandler = (function () {
         this.gl.useProgram(program);
     };
     WebGLHandler.prototype.bindVertexArray = function (vao) {
-        this.vao.bindVertexArrayOES(vao);
+        if (this.isWebGL2) {
+            this.gl.bindVertexArray(vao);
+        }
+        else {
+            this.vao.bindVertexArrayOES(vao);
+        }
     };
-    WebGLHandler.initializeContext = function () {
-        var canvas = document.createElement('canvas');
-        var gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
+    WebGLHandler.prototype.deleteTexture = function (texture) {
+        this.gl.deleteTexture(texture);
+    };
+    WebGLHandler.initializeWebGL2Context = function (canvas) {
+        var gl;
+        gl = (canvas.getContext('webgl2'));
         if (!gl)
             return null;
+        if (!gl.getExtension('EXT_color_buffer_float'))
+            return null;
+        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+            return null;
+        return gl;
+    };
+    WebGLHandler.initializeWebGL1Context = function (canvas) {
+        var gl;
         var vao;
+        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
+        if (!gl)
+            return null;
         if (!gl.getExtension('OES_texture_float'))
             return null;
         if (!(vao = gl.getExtension('OES_vertex_array_object')))
             return null;
         if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
             return null;
+        return { gl: gl, vao: vao };
+    };
+    WebGLHandler.initializeContext = function () {
+        var canvas = document.createElement('canvas');
+        var gl;
+        var isWebGL2 = false;
+        var vao;
+        gl = WebGLHandler.initializeWebGL2Context(canvas);
+        if (gl) {
+            isWebGL2 = true;
+        }
+        else {
+            var res = WebGLHandler.initializeWebGL1Context(canvas);
+            if (res) {
+                gl = res.gl;
+                vao = res.vao;
+                isWebGL2 = false;
+            }
+            else {
+                return null;
+            }
+        }
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.STENCIL_TEST);
         gl.disable(gl.BLEND);
@@ -1580,10 +1664,7 @@ var WebGLHandler = (function () {
         gl.enable(gl.SCISSOR_TEST);
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.BACK);
-        return {
-            gl: gl,
-            vao: vao
-        };
+        return { gl: gl, vao: vao, isWebGL2: isWebGL2 };
     };
     /**
      * Check whether WebGL is supported or not
@@ -1648,7 +1729,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                 if (!DescriptorRunnerWebGL.checkAvailability())
                     throw Error('WebGL backend is not supported in this browser.');
                 this.handler = new WebGLHandler();
-                TextureManager.init(this.handler.gl);
+                TextureManager.init(this.handler);
                 vertexBuffer = this.handler.createArrayBuffer(vertexArray);
                 this.handler.bindArrayBuffer(vertexBuffer);
                 this.buffers = new Map();
@@ -1928,7 +2009,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     }
                 });
                 // vao
-                var vao = _this.handler.createVertexArrayObject();
+                var vao = _this.handler.createVertexArray();
                 _this.handler.bindVertexArray(vao);
                 // attributes
                 var loc = gl.getAttribLocation(program, '_xy');
@@ -2158,7 +2239,7 @@ var BufferWebGPU = (function (_super) {
         if (byteLength == 0) {
             byteLength = 4; //0 length buffer causes error
         }
-        _this.buffer = BufferWebGPU.webgpuHandler.createBuffer(new Uint8Array(byteLength));
+        _this.buffer = BufferWebGPU.handler.createBuffer(new Uint8Array(byteLength));
         _this.bufferView = new Uint8Array(_this.buffer.contents);
         return _this;
     }
@@ -2168,7 +2249,7 @@ var BufferWebGPU = (function (_super) {
             var viewSameType;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, BufferWebGPU.webgpuHandler.sync()];
+                    case 0: return [4 /*yield*/, BufferWebGPU.handler.sync()];
                     case 1:
                         _a.sent();
                         viewSameType = new src.constructor(this.bufferView.buffer);
@@ -2187,7 +2268,7 @@ var BufferWebGPU = (function (_super) {
                     case 0:
                         if (!dst)
                             throw new Error('dst cannot be null');
-                        return [4 /*yield*/, BufferWebGPU.webgpuHandler.sync()];
+                        return [4 /*yield*/, BufferWebGPU.handler.sync()];
                     case 1:
                         _a.sent();
                         if (this.byteLength === 0)
@@ -2201,7 +2282,7 @@ var BufferWebGPU = (function (_super) {
         });
     };
     BufferWebGPU.init = function (webgpuHandler) {
-        this.webgpuHandler = webgpuHandler;
+        this.handler = webgpuHandler;
     };
     BufferWebGPU.prototype.getWriteView = function (offset, length, type) {
         return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
@@ -2222,7 +2303,7 @@ var BufferWebGPU = (function (_super) {
                 switch (_a.label) {
                     case 0: 
                     // if the user awaits promise from final kernel execution, this function call is not needed.
-                    return [4 /*yield*/, BufferWebGPU.webgpuHandler.sync()];
+                    return [4 /*yield*/, BufferWebGPU.handler.sync()];
                     case 1:
                         // if the user awaits promise from final kernel execution, this function call is not needed.
                         _a.sent();
