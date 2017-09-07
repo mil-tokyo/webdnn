@@ -260,6 +260,9 @@
         <span class="sd">&quot;&quot;&quot;dictionary of axis and stride size pairs&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Variable.change_order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;change_order(order)</span>
 

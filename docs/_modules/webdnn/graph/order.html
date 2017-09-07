@@ -166,7 +166,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.order</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">List</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">AxisKeyDict</span>
 
@@ -237,7 +237,18 @@
 <span class="sd">        Args:</span>
 <span class="sd">            other: other order</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span></div></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Order.get_all_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.Order.get_all_axes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_all_axes(order)</span>
+
+<span class="sd">        return axes which are included in either two order.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: other order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span></div></div>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
