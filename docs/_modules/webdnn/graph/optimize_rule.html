@@ -169,7 +169,8 @@
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
-<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">flags</span><span class="p">,</span> <span class="n">console</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
 
 
 <div class="viewcode-block" id="OptimizeRule"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule">[docs]</a><span class="k">class</span> <span class="nc">OptimizeRule</span><span class="p">:</span>
@@ -183,6 +184,20 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type:List[&quot;OptimizeRule&quot;]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">old_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">new_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
+        <span class="n">old_var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_var</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">old_var</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">new_var</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">old_var</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">new_var</span><span class="p">)</span>
 
 <div class="viewcode-block" id="OptimizeRule.flags"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule.flags">[docs]</a>    <span class="k">def</span> <span class="nf">flags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;optimize(graph)</span>
