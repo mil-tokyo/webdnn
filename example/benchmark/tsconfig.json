@@ -10,7 +10,7 @@
             "dom"
         ],
         "declaration": false,
-        "sourceMap": false
+        "sourceMap": true
     },
     "files": [
         "index.ts"

@@ -10,6 +10,8 @@ The benchmark for computing speed of DNN model on web browser
 - Execution type
     - WebDNN (WebGPU + Optimization)
     - WebDNN (WebGPU)
+    - WebDNN (WebGL + Optimization)
+    - WebDNN (WebGL)
     - WebDNN (WebAssembly + Optimization)
     - WebDNN (WebAssembly)
     - Keras.js (GPU)

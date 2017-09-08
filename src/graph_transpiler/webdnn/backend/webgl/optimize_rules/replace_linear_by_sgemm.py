@@ -9,7 +9,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, OrderHWCN, OrderNC, OrderCN
 
 
-class OptimizeLinear(OptimizeRule):
+class ReplaceLinearBySGEMM(OptimizeRule):
     """
     Replace Linear by SGEMM
     """

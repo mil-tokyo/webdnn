@@ -1,6 +1,7 @@
 from typing import List, Dict, Tuple, Set
 
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
+from webdnn.backend.webgl.attributes.texture_shape import TextureShape
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -18,6 +19,16 @@ vec4 convert_position(vec3 p1, vec3 s1, vec4 s2, vec4 d2) { return mod(floor((do
 vec2 convert_position(vec4 p1, vec4 s1, vec2 s2, vec2 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
 vec3 convert_position(vec4 p1, vec4 s1, vec3 s2, vec3 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
 vec4 convert_position(vec4 p1, vec4 s1, vec4 s2, vec4 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
+
+vec2 convert_coord(vec2 p1, vec2 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec3 convert_coord(vec2 p1, vec2 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec4 convert_coord(vec2 p1, vec2 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec2 convert_coord(vec3 p1, vec3 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec3 convert_coord(vec3 p1, vec3 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec4 convert_coord(vec3 p1, vec3 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec2 convert_coord(vec4 p1, vec4 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec3 convert_coord(vec4 p1, vec4 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+vec4 convert_coord(vec4 p1, vec4 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
 """
 
 
@@ -157,25 +168,13 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
 
 
 def texture_shape(v: Variable):
-    channel_mode = ChannelMode.get_mode(v)
-    if channel_mode == ChannelModeEnum.R:
-        texture_length = v.size
-
-    elif channel_mode == ChannelModeEnum.RGBA:
-        texture_length = (v.size + 4 - 1) // 4
-
-    else:
-        raise NotImplementedError(f"Unknown channel mode: {channel_mode}")
-
-    return [
-        texture_length if texture_length < 2048 else 2048,
-        (texture_length + 2048 - 1) // 2048
-    ]
+    height, width = TextureShape.get(v)
+    return [width, height]
 
 
 def texture_stride(v: Variable):
     result = []
-    channel_mode = ChannelMode.get_mode(v)
+    channel_mode = ChannelMode.get(v)
     if channel_mode == ChannelModeEnum.R:
         s = 1
 

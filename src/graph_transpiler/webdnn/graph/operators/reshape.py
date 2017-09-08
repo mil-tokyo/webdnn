@@ -1,10 +1,11 @@
-from typing import Optional, List, Union, Sequence
+from typing import Optional, Union, Sequence
 
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util.misc import mul
 
 
@@ -63,3 +64,13 @@ class Reshape(Operator):
         self.append_output("y", y)
 
         return y,
+
+    def fold_constance(self):
+        in_order = self.parameters["in_order"]
+        out_shape = self.parameters["out_shape"]
+        out_order = self.parameters["out_order"]
+
+        x = self.inputs["x"]
+        y = self.outputs["y"]
+        y.replace(ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order))
+        self.remove_all()

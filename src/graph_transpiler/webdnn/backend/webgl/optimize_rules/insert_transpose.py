@@ -50,7 +50,7 @@ def _replace_output(op: Operator, var_name: str, target_orders: Union[Order, Lis
     return True
 
 
-class OptimizeTranspose(OptimizeRule):
+class InsertTranspose(OptimizeRule):
     """
     Insert transpose layer if needed.
     Currently, it is rule-based specific to each operator.

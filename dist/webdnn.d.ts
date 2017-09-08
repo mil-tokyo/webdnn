@@ -588,11 +588,52 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
+	import { Placeholder } from 'webdnn/placeholder';
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
+	import { Allocation, MemoryLayout, ResolvedAllocation } from 'webdnn/graph_descriptor/memory_layout';
 	/**
 	 * @protecte
 	 */
 	export type ChannelMode = 'RGBA' | 'R';
+	/**
+	 * @protected
+	 */
+	export interface WebGLMemoryLayout extends MemoryLayout {
+	    'static': {
+	        size: -1;
+	        allocations: {
+	            [index: string]: ResolvedWebGLAllocation;
+	        };
+	    };
+	    dynamic: {
+	        size: -1;
+	        allocations: {
+	            [index: string]: WebGLAllocation;
+	        };
+	    };
+	}
+	/**
+	 * @protected
+	 */
+	export interface ResolvedWebGLAllocation extends ResolvedAllocation, WebGLAllocation {
+	    name: string;
+	    offset: -1;
+	    size: number;
+	    width: number;
+	    height: number;
+	    channel_mode: ChannelMode;
+	}
+	/**
+	 * @protected
+	 */
+	export interface WebGLAllocation extends Allocation {
+	    name: string;
+	    offset: -1;
+	    size: number | Placeholder;
+	    width: number | Placeholder;
+	    height: number | Placeholder;
+	    channel_mode: ChannelMode;
+	}
 	/**
 	 * @protected
 	 */
@@ -601,18 +642,7 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	        [name: string]: string;
 	    };
 	    exec_infos: GraphDescriptorWebGLExecInfos[];
-	    variables: {
-	        [variable_name: string]: {
-	            variable_size: number;
-	            allocation_name: string;
-	        };
-	    };
-	    allocations: {
-	        [allocation_name: string]: {
-	            allocation_size: number;
-	            channel_mode: ChannelMode;
-	        };
-	    };
+	    memory_layout: WebGLMemoryLayout;
 	    constants_map: {
 	        [variable_name: string]: {
 	            size: number;
@@ -641,6 +671,203 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	}
 
 }
+declare module 'webdnn/webgl_handler' {
+	export interface WebGLVertexArray {
+	}
+	/**
+	 * @protected
+	 */
+	export default class WebGLHandler {
+	    readonly gl: WebGLRenderingContext;
+	    readonly vao: any | null;
+	    readonly isWebGL2: boolean;
+	    constructor();
+	    createTexture(textureWidth: number, textureHeight: number): WebGLTexture;
+	    createVertexShader(source: string): WebGLShader;
+	    createFragmentShader(source: string): WebGLShader;
+	    createShader(type: number, source: string): WebGLShader;
+	    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram;
+	    createArrayBuffer(vertexArray: number | Float32Array): WebGLBuffer;
+	    createVertexArray(): WebGLVertexArray;
+	    createFrameBuffer(): WebGLFramebuffer;
+	    bindArrayBuffer(buffer: WebGLBuffer): void;
+	    bindFrameBuffer(frameBuffer: WebGLFramebuffer, width: number, height: number): void;
+	    useProgram(program: WebGLProgram): void;
+	    bindVertexArray(vao: WebGLVertexArray): void;
+	    deleteTexture(texture: WebGLTexture): void;
+	    static initializeWebGL2Context(canvas: HTMLCanvasElement): WebGLRenderingContext | null;
+	    static initializeWebGL1Context(canvas: HTMLCanvasElement): {
+	        gl: WebGLRenderingContext;
+	        vao: any;
+	    } | null;
+	    static initializeContext(): {
+	        gl: WebGLRenderingContext;
+	        vao: any;
+	        isWebGL2: boolean;
+	    } | null;
+	    /**
+	     * Check whether WebGL is supported or not
+	     * @protected
+	     */
+	    static checkAvailability(): boolean;
+	}
+
+}
+declare module 'webdnn/buffer/buffer' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	/**
+	 * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
+	 *
+	 * @protected
+	 */
+	export abstract class Buffer {
+	    /**
+	     * @property {number}
+	     */
+	    byteLength: number;
+	    backend: string;
+	    constructor(byteLength: number, backend: string);
+	    /**
+	     * Write contents onto specified position synchronously.
+	     *
+	     * @param {ArrayBufferView} src contents source buffer
+	     * @param {number} offset position where contents are written on
+	     */
+	    abstract write(src: ArrayBufferView, offset?: number): Promise<void>;
+	    /**
+	     * Read contents from specified position synchronously.
+	     *
+	     * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
+	     * @param {number} offset position where contents are read from
+	     * @param {length} length contents length
+	     */
+	    abstract read(dst: Float32ArrayConstructor | Int32ArrayConstructor, offset?: number, length?: number): Promise<void>;
+	    /**
+	     * for a range which will be written from CPU iteratively, make view to avoid copy (if backend allows)
+	     * if backend does not allow such operation, return newly allocated memory and send their contents to GPU when syncWriteViews is called
+	     *
+	     * @param {number} offset position where buffer-view begin from
+	     * @param {number} length buffer-view length
+	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+	     */
+	    abstract getWriteView(offset?: number, length?: number, type?: Int32ArrayConstructor): Int32Array;
+	    abstract getWriteView(offset?: number, length?: number, type?: Float32ArrayConstructor): Float32Array;
+	    /**
+	     * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
+	     * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
+	     *
+	     * @param {number} offset position where buffer-view begin from
+	     * @param {number} length buffer-view length
+	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+	     */
+	    abstract getReadView(offset?: number, length?: number, type?: Int32ArrayConstructor): Int32Array;
+	    abstract getReadView(offset?: number, length?: number, type?: Float32ArrayConstructor): Float32Array;
+	    /**
+	     * Sync buffered data into memory.
+	     *
+	     * @see Buffer#getWriteView
+	     */
+	    abstract syncWriteViews(): Promise<void>;
+	    /**
+	     * Sync memory data into buffer view.
+	     *
+	     * @see Buffer#getReadView
+	     */
+	    abstract syncReadViews(): Promise<void>;
+	}
+
+}
+declare module 'webdnn/buffer/buffer_webgl' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	import { ChannelMode } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
+	import WebGLHandler from 'webdnn/webgl_handler';
+	import { Buffer } from 'webdnn/buffer/buffer';
+	/**
+	 * @protected
+	 */
+	export class BufferWebGL extends Buffer {
+	    private gl;
+	    readonly channelMode: ChannelMode;
+	    readonly elementsPerPixel: number;
+	    readonly array: Float32Array;
+	    readonly textureWidth: number;
+	    readonly textureHeight: number;
+	    private _texture;
+	    readonly name: string;
+	    private readTextureUnitInices;
+	    private isBoundToDrawFrameBuffer;
+	    constructor(gl: WebGLRenderingContext, byteLength: number, textureWidth: number, textureHeight: number, name: string, array: Float32Array | null, channelMode: ChannelMode);
+	    readonly texture: WebGLTexture | null;
+	    readonly length: number;
+	    /**
+	     * Write contents onto specified position synchronously.
+	     *
+	     * @param {ArrayBufferView} src contents source buffer
+	     * @param {number} offset position where contents are written on
+	     */
+	    write(src: ArrayBufferView, offset?: number): Promise<void>;
+	    /**
+	     * Read contents from specified position synchronously.
+	     *
+	     * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
+	     * @param {number} offset position where contents are read from
+	     * @param {length} length contents length
+	     */
+	    read(dst: Float32ArrayConstructor | Int32ArrayConstructor, offset?: number, length?: number): Promise<void>;
+	    /**
+	     * for a range which will be written from CPU iteratively, make view to avoid copy (if backend allows)
+	     * if backend does not allow such operation, return newly allocated memory and send their contents to GPU when syncWriteViews is called
+	     *
+	     * @param {number} offset position where buffer-view begin from
+	     * @param {number} length buffer-view length
+	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+	     */
+	    getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
+	    getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
+	    /**
+	     * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
+	     * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
+	     *
+	     * @param {number} offset position where buffer-view begin from
+	     * @param {number} length buffer-view length
+	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
+	     */
+	    getReadView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
+	    getReadView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
+	    /**
+	     * Sync buffered data into memory.
+	     *
+	     * @see Buffer#getWriteView
+	     */
+	    syncWriteViews(): Promise<void>;
+	    /**
+	     * Sync memory data into buffer view.
+	     *
+	     * @see Buffer#getReadView
+	     */
+	    syncReadViews(): Promise<void>;
+	    bindToReadTexture(unit: number): Promise<void>;
+	    unbindFromReadTexture(): void;
+	    bindToDrawTexture(): void;
+	    unbindFromDrawTexture(): void;
+	    private pack(array);
+	    private unpack(array);
+	    private allocateTexture();
+	}
+	export const TextureManager: {
+	    handler: WebGLHandler;
+	    init(handler: WebGLHandler): void;
+	    allocate(textureWidth: number, textureHeight: number): WebGLTexture;
+	    release(texture: WebGLTexture): void;
+	};
+
+}
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
@@ -652,13 +879,12 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
 	    readonly backendName: BackendName;
 	    private runtimeInfo;
-	    private gl;
+	    private handler;
 	    private vertexShader;
 	    private programs;
 	    private buffers;
 	    private inputViews;
 	    private outputViews;
-	    private extensions;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
 	    load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
@@ -677,6 +903,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 
 }
 declare module 'webdnn/webgpu_handler' {
+	/// <reference path="webgpu.d.ts" />
 	/**
 	 * @module webdnn
 	 */
@@ -704,73 +931,6 @@ declare module 'webdnn/webgpu_handler' {
 	export const IS_WEBGPU_SUPPORTED: boolean;
 
 }
-declare module 'webdnn/buffer/buffer' {
-	/**
-	 * @module webdnn
-	 */
-	/** Don't Remove This comment block */
-	/**
-	 * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
-	 *
-	 * @protected
-	 */
-	export abstract class Buffer {
-	    /**
-	     * @property {number}
-	     */
-	    byteLength: number;
-	    backend: string;
-	    constructor(byteLength: number, backend: string);
-	    /**
-	     * Write contents onto specified position.
-	     *
-	     * @param {ArrayBufferView} src contents source buffer
-	     * @param {number} offset position where contents are written on
-	     */
-	    abstract write(src: ArrayBufferView, offset?: number): Promise<void>;
-	    /**
-	     * Read contents from specified position.
-	     *
-	     * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
-	     * @param {number} offset position where contents are read from
-	     * @param {length} length contents length
-	     */
-	    abstract read(dst: Float32ArrayConstructor | Int32ArrayConstructor, offset?: number, length?: number): Promise<void>;
-	    /**
-	     * for a range which will be written from CPU iteratively, make view to avoid copy (if backend allows)
-	     * if backend does not allow such operation, return newly allocated memory and send their contents to GPU when syncWriteViews is called
-	     *
-	     * @param {number} offset position where buffer-view begin from
-	     * @param {number} length buffer-view length
-	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
-	     */
-	    abstract getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-	    abstract getWriteView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
-	    /**
-	     * for a range which will be read from CPU iteratively, make view to avoid copy (if backend allows)
-	     * if backend does not allow such operation, return newly allocated memory and fill their contents from GPU when syncReadViews is called
-	     *
-	     * @param {number} offset position where buffer-view begin from
-	     * @param {number} length buffer-view length
-	     * @param {Int32ArrayConstructor|Float32ArrayConstructor} type data format such as Float32Array, Int32Array, and so on.
-	     */
-	    abstract getReadView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
-	    abstract getReadView(offset: number, length: number, type: Float32ArrayConstructor): Float32Array;
-	    /**
-	     * Sync buffered data into memory.
-	     *
-	     * @see Buffer#getWriteView
-	     */
-	    abstract syncWriteViews(): Promise<void>;
-	    /**
-	     * Sync memory data into buffer view.
-	     *
-	     * @see Buffer#getReadView
-	     */
-	    abstract syncReadViews(): Promise<void>;
-	}
-
-}
 declare module 'webdnn/buffer/buffer_webgpu' {
 	/**
 	 * @module webdnn
@@ -782,7 +942,7 @@ declare module 'webdnn/buffer/buffer_webgpu' {
 	 * @protected
 	 */
 	export default class BufferWebGPU extends Buffer {
-	    private static webgpuHandler;
+	    private static handler;
 	    buffer: WebGPUBuffer;
 	    bufferView: Uint8Array;
 	    constructor(byteLength: number);

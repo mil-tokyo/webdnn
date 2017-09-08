@@ -22,9 +22,9 @@ template = FragmentShaderPreamble + """
 void main() {
     vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
     vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
-    vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
+    vec2 p_x0 = convert_coord(p_X0, s_X0, s_x0, d_x0);
 
-    float x0 = texture2D(X0, p_x0 / d_x0).r;
+    float x0 = texture2D(X0, p_x0).r;
     float y;
 
     y = x0;

@@ -988,6 +988,427 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
+ *
+ * @protected
+ */
+class Buffer {
+    constructor(byteLength, backend) {
+        this.byteLength = byteLength;
+        this.backend = backend;
+    }
+}
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+/**
+ * @protected
+ */
+class BufferWebGL extends Buffer {
+    constructor(gl, byteLength, textureWidth, textureHeight, name, array, channelMode) {
+        super(byteLength, 'webgl');
+        this._texture = null;
+        this.readTextureUnitInices = [];
+        this.isBoundToDrawFrameBuffer = false;
+        this.gl = gl;
+        this.name = name;
+        this.channelMode = channelMode;
+        // switch (this.channelMode) {
+        //     case 'RGBA':
+        //         this.elementsPerPixel = 4;
+        //         break;
+        //
+        //     case 'R':
+        //         this.elementsPerPixel = 1;
+        //         break;
+        //
+        //     default:
+        //         throw Error('Unknown channel mode');
+        // }
+        if (TextureManager.handler.isWebGL2) {
+            this.elementsPerPixel = 1;
+        }
+        else {
+            this.elementsPerPixel = 4;
+        }
+        this.array = array || new Float32Array(this.length);
+        // width is fixed as 1024, height is flexible.
+        // FIXME: flexible width for efficient memory allocation
+        const packedLength = Math.ceil(this.length / this.elementsPerPixel);
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
+    }
+    get texture() {
+        return this._texture;
+    }
+    get length() {
+        return this.byteLength / Float32Array.BYTES_PER_ELEMENT;
+    }
+    /**
+     * Write contents onto specified position synchronously.
+     *
+     * @param {ArrayBufferView} src contents source buffer
+     * @param {number} offset position where contents are written on
+     */
+    write(src, offset) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.array.set(src, offset);
+            yield this.syncWriteViews();
+        });
+    }
+    /**
+     * Read contents from specified position synchronously.
+     *
+     * @param {Float32ArrayConstructor | Int32ArrayConstructor} dst buffer where contents are written on
+     * @param {number} offset position where contents are read from
+     * @param {length} length contents length
+     */
+    read(dst, offset = 0, length) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (dst !== Float32Array)
+                throw new Error('Currently, only Float32Array is supported for parameter \'dst\'.');
+            yield this.syncReadViews();
+            new Float32Array(this.array.buffer, offset * Float32Array.BYTES_PER_ELEMENT, length);
+        });
+    }
+    getWriteView(offset, length, type) {
+        return new type(this.array.buffer, offset * type.BYTES_PER_ELEMENT, length);
+    }
+    ;
+    getReadView(offset, length, type) {
+        return new type(this.array.buffer, offset * type.BYTES_PER_ELEMENT, length);
+    }
+    /**
+     * Sync buffered data into memory.
+     *
+     * @see Buffer#getWriteView
+     */
+    syncWriteViews() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let gl = this.gl;
+            if (!this.texture)
+                this.allocateTexture();
+            let tmp = this.pack(this.array);
+            if (tmp.length != this.textureWidth * this.textureHeight * 4) {
+                let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * 4); //TODO
+                tmp2.set(tmp, 0);
+                tmp = tmp2;
+            }
+            let format = TextureManager.handler.isWebGL2 ? gl.RED : gl.RGBA;
+            this.bindToReadTexture(9); //TODO: texture unit 9 is always available?
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, format, gl.FLOAT, tmp);
+            this.unbindFromReadTexture();
+        });
+    }
+    /**
+     * Sync memory data into buffer view.
+     *
+     * @see Buffer#getReadView
+     */
+    syncReadViews() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let gl = this.gl;
+            let tmp = new Float32Array(this.textureWidth * this.textureHeight * 4); //TODO
+            let format = gl.RGBA;
+            this.bindToDrawTexture();
+            gl.readPixels(0, 0, this.textureWidth, this.textureHeight, format, gl.FLOAT, tmp);
+            this.unbindFromDrawTexture();
+            tmp = this.unpack(tmp);
+            this.array.set(tmp.slice(0, this.length), 0);
+        });
+    }
+    bindToReadTexture(unit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.isBoundToDrawFrameBuffer)
+                throw Error('This buffer is already registered as draw buffer. ' +
+                    'You may forgot to unbind the binding while previous operations.');
+            let gl = this.gl;
+            if (!this.texture) {
+                this.allocateTexture();
+                yield this.syncWriteViews();
+            }
+            gl.activeTexture(gl.TEXTURE0 + unit);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            this.readTextureUnitInices.push(unit);
+        });
+    }
+    unbindFromReadTexture() {
+        let gl = this.gl;
+        for (let unit of this.readTextureUnitInices) {
+            gl.activeTexture(gl.TEXTURE0 + unit);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+        this.readTextureUnitInices = [];
+    }
+    bindToDrawTexture() {
+        if (this.readTextureUnitInices.length > 0)
+            throw Error('This buffer is already registered as read buffer. ' +
+                'You cannot bind a texture as both read and draw texture buffer at same time.');
+        if (this.isBoundToDrawFrameBuffer)
+            throw Error('This buffer is already registered as draw buffer. ' +
+                'You may forgot to unbind the binding while previous operations.');
+        let gl = this.gl;
+        if (!this.texture)
+            this.allocateTexture();
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+        this.isBoundToDrawFrameBuffer = true;
+    }
+    unbindFromDrawTexture() {
+        if (!this.isBoundToDrawFrameBuffer)
+            return;
+        let gl = this.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+        this.isBoundToDrawFrameBuffer = false;
+    }
+    pack(array) {
+        if (TextureManager.handler.isWebGL2) {
+            return new Float32Array(array);
+        }
+        else {
+            let result = new Float32Array(array.length * 4);
+            for (let i = 0; i < array.length; i++)
+                result[i * 4] = array[i];
+            return result;
+        }
+        //     switch (this.channelMode) {
+        //         case 'RGBA':
+        //             return new Float32Array(array);
+        //
+        //         case 'R':
+        //             let result = new Float32Array(array.length * 4);
+        //             for (let i = 0; i < array.length; i++) result[i * 4] = array[i];
+        //             return result;
+        //
+        //         default:
+        //             throw Error('Unknown channel mode');
+        //     }
+    }
+    unpack(array) {
+        if (TextureManager.handler.isWebGL2) {
+            let result = new Float32Array(array.length / 4);
+            for (let i = 0; i < array.length / 4; i++)
+                result[i] = array[i * 4];
+            return result;
+        }
+        else {
+            let result = new Float32Array(array.length / 4);
+            for (let i = 0; i < array.length / 4; i++)
+                result[i] = array[i * 4];
+            return result;
+        }
+        // switch (this.channelMode) {
+        //     case 'RGBA':
+        //         return new Float32Array(array);
+        //
+        //     case 'R':
+        //         let result = new Float32Array(array.length / 4);
+        //         for (let i = 0; i < array.length / 4; i++) result[i] = array[i * 4];
+        //         return result;
+        //
+        //     default:
+        //         throw Error('Unknown channel mode');
+        // }
+    }
+    allocateTexture() {
+        if (this.texture)
+            throw Error('Texture is already allocated.');
+        this._texture = TextureManager.allocate(this.textureWidth, this.textureHeight);
+    }
+}
+const TextureManager = new class TextureManagerConstructor {
+    init(handler) {
+        this.handler = handler;
+    }
+    allocate(textureWidth, textureHeight) {
+        return this.handler.createTexture(textureWidth, textureHeight);
+    }
+    release(texture) {
+        this.handler.gl.deleteTexture(texture);
+    }
+}();
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+/**
+ * @protected
+ */
+class WebGLHandler {
+    constructor() {
+        let { gl, vao, isWebGL2 } = checkNull(WebGLHandler.initializeContext());
+        this.gl = gl;
+        this.vao = vao;
+        this.isWebGL2 = isWebGL2;
+    }
+    createTexture(textureWidth, textureHeight) {
+        let gl = this.gl;
+        let texture = checkNull(gl.createTexture());
+        let internalFormat = this.isWebGL2 ? gl.R32F : gl.RGBA;
+        let format = this.isWebGL2 ? gl.RED : gl.RGBA;
+        let type = gl.FLOAT;
+        gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, textureWidth, textureHeight, 0, format, type, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return texture;
+    }
+    createVertexShader(source) {
+        return this.createShader(this.gl.VERTEX_SHADER, source);
+    }
+    createFragmentShader(source) {
+        return this.createShader(this.gl.FRAGMENT_SHADER, source);
+    }
+    createShader(type, source) {
+        let shader = checkNull(this.gl.createShader(type));
+        this.gl.shaderSource(shader, source);
+        this.gl.compileShader(shader);
+        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+            console.error(this.gl.getShaderInfoLog(shader));
+            throw Error("Shader Compile failed: " + this.gl.getShaderInfoLog(shader));
+        }
+        return shader;
+    }
+    createProgram(vertexShader, fragmentShader) {
+        let program = checkNull(this.gl.createProgram());
+        this.gl.attachShader(program, fragmentShader);
+        this.gl.attachShader(program, vertexShader);
+        this.gl.linkProgram(program);
+        if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+            console.error(this.gl.getProgramInfoLog(program));
+            throw Error('ShaderProgram Initialization failed.');
+        }
+        return program;
+    }
+    createArrayBuffer(vertexArray) {
+        let buffer = checkNull(this.gl.createBuffer());
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
+        return buffer;
+    }
+    createVertexArray() {
+        if (this.isWebGL2) {
+            return checkNull(this.gl.createVertexArray());
+        }
+        else {
+            return checkNull(this.vao.createVertexArrayOES());
+        }
+    }
+    createFrameBuffer() {
+        return checkNull(this.gl.createFramebuffer());
+    }
+    bindArrayBuffer(buffer) {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+    }
+    bindFrameBuffer(frameBuffer, width, height) {
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, frameBuffer);
+        this.gl.viewport(0, 0, width, height);
+        this.gl.scissor(0, 0, width, height);
+    }
+    useProgram(program) {
+        this.gl.useProgram(program);
+    }
+    bindVertexArray(vao) {
+        if (this.isWebGL2) {
+            this.gl.bindVertexArray(vao);
+        }
+        else {
+            this.vao.bindVertexArrayOES(vao);
+        }
+    }
+    deleteTexture(texture) {
+        this.gl.deleteTexture(texture);
+    }
+    static initializeWebGL2Context(canvas) {
+        let gl;
+        gl = (canvas.getContext('webgl2'));
+        if (!gl)
+            return null;
+        if (!gl.getExtension('EXT_color_buffer_float'))
+            return null;
+        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+            return null;
+        return gl;
+    }
+    static initializeWebGL1Context(canvas) {
+        let gl;
+        let vao;
+        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
+        if (!gl)
+            return null;
+        if (!gl.getExtension('OES_texture_float'))
+            return null;
+        if (!(vao = gl.getExtension('OES_vertex_array_object')))
+            return null;
+        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+            return null;
+        return { gl, vao };
+    }
+    static initializeContext() {
+        let canvas = document.createElement('canvas');
+        let gl;
+        let isWebGL2 = false;
+        let vao;
+        gl = WebGLHandler.initializeWebGL2Context(canvas);
+        if (gl) {
+            isWebGL2 = true;
+        }
+        else {
+            let res = WebGLHandler.initializeWebGL1Context(canvas);
+            if (res) {
+                gl = res.gl;
+                vao = res.vao;
+                isWebGL2 = false;
+            }
+            else {
+                return null;
+            }
+        }
+        gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.STENCIL_TEST);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.DITHER);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+        gl.disable(gl.SAMPLE_COVERAGE);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        return { gl, vao, isWebGL2 };
+    }
+    /**
+     * Check whether WebGL is supported or not
+     * @protected
+     */
+    static checkAvailability() {
+        if (availability === null) {
+            if (!WebGLHandler.initializeContext()) {
+                availability = false;
+            }
+            else {
+                availability = true;
+            }
+        }
+        return availability;
+    }
+}
+let availability = null;
+function checkNull(obj) {
+    if (obj === null)
+        throw Error('Null is deteced');
+    return obj;
+}
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 /**
  * @protected
@@ -998,142 +1419,6 @@ const vertexArray = new Float32Array([
     +1, +1,
     +1, -1,
 ]);
-/**
- * Buffer wrapper for WebGL backend
- * @TODO: Move this into `/buffer/buffer_webgl.ts` and implement `Buffer` interface.
- * @protected
- */
-class WebGLBuffer {
-    constructor(gl, length, name, array, channelMode) {
-        this._texture = null;
-        this.textureUnit = -1;
-        this.gl = gl;
-        this.name = name;
-        this.channelMode = channelMode;
-        switch (this.channelMode) {
-            case 'RGBA':
-                this.elementsPerPixel = 4;
-                break;
-            case 'R':
-                this.elementsPerPixel = 1;
-                break;
-            default:
-                throw Error('Unknown channel mode');
-        }
-        this.length = length;
-        this.array = array || new Float32Array(this.length);
-        // width is fixed as 1024, height is flexible.
-        // FIXME: flexible width for efficient memory allocation
-        const packedLength = Math.ceil(length / this.elementsPerPixel);
-        this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
-        this.textureHeight = Math.ceil(packedLength / 2048);
-    }
-    get texture() {
-        return this._texture;
-    }
-    initializeTexture() {
-        let gl = this.gl;
-        let texture = checkNull(gl.createTexture());
-        gl.activeTexture(gl.TEXTURE0 + 9); // TODO
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.textureWidth, this.textureHeight, 0, gl.RGBA, gl.FLOAT, null);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        this._texture = texture;
-    }
-    disposeTexture() {
-        this.unbindTextureFromUnit();
-        this.gl.deleteTexture(this.texture);
-        this._texture = null;
-    }
-    allocateOnGPU() {
-        if (!this.texture)
-            this.initializeTexture();
-    }
-    uploadToGPU() {
-        this.allocateOnGPU();
-        let gl = this.gl;
-        let tmp = this.pack(this.array);
-        if (tmp.length != this.textureWidth * this.textureHeight * 4) {
-            let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * 4);
-            tmp2.set(tmp, 0);
-            tmp = tmp2;
-        }
-        gl.activeTexture(gl.TEXTURE0 + 9); // TODO
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-    downloadToCPU() {
-        let gl = this.gl;
-        let tmp = new Float32Array(this.textureWidth * this.textureHeight * 4);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
-        gl.readPixels(0, 0, this.textureWidth, this.textureHeight, gl.RGBA, gl.FLOAT, tmp);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-        this.array.set(this.unpack(tmp).slice(0, this.length), 0);
-        this.disposeTexture();
-    }
-    releaseGPUMemory() {
-        this.disposeTexture();
-    }
-    bindTextureToUnit(unit) {
-        if (!this.texture)
-            this.uploadToGPU();
-        let gl = this.gl;
-        this.textureUnit = unit;
-        gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-    }
-    unbindTextureFromUnit() {
-        if (this.textureUnit === -1)
-            return;
-        let gl = this.gl;
-        gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        this.textureUnit = -1;
-    }
-    bindTextureToCurrentFrameBuffer() {
-        if (this.textureUnit !== -1)
-            throw ('This buffer is already registered as input texture. Please unbind first.');
-        if (!this.texture)
-            this.allocateOnGPU();
-        let gl = this.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
-    }
-    unbindTextureFromCurrentFrameBuffer() {
-        let gl = this.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-    }
-    pack(array) {
-        switch (this.channelMode) {
-            case 'RGBA':
-                return new Float32Array(array);
-            case 'R':
-                let result = new Float32Array(array.length * 4);
-                for (let i = 0; i < array.length; i++)
-                    result[i * 4] = array[i];
-                return result;
-            default:
-                throw Error('Unknown channel mode');
-        }
-    }
-    unpack(array) {
-        switch (this.channelMode) {
-            case 'RGBA':
-                return new Float32Array(array);
-            case 'R':
-                let result = new Float32Array(array.length / 4);
-                for (let i = 0; i < array.length / 4; i++)
-                    result[i] = array[i * 4];
-                return result;
-            default:
-                throw Error('Unknown channel mode');
-        }
-    }
-}
 /**
  * @protected
  */
@@ -1148,18 +1433,16 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
         // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
         const IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 &&
             navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
-        return IS_WEBGL_SUPPORTED && !IS_SAFARI;
+        return WebGLHandler.checkAvailability() && !IS_SAFARI;
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!DescriptorRunnerWebGL.checkAvailability())
                 throw Error('WebGL backend is not supported in this browser.');
-            let { gl, extensions } = initializeWebGLRenderingContext();
-            this.gl = gl;
-            this.extensions = extensions;
-            let vertexBuffer = this.gl.createBuffer();
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-            this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
+            this.handler = new WebGLHandler();
+            TextureManager.init(this.handler);
+            let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
+            this.handler.bindArrayBuffer(vertexBuffer);
             this.buffers = new Map();
         });
     }
@@ -1186,21 +1469,20 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             let decoder = get_weight_decoder(this.descriptor.weight_encoding);
             let weight = yield decoder.decode(new Uint8Array(weightRawArray));
             let buffers = this.buffers;
-            Object.entries(descriptor.allocations)
-                .forEach(([name, { allocation_size, channel_mode }]) => {
-                buffers.set(name, new WebGLBuffer(this.gl, allocation_size, name, null, channel_mode));
+            Object.entries(descriptor.memory_layout.static.allocations)
+                .forEach(([name, { width, height, size, channel_mode }]) => {
+                buffers.set(name, new BufferWebGL(this.handler.gl, size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
             });
             Object.entries(descriptor.constants_map)
-                .forEach(([variable_name, { size, byte_offset }]) => {
-                let buffer = buffers.get(descriptor.variables[variable_name].allocation_name);
-                buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+                .forEach(([name, { size, byte_offset }]) => {
+                buffers.get(name).array.set(new Float32Array(weight.buffer, byte_offset, size));
             });
             (yield this.getInputViews())
                 .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).getWriteView(0, view.length, Float32Array).buffer));
             (yield this.getOutputViews())
                 .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).getReadView(0, view.length, Float32Array).buffer));
         });
     }
     initializeDynamicBuffer() {
@@ -1212,18 +1494,16 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             let descriptor = this.descriptor;
             let placeholderContext = this.placeholderContext;
             let buffers = this.buffers;
-            Object.entries(descriptor.allocations)
-                .forEach(([name, { allocation_size, channel_mode }]) => {
-                if (typeof allocation_size == 'number')
-                    return;
-                buffers.set(name, new WebGLBuffer(this.gl, placeholderContext.resolve(allocation_size), name, null, channel_mode));
+            Object.entries(descriptor.memory_layout.dynamic.allocations)
+                .forEach(([name, { width, height, size, channel_mode }]) => {
+                buffers.set(name, new BufferWebGL(this.handler.gl, placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
             });
             (yield this.getInputViews())
                 .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
             (yield this.getOutputViews())
                 .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(view.name).array.buffer));
+                .forEach(view => view.setArrayBuffer(buffers.get(view.name).getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
             this.buildPipeline();
         });
     }
@@ -1240,36 +1520,17 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 throw new Error('Descriptor is not loaded');
             let descriptor = this.descriptor;
             this.programs = new Map();
-            this.vertexShader = checkNull(this.gl.createShader(this.gl.VERTEX_SHADER));
-            this.gl.shaderSource(this.vertexShader, `
+            this.vertexShader = this.handler.createVertexShader(`
             precision highp float;
             attribute vec2 _xy;
             void main() { 
               gl_Position = vec4(_xy, 0, 1); 
             }
         `);
-            this.gl.compileShader(this.vertexShader);
-            if (!this.gl.getShaderParameter(this.vertexShader, this.gl.COMPILE_STATUS)) {
-                console.error(this.gl.getShaderInfoLog(this.vertexShader));
-                throw Error("Shader Compile failed: " + this.gl.getShaderInfoLog(this.vertexShader));
-            }
             Object.keys(descriptor.shader_sources)
                 .forEach(name => {
-                let shader = checkNull(this.gl.createShader(this.gl.FRAGMENT_SHADER));
-                this.gl.shaderSource(shader, descriptor.shader_sources[name]);
-                this.gl.compileShader(shader);
-                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-                    console.error(this.gl.getShaderInfoLog(shader));
-                    throw Error("Shader Compile failed: " + this.gl.getShaderInfoLog(shader));
-                }
-                let program = checkNull(this.gl.createProgram());
-                this.gl.attachShader(program, shader);
-                this.gl.attachShader(program, this.vertexShader);
-                this.gl.linkProgram(program);
-                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-                    console.error(this.gl.getProgramInfoLog(program));
-                    throw Error('ShaderProgram Initialization failed.');
-                }
+                let fragmentShader = this.handler.createFragmentShader(descriptor.shader_sources[name]);
+                let program = this.handler.createProgram(this.vertexShader, fragmentShader);
                 this.programs.set(name, program);
             });
         });
@@ -1301,10 +1562,9 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
         this.inputViews = descriptor.inputs.map(name => {
-            let { variable_size, allocation_name } = descriptor.variables[name];
             let view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: this.buffers.get(name).length,
                 offset: 0
             }, placeholderContext, true);
             return view;
@@ -1321,10 +1581,9 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
         this.outputViews = descriptor.outputs.map(name => {
-            let { variable_size, allocation_name } = descriptor.variables[name];
             let view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: this.buffers.get(name).length,
                 offset: 0
             }, placeholderContext, true);
             return view;
@@ -1338,9 +1597,8 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             throw new Error('PlaceholderContext is not initialized');
         if (!this.placeholderContext.isResolved)
             throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
-        let gl = this.gl;
+        let gl = this.handler.gl;
         let buffers = this.buffers;
-        let descriptor = this.descriptor;
         let referenceCount = new Map();
         this.runtimeInfo = {
             inputs: this.getInputViews().map(view => buffers.get(view.name)),
@@ -1348,7 +1606,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             programs: this.descriptor.exec_infos.map(execInfo => {
                 // inputs
                 let inputs = execInfo.inputs.map(input => {
-                    let buffer = buffers.get(descriptor.variables[input.variable_name].allocation_name);
+                    let buffer = buffers.get(input.variable_name);
                     if (!referenceCount.has(buffer))
                         referenceCount.set(buffer, 0);
                     referenceCount.set(buffer, referenceCount.get(buffer) + 1);
@@ -1358,10 +1616,10 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     };
                 });
                 //output
-                let output = buffers.get(descriptor.variables[execInfo.output].allocation_name);
+                let output = buffers.get(execInfo.output);
                 // shader
                 let program = this.programs.get(execInfo.shader_name);
-                gl.useProgram(program);
+                this.handler.useProgram(program);
                 // uniforms
                 let uniforms = Object.keys(execInfo.uniforms).map(name => {
                     let { type, value } = execInfo.uniforms[name];
@@ -1396,8 +1654,8 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                     }
                 });
                 // vao
-                let vao = this.extensions.vao.createVertexArrayOES();
-                this.extensions.vao.bindVertexArrayOES(vao);
+                let vao = this.handler.createVertexArray();
+                this.handler.bindVertexArray(vao);
                 // attributes
                 let loc = gl.getAttribLocation(program, '_xy');
                 gl.vertexAttribPointer(loc, 2, gl.FLOAT, true, 8, 0);
@@ -1405,7 +1663,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 // run
                 return {
                     program: program,
-                    frameBuffer: gl.createFramebuffer(),
+                    frameBuffer: this.handler.createFrameBuffer(),
                     name: execInfo.shader_name,
                     width: output.textureWidth,
                     height: output.textureHeight,
@@ -1440,32 +1698,25 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             if (!this.placeholderContext.isResolved)
                 throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
             this._running = true;
-            let gl = this.gl;
+            let gl = this.handler.gl;
             let runtimeInfo = this.runtimeInfo;
-            let vaoExtension = this.extensions.vao;
             if (this.runtimeInfo.programs.length > 0) {
                 for (let buffer of runtimeInfo.inputs)
-                    buffer.uploadToGPU();
+                    yield buffer.syncWriteViews();
                 if (isDebugMode()) {
                     let records = [];
                     let totalElapsedTime = 0;
                     for (let runtimeProgramInfo of runtimeInfo.programs) {
                         let start = performance.now();
-                        //vao
-                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
-                        // frameBuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
-                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        this.handler.bindVertexArray(runtimeProgramInfo.vao);
+                        this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
                         // inputs
-                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs) {
-                            gl.activeTexture(gl.TEXTURE0 + uniformIndex);
-                            gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
-                        }
+                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
+                            yield buffer.bindToReadTexture(uniformIndex);
                         // output
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, runtimeProgramInfo.output.texture, 0);
+                        runtimeProgramInfo.output.bindToDrawTexture();
                         // shader
-                        gl.useProgram(runtimeProgramInfo.program);
+                        this.handler.useProgram(runtimeProgramInfo.program);
                         // uniforms
                         for (let uniform of runtimeProgramInfo.uniforms)
                             uniform.func.apply(gl, uniform.args);
@@ -1479,10 +1730,12 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                         });
                         totalElapsedTime += elapsedTime;
                         for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs) {
-                            buffer.downloadToCPU();
+                            buffer.unbindFromReadTexture();
+                            yield buffer.syncReadViews();
                             console.log(uniformIndex, buffer.array);
                         }
-                        runtimeProgramInfo.output.downloadToCPU();
+                        runtimeProgramInfo.output.unbindFromDrawTexture();
+                        yield runtimeProgramInfo.output.syncReadViews();
                         console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
                     }
                     let summary = Array.from(Object.values(records.reduce((summary, record) => {
@@ -1503,92 +1756,32 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                 }
                 else {
                     for (let runtimeProgramInfo of runtimeInfo.programs) {
-                        //vao
-                        vaoExtension.bindVertexArrayOES(runtimeProgramInfo.vao);
-                        // frameBuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, runtimeProgramInfo.frameBuffer);
-                        gl.viewport(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        gl.scissor(0, 0, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                        this.handler.bindVertexArray(runtimeProgramInfo.vao);
+                        this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
                         // inputs
-                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs) {
-                            buffer.bindTextureToUnit(uniformIndex);
-                        }
+                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
+                            yield buffer.bindToReadTexture(uniformIndex);
                         // output
-                        runtimeProgramInfo.output.bindTextureToCurrentFrameBuffer();
+                        runtimeProgramInfo.output.bindToDrawTexture();
                         // shader
-                        gl.useProgram(runtimeProgramInfo.program);
+                        this.handler.useProgram(runtimeProgramInfo.program);
                         // uniforms
                         for (let uniform of runtimeProgramInfo.uniforms)
                             uniform.func.apply(gl, uniform.args);
                         // run
                         gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                        // release buffers
-                        for (let buffer of runtimeProgramInfo.disposable)
-                            buffer.releaseGPUMemory();
-                        // runtimeProgramInfo.output.downloadToCPU();
+                        // release buffers and binding
+                        // for (let buffer of runtimeProgramInfo.disposable) buffer.releaseGPUMemory();
+                        for (let { buffer } of runtimeProgramInfo.inputs)
+                            buffer.unbindFromReadTexture();
+                        runtimeProgramInfo.output.unbindFromDrawTexture();
                     }
                 }
                 for (let buffer of runtimeInfo.outputs)
-                    buffer.downloadToCPU();
+                    yield buffer.syncReadViews();
             }
             this._running = false;
         });
-    }
-}
-function initializeWebGLRenderingContext() {
-    let canvas = document.createElement('canvas');
-    let gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
-    if (!gl)
-        return null;
-    let vao;
-    if (!gl.getExtension('OES_texture_float'))
-        return null;
-    if (!(vao = gl.getExtension('OES_vertex_array_object')))
-        return null;
-    if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
-        return null;
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.STENCIL_TEST);
-    gl.disable(gl.BLEND);
-    gl.disable(gl.DITHER);
-    gl.disable(gl.POLYGON_OFFSET_FILL);
-    gl.disable(gl.SAMPLE_COVERAGE);
-    gl.enable(gl.SCISSOR_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
-    return {
-        gl: gl,
-        extensions: {
-            vao: vao
-        }
-    };
-}
-function checkBrowserSupportStatus() {
-    if (!initializeWebGLRenderingContext())
-        return;
-    IS_WEBGL_SUPPORTED = true;
-}
-function checkNull(v) {
-    if (!v)
-        throw Error('null error');
-    return v;
-}
-let IS_WEBGL_SUPPORTED = false;
-document.addEventListener('DOMContentLoaded', checkBrowserSupportStatus);
-
-/**
- * @module webdnn
- */
-/** Don't Remove This comment block */
-/**
- * Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.
- *
- * @protected
- */
-class Buffer {
-    constructor(byteLength, backend) {
-        this.byteLength = byteLength;
-        this.backend = backend;
     }
 }
 
@@ -1605,13 +1798,13 @@ class BufferWebGPU extends Buffer {
         if (byteLength == 0) {
             byteLength = 4; //0 length buffer causes error
         }
-        this.buffer = BufferWebGPU.webgpuHandler.createBuffer(new Uint8Array(byteLength));
+        this.buffer = BufferWebGPU.handler.createBuffer(new Uint8Array(byteLength));
         this.bufferView = new Uint8Array(this.buffer.contents);
     }
     // async: there may be platforms synchronization is needed before writing
     write(src, dst_offset) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield BufferWebGPU.webgpuHandler.sync();
+            yield BufferWebGPU.handler.sync();
             let viewSameType = new src.constructor(this.bufferView.buffer);
             viewSameType.set(src, dst_offset);
         });
@@ -1620,7 +1813,7 @@ class BufferWebGPU extends Buffer {
         return __awaiter(this, void 0, void 0, function* () {
             if (!dst)
                 throw new Error('dst cannot be null');
-            yield BufferWebGPU.webgpuHandler.sync();
+            yield BufferWebGPU.handler.sync();
             if (this.byteLength === 0)
                 return;
             let dstConstructor = dst.constructor;
@@ -1630,15 +1823,13 @@ class BufferWebGPU extends Buffer {
         });
     }
     static init(webgpuHandler) {
-        this.webgpuHandler = webgpuHandler;
+        this.handler = webgpuHandler;
     }
     getWriteView(offset, length, type) {
-        let viewSameType = new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
-        return viewSameType;
+        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
     }
     getReadView(offset, length, type) {
-        let viewSameType = new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
-        return viewSameType;
+        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
     }
     syncWriteViews() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1648,11 +1839,12 @@ class BufferWebGPU extends Buffer {
     syncReadViews() {
         return __awaiter(this, void 0, void 0, function* () {
             // if the user awaits promise from final kernel execution, this function call is not needed.
-            yield BufferWebGPU.webgpuHandler.sync();
+            yield BufferWebGPU.handler.sync();
         });
     }
 }
 
+///<reference path="./webgpu.d.ts" />
 /**
  * @module webdnn
  */
