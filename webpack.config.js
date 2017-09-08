@@ -119,7 +119,10 @@ function generateConfig(tsxPath, ejsPath, outputName) {
 				from: './src/static',
 				to: './'
 			}])
-		]).filter(v => !!v)
+		]).filter(v => !!v),
+		externals: {
+			'webdnn': 'WebDNN'
+		}
 	};
 }
 

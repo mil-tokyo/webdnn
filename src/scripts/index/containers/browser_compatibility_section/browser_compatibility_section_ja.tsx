@@ -4,6 +4,7 @@ import * as bootstrap from "../../../common/bootstrap";
 import TableWrapper from "../../components/table_wrapper/table_wrapper";
 import TopPageSection, { TopPageSectionSubTitle } from "../../components/toppage_section/toppage_section";
 import * as style from "./browser_compatibility_section.scss";
+import * as WebDNN from "webdnn";
 
 export const AnchorID = "compatibility";
 
@@ -19,20 +20,16 @@ let svgIcons = {
 
 class BrowserCompatibilitySectionJA extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
     componentDidMount() {
-        let availability: { [key: string]: boolean } = {
-            'webgpu': ('WebGPUComputeCommandEncoder' in window),
-            'webassembly': ('Worker' in window),
-            'fallback': true
-        };
+        let availability = WebDNN.getBackendAvailability().status;
 
-        for (let backend of ['webgpu', 'webassembly', 'fallback']) {
+        for (let backend of ['webgpu', 'webgl', 'webassembly', 'fallback']) {
             let node = (this.refs[backend] as (HTMLElement | null));
             if (!node) continue;
 
             node.classList.remove(style.checking);
             let statusNode = node.querySelector('span');
 
-            if (availability[backend]) {
+            if (availability[backend as WebDNN.BackendName]) {
                 node.classList.add(style.supported);
                 node.classList.remove(style.unsupported);
                 if (statusNode) statusNode.textContent = 'Supported';
@@ -49,13 +46,17 @@ class BrowserCompatibilitySectionJA extends React.Component<React.HTMLAttributes
             <div className={bootstrap.row}>
                 <div className={bootstrap.col12}>
                     <p>
-                        WebDNNは3種類の実行環境(バックエンド)を実装しています。
+                        WebDNNは4種類の実行環境(バックエンド)を実装しています。
                         これらのバックエンドを組み合わせて用いることで、WebDNNは主要ブラウザのすべてで動作します。
                     </p>
                     <dl>
                         <dt>WebGPU backend</dt>
-                        <dd>すべての演算をGPUで行います。GPU APIにはWebGPUを使用しており、3種類の中で最も高速に動作します。ただし、
+                        <dd>すべての演算をGPUで行います。GPU APIにはWebGPUを使用しており、4種類の中で最も高速に動作します。ただし、
                             現在WebGPUをサポートしているブラウザはSafari Technology Preview版しかありません。
+                        </dd>
+                        <dt>WebGPU backend</dt>
+                        <dd>すべての演算をGPUで行います。GPU APIにはWebGLを使用しており、WebGPUバックエンドと同様CPUベースのバックエンドより高速に動作します。
+                            また、WebGLはモダンなブラウザのほぼ全てでサポートされています。
                         </dd>
                         <dt>WebAssembly backend</dt>
                         <dd>すべての演算をCPUで行います。実装にはWebAssemblyを使用し、オーバーヘッドの少ない処理を可能にしています。
@@ -146,6 +147,9 @@ class BrowserCompatibilitySectionJA extends React.Component<React.HTMLAttributes
                                     <span className={style.backend}>WebGPU</span>
                                 </th>
                                 <th>
+                                    <span className={style.backend}>WebGL</span>
+                                </th>
+                                <th>
                                     <span className={style.backend}>WebAssembly/asm.js</span>
                                 </th>
                                 <th>
@@ -154,6 +158,9 @@ class BrowserCompatibilitySectionJA extends React.Component<React.HTMLAttributes
                             </tr>
                             <tr>
                                 <td className={classNames(style.webgpu, style.unsupported)} ref="webgpu">
+                                    <span>Not supported</span>
+                                </td>
+                                <td className={classNames(style.webassembly, style.unsupported)} ref="webgl">
                                     <span>Not supported</span>
                                 </td>
                                 <td className={classNames(style.webassembly, style.unsupported)} ref="webassembly">

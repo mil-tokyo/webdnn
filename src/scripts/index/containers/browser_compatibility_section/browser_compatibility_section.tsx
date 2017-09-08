@@ -4,6 +4,7 @@ import * as bootstrap from "../../../common/bootstrap";
 import TableWrapper from "../../components/table_wrapper/table_wrapper";
 import TopPageSection, { TopPageSectionSubTitle } from "../../components/toppage_section/toppage_section";
 import * as style from "./browser_compatibility_section.scss";
+import * as WebDNN from "webdnn";
 
 export const AnchorID = "compatibility";
 
@@ -19,20 +20,16 @@ let svgIcons = {
 
 class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
     componentDidMount() {
-        let availability: { [key: string]: boolean } = {
-            'webgpu': ('WebGPUComputeCommandEncoder' in window),
-            'webassembly': ('Worker' in window),
-            'fallback': true
-        };
+        let availability = WebDNN.getBackendAvailability().status;
 
-        for (let backend of ['webgpu', 'webassembly', 'fallback']) {
+        for (let backend of ['webgpu', 'webgl', 'webassembly', 'fallback']) {
             let node = (this.refs[backend] as (HTMLElement | null));
             if (!node) continue;
 
             node.classList.remove(style.checking);
             let statusNode = node.querySelector('span');
 
-            if (availability[backend]) {
+            if (availability[backend as WebDNN.BackendName]) {
                 node.classList.add(style.supported);
                 node.classList.remove(style.unsupported);
                 if (statusNode) statusNode.textContent = 'Supported';
@@ -49,15 +46,19 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
             <div className={bootstrap.row}>
                 <div className={bootstrap.col12}>
                     <p>
-                        WebDNN supports 3 execution backend implementations:&nbsp;<b>WebGPU</b>, <b>WebAssembly</b>,
-                        and&nbsp;<b>fallback pure javascript implementation</b>.
-                        By using this 3 backend implementations, <b>WebDNN works all major browsers</b>.
+                        WebDNN supports 4 execution backend implementations:&nbsp;<b>WebGPU</b>, <b>WebGL</b>,
+                        <b>WebAssembly</b>, and&nbsp;<b>fallback pure javascript implementation</b>.
+                        By using these backends, <b>WebDNN works all major browsers</b>.
                     </p>
                     <dl>
                         <dt>WebGPU backend</dt>
-                        <dd>Compute on GPU by WebGPU API. This backend is fastest in 3 backends, but currently WebGPU
+                        <dd>Compute on GPU by WebGPU API. This backend is fastest in 4 backends, but currently WebGPU
                             API is
                             supported only in Safari Technology Preview.
+                        </dd>
+                        <dt>WebGL backend</dt>
+                        <dd>Compute on GPU by WebGL API. This backend is also faster than CPU-based backends, and WebGL
+                            is supported by almost all browsers.
                         </dd>
                         <dt>WebAssembly backend</dt>
                         <dd>Compute on CPU by WebAssembly API. This backend is enough faster than GPU mode of
@@ -148,6 +149,9 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                                     <span className={style.backend}>WebGPU</span>
                                 </th>
                                 <th>
+                                    <span className={style.backend}>WebGL</span>
+                                </th>
+                                <th>
                                     <span className={style.backend}>WebAssembly/asm.js</span>
                                 </th>
                                 <th>
@@ -156,6 +160,9 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                             </tr>
                             <tr>
                                 <td className={classNames(style.webgpu, style.unsupported)} ref="webgpu">
+                                    <span>Not supported</span>
+                                </td>
+                                <td className={classNames(style.webassembly, style.unsupported)} ref="webgl">
                                     <span>Not supported</span>
                                 </td>
                                 <td className={classNames(style.webassembly, style.unsupported)} ref="webassembly">

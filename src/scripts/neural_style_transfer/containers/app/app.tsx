@@ -1,6 +1,7 @@
 import * as React from "react";
 import InitializeLayer from "../../../common/components/initialize_layer/itnitialize_layer";
 import StartLayer from "../../../common/components/start_layer/start_layer";
+import * as WebDNN from "webdnn";
 import MainLayer from "../../components/main_layer/main_layer";
 
 enum Status {
@@ -28,17 +29,17 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
     }
 
     async initAsync() {
-        WebDNN.registerTransformDelegate((url: string) => {
-            let ma = url.match(/([^/]+)(?:\?.*)?$/);
-            return ma ? `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true` : url;
-        });
-
         let runner = await WebDNN.load("./neural_style_transfer", {
             progressCallback: (loaded: number, total: number) => {
                 this.setState({
                     loadingProgressRate: loaded / total
                 });
-            }
+            },
+            transformUrlDelegate: (url: string) => {
+                let ma = url.match(/([^/]+)(?:\?.*)?$/);
+                return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
+            },
+            backendOrder: ['webgpu', 'webassembly', 'fallback']
         });
 
         this.setState({
@@ -57,7 +58,7 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
     render() {
         switch (this.state.status) {
             case Status.SLEEP:
-                return <StartLayer onStart={() => this.onStartButtonClick()}/>;
+                return <StartLayer onStart={() => this.onStartButtonClick()} />;
 
             case Status.INITIALIZING:
                 return <InitializeLayer rate={this.state.loadingProgressRate} />;

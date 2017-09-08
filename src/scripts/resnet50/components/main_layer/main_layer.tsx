@@ -10,6 +10,7 @@ import Labels from "../../../common/imagenet_labels";
 import { loadImageByDialog, loadImageByUrl } from "../../../common/til/load_image";
 import { loadImageDataFromCanvas } from "../../../common/til/load_image_data";
 import * as style from "./main_layer.scss";
+import * as WebDNN from "webdnn";
 
 declare function require(path: string): any;
 
@@ -42,7 +43,24 @@ function computeContainSize(originalWidth: number, originalHeight: number, refer
     };
 }
 
-const clamp = (x: number, min: number, max: number) => x < min ? min : x > max ? max : x;
+function clamp(x: number, min: number, max: number) { return x < min ? min : x > max ? max : x };
+
+function softmax(x: Float32Array) {
+    let max = -Infinity;
+    for (let i = 0; i < x.length; i++) max = max > x[i] ? max : x[i];
+
+    let exp = new Float32Array(x.length);
+    let sum = 0;
+    for (let i = 0; i < x.length; i++) {
+        let e = Math.exp(x[i] - max);
+        sum += e;
+        exp[i] = e;
+    }
+
+    for (let i = 0; i < exp.length; i++) exp[i] /= sum;
+
+    return exp;
+}
 
 /**
  * Draw image data with adjusting whose size to be contained in specified canvas.
@@ -200,10 +218,12 @@ class MainLayer extends React.Component<Props, State> {
         await runner.run();
         let endTime = performance.now();
         this.processingTimes.push(endTime - startTime);
+        console.log(endTime - startTime);
 
         let output = runner.getOutputViews()[0].toActual();
+        if (runner.backendName === 'webgl') output = softmax(output);
         this.results = WebDNN.Math.argmax(output, 5)
-            .map(i => ({
+            .map((i: number) => ({
                 label: Labels[i],
                 prob: output[i]
             }));

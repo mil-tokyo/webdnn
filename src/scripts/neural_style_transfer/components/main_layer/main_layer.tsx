@@ -8,6 +8,7 @@ import ProgressBar from "../../../common/components/progress_bar/progress_bar";
 import dom from "../../../common/dom";
 import { loadImageByDialog, loadImageByUrl } from "../../../common/til/load_image";
 import { loadImageDataFromCanvas, loadImageDataFromVideo } from "../../../common/til/load_image_data";
+import * as WebDNN from "webdnn";
 import * as style from "./main_layer.scss";
 
 declare function require(path: string): any;
@@ -492,12 +493,13 @@ class MainLayer extends React.Component<Props, State> {
                         <LayoutFrame className={style.inputImageContainer} autoReverse>
                             <LayoutFrame className={style.contentImageContainer} center>
                                 <canvas ref="contentCanvas" className={style.contentCanvas}
-                                style={{display:
-                                    (
-                                        (this.state.inputResource == InputResource.Video) ||
-                                        (this.state.inputResource == InputResource.Photo && !this.state.isContentLoaded)
-                                    ) ? 'none' : ''
-                                }}/>
+                                        style={{
+                                            display:
+                                                (
+                                                    (this.state.inputResource == InputResource.Video) ||
+                                                    (this.state.inputResource == InputResource.Photo && !this.state.isContentLoaded)
+                                                ) ? 'none' : ''
+                                        }} />
                                 <video ref="previewVideo"
                                        onClick={(ev) => (ev.target as HTMLVideoElement).play()}
                                        className={classNames(

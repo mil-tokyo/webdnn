@@ -2,6 +2,7 @@ import * as React from "react";
 import InitializeLayer from "../../../common/components/initialize_layer/itnitialize_layer";
 import StartLayer from "../../../common/components/start_layer/start_layer";
 import MainLayer from "../../components/main_layer/main_layer";
+import * as WebDNN from "webdnn";
 
 enum Status {
     SLEEP,
@@ -14,6 +15,8 @@ interface State {
     loadingProgressRate: number,
     status: Status
 }
+
+const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 export default class App extends React.Component<React.HTMLAttributes<HTMLDivElement>, State> {
     constructor() {
@@ -28,17 +31,19 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
     }
 
     async initAsync() {
-        WebDNN.registerTransformDelegate((url: string) => {
-            let ma = url.match(/([^/]+)(?:\?.*)?$/);
-            return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
-        });
-
         let runner = await WebDNN.load("./resnet", {
             progressCallback: (loaded: number, total: number) => {
                 this.setState({
                     loadingProgressRate: loaded / total
                 });
-            }
+            },
+            transformUrlDelegate: (url: string) => {
+                let ma = url.match(/([^/]+)(?:\?.*)?$/);
+                return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
+            },
+            backendOrder: IS_MOBILE ?
+                ['webgpu', 'webassembly', 'webgl', 'fallback'] :
+                ['webgpu', 'webgl', 'webassembly', 'fallback']
         });
 
         this.setState({
