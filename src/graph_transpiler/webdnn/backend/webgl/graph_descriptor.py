@@ -1,9 +1,8 @@
 from collections import OrderedDict
 from typing import Iterable, Dict, Any
 
-from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
-from webdnn.backend.webgl import generator
+from webdnn.backend.webgl.allocator import WebGLMemoryLayout
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
@@ -14,11 +13,10 @@ from webdnn.util import json
 class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     def __init__(self,
                  kernels: Iterable[Kernel],
-                 memory_layout: MemoryLayout,
+                 memory_layout: WebGLMemoryLayout,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
                  constants_encoding: str,
-                 allocations: Dict[Variable, "generator.WebGLAllocation"],
                  constants_map: Any,
                  licenses: Dict[str, str]):
         self.kernels = kernels
@@ -26,7 +24,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         self.inputs = inputs
         self.outputs = outputs
         self.constants_encoding = constants_encoding
-        self.allocations = allocations
         self.constants_map = constants_map
         self.licenses = licenses
 
@@ -61,14 +58,6 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
             "shader_sources": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
-            "variables": {v.name: {
-                "variable_size": v.size,
-                "allocation_name": a.name
-            } for v, a in self.allocations.items()},  # type: Variable, generator.WebGLAllocation
-            "allocations": {a.name: {
-                "allocation_size": a.size,
-                "channel_mode": a.channel_mode.name
-            } for a in self.allocations.values()},
             "constants_map": self.constants_map,
             "licenses": self.licenses,
         }

@@ -30,14 +30,14 @@ class ChannelMode(Attribute):
         return f"ChannelMode[{self.mode.name}]"
 
     @staticmethod
-    def set_mode(base: Node, mode: ChannelModeEnum):
+    def set(base: Node, mode: ChannelModeEnum):
         if base.has_attribute(ChannelMode):
             base.get_attribute(ChannelMode)[0].mode = mode
         else:
             base.attributes.add(ChannelMode(base, mode=mode))
 
     @staticmethod
-    def get_mode(base: Node):
+    def get(base: Node):
         return base.get_attribute(ChannelMode)[0].mode if base.has_attribute(ChannelMode) else ChannelModeEnum.R
 
 

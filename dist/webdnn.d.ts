@@ -588,11 +588,52 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
+	import { Placeholder } from 'webdnn/placeholder';
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
+	import { Allocation, MemoryLayout, ResolvedAllocation } from 'webdnn/graph_descriptor/memory_layout';
 	/**
 	 * @protecte
 	 */
 	export type ChannelMode = 'RGBA' | 'R';
+	/**
+	 * @protected
+	 */
+	export interface WebGLMemoryLayout extends MemoryLayout {
+	    'static': {
+	        size: -1;
+	        allocations: {
+	            [index: string]: ResolvedWebGLAllocation;
+	        };
+	    };
+	    dynamic: {
+	        size: -1;
+	        allocations: {
+	            [index: string]: WebGLAllocation;
+	        };
+	    };
+	}
+	/**
+	 * @protected
+	 */
+	export interface ResolvedWebGLAllocation extends ResolvedAllocation, WebGLAllocation {
+	    name: string;
+	    offset: -1;
+	    size: number;
+	    width: number;
+	    height: number;
+	    channel_mode: ChannelMode;
+	}
+	/**
+	 * @protected
+	 */
+	export interface WebGLAllocation extends Allocation {
+	    name: string;
+	    offset: -1;
+	    size: number | Placeholder;
+	    width: number | Placeholder;
+	    height: number | Placeholder;
+	    channel_mode: ChannelMode;
+	}
 	/**
 	 * @protected
 	 */
@@ -601,18 +642,7 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	        [name: string]: string;
 	    };
 	    exec_infos: GraphDescriptorWebGLExecInfos[];
-	    variables: {
-	        [variable_name: string]: {
-	            variable_size: number;
-	            allocation_name: string;
-	        };
-	    };
-	    allocations: {
-	        [allocation_name: string]: {
-	            allocation_size: number;
-	            channel_mode: ChannelMode;
-	        };
-	    };
+	    memory_layout: WebGLMemoryLayout;
 	    constants_map: {
 	        [variable_name: string]: {
 	            size: number;
@@ -770,10 +800,9 @@ declare module 'webdnn/buffer/buffer_webgl' {
 	    readonly textureHeight: number;
 	    private _texture;
 	    readonly name: string;
-	    private readTextureUnitIndex;
-	    private isBoundToReadFrameBuffer;
+	    private readTextureUnitInices;
 	    private isBoundToDrawFrameBuffer;
-	    constructor(gl: WebGLRenderingContext, byteLength: number, name: string, array: Float32Array | null, channelMode: ChannelMode);
+	    constructor(gl: WebGLRenderingContext, byteLength: number, textureWidth: number, textureHeight: number, name: string, array: Float32Array | null, channelMode: ChannelMode);
 	    readonly texture: WebGLTexture | null;
 	    readonly length: number;
 	    /**

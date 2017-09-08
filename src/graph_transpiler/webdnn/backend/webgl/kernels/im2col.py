@@ -52,16 +52,16 @@ footer = """
 """
 
 template_R = header + """
-    float v = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im) / d_im).r;
+    float v = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im)).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 """ + footer
 
 template_RGBA = header + """
-    float v0 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 0.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
-    float v1 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 1.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
-    float v2 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 2.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
-    float v3 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1 + 3.0) + 0.5, s_Im, s_im, d_im) / d_im).r;
+    float v0 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 0.0) + 0.5, s_Im, s_im, d_im)).r;
+    float v1 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 1.0) + 0.5, s_Im, s_im, d_im)).r;
+    float v2 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 2.0) + 0.5, s_Im, s_im, d_im)).r;
+    float v3 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 3.0) + 0.5, s_Im, s_im, d_im)).r;
     
     gl_FragColor = vec4(v0, v1, v2, v3);
 """ + footer
@@ -103,7 +103,7 @@ def elementwise_add(op: Im2Col) -> List[Kernel]:
         "PW": op.PW,
     })
 
-    source = template_R if ChannelMode.get_mode(col) == ChannelModeEnum.R else template_RGBA
+    source = template_R if ChannelMode.get(col) == ChannelModeEnum.R else template_RGBA
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(

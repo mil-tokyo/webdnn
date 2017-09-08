@@ -1232,17 +1232,12 @@ var Buffer = (function () {
 /**
  * @protected
  */
-var READ_TEXTURE_UNIT_INDEX_NO_BOUND = -1;
-/**
- * @protected
- */
 var BufferWebGL = (function (_super) {
     __extends(BufferWebGL, _super);
-    function BufferWebGL(gl, byteLength, name, array, channelMode) {
+    function BufferWebGL(gl, byteLength, textureWidth, textureHeight, name, array, channelMode) {
         var _this = _super.call(this, byteLength, 'webgl') || this;
         _this._texture = null;
-        _this.readTextureUnitIndex = READ_TEXTURE_UNIT_INDEX_NO_BOUND;
-        _this.isBoundToReadFrameBuffer = false;
+        _this.readTextureUnitInices = [];
         _this.isBoundToDrawFrameBuffer = false;
         _this.gl = gl;
         _this.name = name;
@@ -1269,8 +1264,8 @@ var BufferWebGL = (function (_super) {
         // width is fixed as 1024, height is flexible.
         // FIXME: flexible width for efficient memory allocation
         var packedLength = Math.ceil(_this.length / _this.elementsPerPixel);
-        _this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
-        _this.textureHeight = Math.ceil(packedLength / 2048);
+        _this.textureWidth = textureWidth;
+        _this.textureHeight = textureHeight;
         return _this;
     }
     Object.defineProperty(BufferWebGL.prototype, "texture", {
@@ -1391,9 +1386,6 @@ var BufferWebGL = (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.isBoundToReadFrameBuffer)
-                            throw Error('This buffer is already registered as read buffer with different texture unit. ' +
-                                'You may forgot to unbind the binding while previous operations');
                         if (this.isBoundToDrawFrameBuffer)
                             throw Error('This buffer is already registered as draw buffer. ' +
                                 'You may forgot to unbind the binding while previous operations.');
@@ -1407,24 +1399,23 @@ var BufferWebGL = (function (_super) {
                     case 2:
                         gl.activeTexture(gl.TEXTURE0 + unit);
                         gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                        this.isBoundToReadFrameBuffer = true;
-                        this.readTextureUnitIndex = unit;
+                        this.readTextureUnitInices.push(unit);
                         return [2 /*return*/];
                 }
             });
         });
     };
     BufferWebGL.prototype.unbindFromReadTexture = function () {
-        if (!this.isBoundToReadFrameBuffer)
-            return;
         var gl = this.gl;
-        gl.activeTexture(gl.TEXTURE0 + this.readTextureUnitIndex);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        this.isBoundToReadFrameBuffer = false;
-        this.readTextureUnitIndex = -1;
+        for (var _i = 0, _a = this.readTextureUnitInices; _i < _a.length; _i++) {
+            var unit = _a[_i];
+            gl.activeTexture(gl.TEXTURE0 + unit);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+        this.readTextureUnitInices = [];
     };
     BufferWebGL.prototype.bindToDrawTexture = function () {
-        if (this.isBoundToReadFrameBuffer)
+        if (this.readTextureUnitInices.length > 0)
             throw Error('This buffer is already registered as read buffer. ' +
                 'You cannot bind a texture as both read and draw texture buffer at same time.');
         if (this.isBoundToDrawFrameBuffer)
@@ -1784,16 +1775,15 @@ var DescriptorRunnerWebGL = (function (_super) {
                     case 1:
                         weight = _a.sent();
                         buffers = this.buffers;
-                        Object.entries(descriptor.allocations)
+                        Object.entries(descriptor.memory_layout.static.allocations)
                             .forEach(function (_a) {
-                            var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
-                            buffers.set(name, new BufferWebGL(_this.handler.gl, allocation_size * Float32Array.BYTES_PER_ELEMENT, name, null, channel_mode));
+                            var name = _a[0], _b = _a[1], width = _b.width, height = _b.height, size = _b.size, channel_mode = _b.channel_mode;
+                            buffers.set(name, new BufferWebGL(_this.handler.gl, size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
                         });
                         Object.entries(descriptor.constants_map)
                             .forEach(function (_a) {
-                            var variable_name = _a[0], _b = _a[1], size = _b.size, byte_offset = _b.byte_offset;
-                            var buffer = buffers.get(descriptor.variables[variable_name].allocation_name);
-                            buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+                            var name = _a[0], _b = _a[1], size = _b.size, byte_offset = _b.byte_offset;
+                            buffers.get(name).array.set(new Float32Array(weight.buffer, byte_offset, size));
                         });
                         return [4 /*yield*/, this.getInputViews()];
                     case 2:
@@ -1824,12 +1814,10 @@ var DescriptorRunnerWebGL = (function (_super) {
                         descriptor = this.descriptor;
                         placeholderContext = this.placeholderContext;
                         buffers = this.buffers;
-                        Object.entries(descriptor.allocations)
+                        Object.entries(descriptor.memory_layout.dynamic.allocations)
                             .forEach(function (_a) {
-                            var name = _a[0], _b = _a[1], allocation_size = _b.allocation_size, channel_mode = _b.channel_mode;
-                            if (typeof allocation_size == 'number')
-                                return;
-                            buffers.set(name, new BufferWebGL(_this.handler.gl, placeholderContext.resolve(allocation_size) * Float32Array.BYTES_PER_ELEMENT, name, null, channel_mode));
+                            var name = _a[0], _b = _a[1], width = _b.width, height = _b.height, size = _b.size, channel_mode = _b.channel_mode;
+                            buffers.set(name, new BufferWebGL(_this.handler.gl, placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
                         });
                         return [4 /*yield*/, this.getInputViews()];
                     case 1:
@@ -1904,6 +1892,7 @@ var DescriptorRunnerWebGL = (function (_super) {
         });
     };
     DescriptorRunnerWebGL.prototype.getInputViews = function () {
+        var _this = this;
         if (this.inputViews)
             return this.inputViews;
         if (!this.descriptor)
@@ -1913,10 +1902,9 @@ var DescriptorRunnerWebGL = (function (_super) {
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         this.inputViews = descriptor.inputs.map(function (name) {
-            var _a = descriptor.variables[name], variable_size = _a.variable_size, allocation_name = _a.allocation_name;
             var view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: _this.buffers.get(name).length,
                 offset: 0
             }, placeholderContext, true);
             return view;
@@ -1924,6 +1912,7 @@ var DescriptorRunnerWebGL = (function (_super) {
         return this.inputViews;
     };
     DescriptorRunnerWebGL.prototype.getOutputViews = function () {
+        var _this = this;
         if (this.outputViews)
             return this.outputViews;
         if (!this.descriptor)
@@ -1933,10 +1922,9 @@ var DescriptorRunnerWebGL = (function (_super) {
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         this.outputViews = descriptor.outputs.map(function (name) {
-            var _a = descriptor.variables[name], variable_size = _a.variable_size, allocation_name = _a.allocation_name;
             var view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: _this.buffers.get(name).length,
                 offset: 0
             }, placeholderContext, true);
             return view;
@@ -1953,7 +1941,6 @@ var DescriptorRunnerWebGL = (function (_super) {
             throw new Error("Not all placeholders are resolved: " + this.placeholderContext);
         var gl = this.handler.gl;
         var buffers = this.buffers;
-        var descriptor = this.descriptor;
         var referenceCount = new Map();
         this.runtimeInfo = {
             inputs: this.getInputViews().map(function (view) { return buffers.get(view.name); }),
@@ -1961,7 +1948,7 @@ var DescriptorRunnerWebGL = (function (_super) {
             programs: this.descriptor.exec_infos.map(function (execInfo) {
                 // inputs
                 var inputs = execInfo.inputs.map(function (input) {
-                    var buffer = buffers.get(descriptor.variables[input.variable_name].allocation_name);
+                    var buffer = buffers.get(input.variable_name);
                     if (!referenceCount.has(buffer))
                         referenceCount.set(buffer, 0);
                     referenceCount.set(buffer, referenceCount.get(buffer) + 1);
@@ -1971,7 +1958,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     };
                 });
                 //output
-                var output = buffers.get(descriptor.variables[execInfo.output].allocation_name);
+                var output = buffers.get(execInfo.output);
                 // shader
                 var program = _this.programs.get(execInfo.shader_name);
                 _this.handler.useProgram(program);
@@ -2047,7 +2034,7 @@ var DescriptorRunnerWebGL = (function (_super) {
     };
     DescriptorRunnerWebGL.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var gl, runtimeInfo, vaoExtension, _i, _a, buffer, records, totalElapsedTime_1, _b, _c, runtimeProgramInfo, start, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, elapsedTime, _j, _k, _l, buffer, uniformIndex, summary, _m, _o, runtimeProgramInfo, _p, _q, _r, buffer, uniformIndex, _s, _t, uniform, _u, _v, buffer, _w, _x, buffer;
+            var gl, runtimeInfo, _i, _a, buffer, records, totalElapsedTime_1, _b, _c, runtimeProgramInfo, start, _d, _e, _f, buffer, uniformIndex, _g, _h, uniform, elapsedTime, _j, _k, _l, buffer, uniformIndex, summary, _m, _o, runtimeProgramInfo, _p, _q, _r, buffer, uniformIndex, _s, _t, uniform, _u, _v, buffer, _w, _x, buffer;
             return __generator(this, function (_y) {
                 switch (_y.label) {
                     case 0:
@@ -2064,7 +2051,6 @@ var DescriptorRunnerWebGL = (function (_super) {
                         this._running = true;
                         gl = this.handler.gl;
                         runtimeInfo = this.runtimeInfo;
-                        vaoExtension = this.handler.vao;
                         if (!(this.runtimeInfo.programs.length > 0)) return [3 /*break*/, 28];
                         _i = 0, _a = runtimeInfo.inputs;
                         _y.label = 1;
@@ -2126,6 +2112,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     case 10:
                         if (!(_j < _k.length)) return [3 /*break*/, 13];
                         _l = _k[_j], buffer = _l.buffer, uniformIndex = _l.uniformIndex;
+                        buffer.unbindFromReadTexture();
                         return [4 /*yield*/, buffer.syncReadViews()];
                     case 11:
                         _y.sent();
@@ -2134,7 +2121,9 @@ var DescriptorRunnerWebGL = (function (_super) {
                     case 12:
                         _j++;
                         return [3 /*break*/, 10];
-                    case 13: return [4 /*yield*/, runtimeProgramInfo.output.syncReadViews()];
+                    case 13:
+                        runtimeProgramInfo.output.unbindFromDrawTexture();
+                        return [4 /*yield*/, runtimeProgramInfo.output.syncReadViews()];
                     case 14:
                         _y.sent();
                         console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);

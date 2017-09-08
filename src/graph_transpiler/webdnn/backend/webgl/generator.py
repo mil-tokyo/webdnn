@@ -2,10 +2,9 @@ import os
 import os.path as path
 from typing import List
 
-from webdnn.backend.code_generator.allocator import Allocation, allocate
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
-from webdnn.backend.webgl.attributes.channel_mode import ChannelModeEnum, ChannelMode
+from webdnn.backend.webgl.allocator import allocate
 from webdnn.backend.webgl.graph_descriptor import GraphDescriptor
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.optimize_rules.webgl_optimize_rule import WebGLOptimizeRule
@@ -15,16 +14,6 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import flags
 from webdnn.util.json import json
-
-
-class WebGLAllocation(Allocation):
-    def __init__(self, allocation: Allocation, channel_mode: ChannelModeEnum):
-        super(WebGLAllocation, self).__init__(
-            size=allocation.size, offset=allocation.offset,
-            begin=allocation.begin, end=allocation.end,
-            name=allocation.name
-        )
-        self.channel_mode = channel_mode
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):
@@ -57,10 +46,6 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
 
         memory_layout = allocate(graph)
 
-        allocations = {}
-        for v, a in memory_layout.allocations.items():
-            allocations[v] = WebGLAllocation(allocation=a, channel_mode=ChannelMode.get_mode(v))
-
         constants_map = {}
         for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
             constants_map[constant.name] = {
@@ -79,7 +64,6 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             inputs=graph.inputs,
             outputs=graph.outputs,
             constants_encoding=constant_encoder.name,
-            allocations=allocations,
             constants_map=constants_map,
             licenses=graph.licenses
         )

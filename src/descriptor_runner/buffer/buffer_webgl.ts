@@ -10,11 +10,6 @@ import { Buffer } from "./buffer";
 /**
  * @protected
  */
-const READ_TEXTURE_UNIT_INDEX_NO_BOUND = -1;
-
-/**
- * @protected
- */
 export class BufferWebGL extends Buffer {
     private gl: WebGLRenderingContext;
     readonly channelMode: ChannelMode;
@@ -24,11 +19,11 @@ export class BufferWebGL extends Buffer {
     readonly textureHeight: number;
     private _texture: WebGLTexture | null = null;
     readonly name: string;
-    private readTextureUnitIndex: number = READ_TEXTURE_UNIT_INDEX_NO_BOUND;
-    private isBoundToReadFrameBuffer: boolean = false;
+    private readTextureUnitInices: number[] = [];
     private isBoundToDrawFrameBuffer: boolean = false;
 
-    constructor(gl: WebGLRenderingContext, byteLength: number, name: string, array: Float32Array | null, channelMode: ChannelMode) {
+    constructor(gl: WebGLRenderingContext, byteLength: number, textureWidth: number, textureHeight: number,
+                name: string, array: Float32Array | null, channelMode: ChannelMode) {
         super(byteLength, 'webgl');
         this.gl = gl;
         this.name = name;
@@ -56,8 +51,8 @@ export class BufferWebGL extends Buffer {
         // width is fixed as 1024, height is flexible.
         // FIXME: flexible width for efficient memory allocation
         const packedLength = Math.ceil(this.length / this.elementsPerPixel);
-        this.textureWidth = packedLength <= 2048 ? packedLength : 2048;
-        this.textureHeight = Math.ceil(packedLength / 2048);
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
     }
 
     get texture() {
@@ -164,10 +159,6 @@ export class BufferWebGL extends Buffer {
     }
 
     async bindToReadTexture(unit: number) {
-        if (this.isBoundToReadFrameBuffer)
-            throw Error('This buffer is already registered as read buffer with different texture unit. ' +
-                'You may forgot to unbind the binding while previous operations');
-
         if (this.isBoundToDrawFrameBuffer)
             throw Error('This buffer is already registered as draw buffer. ' +
                 'You may forgot to unbind the binding while previous operations.');
@@ -181,23 +172,22 @@ export class BufferWebGL extends Buffer {
         gl.activeTexture(gl.TEXTURE0 + unit);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        this.isBoundToReadFrameBuffer = true;
-        this.readTextureUnitIndex = unit;
+        this.readTextureUnitInices.push(unit);
     }
 
     unbindFromReadTexture() {
-        if (!this.isBoundToReadFrameBuffer) return;
         let gl = this.gl;
 
-        gl.activeTexture(gl.TEXTURE0 + this.readTextureUnitIndex);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        for (let unit of this.readTextureUnitInices) {
+            gl.activeTexture(gl.TEXTURE0 + unit);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
 
-        this.isBoundToReadFrameBuffer = false;
-        this.readTextureUnitIndex = -1;
+        this.readTextureUnitInices = [];
     }
 
     bindToDrawTexture() {
-        if (this.isBoundToReadFrameBuffer)
+        if (this.readTextureUnitInices.length > 0)
             throw Error('This buffer is already registered as read buffer. ' +
                 'You cannot bind a texture as both read and draw texture buffer at same time.');
         if (this.isBoundToDrawFrameBuffer)

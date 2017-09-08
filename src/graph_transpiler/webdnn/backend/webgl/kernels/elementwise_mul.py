@@ -32,8 +32,8 @@ void main() {
     vec4 p_X0 = mod(p_Y, d_X0); // for broadcasting
     vec4 p_X1 = mod(p_Y, d_X1);
 
-    vec2 p_x0 = convert_position(p_X0, s_X0, s_x0, d_x0);
-    vec2 p_x1 = convert_position(p_X1, s_X1, s_x1, d_x1);
+    vec2 p_x0 = convert_coord(p_X0, s_X0, s_x0, d_x0);
+    vec2 p_x1 = convert_coord(p_X1, s_X1, s_x1, d_x1);
 """
 
 footer = """
@@ -41,8 +41,8 @@ footer = """
 """
 
 template_R = header + """
-    float x0 = texture2D(X0, p_x0 / d_x0).r;
-    float x1 = texture2D(X1, p_x1 / d_x1).r;
+    float x0 = texture2D(X0, p_x0).r;
+    float x1 = texture2D(X1, p_x1).r;
     float y;
 
     y = x0 * x1;
@@ -51,8 +51,8 @@ template_R = header + """
 """ + footer
 
 template_RGBA = header + """
-    vec4 x0 = texture2D(X0, p_x0 / d_x0);
-    vec4 x1 = texture2D(X1, p_x1 / d_x1);
+    vec4 x0 = texture2D(X0, p_x0);
+    vec4 x1 = texture2D(X1, p_x1);
     vec4 y;
     
     y = x0 * x1;
@@ -91,7 +91,7 @@ def elementwise_add(op: ElementwiseMul) -> List[Kernel]:
         "s_X1": strides[x1],
     })
 
-    source = template_R if ChannelMode.get_mode(y) == ChannelModeEnum.R else template_RGBA
+    source = template_R if ChannelMode.get(y) == ChannelModeEnum.R else template_RGBA
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(

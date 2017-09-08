@@ -52,7 +52,7 @@ from webdnn.frontend.chainer import ChainerConverter
 
 
 # Network definition
-class MLP(chainer.Chain):
+class FC(chainer.Chain):
     """
     Simple multi-layer perceptron
     """
@@ -73,10 +73,6 @@ class MLP(chainer.Chain):
 
 
 class Conv(chainer.Chain):
-    """
-    Simple multi-layer perceptron
-    """
-
     def __init__(self, n_out):
         super().__init__(
             # the size of the inputs to each layer will be inferred
@@ -91,33 +87,20 @@ class Conv(chainer.Chain):
         return self.l3(h2)
 
 
-models = {"mlp": MLP, "conv": Conv}
+models = {"fc": FC, "conv": Conv}
 
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
-    parser.add_argument("--model", default="mlp",
-                        choices=["mlp", "conv"])
-    parser.add_argument('--batchsize', '-b', type=int, default=100,
-                        help='Number of images in each mini-batch')
-    parser.add_argument('--epoch', '-e', type=int, default=5,
-                        help='Number of sweeps over the dataset to train')
-    parser.add_argument('--frequency', '-f', type=int, default=-1,
-                        help='Frequency of taking a snapshot')
-    parser.add_argument('--gpu', '-g', type=int, default=-1,
-                        help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='output_chainer',
-                        help='Directory to output the graph descriptor and sample test data')
-    parser.add_argument('--resume', '-r', default='',
-                        help='Resume the training from snapshot')
+    parser.add_argument("--model", default="fc", choices=["fc", "conv"])
+    parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU ID (negative value indicates CPU)')
+    parser.add_argument('--out', '-o', default='output_chainer', help='Directory to output the graph descriptor and sample test data')
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+
     args = parser.parse_args()
 
-    print('GPU: {}'.format(args.gpu))
-    print('# Minibatch-size: {}'.format(args.batchsize))
-    print('# epoch: {}'.format(args.epoch))
-    print('')
-
-    os.makedirs(args.out, exist_ok=True)
+    output_dir = os.path.join(args.out, f"./chainer_model")
+    os.makedirs(output_dir, exist_ok=True)
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
@@ -135,37 +118,21 @@ def main():
     # Load the MNIST dataset
     train, test = chainer.datasets.get_mnist(ndim=3)
 
-    train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
-    test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
-                                                 repeat=False, shuffle=False)
+    train_iter = chainer.iterators.SerialIterator(train, 128)
+    test_iter = chainer.iterators.SerialIterator(test, 128, repeat=False, shuffle=False)
 
     # Set up a trainer
     updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
-    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=os.path.join(args.out, 'chainer_model'))
+    trainer = training.Trainer(updater, (2, 'epoch'), out=output_dir)
 
     # Evaluate the model with the test dataset for each epoch
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
 
-    # Dump a computational graph from 'loss' variable at the first iteration
-    # The "main" refers to the target link of the "main" optimizer.
-    trainer.extend(extensions.dump_graph('main/loss'))
-
     # Take a snapshot for each specified epoch
-    frequency = args.epoch if args.frequency == -1 else max(1, args.frequency)
-    trainer.extend(extensions.snapshot(), trigger=(frequency, 'epoch'))
+    trainer.extend(extensions.snapshot(filename=args.model), trigger=(2, 'epoch'))
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport())
-
-    # Save two plot images to the result dir
-    if extensions.PlotReport.available():
-        trainer.extend(
-            extensions.PlotReport(['main/loss', 'validation/main/loss'],
-                                  'epoch', file_name='loss.png'))
-        trainer.extend(
-            extensions.PlotReport(
-                ['main/accuracy', 'validation/main/accuracy'],
-                'epoch', file_name='accuracy.png'))
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
@@ -173,30 +140,31 @@ def main():
     # Entries other than 'epoch' are reported by the Classifier link, called by
     # either the updater or the evaluator.
     trainer.extend(extensions.PrintReport(
-        ['epoch', 'main/loss', 'validation/main/loss',
-         'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+        ['epoch', 'main/loss', 'validation/main/loss', 'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
 
     # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
 
-    if args.resume:
+    snapshot_path = os.path.join(output_dir, args.model)
+    if os.path.exists(snapshot_path):
         # Resume from a snapshot
-        chainer.serializers.load_npz(args.resume, trainer)
-
-    # Run the training
-    trainer.run()
+        chainer.serializers.load_npz(snapshot_path, trainer)
+    else:
+        # Run the training
+        trainer.run()
 
     # conversion
     print('Transpiling model to WebDNN graph descriptor')
 
     if args.gpu >= 0:
         model.to_cpu()
+
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
+
     x = chainer.Variable(example_input)
-    # y = F.softmax(model.predictor(x))  # run model
     y = model.predictor(x)
     graph = ChainerConverter().convert([x], [y])  # convert graph to intermediate representation
-    for backend in ["webgpu", "webgl", "webassembly", "fallback"]:
+    for backend in args.backend.split(","):
         exec_info = generate_descriptor(backend, graph)
         exec_info.save(args.out)
 

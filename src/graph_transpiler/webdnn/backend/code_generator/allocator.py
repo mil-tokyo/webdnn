@@ -81,15 +81,6 @@ class MemoryLayout(json.SerializableMixin):
     def __contains__(self, v: Variable):
         return v in self.allocations
 
-    def append(self, v: Variable, offset: IntLike = -1):
-        if offset == -1:
-            if Placeholder.check_resolved(offset) and Placeholder.check_resolved(v.size):
-                offset = self.static_size
-            else:
-                offset = self.dynamic_size
-
-        self.allocations[v] = Allocation(offset, v.size)
-
     @property
     def total_size(self) -> IntLike:
         return self.static_size + self.dynamic_size

@@ -37,9 +37,9 @@ void main() {
     float w1 = floor(w2 / r);
 
     vec4 p_X = vec4(n, h1, w1, c1) + 0.5;
-    vec2 p_x = convert_position(p_X, s_X, s_x, d_x);
+    vec2 p_x = convert_coord(p_X, s_X, s_x, d_x);
 
-    float v = texture2D(X, p_x / d_x).r;
+    float v = texture2D(X, p_x).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 }

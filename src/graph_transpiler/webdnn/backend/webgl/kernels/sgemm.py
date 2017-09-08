@@ -17,12 +17,7 @@ header = FragmentShaderPreamble + """
 %%UNIFORM(vec2, s_C)%%;
 
 %%UNIFORM(vec2, d_a)%%;
-%%UNIFORM(vec2, s_a)%%;
-%%UNIFORM(vec2, s_A)%%;
-
 %%UNIFORM(vec2, d_b)%%;
-%%UNIFORM(vec2, s_b)%%;
-%%UNIFORM(vec2, s_B)%%;
 
 void main() {
     vec2 p_C = convert_position(gl_FragCoord.xy, s_c, s_C, d_C) - 0.5;
@@ -40,8 +35,8 @@ footer = """
 
 template_R = header + """
     for (float k = %%LOOP_SIZE%% - 1.0; k >= 0.0; k -= 1.0) {
-        float v_a = texture2D(A, convert_position(vec2(m, k) + 0.5, s_A, s_a, d_a) / d_a).r;
-        float v_b = texture2D(B, convert_position(vec2(k, n) + 0.5, s_B, s_b, d_b) / d_b).r;
+        float v_a = texture2D(A, fract((vec2(%%INDICES_A%%) + 0.5) / d_a)).r;
+        float v_b = texture2D(B, fract((vec2(%%INDICES_B%%) + 0.5) / d_b)).r;
 
         v += v_a * v_b;
     }
@@ -49,15 +44,15 @@ template_R = header + """
 
 template_RGBA = header + """
     for (float k = 0.0; k < %%LOOP_SIZE%%; k += 4.0) {
-        vec4 v_a = texture2D(A, convert_position(vec2(m, k) + 0.5, s_A, s_a, d_a) / d_a);
-        vec4 v_b = texture2D(B, convert_position(vec2(k, n) + 0.5, s_B, s_b, d_b) / d_b);
+        vec4 v_a = texture2D(A, fract((vec2(%%INDICES_A%%) + 0.5) / d_a));
+        vec4 v_b = texture2D(B, fract((vec2(%%INDICES_B%%) + 0.5) / d_b));
 
         v += dot(v_a, v_b);
     }
 """ + footer
 
 
-def generate_template(mode: ChannelModeEnum, K: int):
+def generate_template(mode: ChannelModeEnum, transpose_A: bool, transpose_B: bool, K: int):
     if mode == ChannelModeEnum.R:
         template = template_R
 
@@ -67,7 +62,10 @@ def generate_template(mode: ChannelModeEnum, K: int):
     else:
         raise NotImplementedError
 
-    return template.replace("%%LOOP_SIZE%%", f"{K:.1f}")
+    return template \
+        .replace("%%LOOP_SIZE%%", f"{K:.1f}") \
+        .replace("%%INDICES_A%%", "k, m" if transpose_A else "m, k") \
+        .replace("%%INDICES_B%%", "n, k" if transpose_B else "k, n")
 
 
 @WebGLDescriptorGenerator.register_handler(Sgemm)
@@ -76,7 +74,7 @@ def elementwise_add(op: Sgemm) -> List[Kernel]:
     B = op.inputs["B"]
     C = op.outputs["C"]
 
-    assert ChannelMode.get_mode(A) == ChannelMode.get_mode(B)
+    assert ChannelMode.get(A) == ChannelMode.get(B)
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
@@ -89,17 +87,12 @@ def elementwise_add(op: Sgemm) -> List[Kernel]:
         "s_C": [op.N, 1],
 
         "d_a": texture_shape(A),
-        "s_a": texture_stride(A),
-        "s_A": [op.K, 1] if op.transpose_A else [1, op.M],
-
         "d_b": texture_shape(B),
-        "s_b": texture_stride(B),
-        "s_B": [op.N, 1] if op.transpose_B else [1, op.K],
 
         "K": op.K
     })
 
-    source = generate_template(mode=ChannelMode.get_mode(A), K=op.K)
+    source = generate_template(mode=ChannelMode.get(A), transpose_A=op.transpose_A, transpose_B=op.transpose_B, K=op.K)
     source = uniform_injector.inject(source)
     source = name_injector.inject(source)
     kernel = Kernel(

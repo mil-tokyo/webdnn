@@ -116,15 +116,14 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let weight = await decoder.decode(new Uint8Array(weightRawArray));
         let buffers = this.buffers;
 
-        Object.entries(descriptor.allocations)
-            .forEach(([name, {allocation_size, channel_mode}]) => {
-                buffers.set(name, new BufferWebGL(this.handler.gl, allocation_size * Float32Array.BYTES_PER_ELEMENT, name, null, channel_mode));
+        Object.entries(descriptor.memory_layout.static.allocations)
+            .forEach(([name, {width, height, size, channel_mode}]) => {
+                buffers.set(name, new BufferWebGL(this.handler.gl, size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
             });
 
         Object.entries(descriptor.constants_map)
-            .forEach(([variable_name, {size, byte_offset}]) => {
-                let buffer = buffers.get(descriptor.variables[variable_name].allocation_name)!;
-                buffer.array.set(new Float32Array(weight.buffer, byte_offset, size));
+            .forEach(([name, {size, byte_offset}]) => {
+                buffers.get(name)!.array.set(new Float32Array(weight.buffer, byte_offset, size));
             });
 
         (await this.getInputViews())
@@ -144,11 +143,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
         let buffers = this.buffers;
 
-        Object.entries(descriptor.allocations)
-            .forEach(([name, {allocation_size, channel_mode}]) => {
-                if (typeof allocation_size == 'number') return;
-
-                buffers.set(name, new BufferWebGL(this.handler.gl, placeholderContext.resolve(allocation_size) * Float32Array.BYTES_PER_ELEMENT, name, null, channel_mode));
+        Object.entries(descriptor.memory_layout.dynamic.allocations)
+            .forEach(([name, {width, height, size, channel_mode}]) => {
+                buffers.set(name, new BufferWebGL(this.handler.gl, placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT,
+                    placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
             });
 
         (await this.getInputViews())
@@ -217,10 +215,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
 
         this.inputViews = descriptor.inputs.map(name => {
-            let {variable_size, allocation_name} = descriptor.variables[name];
             let view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: this.buffers.get(name)!.length,
                 offset: 0
             }, placeholderContext, true);
 
@@ -240,10 +237,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
 
         this.outputViews = descriptor.outputs.map(name => {
-            let {variable_size, allocation_name} = descriptor.variables[name];
             let view = new SymbolicFloat32Array({
-                name: allocation_name,
-                size: variable_size,
+                name: name,
+                size: this.buffers.get(name)!.length,
                 offset: 0
             }, placeholderContext, true);
 
@@ -260,7 +256,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let gl = this.handler.gl;
         let buffers = this.buffers;
-        let descriptor = this.descriptor;
         let referenceCount = new Map<WebGLBuffer, number>();
 
         this.runtimeInfo = {
@@ -269,7 +264,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             programs: this.descriptor.exec_infos.map(execInfo => {
                 // inputs
                 let inputs = execInfo.inputs.map(input => {
-                    let buffer = buffers.get(descriptor.variables[input.variable_name].allocation_name)!;
+                    let buffer = buffers.get(input.variable_name)!;
 
                     if (!referenceCount.has(buffer)) referenceCount.set(buffer, 0);
                     referenceCount.set(buffer, referenceCount.get(buffer)! + 1);
@@ -281,7 +276,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 });
 
                 //output
-                let output = buffers.get(descriptor.variables[execInfo.output].allocation_name)!;
+                let output = buffers.get(execInfo.output)!;
 
                 // shader
                 let program = this.programs.get(execInfo.shader_name)!;
@@ -372,7 +367,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let gl = this.handler.gl;
         let runtimeInfo = this.runtimeInfo;
-        let vaoExtension = this.handler.vao;
 
         if (this.runtimeInfo.programs.length > 0) {
             for (let buffer of runtimeInfo.inputs) await buffer.syncWriteViews();
@@ -410,10 +404,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     totalElapsedTime += elapsedTime;
 
                     for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
+                        buffer.unbindFromReadTexture();
                         await buffer.syncReadViews();
                         console.log(uniformIndex, buffer.array);
                     }
 
+                    runtimeProgramInfo.output.unbindFromDrawTexture();
                     await runtimeProgramInfo.output.syncReadViews();
                     console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
                 }
