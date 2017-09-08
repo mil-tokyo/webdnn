@@ -9,6 +9,13 @@ import { DestinationRect, getImageData, setImageDataToCanvas, SourceRect } from 
 import { loadImageByUrl, loadImageFromFileInput } from "./image_source";
 
 /**
+ * @protected
+ */
+function flatten<T>(arr: ArrayLike<T>) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten(arr))) : arr;
+}
+
+/**
  * Option structure of [[webdnn/image.getImageArray|`WebDNN.Image.getImageArray`]]
  */
 export interface ImageArrayOption {
@@ -65,12 +72,13 @@ export function getImageArrayFromImageData(imageData: ImageData,
     const height = imageData.height;
 
     let data = imageData.data;
-    let array = new type(width * height * 3);
+    let array: Float32Array | Int32Array;
     let biasR: number, biasG: number, biasB: number;
     let scaleR: number, scaleG: number, scaleB: number;
 
     switch (color) {
         case Color.RGB:
+            array = new type(width * height * 3);
             [scaleR, scaleG, scaleB] = scale;
             [biasR, biasG, biasB] = bias;
             switch (order) {
@@ -97,6 +105,7 @@ export function getImageArrayFromImageData(imageData: ImageData,
             break;
 
         case Color.BGR:
+            array = new type(width * height * 3);
             [biasB, biasG, biasR] = bias;
             [scaleB, scaleG, scaleR] = scale;
             switch (order) {
@@ -121,6 +130,23 @@ export function getImageArrayFromImageData(imageData: ImageData,
                     break;
             }
             break;
+
+        case Color.GREY:
+            array = new type(width * height);
+            [biasB, biasG, biasR] = bias;
+            [scaleB, scaleG, scaleR] = scale;
+            for (let h = 0; h < height; h++) {
+                for (let w = 0; w < width; w++) {
+                    let r = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
+                    let g = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                    let b = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
+                    array[h * width + w] = 0.2126 * r + 0.7162 * g + 0.0722 * b;
+                }
+            }
+            break;
+
+        default:
+            throw Error(`Unknown color format: ${color}`)
     }
 
     return array
@@ -370,6 +396,7 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
         bias = [0, 0, 0], scale = [1, 1, 1]
     } = options;
 
+    array = flatten(array);
     let data = new Uint8ClampedArray(srcW * srcH * 4);
     let biasR: number, biasG: number, biasB: number;
     let scaleR: number, scaleG: number, scaleB: number;
@@ -428,6 +455,19 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
                         }
                     }
                     break;
+            }
+            break;
+
+        case Color.GREY:
+            [biasR, biasG, biasB] = bias;
+            [scaleR, scaleG, scaleB] = scale;
+            for (let h = srcY; h < srcY + srcH; h++) {
+                for (let w = srcX; w < srcX + srcW; w++) {
+                    data[(h * imageW + w) * 4 + 0] =
+                        data[(h * imageW + w) * 4 + 1] =
+                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scaleR + biasR;
+                    data[(h * imageW + w) * 4 + 3] = 255;
+                }
             }
             break;
     }

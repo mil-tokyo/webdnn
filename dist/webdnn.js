@@ -434,6 +434,12 @@ class PlaceholderContext {
 }
 
 /**
+ * @protected
+ */
+function flatten(arr) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten(arr))) : arr;
+}
+/**
  * SymbolicTypedArray is wrapper class of buffers used in DNN model.
  */
 class SymbolicTypedArray {
@@ -507,7 +513,7 @@ class SymbolicTypedArray {
      * @param offset The index at which the values will be written.
      */
     set(array, offset) {
-        return this.toActual().set(array, offset);
+        return this.toActual().set(flatten(array), offset);
     }
 }
 
@@ -2247,6 +2253,8 @@ var Color;
     Color[Color["RGB"] = 0] = "RGB";
     /** BGR format */
     Color[Color["BGR"] = 1] = "BGR";
+    /** grey scale */
+    Color[Color["GREY"] = 2] = "GREY";
 })(Color || (Color = {}));
 
 /**
@@ -2434,6 +2442,12 @@ function loadImageByDialog() {
  */
 /** Don't Remove This comment block */
 /**
+ * @protected
+ */
+function flatten$1(arr) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten$1(arr))) : arr;
+}
+/**
  * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
  *
  * @see getImageArrayFromCanvas
@@ -2453,11 +2467,12 @@ function getImageArrayFromImageData(imageData, options = {}) {
     const width = imageData.width;
     const height = imageData.height;
     let data = imageData.data;
-    let array = new type(width * height * 3);
+    let array;
     let biasR, biasG, biasB;
     let scaleR, scaleG, scaleB;
     switch (color) {
         case Color.RGB:
+            array = new type(width * height * 3);
             [scaleR, scaleG, scaleB] = scale;
             [biasR, biasG, biasB] = bias;
             switch (order) {
@@ -2482,6 +2497,7 @@ function getImageArrayFromImageData(imageData, options = {}) {
             }
             break;
         case Color.BGR:
+            array = new type(width * height * 3);
             [biasB, biasG, biasR] = bias;
             [scaleB, scaleG, scaleR] = scale;
             switch (order) {
@@ -2505,6 +2521,21 @@ function getImageArrayFromImageData(imageData, options = {}) {
                     break;
             }
             break;
+        case Color.GREY:
+            array = new type(width * height);
+            [biasB, biasG, biasR] = bias;
+            [scaleB, scaleG, scaleR] = scale;
+            for (let h = 0; h < height; h++) {
+                for (let w = 0; w < width; w++) {
+                    let r = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
+                    let g = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                    let b = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
+                    array[h * width + w] = 0.2126 * r + 0.7162 * g + 0.0722 * b;
+                }
+            }
+            break;
+        default:
+            throw Error(`Unknown color format: ${color}`);
     }
     return array;
 }
@@ -2721,6 +2752,7 @@ function getImageArray(image, options = {}) {
  */
 function setImageArrayToCanvas(array, imageW, imageH, canvas, options = {}) {
     let { color = Color.RGB, order = Order.HWC, srcX = 0, srcY = 0, srcW = imageW, srcH = imageH, dstX = 0, dstY = 0, dstW = canvas.width, dstH = canvas.height, bias = [0, 0, 0], scale = [1, 1, 1] } = options;
+    array = flatten$1(array);
     let data = new Uint8ClampedArray(srcW * srcH * 4);
     let biasR, biasG, biasB;
     let scaleR, scaleG, scaleB;
@@ -2775,6 +2807,18 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options = {}) {
                         }
                     }
                     break;
+            }
+            break;
+        case Color.GREY:
+            [biasR, biasG, biasB] = bias;
+            [scaleR, scaleG, scaleB] = scale;
+            for (let h = srcY; h < srcY + srcH; h++) {
+                for (let w = srcX; w < srcX + srcW; w++) {
+                    data[(h * imageW + w) * 4 + 0] =
+                        data[(h * imageW + w) * 4 + 1] =
+                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scaleR + biasR;
+                    data[(h * imageW + w) * 4 + 3] = 255;
+                }
             }
             break;
     }

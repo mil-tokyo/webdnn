@@ -6,6 +6,13 @@ import { Allocation, ResolvedAllocation } from "../graph_descriptor/memory_layou
 import PlaceholderContext from "../placeholder";
 
 /**
+ * @protected
+ */
+function flatten<T>(arr: ArrayLike<T>) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten(arr))) : arr;
+}
+
+/**
  * SymbolicTypedArray is wrapper class of buffers used in DNN model.
  */
 export abstract class SymbolicTypedArray<T extends Float32Array | Int32Array> {
@@ -97,7 +104,7 @@ export abstract class SymbolicTypedArray<T extends Float32Array | Int32Array> {
      * @param array A typed or untyped array of values to set.
      * @param offset The index at which the values will be written.
      */
-    set (array: ArrayLike<number>, offset?: number): void {
-        return this.toActual().set(array, offset);
+    set(array: ArrayLike<number>, offset?: number): void {
+        return this.toActual().set(flatten(array), offset);
     }
 }

@@ -41,4 +41,4 @@ This example illustrates how to use LSTM model.
 This example illustrates how to iteratively predict character probability and sample a character.
 
 ## Benchmark
-`benchmark` directory contains the speed benchmark to compare WebDNN and Keras.js.
+`benchmark` directory contains the speed benchmark to compare WebDNN with other frameworks.
