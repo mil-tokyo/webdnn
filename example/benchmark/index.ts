@@ -4,21 +4,43 @@
 declare const WebGPUComputeCommandEncoder;
 declare const WebAssembly;
 
+type ModelName = 'squeeze_net' | 'resnet50' | 'vgg16' | 'inception_v3';
+type FrameworkName = 'WebDNN' | 'keras.js' | 'deeplearn.js';
 
-let benchmarks: BaseBenchmark[] = [];
+const InputSize: { [key in ModelName]: number} = {
+    'squeeze_net': 227,
+    'resnet50': 224,
+    'vgg16': 224,
+    'inception_v3': 299,
+};
 
-function console_log(message) {
-    console.log(message);
-    document.getElementById('message')!.appendChild(
-        document.createTextNode(message + "\n")
-    );
-}
+class Logger {
+    private indent = 0;
 
-function console_error(err: Error) {
-    console.error(err);
-    document.getElementById('message')!.appendChild(
-        document.createTextNode(err.message + "\n")
-    );
+    constructor(private $dom: HTMLElement) {
+    }
+
+    log(message: any) {
+        console.log(message);
+        this.$dom.textContent += `\n${'\t'.repeat(this.indent) + message}`
+    }
+
+    error(err: Error) {
+        console.error(err);
+        this.$dom.textContent += `\n${'\t'.repeat(this.indent) + err.message}`
+    }
+
+    group(name: string) {
+        console.group(name);
+        this.log('');
+        this.$dom.textContent += `\n${'\t'.repeat(this.indent) + name}`;
+        this.indent++;
+    }
+
+    groupEnd() {
+        console.groupEnd();
+        this.indent--;
+    }
 }
 
 interface Summary {
@@ -28,42 +50,26 @@ interface Summary {
     results: number[]
 }
 
-class BaseBenchmark {
-    name: string;
+interface Configuration {
+    name: string
+    framework: FrameworkName,
+    modelName: ModelName,
+    iteration: number
+    batchSize: number
+}
+
+class Benchmark<C extends Configuration> {
     summary: Summary | null = null;
-    numIteration: number = -1;
-    results: number[];
+    configuration: C;
 
-    constructor(name: string) {
-        this.name = name;
-    }
+    async runAsync(configuration: C) {
+        this.configuration = configuration;
 
-    static getSelectedModel() {
-        let model_name_selection = document.forms['benchmark'].model_name;
-        let model_name = 'resnet50';
-        for (let i = 0; i < model_name_selection.length; i++) {
-            if (model_name_selection[i].checked) {
-                model_name = model_name_selection[i].value;
-            }
-        }
-        console_log(`Model: ${model_name}`);
-        return model_name;
-    }
+        await this.setupAsync();
+        let results = await this.executeAsync();
+        await this.finalizeAsync();
 
-    async runAsync(numIteration) {
-        this.numIteration = numIteration;
-
-        this.results = [];
-        return this.setupAsync()
-            .then(() => this.executeAsync())
-            .then(() => this.finalizeAsync())
-            .then(() => {
-                let summary = this.summarize();
-                this.summary = summary;
-
-                return summary;
-            })
-            .catch((err) => console_error(err));
+        return this.summarize(results);
     }
 
     /**
@@ -75,16 +81,20 @@ class BaseBenchmark {
     }
 
     async executeAsync() {
-        for (let i = 0; i < this.numIteration; i++) {
+        let results: number[] = [];
+
+        for (let i = 0; i < this.configuration.iteration; i++) {
             this.onExecuteSingle(i);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => requestAnimationFrame(resolve));
 
             let tStart = performance.now();
             await this.executeSingleAsync();
             let elapsedTime = performance.now() - tStart;
 
-            this.results.push(elapsedTime);
+            results.push(elapsedTime);
         }
+
+        return results;
     }
 
     /**
@@ -96,16 +106,15 @@ class BaseBenchmark {
     }
 
     /**
-     * Release resources if needed.
+     * Finalize
      * @returns {Promise<void>}
      */
-    finalizeAsync() {
-        return Promise.resolve();
+    async finalizeAsync() {
     }
 
-    summarize() {
-        this.results.shift(); // remove first run
-        let results = this.results.sort();
+    summarize(results: number[]) {
+        results.shift(); // remove first run, which is regarded as "warming up" execution
+
         let d = results.reduce((d, v) => {
             d.sum += v;
             d.sum2 += v * v;
@@ -116,48 +125,84 @@ class BaseBenchmark {
         let std = Math.sqrt((d.sum2 - results.length * mean * mean) / (results.length - 1));
 
         return {
-            name: this.name,
+            configuration: this.configuration,
             mean: mean,
             std: std,
             results: results
         };
     }
 
-    onExecuteSingle(i) {
-        console_log(`${this.name}: ${i + 1}/${this.numIteration}`);
+    onExecuteSingle(iteration: number) {
     }
 }
+
+//---------------------------------------------------------------------------------------------------
+//
+// WebDNN
+//
+
+interface WebDNNConfiguration extends Configuration {
+    framework: 'WebDNN',
+    backend: WebDNN.BackendName,
+    optimize: boolean
+}
+
+class WebDNNBenchmark extends Benchmark<WebDNNConfiguration> {
+    runner: WebDNN.DescriptorRunner<WebDNN.GraphDescriptor> | null = null;
+
+    async setupAsync() {
+        let url = `./output/webdnn/${this.configuration.modelName}/${this.configuration.optimize ? '' : 'non_'}optimized`;
+        this.runner = await WebDNN.load(url, {
+            backendOrder: [this.configuration.backend]
+        });
+    }
+
+    async executeSingleAsync() {
+        return await this.runner!.run();
+    }
+
+    async finalizeAsync() {
+        this.runner = null;
+    }
+}
+
+//---------------------------------------------------------------------------------------------------
+//
+// KerasJS
+//
 
 declare namespace KerasJS {
     type Model = any;
 }
 declare const KerasJS: any;
 
-class KerasJSBenchmark extends BaseBenchmark {
-    flagGPU: boolean;
+interface KerasJSConfiguration extends Configuration {
+    framework: 'keras.js'
+    gpu: boolean
+}
+
+class KerasJSBenchmark extends Benchmark<KerasJSConfiguration> {
     model: KerasJS.Model | null = null;
     xs: { [name: string]: Float32Array } | null;
 
-    constructor(name: string, flagGPU: boolean) {
-        super(name);
-        this.flagGPU = flagGPU;
-    }
-
     setupAsync() {
-        let modelName = BaseBenchmark.getSelectedModel();
-        let prefix = `./output/kerasjs/${modelName}/model`;
+        if (this.configuration.batchSize !== 1) {
+            throw Error('Keras.js benchmark supports only batchsize=1.');
+        }
+
+        let prefix = `./output/kerasjs/${this.configuration.modelName}/model`;
         this.model = new KerasJS.Model({
             filepaths: {
                 model: `${prefix}.json`,
                 weights: `${prefix}_weights.buf`,
                 metadata: `${prefix}_metadata.json`
             },
-            gpu: this.flagGPU
+            gpu: this.configuration.gpu
         });
 
-        const HW = (modelName === 'inception_v3') ? (299 * 299) : (224 * 224);
+        const S = InputSize[this.configuration.modelName];
         this.xs = {
-            'input_1': new Float32Array(HW * 3)
+            'input_1': new Float32Array(this.configuration.batchSize * S * S * 3)
         };
 
         return this.model.ready()
@@ -173,116 +218,140 @@ class KerasJSBenchmark extends BaseBenchmark {
     }
 }
 
-class WebDNNBenchmark extends BaseBenchmark {
-    backend: WebDNN.BackendName;
-    flagOptimized: boolean;
-    runner: WebDNN.DescriptorRunner<WebDNN.GraphDescriptor> | null = null;
-
-    constructor(name: string, backend: WebDNN.BackendName, flagOptimized: boolean) {
-        super(name);
-        this.backend = backend;
-        this.flagOptimized = flagOptimized;
-    }
-
-    async setupAsync() {
-        //noinspection ES6ModulesDependencies
-        return WebDNN.load(`./output/webdnn/${BaseBenchmark.getSelectedModel()}/${this.flagOptimized ? '' : 'non_'}optimized`,
-            {
-                backendOrder: [this.backend]
-            })
-            .then((runner) => {
-                this.runner = runner;
-            })
-    }
-
-    async executeSingleAsync() {
-        return this.runner!.run()
-    }
-
-    async finalizeAsync() {
-        this.runner = null;
-    }
-}
+//---------------------------------------------------------------------------------------------------
+//
+// deeplearn.js
+//
 
 declare namespace deeplearn {
     type Session = any;
-    type FeedEntry = any;
+    type NDArray = any;
     type NDArrayMath = any;
     type Tensor = any;
 }
 declare const deeplearn;
 
-class DeepLearnJSBenchmark extends BaseBenchmark {
-    flagUsingGPU: boolean;
-    session: deeplearn.Session | null = null;
-    feeds: deeplearn.FeedEntry[] | null = null;
-    math: deeplearn.NDArrayMath | null = null;
-    y: deeplearn.Tensor | null = null;
+interface DeepLearnJSConfiguration extends Configuration {
+    framework: 'deeplearn.js',
+    gpu: boolean
+}
 
-    constructor(name, flagUsingGPU) {
-        super(name);
-        this.flagUsingGPU = flagUsingGPU
-    }
+class DeepLearnJSBenchmark extends Benchmark<DeepLearnJSConfiguration> {
+    math: deeplearn.NDArrayMath | null = null;
+    parameters: deeplearn.NDArray[][] | null = null;
+    xs: deeplearn.NDArray[] | null;
 
     async setupAsync() {
-        if (DeepLearnJSBenchmark.getSelectedModel() !== 'resnet50') {
+        if (this.configuration.modelName !== 'resnet50') {
             throw Error('Only ResNet50 is supported in benchmark of deeplearn.js');
         }
+        this.math = this.configuration.gpu ? new deeplearn.NDArrayMathGPU() : new deeplearn.NDArrayMathCPU();
+        this.xs = [];
+        this.math!.scope((keep) => {
+            for (let n = 0; n < this.configuration.batchSize; n++) {
+                let x = deeplearn.Array3D.randNormal([225, 225, 3]);
+                keep(x);
+                this.xs.push(x);
+            }
+        })
+    }
 
-        let graph = new deeplearn.Graph();
-        let x = graph.placeholder('input', [225, 225, 3]);
+    async executeSingleAsync() {
+        let xs = this.xs;
+        let ys = [];
 
-        function bn(x: deeplearn.Tensor) {
-            let scale = graph.variable('s', deeplearn.Array4D.zeros(x.shape as [number, number, number, number]));
-            let bias = graph.variable('b', deeplearn.Array4D.zeros(x.shape as [number, number, number, number]));
+        this.math!.scope((keep) => {
+            // Dispatch
+            switch (this.configuration.modelName) {
+                case 'resnet50':
+                    for (let n = 0; n < this.configuration.batchSize; n++) {
+                        ys.push(this.resnet50(xs[n], keep));
+                    }
+                    break;
 
-            return graph.add(graph.multiply(x, scale), bias);
+                default:
+                    throw Error(`Not supported: ${this.configuration.modelName}`);
+            }
+
+            for (let y of ys) y.getValues();
+        });
+
+    }
+
+    private resnet50(x, keep) {
+        let math = this.math!;
+        let parameters = this.parameters || (this.parameters = []);
+        let counter = 0;
+
+        function getParameter(factory: () => deeplearn.NDArray[]) {
+            if (counter === parameters.length) {
+                let newParameters = factory();
+                newParameters.forEach(keep);
+                parameters.push(newParameters);
+            }
+            return parameters[counter++];
         }
 
-        function conv2d(x: deeplearn.Tensor, outChannel: number, ksize: number = 3, stride: number = 1, padding: number = 1) {
-            let w = graph.variable('w', deeplearn.Array4D.zeros([ksize, ksize, x.shape[2], outChannel]));
-            let b = graph.variable('b', deeplearn.Array1D.zeros([outChannel]));
+        function bn(x: deeplearn.NDArray) {
+            let [scale, bias] = getParameter(() => ([
+                deeplearn.Array3D.zeros(x.shape as [number, number, number]),
+                deeplearn.Array3D.zeros(x.shape as [number, number, number])
+            ]));
 
-            return graph.conv2d(x, w, b, ksize, outChannel, stride, padding);
+            return math.add(math.multiply(x, scale), bias);
         }
 
-        function relu(x: deeplearn.Tensor) {
-            return graph.relu(x);
+        function conv2d(x: deeplearn.NDArray, outChannel: number, ksize: number, stride: number, padding: number) {
+            let [w, b] = getParameter(() => ([
+                deeplearn.Array4D.zeros([ksize, ksize, x.shape[2], outChannel]),
+                deeplearn.Array1D.zeros([outChannel])
+            ]));
+
+            return math.conv2d(x, w, b, stride, padding);
         }
 
-        function block(x: deeplearn.Tensor, outChannel: number, ksize: number = 3, stride: number = 1, padding: number = 1) {
-            let h1 = (x.shape[2] == outChannel && ksize === 3 && stride === 1 && padding === 1) ?
+        function relu(x: deeplearn.NDArray) {
+            return math.relu(x);
+        }
+
+        function block(x: deeplearn.NDArray, outChannel: number, stride: number = 1) {
+            let h1 = (x.shape[2] == outChannel && stride === 1) ?
                 x :
-                bn(conv2d(x, outChannel, ksize, stride, padding));
+                bn(conv2d(x, outChannel, stride, stride, 0));
 
-            let h2 = relu(bn(conv2d(x, outChannel / 4, ksize, stride, padding)));
-            h2 = relu(bn(conv2d(h2, outChannel / 4)));
-            h2 = bn(conv2d(h2, outChannel));
+            let h2 = relu(bn(conv2d(x, outChannel / 4, stride, stride, 0)));
 
-            return relu(graph.add(h1, h2));
+            h2 = relu(bn(conv2d(h2, outChannel / 4, 3, 1, 1)));
+            h2 = bn(conv2d(h2, outChannel, 1, 1, 0));
+
+            return relu(math.add(h1, h2));
         }
 
-        function dense(x: deeplearn.Tensor, outChannel: number) {
-            let w = graph.variable('w', deeplearn.Array2D.zeros([x.shape[0], outChannel]));
-            return graph.matmul(x, w);
+        function dense(x: deeplearn.NDArray, outChannel: number) {
+            let [w] = getParameter(() => ([
+                deeplearn.Array2D.randNormal([x.shape[1], outChannel])
+            ]));
+
+            return math.matMul(x, w);
         }
 
         // Conv 1.x 225 -> 112
         let h11 = relu(bn(conv2d(x, 64, 7, 2, 3)));
 
         //Conv 2.x 112 -> 56
-        let h20 = graph.maxPool(h11, 3, 2, 0);
+        let h20 = math.maxPool(h11, 3, 2, 0);
         let h21 = block(h20, 256);
         let h22 = block(h21, 256);
+        let h23 = block(h22, 256);
 
         //Conv 3.x 56 -> 28
-        let h31 = block(h22, 512, 2, 2, 0); // original ksize is 3
+        let h31 = block(h23, 512, 2);
         let h32 = block(h31, 512);
         let h33 = block(h32, 512);
         let h34 = block(h33, 512);
 
         //Conv 4.x 28 -> 14
-        let h41 = block(h34, 1024, 2, 2, 0); // original ksize is 3
+        let h41 = block(h34, 1024, 2);
         let h42 = block(h41, 1024);
         let h43 = block(h42, 1024);
         let h44 = block(h43, 1024);
@@ -290,96 +359,173 @@ class DeepLearnJSBenchmark extends BaseBenchmark {
         let h46 = block(h45, 1024);
 
         //Conv 5.x 14 -> 7
-        let h51 = block(h46, 2048, 2, 2, 0); // original ksize is 3
+        let h51 = block(h46, 2048, 2);
         let h52 = block(h51, 2048);
         let h53 = block(h52, 2048);
 
         //fc
-        let h6 = graph.reshape(graph.maxPool(h53, 7, 7, 0), [2048]); // Because deeplearn.js doesn't support average pooling, use max pooling instead.
+        let h6 = math.maxPool(h53, 7, 7, 0).reshape([1, 2048]); // Because deeplearn.js doesn't support average pooling, use max pooling instead.
         let y = dense(h6, 1000);
 
-        this.math = this.flagUsingGPU ? new deeplearn.NDArrayMathGPU() : new deeplearn.NDArrayMathCPU();
-        this.session = new deeplearn.Session(graph, this.math);
-
-        // dummy input
-        this.feeds = [{
-            tensor: x,
-            data: deeplearn.Array3D.zeros([225, 225, 3])
-        }];
-
-        this.y = y;
-    }
-
-    async executeSingleAsync() {
-        this.math!.scope(() => {
-            // getValues() is required for downloading result from GPU to CPU
-            this.session!.eval(this.y!, this.feeds!).getValues();
-        });
+        return y;
     }
 
     async finalizeAsync() {
-        this.session = null;
         this.math = null;
-        this.feeds = null;
-        this.y = null;
+        this.parameters = null;
+        this.xs = null;
     }
 }
 
-// noinspection JSUnusedLocalSymbols
-function run() {
-    let numIteration = Number(document.forms['benchmark'].iterations.value) + 1;
-    if (isNaN(numIteration)) {
-        numIteration = 5;
+//---------------------------------------------------------------------------------------------------
+//
+// Main
+//
+
+const BenchmarkClass: { [key in FrameworkName] : { new(): Benchmark<Configuration> }} = {
+    'WebDNN': WebDNNBenchmark,
+    'keras.js': KerasJSBenchmark,
+    'deeplearn.js': DeepLearnJSBenchmark
+};
+
+async function run() {
+    let logger = new Logger(document.querySelector('#log') as HTMLPreElement);
+    logger.group('Benchmark');
+
+    try {
+        let configuration = JSON.parse((document.querySelector('#configurations') as HTMLSelectElement).selectedOptions[0].value) as Configuration;
+
+        configuration.modelName = (document.querySelector('#modelName') as HTMLSelectElement).selectedOptions[0].value as ModelName;
+        configuration.iteration = Number((document.querySelector('#iteration') as HTMLInputElement).value) + 1;
+        configuration.batchSize = Number((document.querySelector('#batchSize') as HTMLInputElement).value);
+
+        logger.group('Environment Information');
+        logger.log(`${'UserAgent'.padStart(12)}: ${(navigator.userAgent) || '(N/A)'}`);
+        logger.log(`${'Platform'.padStart(12)}: ${(navigator.platform || '(N/A)')}`);
+        logger.groupEnd();
+
+        logger.group('Configuration');
+        Object.keys(configuration).forEach(key => {
+            logger.log(`${key.padStart(12)}: ${configuration[key]}`);
+        });
+        logger.groupEnd();
+
+        logger.group('Run');
+        let benchmark = new BenchmarkClass[configuration.framework]();
+        benchmark.onExecuteSingle = (i => logger.log(`Iteration: ${i + 1} / ${configuration.iteration}`));
+        let summary = await benchmark.runAsync(configuration);
+        logger.groupEnd();
+
+        logger.group('Result');
+        logger.log(`Elapsed Time: ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}[ms/batch]`);
+        logger.groupEnd();
+
+    } catch (err) {
+        logger.error(err);
     }
 
-    let mode_selection = document.forms['benchmark'].mode_selection;
-    let benchmark_id = 0;
-    for (let i = 0; i < mode_selection.length; i++) {
-        if (mode_selection[i].checked) {
-            benchmark_id = Number(mode_selection[i].value);
-        }
-    }
-    let benchmark = benchmarks[benchmark_id];
-
-    let summaryHandler = summary => console_log(`${summary.name} : ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}ms`);
-
-    console_log(`Benchmark ${benchmark.name} start`);
-    Promise.resolve()
-        .then(() => benchmark.runAsync(numIteration).then(summaryHandler))
-        .then(() => console_log('Benchmark end'))
-        .catch(err => console_error(err));
+    logger.groupEnd();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU)', 'webgpu', false));
-    benchmarks.push(new WebDNNBenchmark('WebDNN(WebGPU) + Optimize', 'webgpu', true));
-    benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly)', 'webassembly', false));
-    benchmarks.push(new WebDNNBenchmark('WebDNN(WebAssembly) + Optimize', 'webassembly', true));
-    if (typeof WebGLRenderingContext !== 'undefined') {
-        benchmarks.push(new WebDNNBenchmark('WebDNN(WebGL)', 'webgl', false));
-        benchmarks.push(new WebDNNBenchmark('WebDNN(WebGL) + Optimize', 'webgl', true));
-    }
-    benchmarks.push(new KerasJSBenchmark('Keras.js(CPU)', false));
-    benchmarks.push(new KerasJSBenchmark('Keras.js(GPU)', true));
-    benchmarks.push(new DeepLearnJSBenchmark('deeplearn.js(CPU)', false));
-    benchmarks.push(new DeepLearnJSBenchmark('deeplearn.js(GPU)', true));
+    let webdnnConfigurations: WebDNNConfiguration[] = [{
+        framework: 'WebDNN',
+        name: 'WebDNN (WebGPU backend)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: false,
+        backend: 'webgpu'
+    }, {
+        framework: 'WebDNN',
+        name: 'WebDNN (WebGPU backend + Optimize)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: true,
+        backend: 'webgpu'
+    }, {
+        framework: 'WebDNN',
+        name: 'WebDNN (WebGL backend)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: false,
+        backend: 'webgl'
+    }, {
+        framework: 'WebDNN',
+        name: 'WebDNN (WebGL backend + Optimize)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: true,
+        backend: 'webgl'
+    }, {
+        framework: 'WebDNN',
+        name: 'WebDNN (WebAssembly backend)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: false,
+        backend: 'webassembly'
+    }, {
+        framework: 'WebDNN',
+        name: 'WebDNN (WebAssembly backend + Optimize)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        optimize: true,
+        backend: 'webassembly'
+    }];
+    let kerasjsConfigurations: KerasJSConfiguration[] = [{
+        framework: 'keras.js',
+        name: 'keras.js (CPU)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        gpu: false
+    }, {
+        framework: 'keras.js',
+        name: 'keras.js (GPU)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        gpu: true
+    }];
+    let deeplearnjsConfigurations: DeepLearnJSConfiguration[] = [{
+        framework: 'deeplearn.js',
+        name: 'deeplearn.js (CPU)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        gpu: false
+    }, {
+        framework: 'deeplearn.js',
+        name: 'deeplearn.js (GPU)',
+        modelName: 'resnet50',
+        batchSize: 0,
+        iteration: 0,
+        gpu: true
+    }];
 
-    let div_modelist = document.getElementById('modelist')!;
-    for (let i = 0; i < benchmarks.length; i++) {
-        let benchmark = benchmarks[i];
-        div_modelist.innerHTML += `<label><input type="radio" name="mode_selection" value="${i}" ${i == 0 ? 'checked' : ''}>${benchmark.name}</label><br>`
+    let configurations: Configuration[] = [];
+    configurations = configurations.concat(webdnnConfigurations, kerasjsConfigurations, deeplearnjsConfigurations);
+
+    for (let configuration of configurations) {
+        let option = document.createElement('option');
+        option.value = JSON.stringify(configuration);
+        option.textContent = configuration.name;
+
+        if (configuration.framework === 'WebDNN') {
+            if (!WebDNN.getBackendAvailability().status[(configuration as WebDNNConfiguration).backend]) {
+                option.disabled = true;
+            }
+        }
+
+        document.querySelector('#configurations').appendChild(option);
     }
 
-    let environment_note = "";
-    if (typeof WebGPUComputeCommandEncoder === 'undefined') {
-        environment_note += "This browser does not support WebGPU.\n";
-    }
-    if (typeof WebAssembly === 'undefined') {
-        environment_note += "This browser does not support WebAssembly. WebAssembly backend will run in asm.js mode.\n";
-    }
-    document.getElementById('environment_note')!.innerHTML = environment_note;
-
-    let button = (document.getElementById('run_button') as HTMLButtonElement);
+    let button = (document.querySelector('#runButton') as HTMLButtonElement);
     button.disabled = false;
     button.addEventListener('click', run);
 });

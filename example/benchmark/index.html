@@ -7,6 +7,21 @@
     <script src="./kerasjs/dist/keras.js"></script>
     <script src="https://storage.googleapis.com/learnjs-data/deeplearn-latest.js"></script>
     <script src="index.js"></script>
+    <style>
+        body {
+            font-size: 14px;
+        }
+
+        h4 {
+            margin: 24px 0 0;
+        }
+
+        pre {
+            font-family: 'Consolas', 'Monaco', monospace, serif;
+            font-size: 12px;
+            tab-size: 2;
+        }
+    </style>
 </head>
 <body>
 
@@ -14,30 +29,35 @@
 
 <form name="benchmark">
     <div>
-        Model:
-        <label><input type="radio" name="model_name" value="resnet50" checked>ResNet50</label>
-        <label><input type="radio" name="model_name" value="vgg16">VGG16</label>
-        <label><input type="radio" name="model_name" value="inception_v3">Inception v3</label>
+        <h4>Model</h4>
+        <select id="modelName">
+            <option value="resnet50" selected>ResNet50</option>
+            <option value="vgg16">VGG16</option>
+            <option value="inception_v3">Inception v3</option>
+        </select>
     </div>
-    <div id="modelist">
-        Framework and backends:<br>
-    </div>
-    <p>
-        Iterations: 1(warm up)+<input type="text" name="iterations" size="4" value="3"> proceeding run <br>
-    </p>
-
-    <button type="button" id="run_button" disabled>run</button>
-    (It will take several minutes)
-
-    <pre id="environment_note">
-</pre>
-
     <div>
-<pre id="message">
+        <h4>Framework and backends</h4>
+        <select id="configurations">
 
-</pre>
+        </select>
     </div>
+    <div>
+        <h4>Iterations</h4>
+        1(warming up) + <input type="number" id="iteration" min="1" size="4" value="3"/>
+    </div>
+    <div>
+        <h4>Batch Size</h4>
+        <input type="number" id="batchSize" size="4" min="1" value="1"/>
+    </div>
+
+    <button type="button" id="runButton" disabled>run</button>
+    (It will take several minutes)
 </form>
+
+<div>
+    <pre id="log"></pre>
+</div>
 
 </body>
 </html>

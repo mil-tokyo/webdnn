@@ -1,4 +1,5 @@
 import copy
+import sys
 from collections import defaultdict
 from typing import Generic, TypeVar, Type, Callable, List, Dict
 
@@ -14,6 +15,8 @@ backend_names = ["webgpu", "webassembly", "fallback"]
 
 T_KERNEL = TypeVar("T_KERNEL")
 T_EXEC_DATA = TypeVar("T_EXEC_DATA")
+
+sys.setrecursionlimit(10000)
 
 
 class DescriptorGenerator(Generic[T_KERNEL, T_EXEC_DATA]):
