@@ -23,5 +23,8 @@ export enum Color {
     RGB,
 
         /** BGR format */
-    BGR
+    BGR,
+
+        /** grey scale */
+    GREY
 }

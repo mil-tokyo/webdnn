@@ -1047,6 +1047,8 @@ declare module 'webdnn/image/enums' {
 	    RGB = 0,
 	    /** BGR format */
 	    BGR = 1,
+	    /** grey scale */
+	    GREY = 2,
 	}
 
 }

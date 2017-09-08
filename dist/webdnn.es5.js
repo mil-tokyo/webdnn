@@ -501,6 +501,12 @@ var PlaceholderContext = (function () {
 }());
 
 /**
+ * @protected
+ */
+function flatten(arr) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(function (arr) { return flatten(arr); })) : arr;
+}
+/**
  * SymbolicTypedArray is wrapper class of buffers used in DNN model.
  */
 var SymbolicTypedArray = (function () {
@@ -591,7 +597,7 @@ var SymbolicTypedArray = (function () {
      * @param offset The index at which the values will be written.
      */
     SymbolicTypedArray.prototype.set = function (array, offset) {
-        return this.toActual().set(array, offset);
+        return this.toActual().set(flatten(array), offset);
     };
     return SymbolicTypedArray;
 }());
@@ -2830,6 +2836,8 @@ var Color;
     Color[Color["RGB"] = 0] = "RGB";
     /** BGR format */
     Color[Color["BGR"] = 1] = "BGR";
+    /** grey scale */
+    Color[Color["GREY"] = 2] = "GREY";
 })(Color || (Color = {}));
 
 /**
@@ -3031,6 +3039,12 @@ function loadImageByDialog() {
  */
 /** Don't Remove This comment block */
 /**
+ * @protected
+ */
+function flatten$1(arr) {
+    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(function (arr) { return flatten$1(arr); })) : arr;
+}
+/**
  * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
  *
  * @see getImageArrayFromCanvas
@@ -3051,11 +3065,12 @@ function getImageArrayFromImageData(imageData, options) {
     var width = imageData.width;
     var height = imageData.height;
     var data = imageData.data;
-    var array = new type(width * height * 3);
+    var array;
     var biasR, biasG, biasB;
     var scaleR, scaleG, scaleB;
     switch (color) {
         case Color.RGB:
+            array = new type(width * height * 3);
             scaleR = scale[0], scaleG = scale[1], scaleB = scale[2];
             biasR = bias[0], biasG = bias[1], biasB = bias[2];
             switch (order) {
@@ -3080,6 +3095,7 @@ function getImageArrayFromImageData(imageData, options) {
             }
             break;
         case Color.BGR:
+            array = new type(width * height * 3);
             biasB = bias[0], biasG = bias[1], biasR = bias[2];
             scaleB = scale[0], scaleG = scale[1], scaleR = scale[2];
             switch (order) {
@@ -3103,6 +3119,21 @@ function getImageArrayFromImageData(imageData, options) {
                     break;
             }
             break;
+        case Color.GREY:
+            array = new type(width * height);
+            biasB = bias[0], biasG = bias[1], biasR = bias[2];
+            scaleB = scale[0], scaleG = scale[1], scaleR = scale[2];
+            for (var h = 0; h < height; h++) {
+                for (var w = 0; w < width; w++) {
+                    var r = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
+                    var g = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                    var b = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
+                    array[h * width + w] = 0.2126 * r + 0.7162 * g + 0.0722 * b;
+                }
+            }
+            break;
+        default:
+            throw Error("Unknown color format: " + color);
     }
     return array;
 }
@@ -3335,6 +3366,7 @@ function getImageArray(image, options) {
 function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
     if (options === void 0) { options = {}; }
     var _a = options.color, color = _a === void 0 ? Color.RGB : _a, _b = options.order, order = _b === void 0 ? Order.HWC : _b, _c = options.srcX, srcX = _c === void 0 ? 0 : _c, _d = options.srcY, srcY = _d === void 0 ? 0 : _d, _e = options.srcW, srcW = _e === void 0 ? imageW : _e, _f = options.srcH, srcH = _f === void 0 ? imageH : _f, _g = options.dstX, dstX = _g === void 0 ? 0 : _g, _h = options.dstY, dstY = _h === void 0 ? 0 : _h, _j = options.dstW, dstW = _j === void 0 ? canvas.width : _j, _k = options.dstH, dstH = _k === void 0 ? canvas.height : _k, _l = options.bias, bias = _l === void 0 ? [0, 0, 0] : _l, _m = options.scale, scale = _m === void 0 ? [1, 1, 1] : _m;
+    array = flatten$1(array);
     var data = new Uint8ClampedArray(srcW * srcH * 4);
     var biasR, biasG, biasB;
     var scaleR, scaleG, scaleB;
@@ -3389,6 +3421,18 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
                         }
                     }
                     break;
+            }
+            break;
+        case Color.GREY:
+            biasR = bias[0], biasG = bias[1], biasB = bias[2];
+            scaleR = scale[0], scaleG = scale[1], scaleB = scale[2];
+            for (var h = srcY; h < srcY + srcH; h++) {
+                for (var w = srcX; w < srcX + srcW; w++) {
+                    data[(h * imageW + w) * 4 + 0] =
+                        data[(h * imageW + w) * 4 + 1] =
+                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scaleR + biasR;
+                    data[(h * imageW + w) * 4 + 3] = 255;
+                }
             }
             break;
     }
