@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Buffer | WebDNN</title>
+	<title>BufferWebGL | WebDNN</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/style.css">
@@ -31,7 +31,7 @@
 	<header class="index-header">
 		<span class="index-header-kind">Class</span>
 		<h1 class="index-header-name">
-			Buffer
+			BufferWebGL
 		</h1>
 	</header>
 	<div class="reflection-container">
@@ -39,9 +39,6 @@
 			<section class="members-group members-group-comment tsd-kind-class tsd-parent-kind-external-module tsd-is-protected tsd-is-external">
 				<div class="members-group-body">
 					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Abstract buffer interface. Read/write transactions are regarded as asynchronous operation.</p>
-						</div>
 					</div>
 				</div>
 			</section>
@@ -51,13 +48,10 @@
 					<div class="members-group-body">
 						<ul class="tsd-hierarchy">
 							<li>
-								<code class="target">Buffer</code>
+								<code><a href="webdnn.buffer.html" class="signature-type">Buffer</a></code>
 								<ul class="tsd-hierarchy">
 									<li>
-										<code><a href="webdnn.bufferwebgl.html" class="signature-type">BufferWebGL</a></code>
-									</li>
-									<li>
-										<code><a href="webdnn.bufferwebgpu.html" class="signature-type">BufferWebGPU</a></code>
+										<code class="target">BufferWebGL</code>
 									</li>
 								</ul>
 							</li>
@@ -68,7 +62,7 @@
 			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Constructors</header>
 				<div class="members-group-body">
-					<section class="member tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="constructor" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -80,9 +74,9 @@
 									</h3>
 									<div>
 										<code>
-new <wbr>Buffer<span class="tsd-signature-symbol">(</span>byteLength<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, backend<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="webdnn.buffer.html" class="signature-type">Buffer</a></code>                    </code>
+new <wbr>Buffer<wbr>WebGL<span class="tsd-signature-symbol">(</span>gl<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLRenderingContext</span>                    </code>, byteLength<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, textureWidth<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, textureHeight<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, name<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, array<span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">Float32Array</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">null</span>                    </code></code>, channelMode<span class="tsd-signature-symbol">: </span><code><a href="../modules/webdnn.html#channelmode" class="signature-type">ChannelMode</a></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="webdnn.bufferwebgl.html" class="signature-type">BufferWebGL</a></code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L16">[buffer/buffer.ts:16]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L23">[buffer/buffer_webgl.ts:23]</a>
 										</span>
 									</div>
 								</div>
@@ -106,6 +100,19 @@ new <wbr>Buffer<span class="tsd-signature-symbol">(</span>byteLength<span class=
 												<tbody>
 													<tr>
 														<td>
+															<code>gl</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">WebGLRenderingContext</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
 															<code>byteLength</code>
 														</td>
 														<td>
@@ -119,11 +126,67 @@ new <wbr>Buffer<span class="tsd-signature-symbol">(</span>byteLength<span class=
 													</tr>
 													<tr>
 														<td>
-															<code>backend</code>
+															<code>textureWidth</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>textureHeight</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>name</code>
 														</td>
 														<td>
 															<code>
 <span class="signature-type">string</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>array</code>
+														</td>
+														<td>
+															<code>
+                    <code>
+<span class="signature-type">Float32Array</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">null</span>                    </code>
+															</code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>channelMode</code>
+														</td>
+														<td>
+															<code><a href="../modules/webdnn.html#channelmode" class="signature-type">ChannelMode</a></code>
 														</td>
 														<td>
 														</td>
@@ -137,7 +200,7 @@ new <wbr>Buffer<span class="tsd-signature-symbol">(</span>byteLength<span class=
 									<section class="signature-body-section">
 										<header class="signature-body-section-header">Returns</header>
 										<div class="signature-body-section-body signature-body-section-returns">
-											<code><a href="webdnn.buffer.html" class="signature-type">Buffer</a></code>
+											<code><a href="webdnn.bufferwebgl.html" class="signature-type">BufferWebGL</a></code>
 										</div>
 									</section>
 								</div>
@@ -150,6 +213,24 @@ new <wbr>Buffer<span class="tsd-signature-symbol">(</span>byteLength<span class=
 				<header class="members-group-header">Properties</header>
 				<div class="members-group-body">
 					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="array" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="array" class="anchor"></a>
+								<a href="#array" class="anchor-link">#</a>
+								<code>
+array:                    <code><span class="signature-type">Float32Array</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L17">[buffer/buffer_webgl.ts:17]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 						<a name="backend" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -162,12 +243,12 @@ backend:                    <code><span class="signature-type">string</span>    
 								</span>
 							</header>
 						</div>
-						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 							<div class="members-group-body">
 							</div>
 						</section>
 					</section>
-					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 						<a name="bytelength" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -180,7 +261,7 @@ byte<wbr>Length:                    <code><span class="signature-type">number</s
 								</span>
 							</header>
 						</div>
-						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 							<div class="members-group-body">
 								<div class="tsd-comment tsd-typography">
 									<dl class="tsd-comment-tags">
@@ -192,12 +273,259 @@ byte<wbr>Length:                    <code><span class="signature-type">number</s
 							</div>
 						</section>
 					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="channelmode" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="channelmode" class="anchor"></a>
+								<a href="#channelmode" class="anchor-link">#</a>
+								<code>
+channel<wbr>Mode:<code><a href="../modules/webdnn.html#channelmode" class="signature-type">ChannelMode</a></code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L15">[buffer/buffer_webgl.ts:15]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="elementsperpixel" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="elementsperpixel" class="anchor"></a>
+								<a href="#elementsperpixel" class="anchor-link">#</a>
+								<code>
+elements<wbr>Per<wbr>Pixel:                    <code><span class="signature-type">number</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L16">[buffer/buffer_webgl.ts:16]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="name" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="name" class="anchor"></a>
+								<a href="#name" class="anchor-link">#</a>
+								<code>
+name:                    <code><span class="signature-type">string</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L21">[buffer/buffer_webgl.ts:21]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="textureheight" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="textureheight" class="anchor"></a>
+								<a href="#textureheight" class="anchor-link">#</a>
+								<code>
+texture<wbr>Height:                    <code><span class="signature-type">number</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L19">[buffer/buffer_webgl.ts:19]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="texturewidth" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="texturewidth" class="anchor"></a>
+								<a href="#texturewidth" class="anchor-link">#</a>
+								<code>
+texture<wbr>Width:                    <code><span class="signature-type">number</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L18">[buffer/buffer_webgl.ts:18]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+				</div>
+			</section>
+			<section class="members-group tsd-is-external">
+				<header class="members-group-header">Accessors</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+						<a name="length" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="length" class="anchor"></a>
+								<a href="#length" class="anchor-link">#</a>
+								<code>
+<span>get</span> length<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L62">[buffer/buffer_webgl.ts:62]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">number</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+						<a name="texture" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="texture" class="anchor"></a>
+								<a href="#texture" class="anchor-link">#</a>
+								<code>
+<span>get</span> texture<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLTexture</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L58">[buffer/buffer_webgl.ts:58]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">WebGLTexture</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
 				</div>
 			</section>
 			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Methods</header>
 				<div class="members-group-body">
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="bindtodrawtexture" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="bindtodrawtexture" class="anchor"></a>
+								<a href="#bindtodrawtexture" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										bind<wbr>ToDraw<wbr>Texture
+									</h3>
+									<div>
+										<code>
+bind<wbr>ToDraw<wbr>Texture<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L189">[buffer/buffer_webgl.ts:189]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">void</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="bindtoreadtexture" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="bindtoreadtexture" class="anchor"></a>
+								<a href="#bindtoreadtexture" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										bind<wbr>ToRead<wbr>Texture
+									</h3>
+									<div>
+										<code>
+bind<wbr>ToRead<wbr>Texture<span class="tsd-signature-symbol">(</span>unit<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L161">[buffer/buffer_webgl.ts:161]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>unit</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="getreadview" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -209,16 +537,16 @@ byte<wbr>Length:                    <code><span class="signature-type">number</s
 									</h3>
 									<div>
 										<code>
-get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">Int32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32Array</span>                    </code>                    </code>
+get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32Array</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L59">[buffer/buffer.ts:59]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L114">[buffer/buffer_webgl.ts:114]</a>
 										</span>
 									</div>
 									<div>
 										<code>
-get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">Float32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32Array</span>                    </code>                    </code>
+get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32Array</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L60">[buffer/buffer.ts:60]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L115">[buffer/buffer_webgl.ts:115]</a>
 										</span>
 									</div>
 								</div>
@@ -376,7 +704,7 @@ get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span clas
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="getwriteview" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -388,16 +716,16 @@ get<wbr>Read<wbr>View<span class="tsd-signature-symbol">(</span>offset<span clas
 									</h3>
 									<div>
 										<code>
-get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">Int32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32Array</span>                    </code>                    </code>
+get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Int32Array</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L48">[buffer/buffer.ts:48]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L100">[buffer/buffer_webgl.ts:100]</a>
 										</span>
 									</div>
 									<div>
 										<code>
-get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">Float32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32Array</span>                    </code>                    </code>
+get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, type<span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32ArrayConstructor</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Float32Array</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L49">[buffer/buffer.ts:49]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L101">[buffer/buffer_webgl.ts:101]</a>
 										</span>
 									</div>
 								</div>
@@ -555,7 +883,7 @@ get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span cla
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="read" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -569,7 +897,7 @@ get<wbr>Write<wbr>View<span class="tsd-signature-symbol">(</span>offset<span cla
 										<code>
 read<span class="tsd-signature-symbol">(</span>dst<span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">Float32ArrayConstructor</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Int32ArrayConstructor</span>                    </code></code>, offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, length<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L38">[buffer/buffer.ts:38]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L85">[buffer/buffer_webgl.ts:85]</a>
 										</span>
 									</div>
 								</div>
@@ -626,6 +954,7 @@ read<span class="tsd-signature-symbol">(</span>dst<span class="tsd-signature-sym
 <span class="signature-type">number</span>                    </code>
 														</td>
 														<td>
+															<code>0</code>
 														</td>
 														<td>
 															<div class="tsd-comment tsd-typography">
@@ -664,7 +993,7 @@ read<span class="tsd-signature-symbol">(</span>dst<span class="tsd-signature-sym
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="syncreadviews" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -678,7 +1007,7 @@ read<span class="tsd-signature-symbol">(</span>dst<span class="tsd-signature-sym
 										<code>
 sync<wbr>Read<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L74">[buffer/buffer.ts:74]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L148">[buffer/buffer_webgl.ts:148]</a>
 										</span>
 									</div>
 								</div>
@@ -708,7 +1037,7 @@ sync<wbr>Read<wbr>Views<span class="tsd-signature-symbol">(</span><span class="t
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="syncwriteviews" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -722,7 +1051,7 @@ sync<wbr>Read<wbr>Views<span class="tsd-signature-symbol">(</span><span class="t
 										<code>
 sync<wbr>Write<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L67">[buffer/buffer.ts:67]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L125">[buffer/buffer_webgl.ts:125]</a>
 										</span>
 									</div>
 								</div>
@@ -753,6 +1082,74 @@ sync<wbr>Write<wbr>Views<span class="tsd-signature-symbol">(</span><span class="
 						</div>
 					</section>
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="unbindfromdrawtexture" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="unbindfromdrawtexture" class="anchor"></a>
+								<a href="#unbindfromdrawtexture" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										unbind<wbr>From<wbr>Draw<wbr>Texture
+									</h3>
+									<div>
+										<code>
+unbind<wbr>From<wbr>Draw<wbr>Texture<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L205">[buffer/buffer_webgl.ts:205]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">void</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="unbindfromreadtexture" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="unbindfromreadtexture" class="anchor"></a>
+								<a href="#unbindfromreadtexture" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										unbind<wbr>From<wbr>Read<wbr>Texture
+									</h3>
+									<div>
+										<code>
+unbind<wbr>From<wbr>Read<wbr>Texture<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L178">[buffer/buffer_webgl.ts:178]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">void</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 						<a name="write" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -766,7 +1163,7 @@ sync<wbr>Write<wbr>Views<span class="tsd-signature-symbol">(</span><span class="
 										<code>
 write<span class="tsd-signature-symbol">(</span>src<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayBufferView</span>                    </code>, offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer.ts#L29">[buffer/buffer.ts:29]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/f2ee014/src/descriptor_runner/buffer/buffer_webgl.ts#L72">[buffer/buffer_webgl.ts:72]</a>
 										</span>
 									</div>
 								</div>
@@ -848,8 +1245,8 @@ write<span class="tsd-signature-symbol">(</span>src<span class="tsd-signature-sy
 				<li>
 					<header class="toc-header">Constructors</header>
 					<ul class="toc-list">
-						<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#constructor" class="tsd-kind-icon">
+						<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#constructor" class="tsd-kind-icon">
 								constructor
 							</a>
 						</li>
@@ -859,13 +1256,58 @@ write<span class="tsd-signature-symbol">(</span>src<span class="tsd-signature-sy
 					<header class="toc-header">Properties</header>
 					<ul class="toc-list">
 						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#backend" class="tsd-kind-icon">
+							<a href="webdnn.bufferwebgl.html#array" class="tsd-kind-icon">
+								array
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#backend" class="tsd-kind-icon">
 								backend
 							</a>
 						</li>
-						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#bytelength" class="tsd-kind-icon">
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#bytelength" class="tsd-kind-icon">
 								byte<wbr>Length
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#channelmode" class="tsd-kind-icon">
+								channel<wbr>Mode
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#elementsperpixel" class="tsd-kind-icon">
+								elements<wbr>Per<wbr>Pixel
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#name" class="tsd-kind-icon">
+								name
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#textureheight" class="tsd-kind-icon">
+								texture<wbr>Height
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#texturewidth" class="tsd-kind-icon">
+								texture<wbr>Width
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<header class="toc-header">Accessors</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#length" class="tsd-kind-icon">
+								length
+							</a>
+						</li>
+						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#texture" class="tsd-kind-icon">
+								texture
 							</a>
 						</li>
 					</ul>
@@ -874,32 +1316,52 @@ write<span class="tsd-signature-symbol">(</span>src<span class="tsd-signature-sy
 					<header class="toc-header">Methods</header>
 					<ul class="toc-list">
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#getreadview" class="tsd-kind-icon">
+							<a href="webdnn.bufferwebgl.html#bindtodrawtexture" class="tsd-kind-icon">
+								bind<wbr>ToDraw<wbr>Texture
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#bindtoreadtexture" class="tsd-kind-icon">
+								bind<wbr>ToRead<wbr>Texture
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#getreadview" class="tsd-kind-icon">
 								get<wbr>Read<wbr>View
 							</a>
 						</li>
-						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#getwriteview" class="tsd-kind-icon">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#getwriteview" class="tsd-kind-icon">
 								get<wbr>Write<wbr>View
 							</a>
 						</li>
-						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#read" class="tsd-kind-icon">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#read" class="tsd-kind-icon">
 								read
 							</a>
 						</li>
-						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#syncreadviews" class="tsd-kind-icon">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#syncreadviews" class="tsd-kind-icon">
 								sync<wbr>Read<wbr>Views
 							</a>
 						</li>
-						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#syncwriteviews" class="tsd-kind-icon">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#syncwriteviews" class="tsd-kind-icon">
 								sync<wbr>Write<wbr>Views
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.buffer.html#write" class="tsd-kind-icon">
+							<a href="webdnn.bufferwebgl.html#unbindfromdrawtexture" class="tsd-kind-icon">
+								unbind<wbr>From<wbr>Draw<wbr>Texture
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#unbindfromreadtexture" class="tsd-kind-icon">
+								unbind<wbr>From<wbr>Read<wbr>Texture
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.bufferwebgl.html#write" class="tsd-kind-icon">
 								write
 							</a>
 						</li>
