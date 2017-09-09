@@ -72,7 +72,7 @@ def generate_template(ksize):
 
 
 @WebGLDescriptorGenerator.register_handler(AveragePooling2D)
-def elementwise_add(op: AveragePooling2D) -> List[Kernel]:
+def average_pooling_2d(op: AveragePooling2D) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

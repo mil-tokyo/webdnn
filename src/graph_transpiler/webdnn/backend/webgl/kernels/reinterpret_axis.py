@@ -18,7 +18,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(ReinterpretAxis)
-def elementwise_add(op: ReinterpretAxis) -> List[Kernel]:
+def reinterpret_axis(op: ReinterpretAxis) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

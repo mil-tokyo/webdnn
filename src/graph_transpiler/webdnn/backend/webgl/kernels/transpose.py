@@ -35,7 +35,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(Transpose)
-def elementwise_add(op: Transpose) -> List[Kernel]:
+def transpose(op: Transpose) -> List[Kernel]:
     x0 = op.inputs["x0"]
     y = op.outputs["y"]
 

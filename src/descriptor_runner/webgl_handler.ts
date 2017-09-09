@@ -159,6 +159,8 @@ export default class WebGLHandler {
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
             isWebGL2 = true;
+            if (isDebugMode()) console.info('WebGL2 is enabled');
+
         } else {
             let res = WebGLHandler.initializeWebGL1Context(canvas);
 
@@ -166,6 +168,8 @@ export default class WebGLHandler {
                 gl = res.gl;
                 vao = res.vao;
                 isWebGL2 = false;
+                if (isDebugMode()) console.info('WebGL2 is disabled');
+
             } else {
                 return null;
             }

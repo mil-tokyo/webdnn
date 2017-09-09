@@ -71,7 +71,7 @@ def generate_template(ksize):
 
 
 @WebGLDescriptorGenerator.register_handler(MaxPooling2D)
-def elementwise_add(op: MaxPooling2D) -> List[Kernel]:
+def max_pooling_2d(op: MaxPooling2D) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

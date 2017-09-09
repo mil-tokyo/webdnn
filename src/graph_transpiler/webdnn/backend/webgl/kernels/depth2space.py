@@ -47,7 +47,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(Depth2Space)
-def elementwise_add(op: Depth2Space) -> List[Kernel]:
+def depth2space(op: Depth2Space) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
     r = op.parameters['r']

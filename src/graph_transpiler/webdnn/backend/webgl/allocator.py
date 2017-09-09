@@ -11,9 +11,10 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
 
 IntLike = Union[int, Placeholder]
-AllocationDict = Dict[Variable, "WebGLAllocation"]
+WebGLAllocationDict = Dict[Variable, "WebGLAllocation"]
 _T_UNKNOWN = -1
 
 _count = 0
@@ -53,15 +54,18 @@ class WebGLAllocation(Allocation):
 class WebGLMemoryLayout(MemoryLayout):
     def _to_serializable_(self):
         # WebGLMemoryLayout does not support total length
+        allocations = set(self.allocations.values())
+
         return {
             "static": {
                 "size": -1,
-                "allocations": {a.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Static}
+                "allocations": {a.name: a for a in allocations if a.buffer_type == BufferType.Static}
             },
             "dynamic": {
                 "size": -1,
-                "allocations": {a.name: a for a in self.allocations.values() if a.buffer_type == BufferType.Dynamic}
-            }
+                "allocations": {a.name: a for a in allocations if a.buffer_type == BufferType.Dynamic}
+            },
+            "mapping": {v.name: a.name for v, a in self.allocations.items()}
         }
 
     def __len__(self):
@@ -102,6 +106,7 @@ def allocate(graph: Graph) -> WebGLMemoryLayout:
     assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
 
     allocations = _get_allocations(graph, operators, variables)
+    _optimize_buffer_reuse(allocations)
 
     variable_allocations = {v: allocations[v] for v in variables if not isinstance(v, ConstantVariable)}
     constant_allocations = {v: allocations[v] for v in variables if isinstance(v, ConstantVariable)}
@@ -120,10 +125,10 @@ def allocate(graph: Graph) -> WebGLMemoryLayout:
     return layout
 
 
-def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Variable]) -> AllocationDict:
+def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Variable]) -> WebGLAllocationDict:
     T_LAST = len(operators)
 
-    allocations = {}  # type: AllocationDict
+    allocations = {}  # type: WebGLAllocationDict
     retain_count = {v: 0 for v in variables}  # type: Dict[Variable, int]
     allocated = set()  # type: Set[Variable]
 
@@ -183,7 +188,41 @@ def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Va
     return allocations
 
 
-def _update_offset(allocations: AllocationDict):
+def _optimize_buffer_reuse(allocations_dict: WebGLAllocationDict):
+    texture_table = {}  # type: Dict[str, List[WebGLAllocation]]
+    allocation2variables = {a: [v] for v, a in allocations_dict.items()}
+
+    def texture_key(a: WebGLAllocation):
+        return f"{a.height}x{a.width}"
+
+    for a in allocations_dict.values():
+        if texture_key(a) not in texture_table:
+            texture_table[texture_key(a)] = []
+        texture_table[texture_key(a)].append(a)
+
+    for key in texture_table.keys():
+        allocations = sorted(texture_table[key], key=lambda a: a.end)
+
+        for a1 in allocations:
+            for a2 in allocations:
+                if a1 is a2:
+                    continue
+
+                if not (a2.end < a1.begin or a1.end < a2.begin):
+                    # lifetime of a1 and a2 is overlapped
+                    continue
+
+                console.debug(f"MERGE: [{a1.begin}-{a1.end}) + [{a2.begin}-{a2.end}), key={key}")
+                allocations.remove(a2)
+                for v in allocation2variables[a2]:
+                    allocations_dict[v] = a1
+                    allocation2variables[a1].append(v)
+
+                a1.begin = min(a1.begin, a2.begin)
+                a1.end = max(a1.end, a2.end)
+
+
+def _update_offset(allocations: WebGLAllocationDict):
     static_offset = 0
     dynamic_offset = 0
 
@@ -197,7 +236,7 @@ def _update_offset(allocations: AllocationDict):
             dynamic_offset += _align(dynamic_offset + allocation.size)
 
 
-def _update_constant_offset(allocations: AllocationDict):
+def _update_constant_offset(allocations: WebGLAllocationDict):
     offset = 0
     data = []
 

@@ -69,7 +69,7 @@ def generate_template(mode: ChannelModeEnum, transpose_A: bool, transpose_B: boo
 
 
 @WebGLDescriptorGenerator.register_handler(Sgemm)
-def elementwise_add(op: Sgemm) -> List[Kernel]:
+def sgemm(op: Sgemm) -> List[Kernel]:
     A = op.inputs["A"]
     B = op.inputs["B"]
     C = op.outputs["C"]

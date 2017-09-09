@@ -68,7 +68,7 @@ template_RGBA = header + """
 
 
 @WebGLDescriptorGenerator.register_handler(Im2Col)
-def elementwise_add(op: Im2Col) -> List[Kernel]:
+def im2col(op: Im2Col) -> List[Kernel]:
     im = op.inputs["im"]
     col = op.outputs["col"]
 

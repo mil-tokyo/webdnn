@@ -35,7 +35,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(Broadcast)
-def elementwise_add(op: Broadcast) -> List[Kernel]:
+def broadcast(op: Broadcast) -> List[Kernel]:
     x0 = op.inputs["x0"]
     y = op.outputs["y"]
 
