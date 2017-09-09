@@ -2421,12 +2421,6 @@ function loadImageFromFileInput(input) {
  */
 function loadImageByDialog() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (navigator.userAgent.match(/Chrome|Firefox/)) {
-            /* OK */
-        }
-        else {
-            throw Error('This browser does not support opening File-Picker-Dialog programmatically.');
-        }
         let input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
