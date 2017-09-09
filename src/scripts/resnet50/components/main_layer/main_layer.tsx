@@ -53,7 +53,7 @@ interface State {
 }
 
 class MainLayer extends React.Component<Props, State> {
-    processingTimes: number[] = [];
+    processingTime: number;
     results: ({ label: string, prob: number }[] | null) = null;
 
     constructor() {
@@ -86,21 +86,27 @@ class MainLayer extends React.Component<Props, State> {
         random_image_index++;
         if (random_image_index >= IMAGE_PATH_LIST.length) random_image_index = 0;
 
-        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
+        let canvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
         let image = await WebDNN.Image.loadImageByUrl(IMAGE_PATH_LIST[random_image_index]);
         let data = WebDNN.Image.getImageArrayFromDrawable(image);
 
-        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas);
+        let size = Math.min(canvas.clientWidth, canvas.clientHeight);
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, canvas);
 
         this.setState({ isContentLoaded: true });
     }
 
     async uploadLocalImage() {
-        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
+        let canvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
         let image = await WebDNN.Image.loadImageByDialog();
         let data = WebDNN.Image.getImageArrayFromDrawable(image);
 
-        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas);
+        let size = Math.min(canvas.clientWidth, canvas.clientHeight);
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, canvas);
 
         this.setState({ isContentLoaded: true });
     }
@@ -124,8 +130,7 @@ class MainLayer extends React.Component<Props, State> {
         let startTime = performance.now();
         await runner.run();
         let endTime = performance.now();
-        this.processingTimes.push(endTime - startTime);
-        console.log(endTime - startTime);
+        this.processingTime = endTime - startTime;
 
         let output = runner.getOutputViews()[0].toActual();
         if (runner.backendName === 'webgl') output = softmax(output);
@@ -160,9 +165,9 @@ class MainLayer extends React.Component<Props, State> {
                                         <dl>
                                             <dt>Backend:</dt>
                                             <dd>{this.props.runner ? this.props.runner.backendName : '(unknown)'}</dd>
-                                            <dt>Average Processing Time:</dt>
-                                            <dd>{this.processingTimes.length > 0 ?
-                                                 `${(this.processingTimes.reduce((v, s) => v + s, 0) / this.processingTimes.length).toFixed(1)}[ms/image]` :
+                                            <dt>Processing Time:</dt>
+                                            <dd>{this.processingTime ?
+                                                 this.processingTime.toFixed(1) + ' [ms]' :
                                                  'N/A'}</dd>
                                         </dl>
                                     </LayoutFrame>
