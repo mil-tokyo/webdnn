@@ -1,5 +1,6 @@
 import * as classNames from "classnames";
 import * as React from "react";
+import * as WebDNN from "webdnn";
 import "../../../../stylus/bootstrap.scss";
 import Button from "../../../common/components/button/button";
 import { LayoutFrame } from "../../../common/components/layout/layout";
@@ -7,10 +8,7 @@ import NavbarLayer from "../../../common/components/navbar_layer/navbar_layer";
 import ProgressBar from "../../../common/components/progress_bar/progress_bar";
 import dom from "../../../common/dom";
 import Labels from "../../../common/imagenet_labels";
-import { loadImageByDialog, loadImageByUrl } from "../../../common/til/load_image";
-import { loadImageDataFromCanvas } from "../../../common/til/load_image_data";
 import * as style from "./main_layer.scss";
-import * as WebDNN from "webdnn";
 
 declare function require(path: string): any;
 
@@ -28,23 +26,6 @@ const IMAGE_PATH_LIST = [
 ];
 let random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
 
-function computeContainSize(originalWidth: number, originalHeight: number, referenceWidth: number, referenceHeight: number) {
-    let computeWidth = referenceWidth;
-    let computeHeight = originalHeight * (computeWidth / originalWidth);
-
-    if (computeHeight > referenceHeight) {
-        computeHeight = referenceHeight;
-        computeWidth = originalWidth * (computeHeight / originalHeight)
-    }
-
-    return {
-        width: computeWidth,
-        height: computeHeight
-    };
-}
-
-function clamp(x: number, min: number, max: number) { return x < min ? min : x > max ? max : x };
-
 function softmax(x: Float32Array) {
     let max = -Infinity;
     for (let i = 0; i < x.length; i++) max = max > x[i] ? max : x[i];
@@ -60,82 +41,6 @@ function softmax(x: Float32Array) {
     for (let i = 0; i < exp.length; i++) exp[i] /= sum;
 
     return exp;
-}
-
-/**
- * Draw image data with adjusting whose size to be contained in specified canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {Uint8Array} imageData whose contains only RGB data, not contains alpha data
- * @param {number} naturalWidth
- * @param {number} naturalHeight
- * @param imageWidth
- * @param imageHeight
- */
-function drawAdjustedImageDataToCanvas(canvas: HTMLCanvasElement, data: Uint8Array | Float32Array,
-                                       naturalWidth: number, naturalHeight: number,
-                                       imageWidth: number = naturalWidth, imageHeight: number = naturalHeight) {
-    let context = canvas.getContext('2d');
-    if (!context) throw Error('context initialization failed');
-
-    let { width: clientWidth, height: clientHeight } = computeContainSize(
-        naturalWidth, naturalHeight,
-        canvas.parentElement!.clientWidth, canvas.parentElement!.clientHeight);
-
-    canvas.style.width = clientWidth + 'px';
-    canvas.style.height = clientHeight + 'px';
-    canvas.width = naturalWidth;
-    canvas.height = naturalHeight;
-
-    let imageData = new ImageData(naturalWidth, naturalHeight);
-
-    for (let y = 0; y < naturalHeight; y++) {
-        for (let x = 0; x < naturalWidth; x++) {
-            imageData.data[(y * naturalWidth + x) * 4 + 0] = clamp(data[(y * naturalWidth + x) * 3 + 0], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 1] = clamp(data[(y * naturalWidth + x) * 3 + 1], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 2] = clamp(data[(y * naturalWidth + x) * 3 + 2], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 3] = 255;
-        }
-    }
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.putImageData(imageData, 0, 0);
-
-    let image = new Image();
-
-    return new Promise(resolve => {
-        image.onload = () => {
-            drawAdjustedImageToCanvas(canvas, image, imageWidth, imageHeight);
-            resolve();
-        };
-
-        image.src = canvas.toDataURL();
-    });
-}
-
-/**
- * Draw image with adjusting whose size to be contained in specified canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {HTMLImageElement} image
- * @param {number} imageWidth
- * @param {number} imageHeight
- */
-function drawAdjustedImageToCanvas(canvas: HTMLCanvasElement, image: HTMLImageElement,
-                                   imageWidth: number = image.naturalWidth,
-                                   imageHeight: number = image.naturalHeight) {
-    let context = canvas.getContext('2d');
-    if (!context) throw Error('context initialization failed');
-
-    let { width: clientWidth, height: clientHeight } = computeContainSize(
-        imageWidth, imageHeight,
-        canvas.parentElement!.clientWidth, canvas.parentElement!.clientHeight);
-
-    canvas.style.width = clientWidth + 'px';
-    canvas.style.height = clientHeight + 'px';
-    canvas.width = imageWidth;
-    canvas.height = imageHeight;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, imageWidth, imageHeight);
 }
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
@@ -181,21 +86,21 @@ class MainLayer extends React.Component<Props, State> {
         random_image_index++;
         if (random_image_index >= IMAGE_PATH_LIST.length) random_image_index = 0;
 
-        await drawAdjustedImageToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas'),
-            await loadImageByUrl(IMAGE_PATH_LIST[random_image_index]),
-            224, 224
-        );
+        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
+        let image = await WebDNN.Image.loadImageByUrl(IMAGE_PATH_LIST[random_image_index]);
+        let data = WebDNN.Image.getImageArrayFromDrawable(image);
+
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas);
 
         this.setState({ isContentLoaded: true });
     }
 
     async uploadLocalImage() {
-        await drawAdjustedImageToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas'),
-            await loadImageByDialog(),
-            224, 224
-        );
+        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
+        let image = await WebDNN.Image.loadImageByDialog();
+        let data = WebDNN.Image.getImageArrayFromDrawable(image);
+
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas);
 
         this.setState({ isContentLoaded: true });
     }
@@ -209,7 +114,9 @@ class MainLayer extends React.Component<Props, State> {
 
         let inputImageCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
 
-        runner.getInputViews()[0].set(loadImageDataFromCanvas(inputImageCanvas));
+        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
+            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC
+        }));
         if (runner.backendName !== 'webgpu') {
             this.setState({ isBusy: true });
         }

@@ -37,9 +37,9 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
             },
             transformUrlDelegate: (url: string) => {
                 let ma = url.match(/([^/]+)(?:\?.*)?$/);
-                return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
+                return ma ? `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true` : url;
             },
-            backendOrder: ['webgpu', 'webassembly', 'fallback']
+            backendOrder: ['webgpu', 'webassembly']
         });
 
         this.setState({

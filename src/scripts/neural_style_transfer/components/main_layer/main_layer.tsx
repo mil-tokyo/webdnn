@@ -1,14 +1,12 @@
 import * as classNames from "classnames";
 import * as React from "react";
+import * as WebDNN from "webdnn";
 import "../../../../stylus/bootstrap.scss";
 import Button from "../../../common/components/button/button";
 import { LayoutFrame } from "../../../common/components/layout/layout";
 import NavbarLayer from "../../../common/components/navbar_layer/navbar_layer";
 import ProgressBar from "../../../common/components/progress_bar/progress_bar";
 import dom from "../../../common/dom";
-import { loadImageByDialog, loadImageByUrl } from "../../../common/til/load_image";
-import { loadImageDataFromCanvas, loadImageDataFromVideo } from "../../../common/til/load_image_data";
-import * as WebDNN from "webdnn";
 import * as style from "./main_layer.scss";
 
 declare function require(path: string): any;
@@ -31,98 +29,6 @@ const IMAGE_PATH_LIST = [
 ];
 let random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
 
-function computeContainSize(originalWidth: number, originalHeight: number, referenceWidth: number, referenceHeight: number) {
-    let computeWidth = referenceWidth;
-    let computeHeight = originalHeight * (computeWidth / originalWidth);
-
-    if (computeHeight < referenceHeight) {
-        computeHeight = referenceHeight;
-        computeWidth = originalWidth * (computeHeight / originalHeight)
-    }
-
-    return {
-        width: computeWidth,
-        height: computeHeight
-    };
-}
-
-const clamp = (x: number, min: number, max: number) => x < min ? min : x > max ? max : x;
-
-/**
- * Draw image data with adjusting whose size to be contained in specified canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {Uint8Array} imageData whose contains only RGB data, not contains alpha data
- * @param {number} naturalWidth
- * @param {number} naturalHeight
- * @param imageWidth
- * @param imageHeight
- */
-function drawAdjustedImageDataToCanvas(canvas: HTMLCanvasElement, data: Uint8Array | Float32Array,
-                                       naturalWidth: number, naturalHeight: number,
-                                       imageWidth: number = naturalWidth, imageHeight: number = naturalHeight) {
-    let context = canvas.getContext('2d');
-    if (!context) throw Error('context initialization failed');
-
-    let { width: clientWidth, height: clientHeight } = computeContainSize(
-        naturalWidth, naturalHeight,
-        canvas.parentElement!.clientWidth, canvas.parentElement!.clientHeight);
-
-    canvas.style.width = clientWidth + 'px';
-    canvas.style.height = clientHeight + 'px';
-    canvas.width = naturalWidth;
-    canvas.height = naturalHeight;
-
-    let imageData = new ImageData(naturalWidth, naturalHeight);
-
-    for (let y = 0; y < naturalHeight; y++) {
-        for (let x = 0; x < naturalWidth; x++) {
-            imageData.data[(y * naturalWidth + x) * 4 + 0] = clamp(data[(y * naturalWidth + x) * 3 + 0], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 1] = clamp(data[(y * naturalWidth + x) * 3 + 1], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 2] = clamp(data[(y * naturalWidth + x) * 3 + 2], 0, 255);
-            imageData.data[(y * naturalWidth + x) * 4 + 3] = 255;
-        }
-    }
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.putImageData(imageData, 0, 0);
-
-    let image = new Image();
-
-    return new Promise(resolve => {
-        image.onload = () => {
-            drawAdjustedImageToCanvas(canvas, image, imageWidth, imageHeight);
-            resolve();
-        };
-
-        image.src = canvas.toDataURL();
-    });
-}
-
-/**
- * Draw image with adjusting whose size to be contained in specified canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {HTMLImageElement} image
- * @param {number} imageWidth
- * @param {number} imageHeight
- */
-function drawAdjustedImageToCanvas(canvas: HTMLCanvasElement, image: HTMLImageElement,
-                                   imageWidth: number = image.naturalWidth,
-                                   imageHeight: number = image.naturalHeight) {
-    let context = canvas.getContext('2d');
-    if (!context) throw Error('context initialization failed');
-
-    let { width: clientWidth, height: clientHeight } = computeContainSize(
-        imageWidth, imageHeight,
-        canvas.parentElement!.clientWidth, canvas.parentElement!.clientHeight);
-
-    canvas.style.width = clientWidth + 'px';
-    canvas.style.height = clientHeight + 'px';
-    canvas.width = imageWidth;
-    canvas.height = imageHeight;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, imageWidth, imageHeight);
-}
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
     runner: WebDNN.DescriptorRunner<WebDNN.GraphDescriptor>;
@@ -342,10 +248,14 @@ class MainLayer extends React.Component<Props, State> {
 
     async loadStyleImage() {
         if (this.state.isWebCamReady) {this.finalizeWebCam();}
-        drawAdjustedImageToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'styleCanvas'),
-            await loadImageByUrl(require("./neural_style_transfer-style.jpg"))
-        );
+
+        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'styleCanvas');
+        let image = await WebDNN.Image.loadImageByUrl(require('./neural_style_transfer-style.jpg'));
+        let data = WebDNN.Image.getImageArrayFromDrawable(image);
+
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
+            dstH: styleCanvas.height, dstW: styleCanvas.width
+        });
     }
 
     async loadRandomImage() {
@@ -354,21 +264,25 @@ class MainLayer extends React.Component<Props, State> {
         random_image_index++;
         if (random_image_index >= IMAGE_PATH_LIST.length) random_image_index = 0;
 
-        await drawAdjustedImageToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas'),
-            await loadImageByUrl(IMAGE_PATH_LIST[random_image_index]),
-            192, 144
-        );
+        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas');
+        let image = await WebDNN.Image.loadImageByUrl(IMAGE_PATH_LIST[random_image_index]);
+        let data = WebDNN.Image.getImageArrayFromDrawable(image);
+
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
+            dstH: styleCanvas.height, dstW: styleCanvas.width
+        });
 
         this.setState({ isContentLoaded: true });
     }
 
     async uploadLocalImage() {
-        await drawAdjustedImageToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas'),
-            await loadImageByDialog(),
-            192, 144
-        );
+        let styleCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas');
+        let image = await WebDNN.Image.loadImageByDialog();
+        let data = WebDNN.Image.getImageArrayFromDrawable(image);
+
+        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
+            dstH: styleCanvas.height, dstW: styleCanvas.width
+        });
 
         this.setState({ isContentLoaded: true });
     }
@@ -387,7 +301,7 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
         video.srcObject = stream;
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>(resolve => {
             let timerId = setTimeout(() => {
                 throw Error('timeout');
             }, 5000);
@@ -399,6 +313,7 @@ class MainLayer extends React.Component<Props, State> {
                 resolve();
             };
 
+            // noinspection JSIgnoredPromiseFromCall
             video.play();
         });
     }
@@ -407,14 +322,8 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
         video.pause();
 
-        let data = loadImageDataFromVideo(video);
-        await drawAdjustedImageDataToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas'),
-            data,
-            video.videoWidth,
-            video.videoHeight,
-            192, 144
-        );
+        let data = (await WebDNN.Image.getImageArrayFromDrawable(video)) as Float32Array;
+        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas'));
 
         this.setState({ isContentLoaded: true });
     }
@@ -438,21 +347,22 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
         let contentCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas');
 
-        let data = loadImageDataFromVideo(video);
-        await drawAdjustedImageDataToCanvas(contentCanvas, data, video.videoWidth, video.videoHeight, 192, 144);
+        let data = (await WebDNN.Image.getImageArrayFromDrawable(video, {
+            dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
+        })) as Float32Array;
+        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, contentCanvas);
 
         let runner = this.props.runner;
         if (!runner) return;
 
-        runner.getInputViews()[0].set(loadImageDataFromCanvas(contentCanvas));
+        runner.getInputViews()[0].set(data);
 
         await runner.run();
 
-        await drawAdjustedImageDataToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas'),
-            runner.getOutputViews()[0].toActual(),
-            contentCanvas.width, contentCanvas.height
-        );
+        let outputCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas');
+        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas'), {
+            order: WebDNN.Image.Order.CHW,
+        });
 
         if (this.state.inputResource == InputResource.Video && this.state.isVideoModeRunning) {
             requestAnimationFrame(() => this.videoModeLoop());
@@ -471,17 +381,18 @@ class MainLayer extends React.Component<Props, State> {
 
         let contentCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'contentCanvas');
 
-        runner.getInputViews()[0].set(loadImageDataFromCanvas(contentCanvas));
+        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(contentCanvas, {
+            dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
+        }));
 
         this.setState({ isBusy: true });
         await runner.run();
         this.setState({ isBusy: false });
 
-        await drawAdjustedImageDataToCanvas(
-            dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas'),
-            runner.getOutputViews()[0].toActual(),
-            contentCanvas.width, contentCanvas.height
-        );
+        let outputCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas');
+        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, outputCanvas, {
+            order: WebDNN.Image.Order.CHW,
+        });
     }
 
     render() {

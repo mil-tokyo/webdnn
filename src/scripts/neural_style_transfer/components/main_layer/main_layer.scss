@@ -9,6 +9,16 @@
   box-sizing: border-box;
 }
 
+.content-canvas,
+.style-canvas,
+.output-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .main-layer {
   @extend .layer;
 }
@@ -37,6 +47,7 @@
 .content-image-container,
 .style-image-container {
   overflow: hidden;
+  position: relative;
 
   @include layout-auto-reverse-column {
     height: 50%;
@@ -68,6 +79,7 @@
 
 .output-image-container {
   overflow: hidden;
+  position: relative;
 
   @include layout-auto-column {
     height: 100% / 3 * 2;
