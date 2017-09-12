@@ -20,10 +20,10 @@ header = FragmentShaderPreamble + """
 %%UNIFORM(vec2, d_b)%%;
 
 void main() {
-    vec2 p_C = convert_position(gl_FragCoord.xy, s_c, s_C, d_C);
+    ivec2 p_C = convert_position_i(gl_FragCoord.xy, s_c, s_C, d_C);
     
-    int m = int(p_C.x);
-    int n = int(p_C.y);
+    int m = p_C.x;
+    int n = p_C.y;
 
     float v = 0.0;
 """

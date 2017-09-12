@@ -29,7 +29,7 @@ class Axis:
         return self._name
 
     def __str__(self):
-        return f"<Axis.{self.name}>"
+        return f"<Axis {self.name}>"
 
     def __repr__(self):
         return self.name
