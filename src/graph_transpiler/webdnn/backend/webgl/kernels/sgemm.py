@@ -20,10 +20,10 @@ header = FragmentShaderPreamble + """
 %%UNIFORM(vec2, d_b)%%;
 
 void main() {
-    vec2 p_C = convert_position(gl_FragCoord.xy, s_c, s_C, d_C) - 0.5;
+    vec2 p_C = convert_position(gl_FragCoord.xy, s_c, s_C, d_C);
     
-    float m = p_C.x;
-    float n = p_C.y;
+    int m = int(p_C.x);
+    int n = int(p_C.y);
 
     float v = 0.0;
 """
@@ -34,7 +34,7 @@ footer = """
 """
 
 template_R = header + """
-    for (float k = %%LOOP_SIZE%% - 1.0; k >= 0.0; k -= 1.0) {
+    for (int k = 0; k < %%LOOP_SIZE%%; k++) {
         float v_a = texture2D(A, fract((vec2(%%INDICES_A%%) + 0.5) / d_a)).r;
         float v_b = texture2D(B, fract((vec2(%%INDICES_B%%) + 0.5) / d_b)).r;
 
@@ -43,7 +43,7 @@ template_R = header + """
 """ + footer
 
 template_RGBA = header + """
-    for (float k = 0.0; k < %%LOOP_SIZE%%; k += 4.0) {
+    for (int k = 0; k < %%LOOP_SIZE%%; k += 4) {
         vec4 v_a = texture2D(A, fract((vec2(%%INDICES_A%%) + 0.5) / d_a));
         vec4 v_b = texture2D(B, fract((vec2(%%INDICES_B%%) + 0.5) / d_b));
 
@@ -63,7 +63,7 @@ def generate_template(mode: ChannelModeEnum, transpose_A: bool, transpose_B: boo
         raise NotImplementedError
 
     return template \
-        .replace("%%LOOP_SIZE%%", f"{K:.1f}") \
+        .replace("%%LOOP_SIZE%%", f"{K}") \
         .replace("%%INDICES_A%%", "k, m" if transpose_A else "m, k") \
         .replace("%%INDICES_B%%", "n, k" if transpose_B else "k, n")
 

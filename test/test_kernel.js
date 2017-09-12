@@ -87,6 +87,7 @@ const TestRunner = new class {
             console.groupEnd();
         }
         console.groupEnd();
+        window.results = results;
     }
     mainLoop() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -101,6 +102,7 @@ const TestRunner = new class {
             const testCase = this.testCases[this.currentTestCaseIndex];
             const testName = `[${testCase.backend}] ${testCase.description}`;
             let elapsedTime;
+            let outputs;
             console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
             try {
                 assert.EPS = testCase.EPS;
@@ -111,11 +113,9 @@ const TestRunner = new class {
                 });
                 assert.equal(testCase.backend, runner.backendName, 'backend');
                 let inputs = runner.getInputViews();
-                let outputs = runner.getOutputViews();
+                outputs = runner.getOutputViews();
                 testCase.inputs.forEach((data, i) => inputs[i].set(data));
                 let startTime = performance.now();
-                yield runner.run();
-                yield runner.run();
                 yield runner.run();
                 elapsedTime = performance.now() - startTime;
                 testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual()));
@@ -137,7 +137,8 @@ const TestRunner = new class {
                         testCase: testCase,
                         result: true,
                         elapsedTime: elapsedTime,
-                        err: err
+                        err: err,
+                        outputs: outputs ? outputs.map(v => v.toActual()) : null
                     });
                     console.warn(err.message);
                 }
@@ -147,7 +148,8 @@ const TestRunner = new class {
                         testCase: testCase,
                         result: false,
                         elapsedTime: -1,
-                        err: err
+                        err: err,
+                        outputs: outputs ? outputs.map(v => v.toActual()) : null
                     });
                     console.error(err);
                 }

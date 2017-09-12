@@ -6,9 +6,10 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 @wrap_template
-def template(ksize=3, stride=1, pad=0, nobias=True, description=""):
-    link = chainer.links.Convolution2D(4, 10, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
-    vx = chainer.Variable(np.random.rand(2, 4, 6, 11).astype(np.float32))
+def template(n=2, c_in=4, h_in=6, w_in=8, c_out=10, ksize=3, stride=1, pad=0, nobias=True, description=""):
+    link = chainer.links.Convolution2D(c_in, c_out, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
+    link.W.data = np.random.rand(*link.W.shape).astype(np.float32)
+    vx = chainer.Variable(np.random.rand(*(n, c_in, h_in, w_in)).astype(np.float32))
     vy = link(vx)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -62,3 +63,9 @@ def test_irregular_padding_size4():
 
 def test_irregular_size():
     template(ksize=(3, 5), stride=(2, 3), pad=(1, 3))
+
+
+def test_special_size():
+    # https://github.com/mil-tokyo/webdnn/issues/525
+    # In case that the position index (=n*c_in*h_in*w_in*ksize*ksize)  >  1<<23
+    template(n=1, c_in=64, h_in=128, w_in=128, c_out=3, ksize=9, pad=4)

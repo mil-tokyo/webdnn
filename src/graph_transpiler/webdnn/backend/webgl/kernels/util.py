@@ -7,28 +7,66 @@ from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 from webdnn.util.misc import mul
 
-FragmentShaderPreamble = """
+
+def _mod_snippet(t1: str, t2: str, tr: str):
+    return f"{tr} mod({t1} x, {t2} p) {{ return x-(x/p)*p; }}"
+
+
+def _convert_position_snippet(t1: str, t2: str):
+    ndim1 = t1[-1]
+    return f"""{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+    i{t1} p1i = i{t1}(p1);
+    i{t1} s1i = i{t1}(s1);
+    i{t2} s2i = i{t2}(s2);
+    i{t2} d2i = i{t2}(d2);
+
+    i{t2} index;
+    i{t2} p2i;
+    
+    index *= 0;
+    p2i *= 0;
+
+    for (int j = 0; j < {ndim1}; j++) {{
+        index = mod(index, s2i); 
+        index += p1i[j] * s1i[j]; 
+        p2i += index / s2i; 
+    }}
+
+    p2i = mod(p2i, d2i);
+    return {t2}(p2i) + 0.5;
+}}
+"""
+
+
+FragmentShaderPreamble = f"""
 precision highp float;
+precision highp int;
 
-vec2 convert_position(vec2 p1, vec2 s1, vec2 s2, vec2 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec3 convert_position(vec2 p1, vec2 s1, vec3 s2, vec3 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec4 convert_position(vec2 p1, vec2 s1, vec4 s2, vec4 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec2 convert_position(vec3 p1, vec3 s1, vec2 s2, vec2 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec3 convert_position(vec3 p1, vec3 s1, vec3 s2, vec3 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec4 convert_position(vec3 p1, vec3 s1, vec4 s2, vec4 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec2 convert_position(vec4 p1, vec4 s1, vec2 s2, vec2 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec3 convert_position(vec4 p1, vec4 s1, vec3 s2, vec3 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
-vec4 convert_position(vec4 p1, vec4 s1, vec4 s2, vec4 d2) { return mod(floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5, d2); }
+{_mod_snippet("int",   "int",   "int")}
+{_mod_snippet("int",   "ivec2", "ivec2")}
+{_mod_snippet("int",   "ivec3", "ivec3")}
+{_mod_snippet("int",   "ivec4", "ivec4")}
+{_mod_snippet("ivec2", "int",   "ivec2")}
+{_mod_snippet("ivec3", "int",   "ivec3")}
+{_mod_snippet("ivec4", "int",   "ivec4")}
+{_mod_snippet("ivec2", "ivec2", "ivec2")}
+{_mod_snippet("ivec3", "ivec3", "ivec3")}
+{_mod_snippet("ivec4", "ivec4", "ivec4")}
 
-vec2 convert_coord(vec2 p1, vec2 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec3 convert_coord(vec2 p1, vec2 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec4 convert_coord(vec2 p1, vec2 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec2 convert_coord(vec3 p1, vec3 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec3 convert_coord(vec3 p1, vec3 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec4 convert_coord(vec3 p1, vec3 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec2 convert_coord(vec4 p1, vec4 s1, vec2 s2, vec2 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec3 convert_coord(vec4 p1, vec4 s1, vec3 s2, vec3 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
-vec4 convert_coord(vec4 p1, vec4 s1, vec4 s2, vec4 d2) { return fract((floor((dot(p1 - 0.5, s1) + 0.5) / s2) + 0.5) / d2); }
+{_convert_position_snippet("vec2", "vec2")}
+{_convert_position_snippet("vec2", "vec3")}
+{_convert_position_snippet("vec2", "vec4")}
+{_convert_position_snippet("vec3", "vec2")}
+{_convert_position_snippet("vec3", "vec3")}
+{_convert_position_snippet("vec3", "vec4")}
+{_convert_position_snippet("vec4", "vec2")}
+{_convert_position_snippet("vec4", "vec3")}
+{_convert_position_snippet("vec4", "vec4")}
+
+vec2 convert_coord(vec2 p1, vec2 s1, vec2 s2, vec2 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
+vec4 convert_coord(vec2 p1, vec2 s1, vec4 s2, vec4 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
+vec2 convert_coord(vec4 p1, vec4 s1, vec2 s2, vec2 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
+vec4 convert_coord(vec4 p1, vec4 s1, vec4 s2, vec4 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
 """
 
 
@@ -145,6 +183,7 @@ def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
 
     # re-ordering
     axes = []
+    axes += [axis for axis in orders[key_variable].axes if axis not in axes]
     for v in sorted(variables, key=lambda v: orders[v].ndim):
         axes += [axis for axis in orders[v].axes if axis not in axes]
 

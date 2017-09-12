@@ -504,7 +504,17 @@ var PlaceholderContext = (function () {
  * @protected
  */
 function flatten(arr) {
-    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(function (arr) { return flatten(arr); })) : arr;
+    var result = [];
+    for (var i = 0; i < arr.length; i++) {
+        var v = arr[i];
+        if (v instanceof Array) {
+            result.splice(result.length, 0, flatten(v));
+        }
+        else {
+            result[result.length] = v;
+        }
+    }
+    return result;
 }
 /**
  * SymbolicTypedArray is wrapper class of buffers used in DNN model.
