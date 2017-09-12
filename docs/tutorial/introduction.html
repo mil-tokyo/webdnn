@@ -171,7 +171,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tutorial/introduction.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tutorial/introduction.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -185,7 +185,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="introduction-to-webdnn">
-<span id="introduction-to-webdnn"></span><h1>Introduction to WebDNN<a class="headerlink" href="#introduction-to-webdnn" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction to WebDNN<a class="headerlink" href="#introduction-to-webdnn" title="Permalink to this headline">¶</a></h1>
 <p>Recently, deep neural network (DNN) is attracting a lot of attention in various fields such as image and video recognition, natural language processing and gaming AI. In these fields, DNNs are applied for various products. However, DNNs are computationally expensive and generally hardware acceleration is required for its execution, and so it is not practical to execute DNN on end-user devices such as laptops or smartphones.</p>
 <p>One of the solutions to this is cloud computing. As another solution, WebDNN highly optimizes the DNN models and executes them on the web browsers in end-user devices.</p>
 <p>Key features of WebDNN are the follows.</p>
@@ -195,27 +195,27 @@
 <li>Inference-phase-specialized optimization</li>
 </ul>
 <div class="section" id="installation-free">
-<span id="installation-free"></span><h2>Installation-free<a class="headerlink" href="#installation-free" title="Permalink to this headline">¶</a></h2>
+<h2>Installation-free<a class="headerlink" href="#installation-free" title="Permalink to this headline">¶</a></h2>
 <p>WebDNN executes DNN models on a web browser. Usually, web browsers are already installed on end-user devices already and users are familiar with how to use it. Therefore, using WebDNN, DNN applications can be provided easily, without any difficulty in installing a native application.</p>
 <p>There are a few number of major web browsers, and they have different set of features that can be used for acceleration. WebDNN have several sterategies to execute DNN model as speedy as possible in each web browser.</p>
 </div>
 <div class="section" id="non-overhead-interface">
-<span id="non-overhead-interface"></span><h2>Non overhead interface<a class="headerlink" href="#non-overhead-interface" title="Permalink to this headline">¶</a></h2>
+<h2>Non overhead interface<a class="headerlink" href="#non-overhead-interface" title="Permalink to this headline">¶</a></h2>
 <p>JavaScript is a standard programing language running on web browsers. It is executed by an interpreter. Therefore, it requires computing overhead and it cannot completely harness the capacity of the CPU. The same problem is encountered in GPU. Modern web browsers support WebGL, which is a JavaScript API to use GPU. However, this API is designed for graphics processing and is not suitable for general purpose computation. In addition, using WebGL for general purpose computing incurs overhead costs.</p>
 <p>WebDNN uses next generation JavaScript API, WebGPU for GPU execution, and WebAssembly for CPU execution. These APIs help to bring out the full performance of GPU and CPU.</p>
 </div>
 <div class="section" id="inference-phase-specialized-optimization">
-<span id="inference-phase-specialized-optimization"></span><h2>Inference-phase-specialized optimization<a class="headerlink" href="#inference-phase-specialized-optimization" title="Permalink to this headline">¶</a></h2>
+<h2>Inference-phase-specialized optimization<a class="headerlink" href="#inference-phase-specialized-optimization" title="Permalink to this headline">¶</a></h2>
 <p>To achieve speedier execution, optimizing the computation graph of DNN models is very important. Execution of DNN consists of two phases, the training phase and the inference phase, and they requires different optimization sterategies. WebDNN focuses on only the inference phase execution on end-user devices and supports aggressive optimization. This optimization pipeline can be applied for models trained with various DNN frameworks. It is not required to edit the training codes.</p>
 </div>
 </div>
 <div class="section" id="framework-structure">
-<span id="framework-structure"></span><h1>Framework structure<a class="headerlink" href="#framework-structure" title="Permalink to this headline">¶</a></h1>
-<p><img alt="Pipeline" src="../_images/pipeline.png" /></p>
+<h1>Framework structure<a class="headerlink" href="#framework-structure" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/pipeline.png" src="../_images/pipeline.png" />
 <p>WebDNN consists of two modules - the graph transpiler, which transpiles and optimizes trained model into an executable format on the web browser and the descriptor runner, which executes the converted model on the web browser.</p>
 <p>Graph transpiler is the offline module to transpile the model. It is implemented in python (version 3.6) and only application developers need to run it. It outputs the &#8216;graph descriptor&#8217; files, which consist of JavaScript and binary weight data.</p>
 <p>Descriptor runner is the online module to run the graph descriptor on the web browser of the end-users. It is JavaScript files. Application developers have to use the API provided by the library to supply input to the model and display output.</p>
-<p>Setting up the application development environment is described in <a class="reference external" href="setup.html">setup</a> page. You can find examples of steps to use models from Caffe, Keras, Chainer in WebDNN in the example directory.</p>
+<p>Setting up the application development environment is described in [setup](../setup.html) page. You can find examples of steps to use models from Caffe, Keras, Chainer in WebDNN in the example directory.</p>
 </div>
 
 

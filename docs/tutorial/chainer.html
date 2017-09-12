@@ -166,7 +166,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tutorial/chainer.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tutorial/chainer.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -180,42 +180,43 @@
            <div itemprop="articleBody">
             
   <div class="section" id="use-with-chainer-model">
-<span id="use-with-chainer-model"></span><h1>Use with chainer model<a class="headerlink" href="#use-with-chainer-model" title="Permalink to this headline">¶</a></h1>
-<p>In this tutorial, we&#8217;ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model 
-pretrained in Chainer <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
-<ol>
-<li><p class="first">Load chainer pretrained model</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">chainer</span>
+<h1>Use with chainer model<a class="headerlink" href="#use-with-chainer-model" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we&#8217;ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model pretrained in Chainer <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
+<ol class="arabic simple">
+<li>Load chainer pretrained model</li>
+</ol>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">chainer</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>
 </pre></div>
 </div>
-</li>
-<li><p class="first">Execute model with dummy data. In chainer, computation graph are defined by
-run. Therefore we need execute model at least once to construct the graph.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<ol class="arabic simple" start="2">
+<li>Execute model with dummy data. In chainer, computation graph are defined by run. Therefore we need execute model at least once to construct the graph.</li>
+</ol>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">])[</span><span class="s2">&quot;fc6&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-</li>
-<li><p class="first">Convert chainer computation graph to our computation graph format</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.chainer</span> <span class="kn">import</span> <span class="n">ChainerGraphConverter</span>
+<ol class="arabic simple" start="3">
+<li>Convert chainer computation graph to our computation graph format</li>
+</ol>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.chainer</span> <span class="k">import</span> <span class="n">ChainerConverter</span>
 
-<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerGraphConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert_from_inout_vars</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
 </pre></div>
 </div>
-</li>
-<li><p class="first">Generate and save execution information.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.backend.interface.generator</span> <span class="kn">import</span> <span class="n">generate_descriptor</span>
+<ol class="arabic simple" start="4">
+<li>Generate and save execution information.</li>
+</ol>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.backend</span> <span class="k">import</span> <span class="n">generate_descriptor</span>
 
-<span class="n">exec_info</span> <span class="o">=</span> <span class="n">generate_descriptor</span><span class="p">(</span><span class="s2">&quot;webgpu&quot;</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+<span class="n">exec_info</span> <span class="o">=</span> <span class="n">generate_descriptor</span><span class="p">(</span><span class="s2">&quot;webgpu&quot;</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>  <span class="c1"># also &quot;webassembly&quot;, &quot;webgl&quot;, &quot;fallback&quot; are available.</span>
 <span class="n">exec_info</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./output&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</li>
-</ol>
+<p>To run converted model on web browser, please see <a class="reference internal" href="keras.html#js-api"><span class="std std-ref">&#8220;#3. Run on web browser&#8221; in keras tutorial</span></a></p>
 <p class="rubric">References</p>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
