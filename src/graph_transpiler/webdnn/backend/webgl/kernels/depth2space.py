@@ -21,20 +21,19 @@ template = FragmentShaderPreamble + """
 %%UNIFORM(vec4, d_X)%%;
 %%UNIFORM(vec4, s_X)%%;
 
-%%UNIFORM(float, r)%%;
-%%UNIFORM(float, C2)%%;
+%%UNIFORM(int, r)%%;
+%%UNIFORM(int, C2)%%;
 
 void main() {
-    vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y) - 0.5;    
+    vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
     
-    float n = p_Y.x;
-    float h2 = p_Y.y;
-    float w2 = p_Y.z;
-    float c2 = p_Y.w;
-    
-    float c1 = c2 + mod(w2, r) * C2 + mod(h2, r) * C2 * r;
-    float h1 = floor(h2 / r);
-    float w1 = floor(w2 / r);
+    int n = int(p_Y.x);
+    int h2 = int(p_Y.y);
+    int w2 = int(p_Y.z);
+    int c2 = int(p_Y.w);
+    int h1 = h2 / r;
+    int w1 = w2 / r;
+    int c1 = c2 + (w2-w1*r)*C2 + (h2-h1*r)*C2*r;
 
     vec4 p_X = vec4(n, h1, w1, c1) + 0.5;
     vec2 p_x = convert_coord(p_X, s_X, s_x, d_x);
@@ -47,7 +46,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(Depth2Space)
-def elementwise_add(op: Depth2Space) -> List[Kernel]:
+def depth2space(op: Depth2Space) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
     r = op.parameters['r']

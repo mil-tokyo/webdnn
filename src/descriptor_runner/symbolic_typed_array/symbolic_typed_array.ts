@@ -8,8 +8,17 @@ import PlaceholderContext from "../placeholder";
 /**
  * @protected
  */
-function flatten<T>(arr: ArrayLike<T>) {
-    return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten(arr))) : arr;
+function flatten(arr: any) {
+    let result = [] as any[];
+    for (let i = 0; i < arr.length; i++) {
+        let v = arr[i];
+        if (v instanceof Array) {
+            result.splice(result.length, 0, flatten(v))
+        } else {
+            result[result.length] = v;
+        }
+    }
+    return result
 }
 
 /**

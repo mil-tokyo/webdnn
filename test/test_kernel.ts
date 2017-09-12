@@ -45,7 +45,8 @@ interface Result {
     testCase: TestCase,
     err?: Error,
     result: boolean,
-    elapsedTime: number
+    elapsedTime: number,
+    outputs: number[][]
 }
 
 //noinspection JSUnusedLocalSymbols
@@ -104,6 +105,7 @@ const TestRunner = new class {
         }
 
         console.groupEnd();
+        (window as any).results = results;
     }
 
     async mainLoop() {
@@ -117,6 +119,7 @@ const TestRunner = new class {
         const testCase = this.testCases[this.currentTestCaseIndex];
         const testName = `[${testCase.backend}] ${testCase.description}`;
         let elapsedTime: number;
+        let outputs: any;
 
         console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
 
@@ -131,12 +134,10 @@ const TestRunner = new class {
             assert.equal(testCase.backend, runner.backendName, 'backend');
 
             let inputs = runner.getInputViews();
-            let outputs = runner.getOutputViews();
+            outputs = runner.getOutputViews();
 
             testCase.inputs.forEach((data, i) => inputs[i].set(data));
             let startTime = performance.now();
-            await runner.run();
-            await runner.run();
             await runner.run();
             elapsedTime = performance.now() - startTime;
 
@@ -161,7 +162,8 @@ const TestRunner = new class {
                     testCase: testCase,
                     result: true,
                     elapsedTime: elapsedTime,
-                    err: err
+                    err: err,
+                    outputs: outputs ? outputs.map(v => v.toActual()) : null
                 });
                 console.warn(err.message);
             } else {
@@ -170,7 +172,8 @@ const TestRunner = new class {
                     testCase: testCase,
                     result: false,
                     elapsedTime: -1,
-                    err: err
+                    err: err,
+                    outputs: outputs ? outputs.map(v => v.toActual()) : null
                 });
                 console.error(err);
             }

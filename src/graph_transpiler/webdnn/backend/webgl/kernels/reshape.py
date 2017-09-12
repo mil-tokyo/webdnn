@@ -23,7 +23,7 @@ void main() {
 
 
 @WebGLDescriptorGenerator.register_handler(Reshape)
-def elementwise_add(op: Reshape) -> List[Kernel]:
+def reshape(op: Reshape) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

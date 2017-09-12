@@ -115,6 +115,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let decoder = get_weight_decoder(this.descriptor.weight_encoding);
         let weight = await decoder.decode(new Uint8Array(weightRawArray));
         let buffers = this.buffers;
+        let mapping = descriptor.memory_layout.mapping;
 
         Object.entries(descriptor.memory_layout.static.allocations)
             .forEach(([name, {width, height, size, channel_mode}]) => {
@@ -128,11 +129,11 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(view.name)!.getWriteView(0, view.length, Float32Array).buffer));
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getWriteView(0, view.length, Float32Array).buffer));
 
         (await this.getOutputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(view.name)!.getReadView(0, view.length, Float32Array).buffer));
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getReadView(0, view.length, Float32Array).buffer));
     }
 
     private async initializeDynamicBuffer() {
@@ -142,6 +143,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let placeholderContext = this.placeholderContext;
         let buffers = this.buffers;
+        let mapping = descriptor.memory_layout.mapping;
 
         Object.entries(descriptor.memory_layout.dynamic.allocations)
             .forEach(([name, {width, height, size, channel_mode}]) => {
@@ -151,11 +153,11 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         (await this.getInputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(view.name)!.getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
 
         (await this.getOutputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(view.name)!.getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
 
         this.buildPipeline();
     }
@@ -213,11 +215,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
+        let mapping = this.descriptor.memory_layout.mapping;
 
         this.inputViews = descriptor.inputs.map(name => {
             let view = new SymbolicFloat32Array({
                 name: name,
-                size: this.buffers.get(name)!.length,
+                size: this.buffers.get(mapping[name])!.length,
                 offset: 0
             }, placeholderContext, true);
 
@@ -235,11 +238,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
+        let mapping = this.descriptor.memory_layout.mapping;
 
         this.outputViews = descriptor.outputs.map(name => {
             let view = new SymbolicFloat32Array({
                 name: name,
-                size: this.buffers.get(name)!.length,
+                size: this.buffers.get(mapping[name])!.length,
                 offset: 0
             }, placeholderContext, true);
 
@@ -256,15 +260,16 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         let gl = this.handler.gl;
         let buffers = this.buffers;
+        let mapping = this.descriptor.memory_layout.mapping;
         let referenceCount = new Map<WebGLBuffer, number>();
 
         this.runtimeInfo = {
-            inputs: this.getInputViews().map(view => buffers.get(view.name)!),
-            outputs: this.getOutputViews().map(view => buffers.get(view.name)!),
+            inputs: this.getInputViews().map(view => buffers.get(mapping[view.name])!),
+            outputs: this.getOutputViews().map(view => buffers.get(mapping[view.name])!),
             programs: this.descriptor.exec_infos.map(execInfo => {
                 // inputs
                 let inputs = execInfo.inputs.map(input => {
-                    let buffer = buffers.get(input.variable_name)!;
+                    let buffer = buffers.get(mapping[input.variable_name])!;
 
                     if (!referenceCount.has(buffer)) referenceCount.set(buffer, 0);
                     referenceCount.set(buffer, referenceCount.get(buffer)! + 1);
@@ -276,7 +281,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 });
 
                 //output
-                let output = buffers.get(execInfo.output)!;
+                let output = buffers.get(mapping[execInfo.output])!;
 
                 // shader
                 let program = this.programs.get(execInfo.shader_name)!;

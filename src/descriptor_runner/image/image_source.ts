@@ -48,12 +48,6 @@ export async function loadImageFromFileInput(input: HTMLInputElement): Promise<H
  * @protected
  */
 export async function loadImageByDialog(): Promise<HTMLImageElement> {
-    if (navigator.userAgent.match(/Chrome|Firefox/)) {
-        /* OK */
-    } else {
-        throw Error('This browser does not support opening File-Picker-Dialog programmatically.');
-    }
-
     let input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';

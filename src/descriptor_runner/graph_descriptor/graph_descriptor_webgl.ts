@@ -27,7 +27,8 @@ export interface WebGLMemoryLayout extends MemoryLayout {
         allocations: {
             [index: string]: WebGLAllocation
         }
-    }
+    },
+    mapping: { [variableName: string]: string }
 }
 
 /**

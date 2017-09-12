@@ -22,57 +22,45 @@ def generate_template(ksize):
     %%UNIFORM(vec2, s_x)%%;
     %%UNIFORM(vec4, s_X)%%;
     
-    %%UNIFORM(float, C1)%%;
-    %%UNIFORM(float, H1)%%;
-    %%UNIFORM(float, W1)%%;
-    %%UNIFORM(float, SH)%%;
-    %%UNIFORM(float, SW)%%;
-    %%UNIFORM(float, PH)%%;
-    %%UNIFORM(float, PW)%%;
+    %%UNIFORM(int, C1)%%;
+    %%UNIFORM(int, H1)%%;
+    %%UNIFORM(int, W1)%%;
+    %%UNIFORM(int, SH)%%;
+    %%UNIFORM(int, SW)%%;
+    %%UNIFORM(int, PH)%%;
+    %%UNIFORM(int, PW)%%;
     
     void main() {
-        vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y) - 0.5;    
-    
-        float n = p_Y.x;
-        float h2 = p_Y.y;
-        float w2 = p_Y.z; 
-        float c = p_Y.w;
+        vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
+        int n = int(p_Y.x);
+        int h2 = int(p_Y.y);
+        int w2 = int(p_Y.z); 
+        int c = int(p_Y.w);
     
         float sum = 0.0;
         
-        // NOTE(Kiikurage): In FireFox, for-loop with incremental counter generate wrong result
-        // (Maybe there're a bug in implementation of loop-unrolling optimization phase).
-        //
-        // Therefore, loop counter must be decremented!!
-        //
-        // I observed this bug in follow version of FF:
-        //   (navigator.userAgent)="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0"
-
-        for (float kh = %%KSIZE_H%% - 1.0; kh >= 0.0; kh -= 1.0) {
-            float h1 = h2 * SH - PH + kh;
-            if (h1 < 0.0 || h1 >= H1) continue;
+        for (int kh = 0; kh < %%KSIZE_H%%; kh++) {
+            int h1 = h2 * SH - PH + kh;
+            if (h1 < 0 || h1 >= H1) continue;
     
-            for (float kw = %%KSIZE_W%% - 1.0; kw >= 0.0; kw -= 1.0) {
-                float w1 = w2 * SW - PW + kw;
-                if (w1 < 0.0 || w1 >= W1) continue;
+            for (int kw = 0; kw < %%KSIZE_W%%; kw++) {
+                int w1 = w2 * SW - PW + kw;
+                if (w1 < 0 || w1 >= W1) continue;
 
-                vec4 p_X = vec4(n, h1, w1, c) + 0.5;
-                vec2 p_x = convert_position(p_X, s_X, s_x, d_x);
-        
-                sum += texture2D(X, p_x / d_x).r;
+                sum += texture2D(X, convert_coord(vec4(n, h1, w1, c) + 0.5, s_X, s_x, d_x)).r;
             }
         }
         
         gl_FragColor = vec4(sum / %%KSIZE_HW%%, 0, 0, 0);
     }
     """ \
-        .replace("%%KSIZE_H%%", f"{ksize[0]:.1f}") \
-        .replace("%%KSIZE_W%%", f"{ksize[1]:.1f}") \
+        .replace("%%KSIZE_H%%", f"{ksize[0]}") \
+        .replace("%%KSIZE_W%%", f"{ksize[1]}") \
         .replace("%%KSIZE_HW%%", f"{ksize[0] * ksize[1]:.1f}")
 
 
 @WebGLDescriptorGenerator.register_handler(AveragePooling2D)
-def elementwise_add(op: AveragePooling2D) -> List[Kernel]:
+def average_pooling_2d(op: AveragePooling2D) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

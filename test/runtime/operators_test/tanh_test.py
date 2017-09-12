@@ -8,8 +8,8 @@ from webdnn.graph.variable import Variable
 
 
 @wrap_template
-def template(x_order=OrderNHWC, y_order=OrderNHWC, description: str = ""):
-    vx = np.random.rand(2, 3, 4, 5) - 0.5
+def template(r=1.0, x_order=OrderNHWC, y_order=OrderNHWC, description: str = ""):
+    vx = (np.random.rand(2, 3, 4, 5) - 0.5) * r
     vy = np.tanh(vx)
 
     x = Variable(vx.shape, order=OrderNHWC)
@@ -32,3 +32,7 @@ def test():
 
 def test_different_order():
     template(x_order=OrderNCHW)
+
+
+def test_large_range():
+    template(r=1e3)

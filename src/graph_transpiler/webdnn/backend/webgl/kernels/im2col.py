@@ -8,7 +8,7 @@ from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_st
 from webdnn.backend.webgl.operators.im2col import Im2Col
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
-from webdnn.graph.order import OrderNHWC, OrderCNHW
+from webdnn.graph.order import OrderNHWC
 
 header = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, im)%%;
@@ -22,37 +22,38 @@ header = FragmentShaderPreamble + """
 %%UNIFORM(vec4, d_Im)%%;
 %%UNIFORM(vec4, s_Im)%%;
 
-%%UNIFORM(float, C1)%%;
-%%UNIFORM(float, H1)%%;
-%%UNIFORM(float, W1)%%;
-%%UNIFORM(float, KH)%%;
-%%UNIFORM(float, KW)%%;
-%%UNIFORM(float, DH)%%;
-%%UNIFORM(float, DW)%%;
-%%UNIFORM(float, SH)%%;
-%%UNIFORM(float, SW)%%;
-%%UNIFORM(float, PH)%%;
-%%UNIFORM(float, PW)%%;
+%%UNIFORM(int, C1)%%;
+%%UNIFORM(int, H1)%%;
+%%UNIFORM(int, W1)%%;
+%%UNIFORM(int, KH)%%;
+%%UNIFORM(int, KW)%%;
+%%UNIFORM(int, DH)%%;
+%%UNIFORM(int, DW)%%;
+%%UNIFORM(int, SH)%%;
+%%UNIFORM(int, SW)%%;
+%%UNIFORM(int, PH)%%;
+%%UNIFORM(int, PW)%%;
 
 void main() {
-    vec4 p_Col = convert_position(gl_FragCoord.xy, s_col, s_Col, d_Col) - 0.5;
+    vec4 p_Col = convert_position(gl_FragCoord.xy, s_col, s_Col, d_Col);
 
-    float n  = p_Col.x;
-    float h2 = p_Col.y;
-    float w2 = p_Col.z;
-    float kh = mod(floor(floor(p_Col.w/ C1)/ KW) + 0.5, KH) - 0.5;
-    float kw = mod(floor(p_Col.w/ C1) + 0.5, KW) - 0.5;
-    float c1 = mod(p_Col.w + 0.5, C1) - 0.5;
+    int n  = int(p_Col.x);
+    int h2 = int(p_Col.y);
+    int w2 = int(p_Col.z);
+    int khkwc1 = int(p_Col.w);
+    int kh = khkwc1 / C1 / KW;
+    int kw = khkwc1 / C1 - kh * KW;
+    int c1 = khkwc1 - (kh * KW + kw) * C1;
 
-    float h1 = h2 * SH - PH + kh * DH;
-    float w1 = w2 * SW - PW + kw * DW;
+    int h1 = h2 * SH - PH + kh * DH;
+    int w1 = w2 * SW - PW + kw * DW;
 """
 footer = """
 }
 """
 
 template_R = header + """
-    float v = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im)).r;
+    float v = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im)/d_im).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 """ + footer
@@ -68,12 +69,12 @@ template_RGBA = header + """
 
 
 @WebGLDescriptorGenerator.register_handler(Im2Col)
-def elementwise_add(op: Im2Col) -> List[Kernel]:
+def im2col(op: Im2Col) -> List[Kernel]:
     im = op.inputs["im"]
     col = op.outputs["col"]
 
     assert im.order == OrderNHWC
-    assert col.order == OrderNHWC or col.order == OrderCNHW
+    assert col.order == OrderNHWC
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()
