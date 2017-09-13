@@ -286,7 +286,7 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="Variable.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace(new_variable)</span>
 
 <span class="sd">        Replace this variable in graph by specified new variable.</span>
@@ -295,12 +295,13 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            new_variable (:class:`~webdnn.Variable`): new variable</span>
+<span class="sd">            with_assert (bool): If :code:`True`, it is checked whether shape and order is same as variable which will be removed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span><span class="o">.</span><span class="n">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_from</span><span class="o">.</span><span class="n">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">,</span> <span class="n">with_assert</span><span class="o">=</span><span class="n">with_assert</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_to</span><span class="p">):</span>
-            <span class="n">op</span><span class="o">.</span><span class="n">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">)</span></div>
+            <span class="n">op</span><span class="o">.</span><span class="n">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">,</span> <span class="n">with_assert</span><span class="o">=</span><span class="n">with_assert</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;</span><span class="si">{self.__class__.__name__}</span><span class="s2"> </span><span class="si">{self.name}</span><span class="s2"> shape=</span><span class="si">{self.shape}</span><span class="s2">, order=</span><span class="si">{self.order}</span><span class="s2">&gt;&quot;</span>
