@@ -16,9 +16,9 @@ class ConstantVariable(Variable):
         order (:class:`~webdnn.Order`): the data order.
     """
 
-    def __init__(self, data: np.array, order: Order):
+    def __init__(self, data: np.ndarray, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
-        self.data = data.astype(np.float32)  # type: np.array
+        self.data = data.astype(np.float32)  # type: np.ndarray
         self.attributes.add(Constant(self))
 
     def copy(self) -> "ConstantVariable":

@@ -79,7 +79,7 @@ class Operator(Node):
         self.remove_prev(var)
         self._inputs.pop(name)
 
-    def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable"):
+    def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable", with_assert: bool = True):
         """replace_input(v_old, v_new)
 
         Replace input variable with other variable
@@ -87,16 +87,19 @@ class Operator(Node):
         Args:
             v_old(:class:`~webdnn.Variable`): the variable which is removed
             v_new(:class:`~webdnn.Variable`): the variable which is appended
+            with_assert (bool): If :code:`True`, it is checked whether shape and order is same as variable which will be removed
         """
-        assert v_old.ndim == v_new.ndim, \
-            "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
-            f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-        assert v_old.order == v_new.order, \
-            "[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order." + \
-            f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
-        assert v_old.shape == v_new.shape, \
-            "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
-            f"actual: v_old.order = {v_old.shape}, v_new.order = {v_new.shape}"
+
+        if with_assert:
+            assert v_old.ndim == v_new.ndim, \
+                "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
+                f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
+            assert v_old.order == v_new.order, \
+                "[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order." + \
+                f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
+            assert v_old.shape == v_new.shape, \
+                "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
+                f"actual: v_old.order = {v_old.shape}, v_new.order = {v_new.shape}"
 
         name = self.get_input_name(v_old)
         self.remove_input(v_old)
@@ -134,7 +137,7 @@ class Operator(Node):
         self.remove_next(var)
         self._outputs.pop(name)
 
-    def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable"):
+    def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable", with_assert: bool = True):
         """replace_output(v_old, v_new)
 
         Replace output variable with other variable
@@ -142,16 +145,19 @@ class Operator(Node):
         Args:
             v_old(:class:`~webdnn.Variable`): the variable which is removed
             v_new(:class:`~webdnn.Variable`): the variable which is appended
+            with_assert (bool): If :code:`True`, it is checked whether shape and order is same as variable which will be removed
         """
-        assert v_old.ndim == v_new.ndim, \
-            "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
-            f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-        assert v_old.order == v_new.order, \
-            "[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order." + \
-            f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
-        assert v_old.shape == v_new.shape, \
-            "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
-            f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"
+
+        if with_assert:
+            assert v_old.ndim == v_new.ndim, \
+                "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
+                f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
+            assert v_old.order == v_new.order, \
+                "[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order." + \
+                f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
+            assert v_old.shape == v_new.shape, \
+                "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
+                f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"
 
         name = self.get_output_name(v_old)
         self.remove_output(v_old)

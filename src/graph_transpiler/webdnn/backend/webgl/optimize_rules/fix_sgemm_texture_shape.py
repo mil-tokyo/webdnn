@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode
 from webdnn.backend.webgl.attributes.texture_shape import TextureShape
 from webdnn.backend.webgl.operators.sgemm import Sgemm
 from webdnn.graph import traverse
@@ -22,24 +23,16 @@ class FixSGEMMTextureShape(OptimizeRule):
             transpose_A = op.transpose_A
             transpose_B = op.transpose_B
 
-            if transpose_A:
-                if TextureShape.get(A) != [M, K]:
-                    flag_changed = True
-                    TextureShape.set(A, width=K, height=M)
+            K_A = K // ChannelMode.elements_per_pixel(A)
+            shape_A = [M, K_A] if transpose_A else [K_A, M]
+            if TextureShape.get(A) != shape_A:
+                flag_changed = True
+                TextureShape.set(A, height=shape_A[0], width=shape_A[1])
 
-            else:
-                if TextureShape.get(A) != [K, M]:
-                    flag_changed = True
-                    TextureShape.set(A, width=M, height=K)
-
-            if transpose_B:
-                if TextureShape.get(B) != [K, N]:
-                    flag_changed = True
-                    TextureShape.set(B, width=N, height=K)
-
-            else:
-                if TextureShape.get(B) != [N, K]:
-                    flag_changed = True
-                    TextureShape.set(B, width=K, height=N)
+            K_B = K // ChannelMode.elements_per_pixel(B)
+            shape_B = [K_B, N] if transpose_B else [N, K_B]
+            if TextureShape.get(B) != shape_B:
+                flag_changed = True
+                TextureShape.set(B, height=shape_B[0], width=shape_B[1])
 
         return graph, flag_changed

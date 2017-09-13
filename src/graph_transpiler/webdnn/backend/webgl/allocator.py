@@ -3,7 +3,7 @@ from typing import Dict, List, Set, Union
 import numpy as np
 
 from webdnn.backend.code_generator.allocator import MemoryLayout, Allocation, BufferType
-from webdnn.backend.webgl.attributes.channel_mode import ChannelMode
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.attributes.texture_shape import TextureShape
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
@@ -34,8 +34,10 @@ _check_resolved = Placeholder.check_resolved
 
 
 class WebGLAllocation(Allocation):
-    def __init__(self, width: IntLike, height: IntLike, channel_mode, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN, name: str = None):
-        super(WebGLAllocation, self).__init__(size=width * height, offset=-1, begin=begin, end=end, name=name)
+    def __init__(self, width: IntLike, height: IntLike, channel_mode: ChannelModeEnum, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN,
+                 name: str = None):
+        super(WebGLAllocation, self).__init__(size=width * height * ChannelMode.elements_per_pixel(channel_mode),
+                                              offset=-1, begin=begin, end=end, name=name)
         self.width = width
         self.height = height
         self.channel_mode = channel_mode

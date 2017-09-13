@@ -118,7 +118,7 @@ class Variable(Node):
 
         return self
 
-    def replace(self, new_variable: "Variable"):
+    def replace(self, new_variable: "Variable", with_assert: bool = True):
         """replace(new_variable)
 
         Replace this variable in graph by specified new variable.
@@ -127,12 +127,13 @@ class Variable(Node):
 
         Args:
             new_variable (:class:`~webdnn.Variable`): new variable
+            with_assert (bool): If :code:`True`, it is checked whether shape and order is same as variable which will be removed
         """
         if self.output_from:
-            self.output_from.replace_output(self, new_variable)
+            self.output_from.replace_output(self, new_variable, with_assert=with_assert)
 
         for op in list(self.input_to):
-            op.replace_input(self, new_variable)
+            op.replace_input(self, new_variable, with_assert=with_assert)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name} shape={self.shape}, order={self.order}>"
