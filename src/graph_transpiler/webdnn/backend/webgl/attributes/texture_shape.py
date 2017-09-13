@@ -8,8 +8,8 @@ class TextureShape(Attribute):
             raise ValueError(f"\'TextureShape\' attribute has been already registered to {base}.")
 
         super(TextureShape, self).__init__(base)
-        self.width = 2048 if base.size > 2048 else base.size  # type: int
-        self.height = (base.size + 2048 - 1) // 2048 if base.size > 2048 else 1  # type: int
+        self.width = 4096 if base.size > 4096 else base.size  # type: int
+        self.height = (base.size + 4096 - 1) // 4096 if base.size > 4096 else 1  # type: int
 
     def __str__(self):
         return f"TextureShape[{self.height}, {self.width}]"

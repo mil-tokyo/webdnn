@@ -3,7 +3,7 @@
  */
 /** Don't Remove This comment block */
 
-import { BufferWebGL, TextureManager } from "../buffer/buffer_webgl";
+import BufferWebGL from "../buffer/buffer_webgl";
 import get_weight_decoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
@@ -84,7 +84,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         this.handler = new WebGLHandler();
 
-        TextureManager.init(this.handler);
+        BufferWebGL.init(this.handler);
 
         let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
         this.handler.bindArrayBuffer(vertexBuffer);
@@ -119,7 +119,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         Object.entries(descriptor.memory_layout.static.allocations)
             .forEach(([name, {width, height, size, channel_mode}]) => {
-                buffers.set(name, new BufferWebGL(this.handler.gl, size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
+                buffers.set(name, new BufferWebGL(size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
             });
 
         Object.entries(descriptor.constants_map)
@@ -147,7 +147,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         Object.entries(descriptor.memory_layout.dynamic.allocations)
             .forEach(([name, {width, height, size, channel_mode}]) => {
-                buffers.set(name, new BufferWebGL(this.handler.gl, placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT,
+                buffers.set(name, new BufferWebGL(placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT,
                     placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
             });
 

@@ -23,12 +23,10 @@ export default class WebGLHandler {
         this.isWebGL2 = isWebGL2;
     }
 
-    createTexture(textureWidth: number, textureHeight: number) {
+    createTexture(textureWidth: number, textureHeight: number, internalFormat: number, format: number) {
         let gl = this.gl;
 
         let texture = checkNull(gl.createTexture());
-        let internalFormat = this.isWebGL2 ? (gl as any).R32F : gl.RGBA;
-        let format = this.isWebGL2 ? (gl as any).RED : gl.RGBA;
         let type = gl.FLOAT;
 
         gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?

@@ -35,12 +35,12 @@ header = FragmentShaderPreamble + """
 %%UNIFORM(int, PW)%%;
 
 void main() {
-    vec4 p_Col = convert_position(gl_FragCoord.xy, s_col, s_Col, d_Col);
+    ivec4 p_Col = convert_position_i(gl_FragCoord.xy, s_col, s_Col, d_Col);
 
-    int n  = int(p_Col.x);
-    int h2 = int(p_Col.y);
-    int w2 = int(p_Col.z);
-    int khkwc1 = int(p_Col.w);
+    int n  = p_Col.x;
+    int h2 = p_Col.y;
+    int w2 = p_Col.z;
+    int khkwc1 = p_Col.w;
     int kh = khkwc1 / C1 / KW;
     int kw = khkwc1 / C1 - kh * KW;
     int c1 = khkwc1 - (kh * KW + kw) * C1;
@@ -53,16 +53,16 @@ footer = """
 """
 
 template_R = header + """
-    float v = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_position(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im)/d_im).r;
+    float v = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1) + 0.5, s_Im, s_im, d_im)).r;
 
     gl_FragColor = vec4(v, 0, 0, 0);
 """ + footer
 
 template_RGBA = header + """
-    float v0 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 0.0) + 0.5, s_Im, s_im, d_im)).r;
-    float v1 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 1.0) + 0.5, s_Im, s_im, d_im)).r;
-    float v2 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 2.0) + 0.5, s_Im, s_im, d_im)).r;
-    float v3 = (h1 < 0.0 || h1 >= H1 || w1 < 0.0 || w1 >= W1 || p_Col.w >= C1 * KH * KW) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 3.0) + 0.5, s_Im, s_im, d_im)).r;
+    float v0 = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 0) + 0.5, s_Im, s_im, d_im)).r;
+    float v1 = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 1) + 0.5, s_Im, s_im, d_im)).r;
+    float v2 = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 2) + 0.5, s_Im, s_im, d_im)).r;
+    float v3 = (h1 < 0 || h1 >= H1 || w1 < 0 || w1 >= W1) ? 0.0 : texture2D(im, convert_coord(vec4(n, h1, w1, c1 + 3) + 0.5, s_Im, s_im, d_im)).r;
     
     gl_FragColor = vec4(v0, v1, v2, v3);
 """ + footer
@@ -75,6 +75,7 @@ def im2col(op: Im2Col) -> List[Kernel]:
 
     assert im.order == OrderNHWC
     assert col.order == OrderNHWC
+    assert ChannelMode.get(im) == ChannelModeEnum.R
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()

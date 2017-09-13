@@ -1,8 +1,10 @@
 from enum import Enum, auto
+from typing import Union
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
+from webdnn.graph.variable import Variable
 
 
 class ChannelModeEnum(Enum):
@@ -39,6 +41,20 @@ class ChannelMode(Attribute):
     @staticmethod
     def get(base: Node):
         return base.get_attribute(ChannelMode)[0].mode if base.has_attribute(ChannelMode) else ChannelModeEnum.R
+
+    @staticmethod
+    def elements_per_pixel(mode: Union[Variable, ChannelModeEnum]):
+        if isinstance(mode, Variable):
+            mode = ChannelMode.get(mode)
+
+        if mode == ChannelModeEnum.R:
+            return 1
+
+        elif mode == ChannelModeEnum.RGBA:
+            return 4
+
+        else:
+            raise NotImplementedError(f"Unknown channel mode: {mode}")
 
 
 class SupportedChannelMode(Attribute):

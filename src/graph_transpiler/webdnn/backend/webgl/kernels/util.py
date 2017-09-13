@@ -12,11 +12,22 @@ def _mod_snippet(t1: str, t2: str, tr: str):
     return f"{tr} mod({t1} x, {t2} p) {{ return x-(x/p)*p; }}"
 
 
-def _convert_position_snippet(t1: str, t2: str):
-    ndim1 = t1[-1]
-    return f"""{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
-    i{t1} p1i = i{t1}(p1);
-    i{t1} s1i = i{t1}(s1);
+def _convert_position_i_snippet(t1: str, t2: str):
+    ndim1 = int(t1[-1])
+
+    iteration_snippets = []
+    for i in range(ndim1):
+        iteration_snippets.append(f"""
+            index += ind_partial[{i}];
+            m = index / s2i;
+            p2i += m;
+            index -= m*s2i;
+        """)
+
+    iteration_snippet = "\n".join(iteration_snippets)
+
+    return f"""i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+    i{t1} ind_partial = i{t1}(p1) * i{t1}(s1);
     i{t2} s2i = i{t2}(s2);
     i{t2} d2i = i{t2}(d2);
 
@@ -26,14 +37,17 @@ def _convert_position_snippet(t1: str, t2: str):
     index *= 0;
     p2i *= 0;
 
-    for (int j = 0; j < {ndim1}; j++) {{
-        index = mod(index, s2i); 
-        index += p1i[j] * s1i[j]; 
-        p2i += index / s2i; 
-    }}
+    i{t2} m;
+    {iteration_snippet}
 
-    p2i = mod(p2i, d2i);
-    return {t2}(p2i) + 0.5;
+    return p2i-(p2i/d2i)*d2i;
+}}
+"""
+
+
+def _convert_position_snippet(t1: str, t2: str):
+    return f"""{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+    return {t2}(convert_position_i(p1, s1, s2, d2)) + 0.5;
 }}
 """
 
@@ -52,6 +66,16 @@ precision highp int;
 {_mod_snippet("ivec2", "ivec2", "ivec2")}
 {_mod_snippet("ivec3", "ivec3", "ivec3")}
 {_mod_snippet("ivec4", "ivec4", "ivec4")}
+
+{_convert_position_i_snippet("vec2", "vec2")}
+{_convert_position_i_snippet("vec2", "vec3")}
+{_convert_position_i_snippet("vec2", "vec4")}
+{_convert_position_i_snippet("vec3", "vec2")}
+{_convert_position_i_snippet("vec3", "vec3")}
+{_convert_position_i_snippet("vec3", "vec4")}
+{_convert_position_i_snippet("vec4", "vec2")}
+{_convert_position_i_snippet("vec4", "vec3")}
+{_convert_position_i_snippet("vec4", "vec4")}
 
 {_convert_position_snippet("vec2", "vec2")}
 {_convert_position_snippet("vec2", "vec3")}
