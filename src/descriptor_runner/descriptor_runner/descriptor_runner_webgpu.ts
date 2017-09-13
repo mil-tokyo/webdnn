@@ -105,7 +105,7 @@ using namespace metal;
             webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
                 .then(res => res.json() as Promise<GraphDescriptorWebGPU>),
 
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache })
+            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache, progressCallback: progressCallback })
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 
