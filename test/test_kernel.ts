@@ -1,5 +1,62 @@
 ///<reference path="../dist/webdnn.umd.d.ts" />
 
+let logger: DebugLogger = console;
+let pageLogger: DebugLogger;
+
+interface DebugLogger {
+    group: (groupTitle?: string) => void;
+    groupEnd: () => void;
+    log: (message?: any) => void;
+    info: (message?: any) => void;
+    warn: (message?: any) => void;
+    error: (message?: any) => void;
+}
+
+class PageLogger implements DebugLogger {
+    // FIXME: better representation
+    placeholder: HTMLElement;
+    constructor() {
+        this.placeholder = document.getElementById("log");
+    }
+
+    private write(message: string) {
+        let elem = document.createElement("span");
+        elem.innerText = message;
+        this.placeholder.appendChild(elem);
+        this.placeholder.appendChild(document.createElement("br"));
+    }
+
+    group(groupTitle?: string) {
+        this.write(`group: ${groupTitle}`);
+        console.group(groupTitle);
+    }
+
+    groupEnd() {
+        this.write("group end");
+        console.groupEnd();
+    }
+
+    log(message?: any) {
+        this.write(`log: ${message}`);
+        console.log(message);
+    }
+
+    info(message?: any) {
+        this.write(`info: ${message}`);
+        console.info(message);
+    }
+
+    warn(message?: any) {
+        this.write(`warn: ${message}`);
+        console.warn(message);
+    }
+
+    error(message?: any) {
+        this.write(`error: ${message}`);
+        console.error(message);
+    }
+}
+
 class Warning extends Error {
 }
 
@@ -57,7 +114,13 @@ const TestRunner = new class {
     currentTestCaseIndex = 0;
 
     async setup() {
-        let masterJSONUrl = (document.getElementById('masterJSONUrl')! as HTMLInputElement).value;
+        if (!pageLogger) {
+            pageLogger = new PageLogger();
+        }
+        logger = (document.getElementById('displayOnPage')! as HTMLInputElement).checked ? pageLogger : console;
+
+        // avoid loading from cache
+        let masterJSONUrl = `${(document.getElementById('masterJSONUrl')! as HTMLInputElement).value}?t=${Date.now()}`;
 
         let res = await fetch(masterJSONUrl);
         this.testCases = await res.json();
@@ -65,46 +128,46 @@ const TestRunner = new class {
         this.results = [];
         this.currentTestCaseIndex = 0;
 
-        console.group('Setup');
-        console.log('- TestRunner loaded test case(s)');
-        console.log('- # of test case(s): ' + this.testCases.length);
-        console.groupEnd();
+        logger.group('Setup');
+        logger.log('- TestRunner loaded test case(s)');
+        logger.log('- # of test case(s): ' + this.testCases.length);
+        logger.groupEnd();
     }
 
     cleanUp() {
         let results = this.results;
-        console.group('Result');
+        logger.group('Result');
 
         let failedResults = results.filter(result => !result.result);
         let warningResults = results.filter(result => result.result && result.err);
 
         if (failedResults.length == 0) {
-            console.info(`- ${results.length} PASSED / 0 FAILED`);
+            logger.info(`- ${results.length} PASSED / 0 FAILED`);
         } else {
-            console.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
+            logger.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
 
-            console.group('Failed');
+            logger.group('Failed');
             failedResults.forEach(result => {
-                console.group(result.name);
-                console.log(`In: ${result.testCase.dirname}`);
-                console.log('- ' + result.err.message);
-                console.groupEnd();
+                logger.group(result.name);
+                logger.log(`In: ${result.testCase.dirname}`);
+                logger.log('- ' + result.err.message);
+                logger.groupEnd();
             });
-            console.groupEnd();
+            logger.groupEnd();
         }
 
         if (warningResults.length > 0) {
-            console.group('Warning');
+            logger.group('Warning');
             warningResults.forEach(result => {
-                console.group(result.name);
-                console.log(`In: ${result.testCase.dirname}`);
-                console.log('- ' + result.err.message);
-                console.groupEnd();
+                logger.group(result.name);
+                logger.log(`In: ${result.testCase.dirname}`);
+                logger.log('- ' + result.err.message);
+                logger.groupEnd();
             });
-            console.groupEnd();
+            logger.groupEnd();
         }
 
-        console.groupEnd();
+        logger.groupEnd();
         (window as any).results = results;
     }
 
@@ -121,7 +184,7 @@ const TestRunner = new class {
         let elapsedTime: number;
         let outputs: any;
 
-        console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
+        logger.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
 
         try {
             assert.EPS = testCase.EPS;
@@ -152,8 +215,8 @@ const TestRunner = new class {
             };
             this.results.push(result);
 
-            console.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
-            console.log(result);
+            logger.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
+            logger.log(result);
 
         } catch (err) {
             if (err instanceof Warning) {
@@ -165,7 +228,7 @@ const TestRunner = new class {
                     err: err,
                     outputs: outputs ? outputs.map(v => v.toActual()) : null
                 });
-                console.warn(err.message);
+                logger.warn(err.message);
             } else {
                 this.results.push({
                     name: testName,
@@ -175,19 +238,19 @@ const TestRunner = new class {
                     err: err,
                     outputs: outputs ? outputs.map(v => v.toActual()) : null
                 });
-                console.error(err);
+                logger.error(err);
             }
         }
 
-        console.groupEnd();
+        logger.groupEnd();
     }
 
     async run() {
         return this.setup()
-            .then(() => console.group('Run'))
+            .then(() => logger.group('Run'))
             .then(() => this.mainLoop())
-            .then(() => console.groupEnd())
+            .then(() => logger.groupEnd())
             .then(() => this.cleanUp())
-            .catch(err => console.error(err))
+            .catch(err => logger.error(err))
     }
 };

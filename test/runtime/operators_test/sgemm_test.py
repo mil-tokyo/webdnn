@@ -68,6 +68,8 @@ def test_vector_outer_product():
 def test_NN():
     template(transpose_A=False, transpose_B=False)
 
+def test_NN_large():
+    template(transpose_A=False, transpose_B=False, M=100, N=100, K=100)
 
 def test_NT():
     template(transpose_A=False, transpose_B=True)
