@@ -90,6 +90,7 @@ const TestRunner = new class {
             let masterJSONUrl = `${document.getElementById('masterJSONUrl').value}?t=${Date.now()}`;
             let res = yield fetch(masterJSONUrl);
             this.testCases = yield res.json();
+            yield this.loadDataRef();
             this.rootUrl = masterJSONUrl.split('/').slice(0, masterJSONUrl.split('/').length - 1).join('/') + '/';
             this.results = [];
             this.currentTestCaseIndex = 0;
@@ -98,6 +99,24 @@ const TestRunner = new class {
             logger.log('- # of test case(s): ' + this.testCases.length);
             logger.groupEnd();
         });
+    }
+    loadDataRef() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.testCases[0].inputs_ref) {
+                return;
+            }
+            let dataUrl = `${document.getElementById('masterJSONUrl').value}.bin?t=${Date.now()}`;
+            let res = yield fetch(dataUrl);
+            let dataArrayBuffer = yield res.arrayBuffer();
+            for (let i = 0; i < this.testCases.length; i++) {
+                let testCase = this.testCases[i];
+                testCase.inputs = testCase.inputs_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+                testCase.expected = testCase.expected_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+            }
+        });
+    }
+    createArrayFromDataRef(baseArray, dataRef) {
+        return new Float32Array(baseArray, dataRef.byte_offset, dataRef.length);
     }
     cleanUp() {
         let results = this.results;

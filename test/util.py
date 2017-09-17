@@ -90,13 +90,17 @@ def wrap_template(fn, arg_name="description"):
 class KernelTestCaseGenerator:
     OUTPUT_ROOT: str = path.join(path.dirname(__file__), "../build/test")
     cases: List[Dict[str, any]] = []
+    concatenated_data: bytes = b""
     flag_initialized = False
+    use_separate_data = True
     counter = 0
 
     @classmethod
     def setup(cls):
         if path.exists(cls.OUTPUT_ROOT):
             shutil.rmtree(cls.OUTPUT_ROOT)
+
+        cls.use_separate_data = True
 
         cls.flag_initialized = True
 
@@ -158,18 +162,37 @@ class KernelTestCaseGenerator:
         with open(path.join(output_root, "./cg.dot"), "w") as f:
             f.write(traverse.dump_dot(graph_descriptor.graph))
 
-        cls.cases.append({
-            "description": description,
-            "inputs": [list(inputs[v].flatten()) for v in graph.inputs],
-            "expected": [list(expected[v].flatten()) for v in graph.outputs],
-            "dirname": testcase_dirname,
-            "backend": backend,
-            "EPS": EPS,
-            "ABS_EPS": ABS_EPS
-        })
+        if cls.use_separate_data:
+            cls.cases.append({
+                "description": description,
+                "inputs_ref": [cls.add_data(inputs[v]) for v in graph.inputs],
+                "expected_ref": [cls.add_data(expected[v]) for v in graph.outputs],
+                "dirname": testcase_dirname,
+                "backend": backend,
+                "EPS": EPS,
+                "ABS_EPS": ABS_EPS
+            })
+        else:
+            cls.cases.append({
+                "description": description,
+                "inputs": [inputs[v].flatten().tolist() for v in graph.inputs],
+                "expected": [expected[v].flatten().tolist() for v in graph.outputs],
+                "dirname": testcase_dirname,
+                "backend": backend,
+                "EPS": EPS,
+                "ABS_EPS": ABS_EPS
+            })
 
         if raise_skip:
             raise SkipTest(f"[BrowserTest|{backend}] {description}")
+
+    @classmethod
+    def add_data(cls, ary: np.ndarray) -> dict:
+        byte_offset = len(cls.concatenated_data)
+        assert ary.dtype == np.float32
+        length = ary.size
+        cls.concatenated_data += ary.tobytes()
+        return {"byte_offset": byte_offset, "length": length}
 
     @classmethod
     def clean_up_callback(cls):
@@ -178,6 +201,10 @@ class KernelTestCaseGenerator:
 
         with open(path.join(cls.OUTPUT_ROOT, "./master.json"), "w") as f:
             json.dump(cls.cases, f)
+
+        if cls.use_separate_data:
+            with open(path.join(cls.OUTPUT_ROOT, "./master.json.bin"), "wb") as f:
+                f.write(cls.concatenated_data)
 
 
 atexit.register(KernelTestCaseGenerator.clean_up_callback)

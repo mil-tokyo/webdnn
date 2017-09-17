@@ -87,12 +87,19 @@ const assert = new class {
     }
 };
 
+interface DataRef {
+    byte_offset: number,
+    length: number
+}
+
 interface TestCase {
     description: string,
     backend: WebDNN.BackendName,
     dirname: string,
-    inputs: number[][],
-    expected: number[][],
+    inputs: (Float32Array | number[])[],
+    expected: (Float32Array | number[])[],
+    inputs_ref: DataRef[],
+    expected_ref: DataRef[],
     EPS: number,
     ABS_EPS: number
 }
@@ -124,6 +131,7 @@ const TestRunner = new class {
 
         let res = await fetch(masterJSONUrl);
         this.testCases = await res.json();
+        await this.loadDataRef();
         this.rootUrl = masterJSONUrl.split('/').slice(0, masterJSONUrl.split('/').length - 1).join('/') + '/';
         this.results = [];
         this.currentTestCaseIndex = 0;
@@ -132,6 +140,25 @@ const TestRunner = new class {
         logger.log('- TestRunner loaded test case(s)');
         logger.log('- # of test case(s): ' + this.testCases.length);
         logger.groupEnd();
+    }
+
+    async loadDataRef() {
+        if (!this.testCases[0].inputs_ref) {
+            return;
+        }
+
+        let dataUrl = `${(document.getElementById('masterJSONUrl')! as HTMLInputElement).value}.bin?t=${Date.now()}`;
+        let res = await fetch(dataUrl);
+        let dataArrayBuffer = await res.arrayBuffer();
+        for (let i = 0; i < this.testCases.length; i++) {
+            let testCase = this.testCases[i];
+            testCase.inputs = testCase.inputs_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+            testCase.expected = testCase.expected_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+        }
+    }
+
+    createArrayFromDataRef(baseArray: ArrayBuffer, dataRef: DataRef): Float32Array {
+        return new Float32Array(baseArray, dataRef.byte_offset, dataRef.length);
     }
 
     cleanUp() {
