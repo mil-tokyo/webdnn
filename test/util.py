@@ -189,7 +189,7 @@ class KernelTestCaseGenerator:
     @classmethod
     def add_data(cls, ary: np.ndarray) -> dict:
         byte_offset = len(cls.concatenated_data)
-        assert ary.dtype == np.float32
+        ary = ary.astype(np.float32)
         length = ary.size
         cls.concatenated_data += ary.tobytes()
         return {"byte_offset": byte_offset, "length": length}
