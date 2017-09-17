@@ -5,6 +5,7 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
+from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.util.misc import mul
 
@@ -57,7 +58,7 @@ def reshape(op: Reshape, memory_layout: MemoryLayout) -> List[Kernel]:
         {name_injector.name: source},
         name_injector.name,
         GPUSize(8, 1, 1),
-        GPUSize(1024, 1, 1),
+        GPUSize(MAX_THREADS_PER_THREADGROUP, 1, 1),
         buffer_injector.buffer,
         buffer_injector.unresolved_value_list
     )
