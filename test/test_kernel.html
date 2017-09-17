@@ -20,7 +20,15 @@
         <span>Master JSON File</span>
         <input type="text" id="masterJSONUrl" value="../build/test/master.json">
     </label>
+    <br>
+    <label>
+        <input type="checkbox" id="displayOnPage" checked>Display result on page
+    </label>
+    <br>
     <button onclick="TestRunner.run()">RUN</button>
+</div>
+<div id="log">
+
 </div>
 
 <script src="../dist/webdnn.js"></script>

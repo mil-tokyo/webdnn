@@ -7,6 +7,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 ///<reference path="../dist/webdnn.umd.d.ts" />
+let logger = console;
+let pageLogger;
+class PageLogger {
+    constructor() {
+        this.placeholder = document.getElementById("log");
+    }
+    write(message) {
+        let elem = document.createElement("span");
+        elem.innerText = message;
+        this.placeholder.appendChild(elem);
+        this.placeholder.appendChild(document.createElement("br"));
+    }
+    group(groupTitle) {
+        this.write(`group: ${groupTitle}`);
+        console.group(groupTitle);
+    }
+    groupEnd() {
+        this.write("group end");
+        console.groupEnd();
+    }
+    log(message) {
+        this.write(`log: ${message}`);
+        console.log(message);
+    }
+    info(message) {
+        this.write(`info: ${message}`);
+        console.info(message);
+    }
+    warn(message) {
+        this.write(`warn: ${message}`);
+        console.warn(message);
+    }
+    error(message) {
+        this.write(`error: ${message}`);
+        console.error(message);
+    }
+}
 class Warning extends Error {
 }
 const assert = new class {
@@ -45,48 +82,72 @@ const TestRunner = new class {
     }
     setup() {
         return __awaiter(this, void 0, void 0, function* () {
-            let masterJSONUrl = document.getElementById('masterJSONUrl').value;
+            if (!pageLogger) {
+                pageLogger = new PageLogger();
+            }
+            logger = document.getElementById('displayOnPage').checked ? pageLogger : console;
+            // avoid loading from cache
+            let masterJSONUrl = `${document.getElementById('masterJSONUrl').value}?t=${Date.now()}`;
             let res = yield fetch(masterJSONUrl);
             this.testCases = yield res.json();
+            yield this.loadDataRef();
             this.rootUrl = masterJSONUrl.split('/').slice(0, masterJSONUrl.split('/').length - 1).join('/') + '/';
             this.results = [];
             this.currentTestCaseIndex = 0;
-            console.group('Setup');
-            console.log('- TestRunner loaded test case(s)');
-            console.log('- # of test case(s): ' + this.testCases.length);
-            console.groupEnd();
+            logger.group('Setup');
+            logger.log('- TestRunner loaded test case(s)');
+            logger.log('- # of test case(s): ' + this.testCases.length);
+            logger.groupEnd();
         });
+    }
+    loadDataRef() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.testCases[0].inputs_ref) {
+                return;
+            }
+            let dataUrl = `${document.getElementById('masterJSONUrl').value}.bin?t=${Date.now()}`;
+            let res = yield fetch(dataUrl);
+            let dataArrayBuffer = yield res.arrayBuffer();
+            for (let i = 0; i < this.testCases.length; i++) {
+                let testCase = this.testCases[i];
+                testCase.inputs = testCase.inputs_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+                testCase.expected = testCase.expected_ref.map((v) => this.createArrayFromDataRef(dataArrayBuffer, v));
+            }
+        });
+    }
+    createArrayFromDataRef(baseArray, dataRef) {
+        return new Float32Array(baseArray, dataRef.byte_offset, dataRef.length);
     }
     cleanUp() {
         let results = this.results;
-        console.group('Result');
+        logger.group('Result');
         let failedResults = results.filter(result => !result.result);
         let warningResults = results.filter(result => result.result && result.err);
         if (failedResults.length == 0) {
-            console.info(`- ${results.length} PASSED / 0 FAILED`);
+            logger.info(`- ${results.length} PASSED / 0 FAILED`);
         }
         else {
-            console.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
-            console.group('Failed');
+            logger.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
+            logger.group('Failed');
             failedResults.forEach(result => {
-                console.group(result.name);
-                console.log(`In: ${result.testCase.dirname}`);
-                console.log('- ' + result.err.message);
-                console.groupEnd();
+                logger.group(result.name);
+                logger.log(`In: ${result.testCase.dirname}`);
+                logger.log('- ' + result.err.message);
+                logger.groupEnd();
             });
-            console.groupEnd();
+            logger.groupEnd();
         }
         if (warningResults.length > 0) {
-            console.group('Warning');
+            logger.group('Warning');
             warningResults.forEach(result => {
-                console.group(result.name);
-                console.log(`In: ${result.testCase.dirname}`);
-                console.log('- ' + result.err.message);
-                console.groupEnd();
+                logger.group(result.name);
+                logger.log(`In: ${result.testCase.dirname}`);
+                logger.log('- ' + result.err.message);
+                logger.groupEnd();
             });
-            console.groupEnd();
+            logger.groupEnd();
         }
-        console.groupEnd();
+        logger.groupEnd();
         window.results = results;
     }
     mainLoop() {
@@ -103,7 +164,7 @@ const TestRunner = new class {
             const testName = `[${testCase.backend}] ${testCase.description}`;
             let elapsedTime;
             let outputs;
-            console.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
+            logger.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
             try {
                 assert.EPS = testCase.EPS;
                 assert.ABS_EPS = testCase.ABS_EPS;
@@ -127,8 +188,8 @@ const TestRunner = new class {
                     outputs: outputs.map(v => v.toActual())
                 };
                 this.results.push(result);
-                console.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
-                console.log(result);
+                logger.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
+                logger.log(result);
             }
             catch (err) {
                 if (err instanceof Warning) {
@@ -140,7 +201,7 @@ const TestRunner = new class {
                         err: err,
                         outputs: outputs ? outputs.map(v => v.toActual()) : null
                     });
-                    console.warn(err.message);
+                    logger.warn(err.message);
                 }
                 else {
                     this.results.push({
@@ -151,20 +212,20 @@ const TestRunner = new class {
                         err: err,
                         outputs: outputs ? outputs.map(v => v.toActual()) : null
                     });
-                    console.error(err);
+                    logger.error(err);
                 }
             }
-            console.groupEnd();
+            logger.groupEnd();
         });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             return this.setup()
-                .then(() => console.group('Run'))
+                .then(() => logger.group('Run'))
                 .then(() => this.mainLoop())
-                .then(() => console.groupEnd())
+                .then(() => logger.groupEnd())
                 .then(() => this.cleanUp())
-                .catch(err => console.error(err));
+                .catch(err => logger.error(err));
         });
     }
 };
