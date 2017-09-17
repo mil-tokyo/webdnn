@@ -158,7 +158,7 @@ class ElementwiseKernelFusion(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.MERGE_ELEMENTWISE
+            flags.optimize.ELEMENTWISE_KERNEL_FUSION
         ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:

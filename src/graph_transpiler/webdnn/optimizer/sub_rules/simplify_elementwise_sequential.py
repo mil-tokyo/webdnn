@@ -6,13 +6,12 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
-from webdnn.graph.operators.scalar_add import ScalarAdd
-from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.traverse import search_sub_structure
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.optimizer.sub_rules.replace_scalar_operator import ReplaceScalarOperator
 from webdnn.util import flags
 
 
@@ -60,180 +59,6 @@ class SimplifyOperatorBase(OptimizeRule):
         raise NotImplementedError
 
 
-class SimplifyScalarAddScalarAdd(SimplifyOperatorBase):
-    pattern = [ScalarAdd, ScalarAdd]
-
-    def optimize_pair(self, op1: ScalarAdd, op2: ScalarAdd):
-        x0 = op1.inputs["x0"]
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = x0 + (op1.value + op2.value)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarAddScalarMul(SimplifyOperatorBase):
-    pattern = [ScalarAdd, ScalarMul]
-
-    def optimize_pair(self, op1: ScalarAdd, op2: ScalarMul):
-        x0 = op1.inputs["x0"]
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 * op2.value) + (op1.value * op2.value)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarAddElementwiseAdd(SimplifyOperatorBase):
-    pattern = [ScalarAdd, ElementwiseAdd]
-
-    def optimize_pair(self, op1: ScalarAdd, op2: ElementwiseAdd):
-        x0 = op1.inputs["x0"]
-        y1 = op1.outputs["y"]
-
-        if y1 == op2.inputs["x0"]:
-            w = op2.inputs["x1"]
-        else:
-            w = op2.inputs["x0"]
-        y2 = op2.outputs["y"]
-
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 + w) + op1.value  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarAddElementwiseMul(SimplifyOperatorBase):
-    pattern = [ScalarAdd, ElementwiseMul]
-
-    def optimize_pair(self, op1: ScalarAdd, op2: ElementwiseMul):
-        x0 = op1.inputs["x0"]
-        y1 = op1.outputs["y"]
-
-        if y1 == op2.inputs["x0"]:
-            w = op2.inputs["x1"]
-        else:
-            w = op2.inputs["x0"]
-        y2 = op2.outputs["y"]
-
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 * w) + (op1.value * w)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarAddElementwiseDiv(SimplifyOperatorBase):
-    pattern = [ScalarAdd, ElementwiseDiv]
-
-    def optimize_pair(self, op1: ScalarAdd, op2: ElementwiseDiv):
-        x0 = op1.inputs["x0"]
-        y1 = op1.outputs["y"]
-
-        if y1 == op2.inputs["x0"]:
-            w = op2.inputs["x1"]
-        else:
-            w = op2.inputs["x0"]
-        y2 = op2.outputs["y"]
-
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 / w) + (op1.value / w)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarMulScalarMul(SimplifyOperatorBase):
-    pattern = [ScalarMul, ScalarMul]
-
-    def optimize_pair(self, op1: ScalarMul, op2: ScalarMul):
-        x0 = op1.inputs["x0"]
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = x0 * (op1.value * op2.value)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarMulElementwiseMul(SimplifyOperatorBase):
-    pattern = [ScalarMul, ElementwiseMul]
-
-    def optimize_pair(self, op1: ScalarMul, op2: ElementwiseMul):
-        x0 = op1.inputs["x0"]
-        y1 = op1.outputs["y"]
-
-        if y1 == op2.inputs["x0"]:
-            w = op2.inputs["x1"]
-        else:
-            w = op2.inputs["x0"]
-        y2 = op2.outputs["y"]
-
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 * w) * op1.value  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyScalarMulElementwiseDiv(SimplifyOperatorBase):
-    pattern = [ScalarMul, ElementwiseDiv]
-
-    def optimize_pair(self, op1: ScalarMul, op2: ElementwiseDiv):
-        x0 = op1.inputs["x0"]
-        y1 = op1.outputs["y"]
-
-        if y1 == op2.inputs["x0"]:
-            w = op2.inputs["x1"]
-        else:
-            w = op2.inputs["x0"]
-        y2 = op2.outputs["y"]
-
-        op2.remove_all()
-        op1.remove_all()
-        y = (x0 / w) * op1.value  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyElementwiseAddScalarAdd(SimplifyOperatorBase):
-    pattern = [ElementwiseAdd, ScalarAdd]
-
-    def optimize_pair(self, op1: ElementwiseAdd, op2: ScalarAdd):
-        if isinstance(op1.inputs["x0"], ConstantVariable):
-            c1 = op1.inputs["x0"], v1 = op1.inputs["x1"]
-        elif isinstance(op1.inputs["x1"], ConstantVariable):
-            c1 = op1.inputs["x1"], v1 = op1.inputs["x0"]
-        else:
-            return False
-
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = v1 + (c1 + op2.value)  # type: Variable
-        y.replace(y2)
-        return True
-
-
-class SimplifyElementwiseAddScalarMul(SimplifyOperatorBase):
-    pattern = [ElementwiseAdd, ScalarMul]
-
-    def optimize_pair(self, op1: ElementwiseAdd, op2: ScalarMul):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op2.remove_all()
-        op1.remove_all()
-        y = (v1 * op2.value) + (c1 * op2.value)  # type: Variable
-        y.replace(y2)
-        return True
-
-
 class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
     pattern = [ElementwiseAdd, ElementwiseMul]
 
@@ -249,8 +74,8 @@ class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = (v1 * c2) + (c1 * c2)
-        y.replace(y2)
+        y = (v1 * c2) + (c1 * c2)  # type: Variable
+        y.replace(y2, with_assert=False)
         return True
 
 
@@ -269,24 +94,8 @@ class SimplifyElementwiseAddElementwiseDiv(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = (v1 / c2) + (c1 / c2)
-        y.replace(y2)
-        return True
-
-
-class SimplifyElementwiseMulScalarMul(SimplifyOperatorBase):
-    pattern = [ElementwiseMul, ScalarMul]
-
-    def optimize_pair(self, op1: ElementwiseMul, op2: ScalarMul):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op1.remove_all()
-        op2.remove_all()
-        y = v1 * (c1 * op2.value)  # type: Variable
-        y.replace(y2)
+        y = (v1 / c2) + (c1 / c2)  # type: Variable
+        y.replace(y2, with_assert=False)
         return True
 
 
@@ -305,24 +114,8 @@ class SimplifyElementwiseMulElementwiseDiv(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = v1 * (c1 / c2)
-        y.replace(y2)
-        return True
-
-
-class SimplifyElementwiseDivScalarMul(SimplifyOperatorBase):
-    pattern = [ElementwiseDiv, ScalarMul]
-
-    def optimize_pair(self, op1: ElementwiseDiv, op2: ScalarMul):
-        c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
-        if c1 is None:
-            return False
-
-        y2 = op2.outputs["y"]
-        op1.remove_all()
-        op2.remove_all()
-        y = v1 * (op2.value / c1)  # type: Variable
-        y.replace(y2)
+        y = v1 * (c1 / c2)  # type: Variable
+        y.replace(y2, with_assert=False)
         return True
 
 
@@ -341,8 +134,8 @@ class SimplifyElementwiseDivElementwiseMul(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = v1 * (c2 / c1)
-        y.replace(y2)
+        y = v1 * (c2 / c1)  # type: Variable
+        y.replace(y2, with_assert=False)
         return True
 
 
@@ -364,8 +157,8 @@ class SimplifyConcatElementwiseMul(SimplifyOperatorBase):
         op1.remove_all()
         op2.remove_all()
 
-        y, = Concat(None, axis=op1.axis)((x0 * c0), (x1 * c1))
-        y.replace(y2)
+        y, = Concat(None, axis=op1.axis)((x0 * c0), (x1 * c1))  # type: Variable
+        y.replace(y2, with_assert=False)
         return True
 
 
@@ -377,42 +170,23 @@ class SimplifyElementwiseSequential(OptimizeRule):
 
     .. math::
 
-        X * S * s + B + b
+        X * S + B
 
     where,
 
     - :math:`X` : input tensor
     - :math:`S` : scale tensor
     - :math:`B` : bias tensor
-    - :math:`s` : scale scalar
-    - :math:`b` : bias scalar
-
-    2. Simplify operations if enable.
     """
 
     def __init__(self):
         super(SimplifyElementwiseSequential, self).__init__()
-        self.register(SimplifyScalarAddScalarAdd())
-        self.register(SimplifyScalarAddScalarMul())
-        self.register(SimplifyScalarAddElementwiseAdd())
-        self.register(SimplifyScalarAddElementwiseMul())
-        self.register(SimplifyScalarAddElementwiseDiv())
+        self.register(ReplaceScalarOperator())
 
-        self.register(SimplifyScalarMulScalarMul())
-        self.register(SimplifyScalarMulElementwiseMul())
-        self.register(SimplifyScalarMulElementwiseDiv())
-
-        self.register(SimplifyElementwiseAddScalarAdd())
-        self.register(SimplifyElementwiseAddScalarMul())
         self.register(SimplifyElementwiseAddElementwiseMul())
         self.register(SimplifyElementwiseAddElementwiseDiv())
-
-        self.register(SimplifyElementwiseMulScalarMul())
         self.register(SimplifyElementwiseMulElementwiseDiv())
-
-        self.register(SimplifyElementwiseDivScalarMul())
         self.register(SimplifyElementwiseDivElementwiseMul())
-
         self.register(SimplifyConcatElementwiseMul())
 
     def flags(self):
