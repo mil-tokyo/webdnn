@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Building webdnn.js &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>WebGPUをiOS 11で有効にする方法 &mdash; MIL WebDNN 1.1.0 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../index.html"/>
         <link rel="up" title="Tips" href="index.html"/>
-        <link rel="next" title="Using LSTM model" href="lstm.html"/>
-        <link rel="prev" title="WebGPUをiOS 11で有効にする方法" href="enable_webgpu_ios_ja.html"/> 
+        <link rel="next" title="Building webdnn.js" href="build_js.html"/>
+        <link rel="prev" title="Enabling WebGPU on iOS 11" href="enable_webgpu_ios.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -96,8 +96,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="enable_webgpu_ios.html">Enabling WebGPU on iOS 11</a></li>
-<li class="toctree-l2"><a class="reference internal" href="enable_webgpu_ios_ja.html">WebGPUをiOS 11で有効にする方法</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Building webdnn.js</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">WebGPUをiOS 11で有効にする方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_js.html">Building webdnn.js</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lstm.html">Using LSTM model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="es5.html">EcmaScript5 support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="safari_webcam.html">Using web camera in Safari</a></li>
@@ -158,13 +158,13 @@
         
           <li><a href="index.html">Tips</a> &raquo;</li>
         
-      <li>Building webdnn.js</li>
+      <li>WebGPUをiOS 11で有効にする方法</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tips/build_js.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tips/enable_webgpu_ios_ja.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -177,14 +177,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="building-webdnn-js">
-<span id="building-webdnn-js"></span><h1>Building webdnn.js<a class="headerlink" href="#building-webdnn-js" title="Permalink to this headline">¶</a></h1>
-<p>If you want to build <code class="docutils literal"><span class="pre">webdnn.js</span></code> by your own, for modifying some behavior, use the following command.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">npm</span> <span class="n">install</span>
-<span class="n">npm</span> <span class="n">run</span> <span class="n">build</span>
-</pre></div>
-</div>
-<p>From source code in <code class="docutils literal"><span class="pre">src/descriptor_runner</span></code>, <code class="docutils literal"><span class="pre">webdnn.js</span></code> and <code class="docutils literal"><span class="pre">webdnn.es5.js</span></code> are generated in <code class="docutils literal"><span class="pre">dist</span></code> directory.</p>
+  <div class="section" id="webgpuios-11">
+<span id="webgpuios-11"></span><h1>WebGPUをiOS 11で有効にする方法<a class="headerlink" href="#webgpuios-11" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="enable_webgpu_ios.html">English</a></p>
+<p>iOS 11に搭載のWebブラウザSafariには、実験的機能としてWebGPUが搭載されています。WebGPUにより、WebDNNの動作は大幅に高速化されます。
+初期設定ではWebGPUは無効になっているため、このページでは、WebGPUを有効にする方法を説明します。</p>
+<ol>
+<li><p class="first">設定を開き、Safariをタップ</p>
+<p><img src="../_static/tips/webgpu_ios_1_ja.png" width="320px" alt="Safari"></p>
+</li>
+<li><p class="first">詳細をタップ</p>
+<p><img src="../_static/tips/webgpu_ios_2_ja.png" width="320px" alt="Advanced"></p>
+</li>
+<li><p class="first">Experimental Featuresをタップ</p>
+<p><img src="../_static/tips/webgpu_ios_3_ja.png" width="320px" alt="Experimental Features"></p>
+</li>
+<li><p class="first">WebGPUをONにする</p>
+<p><img src="../_static/tips/webgpu_ios_4_ja.png" width="320px" alt="WebGPU"></p>
+</li>
+<li><p class="first">Safariが起動している場合、一旦終了する</p>
+<p><img src="../_static/tips/webgpu_ios_5.png" width="320px" alt="Close Safari"></p>
+<p>(ホームボタンをダブルクリック、Safariの画面を上にスワイプ)</p>
+</li>
+</ol>
+<p>これにより、SafariでWebGPUが利用できるようになります。</p>
+<p>注意：WebGPUは実験的機能であり、ブラウザの動作を不安定にする可能性があります。WebGPUを使用したい場合以外は無効化しておくことが望ましいです。</p>
 </div>
 
 
@@ -197,10 +214,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="lstm.html" class="btn btn-neutral float-right" title="Using LSTM model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="build_js.html" class="btn btn-neutral float-right" title="Building webdnn.js" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="enable_webgpu_ios_ja.html" class="btn btn-neutral" title="WebGPUをiOS 11で有効にする方法" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="enable_webgpu_ios.html" class="btn btn-neutral" title="Enabling WebGPU on iOS 11" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
