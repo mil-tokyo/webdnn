@@ -95,8 +95,11 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Enabling WebGPU on iOS 11</a></li>
-<li class="toctree-l2"><a class="reference internal" href="enable_webgpu_ios_ja.html">WebGPUをiOS 11で有効にする方法</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Enabling WebGPU on iOS 11</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="enable_webgpu_ios_ja.html">日本語版(Japanese)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="enable_webgpu_macos.html">Enabling WebGPU on macOS 10.13 High Sierra</a></li>
 <li class="toctree-l2"><a class="reference internal" href="build_js.html">Building webdnn.js</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lstm.html">Using LSTM model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="es5.html">EcmaScript5 support</a></li>
@@ -164,7 +167,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tips/enable_webgpu_ios.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tips/enable_webgpu_ios.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -178,31 +181,42 @@
            <div itemprop="articleBody">
             
   <div class="section" id="enabling-webgpu-on-ios-11">
-<span id="enabling-webgpu-on-ios-11"></span><h1>Enabling WebGPU on iOS 11<a class="headerlink" href="#enabling-webgpu-on-ios-11" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference external" href="enable_webgpu_ios_ja.html">日本語版(Japanese)</a></p>
+<h1>Enabling WebGPU on iOS 11<a class="headerlink" href="#enabling-webgpu-on-ios-11" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<ul class="simple">
+<li><a class="reference internal" href="enable_webgpu_macos.html"><span class="doc">for macOS</span></a></li>
+<li><a class="reference internal" href="enable_webgpu_ios_ja.html"><span class="doc">日本語版(Japanese)</span></a></li>
+</ul>
 <p>Safari web browser on iOS 11 has WebGPU as an experimental feature. WebGPU accelerates WebDNN considerably.
 For default, WebGPU is disabled. This page describes how to enable WebGPU.</p>
-<ol>
-<li><p class="first">Open Settings and tap Safari</p>
-<p><img src="../_static/tips/webgpu_ios_1.png" width="320px" alt="Safari"></p>
-</li>
-<li><p class="first">Tap Advanced</p>
-<p><img src="../_static/tips/webgpu_ios_2.png" width="320px" alt="Advanced"></p>
-</li>
-<li><p class="first">Tap Experimental Features</p>
-<p><img src="../_static/tips/webgpu_ios_3.png" width="320px" alt="Experimental Features"></p>
-</li>
-<li><p class="first">Turn on WebGPU</p>
-<p><img src="../_static/tips/webgpu_ios_4.png" width="320px" alt="WebGPU"></p>
-</li>
-<li><p class="first">If Safari is already running, close it once</p>
-<p><img src="../_static/tips/webgpu_ios_5.png" width="320px" alt="Close Safari"></p>
+<p><strong>1. Open Settings and tap Safari</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/webgpu_ios_1.png"><img alt="Safari" src="../_images/webgpu_ios_1.png" style="width: 320px;" /></a>
+</div></blockquote>
+<p><strong>2. Tap Advanced</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/webgpu_ios_2.png"><img alt="Advanced" src="../_images/webgpu_ios_2.png" style="width: 320px;" /></a>
+</div></blockquote>
+<p><strong>3. Tap Experimental Features</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/webgpu_ios_3.png"><img alt="Experimental Features" src="../_images/webgpu_ios_3.png" style="width: 320px;" /></a>
+</div></blockquote>
+<p><strong>4. Turn on WebGPU</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/webgpu_ios_4.png"><img alt="WebGPU" src="../_images/webgpu_ios_4.png" style="width: 320px;" /></a>
+</div></blockquote>
+<p><strong>5. If Safari is already running, close it once</strong></p>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/webgpu_ios_5.png"><img alt="Close Safari" src="../_images/webgpu_ios_5.png" style="width: 320px;" /></a>
 <p>(Double-click home button and swipe up preview of Safari)</p>
-</li>
-</ol>
+</div></blockquote>
 <p>Now WebGPU is enabled on Safari.</p>
-<p>Warning: WebGPU is an experimental feature and may make the browser unstable.
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">WebGPU is an experimental feature and may make the browser unstable.
 It should be disabled unless you want to use WebGPU.</p>
+</div>
 </div>
 
 
