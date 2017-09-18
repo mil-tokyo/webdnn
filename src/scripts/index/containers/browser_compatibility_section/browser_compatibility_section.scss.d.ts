@@ -7,6 +7,8 @@ export const webassembly: string;
 export const fallback: string;
 export const checking: string;
 export const supported: string;
+export const disabled: string;
 export const unsupported: string;
 export const browser: string;
 export const versionRange: string;
+export const webgpuTips: string;

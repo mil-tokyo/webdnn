@@ -74,6 +74,10 @@
   font-weight: bold;
 }
 
+.disabled {
+  background: #b30000;
+}
+
 .unsupported {
   background: rgba(#000, 0.3);
   color: #444;
@@ -85,4 +89,10 @@
 
 .versionRange {
   display: block;
+}
+
+.webgpu-tips {
+  text-align: center;
+  color: #b30000;
+  font-weight: bold;
 }

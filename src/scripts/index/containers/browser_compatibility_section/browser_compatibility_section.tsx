@@ -1,10 +1,10 @@
 import * as classNames from "classnames"
 import * as React from "react"
+import * as WebDNN from "webdnn";
 import * as bootstrap from "../../../common/bootstrap";
 import TableWrapper from "../../components/table_wrapper/table_wrapper";
 import TopPageSection, { TopPageSectionSubTitle } from "../../components/toppage_section/toppage_section";
 import * as style from "./browser_compatibility_section.scss";
-import * as WebDNN from "webdnn";
 
 export const AnchorID = "compatibility";
 
@@ -18,8 +18,18 @@ let svgIcons = {
     firefox: require('./firefox.svg')
 };
 
-class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
+class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<HTMLElement>, { flagWebGPUDisabled: boolean }> {
+    constructor() {
+        super();
+        this.state = { flagWebGPUDisabled: false }
+    }
+
     componentDidMount() {
+        const IS_WEBGPU_IMPLEMENTED = /iPhone OS 11_0/.test(navigator.userAgent) &&
+            /Safari/.test(navigator.userAgent) &&
+            !(/CriOS/.test(navigator.userAgent)) &&
+            !(/FxiOS/.test(navigator.userAgent));
+
         let availability = WebDNN.getBackendAvailability().status;
 
         for (let backend of ['webgpu', 'webgl', 'webassembly', 'fallback']) {
@@ -34,9 +44,19 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                 node.classList.remove(style.unsupported);
                 if (statusNode) statusNode.textContent = 'Supported';
             } else {
-                node.classList.remove(style.supported);
-                node.classList.add(style.unsupported);
-                if (statusNode) statusNode.textContent = 'Not supported';
+                if (backend === 'webgpu' && IS_WEBGPU_IMPLEMENTED) {
+                    node.classList.remove(style.unsupported);
+                    node.classList.add(style.disabled);
+                    if (statusNode) statusNode.textContent = 'Disabled';
+                    this.setState({
+                        flagWebGPUDisabled: true
+                    });
+
+                } else {
+                    node.classList.remove(style.supported);
+                    node.classList.add(style.unsupported);
+                    if (statusNode) statusNode.textContent = 'Not supported';
+                }
             }
         }
     }
@@ -99,31 +119,35 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                                 </th>
                             </tr>
                             <tr>
-                                <td className={style.webassembly} rowSpan={2}>
-                                    <span className={style.versionRange}>10 - 11</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                <td className={style.webassembly} rowSpan={1}>
+                                    <span className={style.versionRange}>11</span>
+                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
                                 </td>
                                 <td className={style.webassembly} rowSpan={3}>
                                     <span className={style.versionRange}> - 15</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
                                 </td>
                                 <td className={style.webgpu} rowSpan={1}>
-                                    <span className={style.versionRange}>Technology Preview</span>
-                                    <span className={style.backend}>WebGPU</span>
+                                    <span className={style.versionRange}>11</span>
+                                    <span className={style.backend}>WebGPU, WebAssembly/asm.js</span>
                                 </td>
                                 <td className={style.webassembly} rowSpan={3}>
                                     <span className={style.versionRange}> - 58</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
                                 </td>
                                 <td className={style.webassembly} rowSpan={3}>
                                     <span className={style.versionRange}> - 53</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
                                 </td>
                             </tr>
                             <tr>
+                                <td className={style.webassembly} rowSpan={1}>
+                                    <span className={style.versionRange}>10</span>
+                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                </td>
                                 <td className={style.webassembly} rowSpan={2}>
                                     <span className={style.versionRange}> - 10.1</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
                                 </td>
                             </tr>
                             <tr>
@@ -175,11 +199,22 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                             </tbody>
                         </table>
                     </TableWrapper>
-                    <p id="mes-ts">
-                        In Safari Technology Preview, WebGPU API is disabled as default. To enable the API,
-                        see&nbsp;<i>"Develop"</i>&nbsp;>&nbsp;<i>"Experimental Features"</i>&nbsp;>&nbsp;
-                        <i>"WebGPU"</i>&nbsp;in
-                        menu bar.
+                    <p style={{ display: this.state.flagWebGPUDisabled ? '' : 'none' }} className={style.webgpuTips}>
+                        This browser supports WebGPU, but currently it's disabled. WebGPU accelerates WebDNN
+                        considerably. To enable WebGPU, see
+                        <a href={/iPhone/.test(navigator.userAgent) ?
+                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
+                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
+                            this document
+                        </a>.
+                    </p>
+                    <p style={{ display: this.state.flagWebGPUDisabled ? 'none' : '' }} className={style.webgpuTips}>
+                        In <b>Safari 11 on macOS High Sierra</b> and <b>Safari Technology Preview</b>, WebGPU API is available (some hardware cannot be supported yet).
+                        To enable WebGPU, see <a href={/iPhone/.test(navigator.userAgent) ?
+                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
+                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
+                            this document
+                        </a>.
                     </p>
                 </div>
             </div>

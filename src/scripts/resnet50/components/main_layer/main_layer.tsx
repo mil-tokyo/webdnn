@@ -2,6 +2,7 @@ import * as classNames from "classnames";
 import * as React from "react";
 import * as WebDNN from "webdnn";
 import "../../../../stylus/bootstrap.scss";
+import Alert from "../../../common/components/alert/alert";
 import Button from "../../../common/components/button/button";
 import { LayoutFrame } from "../../../common/components/layout/layout";
 import NavbarLayer from "../../../common/components/navbar_layer/navbar_layer";
@@ -150,10 +151,25 @@ class MainLayer extends React.Component<Props, State> {
     }
 
     render() {
+        const IS_WEBGPU_IMPLEMENTED = /iPhone OS 11_0/.test(navigator.userAgent) &&
+            /Safari/.test(navigator.userAgent) &&
+            !(/CriOS/.test(navigator.userAgent)) &&
+            !(/FxiOS/.test(navigator.userAgent));
+
+        let alert: React.ReactNode = null;
+        if (IS_WEBGPU_IMPLEMENTED && this.props.runner.backendName !== 'webgpu') {
+            alert = <Alert>
+                <div>
+                    You can use WebGPU to accelerate computing! Please check&nbsp;<a href="#">this document</a>
+                </div>
+            </Alert>;
+        }
+
         return (
             <div className={classNames(style.mainLayer, this.props.className)}>
                 <ProgressBar running={this.state.isBusy} />
                 <NavbarLayer title="ResNet50 Image Classification" column>
+                    {alert}
                     <LayoutFrame flex>
                         <LayoutFrame fit block>
                             <LayoutFrame className={style.inputAndInformationContainer}>

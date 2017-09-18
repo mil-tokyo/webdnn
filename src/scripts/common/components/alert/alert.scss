@@ -1,0 +1,25 @@
+@import "../../../../stylus/bootstrap-mixin";
+@import "../../../../stylus/color";
+
+.alert {
+  position: relative;
+  min-height: 56px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  z-index: 655350;
+  padding: 4px 8px;
+  background: #0077b3;
+  color: #fff;
+  border: 0 none;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(#000, 0.4);
+  font-size: 14px;
+  text-align: left;
+
+  @include media-breakpoint-down(sm) {
+    min-height: 48px;
+  }
+}
+
+

@@ -1,7 +1,7 @@
 import * as React from "react";
+import * as WebDNN from "webdnn";
 import InitializeLayer from "../../../common/components/initialize_layer/itnitialize_layer";
 import StartLayer from "../../../common/components/start_layer/start_layer";
-import * as WebDNN from "webdnn";
 import MainLayer from "../../components/main_layer/main_layer";
 
 enum Status {

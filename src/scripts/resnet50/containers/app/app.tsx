@@ -46,6 +46,15 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
                 ['webgpu', 'webgl', 'webassembly', 'fallback']
         });
 
+        const IS_WEBGPU_IMPLEMENTED = /iPhone OS 11_0/.test(navigator.userAgent) &&
+            /Safari/.test(navigator.userAgent) &&
+            !(/CriOS/.test(navigator.userAgent)) &&
+            !(/FxiOS/.test(navigator.userAgent));
+
+        if (IS_WEBGPU_IMPLEMENTED && runner.backendName !== 'webgpu') {
+            //TODO
+        }
+
         this.setState({
             runner: runner,
             status: Status.READY
