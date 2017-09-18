@@ -1,24 +1,24 @@
 # Enabling WebGPU on iOS 11
-[日本語版](../enable_webgpu_ios_ja.html)
+[日本語版(Japanese)](../enable_webgpu_ios_ja.html)
 
 Safari web browser on iOS 11 has WebGPU as an experimental feature. WebGPU accelerates WebDNN considerably.
 For default, WebGPU is disabled. This page describes how to enable WebGPU.
 
 1. Open Settings and tap Safari
 
-    <img src="../_static/tips/webgpu_ios_1_ja.png" width="320px" alt="Safari">
+    <img src="../_static/tips/webgpu_ios_1.png" width="320px" alt="Safari">
 
 2. Tap Advanced
 
-    <img src="../_static/tips/webgpu_ios_2_ja.png" width="320px" alt="Advanced">
+    <img src="../_static/tips/webgpu_ios_2.png" width="320px" alt="Advanced">
 
 3. Tap Experimental Features
 
-    <img src="../_static/tips/webgpu_ios_3_ja.png" width="320px" alt="Experimental Features">
+    <img src="../_static/tips/webgpu_ios_3.png" width="320px" alt="Experimental Features">
 
 4. Turn on WebGPU
 
-    <img src="../_static/tips/webgpu_ios_4_ja.png" width="320px" alt="WebGPU">
+    <img src="../_static/tips/webgpu_ios_4.png" width="320px" alt="WebGPU">
 
 5. If Safari is already running, close it once
 
