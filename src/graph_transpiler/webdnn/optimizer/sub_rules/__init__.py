@@ -9,3 +9,4 @@ from webdnn.optimizer.sub_rules import simplify_associative_operator
 from webdnn.optimizer.sub_rules import simplify_commutative_operator
 from webdnn.optimizer.sub_rules import simplify_elementwise
 from webdnn.optimizer.sub_rules import simplify_elementwise_sequential
+from webdnn.optimizer.sub_rules import update_inplace_attribute
