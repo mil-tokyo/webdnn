@@ -1,7 +1,7 @@
 from typing import Optional, Union, Sequence
 
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.inplace import Inplace
+from webdnn.graph.operators.attributes.inplace import InplaceOperator
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
@@ -47,7 +47,7 @@ class Reshape(Operator):
         self.parameters["out_order"] = out_order
         self.parameters["out_shape"] = out_shape
 
-        self.attributes.add(Inplace(self, "x", "y"))
+        self.attributes.add(InplaceOperator(self, "x", "y"))
 
     def __call__(self, x: Variable):
         in_shape = x.shape

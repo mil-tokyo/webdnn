@@ -7,6 +7,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
 from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.remove_redundant_operator import RemoveRedundantOperator
+from webdnn.optimizer.sub_rules.update_inplace_attribute import UpdateInplaceAttribute
 
 
 class WebGPUOptimizeRule(OptimizeRule):
@@ -21,3 +22,4 @@ class WebGPUOptimizeRule(OptimizeRule):
         self.register(RemoveRedundantOperator())
         self.register(RemoveNoEffectOperator())
         self.register(ElementwiseKernelFusion())
+        self.register(UpdateInplaceAttribute())

@@ -5,6 +5,7 @@ from webdnn.backend.webassembly.optimize_rules.optimize_sgemm_eigen import Optim
 from webdnn.backend.webassembly.optimize_rules.optimize_transpose import OptimizeTranspose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
+from webdnn.optimizer.sub_rules.update_inplace_attribute import UpdateInplaceAttribute
 
 
 class WebassemblyOptimizeRule(OptimizeRule):
@@ -17,3 +18,4 @@ class WebassemblyOptimizeRule(OptimizeRule):
         self.register(OptimizeLinear())
         self.register(OptimizeSgemmEigen())
         self.register(ElementwiseKernelFusion())
+        self.register(UpdateInplaceAttribute())

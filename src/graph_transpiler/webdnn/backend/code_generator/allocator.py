@@ -9,7 +9,6 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import Inplace
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags, console
 
@@ -117,7 +116,7 @@ def allocate(graph: Graph) -> MemoryLayout:
     assert len(dynamic_constants) == 0, f"ConstantVariable with unresolved placeholder shape is detected: f{dynamic_constants}"
 
     allocations = _get_allocations(graph, operators, variables)
-    # _optimize_inplace(operators, allocations)
+    _optimize_inplace(operators, allocations)
 
     variable_allocations = {v: allocations[v] for v in variables if not isinstance(v, ConstantVariable)}
     constant_allocations = {v: allocations[v] for v in variables if isinstance(v, ConstantVariable)}
@@ -228,20 +227,8 @@ def _optimize_inplace(operators: List[Operator], allocations_dict: AllocationDic
         return
 
     for op in operators:
-        for attr in op.get_attribute(Inplace):
-            v_in = attr.get_input()
-            v_out = attr.get_output()
-
-            if v_in.has_attribute(Input):
-                continue
-
-            if isinstance(v_in, ConstantVariable):
-                continue
-
-            if any(v_in.stride_dict[a] != v_out.stride_dict[a] for a in v_out.order.axes if a in v_in.order.axes):
-                continue
-
-            _merge_allocation(allocations_dict, allocations_dict[v_in], allocations_dict[v_out])
+        for attr in op.get_attribute(Inplace):  # type: Inplace
+            _merge_allocation(allocations_dict, allocations_dict[attr.get_input()], allocations_dict[attr.get_output()])
 
 
 def _optimize_buffer_reuse(allocations_dict: AllocationDict):
