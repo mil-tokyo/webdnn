@@ -4,7 +4,7 @@ import TopPageJA from "./index/containers/toppage/toppage_ja";
 
 declare function require(path: string): any;
 
-window.onload = () => {
+window.onload =async () => {
     // let IS_ES2017 = true;
     // try {
     //     eval('(() => { async function test(){return Promise.resolve()} })();');
@@ -20,7 +20,10 @@ window.onload = () => {
     //     iframe.src = IS_ES2017 ? baseUrl : baseUrl.replace('.html', '.es5.html');
     // }
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register(require('file-loader!../static/sw.js'));
+    if ('serviceWorker' in navigator) {
+        let registration = await navigator.serviceWorker.register(require('file-loader!../static/sw.js'));
+        await registration.unregister();
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => ReactDOM.render(<TopPageJA />, document.getElementById('root')));
