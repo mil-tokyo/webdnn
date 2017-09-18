@@ -1,6 +1,6 @@
 importScripts('/webdnn/sw-toolbox.js');
 
-const VERSION = 5;
+const VERSION = 6;
 
 toolbox.precache(['/',
 	`https://mil-tokyo.github.io/webdnn-data/models/resnet/weight_webassembly.bin?raw=true&v=${VERSION}`,
