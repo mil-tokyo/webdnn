@@ -1,8 +1,8 @@
 import * as React from "react";
+import * as WebDNN from "webdnn";
 import InitializeLayer from "../../../common/components/initialize_layer/itnitialize_layer";
 import StartLayer from "../../../common/components/start_layer/start_layer";
 import MainLayer from "../../components/main_layer/main_layer";
-import * as WebDNN from "webdnn";
 
 enum Status {
     SLEEP,
@@ -31,6 +31,7 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
     }
 
     async initAsync() {
+        let gl = document.createElement('canvas').getContext('webgl');
         let runner = await WebDNN.load("./resnet", {
             progressCallback: (loaded: number, total: number) => {
                 this.setState({
@@ -41,9 +42,9 @@ export default class App extends React.Component<React.HTMLAttributes<HTMLDivEle
                 let ma = url.match(/([^/]+)(?:\?.*)?$/);
                 return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
             },
-            backendOrder: IS_MOBILE ?
-                ['webgpu', 'webassembly', 'webgl', 'fallback'] :
-                ['webgpu', 'webgl', 'webassembly', 'fallback']
+            backendOrder: (gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) ?
+                ['webgpu', 'webgl', 'webassembly', 'fallback'] :
+                ['webgpu', 'webassembly', 'webgl', 'fallback']
         });
 
         const IS_WEBGPU_IMPLEMENTED = /iPhone OS 11_0/.test(navigator.userAgent) &&

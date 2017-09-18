@@ -410,7 +410,7 @@ class MainLayer extends React.Component<Props, State> {
         if (IS_WEBGPU_IMPLEMENTED && this.props.runner.backendName !== 'webgpu') {
             alert = <Alert>
                 <div>
-                    You can use WebGPU to accelerate computing! Please check&nbsp;<a href="#">this document</a>
+                    You can use WebGPU to accelerate computing! Please check&nbsp;<a href="https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html">this document</a>
                 </div>
             </Alert>;
         }

@@ -122,7 +122,9 @@ class MainLayer extends React.Component<Props, State> {
         let inputImageCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
 
         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
-            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC
+            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+            color: WebDNN.Image.Color.BGR,
+            bias: [123.68, 116.779, 103.939]
         }));
         if (runner.backendName !== 'webgpu') {
             this.setState({ isBusy: true });
@@ -160,7 +162,7 @@ class MainLayer extends React.Component<Props, State> {
         if (IS_WEBGPU_IMPLEMENTED && this.props.runner.backendName !== 'webgpu') {
             alert = <Alert>
                 <div>
-                    You can use WebGPU to accelerate computing! Please check&nbsp;<a href="#">this document</a>
+                    You can use WebGPU to accelerate computing! Please check&nbsp;<a href="https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html">this document</a>
                 </div>
             </Alert>;
         }

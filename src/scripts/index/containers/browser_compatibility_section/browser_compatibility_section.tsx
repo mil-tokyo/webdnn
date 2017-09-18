@@ -201,8 +201,7 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                     </TableWrapper>
                     <p style={{ display: this.state.flagWebGPUDisabled ? '' : 'none' }} className={style.webgpuTips}>
                         This browser supports WebGPU, but currently it's disabled. WebGPU accelerates WebDNN
-                        considerably. To enable WebGPU, see
-                        <a href={/iPhone/.test(navigator.userAgent) ?
+                        considerably. To enable WebGPU, see&nbsp;<a href={/iPhone/.test(navigator.userAgent) ?
                                  "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                  "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
                             this document
@@ -210,7 +209,7 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                     </p>
                     <p style={{ display: this.state.flagWebGPUDisabled ? 'none' : '' }} className={style.webgpuTips}>
                         In <b>Safari 11 on macOS High Sierra</b> and <b>Safari Technology Preview</b>, WebGPU API is available (some hardware cannot be supported yet).
-                        To enable WebGPU, see <a href={/iPhone/.test(navigator.userAgent) ?
+                        To enable WebGPU, see&nbsp;<a href={/iPhone/.test(navigator.userAgent) ?
                                  "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                  "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
                             this document
