@@ -16,7 +16,7 @@ master_doc = 'index'
 
 project = 'MIL WebDNN'
 copyright = '2017, MIL'
-author = 'MIL'
+author = 'Machine Intelligence Laboratory (MIL), The University of Tokyo'
 
 version = ".".join(webdnn.__version__.split(".")[:2])
 release = webdnn.__version__
