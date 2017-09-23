@@ -1,4 +1,4 @@
-from typing import Type, List, Set, Iterable, Union, Tuple, Optional
+from typing import Type, List, Iterable, Union, Tuple, Optional, Set
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
@@ -65,7 +65,7 @@ def sort_nodes(nodes: List[Node]) -> List[Node]:
 def listup_nodes(graph: Graph) -> List[Node]:
     stack = list(graph.outputs)  # type: List[Node]
     stacked = set(stack)  # type: Set[Node]
-    resolved = set()  # type Set[Node]
+    resolved = set()  # type: Set[Node]
     result = list()  # type: List[Node]
 
     stack = sort_nodes(stack)
