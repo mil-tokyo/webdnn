@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 83);
+/******/ 	return __webpack_require__(__webpack_require__.s = 82);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -540,16 +540,6 @@ module.exports = ReactDOMComponentTree;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
-
-module.exports = __webpack_require__(16);
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -585,6 +575,16 @@ var ExecutionEnvironment = {
 };
 
 module.exports = ExecutionEnvironment;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(16);
+
 
 /***/ }),
 /* 7 */
@@ -1340,7 +1340,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(180);
+	fixUrls = __webpack_require__(179);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -1807,14 +1807,14 @@ module.exports = PooledClass;
 var _assign = __webpack_require__(3);
 
 var ReactBaseClasses = __webpack_require__(50);
-var ReactChildren = __webpack_require__(85);
-var ReactDOMFactories = __webpack_require__(90);
+var ReactChildren = __webpack_require__(84);
+var ReactDOMFactories = __webpack_require__(89);
 var ReactElement = __webpack_require__(17);
-var ReactPropTypes = __webpack_require__(91);
-var ReactVersion = __webpack_require__(95);
+var ReactPropTypes = __webpack_require__(90);
+var ReactVersion = __webpack_require__(94);
 
-var createReactClass = __webpack_require__(96);
-var onlyChild = __webpack_require__(98);
+var createReactClass = __webpack_require__(95);
+var onlyChild = __webpack_require__(97);
 
 var createElement = ReactElement.createElement;
 var createFactory = ReactElement.createFactory;
@@ -2501,7 +2501,7 @@ module.exports = DOMProperty;
 
 
 
-var ReactRef = __webpack_require__(108);
+var ReactRef = __webpack_require__(107);
 var ReactInstrumentation = __webpack_require__(8);
 
 var warning = __webpack_require__(1);
@@ -3363,8 +3363,8 @@ module.exports = ReactInstanceMap;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
-var style = __webpack_require__(178);
+var React = __webpack_require__(6);
+var style = __webpack_require__(177);
 exports.LayoutFrame = function (props) { return (React.createElement("div", { className: classNames(style.frame, props.className, (props.block ? style.block : null), (props.fit ? style.fit : null), (props.flex ? style.flex : null), (!props.block ? style.flexContainer : null), (!props.block && props.row ? style.row : null), (!props.block && props.column ? style.column : null), (!props.block && props.autoReverse ? style.autoReverse : null), (!props.block && (!props.row && !props.column && !props.autoReverse) ? style.auto : null), (!props.block && props.center ? style.center : null)) }, props.block ?
     (React.createElement("div", { className: classNames(style.flexContainer, style.blockInner, (props.row ? style.row : null), (props.column ? style.column : null), (props.autoReverse ? style.autoReverse : null), ((!props.row && !props.column && !props.autoReverse) ? style.auto : null), (props.center ? style.center : null)) }, props.children)) :
     props.children)); };
@@ -3722,7 +3722,7 @@ module.exports = SyntheticMouseEvent;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var DOMNamespaces = __webpack_require__(40);
 
 var WHITESPACE_TEST = /^[ \r\n\t\f]/;
@@ -3955,10 +3955,10 @@ module.exports = escapeTextContentForBrowser;
 var _assign = __webpack_require__(3);
 
 var EventPluginRegistry = __webpack_require__(33);
-var ReactEventEmitterMixin = __webpack_require__(129);
+var ReactEventEmitterMixin = __webpack_require__(128);
 var ViewportMetrics = __webpack_require__(63);
 
-var getVendorPrefixedEventName = __webpack_require__(130);
+var getVendorPrefixedEventName = __webpack_require__(129);
 var isEventSupported = __webpack_require__(37);
 
 /**
@@ -4891,7 +4891,7 @@ module.exports = getEventTarget;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
 var useHasFeature;
 if (ExecutionEnvironment.canUseDOM) {
@@ -5005,7 +5005,7 @@ module.exports = getEventModifierState;
 
 
 var DOMLazyTree = __webpack_require__(20);
-var Danger = __webpack_require__(114);
+var Danger = __webpack_require__(113);
 var ReactDOMComponentTree = __webpack_require__(4);
 var ReactInstrumentation = __webpack_require__(8);
 
@@ -5299,7 +5299,7 @@ module.exports = createMicrosoftUnsafeLocalFunction;
 
 var _prodInvariant = __webpack_require__(2);
 
-var ReactPropTypesSecret = __webpack_require__(132);
+var ReactPropTypesSecret = __webpack_require__(131);
 var propTypesFactory = __webpack_require__(54);
 
 var React = __webpack_require__(16);
@@ -6351,7 +6351,7 @@ var ReactNoopUpdateQueue = __webpack_require__(51);
 var canDefineProperty = __webpack_require__(52);
 var emptyObject = __webpack_require__(27);
 var invariant = __webpack_require__(0);
-var lowPriorityWarning = __webpack_require__(84);
+var lowPriorityWarning = __webpack_require__(83);
 
 /**
  * Base class helpers for the updating state of a component.
@@ -6650,7 +6650,7 @@ module.exports = REACT_ELEMENT_TYPE;
 // Therefore we re-export development-only version with all the PropTypes checks here.
 // However if one is migrating to the `prop-types` npm library, they will go through the
 // `index.js` entry point, and it will branch depending on the environment.
-var factory = __webpack_require__(92);
+var factory = __webpack_require__(91);
 module.exports = function(isValidElement) {
   // It is still allowed in 15.5.
   var throwOnDirectAccess = false;
@@ -6797,7 +6797,7 @@ module.exports = forEachAccumulated;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
 var contentKey = null;
 
@@ -7200,7 +7200,7 @@ module.exports = ViewportMetrics;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var escapeTextContentForBrowser = __webpack_require__(31);
 var setInnerHTML = __webpack_require__(30);
 
@@ -7452,7 +7452,7 @@ var DOMProperty = __webpack_require__(18);
 var ReactDOMComponentTree = __webpack_require__(4);
 var ReactInstrumentation = __webpack_require__(8);
 
-var quoteAttributeValueForBrowser = __webpack_require__(128);
+var quoteAttributeValueForBrowser = __webpack_require__(127);
 var warning = __webpack_require__(1);
 
 var VALID_ATTRIBUTE_NAME_REGEX = new RegExp('^[' + DOMProperty.ATTRIBUTE_NAME_START_CHAR + '][' + DOMProperty.ATTRIBUTE_NAME_CHAR + ']*$');
@@ -8086,11 +8086,11 @@ process.umask = function() { return 0; };
 var _prodInvariant = __webpack_require__(2),
     _assign = __webpack_require__(3);
 
-var ReactCompositeComponent = __webpack_require__(137);
+var ReactCompositeComponent = __webpack_require__(136);
 var ReactEmptyComponent = __webpack_require__(72);
 var ReactHostComponent = __webpack_require__(73);
 
-var getNextDebugID = __webpack_require__(138);
+var getNextDebugID = __webpack_require__(137);
 var invariant = __webpack_require__(0);
 var warning = __webpack_require__(1);
 
@@ -8373,9 +8373,9 @@ module.exports = ReactHostComponent;
 var _prodInvariant = __webpack_require__(2);
 
 var ReactCurrentOwner = __webpack_require__(10);
-var REACT_ELEMENT_TYPE = __webpack_require__(139);
+var REACT_ELEMENT_TYPE = __webpack_require__(138);
 
-var getIteratorFn = __webpack_require__(140);
+var getIteratorFn = __webpack_require__(139);
 var invariant = __webpack_require__(0);
 var KeyEscapeUtils = __webpack_require__(46);
 var warning = __webpack_require__(1);
@@ -9017,9 +9017,9 @@ module.exports = EventListener;
 
 
 
-var ReactDOMSelection = __webpack_require__(152);
+var ReactDOMSelection = __webpack_require__(151);
 
-var containsNode = __webpack_require__(154);
+var containsNode = __webpack_require__(153);
 var focusNode = __webpack_require__(65);
 var getActiveElement = __webpack_require__(78);
 
@@ -9197,12 +9197,12 @@ var React = __webpack_require__(16);
 var ReactBrowserEventEmitter = __webpack_require__(32);
 var ReactCurrentOwner = __webpack_require__(10);
 var ReactDOMComponentTree = __webpack_require__(4);
-var ReactDOMContainerInfo = __webpack_require__(169);
-var ReactDOMFeatureFlags = __webpack_require__(170);
+var ReactDOMContainerInfo = __webpack_require__(168);
+var ReactDOMFeatureFlags = __webpack_require__(169);
 var ReactFeatureFlags = __webpack_require__(60);
 var ReactInstanceMap = __webpack_require__(25);
 var ReactInstrumentation = __webpack_require__(8);
-var ReactMarkupChecksum = __webpack_require__(171);
+var ReactMarkupChecksum = __webpack_require__(170);
 var ReactReconciler = __webpack_require__(19);
 var ReactUpdateQueue = __webpack_require__(47);
 var ReactUpdates = __webpack_require__(9);
@@ -9762,25 +9762,6 @@ module.exports = WebDNN;
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
-var layout_1 = __webpack_require__(26);
-var style = __webpack_require__(190);
-var Button = function (props, _a) {
-    return (React.createElement("button", { className: classNames(style.button, props.className, props.active ? style.active : null, props.primary ? style.primary : null), disabled: props.disabled, onClick: props.onClick },
-        React.createElement("div", { className: style.ripple }),
-        React.createElement(layout_1.LayoutFrame, { fit: true, column: true, center: true, className: style.body }, props.children)));
-};
-exports.default = Button;
-
-
-/***/ }),
-/* 83 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9827,11 +9808,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(5);
-var ReactDOM = __webpack_require__(99);
+var React = __webpack_require__(6);
+var ReactDOM = __webpack_require__(98);
 var WebDNN = __webpack_require__(81);
-var app_base_1 = __webpack_require__(176);
-var main_layer_1 = __webpack_require__(183);
+var app_base_1 = __webpack_require__(175);
+var main_layer_1 = __webpack_require__(182);
 var App = (function (_super) {
     __extends(App, _super);
     function App() {
@@ -9845,7 +9826,7 @@ var App = (function (_super) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, WebDNN.load("./neural_style_transfer", {
+                        return [4, WebDNN.load("./yolo9000", {
                                 progressCallback: function (loaded, total) {
                                     _this.setState({
                                         loadingProgressRate: loaded / total
@@ -9853,11 +9834,9 @@ var App = (function (_super) {
                                 },
                                 transformUrlDelegate: function (url) {
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
-                                    return ma ?
-                                        "https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/" + ma[1] + "?raw=true" :
-                                        url;
+                                    return ma ? "https://mil-tokyo.github.io/webdnn-data/models/yolo9000/" + ma[1] + "?raw=true" : url;
                                 },
-                                backendOrder: ['webgpu', 'webassembly']
+                                backendOrder: ['webgpu']
                             })];
                     case 1:
                         runner = _a.sent();
@@ -9883,11 +9862,11 @@ var App = (function (_super) {
     return App;
 }(app_base_1.AppBase));
 document.addEventListener('DOMContentLoaded', function () { return ReactDOM.render(React.createElement(App, null), document.getElementById('root')); });
-document.title = 'Neural Style Transfer - MIL WebDNN';
+document.title = 'YOLO9000 Object Detection - MIL WebDNN';
 
 
 /***/ }),
-/* 84 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9957,7 +9936,7 @@ if (false) {
 module.exports = lowPriorityWarning;
 
 /***/ }),
-/* 85 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9973,11 +9952,11 @@ module.exports = lowPriorityWarning;
 
 
 
-var PooledClass = __webpack_require__(86);
+var PooledClass = __webpack_require__(85);
 var ReactElement = __webpack_require__(17);
 
 var emptyFunction = __webpack_require__(7);
-var traverseAllChildren = __webpack_require__(87);
+var traverseAllChildren = __webpack_require__(86);
 
 var twoArgumentPooler = PooledClass.twoArgumentPooler;
 var fourArgumentPooler = PooledClass.fourArgumentPooler;
@@ -10153,7 +10132,7 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 /***/ }),
-/* 86 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10270,7 +10249,7 @@ var PooledClass = {
 module.exports = PooledClass;
 
 /***/ }),
-/* 87 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10291,9 +10270,9 @@ var _prodInvariant = __webpack_require__(21);
 var ReactCurrentOwner = __webpack_require__(10);
 var REACT_ELEMENT_TYPE = __webpack_require__(53);
 
-var getIteratorFn = __webpack_require__(88);
+var getIteratorFn = __webpack_require__(87);
 var invariant = __webpack_require__(0);
-var KeyEscapeUtils = __webpack_require__(89);
+var KeyEscapeUtils = __webpack_require__(88);
 var warning = __webpack_require__(1);
 
 var SEPARATOR = '.';
@@ -10451,7 +10430,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 /***/ }),
-/* 88 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10497,7 +10476,7 @@ function getIteratorFn(maybeIterable) {
 module.exports = getIteratorFn;
 
 /***/ }),
-/* 89 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10561,7 +10540,7 @@ var KeyEscapeUtils = {
 module.exports = KeyEscapeUtils;
 
 /***/ }),
-/* 90 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10735,7 +10714,7 @@ var ReactDOMFactories = {
 module.exports = ReactDOMFactories;
 
 /***/ }),
-/* 91 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10759,7 +10738,7 @@ var factory = __webpack_require__(54);
 module.exports = factory(isValidElement);
 
 /***/ }),
-/* 92 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10778,8 +10757,8 @@ var emptyFunction = __webpack_require__(7);
 var invariant = __webpack_require__(0);
 var warning = __webpack_require__(1);
 
-var ReactPropTypesSecret = __webpack_require__(93);
-var checkPropTypes = __webpack_require__(94);
+var ReactPropTypesSecret = __webpack_require__(92);
+var checkPropTypes = __webpack_require__(93);
 
 module.exports = function(isValidElement, throwOnDirectAccess) {
   /* global Symbol */
@@ -11278,7 +11257,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 
 
 /***/ }),
-/* 93 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11299,7 +11278,7 @@ module.exports = ReactPropTypesSecret;
 
 
 /***/ }),
-/* 94 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11367,7 +11346,7 @@ module.exports = checkPropTypes;
 
 
 /***/ }),
-/* 95 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11386,7 +11365,7 @@ module.exports = checkPropTypes;
 module.exports = '15.6.1';
 
 /***/ }),
-/* 96 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11409,12 +11388,12 @@ var _require2 = __webpack_require__(17),
     isValidElement = _require2.isValidElement;
 
 var ReactNoopUpdateQueue = __webpack_require__(51);
-var factory = __webpack_require__(97);
+var factory = __webpack_require__(96);
 
 module.exports = factory(Component, isValidElement, ReactNoopUpdateQueue);
 
 /***/ }),
-/* 97 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12293,7 +12272,7 @@ module.exports = factory;
 
 
 /***/ }),
-/* 98 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12336,17 +12315,17 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 /***/ }),
-/* 99 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(100);
+module.exports = __webpack_require__(99);
 
 
 /***/ }),
-/* 100 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12365,15 +12344,15 @@ module.exports = __webpack_require__(100);
 
 
 var ReactDOMComponentTree = __webpack_require__(4);
-var ReactDefaultInjection = __webpack_require__(101);
+var ReactDefaultInjection = __webpack_require__(100);
 var ReactMount = __webpack_require__(79);
 var ReactReconciler = __webpack_require__(19);
 var ReactUpdates = __webpack_require__(9);
-var ReactVersion = __webpack_require__(173);
+var ReactVersion = __webpack_require__(172);
 
-var findDOMNode = __webpack_require__(174);
+var findDOMNode = __webpack_require__(173);
 var getHostComponentFromComposite = __webpack_require__(80);
-var renderSubtreeIntoContainer = __webpack_require__(175);
+var renderSubtreeIntoContainer = __webpack_require__(174);
 var warning = __webpack_require__(1);
 
 ReactDefaultInjection.inject();
@@ -12462,7 +12441,7 @@ if (false) {
 module.exports = ReactDOM;
 
 /***/ }),
-/* 101 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12478,25 +12457,25 @@ module.exports = ReactDOM;
 
 
 
-var ARIADOMPropertyConfig = __webpack_require__(102);
-var BeforeInputEventPlugin = __webpack_require__(103);
-var ChangeEventPlugin = __webpack_require__(107);
-var DefaultEventPluginOrder = __webpack_require__(110);
-var EnterLeaveEventPlugin = __webpack_require__(111);
-var HTMLDOMPropertyConfig = __webpack_require__(112);
-var ReactComponentBrowserEnvironment = __webpack_require__(113);
-var ReactDOMComponent = __webpack_require__(119);
+var ARIADOMPropertyConfig = __webpack_require__(101);
+var BeforeInputEventPlugin = __webpack_require__(102);
+var ChangeEventPlugin = __webpack_require__(106);
+var DefaultEventPluginOrder = __webpack_require__(109);
+var EnterLeaveEventPlugin = __webpack_require__(110);
+var HTMLDOMPropertyConfig = __webpack_require__(111);
+var ReactComponentBrowserEnvironment = __webpack_require__(112);
+var ReactDOMComponent = __webpack_require__(118);
 var ReactDOMComponentTree = __webpack_require__(4);
-var ReactDOMEmptyComponent = __webpack_require__(144);
-var ReactDOMTreeTraversal = __webpack_require__(145);
-var ReactDOMTextComponent = __webpack_require__(146);
-var ReactDefaultBatchingStrategy = __webpack_require__(147);
-var ReactEventListener = __webpack_require__(148);
-var ReactInjection = __webpack_require__(150);
-var ReactReconcileTransaction = __webpack_require__(151);
-var SVGDOMPropertyConfig = __webpack_require__(157);
-var SelectEventPlugin = __webpack_require__(158);
-var SimpleEventPlugin = __webpack_require__(159);
+var ReactDOMEmptyComponent = __webpack_require__(143);
+var ReactDOMTreeTraversal = __webpack_require__(144);
+var ReactDOMTextComponent = __webpack_require__(145);
+var ReactDefaultBatchingStrategy = __webpack_require__(146);
+var ReactEventListener = __webpack_require__(147);
+var ReactInjection = __webpack_require__(149);
+var ReactReconcileTransaction = __webpack_require__(150);
+var SVGDOMPropertyConfig = __webpack_require__(156);
+var SelectEventPlugin = __webpack_require__(157);
+var SimpleEventPlugin = __webpack_require__(158);
 
 var alreadyInjected = false;
 
@@ -12553,7 +12532,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 102 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12632,7 +12611,7 @@ var ARIADOMPropertyConfig = {
 module.exports = ARIADOMPropertyConfig;
 
 /***/ }),
-/* 103 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12649,10 +12628,10 @@ module.exports = ARIADOMPropertyConfig;
 
 
 var EventPropagators = __webpack_require__(22);
-var ExecutionEnvironment = __webpack_require__(6);
-var FallbackCompositionState = __webpack_require__(104);
-var SyntheticCompositionEvent = __webpack_require__(105);
-var SyntheticInputEvent = __webpack_require__(106);
+var ExecutionEnvironment = __webpack_require__(5);
+var FallbackCompositionState = __webpack_require__(103);
+var SyntheticCompositionEvent = __webpack_require__(104);
+var SyntheticInputEvent = __webpack_require__(105);
 
 var END_KEYCODES = [9, 13, 27, 32]; // Tab, Return, Esc, Space
 var START_KEYCODE = 229;
@@ -13021,7 +13000,7 @@ var BeforeInputEventPlugin = {
 module.exports = BeforeInputEventPlugin;
 
 /***/ }),
-/* 104 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13121,7 +13100,7 @@ PooledClass.addPoolingTo(FallbackCompositionState);
 module.exports = FallbackCompositionState;
 
 /***/ }),
-/* 105 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13162,7 +13141,7 @@ SyntheticEvent.augmentClass(SyntheticCompositionEvent, CompositionEventInterface
 module.exports = SyntheticCompositionEvent;
 
 /***/ }),
-/* 106 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13204,7 +13183,7 @@ SyntheticEvent.augmentClass(SyntheticInputEvent, InputEventInterface);
 module.exports = SyntheticInputEvent;
 
 /***/ }),
-/* 107 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13222,7 +13201,7 @@ module.exports = SyntheticInputEvent;
 
 var EventPluginHub = __webpack_require__(23);
 var EventPropagators = __webpack_require__(22);
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var ReactDOMComponentTree = __webpack_require__(4);
 var ReactUpdates = __webpack_require__(9);
 var SyntheticEvent = __webpack_require__(11);
@@ -13521,7 +13500,7 @@ var ChangeEventPlugin = {
 module.exports = ChangeEventPlugin;
 
 /***/ }),
-/* 108 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13538,7 +13517,7 @@ module.exports = ChangeEventPlugin;
 
 
 
-var ReactOwner = __webpack_require__(109);
+var ReactOwner = __webpack_require__(108);
 
 var ReactRef = {};
 
@@ -13615,7 +13594,7 @@ ReactRef.detachRefs = function (instance, element) {
 module.exports = ReactRef;
 
 /***/ }),
-/* 109 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13713,7 +13692,7 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 /***/ }),
-/* 110 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13744,7 +13723,7 @@ var DefaultEventPluginOrder = ['ResponderEventPlugin', 'SimpleEventPlugin', 'Tap
 module.exports = DefaultEventPluginOrder;
 
 /***/ }),
-/* 111 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13847,7 +13826,7 @@ var EnterLeaveEventPlugin = {
 module.exports = EnterLeaveEventPlugin;
 
 /***/ }),
-/* 112 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14088,7 +14067,7 @@ var HTMLDOMPropertyConfig = {
 module.exports = HTMLDOMPropertyConfig;
 
 /***/ }),
-/* 113 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14105,7 +14084,7 @@ module.exports = HTMLDOMPropertyConfig;
 
 
 var DOMChildrenOperations = __webpack_require__(39);
-var ReactDOMIDOperations = __webpack_require__(118);
+var ReactDOMIDOperations = __webpack_require__(117);
 
 /**
  * Abstracts away all functionality of the reconciler that requires knowledge of
@@ -14121,7 +14100,7 @@ var ReactComponentBrowserEnvironment = {
 module.exports = ReactComponentBrowserEnvironment;
 
 /***/ }),
-/* 114 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14140,9 +14119,9 @@ module.exports = ReactComponentBrowserEnvironment;
 var _prodInvariant = __webpack_require__(2);
 
 var DOMLazyTree = __webpack_require__(20);
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
-var createNodesFromMarkup = __webpack_require__(115);
+var createNodesFromMarkup = __webpack_require__(114);
 var emptyFunction = __webpack_require__(7);
 var invariant = __webpack_require__(0);
 
@@ -14172,7 +14151,7 @@ var Danger = {
 module.exports = Danger;
 
 /***/ }),
-/* 115 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14191,10 +14170,10 @@ module.exports = Danger;
 
 /*eslint-disable fb-www/unsafe-html*/
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
-var createArrayFromMixed = __webpack_require__(116);
-var getMarkupWrap = __webpack_require__(117);
+var createArrayFromMixed = __webpack_require__(115);
+var getMarkupWrap = __webpack_require__(116);
 var invariant = __webpack_require__(0);
 
 /**
@@ -14261,7 +14240,7 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 /***/ }),
-/* 116 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14393,7 +14372,7 @@ function createArrayFromMixed(obj) {
 module.exports = createArrayFromMixed;
 
 /***/ }),
-/* 117 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14411,7 +14390,7 @@ module.exports = createArrayFromMixed;
 
 /*eslint-disable fb-www/unsafe-html */
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
 var invariant = __webpack_require__(0);
 
@@ -14493,7 +14472,7 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 /***/ }),
-/* 118 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14531,7 +14510,7 @@ var ReactDOMIDOperations = {
 module.exports = ReactDOMIDOperations;
 
 /***/ }),
-/* 119 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14552,8 +14531,8 @@ module.exports = ReactDOMIDOperations;
 var _prodInvariant = __webpack_require__(2),
     _assign = __webpack_require__(3);
 
-var AutoFocusUtils = __webpack_require__(120);
-var CSSPropertyOperations = __webpack_require__(121);
+var AutoFocusUtils = __webpack_require__(119);
+var CSSPropertyOperations = __webpack_require__(120);
 var DOMLazyTree = __webpack_require__(20);
 var DOMNamespaces = __webpack_require__(40);
 var DOMProperty = __webpack_require__(18);
@@ -14563,13 +14542,13 @@ var EventPluginRegistry = __webpack_require__(33);
 var ReactBrowserEventEmitter = __webpack_require__(32);
 var ReactDOMComponentFlags = __webpack_require__(55);
 var ReactDOMComponentTree = __webpack_require__(4);
-var ReactDOMInput = __webpack_require__(131);
-var ReactDOMOption = __webpack_require__(133);
+var ReactDOMInput = __webpack_require__(130);
+var ReactDOMOption = __webpack_require__(132);
 var ReactDOMSelect = __webpack_require__(68);
-var ReactDOMTextarea = __webpack_require__(134);
+var ReactDOMTextarea = __webpack_require__(133);
 var ReactInstrumentation = __webpack_require__(8);
-var ReactMultiChild = __webpack_require__(135);
-var ReactServerRenderingTransaction = __webpack_require__(142);
+var ReactMultiChild = __webpack_require__(134);
+var ReactServerRenderingTransaction = __webpack_require__(141);
 
 var emptyFunction = __webpack_require__(7);
 var escapeTextContentForBrowser = __webpack_require__(31);
@@ -15546,7 +15525,7 @@ _assign(ReactDOMComponent.prototype, ReactDOMComponent.Mixin, ReactMultiChild.Mi
 module.exports = ReactDOMComponent;
 
 /***/ }),
-/* 120 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15575,7 +15554,7 @@ var AutoFocusUtils = {
 module.exports = AutoFocusUtils;
 
 /***/ }),
-/* 121 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15592,13 +15571,13 @@ module.exports = AutoFocusUtils;
 
 
 var CSSProperty = __webpack_require__(66);
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var ReactInstrumentation = __webpack_require__(8);
 
-var camelizeStyleName = __webpack_require__(122);
-var dangerousStyleValue = __webpack_require__(124);
-var hyphenateStyleName = __webpack_require__(125);
-var memoizeStringOnly = __webpack_require__(127);
+var camelizeStyleName = __webpack_require__(121);
+var dangerousStyleValue = __webpack_require__(123);
+var hyphenateStyleName = __webpack_require__(124);
+var memoizeStringOnly = __webpack_require__(126);
 var warning = __webpack_require__(1);
 
 var processStyleName = memoizeStringOnly(function (styleName) {
@@ -15795,7 +15774,7 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 /***/ }),
-/* 122 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15812,7 +15791,7 @@ module.exports = CSSPropertyOperations;
 
 
 
-var camelize = __webpack_require__(123);
+var camelize = __webpack_require__(122);
 
 var msPattern = /^-ms-/;
 
@@ -15840,7 +15819,7 @@ function camelizeStyleName(string) {
 module.exports = camelizeStyleName;
 
 /***/ }),
-/* 123 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15877,7 +15856,7 @@ function camelize(string) {
 module.exports = camelize;
 
 /***/ }),
-/* 124 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15961,7 +15940,7 @@ function dangerousStyleValue(name, value, component, isCustomProperty) {
 module.exports = dangerousStyleValue;
 
 /***/ }),
-/* 125 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15978,7 +15957,7 @@ module.exports = dangerousStyleValue;
 
 
 
-var hyphenate = __webpack_require__(126);
+var hyphenate = __webpack_require__(125);
 
 var msPattern = /^ms-/;
 
@@ -16005,7 +15984,7 @@ function hyphenateStyleName(string) {
 module.exports = hyphenateStyleName;
 
 /***/ }),
-/* 126 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16043,7 +16022,7 @@ function hyphenate(string) {
 module.exports = hyphenate;
 
 /***/ }),
-/* 127 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16078,7 +16057,7 @@ function memoizeStringOnly(callback) {
 module.exports = memoizeStringOnly;
 
 /***/ }),
-/* 128 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16109,7 +16088,7 @@ function quoteAttributeValueForBrowser(value) {
 module.exports = quoteAttributeValueForBrowser;
 
 /***/ }),
-/* 129 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16146,7 +16125,7 @@ var ReactEventEmitterMixin = {
 module.exports = ReactEventEmitterMixin;
 
 /***/ }),
-/* 130 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16162,7 +16141,7 @@ module.exports = ReactEventEmitterMixin;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
 /**
  * Generate a mapping of standard vendor prefixes using the defined style property and event name.
@@ -16252,7 +16231,7 @@ function getVendorPrefixedEventName(eventName) {
 module.exports = getVendorPrefixedEventName;
 
 /***/ }),
-/* 131 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16544,7 +16523,7 @@ function _handleChange(event) {
 module.exports = ReactDOMInput;
 
 /***/ }),
-/* 132 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16566,7 +16545,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 module.exports = ReactPropTypesSecret;
 
 /***/ }),
-/* 133 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16693,7 +16672,7 @@ var ReactDOMOption = {
 module.exports = ReactDOMOption;
 
 /***/ }),
-/* 134 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16858,7 +16837,7 @@ function _handleChange(event) {
 module.exports = ReactDOMTextarea;
 
 /***/ }),
-/* 135 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16882,10 +16861,10 @@ var ReactInstrumentation = __webpack_require__(8);
 
 var ReactCurrentOwner = __webpack_require__(10);
 var ReactReconciler = __webpack_require__(19);
-var ReactChildReconciler = __webpack_require__(136);
+var ReactChildReconciler = __webpack_require__(135);
 
 var emptyFunction = __webpack_require__(7);
-var flattenChildren = __webpack_require__(141);
+var flattenChildren = __webpack_require__(140);
 var invariant = __webpack_require__(0);
 
 /**
@@ -17309,7 +17288,7 @@ var ReactMultiChild = {
 module.exports = ReactMultiChild;
 
 /***/ }),
-/* 136 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17468,7 +17447,7 @@ module.exports = ReactChildReconciler;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(69)))
 
 /***/ }),
-/* 137 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18373,7 +18352,7 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 /***/ }),
-/* 138 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18399,7 +18378,7 @@ function getNextDebugID() {
 module.exports = getNextDebugID;
 
 /***/ }),
-/* 139 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18424,7 +18403,7 @@ var REACT_ELEMENT_TYPE = typeof Symbol === 'function' && Symbol['for'] && Symbol
 module.exports = REACT_ELEMENT_TYPE;
 
 /***/ }),
-/* 140 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18470,7 +18449,7 @@ function getIteratorFn(maybeIterable) {
 module.exports = getIteratorFn;
 
 /***/ }),
-/* 141 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18552,7 +18531,7 @@ module.exports = flattenChildren;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(69)))
 
 /***/ }),
-/* 142 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18573,7 +18552,7 @@ var _assign = __webpack_require__(3);
 var PooledClass = __webpack_require__(15);
 var Transaction = __webpack_require__(28);
 var ReactInstrumentation = __webpack_require__(8);
-var ReactServerUpdateQueue = __webpack_require__(143);
+var ReactServerUpdateQueue = __webpack_require__(142);
 
 /**
  * Executed within the scope of the `Transaction` instance. Consider these as
@@ -18647,7 +18626,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 module.exports = ReactServerRenderingTransaction;
 
 /***/ }),
-/* 143 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18791,7 +18770,7 @@ var ReactServerUpdateQueue = function () {
 module.exports = ReactServerUpdateQueue;
 
 /***/ }),
-/* 144 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18856,7 +18835,7 @@ _assign(ReactDOMEmptyComponent.prototype, {
 module.exports = ReactDOMEmptyComponent;
 
 /***/ }),
-/* 145 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18997,7 +18976,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 146 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19164,7 +19143,7 @@ _assign(ReactDOMTextComponent.prototype, {
 module.exports = ReactDOMTextComponent;
 
 /***/ }),
-/* 147 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19237,7 +19216,7 @@ var ReactDefaultBatchingStrategy = {
 module.exports = ReactDefaultBatchingStrategy;
 
 /***/ }),
-/* 148 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19256,13 +19235,13 @@ module.exports = ReactDefaultBatchingStrategy;
 var _assign = __webpack_require__(3);
 
 var EventListener = __webpack_require__(76);
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var PooledClass = __webpack_require__(15);
 var ReactDOMComponentTree = __webpack_require__(4);
 var ReactUpdates = __webpack_require__(9);
 
 var getEventTarget = __webpack_require__(36);
-var getUnboundedScrollPosition = __webpack_require__(149);
+var getUnboundedScrollPosition = __webpack_require__(148);
 
 /**
  * Find the deepest React component completely containing the root of the
@@ -19397,7 +19376,7 @@ var ReactEventListener = {
 module.exports = ReactEventListener;
 
 /***/ }),
-/* 149 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19441,7 +19420,7 @@ function getUnboundedScrollPosition(scrollable) {
 module.exports = getUnboundedScrollPosition;
 
 /***/ }),
-/* 150 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19480,7 +19459,7 @@ var ReactInjection = {
 module.exports = ReactInjection;
 
 /***/ }),
-/* 151 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19663,7 +19642,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 module.exports = ReactReconcileTransaction;
 
 /***/ }),
-/* 152 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19679,9 +19658,9 @@ module.exports = ReactReconcileTransaction;
 
 
 
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 
-var getNodeForCharacterOffset = __webpack_require__(153);
+var getNodeForCharacterOffset = __webpack_require__(152);
 var getTextContentAccessor = __webpack_require__(58);
 
 /**
@@ -19880,7 +19859,7 @@ var ReactDOMSelection = {
 module.exports = ReactDOMSelection;
 
 /***/ }),
-/* 153 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19959,7 +19938,7 @@ function getNodeForCharacterOffset(root, offset) {
 module.exports = getNodeForCharacterOffset;
 
 /***/ }),
-/* 154 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19976,7 +19955,7 @@ module.exports = getNodeForCharacterOffset;
  * 
  */
 
-var isTextNode = __webpack_require__(155);
+var isTextNode = __webpack_require__(154);
 
 /*eslint-disable no-bitwise */
 
@@ -20004,7 +19983,7 @@ function containsNode(outerNode, innerNode) {
 module.exports = containsNode;
 
 /***/ }),
-/* 155 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20021,7 +20000,7 @@ module.exports = containsNode;
  * @typechecks
  */
 
-var isNode = __webpack_require__(156);
+var isNode = __webpack_require__(155);
 
 /**
  * @param {*} object The object to check.
@@ -20034,7 +20013,7 @@ function isTextNode(object) {
 module.exports = isTextNode;
 
 /***/ }),
-/* 156 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20064,7 +20043,7 @@ function isNode(object) {
 module.exports = isNode;
 
 /***/ }),
-/* 157 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20371,7 +20350,7 @@ Object.keys(ATTRS).forEach(function (key) {
 module.exports = SVGDOMPropertyConfig;
 
 /***/ }),
-/* 158 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20388,7 +20367,7 @@ module.exports = SVGDOMPropertyConfig;
 
 
 var EventPropagators = __webpack_require__(22);
-var ExecutionEnvironment = __webpack_require__(6);
+var ExecutionEnvironment = __webpack_require__(5);
 var ReactDOMComponentTree = __webpack_require__(4);
 var ReactInputSelection = __webpack_require__(77);
 var SyntheticEvent = __webpack_require__(11);
@@ -20564,7 +20543,7 @@ var SelectEventPlugin = {
 module.exports = SelectEventPlugin;
 
 /***/ }),
-/* 159 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20586,17 +20565,17 @@ var _prodInvariant = __webpack_require__(2);
 var EventListener = __webpack_require__(76);
 var EventPropagators = __webpack_require__(22);
 var ReactDOMComponentTree = __webpack_require__(4);
-var SyntheticAnimationEvent = __webpack_require__(160);
-var SyntheticClipboardEvent = __webpack_require__(161);
+var SyntheticAnimationEvent = __webpack_require__(159);
+var SyntheticClipboardEvent = __webpack_require__(160);
 var SyntheticEvent = __webpack_require__(11);
-var SyntheticFocusEvent = __webpack_require__(162);
-var SyntheticKeyboardEvent = __webpack_require__(163);
+var SyntheticFocusEvent = __webpack_require__(161);
+var SyntheticKeyboardEvent = __webpack_require__(162);
 var SyntheticMouseEvent = __webpack_require__(29);
-var SyntheticDragEvent = __webpack_require__(165);
-var SyntheticTouchEvent = __webpack_require__(166);
-var SyntheticTransitionEvent = __webpack_require__(167);
+var SyntheticDragEvent = __webpack_require__(164);
+var SyntheticTouchEvent = __webpack_require__(165);
+var SyntheticTransitionEvent = __webpack_require__(166);
 var SyntheticUIEvent = __webpack_require__(24);
-var SyntheticWheelEvent = __webpack_require__(168);
+var SyntheticWheelEvent = __webpack_require__(167);
 
 var emptyFunction = __webpack_require__(7);
 var getEventCharCode = __webpack_require__(49);
@@ -20795,7 +20774,7 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 /***/ }),
-/* 160 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20839,7 +20818,7 @@ SyntheticEvent.augmentClass(SyntheticAnimationEvent, AnimationEventInterface);
 module.exports = SyntheticAnimationEvent;
 
 /***/ }),
-/* 161 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20882,7 +20861,7 @@ SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 module.exports = SyntheticClipboardEvent;
 
 /***/ }),
-/* 162 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20923,7 +20902,7 @@ SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 module.exports = SyntheticFocusEvent;
 
 /***/ }),
-/* 163 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20942,7 +20921,7 @@ module.exports = SyntheticFocusEvent;
 var SyntheticUIEvent = __webpack_require__(24);
 
 var getEventCharCode = __webpack_require__(49);
-var getEventKey = __webpack_require__(164);
+var getEventKey = __webpack_require__(163);
 var getEventModifierState = __webpack_require__(38);
 
 /**
@@ -21012,7 +20991,7 @@ SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 module.exports = SyntheticKeyboardEvent;
 
 /***/ }),
-/* 164 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21129,7 +21108,7 @@ function getEventKey(nativeEvent) {
 module.exports = getEventKey;
 
 /***/ }),
-/* 165 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21170,7 +21149,7 @@ SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 module.exports = SyntheticDragEvent;
 
 /***/ }),
-/* 166 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21220,7 +21199,7 @@ SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 module.exports = SyntheticTouchEvent;
 
 /***/ }),
-/* 167 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21264,7 +21243,7 @@ SyntheticEvent.augmentClass(SyntheticTransitionEvent, TransitionEventInterface);
 module.exports = SyntheticTransitionEvent;
 
 /***/ }),
-/* 168 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21320,7 +21299,7 @@ SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 module.exports = SyntheticWheelEvent;
 
 /***/ }),
-/* 169 */
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21358,7 +21337,7 @@ function ReactDOMContainerInfo(topLevelWrapper, node) {
 module.exports = ReactDOMContainerInfo;
 
 /***/ }),
-/* 170 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21382,7 +21361,7 @@ var ReactDOMFeatureFlags = {
 module.exports = ReactDOMFeatureFlags;
 
 /***/ }),
-/* 171 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21398,7 +21377,7 @@ module.exports = ReactDOMFeatureFlags;
 
 
 
-var adler32 = __webpack_require__(172);
+var adler32 = __webpack_require__(171);
 
 var TAG_END = /\/?>/;
 var COMMENT_START = /^<\!\-\-/;
@@ -21437,7 +21416,7 @@ var ReactMarkupChecksum = {
 module.exports = ReactMarkupChecksum;
 
 /***/ }),
-/* 172 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21486,7 +21465,7 @@ function adler32(data) {
 module.exports = adler32;
 
 /***/ }),
-/* 173 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21505,7 +21484,7 @@ module.exports = adler32;
 module.exports = '15.6.1';
 
 /***/ }),
-/* 174 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21570,7 +21549,7 @@ function findDOMNode(componentOrElement) {
 module.exports = findDOMNode;
 
 /***/ }),
-/* 175 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21591,7 +21570,7 @@ var ReactMount = __webpack_require__(79);
 module.exports = ReactMount.renderSubtreeIntoContainer;
 
 /***/ }),
-/* 176 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21607,8 +21586,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(5);
-var itnitialize_layer_1 = __webpack_require__(177);
+var React = __webpack_require__(6);
+var itnitialize_layer_1 = __webpack_require__(176);
 var AppBase = (function (_super) {
     __extends(AppBase, _super);
     function AppBase() {
@@ -21635,7 +21614,7 @@ exports.AppBase = AppBase;
 
 
 /***/ }),
-/* 177 */
+/* 176 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21652,9 +21631,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 var layout_1 = __webpack_require__(26);
-var style = __webpack_require__(181);
+var style = __webpack_require__(180);
 var InitializeLayer = (function (_super) {
     __extends(InitializeLayer, _super);
     function InitializeLayer() {
@@ -21678,13 +21657,13 @@ exports.default = InitializeLayer;
 
 
 /***/ }),
-/* 178 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(179);
+var content = __webpack_require__(178);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -21709,7 +21688,7 @@ if(false) {
 }
 
 /***/ }),
-/* 179 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -21737,7 +21716,7 @@ exports.locals = {
 };
 
 /***/ }),
-/* 180 */
+/* 179 */
 /***/ (function(module, exports) {
 
 
@@ -21832,13 +21811,13 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 181 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(182);
+var content = __webpack_require__(181);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -21863,7 +21842,7 @@ if(false) {
 }
 
 /***/ }),
-/* 182 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -21891,7 +21870,7 @@ exports.locals = {
 };
 
 /***/ }),
-/* 183 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21943,321 +21922,145 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 var WebDNN = __webpack_require__(81);
-__webpack_require__(184);
-var app_shell_1 = __webpack_require__(186);
-var button_1 = __webpack_require__(82);
+__webpack_require__(183);
+var app_shell_1 = __webpack_require__(185);
 var layout_1 = __webpack_require__(26);
-var webcam_1 = __webpack_require__(200);
-var dom_1 = __webpack_require__(201);
-var style = __webpack_require__(202);
-var RunIcon = __webpack_require__(204);
-var PauseIcon = __webpack_require__(205);
-var TakePhotoIcon = __webpack_require__(206);
-var RandomIcon = __webpack_require__(207);
-var UploadIcon = __webpack_require__(208);
-var PhotoIcon = __webpack_require__(209);
-var VideoIcon = __webpack_require__(210);
-var SwitchCameraIcon = __webpack_require__(211);
-var SwitchVideoIcon = __webpack_require__(212);
-var IMAGE_PATH_LIST = [
-    __webpack_require__(213),
-    __webpack_require__(214),
-    __webpack_require__(215),
-    __webpack_require__(216),
-    __webpack_require__(217),
-    __webpack_require__(218)
-];
-var random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
-var InputResource;
-(function (InputResource) {
-    InputResource[InputResource["None"] = 0] = "None";
-    InputResource[InputResource["Image"] = 1] = "Image";
-    InputResource[InputResource["Photo"] = 2] = "Photo";
-    InputResource[InputResource["Video"] = 3] = "Video";
-})(InputResource || (InputResource = {}));
-var ResizeState;
-(function (ResizeState) {
-    ResizeState[ResizeState["sleep"] = 0] = "sleep";
-    ResizeState[ResizeState["resizing"] = 1] = "resizing";
-    ResizeState[ResizeState["finish"] = 2] = "finish";
-})(ResizeState || (ResizeState = {}));
+var dom_1 = __webpack_require__(200);
+var webcam_1 = __webpack_require__(201);
+var labels_1 = __webpack_require__(202);
+var style = __webpack_require__(203);
+var tree_1 = __webpack_require__(205);
+var NUM_CLASS = 9418;
+var ANCHORS = [[0.77871, 1.14074], [3.00525, 4.31277], [9.22725, 9.61974]];
+var DETECTION_THRESHOLD = 0.1;
+var DETECTION_HIERARCHY_THRESHOLD = 0.7;
+var IOU_THRESHOLD = 0.4;
+function intersection(b1, b2) {
+    return Math.max(0, Math.min(b1.x1, b2.x1) - Math.max(b1.x0, b2.x0)) *
+        Math.max(0, Math.min(b1.y1, b2.y1) - Math.max(b1.y0, b2.y0));
+}
+function union(b1, b2) {
+    return (b1.x1 - b1.x0) * (b1.y1 - b1.y0) + (b2.x1 - b2.x0) * (b2.y1 - b2.y0) - intersection(b1, b2);
+}
+function iou(b1, b2) {
+    return intersection(b1, b2) / union(b1, b2);
+}
+function nonMaximumSuppression(boxes) {
+    var result = [];
+    boxes = boxes.sort(function (b1, b2) { return b1.probability < b2.probability ? -1 : b1.probability > b2.probability ? +1 : 0; });
+    for (var i = 0; i < boxes.length; i++) {
+        var flag = true;
+        for (var j = i + 1; j < boxes.length; j++) {
+            if (iou(boxes[i], boxes[j]) > IOU_THRESHOLD) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag)
+            result.push(boxes[i]);
+    }
+    return result;
+}
+var GROUP_SIZES = [];
+var GROUP_OFFSET = [0];
+var CHILDREN_GROUP_ID = [];
+function buildTree() {
+    var last_parent = -1;
+    var size = 0;
+    var offset = 0;
+    for (var i = 0; i < NUM_CLASS; i++) {
+        if (tree_1.default[i] !== last_parent) {
+            GROUP_SIZES.push(size);
+            GROUP_OFFSET.push(offset);
+            CHILDREN_GROUP_ID[tree_1.default[i]] = GROUP_SIZES.length;
+            size = 0;
+        }
+        size++;
+        offset++;
+        last_parent = tree_1.default[i];
+    }
+}
+var Colors = ['#f00', '#0f0', '#88f', '#ff0', '#f0f', '#0ff', '#f80', '#80f', '#f08', '#08f', '#080'];
+var RunIcon = __webpack_require__(206);
+var VideoIcon = __webpack_require__(207);
+var PauseIcon = __webpack_require__(208);
 var MainLayer = (function (_super) {
     __extends(MainLayer, _super);
     function MainLayer() {
         var _this = _super.call(this) || this;
-        _this.resizeState = ResizeState.sleep;
-        _this.resizeHandler = function () { return _this.onResize(); };
+        _this.results = null;
         _this.webcam = new webcam_1.default();
         _this.state = {
             isBusy: false,
-            isContentLoaded: false,
-            inputResource: InputResource.None,
             isWebCamReady: false,
-            isFirstTime: true,
-            isVideoModeRunning: false,
-            isVideoPlaying: false
+            isContentLoaded: false
         };
         return _this;
     }
-    MainLayer.prototype.onResize = function () {
-        var _this = this;
-        if (this.resizeState == ResizeState.resizing)
-            return;
-        this.resizeState = ResizeState.resizing;
-        var handler = function () {
-            if (_this.resizeState == ResizeState.finish) {
-                _this.resetCanvasAll();
-                _this.loadStyleImage();
-            }
-            else {
-                _this.resizeState = ResizeState.finish;
-                requestAnimationFrame(handler);
-            }
-        };
-        requestAnimationFrame(handler);
+    MainLayer.prototype.componentDidMount = function () {
+        this.initializeAsync();
     };
-    MainLayer.prototype.onRandomImageButtonClick = function () {
+    MainLayer.prototype.initializeAsync = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var xyOffset, i;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.setState({
-                            inputResource: InputResource.Image,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
-                        });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        return [4, this.loadRandomImage()];
-                    case 1:
-                        _a.sent();
-                        this.setState({ isContentLoaded: true });
-                        return [2];
+                xyOffset = [];
+                for (i = 0; i < 13; i++) {
+                    xyOffset[i] = i;
                 }
-            });
-        });
-    };
-    MainLayer.prototype.onUploadImageButtonClick = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.setState({
-                            inputResource: InputResource.Image,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
-                        });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        return [4, this.uploadLocalImage()];
-                    case 1:
-                        _a.sent();
-                        this.setState({ isContentLoaded: true });
-                        return [2];
-                }
-            });
-        });
-    };
-    MainLayer.prototype.onPhotoButtonClick = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
-                        });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.initializeWebCam()];
-                    case 2:
-                        _a.sent();
-                        this.setState({
-                            inputResource: InputResource.Photo,
-                        });
-                        return [3, 4];
-                    case 3:
-                        e_1 = _a.sent();
-                        console.error(e_1.message);
-                        this.finalizeWebCam();
-                        this.setState({
-                            inputResource: InputResource.None,
-                        });
-                        return [3, 4];
-                    case 4: return [2];
-                }
+                this.props.runner.getInputViews()[1].set(xyOffset);
+                this.props.runner.getInputViews()[2].set(xyOffset);
+                this.props.runner.getInputViews()[3].set(ANCHORS.map(function (anchor) { return anchor[0]; }));
+                this.props.runner.getInputViews()[4].set(ANCHORS.map(function (anchor) { return anchor[1]; }));
+                buildTree();
+                return [2];
             });
         });
     };
     MainLayer.prototype.onVideoButtonClick = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false,
-                            isFirstTime: false
-                        });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        _a.label = 1;
+                    case 0: return [4, this.initializeWebCam()];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.initializeWebCam()];
-                    case 2:
                         _a.sent();
-                        this.setState({
-                            inputResource: InputResource.Video,
-                            isContentLoaded: true
-                        });
-                        return [3, 4];
-                    case 3:
-                        e_2 = _a.sent();
-                        console.error(e_2.message);
-                        this.finalizeWebCam();
-                        this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false
-                        });
-                        return [3, 4];
-                    case 4: return [2];
+                        return [2];
                 }
             });
         });
     };
-    MainLayer.prototype.onTakePhotoButtonClick = function () {
-        this.takePhoto();
-        this.finalizeWebCam();
-    };
     MainLayer.prototype.onRunButtonClick = function () {
-        this.run();
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.run()];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
     };
     MainLayer.prototype.onToggleButtonClick = function () {
-        if (this.state.isVideoModeRunning) {
+        var _this = this;
+        if (this.state.isBusy) {
             this.setState({
-                isVideoModeRunning: false
+                isBusy: false
             });
         }
         else {
             this.setState({
-                isVideoModeRunning: true
+                isBusy: true
             });
-            this.videoModeLoop();
+            requestAnimationFrame(function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.run()];
+                    case 1: return [2, _a.sent()];
+                }
+            }); }); });
         }
-    };
-    MainLayer.prototype.componentDidMount = function () {
-        window.addEventListener('resize', this.resizeHandler);
-        this.loadStyleImage();
-    };
-    MainLayer.prototype.componentWillUnmount = function () {
-        window.removeEventListener('resize', this.resizeHandler);
-    };
-    MainLayer.prototype.resetContentCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'contentCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        this.setState({
-            isContentLoaded: false
-        });
-    };
-    MainLayer.prototype.resetOutputCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'outputCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-    MainLayer.prototype.resetStyleCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'styleCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-    MainLayer.prototype.resetCanvasAll = function () {
-        this.resetContentCanvas();
-        this.resetStyleCanvas();
-        this.resetOutputCanvas();
-    };
-    MainLayer.prototype.loadStyleImage = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.state.isWebCamReady) {
-                            this.finalizeWebCam();
-                        }
-                        styleCanvas = dom_1.default.getFromRef(this, 'styleCanvas');
-                        return [4, WebDNN.Image.loadImageByUrl(__webpack_require__(219))];
-                    case 1:
-                        image = _a.sent();
-                        data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
-                        });
-                        return [2];
-                }
-            });
-        });
-    };
-    MainLayer.prototype.loadRandomImage = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.state.isWebCamReady) {
-                            this.finalizeWebCam();
-                        }
-                        random_image_index++;
-                        if (random_image_index >= IMAGE_PATH_LIST.length)
-                            random_image_index = 0;
-                        styleCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        return [4, WebDNN.Image.loadImageByUrl(IMAGE_PATH_LIST[random_image_index])];
-                    case 1:
-                        image = _a.sent();
-                        data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
-                        });
-                        this.setState({ isContentLoaded: true });
-                        return [2];
-                }
-            });
-        });
-    };
-    MainLayer.prototype.uploadLocalImage = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        styleCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        return [4, WebDNN.Image.loadImageByDialog()];
-                    case 1:
-                        image = _a.sent();
-                        data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
-                        });
-                        this.setState({ isContentLoaded: true });
-                        return [2];
-                }
-            });
-        });
     };
     MainLayer.prototype.initializeWebCam = function (forceReInitialize) {
         if (forceReInitialize === void 0) { forceReInitialize = false; }
@@ -22268,8 +22071,8 @@ var MainLayer = (function (_super) {
                     case 0:
                         if (!forceReInitialize && this.state.isWebCamReady)
                             return [2];
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
-                        this.setState({ isWebCamReady: false, isVideoPlaying: false });
+                        video = dom_1.default.getFromRef(this, 'input');
+                        this.setState({ isWebCamReady: false, isContentLoaded: false });
                         video.srcObject = null;
                         _b.label = 1;
                     case 1:
@@ -22295,133 +22098,134 @@ var MainLayer = (function (_super) {
     };
     MainLayer.prototype.playVideo = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var video, err_2;
+            var $input, $output, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
+                        $input = dom_1.default.getFromRef(this, 'input');
+                        $output = dom_1.default.getFromRef(this, 'output');
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4, video.play()];
+                        return [4, $input.play()];
                     case 2:
                         _a.sent();
-                        this.setState({ isVideoPlaying: !video.paused });
+                        $output.width = $input.videoWidth;
+                        $output.height = $input.videoHeight;
+                        this.setState({ isContentLoaded: !$input.paused });
                         return [3, 4];
                     case 3:
                         err_2 = _a.sent();
-                        this.setState({ isVideoPlaying: false });
+                        this.setState({ isContentLoaded: false });
                         return [3, 4];
                     case 4: return [2];
                 }
             });
         });
     };
-    MainLayer.prototype.toggleCamera = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.initializeWebCam(true)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
-    };
-    MainLayer.prototype.takePhoto = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var video, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
-                        video.pause();
-                        return [4, WebDNN.Image.getImageArrayFromDrawable(video, {
-                                dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
-                            })];
-                    case 1:
-                        data = (_a.sent());
-                        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, dom_1.default.getFromRef(this, 'contentCanvas'), {
-                            order: WebDNN.Image.Order.CHW,
-                        });
-                        this.setState({ isContentLoaded: true });
-                        return [2];
-                }
-            });
-        });
-    };
     MainLayer.prototype.finalizeWebCam = function () {
-        var video = dom_1.default.getFromRef(this, 'previewVideo');
+        var video = dom_1.default.getFromRef(this, 'input');
         if (video.srcObject) {
             for (var _i = 0, _a = video.srcObject.getTracks(); _i < _a.length; _i++) {
                 var stream = _a[_i];
                 stream.stop();
             }
         }
-        this.setState({ isWebCamReady: false });
-    };
-    MainLayer.prototype.videoModeLoop = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            var video, contentCanvas, data, runner, outputCanvas;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
-                        contentCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        return [4, WebDNN.Image.getImageArrayFromDrawable(video, {
-                                dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
-                            })];
-                    case 1:
-                        data = (_a.sent());
-                        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, contentCanvas);
-                        runner = this.props.runner;
-                        if (!runner)
-                            return [2];
-                        runner.getInputViews()[0].set(data);
-                        return [4, runner.run()];
-                    case 2:
-                        _a.sent();
-                        outputCanvas = dom_1.default.getFromRef(this, 'outputCanvas');
-                        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, outputCanvas, {
-                            order: WebDNN.Image.Order.CHW,
-                        });
-                        if (this.state.inputResource == InputResource.Video && this.state.isVideoModeRunning) {
-                            requestAnimationFrame(function () { return _this.videoModeLoop(); });
-                        }
-                        return [2];
-                }
-            });
-        });
+        this.setState({ isWebCamReady: false, isContentLoaded: false });
     };
     MainLayer.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var runner, contentCanvas, outputCanvas;
+            var _this = this;
+            var runner, $input, $output, boxes, x, y, w, h, conf, prob, i, offset, j, accumulatedProb, groupIndex, maxVal, maxIndex, categoryId, depth, j, index, val, context, _i, boxes_1, box, color, w_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        runner = this.props.runner;
-                        if (!runner)
+                        if (!this.state.isBusy)
                             return [2];
-                        if (this.state.isFirstTime) {
-                            this.setState({
-                                isFirstTime: false
-                            });
-                        }
-                        contentCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(contentCanvas, {
-                            dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
+                        runner = this.props.runner;
+                        $input = dom_1.default.getFromRef(this, 'input');
+                        $output = dom_1.default.getFromRef(this, 'output');
+                        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromDrawable($input, {
+                            dstW: 416, dstH: 416,
+                            order: WebDNN.Image.Order.CHW,
+                            color: WebDNN.Image.Color.RGB,
+                            scale: [255, 255, 255]
                         }));
-                        this.setState({ isBusy: true });
                         return [4, runner.run()];
                     case 1:
                         _a.sent();
-                        this.setState({ isBusy: false });
-                        outputCanvas = dom_1.default.getFromRef(this, 'outputCanvas');
-                        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, outputCanvas, {
-                            order: WebDNN.Image.Order.CHW,
-                        });
+                        boxes = [];
+                        x = runner.getOutputViews()[0].toActual();
+                        y = runner.getOutputViews()[1].toActual();
+                        w = runner.getOutputViews()[2].toActual();
+                        h = runner.getOutputViews()[3].toActual();
+                        conf = runner.getOutputViews()[4].toActual();
+                        prob = runner.getOutputViews()[5].toActual();
+                        for (i = 0; i < 3 * 13 * 13; i++) {
+                            if (conf[i] < DETECTION_THRESHOLD)
+                                continue;
+                            offset = i * NUM_CLASS;
+                            for (j = 0; j < NUM_CLASS; j++) {
+                                if (tree_1.default[j] >= 0)
+                                    prob[i * NUM_CLASS + j] *= prob[offset + tree_1.default[j]];
+                            }
+                            accumulatedProb = 1;
+                            groupIndex = 0;
+                            maxVal = 0;
+                            maxIndex = 0;
+                            categoryId = 0;
+                            depth = 0;
+                            while (true) {
+                                maxVal = 0;
+                                maxIndex = 0;
+                                for (j = 0; j < GROUP_SIZES[groupIndex]; j++) {
+                                    index = j + GROUP_OFFSET[groupIndex];
+                                    val = prob[offset + index];
+                                    if (val > maxVal) {
+                                        maxVal = val;
+                                        maxIndex = index;
+                                    }
+                                }
+                                accumulatedProb *= maxVal;
+                                if (accumulatedProb < DETECTION_HIERARCHY_THRESHOLD)
+                                    break;
+                                groupIndex = CHILDREN_GROUP_ID[maxIndex];
+                                if (!groupIndex)
+                                    break;
+                                depth++;
+                                if (depth < 3)
+                                    categoryId = groupIndex;
+                            }
+                            boxes.push({
+                                x0: Math.round(Math.min(1, Math.max(0, x[i] - w[i] / 2)) * $input.videoWidth),
+                                y0: Math.round(Math.min(1, Math.max(0, y[i] - h[i] / 2)) * $input.videoHeight),
+                                x1: Math.round(Math.min(1, Math.max(0, x[i] + w[i] / 2)) * $input.videoWidth),
+                                y1: Math.round(Math.min(1, Math.max(0, y[i] + h[i] / 2)) * $input.videoHeight),
+                                conf: conf[i],
+                                classId: maxIndex,
+                                categoryId: categoryId,
+                                className: labels_1.default[maxIndex],
+                                probability: maxVal
+                            });
+                        }
+                        boxes = nonMaximumSuppression(boxes);
+                        context = $output.getContext('2d');
+                        context.drawImage($input, 0, 0);
+                        context.font = '16px "sans-serif"';
+                        for (_i = 0, boxes_1 = boxes; _i < boxes_1.length; _i++) {
+                            box = boxes_1[_i];
+                            color = Colors[box.categoryId % Colors.length];
+                            context.strokeStyle = color;
+                            context.lineWidth = 3;
+                            context.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
+                            context.fillStyle = color;
+                            w_1 = context.measureText(box.className).width;
+                            context.fillRect(box.x0, box.y0 - 20, w_1 + 8, 20);
+                            context.strokeRect(box.x0, box.y0 - 20, w_1 + 8, 20);
+                            context.fillStyle = '#000';
+                            context.fillText(box.className, box.x0 + 4, box.y0 - 4);
+                        }
+                        requestAnimationFrame(function () { return _this.run(); });
                         return [2];
                 }
             });
@@ -22429,72 +22233,30 @@ var MainLayer = (function (_super) {
     };
     MainLayer.prototype.render = function () {
         var _this = this;
+        var runButton = this.state.isBusy ?
+            ({
+                onClick: function () { return _this.onToggleButtonClick(); },
+                icon: React.createElement(PauseIcon, null),
+                label: 'Stop',
+                primary: true
+            }) :
+            ({
+                onClick: function () { return _this.onToggleButtonClick(); },
+                disabled: this.state.isBusy || !this.state.isContentLoaded,
+                icon: React.createElement(RunIcon, null),
+                label: 'Start',
+                primary: true
+            });
         return (React.createElement("div", { className: classNames(style.mainLayer, this.props.className) },
-            React.createElement(app_shell_1.AppShell, { title: "Neural Style Transfer", subTitle: "backend: " + this.props.runner.backendName, progressBar: this.state.isBusy, bottomBar: [{
-                        onClick: function (ev) { return _this.onRandomImageButtonClick(); },
-                        disabled: this.state.isBusy,
-                        icon: React.createElement(RandomIcon, null),
-                        label: 'Random'
-                    }, {
-                        onClick: function (ev) { return _this.onUploadImageButtonClick(); },
-                        disabled: this.state.isBusy,
-                        icon: React.createElement(UploadIcon, null),
-                        label: 'Upload'
-                    }, {
-                        onClick: function (ev) { return _this.onPhotoButtonClick(); },
-                        disabled: this.state.isBusy,
-                        icon: React.createElement(PhotoIcon, null),
-                        label: 'Photo'
-                    }, {
+            React.createElement(app_shell_1.AppShell, { title: "YOLO9000 Object Detection", subTitle: "backend: " + this.props.runner.backendName, bottomBar: [{
                         onClick: function (ev) { return _this.onVideoButtonClick(); },
                         disabled: this.state.isBusy,
                         icon: React.createElement(VideoIcon, null),
                         label: 'Video'
-                    }] },
-                React.createElement(layout_1.LayoutFrame, { className: style.canvasContainer, flex: true, block: true },
-                    React.createElement(layout_1.LayoutFrame, { className: style.inputImageContainer, autoReverse: true },
-                        React.createElement(layout_1.LayoutFrame, { className: style.contentImageContainer, center: true },
-                            React.createElement("canvas", { ref: "contentCanvas", className: style.contentCanvas, style: {
-                                    display: ((this.state.inputResource == InputResource.Video) ||
-                                        (this.state.inputResource == InputResource.Photo && !this.state.isContentLoaded)) ? 'none' : ''
-                                } }),
-                            React.createElement("video", { ref: "previewVideo", playsInline: true, className: classNames(style.previewVideo, this.state.isWebCamReady ? style.active : null) }),
-                            React.createElement("p", { className: style.canvasLabel }, "Content"),
-                            (this.state.isWebCamReady && !this.state.isVideoPlaying) ?
-                                React.createElement(layout_1.LayoutFrame, { fit: true, className: style.playVideoButtonLayer },
-                                    React.createElement(button_1.default, { primary: true, onClick: function (ev) { return _this.playVideo(); } },
-                                        React.createElement(RunIcon, null),
-                                        React.createElement("span", null, "Activate Camera"))) : null),
-                        React.createElement(layout_1.LayoutFrame, { className: style.styleImageContainer, center: true },
-                            React.createElement("canvas", { ref: "styleCanvas", className: style.styleCanvas }),
-                            React.createElement("p", { className: style.canvasLabel }, "Style"))),
-                    React.createElement(layout_1.LayoutFrame, { className: style.outputImageContainer, center: true },
-                        this.state.isFirstTime ? (this.state.isContentLoaded ? (React.createElement("span", null, "Click \"Run\" button")) : (React.createElement("span", null, "Select content image from bottom buttons"))) : null,
-                        React.createElement("canvas", { ref: "outputCanvas", className: style.outputCanvas, style: { display: this.state.isFirstTime ? 'none' : '' } }),
-                        React.createElement("p", { className: style.canvasLabel }, "Output"))),
-                React.createElement(layout_1.LayoutFrame, { column: true }, this.state.inputResource == InputResource.Photo ? (this.state.isContentLoaded ? (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, className: style.useThisPhotoButton, onClick: function (ev) { return _this.onRunButtonClick(); } },
-                        React.createElement(RunIcon, null),
-                        React.createElement("span", null, "Run")),
-                    React.createElement(button_1.default, { disabled: this.state.isBusy, onClick: function (ev) { return _this.onPhotoButtonClick(); }, className: style.retakeButton },
-                        React.createElement(TakePhotoIcon, null),
-                        React.createElement("span", null, "Retake")))) : (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady, onClick: function (ev) { return _this.toggleCamera(); } },
-                        React.createElement(SwitchCameraIcon, null),
-                        React.createElement("span", null, "Switch Camera")),
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady || !this.state.isVideoPlaying, onClick: function (ev) { return _this.onTakePhotoButtonClick(); }, className: style.snapButton },
-                        React.createElement(TakePhotoIcon, null),
-                        React.createElement("span", null, "Take Photo"))))) : this.state.inputResource == InputResource.Video ? (this.state.isVideoModeRunning ? (React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, onClick: function (ev) { return _this.onToggleButtonClick(); } },
-                    React.createElement(PauseIcon, null),
-                    React.createElement("span", null, "Stop"))) : (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady, onClick: function (ev) { return _this.toggleCamera(); } },
-                        React.createElement(SwitchVideoIcon, null),
-                        React.createElement("span", null, "Switch Camera")),
-                    React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded || !this.state.isVideoPlaying, onClick: function (ev) { return _this.onToggleButtonClick(); } },
-                        React.createElement(RunIcon, null),
-                        React.createElement("span", null, "Start"))))) : (React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, onClick: function (ev) { return _this.onRunButtonClick(); } },
-                    React.createElement(RunIcon, null),
-                    React.createElement("span", null, "Run")))))));
+                    }, runButton] },
+                React.createElement(layout_1.LayoutFrame, { fit: true, block: true },
+                    React.createElement("video", { className: style.fit, ref: "input" }),
+                    React.createElement("canvas", { className: style.fit, ref: "output" })))));
     };
     return MainLayer;
 }(React.Component));
@@ -22502,13 +22264,13 @@ exports.default = MainLayer;
 
 
 /***/ }),
-/* 184 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(185);
+var content = __webpack_require__(184);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -22533,7 +22295,7 @@ if(false) {
 }
 
 /***/ }),
-/* 185 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -22897,16 +22659,16 @@ exports.locals = {
 };
 
 /***/ }),
-/* 186 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
-var bottom_bar_1 = __webpack_require__(187);
-var button_1 = __webpack_require__(82);
+var React = __webpack_require__(6);
+var bottom_bar_1 = __webpack_require__(186);
+var button_1 = __webpack_require__(189);
 var layout_1 = __webpack_require__(26);
 var navbar_1 = __webpack_require__(192);
 var progress_bar_1 = __webpack_require__(195);
@@ -22922,29 +22684,29 @@ exports.AppShell = function (props) { return (React.createElement("div", { class
 
 
 /***/ }),
-/* 187 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 var layout_1 = __webpack_require__(26);
-var style = __webpack_require__(188);
+var style = __webpack_require__(187);
 exports.BottomBar = function (props) {
     return (React.createElement(layout_1.LayoutFrame, { className: classNames(style.bottomBar, props.className), row: true }, props.children));
 };
 
 
 /***/ }),
-/* 188 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(189);
+var content = __webpack_require__(188);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -22969,7 +22731,7 @@ if(false) {
 }
 
 /***/ }),
-/* 189 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -22984,6 +22746,25 @@ exports.locals = {
 	"bottom_bar": "_1XDJMcmA-DYknkV3Sr4k8J",
 	"bottomBar": "_1XDJMcmA-DYknkV3Sr4k8J"
 };
+
+/***/ }),
+/* 189 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var classNames = __webpack_require__(14);
+var React = __webpack_require__(6);
+var layout_1 = __webpack_require__(26);
+var style = __webpack_require__(190);
+var Button = function (props, _a) {
+    return (React.createElement("button", { className: classNames(style.button, props.className, props.active ? style.active : null, props.primary ? style.primary : null), disabled: props.disabled, onClick: props.onClick },
+        React.createElement("div", { className: style.ripple }),
+        React.createElement(layout_1.LayoutFrame, { fit: true, column: true, center: true, className: style.body }, props.children)));
+};
+exports.default = Button;
+
 
 /***/ }),
 /* 190 */
@@ -23044,7 +22825,7 @@ exports.locals = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 var style = __webpack_require__(193);
 exports.Navbar = function (props) {
     var title;
@@ -23119,7 +22900,7 @@ exports.locals = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var classNames = __webpack_require__(14);
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 var style = __webpack_require__(196);
 var ProgressBar = function (props) { return (React.createElement("div", { className: classNames(style.progressBar, props.className, props.running ? style.running : null) },
     React.createElement("div", { className: style.inner }))); };
@@ -23229,6 +23010,40 @@ exports.locals = {
 
 /***/ }),
 /* 200 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var dom = {
+    getElementById: function getElementById(id) {
+        var node = document.getElementById(id);
+        if (!node)
+            throw Error("#" + id + " is not found.");
+        return node;
+    },
+    querySelector: function querySelector(element, query) {
+        var node = element.querySelector(query);
+        if (!node)
+            throw Error(query + " is not found.");
+        return node;
+    },
+    querySelectorAll: function querySelectorAll(element, query) {
+        var nodes = element.querySelectorAll(query);
+        return Array.from(nodes);
+    },
+    getFromRef: function getFromRef(component, ref) {
+        var node = component.refs[ref];
+        if (!node)
+            throw Error(ref + " is not found in refs");
+        return node;
+    }
+};
+exports.default = dom;
+
+
+/***/ }),
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23388,47 +23203,24 @@ exports.default = WebCam;
 
 
 /***/ }),
-/* 201 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var dom = {
-    getElementById: function getElementById(id) {
-        var node = document.getElementById(id);
-        if (!node)
-            throw Error("#" + id + " is not found.");
-        return node;
-    },
-    querySelector: function querySelector(element, query) {
-        var node = element.querySelector(query);
-        if (!node)
-            throw Error(query + " is not found.");
-        return node;
-    },
-    querySelectorAll: function querySelectorAll(element, query) {
-        var nodes = element.querySelectorAll(query);
-        return Array.from(nodes);
-    },
-    getFromRef: function getFromRef(component, ref) {
-        var node = component.refs[ref];
-        if (!node)
-            throw Error(ref + " is not found in refs");
-        return node;
-    }
-};
-exports.default = dom;
+var LABELS = ["thing", "matter", "object", "atmospheric phenomenon", "body part", "body of water", "head", "hair", "structure", "vein", "mouth", "heel", "watercourse", "ocean", "gas", "solid", "substance", "food", "tear gas", "sky", "ice", "food", "cheese", "yogurt", "produce", "baked goods", "cake mix", "Emmenthal", "Camembert", "Brie", "mozzarella", "Stilton", "double cream", "edible fruit", "vegetable", "currant", "custard apple", "citrus", "jackfruit", "pomegranate", "avocado", "prickly pear", "apple", "carambola", "fig", "mangosteen", "tangelo", "plum", "papaya", "apricot", "berry", "elderberry", "loquat", "pear", "litchi", "peach", "muscat", "grape", "banana", "pitahaya", "rambutan", "kiwi", "melon", "breadfruit", "pineapple", "mango", "date", "papaw", "durian", "passion fruit", "jujube", "guava", "dried fruit", "cherry", "quince", "nectarine", "cherimoya", "soursop", "lime", "mandarin", "kumquat", "orange", "lemon", "citron", "grapefruit", "pomelo", "clementine", "tangerine", "satsuma", "sweet orange", "bitter orange", "navel orange", "Valencia orange", "crab apple", "eating apple", "Granny Smith", "Delicious", "McIntosh", "Red Delicious", "Golden Delicious", "strawberry", "mulberry", "currant", "lingonberry", "blackberry", "red currant", "raspberry", "cranberry", "acerola", "persimmon", "blueberry", "bilberry", "muskmelon", "watermelon", "cantaloup", "sour cherry", "sweet cherry", "bing cherry", "mushroom", "asparagus", "plantain", "pumpkin", "cucumber", "root vegetable", "cruciferous vegetable", "raw vegetable", "solanaceous vegetable", "artichoke", "legume", "leek", "squash", "greens", "celery", "cardoon", "gumbo", "pieplant", "onion", "fennel", "taro", "beet", "yam", "carrot", "potato", "baked potato", "mashed potato", "french fries", "mustard", "cabbage", "kohlrabi", "cauliflower", "brussels sprouts", "broccoli rabe", "broccoli", "radish", "turnip", "collards", "bok choy", "savoy cabbage", "head cabbage", "kale", "pepper", "tomato", "eggplant", "tomatillo", "sweet pepper", "hot pepper", "bell pepper", "pimento", "green pepper", "chili", "tabasco", "cayenne", "jalapeno", "cherry tomato", "beefsteak tomato", "bean", "pea", "chickpea", "lentil", "soy", "common bean", "black bean", "kidney bean", "fresh bean", "green bean", "shell bean", "snap bean", "haricot vert", "string bean", "fava bean", "green soybean", "green pea", "snow pea", "sugar snap pea", "summer squash", "winter squash", "spaghetti squash", "zucchini", "yellow squash", "butternut squash", "acorn squash", "chard", "turnip greens", "salad green", "bean sprout", "spinach", "lamb's-quarter", "cress", "chicory", "chicory escarole", "radicchio", "lettuce", "leaf lettuce", "crisphead lettuce", "cos", "green onion", "shallot", "purple onion", "doughnut", "bread", "crouton", "breadstick", "soft pretzel", "rye bread", "dark bread", "raisin bread", "brown bread", "cinnamon bread", "quick bread", "matzo", "sour bread", "bun", "white bread", "challah", "loaf of bread", "pretzel", "English muffin", "toast", "nan", "chapatti", "garlic bread", "Yorkshire pudding", "banana bread", "scone", "Irish soda bread", "biscuit", "muffin", "drop scone", "cornbread", "nut bread", "buttermilk biscuit", "hardtack", "shortcake", "corn muffin", "popover", "bran muffin", "cornpone", "hush puppy", "johnnycake", "hamburger bun", "bagel", "frankfurter bun", "sweet roll", "hard roll", "brioche", "crescent roll", "honey bun", "cinnamon roll", "cross bun", "Italian bread", "baguet", "French bread", "meat loaf", "French loaf", "material", "stucco", "gravel", "rock", "leopard", "soil", "sand", "loofa", "paper", "litter", "toilet tissue", "queen", "comestible", "foodstuff", "fare", "beverage", "soul food", "feed", "nutriment", "yolk", "comfort food", "egg", "grain", "carrot juice", "soya milk", "whole wheat flour", "oatmeal", "ingredient", "dairy product", "cocoa", "concoction", "Spam", "juice", "canned food", "corn", "rice", "wild rice", "barley", "wheat", "sweet corn", "popcorn", "white rice", "paddy", "flavorer", "egg yolk", "saffron", "juniper berries", "cayenne", "sesame seed", "sassafras", "spice", "condiment", "sweetening", "herb", "paprika", "garlic", "nasturtium", "mocha", "cardamom", "nutmeg", "stick cinnamon", "Chinese anise", "clove", "cinnamon", "guacamole", "chili sauce", "olive", "chutney", "vinegar", "dip", "soy sauce", "salsa", "cranberry sauce", "catsup", "spread", "green olive", "sauce", "wine vinegar", "cider vinegar", "hummus", "miso", "spaghetti sauce", "chocolate sauce", "Tabasco", "hot sauce", "veloute", "pesto", "dressing", "bourguignon", "hollandaise", "carbonara", "tomato sauce", "green mayonnaise", "mayonnaise", "powdered sugar", "honey", "syrup", "sorghum", "grenadine", "maple syrup", "basil", "lemon balm", "sweet woodruff", "clary sage", "hyssop", "comfrey", "coriander", "mint", "chives", "marjoram", "borage", "sage", "tea", "rosemary", "parsley", "bay leaf", "thyme", "tea bag", "oolong", "souchong", "cream", "milk", "whipping cream", "clotted cream", "light cream", "heavy cream", "stuffing", "batter", "dough", "filling", "pastry", "bread dough", "puff paste", "phyllo", "chow", "menu", "dietary", "diet", "diet", "dietary supplement", "vegetarianism", "vitamin pill", "multivitamin", "alcohol", "fruit juice", "fizz", "near beer", "cocoa", "coffee", "cider", "tea", "soft drink", "fruit drink", "ginger beer", "drinking water", "potion", "smoothie", "mixed drink", "liquor", "sake", "wine", "hooch", "home brew", "liqueur", "hard cider", "brew", "neutral spirits", "aperitif", "highball", "cocktail", "spritzer", "punch", "pina colada", "mimosa", "julep", "gin and tonic", "Bloody Mary", "martini", "gimlet", "gin and it", "daiquiri", "sidecar", "Sazerac", "margarita", "cup", "May wine", "eggnog", "fruit punch", "vodka", "firewater", "aquavit", "grog", "schnapps", "arrack", "gin", "rum", "aqua vitae", "tequila", "bitters", "geneva", "brandy", "ouzo", "whiskey", "eau de vie", "Cognac", "grappa", "Armagnac", "Calvados", "Irish", "bourbon", "sour mash", "Scotch", "rye", "corn whiskey", "blended whiskey", "blush wine", "vintage", "champagne", "vin ordinaire", "dessert wine", "macon", "sparkling wine", "Cotes de Provence", "varietal", "Burgundy", "fortified wine", "Bordeaux", "table wine", "California wine", "vermouth", "red wine", "Rhone wine", "white wine", "Montrachet", "Beaujolais", "Chablis", "Madeira", "sherry", "malmsey", "port", "muscat", "Saint Emilion", "claret", "dry vermouth", "sweet vermouth", "Medoc", "Chianti", "Pinot noir", "Rioja", "Merlot", "Cabernet", "zinfandel", "Riesling", "Sauvignon blanc", "Muscadet", "Yquem", "Pinot blanc", "Sauterne", "Chenin blanc", "Chardonnay", "sack", "Verdicchio", "Canary wine", "Pernod", "Drambuie", "sambuca", "triple sec", "absinth", "maraschino", "anisette", "beer", "lager", "draft beer", "ale", "suds", "Munich beer", "Pilsner", "light beer", "malt", "bock", "Weissbier", "porter", "stout", "bitter", "pale ale", "Guinness", "Weizenbock", "orange juice", "cranberry juice", "nectar", "iced coffee", "caffe latte", "espresso", "cappuccino", "Irish coffee", "chicory", "cafe au lait", "mocha", "Turkish coffee", "ice tea", "cuppa", "tonic", "cola", "orange soda", "ginger ale", "pop", "root beer", "Coca Cola", "Pepsi", "mineral water", "bottled water", "soda water", "oil cake", "bird feed", "fodder", "eatage", "hay", "alfalfa", "broad bean", "dainty", "fast food", "puree", "finger food", "dish", "course", "mother's milk", "vitamin", "kosher", "meal", "jello", "gelatin", "sweet", "candied apple", "confiture", "candy", "chewing gum", "confectionery", "maraschino", "conserve", "strawberry jam", "apple butter", "lemon curd", "jam", "jelly", "peppermint", "peanut brittle", "chocolate kiss", "nougat bar", "candy bar", "jelly bean", "lollipop", "candy cane", "truffle", "chocolate fudge", "cough drop", "sugar candy", "Easter egg", "kiss", "gumdrop", "candy corn", "fondant", "cotton candy", "caramel", "fudge", "candy egg", "chocolate egg", "bubble gum", "gum ball", "poached egg", "piece de resistance", "side dish", "stew", "omelet", "soup", "sashimi", "taco", "French toast", "cheese souffle", "potpie", "lamb curry", "stuffed tomato", "chow mein", "croquette", "gefilte fish", "coq au vin", "special", "spaghetti and meatballs", "eggs Benedict", "schnitzel", "buffalo wing", "chicken casserole", "rissole", "paella", "frittata", "meatball", "chili", "porridge", "tamale", "stuffed tomato", "couscous", "deviled egg", "beef Wellington", "pasta", "egg roll", "enchilada", "falafel", "mushy peas", "turnover", "scrambled eggs", "Spanish rice", "teriyaki", "barbecued spareribs", "pilaf", "kabob", "tempura", "samosa", "fried egg", "sandwich plate", "chicken cacciatore", "saute", "fried rice", "custard", "sukiyaki", "fish and chips", "souffle", "steak au poivre", "pizza", "fondue", "biryani", "stuffed peppers", "mousse", "shirred egg", "Swedish meatball", "jambalaya", "Scotch egg", "burrito", "risotto", "salad", "boiled egg", "curry", "snack food", "bouillabaisse", "goulash", "pottage", "beef stew", "hot pot", "fish stew", "hotchpotch", "Irish stew", "ratatouille", "gazpacho", "won ton", "petite marmite", "split-pea soup", "consomme", "chowder", "potage", "marmite", "lentil soup", "bisque", "pea soup", "pepper pot", "chicken broth", "chicken soup", "broth", "broth", "gumbo", "borsch", "corn chowder", "clam chowder", "fish chowder", "gruel", "congee", "macaroni and cheese", "lasagna", "cannelloni", "spaghetti", "creme caramel", "creme brulee", "pepperoni pizza", "anchovy pizza", "cheese pizza", "Sicilian pizza", "sausage pizza", "chocolate fondue", "cheese fondue", "coleslaw", "macaroni salad", "tossed salad", "salad nicoise", "pasta salad", "fruit salad", "tabbouleh", "green salad", "chef's salad", "hard-boiled egg", "Easter egg", "sandwich", "corn chip", "chip", "bomber", "cheeseburger", "chicken sandwich", "ham sandwich", "Reuben", "bacon-lettuce-tomato sandwich", "chili dog", "open-face sandwich", "gyro", "wrap", "hamburger", "club sandwich", "hotdog", "tortilla chip", "nacho", "entree", "plate", "dessert", "appetizer", "mousse", "tiramisu", "frozen dessert", "pudding", "pudding", "trifle", "flan", "whip", "dumpling", "compote", "chocolate mousse", "pavlova", "parfait", "ice-cream cake", "ice lolly", "ice-cream sundae", "ice-cream cone", "ice cream", "ice", "banana split", "frozen yogurt", "frozen custard", "vanilla ice cream", "peach ice cream", "chocolate ice cream", "strawberry ice cream", "plum pudding", "chocolate pudding", "shrimp cocktail", "stuffed mushroom", "cocktail", "hors d'oeuvre", "carrot stick", "antipasto", "water-soluble vitamin", "fat-soluble vitamin", "vitamin P", "vitamin C", "B-complex vitamin", "vitamin B2", "inositol", "vitamin B6", "choline", "pantothenic acid", "vitamin B12", "vitamin Bc", "vitamin D", "vitamin A1", "picnic", "bite", "supper", "breakfast", "refection", "smorgasbord", "buffet", "brunch", "continental breakfast", "dinner", "lunch", "banquet", "cookout", "fish fry", "barbecue", "refreshment", "nosh", "land", "location", "land", "fomite", "part", "geological formation", "cobweb", "whole", "hail", "swamp", "cultivated land", "region", "region", "pass", "line", "point", "opening", "bedside", "soil horizon", "extremity", "boundary", "nib", "selvage", "shoreline", "benthos", "resort area", "geographical area", "district", "scrubland", "bush", "oilfield", "field", "tract", "heronry", "grassland", "site", "court", "basketball court", "fairground", "plot", "field", "amusement park", "veld", "pasture", "campsite", "garbage heap", "cemetery", "flowerbed", "garden", "topiary", "peach orchard", "yard", "grainfield", "playground", "garden", "city", "city district", "eparchy", "kasbah", "waterfront", "business district", "col", "defile", "hemline", "spoor", "crest", "topographic point", "workplace", "half-mast", "intersection", "bus stop", "mecca", "hole-in-the-wall", "patisserie", "bakery", "farm", "piggery", "ranch", "dairy", "knothole", "chasm", "oxbow", "floor", "pinetum", "plain", "steppe", "cigarette butt", "pipefitting", "handle", "panhandle", "stock", "haft", "ax handle", "broomstick", "pistol grip", "arete", "volcanic crater", "spring", "ice mass", "natural depression", "natural elevation", "oceanfront", "massif", "cliff", "shore", "talus", "ridge", "range", "lakefront", "slope", "cave", "foreshore", "beach", "hot spring", "geyser", "icecap", "iceberg", "Alpine glacier", "glacier", "valley", "lunar crater", "landfill", "sinkhole", "basin", "crater", "bed", "hole", "arroyo", "ravine", "canyon", "gorge", "tidal basin", "cirque", "ocean floor", "riverbed", "streambed", "burrow", "pothole", "tableland", "hill", "mountain", "highland", "ridge", "promontory", "anthill", "butte", "foothill", "knoll", "alp", "ben", "volcano", "sandbar", "dune", "reef", "bank", "coral reef", "atoll", "sandbank", "bluff", "point", "mull", "crag", "precipice", "seashore", "strand", "lakeside", "littoral", "seaside", "mountainside", "descent", "hillside", "ski slope", "escarpment", "bank", "downhill", "ascent", "brae", "uphill", "riverbank", "waterside", "cove", "cavern", "grotto", "artifact", "living thing", "natural object", "assembly", "block", "millstone", "paving", "creation", "opening", "plaything", "surface", "tramline", "structure", "instrumentality", "padding", "covering", "fabric", "bookmark", "float", "building material", "decoration", "way", "strip", "article", "facility", "excavation", "commodity", "sheet", "fixture", "blacktop", "line", "bullion", "tessera", "tile", "anvil", "representation", "art", "needlework", "product", "pieta", "map", "sketch", "sonogram", "photograph", "waxwork", "arthrogram", "radiogram", "photomicrograph", "photostat", "painting", "triptych", "nude", "finger-painting", "smocking", "stitch", "sewing stitch", "knitting stitch", "lockstitch", "hemstitch", "garter stitch", "purl", "book", "work", "jotter", "newspaper", "wicker", "masterpiece", "openwork", "woodwork", "lacquerware", "cabinetwork", "joinery", "decolletage", "gargoyle", "aperture", "hole", "mouthpiece", "outfall", "plughole", "manhole", "keyhole", "perforation", "thumbhole", "pogo stick", "ball", "pinata", "teddy", "jungle gym", "bubble", "hula-hoop", "pinwheel", "slide", "sport kite", "cockhorse", "doll", "foam", "air bubble", "spume", "shaving foam", "golliwog", "kachina", "horizontal surface", "board", "tabletop", "side", "platform", "tarmacadam", "floor", "turntable", "stage", "dais", "sumo ring", "hurricane deck", "flatbed", "parquet", "backgammon board", "pegboard", "facade", "ceiling", "body", "floor", "bridge", "corner", "conformation", "superstructure", "airdock", "cross", "house of cards", "hull", "gun enclosure", "lookout", "building complex", "shelter", "honeycomb", "column", "altar", "arch", "tower", "transept", "mound", "fountain", "obelisk", "fan vaulting", "arcade", "loggia", "coil", "billboard", "partition", "masonry", "skein", "colonnade", "obstruction", "building", "sail", "projection", "peristyle", "door", "stadium", "drinking fountain", "area", "balcony", "porch", "dock", "high altar", "housing", "supporting structure", "balance", "defensive structure", "entablature", "memorial", "establishment", "signboard", "bodywork", "fuselage", "ground floor", "mezzanine", "loft", "basement", "footbridge", "drawbridge", "cantilever bridge", "rope bridge", "overpass", "truss bridge", "viaduct", "steel arch bridge", "covered bridge", "gangplank", "suspension bridge", "trestle bridge", "plant", "college", "winery", "factory", "distillery", "oil refinery", "refinery", "rolling mill", "foundry", "steel mill", "lumbermill", "stamp mill", "quartz battery", "battery", "harbor", "Nissen hut", "hovel", "tent", "hut", "igloo", "dugout", "mountain tent", "pup tent", "pavilion", "backpacking tent", "fly tent", "canvas tent", "field tent", "wall tent", "circus tent", "Gothic arch", "round arch", "pointed arch", "triumphal arch", "broken arch", "Moorish arch", "Roman arch", "campanile", "turret", "clock tower", "shot tower", "church tower", "minaret", "pylon", "silo", "watchtower", "trestle", "pylon", "steeple", "fire tower", "high-rise", "supporting tower", "control tower", "bell tower", "beacon", "burial mound", "snowbank", "rampart", "fraise", "battlement", "altarpiece", "wall", "gable", "wainscoting", "attic", "pediment", "bell gable", "brickwork", "stonework", "barrier", "obstacle", "plug", "lever", "grate", "safety rail", "movable barrier", "bannister", "breakwater", "grille", "weir", "railing", "hurdle", "starting gate", "fence", "dam", "gate", "door", "lychgate", "portcullis", "turnstile", "French window", "car door", "screen door", "French door", "double door", "interior door", "sliding door", "revolving door", "barn door", "hatchback", "storm door", "wall", "retaining wall", "rail fence", "chainlink fence", "dry wall", "hedge", "worm fence", "picket fence", "stone wall", "water jump", "bunker", "earplug", "cork", "tap", "presbytery", "hotel", "tenement", "abattoir", "apartment building", "aviary", "hall", "house", "Roman building", "rest house", "outbuilding", "funeral home", "medical building", "hotel-casino", "library", "casino", "farm building", "place of worship", "restaurant", "ministry", "rotunda", "observatory", "office building", "temple", "signal box", "government building", "greenhouse", "rink", "planetarium", "public house", "bowling alley", "house", "ruin", "architecture", "skyscraper", "gazebo", "school", "chapterhouse", "theater", "hall of residence", "conservatory", "center", "resort hotel", "resort", "motel", "dude ranch", "Ritz", "ski lodge", "hostel", "motor hotel", "city hall", "guildhall", "lyceum", "field house", "oast house", "courthouse", "shed", "garage", "carport", "outhouse", "coach house", "boathouse", "woodshed", "apiary", "maternity hospital", "dispensary", "stable", "chicken coop", "cowbarn", "barn", "pantheon", "church", "temple", "shrine", "stupa", "masjid", "synagogue", "mosque", "chapel", "kirk", "abbey", "cathedral", "cathedral", "minster", "cafe", "rotisserie", "automat", "brasserie", "cafeteria", "diner", "capitol", "embassy", "town hall", "chancellery", "customhouse", "Statehouse", "courthouse", "ice rink", "ice hockey rink", "alehouse", "free house", "solar house", "bungalow", "row house", "cabin", "duplex house", "mansion", "lodging house", "gatehouse", "log cabin", "saltbox", "country house", "dollhouse", "ranch house", "boarding house", "detached house", "villa", "chalet", "residence", "farmhouse", "terraced house", "brownstone", "palace", "stately home", "manor", "summer house", "dacha", "villa", "chateau", "manse", "religious residence", "glebe house", "parsonage", "palace", "monastery", "abbey", "abbey", "day school", "conservatory", "music school", "opera", "music hall", "cinema", "little theater", "home theater", "control center", "settlement house", "call center", "cornice", "cog", "knob", "bill", "flange", "brim", "tine", "eaves", "tooth", "pinhead", "football stadium", "hippodrome", "dome", "ballpark", "bullring", "amphitheater", "patio", "corner", "baggage claim", "hideaway", "choir", "breakfast area", "quad", "chancel", "auditorium", "court", "dining area", "room", "assembly hall", "enclosure", "nave", "aisle", "storage space", "goalmouth", "food court", "atrium", "cloister", "forecourt", "toilet", "sun parlor", "engineering", "surgery", "rotunda", "classroom", "gallery", "manor hall", "cell", "lounge", "sauna", "dressing room", "billiard room", "belfry", "kitchen", "library", "storeroom", "workroom", "sewing room", "anechoic chamber", "dining room", "recreation room", "hospital room", "reading room", "booth", "conference room", "bedroom", "clean room", "living room", "door", "hall", "reception room", "boardroom", "study", "locker room", "cocktail lounge", "television room", "compartment", "court", "poolroom", "bathroom", "control room", "anteroom", "water closet", "men's room", "washroom", "public toilet", "home room", "lecture room", "study hall", "pantry", "stockroom", "vault", "refectory", "dining-hall", "canteen", "family room", "rumpus room", "emergency room", "recovery room", "operating room", "telephone booth", "voting booth", "confessional", "shower stall", "master bedroom", "motel room", "guestroom", "hotel room", "dormitory", "nursery", "day nursery", "great hall", "concert hall", "palace", "exhibition hall", "parlor", "drawing room", "press box", "command module", "cabin", "pilothouse", "cab", "luggage compartment", "cabinet", "cockpit", "stateroom", "car", "cable car", "stall", "drawing room", "terrarium", "cage", "playpen", "pen", "vivarium", "pound", "lock", "chicken yard", "chamber", "recess", "birdcage", "rabbit hutch", "hutch", "cow pen", "rodeo", "fold", "sounding board", "burial chamber", "firing chamber", "resonator", "furnace", "bomb shelter", "hyperbaric chamber", "repository", "mausoleum", "kiln", "blast furnace", "oast", "gas oven", "incinerator", "mihrab", "columbarium", "fire", "fireplace", "apse", "cellar", "cupboard", "stacks", "gallery", "amphitheater", "organ loft", "stoop", "sun deck", "front porch", "veranda", "deck", "back porch", "portico", "marina", "dry dock", "block", "dwelling", "tennis camp", "living quarters", "mobile home", "condominium", "apartment", "ward", "cellblock", "condominium", "yurt", "lodge", "vacation home", "hearth", "fixer-upper", "cliff dwelling", "homestead", "semi-detached house", "wigwam", "tepee", "accommodation", "first class", "cabin class", "bedsitting room", "flatlet", "chassis", "support", "framework", "pedestal", "buttress", "flying buttress", "abutment", "ribbing", "bustle", "window frame", "frame", "gantry", "honeycomb", "truss", "lattice", "cornice", "picture frame", "window", "climbing frame", "trellis", "airframe", "grate", "grape arbor", "walker", "casing", "tambour", "arbor", "rack", "mounting", "sash", "casement", "oriel", "bay window", "stained-glass window", "skylight", "display window", "rose window", "porthole", "transom", "clerestory", "dormer", "dormer window", "lancet window", "fanlight", "plate rack", "barbecue", "bicycle rack", "luggage rack", "dish rack", "towel rack", "passe-partout", "pave", "mount", "stronghold", "fortress", "fortification", "bastion", "keep", "kremlin", "acropolis", "alcazar", "martello tower", "fieldwork", "bastion", "escarpment", "palisade", "castle", "cenotaph", "megalith", "Seven Wonders of the Ancient World", "brass", "national monument", "pantheon", "dolmen", "menhir", "place of business", "institution", "university", "mercantile establishment", "office", "cabaret", "health spa", "plaza", "country store", "department store", "shop", "marketplace", "boutique", "salon", "shoe shop", "bookshop", "package store", "thriftshop", "junk shop", "toyshop", "cleaners", "bazaar", "gift shop", "florist", "drugstore", "garage", "delicatessen", "small stores", "barbershop", "stall", "tobacco shop", "newsstand", "butcher shop", "pizzeria", "confectionery", "convenience store", "bazaar", "agora", "grocery store", "open-air market", "supermarket", "hypermarket", "greengrocery", "souk", "farmer's market", "flea market", "newsroom", "box office", "headquarters", "correctional institution", "orphanage", "jail", "penitentiary", "prison", "toiletry", "weaponry", "equipment", "connection", "implement", "furnishing", "device", "ceramic", "system", "container", "conveyance", "medium", "deodorant", "bath oil", "cream", "lotion", "shaving cream", "hair spray", "mousse", "perfume", "hairdressing", "antiperspirant", "powder", "cosmetic", "bath salts", "hand cream", "cold cream", "sunscreen", "lanolin", "body lotion", "toner", "hand lotion", "after-shave", "potpourri", "patchouli", "perfumery", "cologne", "toilet water", "pomade", "brilliantine", "toilet powder", "talcum", "depilatory", "highlighter", "makeup", "face powder", "lip-gloss", "eyeshadow", "mascara", "lipstick", "rouge", "eyeliner", "eyebrow pencil", "armament", "defense system", "bomb", "ammunition", "naval weaponry", "bazooka", "artillery", "launcher", "cannon", "field artillery", "mortar", "basilisk", "hydrogen bomb", "atom bomb", "round", "shotgun shell", "recorder", "sports equipment", "photographic equipment", "naval equipment", "parasail", "gear", "satellite", "game equipment", "parachute", "electronic equipment", "apparatus", "automation", "material", "baggage", "tape recorder", "cassette recorder", "Dictaphone", "videocassette recorder", "baseball equipment", "croquet mallet", "clay pigeon", "skate", "wrestling mat", "cricket equipment", "basketball equipment", "javelin", "shuttlecock", "golf equipment", "spike", "stick", "boxing equipment", "boxing glove", "gymnastic apparatus", "weight", "baseball glove", "batting cage", "batting glove", "base", "batting helmet", "baseball bat", "home plate", "first base", "third base", "second base", "in-line skate", "Rollerblade", "roller skate", "ice skate", "hockey skate", "speed skate", "figure skate", "cricket bat", "wicket", "golfcart", "golf glove", "tee", "golf club", "wood", "iron", "driver", "spoon", "wedge", "midiron", "putter", "niblick", "pitching wedge", "sand wedge", "hockey stick", "polo mallet", "horizontal bar", "horse", "uneven parallel bars", "parallel bars", "trampoline", "balance beam", "vaulting horse", "pommel horse", "dumbbell", "barbell", "enlarger", "camera", "clapperboard", "film", "light meter", "box camera", "flash camera", "Polaroid camera", "point-and-shoot camera", "webcam", "motion-picture camera", "digital camera", "portrait camera", "reflex camera", "X-ray film", "reel", "negative", "regalia", "kit", "rig", "fishing gear", "stable gear", "rigging", "crown", "crown jewels", "sewing kit", "first-aid kit", "carpenter's kit", "layette", "drill rig", "drilling platform", "harness", "snaffle", "headgear", "saddle blanket", "halter", "bridle", "sputnik", "space station", "backboard", "ball", "puzzle", "pool table", "bowling pin", "man", "chip", "roulette wheel", "goal", "volleyball net", "pinball machine", "soccer ball", "pool ball", "bowling ball", "softball", "field hockey ball", "punching bag", "billiard ball", "croquet ball", "cricket ball", "tennis ball", "golf ball", "rugby ball", "cue ball", "medicine ball", "basketball", "eight ball", "ping-pong ball", "handball", "baseball", "racquetball", "bocce ball", "volleyball", "jigsaw puzzle", "crossword puzzle", "chessman", "white", "pawn", "basket", "net", "electronic fetal monitor", "monitor", "monitor", "television monitor", "telephone", "oscilloscope", "peripheral", "booster", "cassette player", "CD player", "receiver", "audio system", "lens", "playback", "television equipment", "circuitry", "cassette deck", "central processing unit", "mixer", "scanner", "tape player", "detector", "modem", "equalizer", "tape deck", "amplifier", "cellular telephone", "speakerphone", "desk phone", "pay-phone", "handset", "dial telephone", "radiotelephone", "television receiver", "radio receiver", "satellite receiver", "heterodyne receiver", "clock radio", "reproducer", "hi-fi", "stereo", "iPod", "Walkman", "video iPod", "ghetto blaster", "camcorder", "television camera", "pendulum", "purifier", "sequencer", "reformer", "duplicator", "heat pump", "semaphore", "tomograph", "ultracentrifuge", "generator", "incubator", "burner", "Foucault pendulum", "clock pendulum", "metronome", "Photostat", "photocopier", "Xerox", "facsimile", "mimeograph", "positron emission tomography scanner", "computerized axial tomography scanner", "gas burner", "blowtorch", "bunsen burner", "gas ring", "packaging", "blister pack", "roofing", "temporary hookup", "slip ring", "telephone line", "ligament", "junction", "hot line", "digital subscriber line", "land line", "binder", "wire", "chain", "concertina", "barbed wire", "paper chain", "anchor chain", "fob", "bicycle chain", "tire chain", "chatelaine", "joint", "contact", "dovetail", "welt", "hinge", "scarf joint", "weld", "seam", "mortise joint", "butt hinge", "strap hinge", "distributor point", "tread", "wiper", "bar", "tool", "utensil", "rubber eraser", "needle", "eraser", "stick", "brush", "hook", "sharpener", "sports implement", "leather strip", "swatter", "fire iron", "oar", "stick", "cleaning implement", "rod", "writing implement", "shovel", "split rail", "fret", "bolt", "rotor", "towel rail", "lever", "track", "handlebar", "crowbar", "stick", "key", "tappet", "pedal", "rocker arm", "gun trigger", "space bar", "backspace key", "shift key", "telegraph key", "accelerator", "sustaining pedal", "hand tool", "jack", "pestle", "garden tool", "plow", "comb", "drill", "cutting implement", "tamp", "garden rake", "rake", "stamp", "locking pliers", "pestle", "plunger", "pincer", "pliers", "soldering iron", "spade", "hammer", "pipe cutter", "wrench", "screwdriver", "trowel", "saw", "opener", "scraper", "shovel", "brick trowel", "spatula", "carpenter's hammer", "gavel", "mallet", "maul", "torque wrench", "pipe wrench", "adjustable wrench", "open-end wrench", "Allen wrench", "box wrench", "hacksaw", "folding saw", "handsaw", "pruner", "pruning saw", "corkscrew", "bottle opener", "can opener", "hedge trimmer", "lawn mower", "power mower", "riding mower", "power drill", "electric drill", "cutter", "twist bit", "bit", "blade", "knife blade", "bolt cutter", "cigar cutter", "edge tool", "scissors", "knife", "ax", "razor", "wire cutter", "chisel", "plane", "shears", "snips", "pruning shears", "secateurs", "carving knife", "Bowie knife", "pocketknife", "cleaver", "hunting knife", "case knife", "parer", "letter opener", "switchblade", "penknife", "battle-ax", "hatchet", "shaver", "straight razor", "safety razor", "cold chisel", "wood chisel", "jointer", "smooth plane", "spokeshave", "kitchen utensil", "ceramic ware", "funnel", "rolling pin", "reamer", "masher", "kitchenware", "squeezer", "mixer", "cookie cutter", "cooking utensil", "grater", "mincer", "eggbeater", "whisk", "blender", "pan", "Crock Pot", "chafing dish", "spatula", "griddle", "enamelware", "steamer", "cookie sheet", "cooker", "turner", "omelet pan", "stewing pan", "frying pan", "roaster", "wok", "saucepan", "graniteware", "cloisonne", "porcelain", "earthenware", "stoneware", "pottery", "Spode", "china", "bone china", "majolica", "faience", "knitting needle", "crochet needle", "walking stick", "matchstick", "club", "fiddlestick", "spindle", "stob", "staff", "drumstick", "mallet", "cane", "sword cane", "bat", "table-tennis racquet", "truncheon", "alpenstock", "flagpole", "crutch", "electric toothbrush", "toothbrush", "sable", "scrub brush", "hairbrush", "bristle brush", "shaving brush", "pencil sharpener", "steel", "cue", "racket", "squash racket", "tennis racket", "badminton racket", "thong", "strap", "cheekpiece", "rein", "noseband", "leading rein", "scull", "paddle", "besom", "scouring pad", "dustmop", "squeegee", "broom", "swab", "rotating shaft", "wand", "shaft", "piston rod", "kickstand", "axle", "pole", "fishing rod", "connecting rod", "tie rod", "driveshaft", "crankshaft", "transmission shaft", "spindle", "camshaft", "boom", "stilt", "ski pole", "clothes tree", "caber", "spar", "mast", "mast", "bowsprit", "yard", "mizzenmast", "royal mast", "mainmast", "foremast", "fly rod", "spinning rod", "pencil", "pen", "highlighter", "chalk", "crayon", "lead pencil", "ballpoint", "Sharpie", "quill", "fountain pen", "felt-tip pen", "furniture", "office furniture", "dining-room furniture", "wardrobe", "bedroom furniture", "table", "table", "wall unit", "lamp", "dining-room table", "washstand", "buffet", "cabinet", "baby bed", "bedstead", "lawn furniture", "credenza", "bookcase", "entertainment center", "etagere", "seat", "sectional", "chest of drawers", "file", "Rolodex", "card index", "vertical file", "clothes closet", "armoire", "bed", "berth", "platform bed", "hospital bed", "bunk", "trundle bed", "four-poster", "couch", "bunk bed", "twin bed", "sleigh bed", "single bed", "hammock", "Murphy bed", "double bed", "gaming table", "gueridon", "table-tennis table", "counter", "altar", "breakfast table", "stand", "conference table", "pedestal table", "kitchen table", "operating table", "tea table", "lectern", "worktable", "gateleg table", "dressing table", "desk", "drop-leaf table", "coffee table", "trestle table", "console table", "checkout", "bar", "meat counter", "reception desk", "salad bar", "snack bar", "drafting table", "lab bench", "writing desk", "secretary", "davenport", "dining table", "dinner table", "refectory table", "floor lamp", "table lamp", "reading lamp", "dresser", "china cabinet", "medicine chest", "bassinet", "crib", "carrycot", "cradle", "chair", "toilet seat", "stool", "sofa", "ottoman", "bench", "lawn chair", "chaise longue", "rocking chair", "swivel chair", "throne", "straight chair", "ladder-back", "highchair", "armchair", "Windsor chair", "folding chair", "wheelchair", "motorized wheelchair", "barber chair", "easy chair", "recliner", "Morris chair", "wing chair", "deck chair", "camp chair", "music stool", "taboret", "footstool", "settee", "daybed", "convertible", "love seat", "chesterfield", "studio couch", "park bench", "flat bench", "pew", "settle", "window seat", "chiffonier", "highboy", "bird feeder", "heater", "lighter", "signal", "converter", "crusher", "drive", "knocker", "peeler", "musical instrument", "shoehorn", "shock absorber", "machine", "conductor", "bait", "stabilizer", "filter", "mechanism", "acoustic device", "trap", "charger", "airfoil", "router", "pick", "energizer", "fan", "hydrofoil", "dental appliance", "adapter", "toy", "support", "optical device", "straightener", "tongs", "phonograph needle", "instrument", "comb", "remote control", "exercise device", "comforter", "washboard", "shredder", "water ski", "blower", "ventilator", "breathing device", "applicator", "skeleton key", "guitar pick", "restraint", "keyboard", "electrical device", "appliance", "fire extinguisher", "corrective", "reflector", "alarm", "electronic device", "snowshoe", "holding device", "memory device", "key", "noisemaker", "source of illumination", "indicator", "detector", "breathalyzer", "imprint", "afterburner", "horn", "elastic device", "ski", "lifting device", "solar heater", "electric heater", "radiator", "gas heater", "convector", "space heater", "stove", "cigar lighter", "match", "cairn", "sign", "street sign", "traffic light", "electrical converter", "catalytic converter", "inverter", "synchronous converter", "external drive", "CD-ROM drive", "internal drive", "stringed instrument", "electronic instrument", "keyboard instrument", "wind instrument", "bass", "percussion instrument", "dulcimer", "chordophone", "banjo", "zither", "samisen", "guitar", "bowed stringed instrument", "sitar", "lute", "mandola", "mandolin", "harp", "acoustic guitar", "Hawaiian guitar", "uke", "electric guitar", "viol", "violin", "cello", "viola", "viola da gamba", "Stradavarius", "theremin", "electric organ", "synthesizer", "piano", "clavier", "organ", "accordion", "grand piano", "upright", "spinet", "mechanical piano", "baby grand", "concert grand", "harpsichord", "spinet", "ocarina", "woodwind", "brass", "organ pipe", "free-reed instrument", "whistle", "pipe", "kazoo", "flute", "beating-reed instrument", "double-reed instrument", "single-reed instrument", "bassoon", "oboe", "clarinet", "sax", "baritone", "bugle", "flugelhorn", "French horn", "trombone", "cornet", "harmonium", "harmonica", "concertina", "chanter", "panpipe", "bagpipe", "fipple flute", "pennywhistle", "drone", "bass fiddle", "bass horn", "bass guitar", "euphonium", "handbell", "bones", "gong", "vibraphone", "steel drum", "marimba", "glockenspiel", "chime", "kettle", "maraca", "drum", "cymbal", "bongo", "bass drum", "tambourine", "snare drum", "tenor drum", "slot machine", "power shovel", "press", "backhoe", "printer", "machine tool", "motor", "snow thrower", "cash machine", "farm machine", "computer", "Zamboni", "mill", "staple gun", "power tool", "concrete mixer", "stapler", "slicer", "textile machine", "record player", "calculator", "vending machine", "slot", "automat", "garlic press", "bench press", "hydraulic press", "punch press", "character printer", "impact printer", "printer", "drum printer", "line printer", "laser printer", "Linotype", "thermal printer", "portable", "typewriter", "bar printer", "wire matrix printer", "dot matrix printer", "bubble jet printer", "ink-jet printer", "shaper", "drill press", "grinder", "lathe", "miller", "engine", "electric motor", "heat engine", "jet engine", "automobile engine", "aircraft engine", "generator", "steam engine", "internal-combustion engine", "wind turbine", "gasoline engine", "diesel", "outboard motor", "radial engine", "rocket", "fanjet", "booster", "space rocket", "alternator", "windmill", "starter", "kick starter", "cultivator", "haymaker", "combine", "thresher", "harvester", "disk harrow", "harrow", "slide rule", "web site", "home computer", "server", "digital computer", "supercomputer", "workstation", "personal computer", "portable computer", "desktop computer", "notebook", "planner", "laptop", "hand-held computer", "pepper mill", "water mill", "meat grinder", "coffee mill", "treadmill", "windmill", "electric hammer", "power saw", "buffer", "circular saw", "chain saw", "table saw", "saber saw", "bandsaw", "spinning wheel", "loom", "jukebox", "gramophone", "abacus", "adding machine", "hand calculator", "semiconductor device", "wire", "cord", "heat sink", "cable", "microprocessor", "transistor", "light-emitting diode", "chip", "filament", "jumper cable", "telephone wire", "patchcord", "telephone cord", "power cord", "extension cord", "ethernet cable", "electrical cable", "printer cable", "power line", "fisherman's lure", "fly", "dry fly", "wet fly", "streamer fly", "outrigger", "vane", "strainer", "air filter", "oil filter", "sieve", "tea-strainer", "colander", "fusee drive", "android", "radiator", "mechanical device", "rotating mechanism", "rotor head", "carriage", "control", "power steering", "automaton", "action", "cooling system", "gear", "tape drive", "film advance", "sprinkler", "propeller", "anchor", "golf-club head", "weathervane", "machine", "seeder", "pump", "gearshift", "ride", "bumper", "hook", "ski binding", "coupling", "record changer", "swing", "windshield wiper", "winder", "winder", "diaphragm", "shutter", "escapement", "broadcaster", "curler", "splint", "compressor", "air compressor", "carburetor", "dildo", "cartridge holder", "trapeze", "gearing", "stator", "airplane propeller", "screw", "pulley", "wheel", "idle pulley", "lever", "inclined plane", "millwheel", "waterwheel", "roller", "bicycle wheel", "caster", "grinding wheel", "rowel", "fifth wheel", "wagon wheel", "waterwheel", "car wheel", "sprocket", "pinwheel", "potter's wheel", "gear", "driving wheel", "paddlewheel", "roulette", "spur gear", "bevel gear", "pinion", "ramp", "ax head", "screw", "grease-gun", "gas pump", "bicycle pump", "sump pump", "hand pump", "centrifugal pump", "Ferris wheel", "roller coaster", "carousel", "universal joint", "clutch", "freewheel", "disk clutch", "bobbin", "reel", "shuttle", "blade", "gyroscope", "circle", "rotor", "paddle", "impeller", "fan blade", "disk", "puck", "brake disk", "token", "Frisbee", "planchet", "tail rotor", "main rotor", "valve", "steering wheel", "governor", "joystick", "regulator", "switch", "ball valve", "butterfly valve", "timer", "flywheel", "faucet", "thermostat", "aperture", "mixing faucet", "stopcock", "toggle switch", "push button", "dial", "horn button", "mouse button", "doorbell", "bell push", "flintlock", "movement", "gunlock", "cooling tower", "evaporative cooler", "air conditioner", "gearset", "four-wheel drive", "whistle", "silencer", "megaphone", "hearing aid", "bell", "cowbell", "church bell", "dinner bell", "spider web", "mousetrap", "lobster pot", "web", "net", "landing net", "fishnet", "vertical stabilizer", "spoiler", "spoiler", "rotor blade", "flap", "rudder", "horizontal stabilizer", "wing", "exhaust fan", "electric fan", "brace", "denture", "backboard", "stirrup", "pier", "pier", "back", "shelf", "landing gear", "baluster", "spoke", "base", "step", "brace", "pillow block", "bearing", "rocker", "coat hanger", "harp", "rest", "bracket", "tailstock", "bookend", "structural member", "headstock", "seat", "thrust bearing", "hanger", "rack", "harness", "cantle", "ladder-back", "bookshelf", "mantel", "neck brace", "knee brace", "ankle brace", "back brace", "arm", "headrest", "chin rest", "armrest", "sconce", "corbel", "shelf bracket", "sill", "riser", "upright", "brace", "tread", "beam", "windowsill", "doorsill", "stile", "jamb", "column", "post", "support column", "caryatid", "goalpost", "newel post", "bollard", "lamppost", "telephone pole", "maypole", "timber", "rundle", "tie", "rafter", "girder", "timber", "floor joist", "joist", "car seat", "pillion", "plane seat", "saddle", "chair", "bicycle seat", "bucket seat", "backseat", "stock saddle", "English saddle", "tripod", "spice rack", "magazine rack", "music stand", "camera tripod", "easel", "autofocus", "projector", "finder", "laser", "lens", "objective", "condenser", "camera lens", "anastigmat", "contact", "sunglass", "eyepiece", "field lens", "Fresnel lens", "portrait lens", "closeup lens", "telephoto lens", "wide-angle lens", "plotter", "scientific instrument", "measuring instrument", "weapon", "guillotine", "drafting instrument", "analyzer", "navigational instrument", "optical instrument", "medical instrument", "instrument of punishment", "catapult", "extractor", "theodolite", "riding crop", "tachymeter", "collider", "microtome", "accelerator", "stroboscope", "magnifier", "console", "telescope", "microscope", "astronomical telescope", "equatorial", "optical telescope", "radio telescope", "refracting telescope", "field glass", "reflecting telescope", "Cassegrainian telescope", "Newtonian telescope", "Schmidt telescope", "Maksutov telescope", "electron microscope", "field-emission microscope", "light microscope", "binocular microscope", "hand glass", "operating microscope", "compound microscope", "loupe", "oximeter", "dropper", "refractometer", "rangefinder", "barometer", "pedometer", "thermometer", "astrolabe", "measuring stick", "gauge", "timepiece", "aneroid barometer", "caliper", "potentiometer", "tachometer", "scale", "tape", "meter", "hygrometer", "sextant", "rule", "altazimuth", "pyrometer", "meat thermometer", "water gauge", "vacuum gauge", "anemometer", "gasoline gauge", "pressure gauge", "manometer", "sphygmomanometer", "atomic clock", "clock", "watch", "sundial", "timer", "hourglass", "grandfather clock", "digital clock", "alarm clock", "wall clock", "analog clock", "pendulum clock", "cuckoo clock", "digital watch", "analog watch", "pocket watch", "wristwatch", "stopwatch", "parking meter", "chronograph", "vernier caliper", "micrometer", "balance", "analytical balance", "electronic balance", "electric meter", "odometer", "ammeter", "speedometer", "ohmmeter", "water meter", "voltmeter", "magnetometer", "tomahawk", "gun", "bow", "bow and arrow", "brass knucks", "knife", "sword", "stun gun", "projectile", "antiaircraft", "firearm", "set gun", "air gun", "gas gun", "paintball gun", "cannon", "autoloader", "pistol", "twenty-two", "Mauser", "muzzle loader", "rifle", "repeating firearm", "semiautomatic firearm", "automatic firearm", "Garand rifle", "Luger", "semiautomatic pistol", "automatic rifle", "assault rifle", "automatic pistol", "machine gun", "submachine gun", "burp gun", "Uzi", "Kalashnikov", "Tommy gun", "Colt", "derringer", "revolver", "gat", "flintlock", "musket", "sniper rifle", "Winchester", "carbine", "crossbow", "longbow", "khukuri", "bayonet", "machete", "dagger", "rapier", "fencing sword", "broadsword", "cavalry sword", "saber", "epee", "foil", "bullet", "cannonball", "compass", "protractor", "artificial horizon", "depth finder", "magnetic compass", "compass", "binoculars", "spectacles", "projector", "telescopic sight", "goggles", "sunglasses", "slide projector", "front projector", "movie projector", "overhead projector", "hypodermic syringe", "cardiograph", "syringe", "stethoscope", "laryngoscope", "otoscope", "surgical instrument", "retractor", "hemostat", "pillory", "rattan", "exercise bike", "treadmill", "respirator", "snorkel", "oxygen mask", "aqualung", "paintbrush", "spray gun", "brake", "handcuff", "fastener", "seat belt", "leash", "safety belt", "brake system", "muzzle", "chain", "bolt", "buckle", "knot", "cleat", "clothespin", "catch", "pin", "dowel", "screw", "slide fastener", "button", "seal", "paper fastener", "lock", "thumbtack", "locker", "clasp", "clip", "carabiner", "nail", "toggle", "nut and bolt", "bowline", "bow", "latch", "hasp", "rivet", "hairpin", "skewer", "hatpin", "brochette", "bobby pin", "barrette", "safety pin", "shirt button", "coat button", "washer", "gasket", "head gasket", "O ring", "padlock", "sash fastener", "latch", "combination lock", "doorlock", "paper clip", "bulldog clip", "hair slide", "hydraulic brake", "disk brake", "drum brake", "typewriter keyboard", "QWERTY keyboard", "computer keyboard", "piano keyboard", "circuit", "Segway", "jack", "control panel", "telephone jack", "circuit breaker", "plug", "electrolytic", "dashboard", "transducer", "solar cell", "antenna", "capacitor", "spark plug", "relay", "surge suppressor", "solar array", "battery", "Tesla coil", "closed circuit", "wiring", "computer circuit", "integrated circuit", "module", "printed circuit", "interface", "CPU board", "circuit board", "mosaic", "electro-acoustic transducer", "earphone", "microphone", "loudspeaker", "telephone receiver", "headset", "condenser microphone", "cardioid microphone", "tweeter", "bullhorn", "tannoy", "woofer", "subwoofer", "omnidirectional antenna", "directional antenna", "radio antenna", "television antenna", "dish", "scanner", "yagi", "voltaic battery", "flashlight battery", "lead-acid battery", "pack", "prosthesis", "solar dish", "mirror", "hand glass", "car mirror", "rearview mirror", "outside mirror", "burglar alarm", "automobile horn", "shofar", "fire alarm", "readout", "scanner", "tube", "display", "personal digital assistant", "dongle", "trackball", "mouse", "answering machine", "hearing aid", "beeper", "triode", "pentode", "computer monitor", "monitor", "screen", "digital display", "liquid crystal display", "flat panel display", "window", "dialog box", "caller ID", "computer screen", "background", "C-clamp", "chuck", "collet", "holder", "vise", "candlestick", "cigarette holder", "candelabrum", "menorah", "Menorah", "cache", "optical disk", "magnetic disk", "memory", "magnetic tape", "recording", "auxiliary storage", "compact disk", "videodisk", "CD-ROM", "CD-R", "audio CD", "hard disc", "diskette", "flash memory", "random-access memory", "videotape", "cassette tape", "tape", "phonograph record", "LP", "seventy-eight", "lamp", "light", "flash", "lantern", "candle", "neon lamp", "vigil light", "taillight", "gas lamp", "oil lamp", "hurricane lamp", "fluorescent lamp", "streetlight", "spotlight", "electric lamp", "jack-o'-lantern", "Chinese lantern", "flashlight", "light bulb", "penlight", "headlight", "room light", "strip lighting", "fairy light", "sconce", "searchlight", "night-light", "blinker", "torch", "flood", "fuel gauge", "gnomon", "dial", "vernier scale", "pointer", "light pen", "hand", "sweep hand", "minute hand", "second hand", "hour hand", "spring", "rubber band", "coil spring", "box spring", "hoist", "winch", "elevator", "crane", "wheel and axle", "derrick", "maze", "communication system", "network", "Global Positioning System", "resonator", "exhaust", "mechanical system", "computer system", "scaffolding", "reticle", "walkie-talkie", "radio", "telecommunication system", "telephone system", "intercommunication system", "interphone", "television", "satellite television", "surveillance system", "color television", "local area network", "superhighway", "ethernet", "wireless local area network", "production line", "linkage", "suspension", "fuel injection", "planter", "trophy case", "wastepaper basket", "dish", "bread-bin", "dispenser", "pot", "bunker", "reliquary", "cup", "bag", "cassette", "Dumpster", "bag", "measuring cup", "glass", "paintball", "measure", "envelope", "shaker", "piggy bank", "basket", "sewing basket", "savings bank", "powder horn", "can", "wheeled vehicle", "workbasket", "bin", "canister", "mold", "cargo container", "videocassette", "case", "case", "vessel", "drawer", "receptacle", "package", "watering can", "box", "cocotte", "Petri dish", "gravy boat", "serving dish", "tureen", "sugar bowl", "bowl", "casserole", "ramekin", "butter dish", "salad bowl", "mixing bowl", "porringer", "cereal bowl", "soup bowl", "punch bowl", "roll-on", "aerosol", "soap dispenser", "atomizer", "inhaler", "demitasse", "beaker", "kylix", "coffee cup", "chalice", "teacup", "Dixie cup", "evening bag", "shoulder bag", "clutch bag", "reticule", "backpack", "sachet", "beanbag", "sandbag", "carryall", "pannier", "duffel bag", "book bag", "tool bag", "mailbag", "purse", "drawstring bag", "envelope", "saddlebag", "sack", "pouch", "shopping bag", "toilet bag", "gamebag", "kitbag", "plastic bag", "golf bag", "sleeping bag", "gunnysack", "grocery bag", "sporran", "pocket", "waist pack", "fanny pack", "hip pocket", "patch pocket", "flute", "tumbler", "water glass", "bumper", "liqueur glass", "snifter", "shot glass", "beer glass", "rummer", "goblet", "wineglass", "cocktail shaker", "saltshaker", "pepper shaker", "pannier", "clothes hamper", "hamper", "breadbasket", "shopping basket", "wicker basket", "milk can", "beer can", "soda can", "pedicab", "camper trailer", "rolling stock", "motor scooter", "self-propelled vehicle", "unicycle", "wagon", "bassinet", "handcart", "baby buggy", "bicycle", "horse-drawn vehicle", "trailer", "car", "tricycle", "armored vehicle", "recreational vehicle", "tracked vehicle", "snowmobile", "bulldozer", "locomotive", "streetcar", "motor vehicle", "tractor", "forklift", "armored personnel carrier", "armored car", "dune buggy", "camper", "van", "shunter", "diesel locomotive", "electric locomotive", "tank engine", "traction engine", "steam locomotive", "diesel-electric locomotive", "diesel-hydraulic locomotive", "hearse", "truck", "amphibian", "four-wheel drive", "motorcycle", "go-kart", "car", "snowplow", "fire engine", "van", "trailer truck", "transporter", "garbage truck", "ladder truck", "tow truck", "dump truck", "tractor", "pickup", "delivery truck", "moving van", "passenger van", "police van", "bookmobile", "trail bike", "moped", "beach wagon", "loaner", "Model T", "electric", "minivan", "convertible", "compact", "cab", "shooting brake", "racer", "hatchback", "roadster", "berlin", "sport utility", "sedan", "jeep", "limousine", "cruiser", "ambulance", "used-car", "stock car", "subcompact", "pace car", "hot rod", "sports car", "coupe", "covered wagon", "cart", "horse cart", "dumpcart", "jinrikisha", "pony cart", "oxcart", "tea cart", "laundry cart", "serving cart", "barrow", "shopping cart", "hand truck", "bicycle-built-for-two", "safety bicycle", "push-bike", "mountain bike", "carriage", "gharry", "buggy", "stagecoach", "four-wheeler", "baggage car", "freight car", "passenger car", "cabin car", "boxcar", "tank car", "nonsmoker", "Pullman", "dining car", "smoker", "recycling bin", "ashcan", "litterbin", "sandbox", "pig bed", "briefcase", "compact", "dispatch case", "kit", "wallet", "cardcase", "portfolio", "ditty bag", "cigarette case", "shoe", "gun case", "attache case", "locket", "writing desk", "watch case", "baggage", "glasses case", "hand luggage", "satchel", "bag", "trunk", "hatbox", "garment bag", "weekender", "carpetbag", "portmanteau", "overnighter", "valise", "boiler", "flagon", "bowl", "ladle", "bottle", "bottle", "pot", "pitcher", "bathtub", "mortar", "bucket", "drinking vessel", "cream pitcher", "wine bucket", "pressure cooker", "tub", "inkwell", "tin", "basin", "monstrance", "autoclave", "churn", "barrel", "tank", "jar", "censer", "toilet bowl", "fishbowl", "scoop", "soup ladle", "smelling bottle", "pop bottle", "water bottle", "jug", "catsup bottle", "gourd", "pill bottle", "carboy", "flask", "beer bottle", "ink bottle", "demijohn", "whiskey bottle", "cruet", "wine bottle", "carafe", "phial", "whiskey jug", "water jug", "hipflask", "Erlenmeyer flask", "thermos", "canteen", "vacuum flask", "magnum", "jeroboam", "saucepot", "teapot", "Dutch oven", "urn", "stockpot", "kettle", "caldron", "percolator", "teakettle", "coffeepot", "coffee urn", "samovar", "tea urn", "sitz bath", "hot tub", "footbath", "mug", "loving cup", "tankard", "coffee mug", "toby", "beer mug", "bidet", "birdbath", "washbasin", "baptismal font", "beer barrel", "wine cask", "keg", "gas tank", "water heater", "septic tank", "aquarium", "reservoir", "water tower", "rain barrel", "canopic jar", "amphora", "cookie jar", "beaker", "urn", "Mason jar", "vase", "crock", "jampot", "plate", "tray", "cat box", "dustpan", "chamberpot", "salver", "garbage", "in-basket", "hot-water bottle", "ossuary", "socket", "ashtray", "packet", "bundle", "deck", "bale", "hay bale", "pack", "ballot box", "carton", "coffin", "shoebox", "snuffbox", "pencil box", "crate", "bandbox", "window box", "chest", "strongbox", "cereal box", "mailbox", "casket", "bier", "packing box", "toolbox", "toy box", "coffer", "hope chest", "treasure chest", "cedar chest", "cash register", "safe-deposit", "cashbox", "safe", "tramway", "chairlift", "sidecar", "public transport", "semitrailer", "horsebox", "vehicle", "ski tow", "roll-on roll-off", "trailer", "shipping", "litter", "express", "shuttle bus", "train", "bus", "local", "freight liner", "passenger train", "subway train", "mail train", "freight train", "commuter", "bullet train", "trolleybus", "minibus", "school bus", "steamroller", "bumper car", "rocket", "military vehicle", "missile", "craft", "sled", "half track", "tank", "panzer", "personnel carrier", "Humvee", "aircraft", "vessel", "spacecraft", "hovercraft", "heavier-than-air craft", "stealth aircraft", "lighter-than-air craft", "hang glider", "glider", "helicopter", "warplane", "airplane", "autogiro", "bomber", "amphibian", "propeller plane", "airliner", "biplane", "floatplane", "jet", "fighter", "stealth bomber", "seaplane", "airbus", "widebody aircraft", "jumbojet", "jetliner", "stealth fighter", "interceptor", "airship", "blimp", "balloon", "hot-air balloon", "boat", "trawler", "yacht", "ship", "sailing vessel", "bareboat", "lifeboat", "police boat", "gondola", "sea boat", "barge", "river boat", "tugboat", "punt", "pilot boat", "small boat", "ferry", "tender", "canal boat", "fireboat", "motorboat", "dredger", "pontoon", "houseboat", "skiff", "canoe", "dinghy", "racing boat", "coracle", "yawl", "gig", "jolly boat", "rowing boat", "kayak", "outrigger canoe", "dugout canoe", "racing gig", "racing skiff", "speedboat", "outboard motorboat", "cabin cruiser", "hydrofoil", "shipwreck", "wreck", "passenger ship", "pirate", "lightship", "hospital ship", "steamer", "cargo ship", "sister ship", "warship", "liner", "luxury liner", "cargo liner", "cruise ship", "paddle steamer", "sternwheeler", "bottom", "container ship", "banana boat", "oil tanker", "submarine", "guided missile cruiser", "frigate", "battleship", "guided missile frigate", "aircraft carrier", "man-of-war", "destroyer", "attack submarine", "nautilus", "yawl", "clipper", "felucca", "sloop", "ketch", "dhow", "sailboat", "bark", "schooner", "windjammer", "trimaran", "catamaran", "catboat", "space shuttle", "space capsule", "dogsled", "bobsled", "bobsled", "stretcher", "covered couch", "telecommunication", "vehicle", "print media", "broadcasting", "telephone", "radiotelephone", "television", "reception", "radio", "cable television", "high-definition television", "three-way calling", "call", "voice mail", "press", "journalism", "magazine", "newspaper", "pulp", "slick", "comic book", "news magazine", "tabloid", "daily", "gazette", "Fleet Street", "yellow journalism", "pillow", "pad", "sanitary napkin", "beer mat", "futon", "carpet pad", "range hood", "screen", "top", "footwear", "protective covering", "cloak", "wrapping", "upholstery", "cloth covering", "mask", "finger", "floor cover", "coating", "canopy", "flap", "domino", "folder", "planking", "earmuff", "camouflage", "shoji", "cap", "manhole cover", "lid", "radiator cap", "bottlecap", "nipple", "clog", "shoe", "arctic", "boot", "flats", "slipper", "overshoe", "sabot", "slingback", "chukka", "saddle oxford", "spectator pump", "brogan", "wing tip", "walker", "blucher", "anklet", "cleats", "gaiter", "Loafer", "running shoe", "oxford", "bowling shoe", "plimsoll", "pump", "sandal", "chopine", "pusher", "talaria", "flip-flop", "espadrille", "jodhpur", "buskin", "ski boot", "hip boot", "riding boot", "rubber boot", "Hessian boot", "waders", "cowboy boot", "mule", "bootee", "cold frame", "cloche", "washboard", "toecap", "mulch", "shield", "bracer", "screen", "sheathing", "bell jar", "shade", "shelter", "splashboard", "testudo", "roof", "faceplate", "hood", "sheath", "cap", "mask", "facing", "crystal", "calash", "armor", "binder", "binding", "housing", "blind", "lining", "plate", "horseshoe", "armor plate", "breastplate", "helmet", "cannon", "knee piece", "pickelhaube", "sallet", "window screen", "fire screen", "windshield", "mosquito net", "lampshade", "parasol", "lean-to", "bell cote", "sentry box", "birdhouse", "canopy", "kennel", "awning", "umbrella", "gamp", "gable roof", "sunroof", "mansard", "dome", "hip roof", "tile roof", "housetop", "vault", "slate roof", "gambrel", "thatch", "cupola", "geodesic dome", "onion dome", "barrel vault", "ribbed vault", "holster", "scabbard", "shoulder holster", "hubcap", "thimble", "distributor cap", "lens cap", "gasmask", "face mask", "ski mask", "catcher's mask", "body armor", "shield", "chain mail", "bulletproof vest", "corselet", "cuirass", "cabinet", "radome", "boot", "window blind", "jalousie", "curtain", "shutter", "Venetian blind", "window shade", "roller blind", "theater curtain", "shower curtain", "bushing", "brake lining", "gift wrapping", "envelope", "cellophane", "book jacket", "jacket", "plastic wrap", "shoulder", "pant leg", "leg", "back", "cosy", "bandage", "bosom", "slipcover", "bedclothes", "sleeve", "blindfold", "eyepatch", "skirt", "seat", "Band Aid", "swathe", "cast", "elastic bandage", "quilt", "afghan", "blanket", "bedspread", "mattress cover", "patchwork", "eiderdown", "crazy quilt", "coverlet", "quilted bedspread", "raglan sleeve", "long sleeve", "rug", "doormat", "mat", "scatter rug", "shag rug", "prayer rug", "broadloom", "stair-carpet", "red carpet", "Brussels carpet", "fixative", "gold plate", "verdigris", "paint", "nail polish", "gilt", "couch", "enamel", "veneer", "finger paint", "enamel", "encaustic", "oil paint", "water-base paint", "latex paint", "whitewash", "earflap", "pocket flap", "lapel", "tongue", "revers", "tent-fly", "file folder", "matchbook", "plush", "muslin", "tarpaulin", "velvet", "batik", "khaki", "belting", "sacking", "diaper", "voile", "duffel", "chenille", "cotton flannel", "toweling", "crinoline", "panting", "chintz", "felt", "cotton", "velveteen", "satin", "knit", "sateen", "print", "flannel", "webbing", "gabardine", "camouflage", "worsted", "cashmere", "tartan", "mohair", "brocade", "velour", "shirttail", "boucle", "madras", "net", "paisley", "yoke", "percale", "piece of cloth", "moquette", "terry", "rayon", "acetate rayon", "cord", "permanent press", "chiffon", "burlap", "ticking", "basket weave", "lace", "sheeting", "georgette", "poplin", "denim", "flannelette", "shantung", "camel's hair", "nylon", "drapery", "gauze", "organza", "foulard", "gingham", "wool", "suede cloth", "taffeta", "leatherette", "tweed", "organdy", "canopy", "etamine", "damask", "oilcloth", "tapestry", "broadcloth", "pique", "homespun", "tricot", "double knit", "jersey", "gauze", "tulle", "chicken wire", "handkerchief", "groundsheet", "dustcloth", "dishrag", "towel", "bandanna", "gusset", "bib", "sail", "patch", "hand towel", "paper towel", "dishtowel", "fore-and-aft sail", "foresail", "spinnaker", "headsail", "topsail", "mainsail", "balloon sail", "jib", "mizzen", "gaff topsail", "lugsail", "staysail", "lateen", "flash", "shoulder patch", "narrow wale", "Bedford cord", "macrame", "pillow lace", "raft", "life preserver", "life buoy", "Mae West", "life jacket", "stone", "brick", "lumber", "bricks and mortar", "tile", "concrete", "quoin", "millstone", "stele", "hone", "grindstone", "curbstone", "gravestone", "firebrick", "mud brick", "clinker", "adobe", "strip", "chipboard", "slat", "fingerboard", "toothpick", "hip tile", "pantile", "cornice", "embellishment", "graffito", "epergne", "necklet", "marquetry", "brass", "garnish", "arabesque", "design", "adornment", "frieze", "lambrequin", "tattoo", "mihrab", "emblem", "swastika", "herringbone", "spot", "flag", "banner", "totem pole", "crucifix", "fleur-de-lis", "macule", "parhelion", "jewelry", "frill", "lavaliere", "peplum", "bangle", "cigar band", "aigrette", "bracelet", "bling", "pendant earring", "necklace", "ghat", "path", "road", "passage", "sidewalk", "towpath", "pedestrian crossing", "highway", "carriageway", "thoroughfare", "trail", "divided highway", "expressway", "arterial road", "autostrada", "autobahn", "street", "street", "piste", "horse-trail", "adit", "conduit", "passageway", "tube", "sluice", "snorkel", "waterspout", "catheter", "barrel", "pipe", "hookah", "tailpipe", "drain", "culvert", "soil pipe", "tunnel", "stairwell", "gangway", "catacomb", "railroad tunnel", "tape", "band", "inkle", "adhesive tape", "plaster", "cellulose tape", "headstall", "girdle", "tire", "armlet", "radial", "car tire", "tableware", "riband", "cutlery", "glass", "hollowware", "platter", "spoon", "table knife", "fork", "Spork", "soupspoon", "teaspoon", "sugar spoon", "wooden spoon", "iced-tea spoon", "tablespoon", "dessert spoon", "case knife", "butter knife", "steak knife", "tablefork", "carving fork", "airfield", "telpherage", "air terminal", "airport", "menagerie", "storehouse", "station", "warehouse", "granary", "crib", "mineshaft", "ditch", "irrigation ditch", "furrow", "consumer goods", "linen", "clothing", "appliance", "leisure wear", "grey", "blue", "nightwear", "protective garment", "outerwear", "neckpiece", "knitwear", "loungewear", "apparel", "collar", "military uniform", "headdress", "pajama", "garment", "array", "woman's clothing", "overall", "glove", "accessory", "black", "footwear", "attire", "ready-to-wear", "beachwear", "man's clothing", "street clothes", "slip-on", "shin guard", "overall", "pressure suit", "arm guard", "foul-weather gear", "diving suit", "apron", "shoulder pad", "coverall", "chest protector", "elbow pad", "spacesuit", "knee pad", "gown", "vestment", "chasuble", "academic gown", "battle dress", "fatigues", "dress uniform", "khakis", "helmet", "hood", "turban", "hat", "cap", "cowl", "tiara", "football helmet", "hard hat", "crash helmet", "sunhat", "fur hat", "cowboy hat", "bearskin", "boater", "snap-brim hat", "fedora", "cavalier hat", "sombrero", "tricorn", "beaver", "porkpie", "bonnet", "pith hat", "bowler hat", "millinery", "cloche", "pillbox", "baseball cap", "coonskin cap", "shower cap", "kepi", "balaclava", "fez", "tam", "beret", "skullcap", "cloth cap", "ski cap", "watch cap", "bathing cap", "mortarboard", "yarmulke", "beanie", "head covering", "scarf", "romper", "diaper", "wraparound", "robe", "wet suit", "legging", "skirt", "undergarment", "separate", "vest", "shirt", "overgarment", "hose", "burqa", "trouser", "trouser", "straitjacket", "fur", "neckwear", "sweat suit", "leotard", "swimsuit", "hand-me-down", "raglan", "suit", "sweater", "gown", "face veil", "niqab", "chador", "mantilla", "muffler", "headscarf", "tudung", "feather boa", "stole", "hijab", "khimar", "dressing gown", "kimono", "abaya", "bathrobe", "gaiter", "spat", "overskirt", "grass skirt", "miniskirt", "kilt", "maxi", "ballet skirt", "dirndl", "sarong", "hoopskirt", "petticoat", "brassiere", "foundation garment", "singlet", "garter belt", "crinoline", "underwear", "body stocking", "camisole", "uplift", "chemise", "underpants", "corset", "panty girdle", "roll-on", "lingerie", "long johns", "BVD", "undies", "nightgown", "bloomers", "thong", "bikini pants", "briefs", "pantie", "drawers", "work-shirt", "kurta", "jersey", "dashiki", "polo shirt", "coat", "cloak", "snowsuit", "surcoat", "duffel coat", "sheepskin coat", "frock coat", "lab coat", "greatcoat", "jacket", "raincoat", "capote", "sack coat", "fur coat", "mess jacket", "single-breasted jacket", "bomber jacket", "pea jacket", "swallow-tailed coat", "doublet", "bolero", "parka", "oilskin", "trench coat", "mink", "sable coat", "poncho", "toga virilis", "toga", "kameez", "serape", "tunic", "shawl", "caftan", "short pants", "pajama", "sweat pants", "salwar", "breeches", "chino", "slacks", "jodhpurs", "pedal pusher", "long trousers", "jean", "cords", "Levi's", "stretch pants", "bellbottom trousers", "buckskins", "hot pants", "Bermuda shorts", "lederhosen", "necktie", "cravat", "bolo tie", "Windsor tie", "bow tie", "black tie", "maillot", "swimming trunks", "bikini", "double-breasted suit", "pinstripe", "single-breasted suit", "pants suit", "business suit", "three-piece suit", "two-piece", "turtleneck", "cardigan", "sweatshirt", "pullover", "top", "G-string", "camisole", "dress", "bodice", "blouse", "halter", "cocktail dress", "sari", "caftan", "sundress", "chemise", "strapless", "gown", "jumper", "dirndl", "bridal gown", "tea gown", "ball gown", "gauntlet", "mitten", "kid glove", "belt", "furnishing", "money belt", "holster", "cartridge belt", "hosiery", "tights", "sock", "stocking", "pantyhose", "maillot", "athletic sock", "tabi", "knee-high", "argyle", "nylons", "Christmas stocking", "formalwear", "ensemble", "outfit", "ao dai", "costume", "fancy dress", "costume", "frock", "sportswear", "academic costume", "disguise", "hairpiece", "dinner jacket", "balldress", "dinner dress", "dress suit", "Afro-wig", "toupee", "wig", "dress hat", "brace", "athletic supporter", "home appliance", "dryer", "vacuum", "iron", "trouser press", "curling iron", "white goods", "sewing machine", "serger", "kitchen appliance", "Hoover", "travel iron", "steam iron", "dishwasher", "refrigerator", "washer", "cooler", "electric refrigerator", "ice machine", "deep-freeze", "toaster", "microwave", "toaster oven", "coffee maker", "hot plate", "waffle iron", "disposal", "espresso maker", "stove", "oven", "food processor", "ice maker", "cookstove", "electric range", "gas range", "Primus stove", "broiler", "rotisserie", "Dutch oven", "gas oven", "hand blower", "clothes dryer", "spin dryer", "tumble-dryer", "wringer", "bath towel", "doily", "Turkish towel", "bed linen", "pillow sham", "sheet", "tinfoil", "plywood", "doorplate", "board", "drumhead", "panel", "laminate", "blackboard", "snowboard", "Sheetrock", "surfboard", "skateboard", "sideboard", "scoreboard", "wainscot", "headboard", "chandelier", "plumbing fixture", "soap dish", "toilet", "shower", "water faucet", "flush toilet", "potty seat", "rope", "cord", "lasso", "bungee", "spun yarn", "cordage", "thread", "bootlace", "wick", "lanyard", "floss", "woof", "worsted", "organism", "cell", "mistletoe", "plant", "animal", "microorganism", "bryophyte", "person", "fungus", "benthos", "flowering maple", "vascular plant", "strangler", "aquatic", "annual", "houseplant", "poisonous plant", "agave", "pteridophyte", "spermatophyte", "aquatic plant", "herb", "vine", "woody plant", "weed", "cultivar", "bulbous plant", "succulent", "American agave", "maguey", "maguey", "sansevieria", "dracaena", "mother-in-law's tongue", "fern ally", "fern", "club moss", "scouring rush", "ground pine", "ground cedar", "ground fir", "flowering fern", "lady fern", "Boston fern", "flowering fern", "royal fern", "tree fern", "oak fern", "common polypody", "mountain fern", "shield fern", "deer fern", "wood fern", "American maidenhair fern", "hart's-tongue", "soft shield fern", "holly fern", "maidenhair", "holly fern", "water clover", "sensitive fern", "Christmas fern", "angiopteris", "soft tree fern", "male fern", "marginal wood fern", "angiosperm", "gymnosperm", "barbados cherry", "dicot", "flower", "wildflower", "commelina", "woodland star", "nigella", "black-eyed Susan", "mistflower", "calceolaria", "toadflax", "zinnia", "centaury", "Easter daisy", "African violet", "brompton stock", "verbena", "blue daisy", "pink calla", "Mexican sunflower", "bloomer", "achimenes", "lychnis", "painted daisy", "treasure flower", "globe amaranth", "common valerian", "rose moss", "tidytips", "common daisy", "composite", "ice plant", "gentian", "soapwort", "anemone", "veronica", "larkspur", "spring beauty", "gazania", "damask violet", "Barberton daisy", "bush violet", "baby's breath", "corydalis", "calendula", "sunflower", "scabious", "valerian", "rue anemone", "sandwort", "candytuft", "horn poppy", "sandwort", "poppy", "stokes' aster", "dahlia", "Virginia spring beauty", "petunia", "orchid", "hybrid petunia", "African daisy", "pink", "African daisy", "African daisy", "daisy", "common ageratum", "oxeye daisy", "columbine", "calla lily", "sweet alyssum", "spathiphyllum", "four o'clock", "common marigold", "cornflower", "strawflower", "silene", "tuberose", "common four-o'clock", "rocket larkspur", "bellwort", "begonia", "streptocarpus", "Swan River daisy", "wallflower", "peony", "love-in-a-mist", "wallflower", "cineraria", "chrysanthemum", "stock", "sandwort", "Malcolm stock", "mountain sandwort", "coneflower", "ageratum", "coneflower", "sowbread", "scorpionweed", "cyclamen", "delphinium", "marigold", "aster", "cosmos", "Mediterranean snapdragon", "mullein pink", "ragged robin", "mayweed", "tansy", "dusty miller", "corn chamomile", "shasta daisy", "everlasting", "wingstem", "rosinweed", "oxeye daisy", "strawflower", "strawflower", "cudweed", "pearly everlasting", "gentianella", "agueweed", "closed gentian", "closed gentian", "great yellow gentian", "fringed gentian", "marsh gentian", "snowdrop anemone", "wood anemone", "wood anemone", "germander speedwell", "common speedwell", "common sunflower", "prairie sunflower", "giant sunflower", "Jerusalem artichoke", "sweet scabious", "field scabious", "Iceland poppy", "wind poppy", "Iceland poppy", "celandine", "oriental poppy", "opium poppy", "celandine poppy", "prickly poppy", "California poppy", "corn poppy", "blue poppy", "aerides", "coelogyne", "lady's slipper", "Venus' slipper", "cymbid", "sobralia", "spider orchid", "spider orchid", "Psychopsis papilio", "liparis", "butterfly orchid", "butterfly orchid", "butterfly orchid", "oncidium", "twayblade", "twayblade", "grass pink", "brassavola", "fragrant orchid", "fly orchid", "frog orchid", "coral root", "cattleya", "lesser butterfly orchid", "vanilla", "short-spurred fragrant orchid", "common spotted orchid", "bog rose", "ladies' tresses", "odontoglossum", "orchis", "vanda", "pansy orchid", "Bletilla striata", "rattlesnake plantain", "marsh orchid", "stanhopea", "laelia", "phaius", "lizard orchid", "caladenia", "calypso", "moth orchid", "blue orchid", "bee orchid", "early spider orchid", "masdevallia", "bog rein orchid", "European ladies' tresses", "fen orchid", "pogonia", "fringed orchis", "dendrobium", "fly orchid", "helleborine", "helleborine", "stelis", "greater butterfly orchid", "yellow lady's slipper", "large yellow lady's slipper", "common lady's-slipper", "moccasin flower", "butterfly orchid", "male orchis", "ragged orchid", "purple-fringed orchid", "stream orchid", "Epipactis helleborine", "sweet William", "china pink", "Japanese pink", "carnation", "cottage pink", "maiden pink", "meeting house", "granny's bonnets", "blue columbine", "fire pink", "white campion", "bladder campion", "red campion", "wild pink", "moss campion", "wax begonia", "hybrid tuberous begonia", "rex begonia", "crown daisy", "corn marigold", "florist's chrysanthemum", "African marigold", "French marigold", "New England aster", "bushy aster", "Michaelmas daisy", "Indian paintbrush", "goldenrod", "sand verbena", "bitterroot", "Indian pipe", "heliopsis", "meadow goldenrod", "pasqueflower", "fleabane", "blazing star", "edelweiss", "coneflower", "balloon flower", "wild carrot", "prairie gentian", "desert sunflower", "Arnica montana", "butterweed", "gaillardia", "brittlebush", "orange daisy", "daisy fleabane", "Mexican hat", "long-head coneflower", "cycad", "welwitschia", "encephalartos", "dioon", "macrozamia", "false sago", "water shamrock", "water hyacinth", "pistia", "water lily", "marsh plant", "water nymph", "European white lily", "bog star", "marsh marigold", "wild calla", "sedge", "parnassia", "skunk cabbage", "skunk cabbage", "cotton grass", "nutgrass", "common cotton grass", "winter aconite", "buttercup", "phlox", "willowherb", "stapelia", "skullcap", "bedstraw", "gumweed", "kangaroo paw", "common chickweed", "hyssop", "arum", "common comfrey", "borage", "nasturtium", "canna", "loosestrife", "toad lily", "globe thistle", "wild thyme", "common fennel", "bear's breech", "ironweed", "feverfew", "monarda", "physostegia", "creeping bugle", "vegetable", "hedge nettle", "plum tomato", "ground cherry", "flax", "primrose", "oxalis", "kniphofia", "boneset", "chickweed", "periwinkle", "garden angelica", "bugloss", "Dutchman's breeches", "pie plant", "cow parsnip", "butterbur", "milk thistle", "mouse-ear chickweed", "yellow bells", "lobelia", "anise hyssop", "banana", "Joe-Pye weed", "Joe-Pye weed", "garden forget-me-not", "evening primrose", "spiderflower", "sweet false chamomile", "agrimonia", "hepatica", "medic", "peperomia", "geranium", "viola", "okra", "bergenia", "astrantia", "aspidistra", "thyme", "common teasel", "carnivorous plant", "harvest-lice", "nemophila", "hawkweed", "hawkweed", "fleabane", "plumbago", "spiderwort", "prickly poppy", "common foxglove", "stonecrop", "garden lettuce", "teasel", "herb Paris", "coltsfoot", "basil", "sainfoin", "sneezeweed", "cockscomb", "baby blue-eyes", "coleus", "spurge nettle", "arnica", "sour dock", "clover", "mint", "coreopsis", "pimpernel", "kidney vetch", "foxglove", "legume", "reseda", "forget-me-not", "Virginia bluebell", "pineapple", "blueweed", "anchusa", "moss pink", "common dandelion", "false lupine", "sage", "chamomile", "crucifer", "chicory", "broad-leaved plantain", "bugle", "milkweed", "fireweed", "spirea", "inula", "hemp nettle", "garden nasturtium", "pokeweed", "moneywort", "asparagus", "Italian parsley", "rhubarb", "jewelweed", "asparagus fern", "sedum", "yarrow", "bird's foot trefoil", "scarlet pimpernel", "campanula", "mayapple", "painted nettle", "pigweed", "bleeding heart", "achillea", "snow-in-summer", "gramineous plant", "balsamroot", "Abyssinian banana", "herbage", "astilbe", "ginger", "saxifrage", "cow parsley", "dill", "common mullein", "dead nettle", "creeping buttercup", "meadow buttercup", "yellow bedstraw", "sweet woodruff", "caladium", "cuckoopint", "jack-in-the-pulpit", "alocasia", "taro", "amorphophallus", "bee balm", "bee balm", "artichoke", "cardoon", "tomatillo", "tomatillo", "English primrose", "oxlip", "cowslip", "polyanthus", "creeping oxalis", "common wood sorrel", "Bermuda buttercup", "red-hot poker", "poker plant", "dwarf banana", "Japanese banana", "plantain", "sundrops", "common evening primrose", "ivy geranium", "cranesbill", "fish geranium", "rose geranium", "meadow cranesbill", "wild geranium", "dove's foot geranium", "herb robert", "horned violet", "field pansy", "violet", "dog violet", "pale violet", "bird's-foot violet", "hedge violet", "Venus's flytrap", "pitcher plant", "tropical pitcher plant", "sundew", "white clover", "red clover", "crimson clover", "pennyroyal", "water-mint", "beach pea", "chickpea", "vetch", "tufted vetch", "bean", "wild pea", "scarlet runner", "sieva bean", "clary", "common sage", "clary sage", "wild sage", "purple sage", "meadow clary", "bok choy", "mustard", "cabbage", "cauliflower", "collard", "broccoli", "brussels sprout", "garlic mustard", "head cabbage", "radish plant", "bittercress", "alyssum", "field mustard", "rape", "radish", "radish", "lady's smock", "crinkleroot", "butterfly weed", "swamp milkweed", "tussock bellflower", "Canterbury bell", "clustered bellflower", "peach bells", "giant bamboo", "grass", "fescue", "cordgrass", "feather reed grass", "reed grass", "orchard grass", "cereal", "broom beard grass", "tall oat grass", "tallgrass", "St. Augustine grass", "pampas grass", "grama", "dallisgrass", "zoysia", "rye grass", "brome", "fountain grass", "rye", "popcorn", "wheat", "millet", "sorghum", "panic grass", "goose grass", "switch grass", "common ginger", "shellflower", "meadow saxifrage", "purple saxifrage", "white dead nettle", "henbit", "ground ivy", "blue pea", "purple clematis", "black-eyed Susan", "bougainvillea", "butterfly pea", "butterfly pea", "bindweed", "kudzu", "Boston ivy", "squash", "yellow jasmine", "wax plant", "morning glory", "liana", "Japanese wistaria", "allamanda", "field bindweed", "common allamanda", "passionflower", "convolvulus", "gourd", "grape", "Chinese gooseberry", "summer squash", "winter squash", "pumpkin", "spaghetti squash", "yellow squash", "acorn squash", "winter crookneck", "cypress vine", "Japanese morning glory", "moonflower", "golden pothos", "ceriman", "jade vine", "pothos", "love-in-a-mist", "maypop", "granadilla", "sweet melon", "bottle gourd", "net melon", "winter melon", "cantaloupe", "Sauvignon grape", "fox grape", "wild indigo", "shrub", "tree", "raspberry", "lupine", "abelia", "banksia", "bird pepper", "sea holly", "guelder rose", "crape myrtle", "castor-oil plant", "spirea", "hydrangea", "fuchsia", "redberry", "saltbush", "false indigo", "bridal wreath", "protea", "Oregon grape", "grevillea", "gorse", "rockrose", "cowberry", "subshrub", "honeypot", "California fuchsia", "sumac", "jasmine", "impala lily", "currant", "axseed", "mimosa", "southern buckthorn", "flowering quince", "yucca", "purple heather", "waratah", "mallow", "strawberry tree", "mock orange", "honeysuckle", "spurge", "kalmia", "bush hibiscus", "weigela", "Christmasberry", "angel's trumpet", "angel's trumpet", "gooseberry", "dusty miller", "croton", "Pyracantha", "forsythia", "artemisia", "silversword", "waratah", "philadelphus", "common lilac", "saltwort", "calliandra", "wahoo", "bird of paradise", "cape jasmine", "camellia", "night jasmine", "rose", "mountain laurel", "cotoneaster", "rhododendron", "frangipani", "broom", "desert pea", "lavender", "butterfly bush", "deutzia", "hortensia", "burdock", "prairie smoke", "centaury", "sea lavender", "common mugwort", "bird's foot trefoil", "large periwinkle", "great burdock", "St John's wort", "eriogonum", "purple loosestrife", "loosestrife", "mountain avens", "matilija poppy", "bur marigold", "wild lupine", "marguerite", "dusty miller", "great knapweed", "knapweed", "creeping St John's wort", "klammath weed", "common St John's wort", "common jasmine", "winter jasmine", "Adam's needle", "bear grass", "Joshua tree", "Spanish dagger", "hollyhock", "rose mallow", "common mallow", "marsh mallow", "musk mallow", "hibiscus", "althea", "rose mallow", "cotton rose", "woodbine", "trumpet honeysuckle", "Japanese honeysuckle", "poinsettia", "crown of thorns", "damask rose", "musk rose", "azalea", "rosebay", "swamp azalea", "common broom", "woodwaxen", "English lavender", "spike lavender", "French lavender", "locust tree", "kowhai", "bottle-tree", "timber tree", "linden", "bonsai", "snag", "hackberry", "pepper tree", "Japanese oak", "European hackberry", "cork tree", "birch", "star anise", "red silk-cotton tree", "roble", "common alder", "fig tree", "Japanese pagoda tree", "albizzia", "European hornbeam", "cassia", "coral tree", "neem", "white mangrove", "Chinese parasol tree", "bayberry", "yellowwood", "elm", "alder", "prickly ash", "angiospermous tree", "chestnut", "cabbage bark", "ash", "beech", "fringe tree", "golden shower tree", "lead tree", "palm", "balata", "sapling", "black beech", "acacia", "coffee", "gymnospermous tree", "ceibo", "incense tree", "lacebark", "shade tree", "pollard", "gum tree", "wild medlar", "hornbeam", "willow", "textile screw pine", "mescal bean", "Brazilian rosewood", "pandanus", "white mangrove", "oak", "bean tree", "plane tree", "blackwood", "coralwood", "Kentucky coffee tree", "black locust", "honey locust", "flame tree", "flame tree", "kurrajong", "American basswood", "silver lime", "black birch", "silver birch", "swamp birch", "downy birch", "grey birch", "golden fig", "India-rubber tree", "fig", "banyan", "pipal", "rain tree", "silk tree", "smooth-leaved elm", "American elm", "English elm", "cedar elm", "myrtle", "mangrove", "magnolia", "Queen's crape myrtle", "looking-glass plant", "tulip tree", "maple", "nut tree", "redbud", "baobab", "poplar", "tree of heaven", "ailanthus", "dogwood", "holly", "cacao", "laurel", "mountain ebony", "kapok", "sorrel tree", "cacao bean", "Spanish elm", "rowan", "mountain ash", "royal poinciana", "iron tree", "fruit tree", "sweet bay", "southern magnolia", "star magnolia", "umbrella tree", "box elder", "red maple", "hedge maple", "Norway maple", "Japanese maple", "sycamore", "California box elder", "silver maple", "sugar maple", "Oregon maple", "cashew", "walnut", "hazelnut", "black walnut", "English walnut", "black poplar", "aspen", "cottonwood", "white poplar", "quaking aspen", "Eastern cottonwood", "black cottonwood", "cornelian cherry", "bunchberry", "common European dogwood", "common white dogwood", "bearberry", "inkberry", "true laurel", "cassia", "citrus", "mulberry", "jackfruit", "pomegranate", "pawpaw", "persimmon", "carambola", "plum", "almond tree", "durian", "papaya", "olive tree", "longan", "pear", "loquat", "medlar", "peach", "white mulberry", "olive", "litchi", "Japanese apricot", "rambutan", "apple tree", "Japanese persimmon", "mango", "breadfruit", "guava", "guava", "jaboticaba", "cherry", "Surinam cherry", "lime", "mandarin", "orange", "kumquat", "lemon", "pomelo", "grapefruit", "clementine", "tangerine", "sweet orange", "sour orange", "bergamot", "cherry plum", "Allegheny plum", "flowering almond", "almond", "flowering almond", "crab apple", "apple", "wild apple", "Southern crab apple", "Bechtel crab", "Iowa crab", "sour cherry", "flowering cherry", "wild cherry", "sweet cherry", "chokecherry", "Japanese flowering cherry", "oriental cherry", "fuji", "hagberry tree", "black cherry", "Ozark chinkapin", "American chestnut", "pumpkin ash", "mountain ash", "manna ash", "European ash", "red ash", "weeping beech", "American beech", "copper beech", "bamboo palm", "wine palm", "fan palm", "royal palm", "cabbage palm", "cabbage palm", "sago palm", "miniature fan palm", "lady palm", "feather palm", "coconut", "cabbage palm", "carnauba", "caranday", "palmyra", "cabbage palmetto", "key palm", "saw palmetto", "palmetto", "date palm", "oil palm", "silver wattle", "wattle", "huisache", "ginkgo", "conifer", "kauri", "green douglas fir", "miro", "cedar", "cedar", "douglas fir", "matai", "arborvitae", "spruce", "yew", "araucaria", "cypress", "metasequoia", "pine", "fir", "larch", "hemlock", "cedar of Lebanon", "Atlas cedar", "deodar", "southern white cedar", "incense cedar", "Oregon cedar", "Japanese cedar", "Oriental arborvitae", "American arborvitae", "western red cedar", "Colorado spruce", "white spruce", "Norway spruce", "red spruce", "black spruce", "Sitka spruce", "oriental spruce", "bunya bunya", "monkey puzzle", "Monterey cypress", "Arizona cypress", "Italian cypress", "Scotch pine", "pond pine", "pitch pine", "table-mountain pine", "ancient pine", "stone pine", "Jeffrey pine", "loblolly pine", "Swiss pine", "spruce pine", "white pine", "red pine", "Japanese black pine", "Swiss mountain pine", "black pine", "Monterey pine", "yellow pine", "Torrey pine", "shore pine", "bristlecone pine", "whitebark pine", "western white pine", "longleaf pine", "ponderosa", "silver fir", "Fraser fir", "Alpine fir", "amabilis fir", "lowland fir", "balsam fir", "European silver fir", "white fir", "western larch", "American larch", "eastern hemlock", "western hemlock", "mountain hemlock", "gumbo-limbo", "elephant tree", "sweet gum", "eucalyptus", "sour gum", "liquidambar", "snow gum", "mountain ash", "black mallee", "alpine ash", "red gum", "red gum", "blue gum", "osier", "pussy willow", "bay willow", "weeping willow", "swamp willow", "purple willow", "common osier", "European turkey oak", "red oak", "cork oak", "black oak", "live oak", "chestnut oak", "bluejack oak", "pin oak", "post oak", "shingle oak", "white oak", "laurel oak", "northern red oak", "southern red oak", "southern live oak", "canyon oak", "coast live oak", "chinquapin oak", "basket oak", "swamp chestnut oak", "bur oak", "Oregon white oak", "common oak", "tamarind", "catalpa", "carob", "California sycamore", "American sycamore", "London plane", "lightwood", "black mangrove", "wild raspberry", "black raspberry", "bluebonnet", "Texas bluebonnet", "thistle", "cat's-ear", "corn cockle", "yellow rocket", "fireweed", "stinging nettle", "horseweed", "stemless carline thistle", "musk thistle", "cotton thistle", "plume thistle", "field thistle", "bull thistle", "Canada thistle", "hippeastrum", "narcissus", "iridaceous plant", "fritillary", "liliaceous plant", "star-of-Bethlehem", "daffodil", "jonquil", "jonquil", "iris", "blue-eyed grass", "blackberry-lily", "dwarf iris", "dwarf iris", "beardless iris", "bearded iris", "Japanese iris", "German iris", "snake's head fritillary", "crown imperial", "dogtooth violet", "lily", "African lily", "grape hyacinth", "common camas", "false lily of the valley", "common hyacinth", "camas", "clintonia", "lemon lily", "squaw grass", "scilla", "tulip", "alliaceous plant", "fawn lily", "glacier lily", "yellow adder's tongue", "Turk's-cap", "Turk's-cap", "tiger lily", "tiger lily", "mountain lily", "Easter lily", "tassel hyacinth", "common grape hyacinth", "Tulipa gesneriana", "Darwin tulip", "garlic chive", "wild garlic", "Hottentot fig", "livingstone daisy", "cactus", "nopal", "nopal", "barrel cactus", "night-blooming cereus", "night-blooming cereus", "night-blooming cereus", "cholla", "echinocactus", "mammillaria", "feather ball", "prickly pear", "crab cactus", "saguaro", "Christmas cactus", "hedgehog cactus", "golden barrel cactus", "flamingo flower", "anthurium", "gloxinia", "baneberry", "red baneberry", "poison ivy", "gloriosa", "monkshood", "American holly", "oleander", "poison ash", "herbivore", "big game", "thoroughbred", "creepy-crawly", "young", "domestic animal", "pet", "critter", "larva", "feeder", "male", "pest", "omnivore", "predator", "chordate", "work animal", "invertebrate", "female", "marine animal", "scavenger", "hexapod", "mate", "prey", "carnivore", "young mammal", "orphan", "spat", "young bird", "hatchling", "foal", "kitten", "calf", "pup", "calf", "lamb", "baby", "puppy", "suckling", "cub", "piglet", "nestling", "fledgling", "head", "stray", "feeder", "tadpole", "caterpillar", "nymph", "doodlebug", "tobacco hornworm", "cabbageworm", "tomato hornworm", "silkworm", "cutworm", "woolly bear", "measuring worm", "armyworm", "silkworm", "tussock caterpillar", "tent caterpillar", "colt", "ridgeling", "sire", "sea squirt", "ascidian", "vertebrate", "aquatic vertebrate", "amphibian", "mammal", "baby", "fetus", "quadruped", "reptile", "bird", "fish", "lamprey", "teleost fish", "food fish", "elasmobranch", "ganoid", "trumpetfish", "pipefish", "seahorse", "spiny-finned fish", "soft-finned fish", "needlefish", "beluga", "gar", "bowfin", "paddlefish", "sturgeon", "percoid fish", "dragonet", "frogfish", "barracuda", "soldierfish", "goosefish", "scorpaenoid", "flatfish", "great barracuda", "plectognath", "snook", "perch", "perch", "dolphinfish", "freshwater bass", "scombroid", "bass", "parrotfish", "sea bream", "grunt", "flathead", "bluefish", "carangid fish", "damselfish", "butterfly fish", "mudskipper", "pike", "goby", "tautog", "sunfish", "snapper", "snapper", "sciaenid fish", "wolffish", "cichlid", "wrasse", "yellow perch", "European perch", "walleye", "mackerel", "skipjack", "black marlin", "sailfish", "marlin", "bonito", "tuna", "wahoo", "Spanish mackerel", "Spanish mackerel", "cero", "king mackerel", "bluefin", "yellowfin", "jack", "permit", "scad", "crevalle jack", "kingfish", "amberjack", "yellowtail", "horse mackerel", "horse mackerel", "clown anemone fish", "sergeant major", "anemone fish", "chaetodon", "rock beauty", "angelfish", "northern pike", "pickerel", "muskellunge", "black bass", "pumpkinseed", "freshwater bream", "bluegill", "crappie", "smallmouth", "largemouth", "sea trout", "croaker", "kingfish", "mulloway", "red drum", "white croaker", "white croaker", "scorpaenid", "flathead", "scorpionfish", "lionfish", "stonefish", "rockfish", "plaice", "flounder", "halibut", "cowfish", "boxfish", "ocean sunfish", "puffer", "spiny puffer", "triggerfish", "balloonfish", "porcupinefish", "tarpon", "bonefish", "pollack", "anchovy", "lizardfish", "catfish", "cypriniform fish", "eel", "clupeid fish", "European catfish", "flathead catfish", "channel catfish", "blue catfish", "characin", "electric eel", "cyprinodont", "loach", "cyprinid", "topminnow", "piranha", "cardinal tetra", "tetra", "killifish", "striped killifish", "guppy", "swordtail", "carp", "minnow", "tench", "crucian carp", "goldfish", "gudgeon", "platy", "mosquitofish", "conger", "tuna", "moray", "sardine", "pilchard", "sea bass", "trout", "salmon", "barracouta", "grouper", "striped bass", "jewfish", "hind", "sea trout", "brook trout", "rainbow trout", "brown trout", "lake trout", "chinook", "Atlantic salmon", "redfish", "coho", "landlocked salmon", "shark", "ray", "sand tiger", "angel shark", "nurse shark", "requiem shark", "smooth dogfish", "hammerhead", "mackerel shark", "whale shark", "bull shark", "blue shark", "sandbar shark", "blacktip shark", "whitetip shark", "tiger shark", "lemon shark", "whitetip shark", "smoothhound", "great white shark", "mako", "porbeagle", "stingray", "electric ray", "spotted eagle ray", "Atlantic manta", "manta", "skate", "eagle ray", "salamander", "frog", "spotted salamander", "newt", "European fire salamander", "slender salamander", "ambystomid", "eft", "common newt", "red eft", "spotted salamander", "axolotl", "tiger salamander", "true toad", "true frog", "tailed frog", "crapaud", "tree toad", "tree frog", "natterjack", "Eurasian green toad", "bufo", "American toad", "agua", "western toad", "European toad", "grass frog", "wood-frog", "bullfrog", "leopard frog", "pickerel frog", "green frog", "spring peeper", "chorus frog", "placental", "tusker", "monotreme", "marsupial", "female mammal", "aardvark", "livestock", "insectivore", "hyrax", "doe", "edentate", "stag", "bull", "primate", "carnivore", "bat", "aquatic mammal", "lagomorph", "rock hyrax", "yearling", "rodent", "cow", "pachyderm", "buck", "pangolin", "ungulate", "shrew", "hedgehog", "peba", "sloth", "armadillo", "anteater", "two-toed sloth", "two-toed sloth", "three-toed sloth", "ant bear", "tamandua", "simian", "tarsier", "homo", "ape", "lemur", "monkey", "Homo sapiens sapiens", "Homo sapiens", "Neandertal man", "anthropoid ape", "lesser ape", "great ape", "siamang", "gibbon", "chimpanzee", "orangutan", "gorilla", "pygmy chimpanzee", "central chimpanzee", "western lowland gorilla", "mountain gorilla", "silverback", "indri", "Madagascar cat", "potto", "galago", "slow loris", "Old World monkey", "New World monkey", "baboon", "vervet", "proboscis monkey", "colobus", "patas", "macaque", "guenon", "langur", "chacma", "mandrill", "Barbary ape", "rhesus", "spider monkey", "marmoset", "squirrel monkey", "titi", "capuchin", "howler monkey", "tamarin", "pygmy marmoset", "procyonid", "feline", "viverrine", "canine", "musteline mammal", "bear", "coati", "common raccoon", "lesser panda", "raccoon", "kinkajou", "giant panda", "big cat", "cat", "jaguar", "tiger", "leopard", "cheetah", "lion", "snow leopard", "tigress", "Bengal tiger", "tiger cub", "lioness", "lion cub", "domestic cat", "wildcat", "tabby", "tiger cat", "tabby", "tortoiseshell", "Manx", "Egyptian cat", "Abyssinian", "kitty", "Angora", "Persian cat", "Burmese cat", "Siamese cat", "alley cat", "tom", "mouser", "margay", "ocelot", "lynx", "cougar", "European wildcat", "serval", "manul", "sand cat", "common lynx", "bobcat", "caracal", "Canada lynx", "meerkat", "genet", "mongoose", "slender-tailed meerkat", "suricate", "dog", "wild dog", "wolf", "bitch", "jackal", "fox", "hyena", "pug", "corgi", "Great Pyrenees", "Brabancon griffon", "poodle", "cur", "Leonberg", "griffon", "dalmatian", "pooch", "spitz", "toy dog", "hunting dog", "working dog", "basenji", "Mexican hairless", "Newfoundland", "lapdog", "Cardigan", "Pembroke", "standard poodle", "toy poodle", "miniature poodle", "Pomeranian", "keeshond", "chow", "Samoyed", "toy spaniel", "Shih-Tzu", "toy terrier", "Maltese dog", "Japanese spaniel", "Chihuahua", "Pekinese", "King Charles spaniel", "Blenheim spaniel", "papillon", "terrier", "Rhodesian ridgeback", "sausage dog", "sporting dog", "hound", "dachshund", "Dandie Dinmont", "schnauzer", "wirehair", "Airedale", "West Highland white terrier", "Kerry blue terrier", "Norfolk terrier", "Border terrier", "Yorkshire terrier", "wire-haired fox terrier", "Bedlington terrier", "Tibetan terrier", "silky terrier", "Lhasa", "Scotch terrier", "cairn", "Boston bull", "fox terrier", "Australian terrier", "bullterrier", "Norwich terrier", "Irish terrier", "rat terrier", "soft-coated wheaten terrier", "standard schnauzer", "giant schnauzer", "miniature schnauzer", "Lakeland terrier", "Welsh terrier", "Sealyham terrier", "Staffordshire bullterrier", "American Staffordshire terrier", "Manchester terrier", "toy Manchester", "water dog", "pointer", "bird dog", "setter", "spaniel", "retriever", "vizsla", "German short-haired pointer", "Gordon setter", "English setter", "Irish setter", "cocker spaniel", "water spaniel", "springer spaniel", "Brittany spaniel", "clumber", "Sussex spaniel", "Irish water spaniel", "English springer", "Welsh springer spaniel", "flat-coated retriever", "golden retriever", "curly-coated retriever", "Chesapeake Bay retriever", "Labrador retriever", "otterhound", "bloodhound", "wolfhound", "basset", "Ibizan hound", "Norwegian elkhound", "coonhound", "Saluki", "Afghan hound", "black-and-tan coonhound", "bluetick", "Scottish deerhound", "redbone", "foxhound", "beagle", "Weimaraner", "greyhound", "borzoi", "Irish wolfhound", "English foxhound", "Walker hound", "whippet", "Italian greyhound", "Great Dane", "watchdog", "Eskimo dog", "Tibetan mastiff", "sled dog", "Saint Bernard", "French bulldog", "police dog", "bulldog", "Sennenhunde", "bull mastiff", "shepherd dog", "boxer", "mastiff", "kuvasz", "housedog", "pinscher", "schipperke", "Doberman", "miniature pinscher", "affenpinscher", "Siberian husky", "malamute", "Greater Swiss Mountain dog", "EntleBucher", "Bernese mountain dog", "Appenzeller", "Belgian sheepdog", "kelpie", "Shetland sheepdog", "komondor", "Border collie", "collie", "Rottweiler", "Old English sheepdog", "German shepherd", "briard", "Bouvier des Flandres", "groenendael", "malinois", "African hunting dog", "dingo", "dhole", "coyote", "wolf pup", "red wolf", "white wolf", "timber wolf", "red fox", "red fox", "kit fox", "Arctic fox", "grey fox", "kit fox", "spotted hyena", "striped hyena", "mink", "black-footed ferret", "striped skunk", "pine marten", "sea otter", "otter", "weasel", "polecat", "glutton", "skunk", "badger", "ferret", "river otter", "Eurasian otter", "ice bear", "American black bear", "bear cub", "Asiatic black bear", "brown bear", "sloth bear", "grizzly", "Alaskan brown bear", "carnivorous bat", "flying fox", "fruit bat", "brown bat", "vespertilian bat", "pallid bat", "pipistrelle", "cetacean", "sea cow", "pinniped mammal", "whale", "toothed whale", "baleen whale", "dolphin", "bottle-nosed whale", "porpoise", "common dolphin", "bottlenose dolphin", "pilot whale", "killer whale", "white whale", "Pacific bottlenose dolphin", "Atlantic bottlenose dolphin", "grey whale", "rorqual", "blue whale", "lesser rorqual", "finback", "manatee", "dugong", "walrus", "seal", "earless seal", "eared seal", "elephant seal", "harbor seal", "harp seal", "fur seal", "fur seal", "sea lion", "California sea lion", "Australian sea lion", "Steller sea lion", "pika", "leporid", "rabbit", "hare", "eastern cottontail", "wood rabbit", "bunny", "European rabbit", "lapin", "Angora", "rabbit ears", "snowshoe hare", "European hare", "jackrabbit", "chinchilla", "rat", "capybara", "golden hamster", "water vole", "porcupine", "coypu", "vole", "beaver", "hamster", "prairie dog", "squirrel", "marmot", "blacktail prairie dog", "cavy", "gerbil", "mouse", "muskrat", "gopher", "brown rat", "black rat", "chipmunk", "ground squirrel", "eastern chipmunk", "tree squirrel", "rock squirrel", "mantled ground squirrel", "eastern grey squirrel", "red squirrel", "black squirrel", "American red squirrel", "fox squirrel", "hoary marmot", "groundhog", "aperea", "guinea pig", "field mouse", "house mouse", "elephant", "African elephant", "Indian elephant", "even-toed ungulate", "odd-toed ungulate", "ruminant", "camel", "swine", "llama", "vicuna", "collared peccary", "hippopotamus", "peccary", "pronghorn", "deer", "bovid", "giraffe", "okapi", "woodland caribou", "caribou", "fallow deer", "elk", "hart", "mule deer", "fawn", "red deer", "muntjac", "Virginia deer", "wapiti", "Japanese deer", "roe deer", "black-tailed deer", "wild sheep", "bison", "musk ox", "Old World buffalo", "bovine", "antelope", "sheep", "goat antelope", "goat", "aoudad", "mountain sheep", "Dall sheep", "bighorn", "mouflon", "American bison", "wisent", "carabao", "water buffalo", "Cape buffalo", "Brahman", "ox", "zebu", "cattle", "yak", "gaur", "beef", "ox", "bull", "bullock", "heifer", "cow", "dairy cattle", "longhorn", "Charolais", "Hereford", "Durham", "Aberdeen Angus", "Galloway", "Friesian", "Brown Swiss", "kudu", "addax", "blackbuck", "waterbuck", "eland", "steenbok", "dik-dik", "gnu", "harnessed antelope", "gerenuk", "sassaby", "impala", "greater kudu", "sable antelope", "hartebeest", "bongo", "gemsbok", "oryx", "gazelle", "nyala", "bushbuck", "Thomson's gazelle", "springbok antelope", "domestic sheep", "black sheep", "ewe", "wether", "ram", "mountain goat", "chamois", "takin", "nanny", "kid", "ibex", "Angora", "domestic goat", "billy", "wild goat", "Bactrian camel", "Arabian camel", "wild boar", "warthog", "boar", "hog", "guanaco", "alpaca", "rhinoceros", "tapir", "equine", "Malayan tapir", "Indian rhinoceros", "black rhinoceros", "white rhinoceros", "horse", "zebra", "ass", "bay", "broodmare", "racehorse", "palomino", "wild horse", "pinto", "hack", "roan", "male horse", "post horse", "liver chestnut", "tarpan", "saddle horse", "chestnut", "harness horse", "polo pony", "workhorse", "mare", "pony", "pony", "sorrel", "yearling", "thoroughbred", "trotting horse", "stud", "stallion", "gelding", "Tennessee walker", "hack", "cavalry horse", "grey", "Morgan", "buckskin", "dun", "Arabian", "quarter horse", "cob", "hackney", "plow horse", "farm horse", "draft horse", "carthorse", "Percheron", "Clydesdale", "shire", "cayuse", "bronco", "mustang", "Welsh pony", "Shetland pony", "Exmoor", "common zebra", "mountain zebra", "grevy's zebra", "jennet", "burro", "domestic ass", "echidna", "platypus", "echidna", "kangaroo", "koala", "wombat", "common opossum", "opossum", "dasyurid marsupial", "phalanger", "giant kangaroo", "wallaby", "rock wallaby", "tree wallaby", "Tasmanian devil", "numbat", "chelonian", "diapsid", "turtle", "Western box turtle", "box turtle", "common snapping turtle", "terrapin", "soft-shelled turtle", "painted turtle", "sea turtle", "snapping turtle", "slider", "tortoise", "mud turtle", "cooter", "hawksbill turtle", "loggerhead", "green turtle", "leatherback turtle", "ridley", "Pacific ridley", "Atlantic ridley", "giant tortoise", "gopher tortoise", "European tortoise", "desert tortoise", "crocodilian reptile", "snake", "tuatara", "lizard", "dinosaur", "alligator", "crocodile", "American alligator", "caiman", "Asian crocodile", "African crocodile", "blind snake", "viper", "sea snake", "elapid", "constrictor", "colubrid snake", "horned viper", "asp", "adder", "puff adder", "pit viper", "water moccasin", "copperhead", "rattlesnake", "ground rattler", "massasauga", "diamondback", "Mojave rattlesnake", "timber rattlesnake", "prairie rattlesnake", "Western diamondback", "sidewinder", "rock rattlesnake", "speckled rattlesnake", "cobra", "green mamba", "taipan", "copperhead", "mamba", "coral snake", "coral snake", "Indian cobra", "hamadryad", "boa", "python", "rosy boa", "boa constrictor", "anaconda", "reticulated python", "carpet snake", "rock python", "blacksnake", "garter snake", "bull snake", "hognose snake", "rat snake", "whip-snake", "water snake", "green snake", "racer", "green snake", "thunder snake", "ringneck snake", "vine snake", "king snake", "night snake", "ribbon snake", "common garter snake", "pine snake", "gopher snake", "corn snake", "black rat snake", "grass snake", "common water snake", "water moccasin", "smooth green snake", "rough green snake", "milk snake", "common kingsnake", "banded gecko", "chameleon", "monitor", "skink", "Gila monster", "Komodo dragon", "whiptail", "iguanid", "agamid", "gecko", "African chameleon", "lacertid lizard", "anguid lizard", "horned lizard", "tree lizard", "chuckwalla", "American chameleon", "basilisk", "side-blotched lizard", "spiny lizard", "collared lizard", "common iguana", "marine iguana", "leopard lizard", "western fence lizard", "fence lizard", "agama", "mountain devil", "frilled lizard", "green lizard", "sand lizard", "blindworm", "alligator lizard", "ornithischian", "tyrannosaur", "stegosaur", "triceratops", "bird of passage", "aquatic bird", "passerine", "cock", "hummingbird", "piciform bird", "coraciiform bird", "quetzal", "bird of prey", "caprimulgiform bird", "cuculiform bird", "gamecock", "ratite", "gallinaceous bird", "trogon", "parrot", "carinate", "dickeybird", "hen", "wading bird", "swan", "gallinule", "seabird", "waterfowl", "heron", "crested cariama", "trumpeter", "bustard", "ibis", "stork", "whooping crane", "crane", "limpkin", "chunga", "flamingo", "rail", "spoonbill", "shoebill", "shorebird", "great blue heron", "night heron", "little blue heron", "boatbill", "great white heron", "egret", "bittern", "black-crowned night heron", "yellow-crowned night heron", "great white heron", "little egret", "snowy egret", "American egret", "cattle egret", "least bittern", "American bittern", "wood ibis", "sacred ibis", "marabou", "black stork", "white stork", "saddlebill", "jabiru", "policeman bird", "wood ibis", "notornis", "weka", "spotted crake", "crake", "coot", "Old World coot", "American coot", "common spoonbill", "roseate spoonbill", "plover", "godwit", "Hudsonian godwit", "stilt", "stone curlew", "oystercatcher", "stilt", "American woodcock", "snipe", "woodcock", "avocet", "sandpiper", "European curlew", "pratincole", "curlew", "phalarope", "golden plover", "ruddy turnstone", "killdeer", "lapwing", "turnstone", "piping plover", "black-necked stilt", "black-winged stilt", "whole snipe", "Wilson's snipe", "great snipe", "dowitcher", "tattler", "greenshank", "willet", "curlew sandpiper", "sanderling", "redshank", "spotted sandpiper", "knot", "red-backed sandpiper", "upland sandpiper", "least sandpiper", "pectoral sandpiper", "ruff", "European sandpiper", "yellowlegs", "greater yellowlegs", "lesser yellowlegs", "red phalarope", "Wilson's phalarope", "pen", "cygnet", "trumpeter", "coscoroba", "mute swan", "cob", "whooper", "black swan", "tundra swan", "whistling swan", "Bewick's swan", "purple gallinule", "European gallinule", "moorhen", "coastal diving bird", "pelagic bird", "grebe", "auk", "loon", "pelecaniform seabird", "sphenisciform seabird", "puffin", "larid", "jaeger", "skimmer", "sea swallow", "gull", "tern", "ivory gull", "mew", "laughing gull", "black-backed gull", "kittiwake", "herring gull", "skua", "parasitic jaeger", "petrel", "albatross", "wandering albatross", "shearwater", "storm petrel", "fulmar", "red-necked grebe", "great crested grebe", "pied-billed grebe", "black-necked grebe", "dabchick", "razorbill", "guillemot", "auklet", "murre", "black guillemot", "common murre", "pigeon guillemot", "frigate bird", "cormorant", "snakebird", "pelican", "gannet", "water turkey", "tropic bird", "white pelican", "Old world white pelican", "solan", "booby", "penguin", "emperor penguin", "jackass penguin", "king penguin", "rock hopper", "Adelie", "horned puffin", "tufted puffin", "Atlantic puffin", "anseriform bird", "goose", "duck", "blue goose", "barnacle goose", "snow goose", "Chinese goose", "common brant goose", "brant", "gosling", "greylag", "gander", "honker", "diving duck", "scaup", "shelduck", "wood drake", "bufflehead", "black duck", "mandarin duck", "American widgeon", "pintail", "mallard", "sheldrake", "teal", "Barrow's goldeneye", "quack-quack", "wild duck", "ruddy duck", "wood duck", "drake", "muscovy duck", "shoveler", "dabbling duck", "widgeon", "sea duck", "redhead", "pochard", "goldeneye", "canvasback", "duckling", "greater scaup", "lesser scaup", "garganey", "greenwing", "bluewing", "eider", "old squaw", "merganser", "scoter", "common scoter", "American merganser", "red-breasted merganser", "hooded merganser", "smew", "goosander", "wren", "broadbill", "tyrannid", "oscine", "scrubbird", "sparrow", "marsh wren", "rock wren", "winter wren", "cactus wren", "house wren", "Carolina wren", "ovenbird", "manakin", "pitta", "woodhewer", "New World flycatcher", "kingbird", "phoebe", "pewee", "vermillion flycatcher", "western wood pewee", "scissortail", "grey kingbird", "eastern kingbird", "Arkansas kingbird", "warbler", "brown creeper", "corvine bird", "starling", "pipit", "titmouse", "fairy bluebird", "thrush", "hedge sparrow", "wood swallow", "shrike", "lark", "golden oriole", "Old World flycatcher", "thrasher", "vireo", "tanager", "honeycreeper", "finch", "bowerbird", "water ouzel", "accentor", "mockingbird", "brown thrasher", "skylark", "catbird", "satin bowerbird", "waxwing", "red-eyed vireo", "New World oriole", "Old World oriole", "babbler", "swallow", "creeper", "songbird", "Australian magpie", "wagtail", "meadow pipit", "spotted flycatcher", "weaver", "nuthatch", "greater whitethroat", "New World warbler", "kinglet", "Old World warbler", "gnatcatcher", "lesser whitethroat", "yellowthroat", "common yellowthroat", "ovenbird", "parula warbler", "Blackburn", "yellow warbler", "American redstart", "yellow-breasted chat", "Audubon's warbler", "Wilson's warbler", "Cape May warbler", "myrtle warbler", "goldcrest", "ruby-crowned kinglet", "tailorbird", "sedge warbler", "wren warbler", "blackcap", "rook", "Clark's nutcracker", "jackdaw", "European magpie", "jay", "raven", "crow", "magpie", "American crow", "blue jay", "Canada jay", "common starling", "hill myna", "myna", "bushtit", "chickadee", "blue tit", "tufted titmouse", "Carolina chickadee", "black-capped chickadee", "robin", "robin", "hermit thrush", "redwing", "fieldfare", "song thrush", "nightingale", "blackbird", "missel thrush", "ring ouzel", "wheatear", "bluebird", "thrush nightingale", "bluethroat", "redstart", "bulbul", "Old World chat", "wood thrush", "stonechat", "whinchat", "butcherbird", "loggerhead shrike", "bush shrike", "northern shrike", "European shrike", "western tanager", "summer tanager", "scarlet tanager", "serin", "bullfinch", "grosbeak", "goldfinch", "New World sparrow", "crossbill", "bunting", "linnet", "cardinal", "siskin", "common canary", "towhee", "purple finch", "honeycreeper", "brambling", "New World goldfinch", "pine siskin", "redpoll", "dark-eyed junco", "house finch", "chaffinch", "canary", "redpoll", "junco", "pine grosbeak", "evening grosbeak", "hawfinch", "song sparrow", "white-throated sparrow", "tree sparrow", "field sparrow", "white-crowned sparrow", "swamp sparrow", "chipping sparrow", "indigo bunting", "reed bunting", "snow bunting", "ortolan", "yellowhammer", "cedar waxwing", "Bohemian waxwing", "bobolink", "meadowlark", "northern oriole", "orchard oriole", "New World blackbird", "eastern meadowlark", "western meadowlark", "Bullock's oriole", "Baltimore oriole", "purple grackle", "cowbird", "grackle", "red-winged blackbird", "white-bellied swallow", "tree swallow", "martin", "barn swallow", "cliff swallow", "house martin", "bank martin", "butcherbird", "currawong", "Java sparrow", "zebra finch", "red-breasted nuthatch", "European nuthatch", "white-breasted nuthatch", "English sparrow", "tree sparrow", "thornbill", "Archilochus colubris", "jacamar", "woodpecker", "barbet", "toucanet", "toucan", "flicker", "downy woodpecker", "green woodpecker", "sapsucker", "wryneck", "redheaded woodpecker", "yellow-shafted flicker", "red-breasted sapsucker", "yellow-bellied sapsucker", "kingfisher", "roller", "motmot", "Euopean hoopoe", "hornbill", "European roller", "hoopoe", "bee eater", "kookaburra", "Eurasian kingfisher", "belted kingfisher", "vulture", "hawk", "secretary bird", "eagle", "owl", "Old World vulture", "New World vulture", "Egyptian vulture", "bearded vulture", "black vulture", "griffon vulture", "black vulture", "buzzard", "king vulture", "condor", "Andean condor", "California condor", "harrier", "goshawk", "red-shouldered hawk", "honey buzzard", "falcon", "harrier eagle", "Cooper's hawk", "osprey", "kite", "rough-legged hawk", "buzzard", "sparrow hawk", "marsh harrier", "marsh hawk", "carancha", "gyrfalcon", "peregrine", "caracara", "hobby", "pigeon hawk", "kestrel", "sparrow hawk", "white-tailed kite", "swallow-tailed kite", "black kite", "eaglet", "golden eagle", "sea eagle", "bald eagle", "harpy", "tawny eagle", "fishing eagle", "ern", "tawny owl", "owlet", "spotted owl", "screech owl", "horned owl", "screech owl", "little owl", "barn owl", "scops owl", "Old World scops owl", "hawk owl", "great horned owl", "barred owl", "long-eared owl", "great grey owl", "frogmouth", "goatsucker", "touraco", "cuckoo", "coucal", "roadrunner", "rhea", "rhea", "ostrich", "emu", "cassowary", "domestic fowl", "columbiform bird", "brush turkey", "red jungle fowl", "jungle fowl", "game bird", "turkey cock", "bantam", "turkey", "guinea fowl", "chicken", "cockerel", "cock", "Rhode Island red", "chick", "Orpington", "hen", "pullet", "brood hen", "sandgrouse", "pigeon", "domestic pigeon", "dove", "wood pigeon", "rock dove", "homing pigeon", "roller", "Streptopelia turtur", "turtledove", "Australian turtledove", "mourning dove", "phasianid", "tinamou", "grouse", "pheasant", "quail", "partridge", "tragopan", "ring-necked pheasant", "golden pheasant", "peafowl", "peahen", "blue peafowl", "peacock", "green peafowl", "bobwhite", "California quail", "northern bobwhite", "red-legged partridge", "Hungarian partridge", "spruce grouse", "prairie chicken", "capercaillie", "ruffed grouse", "sage grouse", "moorhen", "black grouse", "ptarmigan", "cockateel", "parakeet", "cockatoo", "poll", "kea", "African grey", "macaw", "amazon", "lovebird", "lory", "popinjay", "budgerigar", "ring-necked parakeet", "sulphur-crested cockatoo", "pink cockatoo", "rainbow lorikeet", "lorikeet", "beast of burden", "draft animal", "ctenophore", "worm", "mollusk", "echinoderm", "coelenterate", "arthropod", "sponge", "nematode", "annelid", "flatworm", "medicinal leech", "earthworm", "chiton", "bivalve", "cephalopod", "gastropod", "oyster", "ark shell", "clam", "mussel", "cockle", "scallop", "pearl oyster", "soft-shell clam", "quahog", "giant clam", "freshwater mussel", "edible mussel", "zebra mussel", "octopod", "chambered nautilus", "cuttlefish", "octopus", "paper nautilus", "sea hare", "cowrie", "conch", "seasnail", "ormer", "tiger cowrie", "sea slug", "slug", "snail", "common limpet", "whelk", "nerita", "edible snail", "brown snail", "garden snail", "starfish", "feather star", "sand dollar", "sea urchin", "sea cucumber", "brittle star", "polyp", "anthozoan", "Portuguese man-of-war", "jellyfish", "sea pen", "sea anemone", "coral", "stony coral", "gorgonian", "sea fan", "mushroom coral", "brain coral", "centipede", "crustacean", "trilobite", "millipede", "arachnid", "horseshoe crab", "instar", "insect", "house centipede", "daphnia", "brachyuran", "mantis shrimp", "malacostracan crustacean", "decapod crustacean", "isopod", "amphipod", "pill bug", "woodlouse", "lobster", "shrimp", "hermit crab", "prawn", "crab", "crayfish", "Norway lobster", "spiny lobster", "American lobster", "king crab", "blue crab", "rock crab", "Dungeness crab", "fiddler crab", "European spider crab", "scorpion", "harvestman", "acarine", "spider", "tick", "mite", "wood tick", "orb-weaving spider", "European wolf spider", "tarantula", "wolf spider", "garden spider", "black widow", "black and gold garden spider", "barn spider", "orthopterous insect", "hemipterous insect", "neuropteron", "dictyopterous insect", "collembolan", "mayfly", "homopterous insect", "dipterous insect", "earwig", "common European earwig", "phasmid", "pollinator", "bug", "pupa", "walking stick", "scorpion fly", "beetle", "heteropterous insect", "stonefly", "hymenopterous insect", "lepidopterous insect", "chrysalis", "odonate", "silverfish", "worker bee", "grasshopper", "cricket", "katydid", "locust", "true bug", "bedbug", "dobson", "green lacewing", "lacewing", "mantis", "praying mantis", "cockroach", "American cockroach", "German cockroach", "oriental cockroach", "plant louse", "cicada", "meadow spittlebug", "seventeen-year locust", "mealybug", "leafhopper", "aphid", "mosquito", "crane fly", "midge", "fruit fly", "fly", "horse tick", "robber fly", "Asian tiger mosquito", "common mosquito", "bee fly", "horsefly", "flesh fly", "blowfly", "housefly", "greenbottle", "bluebottle", "Colorado potato beetle", "firefly", "ground beetle", "sawyer", "ladybug", "lamellicorn beetle", "rove beetle", "Asian longhorned beetle", "leaf beetle", "elaterid beetle", "click beetle", "tiger beetle", "weevil", "long-horned beetle", "Hippodamia convergens", "vedalia", "scarabaeid beetle", "stag beetle", "rose chafer", "June beetle", "Japanese beetle", "rhinoceros beetle", "dung beetle", "scarab", "cockchafer", "water strider", "wheel bug", "wasp", "ichneumon fly", "ant", "bee", "cicada killer", "digger wasp", "vespid", "hornet", "paper wasp", "common wasp", "giant hornet", "yellow jacket", "carpenter ant", "fire ant", "wood ant", "carpenter bee", "honeybee", "mason bee", "andrena", "leaf-cutting bee", "bumblebee", "Africanized bee", "black bee", "butterfly", "moth", "lycaenid", "nymphalid", "sulphur butterfly", "ringlet", "monarch", "cabbage butterfly", "blue", "hairstreak", "copper", "tortoiseshell", "fritillary", "admiral", "banded purple", "peacock", "red-spotted purple", "painted beauty", "mourning cloak", "viceroy", "red admiral", "white admiral", "comma", "small white", "large white", "cinnabar", "saturniid", "noctuid moth", "hawkmoth", "tea tortrix", "geometrid", "tineid", "atlas moth", "emperor", "polyphemus moth", "cecropia", "luna moth", "carpet moth", "clothes moth", "dragonfly", "damselfly", "hen", "filly", "dam", "herpes", "protoctist", "herpes simplex", "herpes zoster", "cytomegalovirus", "herpes varicella zoster", "alga", "protozoan", "seagrass", "pond scum", "green algae", "plasmodium", "ameba", "ciliate", "paramecium", "sphagnum", "hepatica", "liverwort", "peer", "birth", "adult", "juvenile", "countrywoman", "businessperson", "native", "celebrant", "native", "Filipino", "male", "Gemini", "onlooker", "queen", "referee", "commoner", "expert", "newcomer", "face", "demonstrator", "orphan", "Black woman", "contestant", "bullfighter", "lowerclassman", "candidate", "friend", "life", "anomaly", "actor", "thrower", "creature", "child", "sheep", "scuba diver", "dancer", "garbage man", "entertainer", "lover", "unfortunate", "anti", "defender", "sphinx", "Indian", "patient", "Slav", "White", "brick", "recipient", "religious person", "rescuer", "Latin", "money handler", "rich person", "domestic partner", "creator", "consumer", "worker", "groom", "boy scout", "inhabitant", "African", "fan", "eager beaver", "leader", "schoolmate", "man", "philatelist", "advocate", "eccentric", "bad person", "transvestite", "citizen", "communicator", "nonworker", "parrot", "intellectual", "nonsmoker", "student", "chameleon", "combatant", "platinum blond", "appointee", "unpleasant person", "politician", "ruler", "ancient", "spectator", "right-hander", "traveler", "scientist", "picker", "female", "acquaintance", "Black", "relative", "beard", "redhead", "sleeper", "computer user", "associate", "participant", "member", "raiser", "groom", "bride", "commissioner", "director", "tribesman", "board member", "important person", "professional", "oldster", "celebrity", "very important person", "serjeant-at-law", "educator", "health professional", "teacher", "reading teacher", "schoolmaster", "nurse", "medical practitioner", "pharmacist", "head nurse", "probationer", "doctor", "surgeon", "specialist", "house physician", "cardiologist", "radiologist", "schoolchild", "child", "bairn", "orphan", "entrepreneur", "baron", "agent", "merchant", "certified public accountant", "syndic", "insurance broker", "fishmonger", "vintner", "peddler", "seller", "male child", "mother's boy", "son", "man", "cub", "farm boy", "bat boy", "Herr", "hunk", "Peter Pan", "patriarch", "adonis", "young buck", "stud", "guy", "patriarch", "sleuth", "archer", "authority", "military attache", "therapist", "technician", "black belt", "high priest", "critic", "taster", "panelist", "physical therapist", "osteopath", "player", "athlete", "rival", "billiard player", "medalist", "seeded player", "chess master", "pool player", "football player", "tennis player", "ball hawk", "vaulter", "runner", "skater", "acrobat", "climber", "diver", "alpinist", "soccer player", "winger", "tennis pro", "forward", "sport", "basketball player", "miler", "ballplayer", "gymnast", "back", "lineman", "halfback", "quarterback", "tailback", "skateboarder", "speedskater", "circus acrobat", "aerialist", "fielder", "designated hitter", "base runner", "minor leaguer", "first baseman", "outfielder", "right fielder", "infielder", "semifinalist", "foe", "matador", "picador", "banderillero", "buddy", "mate", "flatmate", "pitcher", "closer", "right-handed pitcher", "folk dancer", "square dancer", "morris dancer", "compere", "master of ceremonies", "caricaturist", "performer", "fire-eater", "executant", "dancer", "juggler", "puppeteer", "actor", "clown", "musician", "dancing-master", "ballet dancer", "understudy", "starlet", "tenor saxophonist", "percussionist", "guitarist", "keyboardist", "trumpeter", "sitar player", "singer", "oboist", "cellist", "violist", "flutist", "organist", "rock star", "drummer", "songster", "bass", "fiance", "darling", "fancier", "soul mate", "sweetheart", "kisser", "amputee", "homeless", "casualty", "guard", "fireman", "zoo keeper", "lawman", "military policeman", "attorney general", "policeman", "bobby", "Mountie", "detective", "motorcycle cop", "trooper", "traffic cop", "Kiliwa", "Biloxi", "Chickasaw", "Kickapoo", "Arab", "white man", "Omani", "Bedouin", "Yemeni", "protegee", "heiress", "swami", "Buddhist", "Muslim", "novitiate", "religious", "Muslimah", "Sufi", "mother", "monk", "Sister", "treasurer", "ratepayer", "state treasurer", "bursar", "cobbler", "artist", "choreographer", "farmer", "musician", "stylist", "sculptor", "press photographer", "songwriter", "arranger", "beekeeper", "breeder", "agriculturist", "drinker", "policyholder", "drinker", "concert-goer", "drunkard", "beer drinker", "maid", "employee", "assistant", "gondolier", "skilled worker", "skidder", "boatman", "waiter", "bartender", "staff member", "salesperson", "workman", "settler", "breadwinner", "waitress", "salesman", "gardener", "laborer", "mill-hand", "hired hand", "coal miner", "horse wrangler", "goat herder", "farmhand", "attendant", "cog", "model", "escort", "caddie", "companion", "lifeguard", "steward", "color guard", "honor guard", "cover girl", "artist's model", "electrician", "official", "falconer", "balloonist", "craftsman", "pilot", "blacksmith", "trawler", "mender", "baker", "serviceman", "painter", "diplomat", "judge", "incumbent", "appointee", "presbyter", "ambassador", "high commissioner", "plenipotentiary", "glassblower", "carpenter", "coiffeur", "machinist", "wright", "hairdresser", "fighter pilot", "copilot", "artilleryman", "Navy SEAL", "military officer", "enlisted person", "noncommissioned officer", "commanding officer", "naval commander", "adjutant general", "commander in chief", "commissioned officer", "army officer", "adjutant", "inspector general", "sergeant", "first sergeant", "staff sergeant", "commissioned military officer", "commissioned naval officer", "line officer", "major", "lieutenant", "first lieutenant", "marshal", "captain", "general", "lieutenant colonel", "lieutenant commander", "rear admiral", "soldier", "enlisted man", "tanker", "reservist", "Unknown Soldier", "private", "recruit", "yard bird", "villager", "Tahitian", "American", "Asian", "American", "Polynesian", "European", "New Zealander", "North Carolinian", "Minnesotan", "Nebraskan", "Floridian", "Afghan", "Tibetan", "Mongol", "Papuan", "Indian", "Jordanian", "Japanese", "Malay", "Korean", "Timorese", "Bornean", "Lao", "Iraqi", "Gujarati", "Punjabi", "West Indian", "Latin American", "North American", "South American", "Bahamian", "Barbadian", "Haitian", "Central American", "Canadian", "Mexican", "Nicaraguan", "Mexican-American", "Bolivian", "Guyanese", "Albanian", "Byelorussian", "Monegasque", "Frank", "Scandinavian", "Laconian", "Netherlander", "Slovene", "Sabine", "Bulgarian", "Romanian", "Lithuanian", "Englishwoman", "Britisher", "Yugoslav", "Dubliner", "Parisian", "Eritrean", "Tanzanian", "Zulu", "Black African", "Cameroonian", "Sudanese", "Senegalese", "Kenyan", "Togolese", "Ugandan", "Liberian", "Herero", "Zimbabwean", "Nigerian", "Gambian", "Tuareg", "Guinean", "Ethiopian", "South African", "mayor", "politician", "trainer", "employer", "Speaker", "lawgiver", "cheerleader", "head", "aristocrat", "spiritual leader", "instigator", "mistress", "boss", "demagogue", "Labourite", "animal trainer", "pitching coach", "legislator", "deputy", "senator", "administrator", "department head", "secretary", "manageress", "executive", "hotelier", "chief executive officer", "Treasury", "minister", "Secretary of State", "Secretary of the Interior", "duchess", "viscount", "clergyman", "lama", "rabbi", "Dalai Lama", "officiant", "priest", "cleric", "vicar", "Father", "bishop", "diocesan", "cardinal", "metropolitan", "federalist", "supporter", "ambassador", "protectionist", "loyalist", "cheerleader", "adulteress", "wrongdoer", "hypocrite", "abettor", "skinhead", "biographer", "disk jockey", "speaker", "representative", "reporter", "orator", "interlocutor", "organ-grinder", "head of state", "alderman", "resident commissioner", "President of the United States", "president", "television reporter", "anchor", "retiree", "sunbather", "camper", "scholar", "exponent", "casuist", "futurist", "licentiate", "reader", "brawler", "boxer", "wrestler", "flyweight", "middleweight", "sparring partner", "prizefighter", "light heavyweight", "featherweight", "lightweight", "heavyweight", "flyweight", "sumo wrestler", "bantamweight", "egotist", "fire-eater", "upstart", "bragger", "exhibitionist", "sovereign", "Pharaoh", "Cheops", "sheik", "rider", "motorcyclist", "musher", "astronaut", "pedestrian", "mover", "commuter", "pilgrim", "skin-diver", "settler", "tourist", "runner", "gringo", "unicyclist", "hang glider", "jockey", "horseman", "saunterer", "marcher", "hitter", "scrambler", "psycholinguist", "social scientist", "lumper", "sociologist", "political scientist", "economist", "econometrician", "microeconomist", "female child", "woman", "mother's daughter", "girl wonder", "Boy Scout", "Cub Scout", "enchantress", "lady", "old woman", "nymph", "donna", "bridesmaid", "smasher", "primigravida", "signorina", "girl", "beldam", "heroine", "widow", "call girl", "baggage", "wife", "gal", "baby", "lass", "maid", "first lady", "old lady", "crown princess", "father-in-law", "cousin", "kinswoman", "ancestor", "kinsman", "second cousin", "in-law", "kin", "twin", "offspring", "sibling", "niece", "aunt", "great-niece", "sister", "great-aunt", "little sister", "big sister", "parent", "forefather", "forebear", "patriarch", "mater", "father", "mother", "dad", "old man", "great grandparent", "grandparent", "great grandmother", "nan", "grandma", "grandfather", "great-nephew", "little brother", "grandchild", "firstborn", "child", "successor", "granddaughter", "great grandchild", "great grandson", "great granddaughter", "baby", "godson", "premature baby", "neonate", "shiitake", "common stinkhorn", "earthball", "truffle", "hen-of-the-woods", "gyromitra", "mildew", "lichen", "white fungus", "true slime mold", "slime mold", "club fungus", "earthstar", "coral fungus", "false morel", "puffball", "pythium", "helvella", "giant puffball", "Scleroderma citrinum", "jelly fungus", "agaric", "stinkhorn", "discomycete", "basidiomycete", "Phytophthora infestans", "Jew's-ear", "bolete", "powdery mildew", "downy mildew", "reindeer moss", "beard lichen", "Iceland moss", "lecanora", "Sarcoscypha coccinea", "Aleuria aurantia", "gill fungus", "polypore", "agaric", "mushroom", "Polyporus squamosus", "bracket fungus", "Entoloma lividum", "mushroom", "inky cap", "mushroom", "oyster mushroom", "deer mushroom", "parasol mushroom", "fairy-ring mushroom", "royal agaric", "blewits", "honey mushroom", "Pholiota squarrosa", "lepiota", "blushing mushroom", "horse mushroom", "nameko", "winter mushroom", "false deathcap", "shaggymane", "destroying angel", "toadstool", "chanterelle", "meadow mushroom", "death cap", "fly agaric", "morel", "common morel", "black morel", "Boletus edulis", "Boletus luridus", "Boletus chrysenteron", "somatic cell", "histiocyte", "leukocyte", "lymphocyte", "neutrophil", "nest", "tangle", "radiator", "plant part", "rock", "comet", "cadaver", "star", "snowdrift", "covering", "aerie", "wasp's nest", "lip", "tendril", "plant organ", "mycelium", "reproductive structure", "leaf", "root", "stalk", "hypanthium", "flower", "fruit", "pistil", "rosebud", "inflorescence", "floret", "umbel", "flower cluster", "panicle", "olive", "ear", "buckthorn berry", "berry", "wild cherry", "acorn", "rowanberry", "mealie", "gourd", "seed", "hip", "juniper berry", "pod", "corn", "coffee bean", "nut", "buckeye", "oilseed", "bean", "edible seed", "edible nut", "pine nut", "macadamia nut", "pistachio", "hazelnut", "walnut", "cashew", "chestnut", "pecan", "peanut", "coconut", "linseed", "rapeseed", "broad bean", "soy", "cumin", "sunflower seed", "pumpkin seed", "legume", "okra", "chickpea", "pea", "cowpea", "garden pea", "lentil", "dandelion green", "frond", "petal", "cassava", "chicory", "tuber", "spadix", "branchlet", "bulb", "petiole", "scape", "cornstalk", "rattan", "Jerusalem artichoke", "yam", "squill", "onion", "belay", "outcrop", "tor", "supernova", "sun", "shell", "bracteole", "shell", "cassia bark", "snowcap", "perianth", "body covering", "roof", "seashell", "scallop shell", "oyster shell", "exoskeleton", "cuticle", "plastron", "skin", "hair", "scapular", "hairdo", "forelock", "encolure", "facial hair", "pigtail", "thatch", "pompadour", "mustache", "beard", "mustachio", "soup-strainer", "stubble", "soul patch", "weather", "dust storm", "cloud", "snow", "wave"];
+exports.default = LABELS;
 
 
 /***/ }),
-/* 202 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(203);
+var content = __webpack_require__(204);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -23453,7 +23245,7 @@ if(false) {
 }
 
 /***/ }),
-/* 203 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -23461,62 +23253,32 @@ exports = module.exports = __webpack_require__(12)(undefined);
 
 
 // module
-exports.push([module.i, "._3Dn3flTP5w4SCs3DGVFMEr{position:relative}._1oqSFOMneLCOPuKZtEkfXk{display:-webkit-flex;display:flex;-webkit-align-items:stretch;align-items:stretch;-webkit-justify-content:flex-start;justify-content:flex-start}._1gVe13ZLQh1vAkU1uXUj9D{display:block;padding:inherit}._2SjvIzrk2COBZTqNovED2v{padding:inherit;margin:inherit}@media (min-width:768px){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:row;flex-direction:row}}@media (max-width:1463px) and (orientation:landscape){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:row;flex-direction:row}}@media (max-width:1463px) and (orientation:portrait){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:column;flex-direction:column}.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:row;flex-direction:row}}@media (min-width:768px){.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:column;flex-direction:column}}@media (max-width:1463px) and (orientation:landscape){.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:column;flex-direction:column}}._2SjvIzrk2COBZTqNovED2v,._24xEWcaNG4E_r5RVgtnoHr{position:absolute;top:0;left:0;width:100%;height:100%}._26L5rp8a3579dff46bcuRU{-webkit-flex-direction:column;flex-direction:column}._1Z7Hdp8AwCzZp4qZ52Zejz{-webkit-flex-direction:row;flex-direction:row}._2_iE9Vj4YKugOhtBfKAflO{-webkit-flex:1 0 auto;flex:1 0 auto}._2duGwiQSlwDM-6fsx1kiY5{-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}.nyrnWjU_ageoEw0V1cK6z,._3m2iCl-pniTd4b1gvRJrnF{position:fixed;background:#0d1115;color:#fff;top:0;left:0;width:100%;height:100%}._69_Xuy51tOdUi0OrWq6OB,._1cc1lVVa2_S7Q2KiFnT1ko,._3-okxFliUxKaCeOMtc55Yv,.vwshtdKVyoqKBhZMhrBVB{box-sizing:border-box}._1cc1lVVa2_S7Q2KiFnT1ko,._3-okxFliUxKaCeOMtc55Yv,.vwshtdKVyoqKBhZMhrBVB{position:absolute;top:0;left:0;width:100%;height:100%}.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{overflow:hidden;position:relative}@media (min-width:768px){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{height:50%}}@media (max-width:1463px) and (orientation:landscape){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{height:50%}}@media (max-width:1463px) and (orientation:portrait){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{width:50%}}@media (min-width:768px){.m5NsEzDiCfpmbRIEljudu{border-bottom:1px solid #000}}@media (max-width:1463px) and (orientation:landscape){.m5NsEzDiCfpmbRIEljudu{border-bottom:1px solid #000}}@media (max-width:1463px) and (orientation:portrait){.m5NsEzDiCfpmbRIEljudu{border-right:1px solid #000}.JyZIc0gsq1IsPzaz6zJjp{height:33.33333%;border-bottom:1px solid #000}}@media (min-width:768px){.JyZIc0gsq1IsPzaz6zJjp{width:33.33333%;border-right:1px solid #000}}@media (max-width:1463px) and (orientation:landscape){.JyZIc0gsq1IsPzaz6zJjp{width:33.33333%;border-right:1px solid #000}}._2hi3tJO8JIA0u4zNlUjePn{overflow:hidden;position:relative}@media (max-width:1463px) and (orientation:portrait){._2hi3tJO8JIA0u4zNlUjePn{height:66.66667%}}@media (min-width:768px){._2hi3tJO8JIA0u4zNlUjePn{width:66.66667%}}@media (max-width:1463px) and (orientation:landscape){._2hi3tJO8JIA0u4zNlUjePn{width:66.66667%}}._3hOU_S1eEYi08Hf7f1JcsL{position:absolute;background:rgba(0,0,0,.8);color:#aaa;left:50%;right:50%;margin:0 -40px;border-radius:2em;width:80px;bottom:8px;padding:.5em 0;line-height:1;text-align:center}.c9MmagZqOSN0Z_Ee6Pz2o{position:absolute;display:none;top:0;left:0;width:100%;height:100%}.c9MmagZqOSN0Z_Ee6Pz2o._5CFi3oGbE1y95EMyVJuSK{display:block}._99LZWuqJt2HblaOun_rdJ,.nCCFuRzKGkONOaAUXLtXw{color:#0080ff;fill:#0080ff}._99LZWuqJt2HblaOun_rdJ,._2Ca8Zlum3_MJOxQupULi87{position:relative;width:50%}._3uleNtFO8Ijn2e47fI7jpQ{background:rgba(0,0,0,.7)}", ""]);
+exports.push([module.i, "._13eXn4BpQnDlh3WhhRn5fY,._2nSJ3zwhpOI6iaj0DwFHwV,.fwywRlIuXU8SaWr5lRkbf{top:0;left:0;width:100%;height:100%}._2nSJ3zwhpOI6iaj0DwFHwV,.fwywRlIuXU8SaWr5lRkbf{background:#0d1115;color:#fff;position:fixed}._13eXn4BpQnDlh3WhhRn5fY{position:absolute}", ""]);
 
 // exports
 exports.locals = {
-	"frame": "_3Dn3flTP5w4SCs3DGVFMEr",
-	"flexContainer": "_1oqSFOMneLCOPuKZtEkfXk",
-	"block": "_1gVe13ZLQh1vAkU1uXUj9D",
-	"block-inner": "_2SjvIzrk2COBZTqNovED2v",
-	"blockInner": "_2SjvIzrk2COBZTqNovED2v",
-	"auto": "TASpdHEleRyV7Fm9jBoF5",
-	"auto-reverse": "YWC8_DDAmAnv3uu0UWd6H",
-	"autoReverse": "YWC8_DDAmAnv3uu0UWd6H",
-	"fit": "_24xEWcaNG4E_r5RVgtnoHr",
-	"column": "_26L5rp8a3579dff46bcuRU",
-	"row": "_1Z7Hdp8AwCzZp4qZ52Zejz",
-	"flex": "_2_iE9Vj4YKugOhtBfKAflO",
-	"center": "_2duGwiQSlwDM-6fsx1kiY5",
-	"layer": "nyrnWjU_ageoEw0V1cK6z",
-	"main-layer": "_3m2iCl-pniTd4b1gvRJrnF",
-	"mainLayer": "_3m2iCl-pniTd4b1gvRJrnF",
-	"canvas-container": "_69_Xuy51tOdUi0OrWq6OB",
-	"canvasContainer": "_69_Xuy51tOdUi0OrWq6OB",
-	"content-canvas": "_1cc1lVVa2_S7Q2KiFnT1ko",
-	"contentCanvas": "_1cc1lVVa2_S7Q2KiFnT1ko",
-	"output-canvas": "_3-okxFliUxKaCeOMtc55Yv",
-	"outputCanvas": "_3-okxFliUxKaCeOMtc55Yv",
-	"style-canvas": "vwshtdKVyoqKBhZMhrBVB",
-	"styleCanvas": "vwshtdKVyoqKBhZMhrBVB",
-	"content-image-container": "m5NsEzDiCfpmbRIEljudu",
-	"contentImageContainer": "m5NsEzDiCfpmbRIEljudu",
-	"style-image-container": "_1p0b0OcMF3aiKgsGMm8mEj",
-	"styleImageContainer": "_1p0b0OcMF3aiKgsGMm8mEj",
-	"input-image-container": "JyZIc0gsq1IsPzaz6zJjp",
-	"inputImageContainer": "JyZIc0gsq1IsPzaz6zJjp",
-	"output-image-container": "_2hi3tJO8JIA0u4zNlUjePn",
-	"outputImageContainer": "_2hi3tJO8JIA0u4zNlUjePn",
-	"canvas-label": "_3hOU_S1eEYi08Hf7f1JcsL",
-	"canvasLabel": "_3hOU_S1eEYi08Hf7f1JcsL",
-	"preview-video": "c9MmagZqOSN0Z_Ee6Pz2o",
-	"previewVideo": "c9MmagZqOSN0Z_Ee6Pz2o",
-	"active": "_5CFi3oGbE1y95EMyVJuSK",
-	"retake-button": "_99LZWuqJt2HblaOun_rdJ",
-	"retakeButton": "_99LZWuqJt2HblaOun_rdJ",
-	"snap-button": "nCCFuRzKGkONOaAUXLtXw",
-	"snapButton": "nCCFuRzKGkONOaAUXLtXw",
-	"use-this-photo-button": "_2Ca8Zlum3_MJOxQupULi87",
-	"useThisPhotoButton": "_2Ca8Zlum3_MJOxQupULi87",
-	"play-video-button-layer": "_3uleNtFO8Ijn2e47fI7jpQ",
-	"playVideoButtonLayer": "_3uleNtFO8Ijn2e47fI7jpQ"
+	"fit": "_13eXn4BpQnDlh3WhhRn5fY",
+	"layer": "_2nSJ3zwhpOI6iaj0DwFHwV",
+	"main-layer": "fwywRlIuXU8SaWr5lRkbf",
+	"mainLayer": "fwywRlIuXU8SaWr5lRkbf"
 };
 
 /***/ }),
-/* 204 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var React = __webpack_require__(5);
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var TREE = [-1, -1, -1, -1, 0, 0, 4, 4, 4, 8, 8, 8, 5, 5, 1, 1, 1, 1, 14, 14, 15, 15, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 24, 24, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 36, 36, 37, 37, 37, 37, 37, 37, 37, 37, 79, 79, 79, 81, 81, 89, 89, 42, 42, 94, 94, 94, 96, 96, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 62, 62, 62, 73, 73, 73, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 123, 123, 123, 123, 123, 142, 142, 142, 124, 124, 124, 124, 124, 124, 124, 124, 124, 147, 147, 147, 147, 147, 126, 126, 126, 126, 160, 160, 164, 164, 164, 165, 165, 169, 169, 161, 161, 128, 128, 128, 128, 175, 175, 180, 180, 180, 183, 183, 184, 184, 184, 185, 185, 176, 191, 191, 130, 130, 194, 194, 194, 195, 195, 131, 131, 131, 131, 131, 131, 203, 203, 203, 203, 203, 211, 211, 211, 136, 136, 136, 25, 25, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 228, 228, 228, 228, 228, 228, 228, 228, 228, 245, 245, 245, 246, 246, 246, 248, 248, 248, 231, 231, 231, 231, 231, 231, 231, 262, 262, 262, 232, 232, 232, 234, 234, 16, 16, 274, 274, 274, 274, 274, 274, 274, 274, 282, 282, 17, 17, 17, 17, 17, 17, 17, 17, 17, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 296, 296, 296, 296, 296, 308, 308, 309, 309, 301, 301, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 324, 324, 324, 324, 324, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 342, 342, 348, 348, 350, 350, 350, 350, 350, 350, 350, 350, 350, 355, 355, 361, 361, 326, 326, 326, 370, 370, 370, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 386, 386, 386, 302, 302, 394, 394, 394, 394, 304, 304, 304, 304, 402, 402, 404, 404, 288, 288, 288, 288, 288, 411, 411, 413, 413, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 417, 417, 417, 417, 417, 417, 417, 417, 417, 417, 417, 431, 431, 431, 431, 431, 431, 442, 442, 443, 443, 443, 443, 443, 443, 443, 443, 445, 445, 445, 445, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 474, 474, 474, 474, 474, 476, 476, 476, 476, 476, 476, 476, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 434, 498, 498, 498, 499, 499, 499, 499, 499, 500, 500, 503, 503, 504, 504, 504, 504, 504, 504, 504, 506, 506, 506, 506, 506, 506, 506, 506, 506, 506, 506, 437, 437, 437, 437, 437, 437, 437, 439, 544, 544, 544, 544, 545, 545, 545, 545, 545, 547, 547, 547, 547, 547, 547, 547, 418, 418, 418, 422, 422, 422, 422, 422, 422, 422, 422, 422, 424, 424, 425, 425, 425, 425, 425, 425, 576, 576, 428, 428, 428, 291, 291, 291, 588, 588, 588, 588, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 593, 593, 593, 605, 605, 605, 605, 605, 605, 607, 612, 612, 612, 612, 612, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 608, 630, 630, 609, 609, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 597, 645, 645, 645, 645, 645, 645, 645, 645, 645, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 647, 729, 729, 729, 670, 670, 676, 676, 676, 676, 695, 695, 700, 700, 700, 700, 700, 701, 701, 711, 711, 711, 711, 711, 711, 711, 762, 762, 712, 712, 714, 714, 714, 771, 771, 771, 771, 771, 771, 771, 771, 771, 771, 771, 771, 771, 772, 772, 598, 598, 598, 598, 791, 791, 791, 791, 791, 791, 791, 791, 791, 791, 791, 791, 795, 795, 795, 795, 795, 795, 795, 795, 795, 795, 810, 810, 810, 810, 796, 796, 792, 792, 792, 792, 792, 792, 600, 600, 827, 827, 827, 831, 831, 831, 831, 831, 831, 831, 828, 828, 602, 602, 602, 602, 602, 602, 602, 602, 602, 602, 602, 602, 841, 853, 853, 842, 842, 2, 2, 2, 2, 2, 2, 2, 2, 2, 858, 858, 859, 859, 859, 859, 859, 859, 869, 869, 869, 877, 877, 878, 878, 870, 870, 870, 870, 884, 884, 884, 884, 884, 890, 890, 890, 890, 890, 890, 890, 890, 890, 892, 892, 893, 893, 893, 897, 897, 906, 906, 898, 898, 909, 909, 885, 885, 885, 914, 914, 914, 871, 871, 872, 872, 872, 873, 873, 873, 924, 924, 924, 924, 925, 925, 925, 933, 933, 933, 874, 874, 860, 860, 860, 860, 860, 862, 862, 862, 946, 946, 946, 946, 946, 946, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 863, 955, 955, 956, 956, 956, 956, 957, 957, 957, 957, 957, 957, 957, 957, 977, 977, 986, 986, 981, 981, 983, 983, 983, 984, 984, 958, 958, 958, 958, 958, 958, 997, 997, 997, 997, 998, 998, 998, 1000, 1000, 1000, 1000, 1011, 1011, 1012, 1012, 1001, 1001, 961, 961, 962, 962, 962, 1021, 1021, 967, 967, 967, 967, 967, 967, 967, 967, 967, 967, 1031, 1031, 968, 968, 968, 865, 865, 865, 865, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1041, 1045, 1045, 1045, 1045, 1048, 1048, 1048, 1048, 1076, 1076, 1076, 1076, 1076, 1076, 1084, 1084, 1084, 1084, 1077, 1077, 1090, 1090, 1078, 1078, 1095, 1095, 1096, 1096, 1097, 1097, 1079, 1079, 1079, 1079, 1103, 1103, 1103, 1103, 1103, 1109, 1109, 1049, 1049, 1049, 1049, 1049, 1049, 1116, 1116, 1116, 1116, 1116, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1129, 1129, 1136, 1136, 1135, 1135, 1051, 1051, 1051, 1051, 1142, 1142, 1142, 1146, 1146, 1146, 1146, 1146, 1148, 1148, 1143, 1143, 1145, 1145, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1053, 1160, 1160, 1161, 1161, 1161, 1161, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1162, 1172, 1172, 1231, 1231, 1231, 1231, 1231, 1234, 1234, 1234, 1234, 1234, 1242, 1242, 1173, 1173, 1173, 1173, 1173, 1173, 1173, 1248, 1248, 1248, 1248, 1248, 1248, 1257, 1257, 1257, 1177, 1177, 1177, 1177, 1177, 1262, 1262, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1180, 1180, 1180, 1288, 1288, 1188, 1188, 1292, 1292, 1292, 1293, 1293, 1189, 1189, 1192, 1192, 1192, 1192, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1300, 1306, 1306, 1316, 1316, 1316, 1317, 1317, 1317, 1317, 1317, 1317, 1317, 1317, 1317, 1317, 1317, 1314, 1314, 1314, 1314, 1314, 1314, 1314, 1314, 1314, 1301, 1301, 1302, 1302, 1302, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1193, 1347, 1347, 1347, 1347, 1347, 1347, 1347, 1347, 1352, 1352, 1352, 1353, 1353, 1353, 1356, 1356, 1356, 1356, 1356, 1402, 1402, 1402, 1358, 1358, 1362, 1362, 1362, 1362, 1363, 1363, 1363, 1363, 1363, 1363, 1363, 1363, 1363, 1417, 1417, 1417, 1417, 1417, 1364, 1364, 1364, 1364, 1364, 1364, 1371, 1371, 1371, 1371, 1371, 1371, 1371, 1373, 1373, 1375, 1375, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1377, 1449, 1449, 1452, 1452, 1452, 1457, 1457, 1457, 1457, 1464, 1464, 1464, 1464, 1464, 1476, 1476, 1476, 1382, 1382, 1382, 1384, 1384, 1384, 1384, 1384, 1387, 1387, 1387, 1195, 1195, 1195, 1195, 1195, 1195, 1195, 1195, 1195, 1195, 1198, 1198, 1198, 1198, 1198, 1198, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1519, 1519, 1519, 1519, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1521, 1532, 1532, 1532, 1532, 1537, 1537, 1537, 1548, 1548, 1548, 1552, 1552, 1553, 1553, 1553, 1554, 1554, 1554, 1556, 1556, 1556, 1556, 1558, 1558, 1558, 1558, 1558, 1558, 1558, 1562, 1562, 1562, 1562, 1563, 1563, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1523, 1523, 1523, 1523, 1523, 1523, 1523, 1523, 1523, 1523, 1624, 1624, 1624, 1626, 1626, 1626, 1631, 1631, 1631, 1631, 1631, 1631, 1631, 1640, 1640, 1643, 1643, 1643, 1643, 1643, 1632, 1632, 1632, 1632, 1632, 1526, 1526, 1526, 1201, 1661, 1661, 1202, 1202, 1202, 1202, 1202, 1202, 1202, 1203, 1203, 1205, 1205, 1205, 1205, 1205, 1205, 1205, 1673, 1673, 1674, 1674, 1674, 1674, 1674, 1674, 1674, 1674, 1674, 1684, 1684, 1676, 1693, 1693, 1679, 1679, 1206, 1206, 1206, 1699, 1699, 1699, 1699, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1715, 1725, 1725, 1725, 1725, 1725, 1725, 1726, 1726, 1726, 1208, 1208, 1208, 1751, 1751, 1754, 1754, 1752, 1752, 1753, 1753, 1753, 1753, 1753, 1210, 1210, 1210, 1210, 1210, 1210, 1766, 1766, 1211, 1211, 1211, 1773, 1773, 1773, 1773, 1776, 1776, 1776, 1776, 1776, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1783, 1784, 1784, 1784, 1784, 1811, 1811, 1811, 1812, 1812, 1812, 1777, 1777, 1777, 1774, 1774, 1822, 1822, 1822, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1054, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 1841, 1841, 1841, 1841, 1842, 1842, 1842, 1842, 1846, 1846, 1846, 1846, 1846, 1847, 1847, 1849, 1849, 1850, 1850, 1850, 1871, 1871, 1871, 1871, 1871, 1871, 1871, 1871, 1828, 1828, 1828, 1828, 1828, 1880, 1880, 1880, 1886, 1886, 1888, 1888, 1882, 1882, 1883, 1883, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1829, 1896, 1896, 1910, 1910, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1914, 1914, 1914, 1914, 1914, 1914, 1933, 1933, 1933, 1933, 1917, 1917, 1917, 1917, 1943, 1943, 1943, 1919, 1919, 1923, 1923, 1923, 1923, 1952, 1952, 1953, 1953, 1954, 1954, 1954, 1954, 1957, 1957, 1925, 1925, 1928, 1928, 1928, 1928, 1928, 1928, 1966, 1966, 1929, 1929, 1898, 1898, 1898, 1898, 1898, 1976, 1976, 1976, 1976, 1976, 1976, 1976, 1976, 1976, 1978, 1978, 1978, 1901, 1901, 1901, 1901, 1901, 1901, 1992, 1992, 1993, 1993, 1993, 1993, 1994, 1994, 1996, 1996, 1996, 1996, 2008, 2008, 1902, 1902, 1903, 1903, 1903, 1903, 1903, 1903, 1903, 1903, 1903, 1903, 1903, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2016, 2016, 2019, 2019, 2019, 2022, 2022, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 1905, 2058, 2058, 2058, 2058, 2058, 2058, 2058, 2064, 2064, 2064, 2088, 2088, 2065, 2092, 2092, 2094, 2094, 2094, 2094, 2068, 2068, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 1906, 2101, 2101, 2101, 2105, 2105, 2105, 2105, 2105, 2108, 2108, 2112, 2112, 2123, 2123, 1908, 1908, 1908, 1830, 1830, 1830, 1830, 1830, 2132, 2132, 2132, 2133, 2133, 2133, 2139, 2139, 2140, 2140, 2140, 2140, 2140, 2140, 2134, 2134, 2149, 2149, 2149, 2149, 2149, 2149, 2149, 2153, 2153, 2150, 2150, 2150, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 1831, 2163, 2163, 2163, 2163, 2163, 2163, 2163, 2163, 2188, 2188, 2188, 2188, 2188, 2188, 2188, 2193, 2193, 2193, 2193, 2195, 2195, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2164, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2204, 2223, 2223, 2223, 2223, 2225, 2225, 2225, 2225, 2225, 2225, 2228, 2228, 2228, 2246, 2246, 2229, 2229, 2229, 2207, 2207, 2253, 2253, 2210, 2210, 2211, 2211, 2211, 2211, 2211, 2258, 2258, 2258, 2265, 2265, 2265, 2265, 2265, 2265, 2265, 2266, 2273, 2273, 2273, 2267, 2267, 2267, 2267, 2267, 2267, 2267, 2267, 2279, 2279, 2268, 2268, 2269, 2269, 2269, 2271, 2271, 2272, 2272, 2272, 2165, 2165, 2165, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2305, 2305, 2305, 2307, 2307, 2307, 2307, 2307, 2307, 2307, 2307, 2307, 2307, 2313, 2313, 2313, 2313, 2313, 2313, 2318, 2318, 2298, 2298, 2298, 2298, 2331, 2331, 2331, 2332, 2332, 2167, 2167, 2169, 2169, 2169, 2169, 2169, 2169, 2169, 2169, 2169, 2342, 2342, 2344, 2344, 2344, 2348, 2348, 2348, 2170, 2170, 2170, 2170, 2170, 2170, 2170, 2172, 2172, 2173, 2173, 2369, 2369, 2369, 2174, 2174, 2374, 2374, 2374, 2374, 2177, 2177, 2179, 2179, 2179, 2179, 2179, 2179, 2180, 2180, 2180, 2180, 2180, 2180, 2180, 2180, 2180, 2180, 2387, 2387, 2387, 2387, 2387, 2393, 2393, 2393, 2393, 2393, 2393, 2393, 2407, 2407, 2407, 2409, 2409, 2409, 2409, 2394, 2394, 2181, 2181, 2181, 2181, 2181, 2181, 2419, 2419, 2419, 2419, 2419, 1832, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2429, 2430, 2452, 2452, 2452, 2432, 2432, 2433, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2458, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2434, 2476, 2476, 2476, 2476, 2495, 2495, 2486, 2486, 2489, 2489, 2489, 2435, 2505, 2505, 2437, 2437, 2437, 2441, 2441, 2441, 2442, 2442, 2442, 2442, 2449, 2449, 2449, 2449, 2449, 2449, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2518, 2532, 2532, 2532, 2532, 2534, 2534, 2520, 2520, 2520, 2521, 2521, 2521, 2521, 2549, 2549, 2523, 2523, 2523, 2523, 2523, 2451, 2451, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 1833, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2562, 2562, 2563, 2563, 2563, 2563, 2564, 2564, 2646, 2646, 2566, 2566, 2566, 2569, 2569, 2569, 2569, 2569, 2569, 2653, 2653, 2653, 2653, 2653, 2653, 2653, 2653, 2660, 2660, 2660, 2660, 2664, 2664, 2664, 2664, 2665, 2665, 2665, 2665, 2665, 2665, 2654, 2654, 2654, 2655, 2655, 2655, 2655, 2684, 2684, 2684, 2684, 2688, 2688, 2685, 2685, 2656, 2656, 2656, 2656, 2656, 2656, 2656, 2656, 2697, 2697, 2705, 2705, 2706, 2706, 2707, 2707, 2698, 2698, 2698, 2698, 2698, 2698, 2700, 2700, 2700, 2702, 2702, 2702, 2702, 2702, 2702, 2657, 2657, 2657, 2657, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2658, 2741, 2741, 2741, 2741, 2741, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2572, 2748, 2748, 2748, 2750, 2750, 2750, 2750, 2752, 2752, 2752, 2752, 2752, 2752, 2752, 2752, 2776, 2776, 2777, 2777, 2778, 2788, 2788, 2753, 2753, 2753, 2791, 2791, 2754, 2754, 2796, 2796, 2796, 2796, 2796, 2798, 2798, 2804, 2804, 2804, 2804, 2804, 2799, 2799, 2810, 2810, 2802, 2802, 2797, 2797, 2757, 2757, 2757, 2757, 2757, 2818, 2818, 2758, 2758, 2758, 2758, 2758, 2829, 2829, 2829, 2832, 2832, 2833, 2833, 2833, 2833, 2760, 2760, 2760, 2760, 2760, 2760, 2762, 2762, 2762, 2846, 2846, 2846, 2846, 2846, 2766, 2766, 2767, 2767, 2768, 2768, 2768, 2573, 2573, 2573, 2573, 2573, 2860, 2860, 2860, 2860, 2861, 2861, 2861, 2861, 2861, 2862, 2862, 2864, 2864, 2864, 2864, 2574, 2880, 2881, 2881, 2881, 2575, 2575, 2576, 2576, 2576, 2887, 2887, 2887, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2577, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2896, 2909, 2909, 2913, 2913, 2913, 2913, 2913, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2944, 2962, 2962, 2962, 2947, 2947, 2947, 2915, 2915, 2915, 2915, 2915, 2915, 2917, 2917, 2917, 2921, 2921, 2982, 2982, 2926, 2926, 2926, 2897, 2897, 2897, 2897, 2988, 2988, 2988, 2990, 2995, 2995, 2995, 2995, 2995, 2991, 2991, 2900, 2900, 2900, 2900, 2900, 2900, 3003, 3003, 3005, 3005, 3007, 3007, 3007, 3013, 3013, 3008, 3008, 3008, 3019, 3019, 3019, 3019, 2903, 2903, 2903, 2904, 2904, 2904, 2905, 2905, 2578, 2578, 2578, 2578, 2578, 3037, 3037, 3037, 2579, 2579, 2579, 2579, 2579, 3045, 3045, 2581, 2581, 2581, 2581, 2581, 2581, 2581, 2581, 2585, 2585, 2587, 2587, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 2590, 3064, 3064, 3065, 3065, 3071, 3071, 3071, 3071, 3077, 3077, 3077, 3077, 3078, 3078, 3078, 3081, 3081, 3081, 3081, 3081, 3081, 3103, 3103, 3105, 3105, 3105, 3105, 3113, 3113, 3114, 3114, 3114, 3114, 3114, 3114, 3114, 3106, 3106, 3108, 3108, 3108, 3108, 3108, 3083, 3083, 3083, 3083, 3083, 3083, 3083, 3083, 3134, 3134, 3086, 3086, 3086, 3086, 3141, 3141, 2591, 2591, 2591, 2591, 2591, 3151, 3151, 3151, 3151, 3151, 3151, 3151, 3151, 3151, 3154, 3154, 3154, 3154, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 2595, 3166, 3166, 3166, 3166, 3166, 3166, 3185, 3185, 3187, 3187, 3189, 3189, 3191, 3191, 3191, 3195, 3195, 3195, 3195, 3188, 3188, 3188, 3202, 3202, 3202, 3202, 3202, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3167, 3214, 3214, 3217, 3217, 3217, 3217, 3217, 3236, 3236, 3218, 3218, 3218, 3218, 3218, 3218, 3240, 3240, 3240, 3240, 3240, 3240, 3240, 3241, 3241, 3241, 3241, 3243, 3243, 3243, 3220, 3220, 3223, 3261, 3261, 3225, 3225, 3225, 3225, 3225, 3225, 3225, 3225, 3168, 3168, 3168, 3168, 3168, 3168, 3168, 3168, 3168, 3273, 3273, 3273, 3273, 3273, 3273, 3273, 3282, 3282, 3282, 3282, 3282, 3282, 3282, 3288, 3288, 3295, 3295, 3295, 3296, 3296, 3296, 3296, 3303, 3304, 3304, 3304, 3304, 3289, 3289, 3289, 3289, 3292, 3292, 3293, 3293, 3293, 3274, 3274, 3277, 3277, 3277, 3277, 3278, 3278, 3278, 3278, 3325, 3325, 3325, 3280, 3280, 3170, 3170, 3172, 3172, 3172, 3172, 3173, 3173, 3173, 3173, 3340, 3340, 3341, 3341, 3341, 3341, 3174, 3174, 3174, 3174, 3174, 3174, 3174, 3355, 3355, 3175, 3175, 2598, 2598, 2605, 2605, 2605, 2605, 2606, 2606, 2609, 2609, 2609, 2609, 2609, 2609, 2609, 2609, 2609, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3370, 3379, 3379, 3382, 3382, 3383, 3383, 3383, 3383, 3383, 3383, 3383, 3383, 3387, 3387, 3388, 3388, 3414, 3414, 3390, 3390, 3390, 3390, 3390, 3394, 3394, 3394, 3374, 3425, 3425, 2610, 2610, 2610, 2610, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 2611, 3432, 3432, 3432, 3453, 3453, 3453, 3453, 3456, 3456, 3441, 3441, 3461, 3461, 3461, 3462, 3462, 3463, 3463, 3464, 3464, 3464, 3464, 3464, 3443, 3443, 3474, 3474, 3475, 3475, 3475, 3449, 3481, 3481, 2614, 2614, 2615, 2615, 3487, 3487, 3489, 3489, 2616, 2616, 2616, 2616, 2617, 2617, 2617, 2617, 2617, 2617, 2617, 2617, 2617, 2617, 2617, 3498, 3498, 3499, 3499, 3499, 3499, 3499, 3499, 3499, 3499, 3499, 3511, 3511, 2619, 2619, 2619, 2619, 2619, 3523, 3523, 3525, 3527, 3527, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 3531, 3531, 3537, 3537, 3537, 3532, 3532, 3533, 3533, 3534, 3534, 3535, 3535, 3549, 3549, 2623, 2623, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3552, 3555, 3555, 3566, 3566, 3566, 3553, 3553, 3553, 3553, 3553, 3553, 3553, 3553, 3553, 3553, 2624, 2624, 2624, 2624, 2624, 3586, 3586, 3588, 3588, 3588, 3588, 2630, 2630, 3593, 3593, 2632, 2632, 2632, 2632, 2632, 2632, 1835, 1835, 1835, 1835, 1835, 1835, 1835, 1835, 1835, 1835, 3604, 3604, 3604, 3604, 3604, 3604, 3615, 3619, 3619, 3619, 3605, 3605, 3623, 3623, 3609, 3609, 3609, 3609, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 1836, 3634, 3634, 3634, 3634, 3634, 3634, 3634, 3634, 3634, 3634, 3678, 3678, 3678, 3678, 3678, 3678, 3636, 3636, 3636, 3636, 3636, 3640, 3640, 3640, 3640, 3640, 3640, 3640, 3641, 3641, 3641, 3641, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3644, 3719, 3719, 3719, 3719, 3730, 3730, 3646, 3646, 3646, 3646, 3646, 3646, 3646, 3646, 3646, 3646, 3646, 3650, 3650, 3650, 3652, 3652, 3652, 3652, 3652, 3652, 3656, 3656, 3656, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3657, 3762, 3762, 3762, 3762, 3762, 3762, 3762, 3762, 3762, 3762, 3773, 3773, 3774, 3774, 3774, 3778, 3778, 3778, 3778, 3778, 3778, 3789, 3789, 3780, 3780, 3780, 3780, 3780, 3780, 3780, 3780, 3797, 3797, 3797, 3797, 3797, 3797, 3797, 3797, 3797, 3797, 3805, 3805, 3805, 3805, 3805, 3800, 3800, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3802, 3764, 3764, 3848, 3848, 3848, 3848, 3848, 3766, 3766, 3766, 3766, 3766, 3766, 3768, 3768, 3768, 3768, 3769, 3864, 3864, 3864, 3864, 3771, 3771, 3771, 3771, 3870, 3870, 3871, 3871, 3871, 3871, 3659, 3659, 3659, 3661, 3661, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3899, 3899, 3899, 3899, 3899, 3903, 3903, 3903, 3903, 3903, 3903, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3914, 3914, 3915, 3915, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3916, 3945, 3945, 3950, 3950, 3950, 3950, 3950, 3956, 3956, 3918, 3918, 3918, 3918, 3918, 3918, 3918, 3918, 3918, 3918, 3971, 3971, 3971, 3920, 3920, 3920, 3923, 3923, 3923, 3984, 3984, 3984, 3930, 3930, 3930, 3930, 3934, 3934, 3934, 3935, 3935, 3935, 3935, 3935, 4001, 4001, 3936, 3936, 3936, 3936, 3936, 3936, 3936, 3936, 3936, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3668, 3669, 3669, 3669, 4026, 4026, 4026, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 3671, 4040, 4040, 4040, 4040, 4040, 4040, 4041, 4041, 4041, 4041, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 1837, 4060, 4060, 4060, 4060, 4060, 4071, 4071, 4071, 4071, 4071, 4075, 4075, 4072, 4072, 4072, 4063, 4063, 4063, 4063, 4063, 4063, 4063, 4087, 4087, 4087, 4087, 4087, 4089, 4089, 4089, 4089, 4096, 4096, 4096, 4100, 4100, 4100, 4100, 4100, 4100, 4107, 4107, 4107, 4107, 4107, 4107, 4107, 4107, 4107, 4107, 4112, 4112, 4115, 4115, 4116, 4116, 4102, 4102, 4102, 4102, 4097, 4097, 4097, 4097, 4097, 4097, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4129, 4139, 4139, 4139, 4144, 4144, 4144, 4144, 4144, 4144, 4144, 4144, 4144, 4154, 4154, 4154, 4156, 4156, 4149, 4149, 4149, 4149, 4132, 4132, 4132, 4132, 4132, 4132, 4132, 4132, 4132, 4132, 4173, 4181, 4181, 4181, 4177, 4177, 4178, 4178, 4178, 4178, 4180, 4180, 4180, 4180, 4180, 4180, 4180, 4180, 4191, 4191, 4133, 4133, 4133, 4133, 4133, 4133, 4133, 4133, 4133, 4133, 4207, 4207, 4207, 4098, 4098, 4090, 4090, 4090, 4068, 4068, 1838, 1838, 1838, 4221, 4221, 4221, 4224, 4224, 4224, 4227, 4227, 4225, 4225, 4225, 4223, 4223, 4235, 4235, 4237, 4237, 4237, 4237, 4238, 4238, 4238, 4236, 4236, 1055, 1055, 4249, 4249, 4249, 4249, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 1056, 4255, 4255, 4256, 4256, 4256, 4275, 4275, 4275, 4257, 4257, 4257, 4257, 4257, 4257, 4257, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4282, 4306, 4306, 4306, 4306, 4284, 4284, 4284, 4284, 4284, 4284, 4284, 4284, 4284, 4286, 4286, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4258, 4328, 4352, 4352, 4354, 4354, 4354, 4354, 4356, 4356, 4330, 4330, 4330, 4330, 4333, 4333, 4334, 4334, 4334, 4334, 4334, 4334, 4371, 4371, 4371, 4337, 4337, 4337, 4337, 4337, 4337, 4337, 4337, 4337, 4337, 4337, 4379, 4379, 4379, 4383, 4383, 4340, 4340, 4340, 4341, 4341, 4341, 4341, 4342, 4342, 4400, 4400, 4346, 4346, 4403, 4403, 4403, 4403, 4349, 4349, 4349, 4350, 4350, 4350, 4350, 4412, 4412, 4412, 4414, 4414, 4351, 4351, 4260, 4260, 4260, 4260, 4260, 4260, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4262, 4434, 4434, 4434, 4434, 4437, 4437, 4437, 4437, 4437, 4447, 4447, 4447, 4450, 4450, 4438, 4438, 4265, 4265, 4265, 4459, 4459, 4459, 4459, 4459, 4459, 4459, 4266, 4266, 4266, 4266, 4266, 4266, 4266, 4266, 4266, 4472, 4472, 4472, 4472, 4472, 4482, 4482, 4268, 4268, 4268, 4268, 4268, 4268, 4270, 4270, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 1057, 4514, 4514, 4514, 4530, 4530, 4530, 4534, 4534, 4534, 4534, 4534, 4534, 4534, 4534, 4534, 4534, 4583, 4583, 4583, 4587, 4587, 4587, 4587, 4587, 4587, 4587, 4592, 4592, 4592, 4592, 4592, 4592, 4588, 4588, 4539, 4539, 4545, 4545, 1059, 1059, 4612, 4612, 4612, 1060, 1060, 1060, 1060, 1060, 1060, 1060, 4616, 4616, 4616, 4616, 4616, 4616, 4617, 4617, 4617, 4617, 4618, 4618, 4633, 4633, 4633, 4620, 4620, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 1061, 4649, 4649, 4649, 4649, 4649, 4649, 4655, 4655, 4655, 4655, 4655, 4658, 4658, 4650, 4650, 4650, 4650, 4650, 4650, 4650, 4666, 4666, 4666, 4666, 1062, 1062, 1062, 1062, 4678, 4678, 4678, 4679, 4679, 4679, 4679, 4684, 4684, 4684, 4689, 4689, 4686, 4686, 4687, 4687, 4680, 4680, 4680, 4698, 4698, 4698, 4698, 4700, 4700, 4700, 4700, 4706, 4706, 4709, 4709, 4699, 4699, 4699, 4712, 4712, 1063, 1063, 4717, 4717, 4720, 4720, 4718, 4718, 4718, 4718, 4725, 4725, 1064, 1064, 4729, 4729, 4729, 4729, 4731, 4731, 4731, 4731, 4735, 4735, 4735, 4735, 4735, 4735, 4735, 4736, 4736, 4736, 4737, 4737, 1065, 1065, 1065, 1065, 1065, 1065, 1065, 4756, 4756, 4756, 1066, 1066, 4762, 4762, 1067, 1067, 4765, 4765, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4767, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4773, 4774, 4810, 4810, 4810, 4780, 4780, 4780, 4780, 4781, 4781, 4781, 4781, 4781, 4781, 4781, 4818, 4818, 4818, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4821, 4843, 4843, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4822, 4854, 4854, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4783, 4862, 4862, 4862, 4863, 4863, 4863, 4863, 4863, 4863, 4896, 4896, 4867, 4867, 4867, 4867, 4869, 4869, 4870, 4870, 4870, 4870, 4870, 4870, 4870, 4870, 4870, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4871, 4919, 4919, 4919, 4923, 4923, 4923, 4932, 4932, 4928, 4928, 4928, 4928, 4928, 4928, 4874, 4874, 4874, 4874, 4874, 4875, 4875, 4875, 4948, 4948, 4948, 4948, 4948, 4948, 4948, 4948, 4948, 4948, 4948, 4957, 4957, 4957, 4957, 4957, 4957, 4957, 4957, 4958, 4958, 4961, 4961, 4949, 4949, 4949, 4949, 4949, 4949, 4949, 4949, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4879, 4982, 4982, 4982, 4882, 4882, 5001, 5001, 5001, 5001, 4885, 4885, 4885, 4888, 4888, 4888, 4888, 4888, 5014, 5014, 4889, 4889, 4889, 4889, 4785, 4785, 4785, 4785, 5021, 5021, 5021, 5024, 5024, 5024, 5024, 5024, 5024, 5024, 5024, 5024, 5034, 5034, 5034, 4787, 4787, 4787, 4788, 4788, 5043, 5043, 5043, 4790, 5048, 5048, 5048, 5049, 5049, 5050, 5050, 5050, 5050, 5051, 5051, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 4791, 5060, 5060, 5060, 5060, 5071, 5071, 5071, 4794, 4794, 4794, 4768, 4768, 5082, 5082, 5082, 5082, 5082, 5082, 5082, 5082, 5082, 5085, 5085, 5088, 5088, 5088, 5096, 5096, 5099, 5099, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5091, 5110, 5110, 5110, 5110, 5111, 5111, 5111, 5111, 5083, 5083, 5123, 5123, 5123, 4766, 4766, 4766, 4766, 5130, 5130, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 5136, 5136, 5136, 5136, 5136, 5136, 5138, 5138, 1069, 1069, 1069, 5150, 5150, 5150, 5152, 5152, 1071, 1071, 5157, 5157, 5157, 5157, 5158, 5158, 5158, 5158, 5163, 5163, 5163, 1042, 1042, 5170, 5170, 5170, 5170, 5170, 5170, 5170, 5170, 5173, 5173, 5173, 5173, 5173, 5173, 5173, 5181, 5181, 5181, 5181, 5181, 5181, 5181, 5181, 5181, 5181, 5181, 5187, 5187, 5187, 5187, 5187, 5187, 5188, 5188, 5204, 5204, 5206, 5208, 5208, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5205, 5216, 5216, 5222, 5222, 5189, 5189, 5236, 5236, 5236, 5236, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5240, 5260, 5260, 5268, 5268, 5268, 5268, 5268, 5268, 5268, 5268, 5268, 5349, 5349, 5349, 5349, 5270, 5270, 5270, 5270, 5270, 5270, 5270, 5272, 5272, 5272, 5273, 5273, 5283, 5283, 5283, 5283, 5284, 5284, 5291, 5291, 5291, 5291, 5291, 5291, 5291, 5291, 5291, 5291, 5291, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5296, 5388, 5388, 5388, 5388, 5416, 5416, 5437, 5437, 5441, 5441, 5299, 5299, 5299, 5299, 5299, 5299, 5305, 5305, 5305, 5313, 5313, 5313, 5313, 5313, 5313, 5318, 5318, 5318, 5326, 5326, 5326, 5338, 5338, 5339, 5339, 5339, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5241, 5488, 5488, 5491, 5491, 5237, 5237, 5504, 5504, 5504, 5504, 5190, 5190, 5190, 5190, 5190, 5513, 5513, 5514, 5514, 5514, 5514, 5514, 5514, 5514, 5520, 5520, 5520, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5191, 5528, 5528, 5533, 5533, 5538, 5538, 5538, 5538, 5538, 5538, 5551, 5551, 5554, 5554, 5557, 5557, 5559, 5559, 5559, 5559, 5560, 5560, 5560, 5561, 5561, 5576, 5576, 5576, 5580, 5580, 5587, 5587, 5587, 5587, 5707, 5707, 5707, 5707, 5588, 5588, 5588, 5716, 5716, 5716, 5716, 5595, 5595, 5595, 5595, 5619, 5619, 5619, 5620, 5620, 5625, 5625, 5625, 5625, 5625, 5625, 5734, 5734, 5635, 5635, 5635, 5635, 5635, 5635, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5637, 5745, 5745, 5753, 5753, 5754, 5754, 5641, 5641, 5658, 5658, 5658, 5658, 5665, 5665, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5769, 5775, 5775, 5775, 5775, 5790, 5790, 5792, 5792, 5670, 5670, 5671, 5671, 5675, 5675, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5192, 5811, 5811, 5811, 5825, 5825, 5826, 5826, 5814, 5814, 5814, 5815, 5815, 5815, 5815, 5820, 5820, 5820, 5822, 5822, 5842, 5842, 5842, 5823, 5823, 5193, 5193, 5193, 5193, 5193, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5850, 5862, 5862, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5874, 5929, 5929, 5929, 5935, 5935, 5935, 5878, 5878, 5885, 5885, 5885, 5885, 5888, 5888, 5888, 5888, 5888, 5888, 5888, 5961, 5961, 5891, 5891, 5891, 5892, 5892, 5916, 5916, 5919, 5919, 5919, 5921, 5921, 5923, 5923, 5923, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5851, 5980, 5980, 5982, 5982, 5982, 5984, 5984, 5992, 5992, 5992, 5992, 5992, 5997, 5997, 5997, 5997, 5997, 5999, 5999, 6008, 6008, 6008, 6008, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6011, 6071, 6071, 6071, 6071, 6075, 6075, 6075, 6075, 6075, 6075, 6075, 6075, 6075, 6075, 6076, 6076, 6076, 6111, 6111, 6079, 6079, 6079, 6079, 6079, 6117, 6117, 6082, 6082, 6082, 6082, 6083, 6083, 6085, 6085, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6095, 6130, 6130, 6130, 6130, 6130, 6130, 6130, 6162, 6162, 6163, 6163, 6163, 6137, 6137, 6138, 6138, 6138, 6152, 6152, 6152, 6152, 6180, 6180, 6159, 6159, 6159, 6159, 6159, 6185, 6185, 6185, 6186, 6186, 6012, 6012, 6014, 6014, 6014, 6014, 6014, 6015, 6015, 6015, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6019, 6206, 6206, 6206, 6206, 6206, 6206, 6206, 6213, 6213, 6023, 6023, 6023, 6025, 6025, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6229, 6233, 6233, 6233, 6234, 6234, 6234, 6234, 6237, 6237, 6237, 6238, 6238, 6238, 6238, 6238, 6238, 6238, 6240, 6240, 6241, 6241, 6241, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6243, 6279, 6279, 6285, 6285, 6244, 6293, 6293, 6293, 6293, 6293, 6293, 6293, 6245, 6245, 6246, 6246, 6246, 6027, 6027, 6031, 6031, 6031, 6031, 6309, 6309, 6309, 6309, 6309, 6309, 6309, 6034, 6034, 6034, 6034, 6034, 6319, 6319, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6040, 6327, 6327, 6330, 6330, 6330, 6331, 6331, 6331, 6336, 6336, 6336, 6041, 6041, 6041, 6042, 6042, 6042, 6043, 6043, 5852, 5852, 5853, 5853, 5194, 5194, 5194, 5194, 5194, 5194, 5194, 6361, 6361, 6361, 6361, 6361, 6371, 6371, 5196, 5196, 5196, 5196, 5196, 5196, 6376, 6376, 6376, 6377, 6377, 6377, 6384, 6384, 6384, 6384, 6384, 6384, 6378, 6378, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6379, 6395, 6395, 6395, 6396, 6396, 6396, 6396, 6396, 6396, 6398, 6398, 6407, 6407, 6408, 6408, 5197, 5197, 5197, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6426, 6434, 6434, 5185, 5185, 5185, 5186, 5186, 5186, 5186, 5186, 5186, 5186, 5186, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 5174, 6458, 6458, 6458, 6458, 6458, 6478, 6478, 6478, 6478, 6478, 6478, 6478, 6478, 6478, 6478, 6478, 6481, 6481, 6459, 6459, 6459, 6462, 6462, 6462, 6462, 6500, 6500, 6500, 6500, 6500, 6500, 6500, 6500, 6500, 6500, 6500, 6464, 6464, 6464, 6468, 6468, 6468, 6519, 6519, 6519, 6519, 6519, 6519, 6519, 6519, 6520, 6520, 6528, 6528, 6528, 6530, 6530, 6530, 6530, 6530, 6530, 6530, 6533, 6533, 6533, 6533, 6533, 6537, 6537, 6537, 6537, 6537, 6537, 6537, 6537, 6537, 6537, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6545, 6556, 6556, 6556, 6560, 6560, 6560, 6560, 6560, 6560, 6560, 6584, 6584, 6584, 6592, 6592, 6590, 6590, 6567, 6567, 6567, 6598, 6598, 6598, 6598, 6600, 6600, 6568, 6568, 6568, 6569, 6569, 6569, 6571, 6571, 6571, 6574, 6574, 6574, 6574, 6574, 6616, 6616, 6577, 6577, 6577, 6577, 6577, 6624, 6624, 6551, 6551, 6630, 6630, 6630, 6630, 6552, 6552, 6552, 6554, 6554, 6554, 6554, 6554, 6554, 6643, 6643, 6538, 6538, 6538, 6538, 6538, 6538, 6538, 6538, 6538, 6652, 6652, 6652, 6652, 6653, 6653, 6653, 6653, 6653, 6653, 6660, 6660, 6660, 6662, 6662, 6662, 6662, 6664, 6664, 6664, 6664, 6664, 6664, 6665, 6665, 6654, 6654, 6654, 6655, 6655, 6531, 6531, 6531, 6531, 6686, 6686, 6690, 6690, 6687, 6687, 6687, 6687, 6687, 6688, 6688, 6688, 6688, 6688, 6532, 6532, 6704, 6704, 6704, 6704, 6704, 6704, 6704, 6704, 6709, 6709, 6709, 6709, 6709, 6709, 6709, 6710, 6710, 6712, 6712, 6712, 6705, 6705, 6705, 6705, 6705, 6705, 6705, 6521, 6521, 6733, 6733, 6733, 6733, 6733, 6736, 6736, 6736, 6739, 6739, 6739, 6734, 6734, 6734, 6734, 6734, 6734, 6746, 6746, 6746, 6746, 6746, 6746, 6746, 6747, 6747, 6747, 6747, 6747, 6747, 6750, 6750, 6522, 6522, 6522, 6522, 6522, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6767, 6774, 6774, 6777, 6777, 6777, 6777, 6796, 6796, 6796, 6798, 6798, 6780, 6780, 6780, 6780, 6780, 6780, 6806, 6806, 6806, 6807, 6813, 6813, 6814, 6814, 6815, 6815, 6815, 6818, 6818, 6820, 6820, 6820, 6808, 6808, 6808, 6808, 6808, 6809, 6809, 6831, 6831, 6831, 6831, 6831, 6831, 6831, 6831, 6833, 6833, 6838, 6838, 6832, 6832, 6832, 6832, 6832, 6832, 6846, 6846, 6781, 6781, 6781, 6781, 6781, 6781, 6853, 6853, 6853, 6853, 6853, 6853, 6854, 6854, 6865, 6865, 6865, 6865, 6865, 6865, 6868, 6868, 6868, 6871, 6871, 6866, 6866, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6878, 6879, 6879, 6879, 6879, 6879, 6879, 6879, 6879, 6897, 6897, 6897, 6897, 6855, 6855, 6855, 6907, 6907, 6856, 6856, 6856, 6856, 6856, 6856, 6856, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6912, 6920, 6920, 6923, 6923, 6923, 6929, 6929, 6929, 6929, 6930, 6930, 6930, 6930, 6930, 6930, 6930, 6946, 6946, 6946, 6931, 6931, 6931, 6931, 6931, 6931, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6956, 6963, 6963, 6963, 6964, 6964, 6964, 6981, 6981, 6984, 6984, 6959, 6959, 6959, 6959, 6959, 6959, 6997, 6997, 6999, 6999, 6999, 7000, 7000, 7000, 7000, 7000, 7000, 7000, 7009, 7009, 7001, 7001, 7001, 7001, 7001, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 6960, 7023, 7023, 7034, 7034, 7037, 7037, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 6932, 7045, 7045, 7045, 7045, 7060, 7060, 7060, 7048, 7048, 7053, 7053, 7053, 7053, 7055, 7055, 7055, 7055, 7055, 7055, 7055, 7055, 7055, 7055, 7055, 7071, 7071, 6913, 6913, 6913, 6914, 6914, 6914, 6914, 6914, 6917, 6917, 6917, 6917, 6917, 6917, 6918, 6918, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 6857, 7105, 7105, 6858, 6858, 6858, 6858, 6858, 6858, 7118, 7118, 6782, 6782, 6782, 7122, 7122, 7126, 7126, 6783, 6783, 6783, 7129, 7132, 7132, 7133, 7133, 7135, 7135, 7135, 7135, 7135, 7135, 7139, 7139, 7134, 7134, 7134, 7146, 7146, 7130, 7130, 7131, 7131, 7153, 7153, 7154, 7154, 7154, 7155, 7155, 7155, 7161, 7161, 7161, 6784, 6784, 7166, 7166, 7167, 7167, 7167, 7167, 7167, 7167, 7167, 7168, 7168, 7168, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 6787, 7180, 7180, 7180, 7190, 7190, 7190, 7190, 7201, 7201, 7203, 7203, 7203, 7203, 7203, 7191, 7191, 7193, 7193, 7195, 7195, 6789, 7217, 7217, 6792, 6792, 7220, 7220, 7220, 7220, 7220, 7220, 7220, 7220, 7222, 7222, 7222, 7222, 7222, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7231, 7232, 7232, 7232, 7232, 7232, 7232, 7232, 7232, 7232, 7249, 7249, 7249, 7259, 7259, 7250, 7250, 7252, 7252, 7252, 7253, 7253, 7253, 7253, 7269, 7269, 7271, 7271, 7271, 7271, 7271, 7271, 7271, 7274, 7274, 7274, 7274, 7274, 7274, 7280, 7280, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7254, 7297, 7297, 7307, 7307, 7255, 7255, 7255, 7255, 7255, 7256, 7256, 7256, 7257, 7257, 7257, 7257, 7257, 7257, 7257, 7223, 7223, 7224, 7224, 7224, 7224, 7225, 7225, 7221, 7221, 7221, 7221, 7335, 7335, 7335, 7337, 7337, 7337, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7342, 7347, 7347, 7347, 7353, 7353, 7353, 7357, 7357, 7357, 7357, 7357, 7357, 7357, 7357, 7357, 7359, 7359, 7361, 7361, 7361, 7385, 7385, 7385, 7385, 7363, 7363, 7363, 7364, 7364, 7364, 7343, 7343, 7343, 7344, 7344, 7344, 6769, 6769, 6769, 6770, 6770, 6770, 6770, 6770, 6770, 6770, 7405, 7405, 7413, 7413, 7410, 7410, 6526, 6526, 7418, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7420, 7427, 7427, 7427, 7427, 7427, 7437, 7437, 7430, 7430, 7430, 7430, 7419, 7419, 7419, 7419, 7419, 7444, 7444, 7444, 7444, 7450, 7450, 7445, 7445, 7445, 7445, 7445, 7445, 7456, 7456, 7456, 7456, 7456, 7465, 7465, 7465, 7468, 7468, 7468, 7468, 7468, 7468, 7468, 7468, 7468, 7468, 7458, 7458, 7458, 7458, 7458, 7458, 7458, 7479, 7479, 7459, 7488, 7488, 7488, 7488, 7489, 7489, 7489, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7460, 7497, 7497, 7498, 7498, 7500, 7500, 7502, 7502, 7502, 7503, 7503, 7509, 7509, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7447, 7531, 7531, 7531, 7531, 7531, 7531, 7531, 7531, 7531, 7531, 7531, 7543, 7543, 7532, 7532, 7532, 7535, 7535, 7536, 7536, 7448, 7448, 7557, 7557, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 6527, 7562, 7562, 7562, 7562, 7562, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7580, 7585, 7585, 7585, 7585, 7585, 7585, 7585, 7601, 7601, 7605, 7605, 7605, 7605, 7605, 7606, 7606, 7589, 7589, 7590, 7590, 7590, 7590, 7590, 7590, 7590, 7596, 7596, 7596, 7596, 7596, 7629, 7629, 7597, 7597, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7599, 7634, 7634, 7634, 7634, 7634, 7634, 7640, 7640, 7642, 7642, 7642, 7642, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7645, 7676, 7676, 7649, 7649, 7581, 7581, 7581, 7581, 7581, 7581, 7581, 7581, 7581, 7689, 7689, 7582, 7582, 7582, 7583, 7583, 7583, 7583, 7583, 7583, 7583, 7583, 7695, 7695, 7695, 7703, 7703, 7703, 7707, 7707, 7707, 7707, 7707, 7707, 7704, 7704, 7696, 7696, 7696, 7717, 7717, 7717, 7697, 7697, 7697, 7697, 7697, 7698, 7698, 7698, 7729, 7729, 7729, 7729, 7700, 7700, 7700, 7700, 7700, 7700, 7700, 7738, 7738, 7739, 7739, 7701, 7746, 7746, 7746, 7746, 7746, 7702, 7702, 7702, 7584, 7755, 7755, 7756, 7756, 7756, 7756, 7756, 7756, 7756, 7756, 7756, 7756, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7757, 7769, 7769, 7779, 7779, 7779, 7790, 7790, 7790, 7790, 7790, 7803, 7803, 7803, 7803, 7803, 7563, 7563, 7563, 7563, 7563, 7563, 7811, 7811, 7811, 7811, 7811, 7811, 7813, 7813, 7813, 7813, 7813, 7827, 7827, 7827, 7827, 7827, 7827, 7828, 7828, 7828, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7814, 7837, 7837, 7837, 7837, 7837, 7837, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7879, 7880, 7880, 7881, 7881, 7881, 7881, 7839, 7839, 7839, 7839, 7839, 7839, 7839, 7839, 7839, 7906, 7906, 7840, 7840, 7840, 7842, 7842, 7842, 7842, 7917, 7917, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7844, 7938, 7938, 7847, 7847, 7847, 7942, 7942, 7853, 7853, 7853, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7855, 7952, 7952, 7952, 7954, 7954, 7954, 7954, 7954, 7954, 7954, 7956, 7956, 7956, 7956, 7956, 7864, 7864, 7866, 7866, 7866, 7866, 7866, 7992, 7992, 7993, 7993, 7995, 7995, 7995, 7995, 7869, 7869, 7869, 7869, 7869, 8006, 8006, 7872, 7872, 7876, 7876, 7877, 7877, 7877, 7816, 7816, 7565, 7565, 7566, 7566, 7566, 7566, 7566, 8023, 8023, 8023, 8023, 8023, 8023, 8023, 8030, 8030, 7567, 7567, 7567, 7567, 7567, 7567, 7567, 7567, 8036, 8036, 8036, 7569, 7569, 7569, 7569, 7569, 8047, 8047, 8052, 8052, 8052, 8052, 8053, 8053, 8053, 8053, 8061, 8061, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8048, 8064, 8064, 8068, 8068, 8068, 8068, 8068, 8068, 8068, 8068, 8072, 8072, 8072, 8050, 8050, 8050, 8050, 8050, 8050, 8091, 8091, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 8051, 7570, 7570, 7571, 7571, 8115, 8115, 7573, 7573, 7573, 7573, 7573, 7574, 7574, 7574, 7574, 7574, 7574, 8123, 8123, 8123, 8123, 8123, 8133, 8133, 8133, 8133, 8133, 8133, 8139, 8139, 8124, 8124, 8143, 8143, 8143, 8143, 8144, 8144, 8145, 8145, 8145, 8145, 8128, 8128, 8128, 8154, 8154, 8154, 8157, 8157, 8157, 8157, 8163, 8163, 8163, 8163, 8158, 8158, 8158, 8159, 8159, 8156, 8156, 8156, 8156, 8156, 8156, 8156, 8156, 7576, 7576, 7576, 7576, 7576, 7576, 7576, 7576, 7576, 7576, 7576, 8182, 8182, 8183, 8183, 8190, 8190, 6469, 6469, 6470, 6470, 6470, 6470, 6470, 6470, 6470, 8201, 8201, 8201, 8208, 8208, 8202, 8202, 8202, 8202, 8213, 8213, 8213, 8213, 8213, 8213, 8213, 8218, 8218, 8218, 8219, 8219, 8219, 8214, 8214, 8214, 8229, 8229, 8215, 8215, 8215, 8215, 8215, 8215, 8215, 8215, 8215, 8237, 8237, 8237, 8242, 8242, 8242, 8203, 8203, 8203, 8203, 8203, 8203, 8204, 8204, 8204, 8204, 8256, 8256, 8256, 8261, 8261, 8261, 8262, 8262, 8205, 8205, 8205, 8205, 8205, 8205, 8205, 8205, 8205, 8268, 8268, 8268, 8268, 8268, 8279, 8279, 8281, 8281, 8280, 8280, 8280, 8280, 8280, 8280, 8285, 8285, 8285, 8289, 8289, 8289, 8289, 8289, 8289, 8271, 8271, 8271, 8271, 8302, 8302, 8302, 8303, 8303, 8303, 8303, 8303, 8303, 8303, 8303, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8274, 8315, 8315, 8340, 8340, 8316, 8316, 8317, 8317, 8317, 8318, 8318, 8318, 8351, 8351, 8351, 8321, 8321, 8321, 8321, 8321, 8321, 8321, 8322, 8322, 8322, 8322, 8322, 8322, 8322, 8362, 8362, 8366, 8366, 8366, 8366, 8366, 8374, 8374, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8331, 8382, 8382, 8383, 8383, 8394, 8394, 8394, 8394, 8394, 8394, 8394, 8332, 8332, 8334, 8334, 8334, 8334, 8405, 8405, 8405, 8411, 8411, 8411, 8412, 8412, 8407, 8407, 8407, 8408, 8408, 8408, 8408, 8408, 8408, 8421, 8421, 8335, 8335, 8428, 8428, 8428, 8428, 8428, 8428, 8430, 8430, 8430, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8431, 8435, 8435, 8429, 8429, 8429, 8429, 8429, 8429, 8429, 8454, 8454, 8454, 8454, 8454, 8459, 8459, 8337, 8337, 6471, 6471, 6471, 5175, 5175, 8472, 8472, 8472, 8472, 8473, 8473, 8478, 8478, 8478, 8479, 8479, 8479, 8479, 5176, 5176, 5176, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 5177, 8490, 8590, 8590, 8590, 8591, 8591, 8592, 8592, 8592, 8592, 8492, 8492, 8492, 8600, 8600, 8601, 8601, 8601, 8606, 8606, 8606, 8607, 8607, 8607, 8611, 8611, 8612, 8616, 8616, 8616, 8618, 8618, 8493, 8493, 8623, 8623, 8495, 8495, 8495, 8495, 8495, 8628, 8628, 8629, 8629, 8629, 8629, 8500, 8500, 8500, 8500, 8637, 8637, 8637, 8640, 8640, 8640, 8640, 8640, 8640, 8640, 8640, 8640, 8506, 8506, 8506, 8506, 8506, 8506, 8506, 8655, 8655, 8661, 8661, 8657, 8657, 8512, 8512, 8512, 8666, 8666, 8666, 8666, 8666, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8667, 8674, 8674, 8693, 8693, 8693, 8679, 8679, 8680, 8680, 8691, 8691, 8691, 8691, 8702, 8702, 8702, 8702, 8668, 8668, 8513, 8513, 8513, 8516, 8516, 8516, 8520, 8718, 8718, 8525, 8721, 8721, 8527, 8527, 8527, 8527, 8727, 8727, 8727, 8727, 8727, 8727, 8727, 8727, 8730, 8730, 8733, 8733, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8735, 8746, 8746, 8528, 8528, 8528, 8528, 8528, 8528, 8529, 8529, 8529, 8531, 8531, 8531, 8531, 8768, 8768, 8768, 8771, 8771, 8771, 8771, 8771, 8771, 8533, 8533, 8533, 8533, 8536, 8536, 8782, 8782, 8782, 8538, 8538, 8539, 8539, 8539, 8539, 8539, 8791, 8791, 8793, 8793, 8793, 8542, 8542, 8799, 8799, 8545, 8545, 8545, 8545, 8804, 8804, 8804, 8804, 8807, 8807, 8806, 8806, 8806, 8546, 8546, 8546, 8546, 8818, 8818, 8547, 8547, 8547, 8547, 8547, 8547, 8547, 8823, 8823, 8823, 8823, 8823, 8823, 8823, 8823, 8823, 8823, 8833, 8833, 8839, 8839, 8841, 8841, 8841, 8824, 8824, 8824, 8846, 8846, 8846, 8846, 8846, 8849, 8849, 8848, 8848, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8826, 8859, 8859, 8859, 8859, 8859, 8870, 8870, 8870, 8862, 8862, 8862, 8862, 8862, 8862, 8863, 8863, 8868, 8868, 8868, 8868, 8888, 8888, 8888, 8888, 8888, 8888, 8888, 8888, 8888, 8890, 8899, 8899, 8895, 8895, 8895, 8902, 8902, 8902, 8902, 8902, 8902, 8902, 8903, 8903, 8889, 8889, 8914, 8914, 8914, 8915, 8915, 8915, 8550, 8550, 8550, 8550, 8550, 8550, 8550, 8550, 8924, 8924, 8924, 8924, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8925, 8938, 8938, 8926, 8926, 8926, 8926, 8949, 8949, 8949, 8951, 8951, 8956, 8956, 8956, 8952, 8952, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8928, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8551, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 8554, 9000, 9000, 9001, 9001, 9004, 9016, 9016, 9006, 9006, 9006, 9019, 9019, 9019, 9023, 9023, 9023, 9021, 9021, 9007, 9007, 9008, 9008, 9008, 9008, 9032, 9032, 9032, 9037, 9037, 9037, 9041, 9041, 9041, 8558, 8558, 8558, 8558, 9046, 9046, 8560, 8560, 9052, 9052, 9052, 8563, 8563, 8563, 8563, 8563, 9058, 9058, 9059, 9059, 9059, 9059, 9064, 9064, 9060, 9060, 8564, 8564, 8564, 8566, 8566, 8566, 9074, 9074, 9074, 8570, 8570, 8570, 9081, 9081, 9081, 9081, 9086, 9086, 9086, 9082, 9082, 9082, 9082, 8573, 8573, 8573, 9094, 9094, 8575, 8575, 8575, 8575, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 8579, 9103, 9103, 9103, 9103, 9107, 9107, 9108, 9108, 8580, 8580, 8580, 9125, 9125, 9125, 9129, 9129, 8582, 8582, 8582, 8582, 9132, 9132, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9133, 9147, 9147, 9147, 9147, 9153, 9153, 9153, 8585, 8585, 8585, 8585, 8585, 8585, 8585, 8585, 8585, 8585, 8585, 9163, 9163, 9163, 9163, 9163, 9175, 9175, 9164, 9164, 9164, 9164, 9179, 9179, 9179, 9184, 9184, 9181, 9181, 9181, 9189, 9189, 9189, 9165, 9165, 9170, 9170, 9170, 9170, 9196, 9196, 9201, 9201, 9198, 9204, 9204, 9204, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 5178, 9214, 9214, 9215, 9215, 9215, 9215, 9231, 9231, 9232, 9232, 9232, 9232, 9245, 9245, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9246, 9247, 9275, 9275, 9235, 9235, 9235, 5171, 9281, 9281, 9283, 9283, 1043, 1043, 1043, 1043, 1043, 1043, 1043, 1043, 1043, 1043, 9286, 9286, 9289, 9289, 9289, 9289, 9300, 9300, 9300, 9300, 9300, 9302, 9302, 9302, 9307, 9307, 9307, 9311, 9311, 9311, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9308, 9325, 9325, 9325, 9325, 9325, 9325, 9325, 9331, 9336, 9336, 9336, 9336, 9336, 9336, 9336, 9336, 9336, 9336, 9333, 9333, 9334, 9334, 9335, 9335, 9335, 9328, 9328, 9354, 9354, 9354, 9354, 9354, 9303, 9303, 9303, 9304, 9304, 9305, 9305, 9305, 9305, 9305, 9305, 9305, 9305, 9366, 9366, 9369, 9369, 9290, 9290, 9290, 9293, 9293, 9295, 9295, 9295, 9295, 9295, 9295, 9295, 9295, 9383, 9383, 9383, 9389, 9389, 9389, 9389, 9389, 9389, 9398, 9398, 9398, 9398, 9400, 9400, 9400, 9403, 9403, 9407, 9407, 9408, 9408, 3, 3, 3, 9413, 9413];
+exports.default = TREE;
+
+
+/***/ }),
+/* 206 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var React = __webpack_require__(6);
 
 function IcPlayArrowBlack24px (props) {
     return React.createElement("svg",props,React.createElement("path",{"d":"M8 5v14l11-7z"}));
@@ -23532,105 +23294,10 @@ IcPlayArrowBlack24px.default = IcPlayArrowBlack24px;
 
 
 /***/ }),
-/* 205 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcPauseBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M6 19h4V5H6v14zm8-14v14h4V5h-4z"}));
-}
-
-IcPauseBlack24px.displayName = "IcPauseBlack24px";
-
-IcPauseBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcPauseBlack24px;
-
-IcPauseBlack24px.default = IcPauseBlack24px;
-
-
-/***/ }),
-/* 206 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcAddAPhotoBlack24px (props) {
-    return React.createElement("svg",props,[React.createElement("defs",{"key":0},React.createElement("path",{"d":"M24 24H0V0h24v24z","id":"a"})),React.createElement("clipPath",{"id":"b","key":1},React.createElement("use",{"overflow":"visible","xlinkHref":"#a"})),React.createElement("path",{"clipPath":"url(#b)","d":"M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10h3zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-3.2-5c0 1.77 1.43 3.2 3.2 3.2s3.2-1.43 3.2-3.2-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2z","key":2})]);
-}
-
-IcAddAPhotoBlack24px.displayName = "IcAddAPhotoBlack24px";
-
-IcAddAPhotoBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcAddAPhotoBlack24px;
-
-IcAddAPhotoBlack24px.default = IcAddAPhotoBlack24px;
-
-
-/***/ }),
 /* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var React = __webpack_require__(5);
-
-function IcAutorenewBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"}));
-}
-
-IcAutorenewBlack24px.displayName = "IcAutorenewBlack24px";
-
-IcAutorenewBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcAutorenewBlack24px;
-
-IcAutorenewBlack24px.default = IcAutorenewBlack24px;
-
-
-/***/ }),
-/* 208 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcFileUploadBlack24px (props) {
-    return React.createElement("svg",props,[React.createElement("path",{"d":"M0 0h24v24H0z","fill":"none","key":0}),React.createElement("path",{"d":"M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z","key":1})]);
-}
-
-IcFileUploadBlack24px.displayName = "IcFileUploadBlack24px";
-
-IcFileUploadBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcFileUploadBlack24px;
-
-IcFileUploadBlack24px.default = IcFileUploadBlack24px;
-
-
-/***/ }),
-/* 209 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcPhotoCameraBlack24px (props) {
-    return React.createElement("svg",props,[React.createElement("circle",{"cx":"12","cy":"12","r":"3.2","key":0}),React.createElement("path",{"d":"M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z","key":1})]);
-}
-
-IcPhotoCameraBlack24px.displayName = "IcPhotoCameraBlack24px";
-
-IcPhotoCameraBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcPhotoCameraBlack24px;
-
-IcPhotoCameraBlack24px.default = IcPhotoCameraBlack24px;
-
-
-/***/ }),
-/* 210 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 
 function IcVideocamBlack24px (props) {
     return React.createElement("svg",props,React.createElement("path",{"d":"M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"}));
@@ -23646,84 +23313,23 @@ IcVideocamBlack24px.default = IcVideocamBlack24px;
 
 
 /***/ }),
-/* 211 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var React = __webpack_require__(5);
+var React = __webpack_require__(6);
 
-function IcSwitchCameraBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"}));
+function IcPauseBlack24px (props) {
+    return React.createElement("svg",props,React.createElement("path",{"d":"M6 19h4V5H6v14zm8-14v14h4V5h-4z"}));
 }
 
-IcSwitchCameraBlack24px.displayName = "IcSwitchCameraBlack24px";
+IcPauseBlack24px.displayName = "IcPauseBlack24px";
 
-IcSwitchCameraBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
+IcPauseBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
 
-module.exports = IcSwitchCameraBlack24px;
+module.exports = IcPauseBlack24px;
 
-IcSwitchCameraBlack24px.default = IcSwitchCameraBlack24px;
+IcPauseBlack24px.default = IcPauseBlack24px;
 
-
-/***/ }),
-/* 212 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcSwitchVideoBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M18 9.5V6c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-3.5l4 4v-13l-4 4zm-5 6V13H7v2.5L3.5 12 7 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"}));
-}
-
-IcSwitchVideoBlack24px.displayName = "IcSwitchVideoBlack24px";
-
-IcSwitchVideoBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcSwitchVideoBlack24px;
-
-IcSwitchVideoBlack24px.default = IcSwitchVideoBlack24px;
-
-
-/***/ }),
-/* 213 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "0.png";
-
-/***/ }),
-/* 214 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "1.png";
-
-/***/ }),
-/* 215 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "2.png";
-
-/***/ }),
-/* 216 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "3.png";
-
-/***/ }),
-/* 217 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "4.png";
-
-/***/ }),
-/* 218 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "5.png";
-
-/***/ }),
-/* 219 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "neural_style_transfer-style.jpg";
 
 /***/ })
 /******/ ]);

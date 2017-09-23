@@ -9840,12 +9840,13 @@ var App = (function (_super) {
     App.prototype.initAsync = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var runner, e_1;
+            var runner, gl, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, WebDNN.load("./neural_style_transfer", {
+                        gl = document.createElement('canvas').getContext('webgl');
+                        return [4, WebDNN.load("./resnet", {
                                 progressCallback: function (loaded, total) {
                                     _this.setState({
                                         loadingProgressRate: loaded / total
@@ -9853,11 +9854,11 @@ var App = (function (_super) {
                                 },
                                 transformUrlDelegate: function (url) {
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
-                                    return ma ?
-                                        "https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/" + ma[1] + "?raw=true" :
-                                        url;
+                                    return ma ? "https://mil-tokyo.github.io/webdnn-data/models/resnet/" + ma[1] + "?raw=true" : url;
                                 },
-                                backendOrder: ['webgpu', 'webassembly']
+                                backendOrder: (gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) ?
+                                    ['webgpu', 'webgl', 'webassembly', 'fallback'] :
+                                    ['webgpu', 'webassembly', 'fallback']
                             })];
                     case 1:
                         runner = _a.sent();
@@ -9883,7 +9884,7 @@ var App = (function (_super) {
     return App;
 }(app_base_1.AppBase));
 document.addEventListener('DOMContentLoaded', function () { return ReactDOM.render(React.createElement(App, null), document.getElementById('root')); });
-document.title = 'Neural Style Transfer - MIL WebDNN';
+document.title = 'ResNet50 Image Classification - MIL WebDNN';
 
 
 /***/ }),
@@ -21951,89 +21952,63 @@ var button_1 = __webpack_require__(82);
 var layout_1 = __webpack_require__(26);
 var webcam_1 = __webpack_require__(200);
 var dom_1 = __webpack_require__(201);
-var style = __webpack_require__(202);
-var RunIcon = __webpack_require__(204);
-var PauseIcon = __webpack_require__(205);
-var TakePhotoIcon = __webpack_require__(206);
-var RandomIcon = __webpack_require__(207);
-var UploadIcon = __webpack_require__(208);
-var PhotoIcon = __webpack_require__(209);
-var VideoIcon = __webpack_require__(210);
-var SwitchCameraIcon = __webpack_require__(211);
-var SwitchVideoIcon = __webpack_require__(212);
+var imagenet_labels_1 = __webpack_require__(202);
+var style = __webpack_require__(203);
+var RunIcon = __webpack_require__(205);
+var RandomIcon = __webpack_require__(206);
+var UploadIcon = __webpack_require__(207);
+var VideoIcon = __webpack_require__(208);
+var PauseIcon = __webpack_require__(209);
 var IMAGE_PATH_LIST = [
+    __webpack_require__(210),
+    __webpack_require__(211),
+    __webpack_require__(212),
     __webpack_require__(213),
     __webpack_require__(214),
-    __webpack_require__(215),
-    __webpack_require__(216),
-    __webpack_require__(217),
-    __webpack_require__(218)
+    __webpack_require__(215)
 ];
 var random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
-var InputResource;
-(function (InputResource) {
-    InputResource[InputResource["None"] = 0] = "None";
-    InputResource[InputResource["Image"] = 1] = "Image";
-    InputResource[InputResource["Photo"] = 2] = "Photo";
-    InputResource[InputResource["Video"] = 3] = "Video";
-})(InputResource || (InputResource = {}));
-var ResizeState;
-(function (ResizeState) {
-    ResizeState[ResizeState["sleep"] = 0] = "sleep";
-    ResizeState[ResizeState["resizing"] = 1] = "resizing";
-    ResizeState[ResizeState["finish"] = 2] = "finish";
-})(ResizeState || (ResizeState = {}));
+function softmax(x) {
+    var max = -Infinity;
+    for (var i = 0; i < x.length; i++)
+        max = max > x[i] ? max : x[i];
+    var exp = new Float32Array(x.length);
+    var sum = 0;
+    for (var i = 0; i < x.length; i++) {
+        var e = Math.exp(x[i] - max);
+        sum += e;
+        exp[i] = e;
+    }
+    for (var i = 0; i < exp.length; i++)
+        exp[i] /= sum;
+    return exp;
+}
 var MainLayer = (function (_super) {
     __extends(MainLayer, _super);
     function MainLayer() {
         var _this = _super.call(this) || this;
-        _this.resizeState = ResizeState.sleep;
-        _this.resizeHandler = function () { return _this.onResize(); };
+        _this.results = null;
         _this.webcam = new webcam_1.default();
         _this.state = {
             isBusy: false,
-            isContentLoaded: false,
-            inputResource: InputResource.None,
+            isVideoMode: false,
             isWebCamReady: false,
-            isFirstTime: true,
-            isVideoModeRunning: false,
-            isVideoPlaying: false
+            isContentLoaded: false
         };
         return _this;
     }
-    MainLayer.prototype.onResize = function () {
-        var _this = this;
-        if (this.resizeState == ResizeState.resizing)
-            return;
-        this.resizeState = ResizeState.resizing;
-        var handler = function () {
-            if (_this.resizeState == ResizeState.finish) {
-                _this.resetCanvasAll();
-                _this.loadStyleImage();
-            }
-            else {
-                _this.resizeState = ResizeState.finish;
-                requestAnimationFrame(handler);
-            }
-        };
-        requestAnimationFrame(handler);
-    };
     MainLayer.prototype.onRandomImageButtonClick = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        this.finalizeWebCam();
                         this.setState({
-                            inputResource: InputResource.Image,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
+                            isVideoMode: false
                         });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
                         return [4, this.loadRandomImage()];
                     case 1:
                         _a.sent();
-                        this.setState({ isContentLoaded: true });
                         return [2];
                 }
             });
@@ -22044,195 +22019,84 @@ var MainLayer = (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        this.finalizeWebCam();
                         this.setState({
-                            inputResource: InputResource.Image,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
+                            isVideoMode: false
                         });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
                         return [4, this.uploadLocalImage()];
                     case 1:
                         _a.sent();
-                        this.setState({ isContentLoaded: true });
                         return [2];
-                }
-            });
-        });
-    };
-    MainLayer.prototype.onPhotoButtonClick = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false
-                        });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.initializeWebCam()];
-                    case 2:
-                        _a.sent();
-                        this.setState({
-                            inputResource: InputResource.Photo,
-                        });
-                        return [3, 4];
-                    case 3:
-                        e_1 = _a.sent();
-                        console.error(e_1.message);
-                        this.finalizeWebCam();
-                        this.setState({
-                            inputResource: InputResource.None,
-                        });
-                        return [3, 4];
-                    case 4: return [2];
                 }
             });
         });
     };
     MainLayer.prototype.onVideoButtonClick = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false,
-                            isVideoModeRunning: false,
-                            isFirstTime: false
+                            isVideoMode: true
                         });
-                        this.resetContentCanvas();
-                        this.resetOutputCanvas();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
                         return [4, this.initializeWebCam()];
-                    case 2:
+                    case 1:
                         _a.sent();
-                        this.setState({
-                            inputResource: InputResource.Video,
-                            isContentLoaded: true
-                        });
-                        return [3, 4];
-                    case 3:
-                        e_2 = _a.sent();
-                        console.error(e_2.message);
-                        this.finalizeWebCam();
-                        this.setState({
-                            inputResource: InputResource.None,
-                            isContentLoaded: false
-                        });
-                        return [3, 4];
-                    case 4: return [2];
+                        return [2];
                 }
             });
         });
     };
-    MainLayer.prototype.onTakePhotoButtonClick = function () {
-        this.takePhoto();
-        this.finalizeWebCam();
-    };
     MainLayer.prototype.onRunButtonClick = function () {
-        this.run();
-    };
-    MainLayer.prototype.onToggleButtonClick = function () {
-        if (this.state.isVideoModeRunning) {
-            this.setState({
-                isVideoModeRunning: false
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.run()];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
             });
-        }
-        else {
-            this.setState({
-                isVideoModeRunning: true
-            });
-            this.videoModeLoop();
-        }
-    };
-    MainLayer.prototype.componentDidMount = function () {
-        window.addEventListener('resize', this.resizeHandler);
-        this.loadStyleImage();
-    };
-    MainLayer.prototype.componentWillUnmount = function () {
-        window.removeEventListener('resize', this.resizeHandler);
-    };
-    MainLayer.prototype.resetContentCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'contentCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        this.setState({
-            isContentLoaded: false
         });
     };
-    MainLayer.prototype.resetOutputCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'outputCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-    MainLayer.prototype.resetStyleCanvas = function () {
-        var canvas = dom_1.default.getFromRef(this, 'styleCanvas');
-        var context = canvas.getContext('2d');
-        if (!context)
-            throw Error('Context initialization failed');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-    MainLayer.prototype.resetCanvasAll = function () {
-        this.resetContentCanvas();
-        this.resetStyleCanvas();
-        this.resetOutputCanvas();
-    };
-    MainLayer.prototype.loadStyleImage = function () {
+    MainLayer.prototype.onToggleButtonClick = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.state.isWebCamReady) {
-                            this.finalizeWebCam();
-                        }
-                        styleCanvas = dom_1.default.getFromRef(this, 'styleCanvas');
-                        return [4, WebDNN.Image.loadImageByUrl(__webpack_require__(219))];
-                    case 1:
-                        image = _a.sent();
-                        data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
+                        if (!this.state.isBusy) return [3, 1];
+                        this.setState({
+                            isBusy: false
                         });
-                        return [2];
+                        return [3, 3];
+                    case 1:
+                        this.setState({
+                            isBusy: true
+                        });
+                        return [4, this.videoModeLoop()];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3: return [2];
                 }
             });
         });
     };
     MainLayer.prototype.loadRandomImage = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
+            var canvas, image, data;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.state.isWebCamReady) {
-                            this.finalizeWebCam();
-                        }
                         random_image_index++;
                         if (random_image_index >= IMAGE_PATH_LIST.length)
                             random_image_index = 0;
-                        styleCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
+                        canvas = dom_1.default.getFromRef(this, 'inputImageCanvas');
                         return [4, WebDNN.Image.loadImageByUrl(IMAGE_PATH_LIST[random_image_index])];
                     case 1:
                         image = _a.sent();
                         data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
-                        });
+                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, canvas);
                         this.setState({ isContentLoaded: true });
                         return [2];
                 }
@@ -22241,18 +22105,16 @@ var MainLayer = (function (_super) {
     };
     MainLayer.prototype.uploadLocalImage = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var styleCanvas, image, data;
+            var canvas, image, data;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        styleCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
+                        canvas = dom_1.default.getFromRef(this, 'inputImageCanvas');
                         return [4, WebDNN.Image.loadImageByDialog()];
                     case 1:
                         image = _a.sent();
                         data = WebDNN.Image.getImageArrayFromDrawable(image);
-                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, styleCanvas, {
-                            dstH: styleCanvas.height, dstW: styleCanvas.width
-                        });
+                        WebDNN.Image.setImageArrayToCanvas(data, image.naturalWidth, image.naturalHeight, canvas);
                         this.setState({ isContentLoaded: true });
                         return [2];
                 }
@@ -22269,7 +22131,7 @@ var MainLayer = (function (_super) {
                         if (!forceReInitialize && this.state.isWebCamReady)
                             return [2];
                         video = dom_1.default.getFromRef(this, 'previewVideo');
-                        this.setState({ isWebCamReady: false, isVideoPlaying: false });
+                        this.setState({ isWebCamReady: false, isContentLoaded: false });
                         video.srcObject = null;
                         _b.label = 1;
                     case 1:
@@ -22306,11 +22168,11 @@ var MainLayer = (function (_super) {
                         return [4, video.play()];
                     case 2:
                         _a.sent();
-                        this.setState({ isVideoPlaying: !video.paused });
+                        this.setState({ isContentLoaded: !video.paused });
                         return [3, 4];
                     case 3:
                         err_2 = _a.sent();
-                        this.setState({ isVideoPlaying: false });
+                        this.setState({ isContentLoaded: false });
                         return [3, 4];
                     case 4: return [2];
                 }
@@ -22329,28 +22191,6 @@ var MainLayer = (function (_super) {
             });
         });
     };
-    MainLayer.prototype.takePhoto = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var video, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
-                        video.pause();
-                        return [4, WebDNN.Image.getImageArrayFromDrawable(video, {
-                                dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
-                            })];
-                    case 1:
-                        data = (_a.sent());
-                        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, dom_1.default.getFromRef(this, 'contentCanvas'), {
-                            order: WebDNN.Image.Order.CHW,
-                        });
-                        this.setState({ isContentLoaded: true });
-                        return [2];
-                }
-            });
-        });
-    };
     MainLayer.prototype.finalizeWebCam = function () {
         var video = dom_1.default.getFromRef(this, 'previewVideo');
         if (video.srcObject) {
@@ -22359,69 +22199,78 @@ var MainLayer = (function (_super) {
                 stream.stop();
             }
         }
-        this.setState({ isWebCamReady: false });
+        this.setState({ isWebCamReady: false, isContentLoaded: false });
     };
-    MainLayer.prototype.videoModeLoop = function () {
+    MainLayer.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            var video, contentCanvas, data, runner, outputCanvas;
+            var runner, inputImageCanvas, output;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        video = dom_1.default.getFromRef(this, 'previewVideo');
-                        contentCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        return [4, WebDNN.Image.getImageArrayFromDrawable(video, {
-                                dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
-                            })];
-                    case 1:
-                        data = (_a.sent());
-                        WebDNN.Image.setImageArrayToCanvas(data, 192, 144, contentCanvas);
                         runner = this.props.runner;
                         if (!runner)
                             return [2];
-                        runner.getInputViews()[0].set(data);
+                        inputImageCanvas = dom_1.default.getFromRef(this, 'inputImageCanvas');
+                        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
+                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+                            color: WebDNN.Image.Color.BGR,
+                            bias: [123.68, 116.779, 103.939]
+                        }));
+                        if (runner.backendName !== 'webgpu') {
+                            this.setState({ isBusy: true });
+                        }
                         return [4, runner.run()];
-                    case 2:
+                    case 1:
                         _a.sent();
-                        outputCanvas = dom_1.default.getFromRef(this, 'outputCanvas');
-                        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, outputCanvas, {
-                            order: WebDNN.Image.Order.CHW,
-                        });
-                        if (this.state.inputResource == InputResource.Video && this.state.isVideoModeRunning) {
-                            requestAnimationFrame(function () { return _this.videoModeLoop(); });
+                        output = runner.getOutputViews()[0].toActual();
+                        if (runner.backendName === 'webgl')
+                            output = softmax(output);
+                        this.results = WebDNN.Math.argmax(output, 5)
+                            .map(function (i) { return ({
+                            label: imagenet_labels_1.default[i],
+                            prob: output[i]
+                        }); });
+                        if (runner.backendName === 'webgpu') {
+                            this.forceUpdate();
+                        }
+                        else {
+                            this.setState({ isBusy: false });
                         }
                         return [2];
                 }
             });
         });
     };
-    MainLayer.prototype.run = function () {
+    MainLayer.prototype.videoModeLoop = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var runner, contentCanvas, outputCanvas;
+            var _this = this;
+            var runner, video, output;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         runner = this.props.runner;
                         if (!runner)
                             return [2];
-                        if (this.state.isFirstTime) {
-                            this.setState({
-                                isFirstTime: false
-                            });
-                        }
-                        contentCanvas = dom_1.default.getFromRef(this, 'contentCanvas');
-                        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(contentCanvas, {
-                            dstW: 192, dstH: 144, order: WebDNN.Image.Order.CHW
+                        video = dom_1.default.getFromRef(this, 'previewVideo');
+                        runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromDrawable(video, {
+                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+                            color: WebDNN.Image.Color.BGR,
+                            bias: [123.68, 116.779, 103.939]
                         }));
-                        this.setState({ isBusy: true });
                         return [4, runner.run()];
                     case 1:
                         _a.sent();
-                        this.setState({ isBusy: false });
-                        outputCanvas = dom_1.default.getFromRef(this, 'outputCanvas');
-                        WebDNN.Image.setImageArrayToCanvas(runner.getOutputViews()[0].toActual(), 192, 144, outputCanvas, {
-                            order: WebDNN.Image.Order.CHW,
-                        });
+                        output = runner.getOutputViews()[0].toActual();
+                        if (runner.backendName === 'webgl')
+                            output = softmax(output);
+                        this.results = WebDNN.Math.argmax(output, 5)
+                            .map(function (i) { return ({
+                            label: imagenet_labels_1.default[i],
+                            prob: output[i]
+                        }); });
+                        this.forceUpdate();
+                        if (this.state.isBusy)
+                            requestAnimationFrame(function () { return _this.videoModeLoop(); });
                         return [2];
                 }
             });
@@ -22429,8 +22278,30 @@ var MainLayer = (function (_super) {
     };
     MainLayer.prototype.render = function () {
         var _this = this;
+        var runButton = this.state.isVideoMode ?
+            this.state.isBusy ?
+                ({
+                    onClick: function () { return _this.onToggleButtonClick(); },
+                    icon: React.createElement(PauseIcon, null),
+                    label: 'Stop',
+                    primary: true
+                }) :
+                ({
+                    onClick: function () { return _this.onToggleButtonClick(); },
+                    disabled: this.state.isBusy || !this.state.isContentLoaded,
+                    icon: React.createElement(RunIcon, null),
+                    label: 'Start',
+                    primary: true
+                }) :
+            {
+                onClick: function () { return _this.onRunButtonClick(); },
+                disabled: this.state.isBusy || !this.state.isContentLoaded,
+                icon: React.createElement(RunIcon, null),
+                label: 'Run',
+                primary: true
+            };
         return (React.createElement("div", { className: classNames(style.mainLayer, this.props.className) },
-            React.createElement(app_shell_1.AppShell, { title: "Neural Style Transfer", subTitle: "backend: " + this.props.runner.backendName, progressBar: this.state.isBusy, bottomBar: [{
+            React.createElement(app_shell_1.AppShell, { title: "ResNet50 Image Classification", subTitle: "backend: " + this.props.runner.backendName, progressBar: !this.state.isVideoMode && this.state.isBusy, bottomBar: [{
                         onClick: function (ev) { return _this.onRandomImageButtonClick(); },
                         disabled: this.state.isBusy,
                         icon: React.createElement(RandomIcon, null),
@@ -22441,60 +22312,39 @@ var MainLayer = (function (_super) {
                         icon: React.createElement(UploadIcon, null),
                         label: 'Upload'
                     }, {
-                        onClick: function (ev) { return _this.onPhotoButtonClick(); },
-                        disabled: this.state.isBusy,
-                        icon: React.createElement(PhotoIcon, null),
-                        label: 'Photo'
-                    }, {
                         onClick: function (ev) { return _this.onVideoButtonClick(); },
                         disabled: this.state.isBusy,
                         icon: React.createElement(VideoIcon, null),
                         label: 'Video'
-                    }] },
-                React.createElement(layout_1.LayoutFrame, { className: style.canvasContainer, flex: true, block: true },
-                    React.createElement(layout_1.LayoutFrame, { className: style.inputImageContainer, autoReverse: true },
-                        React.createElement(layout_1.LayoutFrame, { className: style.contentImageContainer, center: true },
-                            React.createElement("canvas", { ref: "contentCanvas", className: style.contentCanvas, style: {
-                                    display: ((this.state.inputResource == InputResource.Video) ||
-                                        (this.state.inputResource == InputResource.Photo && !this.state.isContentLoaded)) ? 'none' : ''
-                                } }),
-                            React.createElement("video", { ref: "previewVideo", playsInline: true, className: classNames(style.previewVideo, this.state.isWebCamReady ? style.active : null) }),
-                            React.createElement("p", { className: style.canvasLabel }, "Content"),
-                            (this.state.isWebCamReady && !this.state.isVideoPlaying) ?
+                    }, runButton] },
+                React.createElement(layout_1.LayoutFrame, { fit: true, block: true },
+                    React.createElement(layout_1.LayoutFrame, { flex: true, block: true },
+                        React.createElement(layout_1.LayoutFrame, { fit: true, block: true, center: true },
+                            React.createElement("canvas", { ref: "inputImageCanvas", className: classNames(style.toggleDisplay, style.inputImageCanvas, this.state.isVideoMode ? null : style.active) }),
+                            React.createElement("video", { ref: "previewVideo", playsInline: true, className: classNames(style.toggleDisplay, style.previewVideo, this.state.isVideoMode ? style.active : null) }),
+                            (this.state.isWebCamReady && !this.state.isContentLoaded) ?
                                 React.createElement(layout_1.LayoutFrame, { fit: true, className: style.playVideoButtonLayer },
                                     React.createElement(button_1.default, { primary: true, onClick: function (ev) { return _this.playVideo(); } },
                                         React.createElement(RunIcon, null),
-                                        React.createElement("span", null, "Activate Camera"))) : null),
-                        React.createElement(layout_1.LayoutFrame, { className: style.styleImageContainer, center: true },
-                            React.createElement("canvas", { ref: "styleCanvas", className: style.styleCanvas }),
-                            React.createElement("p", { className: style.canvasLabel }, "Style"))),
-                    React.createElement(layout_1.LayoutFrame, { className: style.outputImageContainer, center: true },
-                        this.state.isFirstTime ? (this.state.isContentLoaded ? (React.createElement("span", null, "Click \"Run\" button")) : (React.createElement("span", null, "Select content image from bottom buttons"))) : null,
-                        React.createElement("canvas", { ref: "outputCanvas", className: style.outputCanvas, style: { display: this.state.isFirstTime ? 'none' : '' } }),
-                        React.createElement("p", { className: style.canvasLabel }, "Output"))),
-                React.createElement(layout_1.LayoutFrame, { column: true }, this.state.inputResource == InputResource.Photo ? (this.state.isContentLoaded ? (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, className: style.useThisPhotoButton, onClick: function (ev) { return _this.onRunButtonClick(); } },
-                        React.createElement(RunIcon, null),
-                        React.createElement("span", null, "Run")),
-                    React.createElement(button_1.default, { disabled: this.state.isBusy, onClick: function (ev) { return _this.onPhotoButtonClick(); }, className: style.retakeButton },
-                        React.createElement(TakePhotoIcon, null),
-                        React.createElement("span", null, "Retake")))) : (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady, onClick: function (ev) { return _this.toggleCamera(); } },
-                        React.createElement(SwitchCameraIcon, null),
-                        React.createElement("span", null, "Switch Camera")),
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady || !this.state.isVideoPlaying, onClick: function (ev) { return _this.onTakePhotoButtonClick(); }, className: style.snapButton },
-                        React.createElement(TakePhotoIcon, null),
-                        React.createElement("span", null, "Take Photo"))))) : this.state.inputResource == InputResource.Video ? (this.state.isVideoModeRunning ? (React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, onClick: function (ev) { return _this.onToggleButtonClick(); } },
-                    React.createElement(PauseIcon, null),
-                    React.createElement("span", null, "Stop"))) : (React.createElement(layout_1.LayoutFrame, { row: true },
-                    React.createElement(button_1.default, { disabled: this.state.isBusy || !this.state.isWebCamReady, onClick: function (ev) { return _this.toggleCamera(); } },
-                        React.createElement(SwitchVideoIcon, null),
-                        React.createElement("span", null, "Switch Camera")),
-                    React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded || !this.state.isVideoPlaying, onClick: function (ev) { return _this.onToggleButtonClick(); } },
-                        React.createElement(RunIcon, null),
-                        React.createElement("span", null, "Start"))))) : (React.createElement(button_1.default, { primary: true, disabled: this.state.isBusy || !this.state.isContentLoaded, onClick: function (ev) { return _this.onRunButtonClick(); } },
-                    React.createElement(RunIcon, null),
-                    React.createElement("span", null, "Run")))))));
+                                        React.createElement("span", null, "Activate Camera"))) : null)),
+                    React.createElement(layout_1.LayoutFrame, { flex: true, block: true },
+                        React.createElement(layout_1.LayoutFrame, { fit: true, column: true, center: true, className: style.resultContainer }, this.results ? (React.createElement("table", { className: style.resultTable },
+                            React.createElement("tbody", null, this.results.map(function (result, i) { return (React.createElement("tr", { key: i },
+                                React.createElement("th", null,
+                                    React.createElement(layout_1.LayoutFrame, { column: true },
+                                        React.createElement("span", { style: {
+                                                opacity: result.prob / 2 + 0.5,
+                                            } }, result.label),
+                                        React.createElement("span", { className: style.resultProb, style: {
+                                                opacity: result.prob / 2 + 0.5,
+                                            } }, (result.prob * 100).toFixed(1) + '%'))),
+                                React.createElement("td", null,
+                                    React.createElement("div", { className: style.resultBar, style: {
+                                            opacity: result.prob,
+                                            transform: "scaleX(" + result.prob + ")",
+                                            WebkitTransform: "scaleX(" + result.prob + ")",
+                                            MozTransform: "scaleX(" + result.prob + ")"
+                                        } })))); })))) : (null)))))));
     };
     return MainLayer;
 }(React.Component));
@@ -23425,10 +23275,1022 @@ exports.default = dom;
 /* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Labels = [
+    "tench",
+    "goldfish",
+    "great white shark",
+    "tiger shark",
+    "hammerhead",
+    "electric ray",
+    "stingray",
+    "cock",
+    "hen",
+    "ostrich",
+    "brambling",
+    "goldfinch",
+    "house finch",
+    "junco",
+    "indigo bunting",
+    "robin",
+    "bulbul",
+    "jay",
+    "magpie",
+    "chickadee",
+    "water ouzel",
+    "kite",
+    "bald eagle",
+    "vulture",
+    "great grey owl",
+    "European fire salamander",
+    "common newt",
+    "eft",
+    "spotted salamander",
+    "axolotl",
+    "bullfrog",
+    "tree frog",
+    "tailed frog",
+    "loggerhead",
+    "leatherback turtle",
+    "mud turtle",
+    "terrapin",
+    "box turtle",
+    "banded gecko",
+    "common iguana",
+    "American chameleon",
+    "whiptail",
+    "agama",
+    "frilled lizard",
+    "alligator lizard",
+    "Gila monster",
+    "green lizard",
+    "African chameleon",
+    "Komodo dragon",
+    "African crocodile",
+    "American alligator",
+    "triceratops",
+    "thunder snake",
+    "ringneck snake",
+    "hognose snake",
+    "green snake",
+    "king snake",
+    "garter snake",
+    "water snake",
+    "vine snake",
+    "night snake",
+    "boa constrictor",
+    "rock python",
+    "Indian cobra",
+    "green mamba",
+    "sea snake",
+    "horned viper",
+    "diamondback",
+    "sidewinder",
+    "trilobite",
+    "harvestman",
+    "scorpion",
+    "black and gold garden spider",
+    "barn spider",
+    "garden spider",
+    "black widow",
+    "tarantula",
+    "wolf spider",
+    "tick",
+    "centipede",
+    "black grouse",
+    "ptarmigan",
+    "ruffed grouse",
+    "prairie chicken",
+    "peacock",
+    "quail",
+    "partridge",
+    "African grey",
+    "macaw",
+    "sulphur-crested cockatoo",
+    "lorikeet",
+    "coucal",
+    "bee eater",
+    "hornbill",
+    "hummingbird",
+    "jacamar",
+    "toucan",
+    "drake",
+    "red-breasted merganser",
+    "goose",
+    "black swan",
+    "tusker",
+    "echidna",
+    "platypus",
+    "wallaby",
+    "koala",
+    "wombat",
+    "jellyfish",
+    "sea anemone",
+    "brain coral",
+    "flatworm",
+    "nematode",
+    "conch",
+    "snail",
+    "slug",
+    "sea slug",
+    "chiton",
+    "chambered nautilus",
+    "Dungeness crab",
+    "rock crab",
+    "fiddler crab",
+    "king crab",
+    "American lobster",
+    "spiny lobster",
+    "crayfish",
+    "hermit crab",
+    "isopod",
+    "white stork",
+    "black stork",
+    "spoonbill",
+    "flamingo",
+    "little blue heron",
+    "American egret",
+    "bittern",
+    "crane",
+    "limpkin",
+    "European gallinule",
+    "American coot",
+    "bustard",
+    "ruddy turnstone",
+    "red-backed sandpiper",
+    "redshank",
+    "dowitcher",
+    "oystercatcher",
+    "pelican",
+    "king penguin",
+    "albatross",
+    "grey whale",
+    "killer whale",
+    "dugong",
+    "sea lion",
+    "Chihuahua",
+    "Japanese spaniel",
+    "Maltese dog",
+    "Pekinese",
+    "Shih-Tzu",
+    "Blenheim spaniel",
+    "papillon",
+    "toy terrier",
+    "Rhodesian ridgeback",
+    "Afghan hound",
+    "basset",
+    "beagle",
+    "bloodhound",
+    "bluetick",
+    "black-and-tan coonhound",
+    "Walker hound",
+    "English foxhound",
+    "redbone",
+    "borzoi",
+    "Irish wolfhound",
+    "Italian greyhound",
+    "whippet",
+    "Ibizan hound",
+    "Norwegian elkhound",
+    "otterhound",
+    "Saluki",
+    "Scottish deerhound",
+    "Weimaraner",
+    "Staffordshire bullterrier",
+    "American Staffordshire terrier",
+    "Bedlington terrier",
+    "Border terrier",
+    "Kerry blue terrier",
+    "Irish terrier",
+    "Norfolk terrier",
+    "Norwich terrier",
+    "Yorkshire terrier",
+    "wire-haired fox terrier",
+    "Lakeland terrier",
+    "Sealyham terrier",
+    "Airedale",
+    "cairn",
+    "Australian terrier",
+    "Dandie Dinmont",
+    "Boston bull",
+    "miniature schnauzer",
+    "giant schnauzer",
+    "standard schnauzer",
+    "Scotch terrier",
+    "Tibetan terrier",
+    "silky terrier",
+    "soft-coated wheaten terrier",
+    "West Highland white terrier",
+    "Lhasa",
+    "flat-coated retriever",
+    "curly-coated retriever",
+    "golden retriever",
+    "Labrador retriever",
+    "Chesapeake Bay retriever",
+    "German short-haired pointer",
+    "vizsla",
+    "English setter",
+    "Irish setter",
+    "Gordon setter",
+    "Brittany spaniel",
+    "clumber",
+    "English springer",
+    "Welsh springer spaniel",
+    "cocker spaniel",
+    "Sussex spaniel",
+    "Irish water spaniel",
+    "kuvasz",
+    "schipperke",
+    "groenendael",
+    "malinois",
+    "briard",
+    "kelpie",
+    "komondor",
+    "Old English sheepdog",
+    "Shetland sheepdog",
+    "collie",
+    "Border collie",
+    "Bouvier des Flandres",
+    "Rottweiler",
+    "German shepherd",
+    "Doberman",
+    "miniature pinscher",
+    "Greater Swiss Mountain dog",
+    "Bernese mountain dog",
+    "Appenzeller",
+    "EntleBucher",
+    "boxer",
+    "bull mastiff",
+    "Tibetan mastiff",
+    "French bulldog",
+    "Great Dane",
+    "Saint Bernard",
+    "Eskimo dog",
+    "malamute",
+    "Siberian husky",
+    "dalmatian",
+    "affenpinscher",
+    "basenji",
+    "pug",
+    "Leonberg",
+    "Newfoundland",
+    "Great Pyrenees",
+    "Samoyed",
+    "Pomeranian",
+    "chow",
+    "keeshond",
+    "Brabancon griffon",
+    "Pembroke",
+    "Cardigan",
+    "toy poodle",
+    "miniature poodle",
+    "standard poodle",
+    "Mexican hairless",
+    "timber wolf",
+    "white wolf",
+    "red wolf",
+    "coyote",
+    "dingo",
+    "dhole",
+    "African hunting dog",
+    "hyena",
+    "red fox",
+    "kit fox",
+    "Arctic fox",
+    "grey fox",
+    "tabby",
+    "tiger cat",
+    "Persian cat",
+    "Siamese cat",
+    "Egyptian cat",
+    "cougar",
+    "lynx",
+    "leopard",
+    "snow leopard",
+    "jaguar",
+    "lion",
+    "tiger",
+    "cheetah",
+    "brown bear",
+    "American black bear",
+    "ice bear",
+    "sloth bear",
+    "mongoose",
+    "meerkat",
+    "tiger beetle",
+    "ladybug",
+    "ground beetle",
+    "long-horned beetle",
+    "leaf beetle",
+    "dung beetle",
+    "rhinoceros beetle",
+    "weevil",
+    "fly",
+    "bee",
+    "ant",
+    "grasshopper",
+    "cricket",
+    "walking stick",
+    "cockroach",
+    "mantis",
+    "cicada",
+    "leafhopper",
+    "lacewing",
+    "dragonfly",
+    "damselfly",
+    "admiral",
+    "ringlet",
+    "monarch",
+    "cabbage butterfly",
+    "sulphur butterfly",
+    "lycaenid",
+    "starfish",
+    "sea urchin",
+    "sea cucumber",
+    "wood rabbit",
+    "hare",
+    "Angora",
+    "hamster",
+    "porcupine",
+    "fox squirrel",
+    "marmot",
+    "beaver",
+    "guinea pig",
+    "sorrel",
+    "zebra",
+    "hog",
+    "wild boar",
+    "warthog",
+    "hippopotamus",
+    "ox",
+    "water buffalo",
+    "bison",
+    "ram",
+    "bighorn",
+    "ibex",
+    "hartebeest",
+    "impala",
+    "gazelle",
+    "Arabian camel",
+    "llama",
+    "weasel",
+    "mink",
+    "polecat",
+    "black-footed ferret",
+    "otter",
+    "skunk",
+    "badger",
+    "armadillo",
+    "three-toed sloth",
+    "orangutan",
+    "gorilla",
+    "chimpanzee",
+    "gibbon",
+    "siamang",
+    "guenon",
+    "patas",
+    "baboon",
+    "macaque",
+    "langur",
+    "colobus",
+    "proboscis monkey",
+    "marmoset",
+    "capuchin",
+    "howler monkey",
+    "titi",
+    "spider monkey",
+    "squirrel monkey",
+    "Madagascar cat",
+    "indri",
+    "Indian elephant",
+    "African elephant",
+    "lesser panda",
+    "giant panda",
+    "barracouta",
+    "eel",
+    "coho",
+    "rock beauty",
+    "anemone fish",
+    "sturgeon",
+    "gar",
+    "lionfish",
+    "puffer",
+    "abacus",
+    "abaya",
+    "academic gown",
+    "accordion",
+    "acoustic guitar",
+    "aircraft carrier",
+    "airliner",
+    "airship",
+    "altar",
+    "ambulance",
+    "amphibian",
+    "analog clock",
+    "apiary",
+    "apron",
+    "ashcan",
+    "assault rifle",
+    "backpack",
+    "bakery",
+    "balance beam",
+    "balloon",
+    "ballpoint",
+    "Band Aid",
+    "banjo",
+    "bannister",
+    "barbell",
+    "barber chair",
+    "barbershop",
+    "barn",
+    "barometer",
+    "barrel",
+    "barrow",
+    "baseball",
+    "basketball",
+    "bassinet",
+    "bassoon",
+    "bathing cap",
+    "bath towel",
+    "bathtub",
+    "beach wagon",
+    "beacon",
+    "beaker",
+    "bearskin",
+    "beer bottle",
+    "beer glass",
+    "bell cote",
+    "bib",
+    "bicycle-built-for-two",
+    "bikini",
+    "binder",
+    "binoculars",
+    "birdhouse",
+    "boathouse",
+    "bobsled",
+    "bolo tie",
+    "bonnet",
+    "bookcase",
+    "bookshop",
+    "bottlecap",
+    "bow",
+    "bow tie",
+    "brass",
+    "brassiere",
+    "breakwater",
+    "breastplate",
+    "broom",
+    "bucket",
+    "buckle",
+    "bulletproof vest",
+    "bullet train",
+    "butcher shop",
+    "cab",
+    "caldron",
+    "candle",
+    "cannon",
+    "canoe",
+    "can opener",
+    "cardigan",
+    "car mirror",
+    "carousel",
+    "carpenter's kit",
+    "carton",
+    "car wheel",
+    "cash machine",
+    "cassette",
+    "cassette player",
+    "castle",
+    "catamaran",
+    "CD player",
+    "cello",
+    "cellular telephone",
+    "chain",
+    "chainlink fence",
+    "chain mail",
+    "chain saw",
+    "chest",
+    "chiffonier",
+    "chime",
+    "china cabinet",
+    "Christmas stocking",
+    "church",
+    "cinema",
+    "cleaver",
+    "cliff dwelling",
+    "cloak",
+    "clog",
+    "cocktail shaker",
+    "coffee mug",
+    "coffeepot",
+    "coil",
+    "combination lock",
+    "computer keyboard",
+    "confectionery",
+    "container ship",
+    "convertible",
+    "corkscrew",
+    "cornet",
+    "cowboy boot",
+    "cowboy hat",
+    "cradle",
+    "crane",
+    "crash helmet",
+    "crate",
+    "crib",
+    "Crock Pot",
+    "croquet ball",
+    "crutch",
+    "cuirass",
+    "dam",
+    "desk",
+    "desktop computer",
+    "dial telephone",
+    "diaper",
+    "digital clock",
+    "digital watch",
+    "dining table",
+    "dishrag",
+    "dishwasher",
+    "disk brake",
+    "dock",
+    "dogsled",
+    "dome",
+    "doormat",
+    "drilling platform",
+    "drum",
+    "drumstick",
+    "dumbbell",
+    "Dutch oven",
+    "electric fan",
+    "electric guitar",
+    "electric locomotive",
+    "entertainment center",
+    "envelope",
+    "espresso maker",
+    "face powder",
+    "feather boa",
+    "file",
+    "fireboat",
+    "fire engine",
+    "fire screen",
+    "flagpole",
+    "flute",
+    "folding chair",
+    "football helmet",
+    "forklift",
+    "fountain",
+    "fountain pen",
+    "four-poster",
+    "freight car",
+    "French horn",
+    "frying pan",
+    "fur coat",
+    "garbage truck",
+    "gasmask",
+    "gas pump",
+    "goblet",
+    "go-kart",
+    "golf ball",
+    "golfcart",
+    "gondola",
+    "gong",
+    "gown",
+    "grand piano",
+    "greenhouse",
+    "grille",
+    "grocery store",
+    "guillotine",
+    "hair slide",
+    "hair spray",
+    "half track",
+    "hammer",
+    "hamper",
+    "hand blower",
+    "hand-held computer",
+    "handkerchief",
+    "hard disc",
+    "harmonica",
+    "harp",
+    "harvester",
+    "hatchet",
+    "holster",
+    "home theater",
+    "honeycomb",
+    "hook",
+    "hoopskirt",
+    "horizontal bar",
+    "horse cart",
+    "hourglass",
+    "iPod",
+    "iron",
+    "jack-o'-lantern",
+    "jean",
+    "jeep",
+    "jersey",
+    "jigsaw puzzle",
+    "jinrikisha",
+    "joystick",
+    "kimono",
+    "knee pad",
+    "knot",
+    "lab coat",
+    "ladle",
+    "lampshade",
+    "laptop",
+    "lawn mower",
+    "lens cap",
+    "letter opener",
+    "library",
+    "lifeboat",
+    "lighter",
+    "limousine",
+    "liner",
+    "lipstick",
+    "Loafer",
+    "lotion",
+    "loudspeaker",
+    "loupe",
+    "lumbermill",
+    "magnetic compass",
+    "mailbag",
+    "mailbox",
+    "maillot",
+    "maillot",
+    "manhole cover",
+    "maraca",
+    "marimba",
+    "mask",
+    "matchstick",
+    "maypole",
+    "maze",
+    "measuring cup",
+    "medicine chest",
+    "megalith",
+    "microphone",
+    "microwave",
+    "military uniform",
+    "milk can",
+    "minibus",
+    "miniskirt",
+    "minivan",
+    "missile",
+    "mitten",
+    "mixing bowl",
+    "mobile home",
+    "Model T",
+    "modem",
+    "monastery",
+    "monitor",
+    "moped",
+    "mortar",
+    "mortarboard",
+    "mosque",
+    "mosquito net",
+    "motor scooter",
+    "mountain bike",
+    "mountain tent",
+    "mouse",
+    "mousetrap",
+    "moving van",
+    "muzzle",
+    "nail",
+    "neck brace",
+    "necklace",
+    "nipple",
+    "notebook",
+    "obelisk",
+    "oboe",
+    "ocarina",
+    "odometer",
+    "oil filter",
+    "organ",
+    "oscilloscope",
+    "overskirt",
+    "oxcart",
+    "oxygen mask",
+    "packet",
+    "paddle",
+    "paddlewheel",
+    "padlock",
+    "paintbrush",
+    "pajama",
+    "palace",
+    "panpipe",
+    "paper towel",
+    "parachute",
+    "parallel bars",
+    "park bench",
+    "parking meter",
+    "passenger car",
+    "patio",
+    "pay-phone",
+    "pedestal",
+    "pencil box",
+    "pencil sharpener",
+    "perfume",
+    "Petri dish",
+    "photocopier",
+    "pick",
+    "pickelhaube",
+    "picket fence",
+    "pickup",
+    "pier",
+    "piggy bank",
+    "pill bottle",
+    "pillow",
+    "ping-pong ball",
+    "pinwheel",
+    "pirate",
+    "pitcher",
+    "plane",
+    "planetarium",
+    "plastic bag",
+    "plate rack",
+    "plow",
+    "plunger",
+    "Polaroid camera",
+    "pole",
+    "police van",
+    "poncho",
+    "pool table",
+    "pop bottle",
+    "pot",
+    "potter's wheel",
+    "power drill",
+    "prayer rug",
+    "printer",
+    "prison",
+    "projectile",
+    "projector",
+    "puck",
+    "punching bag",
+    "purse",
+    "quill",
+    "quilt",
+    "racer",
+    "racket",
+    "radiator",
+    "radio",
+    "radio telescope",
+    "rain barrel",
+    "recreational vehicle",
+    "reel",
+    "reflex camera",
+    "refrigerator",
+    "remote control",
+    "restaurant",
+    "revolver",
+    "rifle",
+    "rocking chair",
+    "rotisserie",
+    "rubber eraser",
+    "rugby ball",
+    "rule",
+    "running shoe",
+    "safe",
+    "safety pin",
+    "saltshaker",
+    "sandal",
+    "sarong",
+    "sax",
+    "scabbard",
+    "scale",
+    "school bus",
+    "schooner",
+    "scoreboard",
+    "screen",
+    "screw",
+    "screwdriver",
+    "seat belt",
+    "sewing machine",
+    "shield",
+    "shoe shop",
+    "shoji",
+    "shopping basket",
+    "shopping cart",
+    "shovel",
+    "shower cap",
+    "shower curtain",
+    "ski",
+    "ski mask",
+    "sleeping bag",
+    "slide rule",
+    "sliding door",
+    "slot",
+    "snorkel",
+    "snowmobile",
+    "snowplow",
+    "soap dispenser",
+    "soccer ball",
+    "sock",
+    "solar dish",
+    "sombrero",
+    "soup bowl",
+    "space bar",
+    "space heater",
+    "space shuttle",
+    "spatula",
+    "speedboat",
+    "spider web",
+    "spindle",
+    "sports car",
+    "spotlight",
+    "stage",
+    "steam locomotive",
+    "steel arch bridge",
+    "steel drum",
+    "stethoscope",
+    "stole",
+    "stone wall",
+    "stopwatch",
+    "stove",
+    "strainer",
+    "streetcar",
+    "stretcher",
+    "studio couch",
+    "stupa",
+    "submarine",
+    "suit",
+    "sundial",
+    "sunglass",
+    "sunglasses",
+    "sunscreen",
+    "suspension bridge",
+    "swab",
+    "sweatshirt",
+    "swimming trunks",
+    "swing",
+    "switch",
+    "syringe",
+    "table lamp",
+    "tank",
+    "tape player",
+    "teapot",
+    "teddy",
+    "television",
+    "tennis ball",
+    "thatch",
+    "theater curtain",
+    "thimble",
+    "thresher",
+    "throne",
+    "tile roof",
+    "toaster",
+    "tobacco shop",
+    "toilet seat",
+    "torch",
+    "totem pole",
+    "tow truck",
+    "toyshop",
+    "tractor",
+    "trailer truck",
+    "tray",
+    "trench coat",
+    "tricycle",
+    "trimaran",
+    "tripod",
+    "triumphal arch",
+    "trolleybus",
+    "trombone",
+    "tub",
+    "turnstile",
+    "typewriter keyboard",
+    "umbrella",
+    "unicycle",
+    "upright",
+    "vacuum",
+    "vase",
+    "vault",
+    "velvet",
+    "vending machine",
+    "vestment",
+    "viaduct",
+    "violin",
+    "volleyball",
+    "waffle iron",
+    "wall clock",
+    "wallet",
+    "wardrobe",
+    "warplane",
+    "washbasin",
+    "washer",
+    "water bottle",
+    "water jug",
+    "water tower",
+    "whiskey jug",
+    "whistle",
+    "wig",
+    "window screen",
+    "window shade",
+    "Windsor tie",
+    "wine bottle",
+    "wing",
+    "wok",
+    "wooden spoon",
+    "wool",
+    "worm fence",
+    "wreck",
+    "yawl",
+    "yurt",
+    "web site",
+    "comic book",
+    "crossword puzzle",
+    "street sign",
+    "traffic light",
+    "book jacket",
+    "menu",
+    "plate",
+    "guacamole",
+    "consomme",
+    "hot pot",
+    "trifle",
+    "ice cream",
+    "ice lolly",
+    "French loaf",
+    "bagel",
+    "pretzel",
+    "cheeseburger",
+    "hotdog",
+    "mashed potato",
+    "head cabbage",
+    "broccoli",
+    "cauliflower",
+    "zucchini",
+    "spaghetti squash",
+    "acorn squash",
+    "butternut squash",
+    "cucumber",
+    "artichoke",
+    "bell pepper",
+    "cardoon",
+    "mushroom",
+    "Granny Smith",
+    "strawberry",
+    "orange",
+    "lemon",
+    "fig",
+    "pineapple",
+    "banana",
+    "jackfruit",
+    "custard apple",
+    "pomegranate",
+    "hay",
+    "carbonara",
+    "chocolate sauce",
+    "dough",
+    "meat loaf",
+    "pizza",
+    "potpie",
+    "burrito",
+    "red wine",
+    "espresso",
+    "cup",
+    "eggnog",
+    "alp",
+    "bubble",
+    "cliff",
+    "coral reef",
+    "geyser",
+    "lakeside",
+    "promontory",
+    "sandbar",
+    "seashore",
+    "valley",
+    "volcano",
+    "ballplayer",
+    "groom",
+    "scuba diver",
+    "rapeseed",
+    "daisy",
+    "yellow lady's slipper",
+    "corn",
+    "acorn",
+    "hip",
+    "buckeye",
+    "coral fungus",
+    "agaric",
+    "gyromitra",
+    "stinkhorn",
+    "earthstar",
+    "hen-of-the-woods",
+    "bolete",
+    "ear",
+    "toilet tissue"
+];
+exports.default = Labels;
+
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports, __webpack_require__) {
+
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(203);
+var content = __webpack_require__(204);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -23453,7 +24315,7 @@ if(false) {
 }
 
 /***/ }),
-/* 203 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(undefined);
@@ -23461,59 +24323,34 @@ exports = module.exports = __webpack_require__(12)(undefined);
 
 
 // module
-exports.push([module.i, "._3Dn3flTP5w4SCs3DGVFMEr{position:relative}._1oqSFOMneLCOPuKZtEkfXk{display:-webkit-flex;display:flex;-webkit-align-items:stretch;align-items:stretch;-webkit-justify-content:flex-start;justify-content:flex-start}._1gVe13ZLQh1vAkU1uXUj9D{display:block;padding:inherit}._2SjvIzrk2COBZTqNovED2v{padding:inherit;margin:inherit}@media (min-width:768px){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:row;flex-direction:row}}@media (max-width:1463px) and (orientation:landscape){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:row;flex-direction:row}}@media (max-width:1463px) and (orientation:portrait){.TASpdHEleRyV7Fm9jBoF5{-webkit-flex-direction:column;flex-direction:column}.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:row;flex-direction:row}}@media (min-width:768px){.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:column;flex-direction:column}}@media (max-width:1463px) and (orientation:landscape){.YWC8_DDAmAnv3uu0UWd6H{-webkit-flex-direction:column;flex-direction:column}}._2SjvIzrk2COBZTqNovED2v,._24xEWcaNG4E_r5RVgtnoHr{position:absolute;top:0;left:0;width:100%;height:100%}._26L5rp8a3579dff46bcuRU{-webkit-flex-direction:column;flex-direction:column}._1Z7Hdp8AwCzZp4qZ52Zejz{-webkit-flex-direction:row;flex-direction:row}._2_iE9Vj4YKugOhtBfKAflO{-webkit-flex:1 0 auto;flex:1 0 auto}._2duGwiQSlwDM-6fsx1kiY5{-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}.nyrnWjU_ageoEw0V1cK6z,._3m2iCl-pniTd4b1gvRJrnF{position:fixed;background:#0d1115;color:#fff;top:0;left:0;width:100%;height:100%}._69_Xuy51tOdUi0OrWq6OB,._1cc1lVVa2_S7Q2KiFnT1ko,._3-okxFliUxKaCeOMtc55Yv,.vwshtdKVyoqKBhZMhrBVB{box-sizing:border-box}._1cc1lVVa2_S7Q2KiFnT1ko,._3-okxFliUxKaCeOMtc55Yv,.vwshtdKVyoqKBhZMhrBVB{position:absolute;top:0;left:0;width:100%;height:100%}.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{overflow:hidden;position:relative}@media (min-width:768px){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{height:50%}}@media (max-width:1463px) and (orientation:landscape){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{height:50%}}@media (max-width:1463px) and (orientation:portrait){.m5NsEzDiCfpmbRIEljudu,._1p0b0OcMF3aiKgsGMm8mEj{width:50%}}@media (min-width:768px){.m5NsEzDiCfpmbRIEljudu{border-bottom:1px solid #000}}@media (max-width:1463px) and (orientation:landscape){.m5NsEzDiCfpmbRIEljudu{border-bottom:1px solid #000}}@media (max-width:1463px) and (orientation:portrait){.m5NsEzDiCfpmbRIEljudu{border-right:1px solid #000}.JyZIc0gsq1IsPzaz6zJjp{height:33.33333%;border-bottom:1px solid #000}}@media (min-width:768px){.JyZIc0gsq1IsPzaz6zJjp{width:33.33333%;border-right:1px solid #000}}@media (max-width:1463px) and (orientation:landscape){.JyZIc0gsq1IsPzaz6zJjp{width:33.33333%;border-right:1px solid #000}}._2hi3tJO8JIA0u4zNlUjePn{overflow:hidden;position:relative}@media (max-width:1463px) and (orientation:portrait){._2hi3tJO8JIA0u4zNlUjePn{height:66.66667%}}@media (min-width:768px){._2hi3tJO8JIA0u4zNlUjePn{width:66.66667%}}@media (max-width:1463px) and (orientation:landscape){._2hi3tJO8JIA0u4zNlUjePn{width:66.66667%}}._3hOU_S1eEYi08Hf7f1JcsL{position:absolute;background:rgba(0,0,0,.8);color:#aaa;left:50%;right:50%;margin:0 -40px;border-radius:2em;width:80px;bottom:8px;padding:.5em 0;line-height:1;text-align:center}.c9MmagZqOSN0Z_Ee6Pz2o{position:absolute;display:none;top:0;left:0;width:100%;height:100%}.c9MmagZqOSN0Z_Ee6Pz2o._5CFi3oGbE1y95EMyVJuSK{display:block}._99LZWuqJt2HblaOun_rdJ,.nCCFuRzKGkONOaAUXLtXw{color:#0080ff;fill:#0080ff}._99LZWuqJt2HblaOun_rdJ,._2Ca8Zlum3_MJOxQupULi87{position:relative;width:50%}._3uleNtFO8Ijn2e47fI7jpQ{background:rgba(0,0,0,.7)}", ""]);
+exports.push([module.i, "._2lac2-SQFiap7ZARXZdptE,._3NSPVfmRqk4a-daYstV9nx{position:fixed;background:#0d1115;color:#fff;top:0;left:0;width:100%;height:100%}._2iyovMUiuTbSh9tPY5WYR6,.Uqwk5niV8uwApCOIzaXcj{position:absolute;display:none;top:0;left:0;width:100%;height:100%}._2iyovMUiuTbSh9tPY5WYR6._3NeuKsqd9qUBxNU6sUTOmE,.Uqwk5niV8uwApCOIzaXcj._3NeuKsqd9qUBxNU6sUTOmE,.wr2gZjTBPOEtOEaiGdQFa._3NeuKsqd9qUBxNU6sUTOmE{display:block}.wr2gZjTBPOEtOEaiGdQFa{display:none}._31HQp9c6_KfByZguaiN6VP{padding:16px;box-sizing:border-box}._1a0Nl7cwb2H6GhLI_jcj_Z{position:relative;width:100%;vertical-align:middle;overflow:auto}._1a0Nl7cwb2H6GhLI_jcj_Z th{line-height:1;width:128px;padding:2px 8px;font-weight:400;border-right:1px solid #888;text-align:right;white-space:nowrap;text-overflow:ellipsis}._1a0Nl7cwb2H6GhLI_jcj_Z td{padding:0}._119iyHGfCVIUZbqF1WyK_0{color:#f90}._2tpwMun8t_TU_EcWcEwukr{display:inline-block;position:relative;height:16px;width:100%;background:#f90;-webkit-transform-origin:left;transform-origin:left;-webkit-transform:scaleX(0);transform:scaleX(0);transition:120ms}._2HcnnuikqEoZ8meN7_ikon{background:rgba(0,0,0,.7)}", ""]);
 
 // exports
 exports.locals = {
-	"frame": "_3Dn3flTP5w4SCs3DGVFMEr",
-	"flexContainer": "_1oqSFOMneLCOPuKZtEkfXk",
-	"block": "_1gVe13ZLQh1vAkU1uXUj9D",
-	"block-inner": "_2SjvIzrk2COBZTqNovED2v",
-	"blockInner": "_2SjvIzrk2COBZTqNovED2v",
-	"auto": "TASpdHEleRyV7Fm9jBoF5",
-	"auto-reverse": "YWC8_DDAmAnv3uu0UWd6H",
-	"autoReverse": "YWC8_DDAmAnv3uu0UWd6H",
-	"fit": "_24xEWcaNG4E_r5RVgtnoHr",
-	"column": "_26L5rp8a3579dff46bcuRU",
-	"row": "_1Z7Hdp8AwCzZp4qZ52Zejz",
-	"flex": "_2_iE9Vj4YKugOhtBfKAflO",
-	"center": "_2duGwiQSlwDM-6fsx1kiY5",
-	"layer": "nyrnWjU_ageoEw0V1cK6z",
-	"main-layer": "_3m2iCl-pniTd4b1gvRJrnF",
-	"mainLayer": "_3m2iCl-pniTd4b1gvRJrnF",
-	"canvas-container": "_69_Xuy51tOdUi0OrWq6OB",
-	"canvasContainer": "_69_Xuy51tOdUi0OrWq6OB",
-	"content-canvas": "_1cc1lVVa2_S7Q2KiFnT1ko",
-	"contentCanvas": "_1cc1lVVa2_S7Q2KiFnT1ko",
-	"output-canvas": "_3-okxFliUxKaCeOMtc55Yv",
-	"outputCanvas": "_3-okxFliUxKaCeOMtc55Yv",
-	"style-canvas": "vwshtdKVyoqKBhZMhrBVB",
-	"styleCanvas": "vwshtdKVyoqKBhZMhrBVB",
-	"content-image-container": "m5NsEzDiCfpmbRIEljudu",
-	"contentImageContainer": "m5NsEzDiCfpmbRIEljudu",
-	"style-image-container": "_1p0b0OcMF3aiKgsGMm8mEj",
-	"styleImageContainer": "_1p0b0OcMF3aiKgsGMm8mEj",
-	"input-image-container": "JyZIc0gsq1IsPzaz6zJjp",
-	"inputImageContainer": "JyZIc0gsq1IsPzaz6zJjp",
-	"output-image-container": "_2hi3tJO8JIA0u4zNlUjePn",
-	"outputImageContainer": "_2hi3tJO8JIA0u4zNlUjePn",
-	"canvas-label": "_3hOU_S1eEYi08Hf7f1JcsL",
-	"canvasLabel": "_3hOU_S1eEYi08Hf7f1JcsL",
-	"preview-video": "c9MmagZqOSN0Z_Ee6Pz2o",
-	"previewVideo": "c9MmagZqOSN0Z_Ee6Pz2o",
-	"active": "_5CFi3oGbE1y95EMyVJuSK",
-	"retake-button": "_99LZWuqJt2HblaOun_rdJ",
-	"retakeButton": "_99LZWuqJt2HblaOun_rdJ",
-	"snap-button": "nCCFuRzKGkONOaAUXLtXw",
-	"snapButton": "nCCFuRzKGkONOaAUXLtXw",
-	"use-this-photo-button": "_2Ca8Zlum3_MJOxQupULi87",
-	"useThisPhotoButton": "_2Ca8Zlum3_MJOxQupULi87",
-	"play-video-button-layer": "_3uleNtFO8Ijn2e47fI7jpQ",
-	"playVideoButtonLayer": "_3uleNtFO8Ijn2e47fI7jpQ"
+	"layer": "_2lac2-SQFiap7ZARXZdptE",
+	"main-layer": "_3NSPVfmRqk4a-daYstV9nx",
+	"mainLayer": "_3NSPVfmRqk4a-daYstV9nx",
+	"input-image-canvas": "_2iyovMUiuTbSh9tPY5WYR6",
+	"inputImageCanvas": "_2iyovMUiuTbSh9tPY5WYR6",
+	"preview-video": "Uqwk5niV8uwApCOIzaXcj",
+	"previewVideo": "Uqwk5niV8uwApCOIzaXcj",
+	"active": "_3NeuKsqd9qUBxNU6sUTOmE",
+	"toggle-display": "wr2gZjTBPOEtOEaiGdQFa",
+	"toggleDisplay": "wr2gZjTBPOEtOEaiGdQFa",
+	"result-container": "_31HQp9c6_KfByZguaiN6VP",
+	"resultContainer": "_31HQp9c6_KfByZguaiN6VP",
+	"result-table": "_1a0Nl7cwb2H6GhLI_jcj_Z",
+	"resultTable": "_1a0Nl7cwb2H6GhLI_jcj_Z",
+	"result-prob": "_119iyHGfCVIUZbqF1WyK_0",
+	"resultProb": "_119iyHGfCVIUZbqF1WyK_0",
+	"result-bar": "_2tpwMun8t_TU_EcWcEwukr",
+	"resultBar": "_2tpwMun8t_TU_EcWcEwukr",
+	"play-video-button-layer": "_2HcnnuikqEoZ8meN7_ikon",
+	"playVideoButtonLayer": "_2HcnnuikqEoZ8meN7_ikon"
 };
 
 /***/ }),
-/* 204 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(5);
@@ -23532,45 +24369,7 @@ IcPlayArrowBlack24px.default = IcPlayArrowBlack24px;
 
 
 /***/ }),
-/* 205 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcPauseBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M6 19h4V5H6v14zm8-14v14h4V5h-4z"}));
-}
-
-IcPauseBlack24px.displayName = "IcPauseBlack24px";
-
-IcPauseBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcPauseBlack24px;
-
-IcPauseBlack24px.default = IcPauseBlack24px;
-
-
-/***/ }),
 /* 206 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcAddAPhotoBlack24px (props) {
-    return React.createElement("svg",props,[React.createElement("defs",{"key":0},React.createElement("path",{"d":"M24 24H0V0h24v24z","id":"a"})),React.createElement("clipPath",{"id":"b","key":1},React.createElement("use",{"overflow":"visible","xlinkHref":"#a"})),React.createElement("path",{"clipPath":"url(#b)","d":"M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10h3zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-3.2-5c0 1.77 1.43 3.2 3.2 3.2s3.2-1.43 3.2-3.2-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2z","key":2})]);
-}
-
-IcAddAPhotoBlack24px.displayName = "IcAddAPhotoBlack24px";
-
-IcAddAPhotoBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcAddAPhotoBlack24px;
-
-IcAddAPhotoBlack24px.default = IcAddAPhotoBlack24px;
-
-
-/***/ }),
-/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(5);
@@ -23589,7 +24388,7 @@ IcAutorenewBlack24px.default = IcAutorenewBlack24px;
 
 
 /***/ }),
-/* 208 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(5);
@@ -23608,26 +24407,7 @@ IcFileUploadBlack24px.default = IcFileUploadBlack24px;
 
 
 /***/ }),
-/* 209 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcPhotoCameraBlack24px (props) {
-    return React.createElement("svg",props,[React.createElement("circle",{"cx":"12","cy":"12","r":"3.2","key":0}),React.createElement("path",{"d":"M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z","key":1})]);
-}
-
-IcPhotoCameraBlack24px.displayName = "IcPhotoCameraBlack24px";
-
-IcPhotoCameraBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcPhotoCameraBlack24px;
-
-IcPhotoCameraBlack24px.default = IcPhotoCameraBlack24px;
-
-
-/***/ }),
-/* 210 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(5);
@@ -23646,84 +24426,59 @@ IcVideocamBlack24px.default = IcVideocamBlack24px;
 
 
 /***/ }),
-/* 211 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(5);
 
-function IcSwitchCameraBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"}));
+function IcPauseBlack24px (props) {
+    return React.createElement("svg",props,React.createElement("path",{"d":"M6 19h4V5H6v14zm8-14v14h4V5h-4z"}));
 }
 
-IcSwitchCameraBlack24px.displayName = "IcSwitchCameraBlack24px";
+IcPauseBlack24px.displayName = "IcPauseBlack24px";
 
-IcSwitchCameraBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
+IcPauseBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
 
-module.exports = IcSwitchCameraBlack24px;
+module.exports = IcPauseBlack24px;
 
-IcSwitchCameraBlack24px.default = IcSwitchCameraBlack24px;
+IcPauseBlack24px.default = IcPauseBlack24px;
 
 
 /***/ }),
-/* 212 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(5);
-
-function IcSwitchVideoBlack24px (props) {
-    return React.createElement("svg",props,React.createElement("path",{"d":"M18 9.5V6c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-3.5l4 4v-13l-4 4zm-5 6V13H7v2.5L3.5 12 7 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"}));
-}
-
-IcSwitchVideoBlack24px.displayName = "IcSwitchVideoBlack24px";
-
-IcSwitchVideoBlack24px.defaultProps = {"height":"24","viewBox":"0 0 24 24","width":"24"};
-
-module.exports = IcSwitchVideoBlack24px;
-
-IcSwitchVideoBlack24px.default = IcSwitchVideoBlack24px;
-
-
-/***/ }),
-/* 213 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "0.png";
 
 /***/ }),
-/* 214 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "1.png";
 
 /***/ }),
-/* 215 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "2.png";
 
 /***/ }),
-/* 216 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "3.png";
 
 /***/ }),
-/* 217 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "4.png";
 
 /***/ }),
-/* 218 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "5.png";
-
-/***/ }),
-/* 219 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "neural_style_transfer-style.jpg";
 
 /***/ })
 /******/ ]);
