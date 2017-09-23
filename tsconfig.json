@@ -5,7 +5,8 @@
 		"strictNullChecks": true,
 		"target": "es5",
 		"jsx": "react",
-		"inlineSourceMap": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
 		"sourceMap": false,
 		"lib": [
 			"es6",
@@ -13,7 +14,7 @@
 		],
 		"baseUrl": ".",
 		"paths": {
-			"webdnn": ["./src/common/webdnn.umd.d.ts"]
+			"webdnn": [ "./src/common/webdnn.d.ts" ]
 		}
 	}
 }

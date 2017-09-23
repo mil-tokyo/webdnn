@@ -1,6 +1,6 @@
 import * as classNames from "classnames"
 import * as React from "react"
-import LinkButton from "../../../common/components/link_button/link_button";
+import { LinkButton } from "../link_button/link_button";
 import * as style from "./splash.scss"
 
 const DENSITY = 5000;
@@ -129,7 +129,7 @@ class ParticleGround {
     }
 }
 
-class Splash extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
+export default class Splash extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
     componentDidMount() {
         let splash = (this.refs["splash"] as HTMLElement);
         if (splash) {
@@ -138,14 +138,12 @@ class Splash extends React.Component<React.HTMLAttributes<HTMLElement>, {}> {
     }
 
     render() {
-        return (<section className={classNames(style.splashPage, this.props.className)}>
-            <div id={style.splash} ref="splash" />
-            <div className={style.content}>
+        return (<section className={ classNames(style.splashPage, this.props.className) }>
+            <div id={ style.splash } ref="splash" />
+            <div className={ style.content }>
                 <h1>Fastest DNN Execution Framework on Web Browser</h1>
                 <LinkButton href="/webdnn/docs">Get Started</LinkButton>
             </div>
         </section>);
     }
 }
-
-export default Splash;

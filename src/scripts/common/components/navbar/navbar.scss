@@ -2,22 +2,23 @@
 @import "../../../../stylus/color";
 @import "../../../../stylus/z-index";
 
-$navbar-background: rgb(46, 48, 56);
+$NavBar-Background: rgb(46, 48, 56);
 
 .navbar {
   display: flex;
-  background: $navbar-background;
-  color: #fff;
-  flex: 0 auto;
   flex-direction: row;
   align-items: center;
+  background: $NavBar-Background;
+  color: #fff;
+  flex: 0 auto;
   justify-content: flex-start;
-  padding: 0 32px;
-  min-height: 56px;
-  z-index: $z-Header;
+  padding: 14px 32px;
+  z-index: $z-NavBar;
   box-shadow: 0 1px 3px rgba(#000, 0.3);
 
   @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    align-items: flex-start;
     min-height: 48px;
   }
 }
@@ -25,9 +26,24 @@ $navbar-background: rgb(46, 48, 56);
 .title {
   margin: 0;
   font-size: 20px;
+  line-height: 28px;
   font-weight: 700;
 
   @include media-breakpoint-down(sm) {
     font-size: 18px;
+    line-height: 20px;
+  }
+}
+
+.sub-title {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+  margin: 0 0 0 8px;
+
+  @include media-breakpoint-down(sm) {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    line-height: 16px;
   }
 }

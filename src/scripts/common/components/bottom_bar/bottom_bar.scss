@@ -1,0 +1,21 @@
+@import "../../../../stylus/bootstrap-mixin";
+@import "../../../../stylus/color";
+@import "../../../../stylus/z-index";
+
+$BottomBar-Background: rgb(46, 48, 56);
+
+.bottom_bar {
+  padding: 1px;
+  box-shadow: 0 -1px 3px rgba(#000, 0.3);
+  z-index: $z-BottomBar;
+  background-color: $BottomBar-Background;
+
+  > * {
+    border-right: 1px solid rgb(28, 29, 35);
+    border-top: 1px solid rgb(28, 29, 35);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}

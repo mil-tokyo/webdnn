@@ -2,8 +2,8 @@ import * as classNames from "classnames"
 import * as React from "react"
 import * as WebDNN from "webdnn";
 import * as bootstrap from "../../../common/bootstrap";
-import TableWrapper from "../../components/table_wrapper/table_wrapper";
-import TopPageSection, { TopPageSectionSubTitle } from "../../components/toppage_section/toppage_section";
+import { TableWrapper } from "../../components/table_wrapper/table_wrapper";
+import { TopPageSection, TopPageSectionSubTitle } from "../../components/toppage_section/toppage_section";
 import * as style from "./browser_compatibility_section.scss";
 
 export const AnchorID = "compatibility";
@@ -18,7 +18,7 @@ let svgIcons = {
     firefox: require('./firefox.svg')
 };
 
-class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<HTMLElement>, { flagWebGPUDisabled: boolean }> {
+export default class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<HTMLElement>, { flagWebGPUDisabled: boolean }> {
     constructor() {
         super();
         this.state = { flagWebGPUDisabled: false }
@@ -62,9 +62,9 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
     }
 
     render() {
-        return (<TopPageSection title="Browser Compatibility" id={AnchorID}>
-            <div className={bootstrap.row}>
-                <div className={bootstrap.col12}>
+        return (<TopPageSection title="Browser Compatibility" id={ AnchorID }>
+            <div className={ bootstrap.row }>
+                <div className={ bootstrap.col12 }>
                     <p>
                         WebDNN supports 4 execution backend implementations:&nbsp;<b>WebGPU</b>, <b>WebGL</b>,
                         <b>WebAssembly</b>, and&nbsp;<b>fallback pure javascript implementation</b>.
@@ -91,69 +91,69 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                         </dd>
                     </dl>
                 </div>
-                <div className={bootstrap.col12}>
+                <div className={ bootstrap.col12 }>
                     <TopPageSectionSubTitle title="Browser Compatibility Table" />
                     <TableWrapper>
-                        <table className={style.compatibilityTable}>
+                        <table className={ style.compatibilityTable }>
                             <tbody>
                             <tr>
                                 <th>
                                     <svgIcons.ie />
-                                    <span className={style.browser}>Internet Explorer</span>
+                                    <span className={ style.browser }>Internet Explorer</span>
                                 </th>
                                 <th>
                                     <svgIcons.edge />
-                                    <span className={style.browser}>Edge</span>
+                                    <span className={ style.browser }>Edge</span>
                                 </th>
                                 <th>
                                     <svgIcons.safari />
-                                    <span className={style.browser}>Safari</span>
+                                    <span className={ style.browser }>Safari</span>
                                 </th>
                                 <th>
                                     <svgIcons.chrome />
-                                    <span className={style.browser}>Chrome</span>
+                                    <span className={ style.browser }>Chrome</span>
                                 </th>
                                 <th>
                                     <svgIcons.firefox />
-                                    <span className={style.browser}>FireFox</span>
+                                    <span className={ style.browser }>FireFox</span>
                                 </th>
                             </tr>
                             <tr>
-                                <td className={style.webassembly} rowSpan={1}>
-                                    <span className={style.versionRange}>11</span>
-                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
+                                <td className={ style.webassembly } rowSpan={ 1 }>
+                                    <span className={ style.versionRange }>11</span>
+                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
                                 </td>
-                                <td className={style.webassembly} rowSpan={3}>
-                                    <span className={style.versionRange}> - 15</span>
-                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
+                                <td className={ style.webassembly } rowSpan={ 3 }>
+                                    <span className={ style.versionRange }> - 15</span>
+                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
                                 </td>
-                                <td className={style.webgpu} rowSpan={1}>
-                                    <span className={style.versionRange}>11</span>
-                                    <span className={style.backend}>WebGPU, WebAssembly/asm.js</span>
+                                <td className={ style.webgpu } rowSpan={ 1 }>
+                                    <span className={ style.versionRange }>11</span>
+                                    <span className={ style.backend }>WebGPU, WebAssembly/asm.js</span>
                                 </td>
-                                <td className={style.webassembly} rowSpan={3}>
-                                    <span className={style.versionRange}> - 58</span>
-                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
+                                <td className={ style.webassembly } rowSpan={ 3 }>
+                                    <span className={ style.versionRange }> - 58</span>
+                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
                                 </td>
-                                <td className={style.webassembly} rowSpan={3}>
-                                    <span className={style.versionRange}> - 53</span>
-                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className={style.webassembly} rowSpan={1}>
-                                    <span className={style.versionRange}>10</span>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
-                                </td>
-                                <td className={style.webassembly} rowSpan={2}>
-                                    <span className={style.versionRange}> - 10.1</span>
-                                    <span className={style.backend}>WebGL, WebAssembly/asm.js</span>
+                                <td className={ style.webassembly } rowSpan={ 3 }>
+                                    <span className={ style.versionRange }> - 53</span>
+                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
                                 </td>
                             </tr>
                             <tr>
-                                <td className={style.fallback} rowSpan={1}>
-                                    <span className={style.versionRange}> - 9</span>
-                                    <span className={style.backend}>Fallback</span>
+                                <td className={ style.webassembly } rowSpan={ 1 }>
+                                    <span className={ style.versionRange }>10</span>
+                                    <span className={ style.backend }>WebAssembly/asm.js</span>
+                                </td>
+                                <td className={ style.webassembly } rowSpan={ 2 }>
+                                    <span className={ style.versionRange }> - 10.1</span>
+                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className={ style.fallback } rowSpan={ 1 }>
+                                    <span className={ style.versionRange }> - 9</span>
+                                    <span className={ style.backend }>Fallback</span>
                                 </td>
                             </tr>
                             </tbody>
@@ -162,63 +162,64 @@ class BrowserCompatibilitySection extends React.Component<React.HTMLAttributes<H
                 </div>
             </div>
             <hr />
-            <div className={bootstrap.row}>
-                <div className={bootstrap.col12}>
+            <div className={ bootstrap.row }>
+                <div className={ bootstrap.col12 }>
                     <TopPageSectionSubTitle title="This Browser" />
                     <TableWrapper>
-                        <table className={style.thisBrowserTable}>
+                        <table className={ style.thisBrowserTable }>
                             <tbody>
                             <tr>
                                 <th>
-                                    <span className={style.backend}>WebGPU</span>
+                                    <span className={ style.backend }>WebGPU</span>
                                 </th>
                                 <th>
-                                    <span className={style.backend}>WebGL</span>
+                                    <span className={ style.backend }>WebGL</span>
                                 </th>
                                 <th>
-                                    <span className={style.backend}>WebAssembly/asm.js</span>
+                                    <span className={ style.backend }>WebAssembly/asm.js</span>
                                 </th>
                                 <th>
-                                    <span className={style.backend}>Fallback</span>
+                                    <span className={ style.backend }>Fallback</span>
                                 </th>
                             </tr>
                             <tr>
-                                <td className={classNames(style.webgpu, style.unsupported)} ref="webgpu">
+                                <td className={ classNames(style.webgpu, style.unsupported) } ref="webgpu">
                                     <span>Not supported</span>
                                 </td>
-                                <td className={classNames(style.webassembly, style.unsupported)} ref="webgl">
+                                <td className={ classNames(style.webassembly, style.unsupported) } ref="webgl">
                                     <span>Not supported</span>
                                 </td>
-                                <td className={classNames(style.webassembly, style.unsupported)} ref="webassembly">
+                                <td className={ classNames(style.webassembly, style.unsupported) } ref="webassembly">
                                     <span>Not supported</span>
                                 </td>
-                                <td className={classNames(style.fallback, style.unsupported)} ref="fallback">
+                                <td className={ classNames(style.fallback, style.unsupported) } ref="fallback">
                                     <span>Not supported</span>
                                 </td>
                             </tr>
                             </tbody>
                         </table>
                     </TableWrapper>
-                    <p style={{ display: this.state.flagWebGPUDisabled ? '' : 'none' }} className={style.webgpuTips}>
+                    <p style={ { display: this.state.flagWebGPUDisabled ? '' : 'none' } }
+                       className={ style.webgpuTips }>
                         This browser supports WebGPU, but currently it's disabled. WebGPU accelerates WebDNN
-                        considerably. To enable WebGPU, see&nbsp;<a href={/iPhone/.test(navigator.userAgent) ?
-                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
-                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
-                            this document
-                        </a>.
+                        considerably. To enable WebGPU, see&nbsp;<a href={ /iPhone/.test(navigator.userAgent) ?
+                                                                           "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
+                                                                           "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }>
+                        this document
+                    </a>.
                     </p>
-                    <p style={{ display: this.state.flagWebGPUDisabled ? 'none' : '' }} className={style.webgpuTips}>
-                        In <b>Safari 11 on macOS High Sierra</b> and <b>Safari Technology Preview</b>, WebGPU API is available (some hardware cannot be supported yet).
-                        To enable WebGPU, see&nbsp;<a href={/iPhone/.test(navigator.userAgent) ?
-                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
-                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html"}>
-                            this document
-                        </a>.
+                    <p style={ { display: this.state.flagWebGPUDisabled ? 'none' : '' } }
+                       className={ style.webgpuTips }>
+                        In <b>macOS High Sierra</b>, <b>iOS 11</b>, and <b>Safari Technology Preview</b>, WebGPU API is
+                        available (some hardware cannot be supported yet).
+                        To enable WebGPU, see&nbsp;<a href={ /iPhone/.test(navigator.userAgent) ?
+                                                             "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
+                                                             "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }>
+                        this document
+                    </a>.
                     </p>
                 </div>
             </div>
         </TopPageSection>);
     }
 }
-
-export default BrowserCompatibilitySection;

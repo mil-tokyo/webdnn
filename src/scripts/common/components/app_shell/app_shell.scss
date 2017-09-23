@@ -1,0 +1,16 @@
+@import "../layer/layer";
+
+.app_shell {
+  @extend .layer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.main {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+}

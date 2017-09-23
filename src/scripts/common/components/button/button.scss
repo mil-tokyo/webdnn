@@ -2,6 +2,7 @@
 @import "../../../../stylus/color";
 
 .button {
+  position: relative;
   border: none;
   color: inherit;
   fill: currentColor;
@@ -14,17 +15,26 @@
   padding: 8px 16px;
   background: none;
   outline: none !important;
-  transition: 60ms ease-out;
   min-height: 64px;
   min-width: 48px;
+  flex: 1;
 
   @include media-breakpoint-down(sm) {
     padding: 8px 8px;
   }
 
+  &:hover {
+    .ripple {
+      transition: none;
+      opacity: 0.1;
+    }
+  }
+
   &:active {
-    transition: none;
-    opacity: 0.3;
+    .ripple {
+      transition: none;
+      opacity: 0.3;
+    }
   }
 
   &[disabled] {
@@ -32,6 +42,10 @@
     opacity: 0.3;
     &:active, &:focus, &:hover {
       opacity: 0.3;
+
+      .ripple {
+        opacity: 0;
+      }
     }
   }
 
@@ -43,6 +57,18 @@
     color: $c-key;
     fill: $c-key;
   }
+}
+
+.ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  opacity: 0;
+  transition: 60ms ease-out;
+  will-change: opacity;
 }
 
 .body {

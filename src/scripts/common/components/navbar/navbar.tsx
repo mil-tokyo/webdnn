@@ -4,21 +4,22 @@ import * as style from "./navbar.scss"
 
 interface Props extends React.HTMLAttributes<HTMLElement> {
     title?: string
+    subTitle?: string
 }
 
-class Navbar extends React.Component<Props, {}> {
-    render() {
-        let title: React.ReactNode;
-        if ('title' in this.props) {
-            title = <h1 className={style.title}>{this.props.title}</h1>
-        }
-        return (
-            <header className={classNames(style.navbar, this.props.className)}>
-                {title}
-                {this.props.children}
-            </header>
-        );
+export const Navbar = (props: Props) => {
+    let title: React.ReactNode;
+    let subTitle: React.ReactNode;
+    if ('title' in props) {
+        title = <h1 className={ style.title }>{ props.title }</h1>
     }
-}
-
-export default Navbar
+    if ('subTitle' in props) {
+        subTitle = <p className={ style.subTitle }>{ props.subTitle }</p>
+    }
+    return (
+        <header className={ classNames(style.navbar, props.className) }>
+            { title }
+            { subTitle }
+        </header>
+    );
+};

@@ -20,7 +20,7 @@ $c-PageHeader-foreground: #fcfcfc;
   color: $c-PageHeader-foreground;
   padding: 0 32px 0 64px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  z-index: $z-Header;
+  z-index: $z-NavBar;
 
   h1 {
     font-weight: 300;

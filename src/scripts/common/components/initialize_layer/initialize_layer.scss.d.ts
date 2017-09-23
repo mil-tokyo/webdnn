@@ -3,6 +3,7 @@ export const initializeLayer: string;
 export const layer: string;
 export const navbar: string;
 export const title: string;
+export const subTitle: string;
 export const message: string;
 export const progress: string;
 export const progressOuter: string;

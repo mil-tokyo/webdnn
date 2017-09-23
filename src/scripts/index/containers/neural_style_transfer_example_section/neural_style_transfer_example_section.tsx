@@ -1,15 +1,15 @@
 import * as classNames from "classnames";
 import * as React from "react";
 import * as bootstrap from "../../../common/bootstrap";
-import Playground from "../../../common/components/playground/playground";
-import TopPageSection from "../../components/toppage_section/toppage_section";
+import { default as Playground } from "../../components/playground/playground";
+import { TopPageSection } from "../../components/toppage_section/toppage_section";
 
 export const AnchorID = "neural-style-transfer";
 
-const NeuralStyleTransferExampleSection = (props: React.HTMLAttributes<HTMLElement>) => (
-    <TopPageSection title="Neural Style Transfer" id={AnchorID}>
-        <div className={bootstrap.row}>
-            <div className={classNames(bootstrap.col12, bootstrap.colLg)}>
+export const NeuralStyleTransferExampleSection = (props: React.HTMLAttributes<HTMLElement>) => (
+    <TopPageSection title="Neural Style Transfer" id={ AnchorID }>
+        <div className={ bootstrap.row }>
+            <div className={ classNames(bootstrap.col12, bootstrap.colLg) }>
                 <p>
                     This example runs Neural Style Transfer model&nbsp;<a className="ref" href="#ref4">[4]</a>.
                     Neural Style Transfer model are given 2 input images, one is content image and another is style
@@ -25,11 +25,9 @@ const NeuralStyleTransferExampleSection = (props: React.HTMLAttributes<HTMLEleme
                                                                                browser, not by server.</b>
                 </p>
             </div>
-            <div className={classNames(bootstrap.col12, bootstrap.colLg)}>
+            <div className={ classNames(bootstrap.col12, bootstrap.colLg) }>
                 <Playground url="/webdnn/neural_style_transfer.html" title="Neural Style Transfer" />
             </div>
         </div>
     </TopPageSection>
 );
-
-export default NeuralStyleTransferExampleSection;

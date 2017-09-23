@@ -11,18 +11,18 @@ declare function require(path: string): any;
 
 const GitHubSVG = require('./github.svg');
 
-const PageHeaderJA = (props: React.HTMLAttributes<HTMLElement>) => (
-    <header className={classNames(style.pageHeader, props.className)}>
-        <h1><span className={style.logo}>MIL</span> WebDNN</h1>
-        <div className={style.itemContainer}>
-            <p className={classNames(style.menu, bootstrap.mobileHide)}>
-                <a href={'#' + AboutAnchorID}>About</a>
-                <a href={'#' + CompatibilityAnchorID}>Compatibility</a>
-                <a href={'#' + BenchmarkAnchorID}>Benchmark</a>
-                <a href={'#' + ExampleSectionAnchorID}>Examples</a>
-                <a href={'/webdnn/docs'}>Docs</a>
+export const PageHeaderJA = (props: React.HTMLAttributes<HTMLElement>) => (
+    <header className={ classNames(style.pageHeader, props.className) }>
+        <h1><span className={ style.logo }>MIL</span> WebDNN</h1>
+        <div className={ style.itemContainer }>
+            <p className={ classNames(style.menu, bootstrap.mobileHide) }>
+                <a href={ '#' + AboutAnchorID }>About</a>
+                <a href={ '#' + CompatibilityAnchorID }>Compatibility</a>
+                <a href={ '#' + BenchmarkAnchorID }>Benchmark</a>
+                <a href={ '#' + ExampleSectionAnchorID }>Examples</a>
+                <a href={ '/webdnn/docs' }>Docs</a>
             </p>
-            <p className={style.link}>
+            <p className={ style.link }>
                 <a href="/webdnn"><span>English</span></a>
                 <a href="https://github.com/mil-tokyo/webdnn">
                     <GitHubSVG />
@@ -31,5 +31,3 @@ const PageHeaderJA = (props: React.HTMLAttributes<HTMLElement>) => (
         </div>
     </header>
 );
-
-export default PageHeaderJA

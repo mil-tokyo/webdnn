@@ -1,8 +1,0 @@
-@import "../layer/layer";
-@import "../../../../stylus/color";
-
-.start_layer {
-  @extend .layer;
-  background: #000;
-  color: $c-key;
-}

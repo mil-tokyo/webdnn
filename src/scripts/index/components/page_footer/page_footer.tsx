@@ -2,7 +2,7 @@ import * as classNames from "classnames";
 import * as React from "react";
 import * as style from "./page_footer.scss";
 
-const PageFooter = (props: React.HTMLAttributes<HTMLElement>) => (
+export const PageFooter = (props: React.HTMLAttributes<HTMLElement>) => (
     <footer className={classNames(style.pageFooter, props.className)}>
         <p>
             &copy;&nbsp;
@@ -14,4 +14,3 @@ const PageFooter = (props: React.HTMLAttributes<HTMLElement>) => (
         </p>
     </footer>
 );
-export default PageFooter;

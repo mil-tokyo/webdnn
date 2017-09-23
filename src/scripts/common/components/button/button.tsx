@@ -7,6 +7,7 @@ interface Props extends React.HTMLAttributes<HTMLButtonElement> {
     srcSet?: string,
     primary?: boolean
     active?: boolean
+    disabled?: boolean
 }
 
 const Button = (props: Props, {}) => {
@@ -19,7 +20,8 @@ const Button = (props: Props, {}) => {
         )}
                 disabled={props.disabled}
                 onClick={props.onClick}>
-            <LayoutFrame column center className={style.body}>
+            <div className={style.ripple} />
+            <LayoutFrame fit column center className={style.body}>
                 {props.children}
             </LayoutFrame>
         </button>
