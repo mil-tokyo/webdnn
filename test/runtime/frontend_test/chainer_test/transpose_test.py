@@ -1,8 +1,31 @@
 import chainer
 import numpy as np
 
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
 from webdnn.frontend.chainer.converter import ChainerConverter
+
+
+@wrap_template
+def template(x_shape=(2, 4, 6, 8), axes=(0, 2, 3, 1), description=""):
+    vx = chainer.Variable(np.random.rand(*x_shape))
+    vy = chainer.functions.transpose(vx, axes=axes)
+
+    graph = ChainerConverter().convert([vx], [vy])
+
+    x = graph.inputs[0]
+    y = graph.outputs[0]
+
+    generate_kernel_test_case(
+        description=f"[chainer] F.transpose {description}",
+        graph=graph,
+        backend=["webgpu", "webgl", "webassembly"],
+        inputs={x: vx.data},
+        expected={y: vy.data},
+    )
+
+
+def test_general():
+    template()
 
 
 def test():
@@ -39,5 +62,5 @@ def test():
         graph=graph,
         inputs={x: vx.data},
         expected={y: vy.data},
-        backend=["webgpu", "webassembly"]
+        backend=["webgpu", "webgl", "webassembly"]
     )
