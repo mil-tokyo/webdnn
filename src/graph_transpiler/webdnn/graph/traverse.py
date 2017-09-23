@@ -62,19 +62,77 @@ def sort_nodes(nodes: List[Node]) -> List[Node]:
     return list(sorted(nodes, key=lambda x: x.name))
 
 
-def listup_nodes(graph: Graph) -> List[Node]:
-    stack = list(graph.outputs)  # type: List[Node]
+def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_internal_output_bound=True) -> List[Node]:
+    """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
+    List up all nodes in graph in order of forward computation.
+
+    `ignore_internal_` parameters control the result.
+
+    .. code-block::
+
+      # graph:
+      #
+      #   +-2-3-4-5-+
+      # 1-+         +-6-
+      #   +---------+
+
+      listup_nodes(Graph([1, 3], [4, 6])
+
+      # >>> ignore_internal_input_bound=False, ignore_internal_output_bound=False : [1,    3, 4,    6]
+      # >>> ignore_internal_input_bound=False, ignore_internal_output_bound=True  : [1,    3, 4, 5, 6] (default)
+      # >>> ignore_internal_input_bound=True,  ignore_internal_output_bound=False : [1, 2, 3, 4,    6]
+      # >>> ignore_internal_input_bound=True,  ignore_internal_output_bound=True  : [1, 2, 3, 4, 5, 6]
+    """
+
+    input_bound = graph.inputs
+    output_bound = graph.outputs
+
+    # Normalize bound nodes
+
+    def check_is_input_bound(node: Node):
+        linked_nodes = list(node.prevs)  # type: List[Node]
+        while len(linked_nodes) > 0:
+            linked_node = linked_nodes.pop()
+
+            if linked_node in graph.inputs:
+                return False
+
+            linked_nodes.extend(linked_node.prevs)
+
+        return True
+
+    def check_is_output_bound(node: Node):
+        linked_nodes = list(node.nexts)  # type: List[Node]
+        while len(linked_nodes) > 0:
+            linked_node = linked_nodes.pop()
+
+            if linked_node in graph.outputs:
+                return False
+
+            linked_nodes.extend(linked_node.nexts)
+
+        return True
+
+    if ignore_internal_input_bound and len(input_bound) >= 2:
+        input_bound = list(filter(check_is_input_bound, input_bound))
+
+    if ignore_internal_output_bound and len(output_bound) >= 2:
+        output_bound = list(filter(check_is_output_bound, output_bound))
+
+    # List up nodes
+
+    stack = list(output_bound)  # type: List[Node]
     stacked = set(stack)  # type: Set[Node]
     resolved = set()  # type: Set[Node]
     result = list()  # type: List[Node]
 
     stack = sort_nodes(stack)
 
-    for variable in graph.inputs:
+    for variable in input_bound:
         result.append(variable)
         resolved.add(variable)
 
-    for variable in graph.outputs:
+    for variable in output_bound:
         resolved.update(variable.nexts)
 
     while len(stack) > 0:

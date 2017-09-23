@@ -22,19 +22,15 @@ class Node:
     """
     Basic graph node class.
     """
-    attributes: Set["attribute.Attribute"]
-    parameters: Dict[str, any]
-    prevs: Set["Node"]
-    nexts: Set["Node"]
 
     def __init__(self, name: Optional[str] = None):
         if name is None:
             name = _generate_name(self)
-        self.parameters = {}
-        self.attributes = set()
+        self.parameters = {}  # type: Dict[str, any]
+        self.attributes = set()  # type: Set["attribute.Attribute"]
         self.name = name
-        self.prevs = set()
-        self.nexts = set()
+        self.prevs = set()  # type: Set["Node"]
+        self.nexts = set()  # type: Set["Node"]
 
     def append_prev(self, prev: "Node"):
         prev.nexts.add(self)

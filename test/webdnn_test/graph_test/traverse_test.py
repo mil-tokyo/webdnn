@@ -2,6 +2,7 @@ from nose import with_setup
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
+from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.order import OrderNC
 from webdnn.graph.traverse import check_attribute_match, check_match, check_node_type_match, search_sub_structure, \
@@ -57,7 +58,7 @@ def setup_graph_sequential():
 def setup_graph_residual():
     """
     generate residual structure
-    
+
     v0 --[op1]--> v1 -+----------------+--[op3]--> v3
                       |                |
                       +--[op2]--> v2 --+
@@ -156,6 +157,25 @@ def test_listup_nodes():
     assert tuple(nodes) == (v0, op1, v1, op2, v2, op3, v3)
 
 
+def test_listup_nodes_hidden_output():
+    v0 = Variable((1, 1), OrderNC)
+    op1 = Operator("op1")
+    v1 = Variable((1, 2), OrderNC)
+    op2 = TestOperator("op2")
+    v2 = Variable((1, 3), OrderNC)
+
+    op1.append_input("v0", v0)
+    op1.append_output("v1", v1)
+    op2.append_input("v1", v1)
+    op2.append_output("v2", v2)
+
+    graph = Graph([v0], [v1, v2])  # outputs hidden variable
+
+    nodes = listup_nodes(graph)
+
+    assert tuple(nodes) == (v0, op1, v1, op2, v2), str(nodes)
+
+
 @with_setup(setup_graph_sequential)
 def test_listup_operators():
     global graph, op1, op2, op3
@@ -194,3 +214,52 @@ def test_listup_variables_residual():
     variables = listup_variables(graph)
 
     assert tuple(variables) == (v0, v1, v2, v3)
+
+
+def test_ignore_internal_bound_flag():
+    #     +-2-3-4-5-+
+    #   1-+         +-6-
+    #     +---------+
+    n1 = Node("n1")
+    n2 = Node("n2")
+    n3 = Node("n3")
+    n4 = Node("n4")
+    n5 = Node("n5")
+    n6 = Node("n6")
+
+    n2.append_prev(n1)
+    n3.append_prev(n2)
+    n4.append_prev(n3)
+    n5.append_prev(n4)
+    n6.append_prev(n1)
+    n6.append_prev(n5)
+
+    graph = Graph([n1, n3], [n4, n6])
+
+    result = listup_nodes(graph, ignore_internal_input_bound=False, ignore_internal_output_bound=False)
+    assert len(result) == 4 and set(result) == {n1, n3, n4, n6}
+    assert result.index(n1) < result.index(n6)
+    assert result.index(n3) < result.index(n4)
+
+    result = listup_nodes(graph, ignore_internal_input_bound=False, ignore_internal_output_bound=True)
+    assert len(result) == 5 and set(result) == {n1, n3, n4, n5, n6}
+    assert result.index(n1) < result.index(n6)
+    assert result.index(n3) < result.index(n4)
+    assert result.index(n4) < result.index(n5)
+    assert result.index(n5) < result.index(n6)
+
+    result = listup_nodes(graph, ignore_internal_input_bound=True, ignore_internal_output_bound=False)
+    assert len(result) == 5 and set(result) == {n1, n2, n3, n4, n6}
+    assert result.index(n1) < result.index(n2)
+    assert result.index(n2) < result.index(n3)
+    assert result.index(n3) < result.index(n4)
+    assert result.index(n1) < result.index(n6)
+
+    result = listup_nodes(graph, ignore_internal_input_bound=True, ignore_internal_output_bound=True)
+    assert len(result) == 6 and set(result) == {n1, n2, n3, n4, n5, n6}
+    assert result.index(n1) < result.index(n2)
+    assert result.index(n2) < result.index(n3)
+    assert result.index(n3) < result.index(n4)
+    assert result.index(n4) < result.index(n5)
+    assert result.index(n5) < result.index(n6)
+    assert result.index(n1) < result.index(n6)
