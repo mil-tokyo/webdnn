@@ -19,7 +19,7 @@ class OptimizeRule:
 
     @staticmethod
     def replace_variable(graph: Graph, old_var: Variable, new_var: Variable):
-        old_var.replace(new_var)
+        old_var.replace(new_var, with_assert=False)
 
         if old_var in graph.inputs:
             i = graph.inputs.index(old_var)

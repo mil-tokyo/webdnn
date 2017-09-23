@@ -1,7 +1,6 @@
 from itertools import combinations
 
 import chainer
-
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.frontend.constraints import unify_order, AxisVar
 from webdnn.graph.operators.broadcast import Broadcast
@@ -10,6 +9,7 @@ from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.order import OrderC, OrderNCHW, Order
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -241,8 +241,11 @@ def _convert_tile(converter: ChainerConverter, c_op: "chainer.functions.Tile"):
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Transpose")
 def _convert_transpose(converter: ChainerConverter, c_op: "chainer.functions.Transpose"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Transpose is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Transpose(None)(x)
+    y.change_order(Order([x.order.axes[axis] for axis in c_op.axes]))
+
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
