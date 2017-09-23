@@ -187,7 +187,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">old_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">new_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
-        <span class="n">old_var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_var</span><span class="p">)</span>
+        <span class="n">old_var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_var</span><span class="p">,</span> <span class="n">with_assert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">old_var</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
