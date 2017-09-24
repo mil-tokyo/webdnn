@@ -133,14 +133,12 @@ export function getImageArrayFromImageData(imageData: ImageData,
 
         case Color.GREY:
             array = new type(width * height);
-            [biasB, biasG, biasR] = bias;
-            [scaleB, scaleG, scaleR] = scale;
             for (let h = 0; h < height; h++) {
                 for (let w = 0; w < width; w++) {
-                    let r = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
-                    let g = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
-                    let b = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
-                    array[h * width + w] = 0.2126 * r + 0.7162 * g + 0.0722 * b;
+                    let r = data[(h * width + w) * 4 + 0];
+                    let g = data[(h * width + w) * 4 + 1];
+                    let b = data[(h * width + w) * 4 + 2];
+                    array[h * width + w] = ((0.2126 * r + 0.7162 * g + 0.0722 * b) - bias[0]) / scale[0];
                 }
             }
             break;
@@ -459,13 +457,11 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
             break;
 
         case Color.GREY:
-            [biasR, biasG, biasB] = bias;
-            [scaleR, scaleG, scaleB] = scale;
             for (let h = srcY; h < srcY + srcH; h++) {
                 for (let w = srcX; w < srcX + srcW; w++) {
                     data[(h * imageW + w) * 4 + 0] =
                         data[(h * imageW + w) * 4 + 1] =
-                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scale[0] + bias[0];
                     data[(h * imageW + w) * 4 + 3] = 255;
                 }
             }

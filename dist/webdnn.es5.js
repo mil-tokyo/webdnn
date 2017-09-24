@@ -1268,7 +1268,6 @@ var BufferWebGL = (function (_super) {
                 throw Error('Unknown channel mode');
         }
         if (BufferWebGL.handler.isWebGL2) {
-            // FIXME: support both R32F and RGBA32F
             switch (channelMode) {
                 case 'RGBA':
                     _this.textureFormat = BufferWebGL.handler.gl.RGBA;
@@ -1285,6 +1284,7 @@ var BufferWebGL = (function (_super) {
             }
         }
         else {
+            // In WebGL1, RGBA channel mode is specified, but only R channel is used.
             _this.textureFormat = BufferWebGL.handler.gl.RGBA;
             _this.textureInternalFormat = BufferWebGL.handler.gl.RGBA;
             _this.pixelStride = 4;
@@ -3113,14 +3113,12 @@ function getImageArrayFromImageData(imageData, options) {
             break;
         case Color.GREY:
             array = new type(width * height);
-            biasB = bias[0], biasG = bias[1], biasR = bias[2];
-            scaleB = scale[0], scaleG = scale[1], scaleR = scale[2];
             for (var h = 0; h < height; h++) {
                 for (var w = 0; w < width; w++) {
-                    var r = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
-                    var g = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
-                    var b = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
-                    array[h * width + w] = 0.2126 * r + 0.7162 * g + 0.0722 * b;
+                    var r = data[(h * width + w) * 4 + 0];
+                    var g = data[(h * width + w) * 4 + 1];
+                    var b = data[(h * width + w) * 4 + 2];
+                    array[h * width + w] = ((0.2126 * r + 0.7162 * g + 0.0722 * b) - bias[0]) / scale[0];
                 }
             }
             break;
@@ -3416,13 +3414,11 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
             }
             break;
         case Color.GREY:
-            biasR = bias[0], biasG = bias[1], biasB = bias[2];
-            scaleR = scale[0], scaleG = scale[1], scaleB = scale[2];
             for (var h = srcY; h < srcY + srcH; h++) {
                 for (var w = srcX; w < srcX + srcW; w++) {
                     data[(h * imageW + w) * 4 + 0] =
                         data[(h * imageW + w) * 4 + 1] =
-                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 2] = array[h * imageW + w] * scale[0] + bias[0];
                     data[(h * imageW + w) * 4 + 3] = 255;
                 }
             }
