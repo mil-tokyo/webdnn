@@ -70,9 +70,8 @@ def main():
     else:
         output_blobs = list(
             link(inputs={args.input_name: input_blob}, outputs=output_names, train=False))  # list of Variable
-    chainer_cg = chainer.computational_graph.build_computational_graph(output_blobs)
     converter = ChainerConverter()
-    graph = converter.convert(chainer_cg, [input_blob], output_blobs)  # type: Graph
+    graph = converter.convert([input_blob], output_blobs)  # type: Graph
 
     if args.out:
         output_dir = args.out

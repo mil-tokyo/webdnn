@@ -3039,15 +3039,6 @@ function flatten$1(arr) {
 /**
  * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
  *
- * @see getImageArrayFromCanvas
- *
- * @param {ImageData} imageData Canvas ImageData object
- * @param [options] Options
- * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
- * @param {Color} [options.color=Color.RGB] Color order of image array
- * @param {Order} [options.order=Order.HWC] Data order of image array
- * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
- * parsed based on `options.order`.
  * @returns {ArrayBufferView} buffer with specified type
  * @protected
  */
@@ -3130,31 +3121,6 @@ function getImageArrayFromImageData(imageData, options) {
 /**
  * Get image array from canvas element as `{Float32 or Int32}ArrayBufferView`.
  *
- * @example <caption>Get image data into Float32Array</caption>
- *
- * let array = getImageArrayFromCanvas(canvas);
- *
- * @example <caption>Get image data with rescaling to 224x224</caption>
- *
- * let array = getImageArrayFromCanvas(canvas, { dstW: 224, dstH: 224 });
- *
- * @example <caption>Get image data with considering mean image value normalization</caption>
- *
- * let array = getImageArrayFromCanvas(canvas, { bias: [MEAN_B, MEAN_G, MEAN_R], color: BGR });
- *
- * @param {HTMLCanvasElement} canvas Canvas
- * @param [options] Options
- * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
- * @param {Color} [options.color=Color.RGB] Color order of image array
- * @param {Order} [options.order=Order.HWC] Data order of image array
- * @param {number} [options.srcX=0] left position of input clipping rect
- * @param {number} [options.srcY=0] top position of input clipping rect
- * @param {number} [options.srcW=canvas.width] width of input clipping rect
- * @param {number} [options.srcH=canvas.height] height of input clipping rect
- * @param {number} [options.dstW=canvas.width] width of output
- * @param {number} [options.dstH=canvas.height] height of output
- * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
- * parsed based on `options.order`.
  * @returns {ImageData} buffer with specified type
  * @protected
  */
@@ -3168,31 +3134,6 @@ function getImageArrayFromCanvas(canvas, options) {
 /**
  * Get image array from image element as `{Float32 or Int32}ArrayBufferView`.
  *
- * @example <caption>Get image data into Float32Array</caption>
- *
- * let array = getImageArrayFromCanvas(canvas);
- *
- * @example <caption>Get image data with rescaling to 224x224</caption>
- *
- * let array = getImageArrayFromCanvas(canvas, { dstW: 224, dstH: 224 });
- *
- * @example <caption>Get image data with considering mean image value normalization</caption>
- *
- * let array = getImageArrayFromCanvas(canvas, { bias: [MEAN_B, MEAN_G, MEAN_R], color: BGR });
- *
- * @param {HTMLImageElement|HTMLVideoElement} drawable Image
- * @param [options] Options
- * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
- * @param {Color} [options.color=Color.RGB] Color order of image array
- * @param {Order} [options.order=Order.HWC] Data order of image array
- * @param {number} [options.srcX=0] left position of input clipping rect
- * @param {number} [options.srcY=0] top position of input clipping rect
- * @param {number} [options.srcW=canvas.width] width of input clipping rect
- * @param {number} [options.srcH=canvas.height] height of input clipping rect
- * @param {number} [options.dstW=canvas.width] width of output
- * @param {number} [options.dstH=canvas.height] height of output
- * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
- * parsed based on `options.order`.
  * @returns {ImageData} buffer with specified type
  * @protected
  */
@@ -3257,7 +3198,7 @@ function getImageArrayFromDrawable(drawable, options) {
  *   packed value `y` as follows:
  *
  *   - `y = (x - bias) / scale`
- *   - `x= y * scale + bias`
+ *   - `x = y * scale + bias`
  *
  * ### Examples
  *
@@ -3352,10 +3293,12 @@ function getImageArray(image, options) {
  * @param imageH height of image. The length of `array` must be `imageW * imageH * (# of channels)`
  * @param canvas destination canvas
  * @param options please see above descriptions and descriptions in [[webdnn/image.getImageArray|getImageArray()]].
+ *                `srcW` and `srcH` is ignored (overwritten by `imageW` and `imageH`).
  */
 function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
     if (options === void 0) { options = {}; }
-    var _a = options.color, color = _a === void 0 ? Color.RGB : _a, _b = options.order, order = _b === void 0 ? Order.HWC : _b, _c = options.srcX, srcX = _c === void 0 ? 0 : _c, _d = options.srcY, srcY = _d === void 0 ? 0 : _d, _e = options.srcW, srcW = _e === void 0 ? imageW : _e, _f = options.srcH, srcH = _f === void 0 ? imageH : _f, _g = options.dstX, dstX = _g === void 0 ? 0 : _g, _h = options.dstY, dstY = _h === void 0 ? 0 : _h, _j = options.dstW, dstW = _j === void 0 ? canvas.width : _j, _k = options.dstH, dstH = _k === void 0 ? canvas.height : _k, _l = options.bias, bias = _l === void 0 ? [0, 0, 0] : _l, _m = options.scale, scale = _m === void 0 ? [1, 1, 1] : _m;
+    var _a = options.color, color = _a === void 0 ? Color.RGB : _a, _b = options.order, order = _b === void 0 ? Order.HWC : _b, _c = options.srcX, srcX = _c === void 0 ? 0 : _c, _d = options.srcY, srcY = _d === void 0 ? 0 : _d, _e = options.dstX, dstX = _e === void 0 ? 0 : _e, _f = options.dstY, dstY = _f === void 0 ? 0 : _f, _g = options.dstW, dstW = _g === void 0 ? canvas.width : _g, _h = options.dstH, dstH = _h === void 0 ? canvas.height : _h, _j = options.bias, bias = _j === void 0 ? [0, 0, 0] : _j, _k = options.scale, scale = _k === void 0 ? [1, 1, 1] : _k;
+    var srcW = imageW, srcH = imageH;
     array = flatten$1(array);
     var data = new Uint8ClampedArray(srcW * srcH * 4);
     var biasR, biasG, biasB;
