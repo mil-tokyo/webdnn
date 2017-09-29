@@ -1,10 +1,12 @@
 import chainer
 
+from webdnn import Axis
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.frontend.constraints import unify_order
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.order import OrderNCHW
+from webdnn.util import console
 
 
 @ChainerConverter.register_handler("AveragePooling2D")
@@ -18,6 +20,12 @@ def _convert_average_pooling2d(converter: ChainerConverter, c_op: "chainer.funct
                                 padding=(c_op.ph, c_op.pw))
 
     y, = pool_opr(x)
+
+    if ((y.shape_dict[Axis.H] + c_op.ph * 2 - c_op.kh) % c_op.sy != 0) or ((y.shape_dict[Axis.W] + c_op.pw * 2 - c_op.kw) % c_op.sx != 0):
+        console.warning(
+            "[AveragePooling2D] AveragePooling2D in chainer is performed as cover_all=False mode. "
+            "However, AveragePooling2D in WebDNN is always calculated as cover_all=True mode. "
+            "Therefore the result may be difference from chainer's output.")
 
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -41,6 +49,10 @@ def _convert_max_pooling2d(converter: ChainerConverter, c_op: "chainer.functions
                             ksize=(c_op.kh, c_op.kw),
                             stride=(c_op.sy, c_op.sx),
                             padding=(c_op.ph, c_op.pw))
+    if c_op.cover_all == False:
+        console.warning(
+            "[MaxPooling2D] MaxPooling2D in WebDNN is always calculated as cover_all=True mode. "
+            "Therefore the result may be difference from chainer's output.")
 
     y, = pool_opr(x)
 
