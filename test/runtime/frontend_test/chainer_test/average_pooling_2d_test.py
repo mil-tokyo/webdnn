@@ -6,8 +6,8 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 @wrap_template
-def template(ksize=2, stride=None, pad=0, description=""):
-    vx = chainer.Variable(np.random.rand(2, 4, 6, 8))
+def template(ksize=2, stride=None, pad=0, shape=(2, 4, 6, 8), description=""):
+    vx = chainer.Variable(np.random.rand(*shape))
     vy = chainer.functions.average_pooling_2d(vx, ksize=ksize, stride=stride, pad=pad)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -29,6 +29,11 @@ def test():
 
 def test_padding_not_zero():
     template(pad=1)
+
+
+# TODO: chainer's average pooling does not support cover_all=True mode
+# def test_odd_size_and_cover_all():
+#     template(shape=(2, 4, 5, 7), stride=2)
 
 
 def test_stride_is_none():
