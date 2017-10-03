@@ -6,6 +6,7 @@ from webdnn.optimizer.sub_rules.convolution2d_svd_compression import Convolution
 from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.remove_redundant_operator import RemoveRedundantOperator
 from webdnn.optimizer.sub_rules.simplify_elementwise import SimplifyElementwise
+from webdnn.optimizer.sub_rules.upgrade_operator_type import UpgradeOperatorType
 
 
 class GeneralOptimizeRule(OptimizeRule):
@@ -19,3 +20,4 @@ class GeneralOptimizeRule(OptimizeRule):
         self.register(ConstantFolding())
         self.register(Convolution2DSvdCompression())
         self.register(ConvFilterPruning())
+        self.register(UpgradeOperatorType())
