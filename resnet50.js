@@ -9840,12 +9840,11 @@ var App = (function (_super) {
     App.prototype.initAsync = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var runner, gl, e_1;
+            var runner, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        gl = document.createElement('canvas').getContext('webgl');
                         return [4, WebDNN.load("./resnet", {
                                 progressCallback: function (loaded, total) {
                                     _this.setState({
@@ -9854,11 +9853,12 @@ var App = (function (_super) {
                                 },
                                 transformUrlDelegate: function (url) {
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
-                                    return ma ? "https://mil-tokyo.github.io/webdnn-data/models/resnet/" + ma[1] + "?raw=true" : url;
+                                    if (ma) {
+                                        url = "https://mil-tokyo.github.io/webdnn-data/models/resnet/" + ma[1] + "?raw=true";
+                                    }
+                                    return url;
                                 },
-                                backendOrder: (gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) ?
-                                    ['webgpu', 'webgl', 'webassembly', 'fallback'] :
-                                    ['webgpu', 'webassembly', 'fallback']
+                                backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
                             })];
                     case 1:
                         runner = _a.sent();
@@ -22203,6 +22203,7 @@ var MainLayer = (function (_super) {
     };
     MainLayer.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             var runner, inputImageCanvas, output;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -22219,7 +22220,19 @@ var MainLayer = (function (_super) {
                         if (runner.backendName !== 'webgpu') {
                             this.setState({ isBusy: true });
                         }
-                        return [4, runner.run()];
+                        return [4, new Promise(function (resolve) {
+                                requestAnimationFrame(function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0: return [4, runner.run()];
+                                            case 1:
+                                                _a.sent();
+                                                resolve();
+                                                return [2];
+                                        }
+                                    });
+                                }); });
+                            })];
                     case 1:
                         _a.sent();
                         output = runner.getOutputViews()[0].toActual();
