@@ -68,7 +68,7 @@ async function init() {
 
 async function run() {
     // 入力変数にデータをセット
-    runner.getInputViews()[0].set(WebDNN.Image.getImageArray('./input_image.png'));
+    runner.getInputViews()[0].set(await WebDNN.Image.getImageArray('./input_image.png'));
     
     // 実行
     await runner.run(); 
