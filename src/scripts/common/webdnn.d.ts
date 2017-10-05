@@ -956,12 +956,13 @@ declare module 'webdnn/webgpu_handler' {
 	    private context;
 	    private commandQueue;
 	    private pipelineStates;
+	    private commandBuffer;
 	    constructor();
 	    createBuffer(arrayBuffer: ArrayBufferView): WebGPUBuffer;
 	    loadKernel(librarySource: string, namespace?: string): void;
 	    createCommandBuffer(): WebGPUCommandBuffer;
 	    getPipelineStateByName(name: string): WebGPUComputePipelineState;
-	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[], getCompletedPromise?: boolean): Promise<void> | null;
+	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[], getCompletedPromise?: boolean, flagDelay?: boolean): Promise<void> | null;
 	    sync(): Promise<void>;
 	}
 	/**
@@ -1092,11 +1093,6 @@ declare module 'webdnn/image/enums' {
 	}
 
 }
-declare module 'webdnn/util/util' {
-	export function assert(value: any, message: any): void;
-	export function toArray<T>(value: T | (T[]), length: number): T[];
-
-}
 declare module 'webdnn/image/canvas' {
 	/**
 	 * @module webdnn/image
@@ -1221,15 +1217,6 @@ declare module 'webdnn/image/image_array' {
 	/**
 	 * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
 	 *
-	 * @see getImageArrayFromCanvas
-	 *
-	 * @param {ImageData} imageData Canvas ImageData object
-	 * @param [options] Options
-	 * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
-	 * @param {Color} [options.color=Color.RGB] Color order of image array
-	 * @param {Order} [options.order=Order.HWC] Data order of image array
-	 * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
-	 * parsed based on `options.order`.
 	 * @returns {ArrayBufferView} buffer with specified type
 	 * @protected
 	 */
@@ -1237,31 +1224,6 @@ declare module 'webdnn/image/image_array' {
 	/**
 	 * Get image array from canvas element as `{Float32 or Int32}ArrayBufferView`.
 	 *
-	 * @example <caption>Get image data into Float32Array</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas);
-	 *
-	 * @example <caption>Get image data with rescaling to 224x224</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas, { dstW: 224, dstH: 224 });
-	 *
-	 * @example <caption>Get image data with considering mean image value normalization</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas, { bias: [MEAN_B, MEAN_G, MEAN_R], color: BGR });
-	 *
-	 * @param {HTMLCanvasElement} canvas Canvas
-	 * @param [options] Options
-	 * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
-	 * @param {Color} [options.color=Color.RGB] Color order of image array
-	 * @param {Order} [options.order=Order.HWC] Data order of image array
-	 * @param {number} [options.srcX=0] left position of input clipping rect
-	 * @param {number} [options.srcY=0] top position of input clipping rect
-	 * @param {number} [options.srcW=canvas.width] width of input clipping rect
-	 * @param {number} [options.srcH=canvas.height] height of input clipping rect
-	 * @param {number} [options.dstW=canvas.width] width of output
-	 * @param {number} [options.dstH=canvas.height] height of output
-	 * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
-	 * parsed based on `options.order`.
 	 * @returns {ImageData} buffer with specified type
 	 * @protected
 	 */
@@ -1269,31 +1231,6 @@ declare module 'webdnn/image/image_array' {
 	/**
 	 * Get image array from image element as `{Float32 or Int32}ArrayBufferView`.
 	 *
-	 * @example <caption>Get image data into Float32Array</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas);
-	 *
-	 * @example <caption>Get image data with rescaling to 224x224</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas, { dstW: 224, dstH: 224 });
-	 *
-	 * @example <caption>Get image data with considering mean image value normalization</caption>
-	 *
-	 * let array = getImageArrayFromCanvas(canvas, { bias: [MEAN_B, MEAN_G, MEAN_R], color: BGR });
-	 *
-	 * @param {HTMLImageElement|HTMLVideoElement} drawable Image
-	 * @param [options] Options
-	 * @param [options.type=Float32Array] Data type of image array. Valid value is `Float32Array` or `Int32Array`.
-	 * @param {Color} [options.color=Color.RGB] Color order of image array
-	 * @param {Order} [options.order=Order.HWC] Data order of image array
-	 * @param {number} [options.srcX=0] left position of input clipping rect
-	 * @param {number} [options.srcY=0] top position of input clipping rect
-	 * @param {number} [options.srcW=canvas.width] width of input clipping rect
-	 * @param {number} [options.srcH=canvas.height] height of input clipping rect
-	 * @param {number} [options.dstW=canvas.width] width of output
-	 * @param {number} [options.dstH=canvas.height] height of output
-	 * @param {number[]} [options.bias=[0, 0, 0]] Bias value of image data (`ImageData = ImageArray + bias`). This value is
-	 * parsed based on `options.order`.
 	 * @returns {ImageData} buffer with specified type
 	 * @protected
 	 */
@@ -1332,7 +1269,7 @@ declare module 'webdnn/image/image_array' {
 	 *   packed value `y` as follows:
 	 *
 	 *   - `y = (x - bias) / scale`
-	 *   - `x= y * scale + bias`
+	 *   - `x = y * scale + bias`
 	 *
 	 * ### Examples
 	 *
@@ -1393,6 +1330,7 @@ declare module 'webdnn/image/image_array' {
 	 * @param imageH height of image. The length of `array` must be `imageW * imageH * (# of channels)`
 	 * @param canvas destination canvas
 	 * @param options please see above descriptions and descriptions in [[webdnn/image.getImageArray|getImageArray()]].
+	 *                `srcW` and `srcH` is ignored (overwritten by `imageW` and `imageH`).
 	 */
 	export function setImageArrayToCanvas(array: Float32Array | Int32Array, imageW: number, imageH: number, canvas: HTMLCanvasElement, options?: SourceRect & DestinationRect & ImageArrayOption): void;
 

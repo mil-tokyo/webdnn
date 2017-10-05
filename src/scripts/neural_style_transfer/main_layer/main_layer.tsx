@@ -406,7 +406,14 @@ class MainLayer extends React.Component<Props, State> {
         }));
 
         this.setState({ isBusy: true });
-        await runner.run();
+
+        // Update screen
+        await new Promise(resolve => {
+            requestAnimationFrame(async () => {
+                await runner.run();
+                resolve();
+            });
+        });
         this.setState({ isBusy: false });
 
         let outputCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'outputCanvas');

@@ -77,5 +77,6 @@ module.exports = [
 	generateConfig('./src/scripts/index/index_ja.tsx'),
 	generateConfig('./src/scripts/neural_style_transfer/neural_style_transfer.tsx'),
 	generateConfig('./src/scripts/resnet50/resnet50.tsx'),
-	generateConfig('./src/scripts/yolo9000/yolo9000.tsx')
+	generateConfig('./src/scripts/squeeze_net/squeeze_net.tsx'),
+	generateConfig('./src/scripts/yolo9000/yolo9000.tsx'),
 ];

@@ -8,7 +8,7 @@ class App extends AppBase {
     async initAsync() {
         let runner: WebDNN.DescriptorRunner;
         try {
-            runner = await WebDNN.load("./neural_style_transfer", {
+            runner = await WebDNN.load("./resnet", {
                 progressCallback: (loaded: number, total: number) => {
                     this.setState({
                         loadingProgressRate: loaded / total
@@ -17,7 +17,7 @@ class App extends AppBase {
                 transformUrlDelegate: (url: string) => {
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
                     if (ma) {
-                        url = `https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/${ma[1]}?raw=true`;
+                        url = `https://mil-tokyo.github.io/webdnn-data/models/squeeze_net/${ma[1]}?raw=true`;
 
                         // if ((/webgl/).test(ma[1])) {
                         //     let gl = document.createElement('canvas').getContext('webgl')!;
@@ -31,11 +31,11 @@ class App extends AppBase {
 
                     return url;
                 },
-                backendOrder: ['webgpu', 'webgl', 'webassembly']
+                backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
             });
-            // // For DEBUG
+            // For DEBUG
             // await new Promise(r => requestAnimationFrame(r));
-            // runner = {backendName: 'webgpu'} as WebDNN.DescriptorRunner;
+            // let runner = {backendName: 'webgpu'} as WebDNN.DescriptorRunner;
             this.setState({
                 runner: runner
             });
@@ -54,4 +54,4 @@ class App extends AppBase {
 
 document.addEventListener('DOMContentLoaded', () => ReactDOM.render(<App />, document.getElementById('root')));
 
-document.title = 'Neural Style Transfer - MIL WebDNN';
+document.title = 'SqueezeNet Image Classification - MIL WebDNN';

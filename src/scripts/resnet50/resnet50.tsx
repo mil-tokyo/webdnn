@@ -8,7 +8,6 @@ class App extends AppBase {
     async initAsync() {
         let runner: WebDNN.DescriptorRunner;
         try {
-            let gl = document.createElement('canvas').getContext('webgl');
             runner = await WebDNN.load("./resnet", {
                 progressCallback: (loaded: number, total: number) => {
                     this.setState({
@@ -17,11 +16,22 @@ class App extends AppBase {
                 },
                 transformUrlDelegate: (url: string) => {
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
-                    return ma ? `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true` : url;
+                    if (ma) {
+                        url = `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true`;
+
+                        // if ((/webgl/).test(ma[1])) {
+                        //     let gl = document.createElement('canvas').getContext('webgl')!;
+                        //     if (gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) {
+                        //         url = url.replace('webgl', 'webgl_16384');
+                        //     } else {
+                        //         url = url.replace('webgl', 'webgl_4096');
+                        //     }
+                        // }
+                    }
+
+                    return url;
                 },
-                backendOrder: (gl && gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) ?
-                    ['webgpu', 'webgl', 'webassembly', 'fallback'] :
-                    ['webgpu', 'webassembly', 'fallback']
+                backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
             });
             // For DEBUG
             // await new Promise(r => requestAnimationFrame(r));
