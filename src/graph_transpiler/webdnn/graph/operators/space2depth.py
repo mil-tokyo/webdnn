@@ -2,6 +2,7 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
 
@@ -27,8 +28,14 @@ class Space2Depth(Operator):
     def __init__(self, name: Optional[str], r: int):
         super().__init__(name)
         self.parameters["r"] = int(r)
+        self.attributes.add(Tensorwise(self, Axis.N))
 
     def __call__(self, x: Variable):
+        self.append_input("x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
         assert x.order.check_same_axes(OrderNHWC), "Input variable of Depth2Space must have N, C, H, and W axes.: " \
                                                    f"x.order.axes={x.order.axes}"
         assert x.shape_dict[Axis.H] % self.parameters["r"] == 0, \
@@ -47,6 +54,5 @@ class Space2Depth(Operator):
         W = x.shape_dict[Axis.W] // self.parameters["r"]
         y = Variable([N, H, W, C], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
-        self.append_input("x", x)
         self.append_output("y", y)
         return y,

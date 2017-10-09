@@ -2,8 +2,6 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.have_weights import HaveWeights
-from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
 from webdnn.graph.order import OrderNC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
@@ -40,10 +38,16 @@ class Linear(Operator):
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
-        self.attributes.add(PostAxiswise(self, Axis.C))
-        self.attributes.add(HaveWeights(self))
 
     def __call__(self, x: Variable, w: Variable):
+        self.append_input("x", x)
+        self.append_input("w", w)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+        w = self.inputs["w"]
+
         if Placeholder.check_resolved(x.shape_dict[Axis.C]) and Placeholder.check_resolved(w.shape_dict[Axis.C]):
             assert x.shape_dict[Axis.C] == w.shape_dict[Axis.C], "Input and Weight variable of Linear operator must have same shape " \
                                                                  "except Axis.N " \
@@ -67,7 +71,5 @@ class Linear(Operator):
                                                                      f"size: w.shape_dict[Axis.W]={w.shape_dict[Axis.W]}"
 
         y = Variable([x.shape_dict[Axis.N], w.shape_dict[Axis.N]], OrderNC)
-        self.append_input("x", x)
-        self.append_input("w", w)
         self.append_output("y", y)
         return y,

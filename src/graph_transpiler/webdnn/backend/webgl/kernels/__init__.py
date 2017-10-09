@@ -2,6 +2,8 @@ from webdnn.backend.webgl.kernels import abs
 from webdnn.backend.webgl.kernels import average_pooling_2d
 from webdnn.backend.webgl.kernels import broadcast
 from webdnn.backend.webgl.kernels import clipped_relu
+from webdnn.backend.webgl.kernels import col2im
+from webdnn.backend.webgl.kernels import concat
 from webdnn.backend.webgl.kernels import convert_r_to_rgba
 from webdnn.backend.webgl.kernels import convert_rgba_to_r
 from webdnn.backend.webgl.kernels import depth2space
@@ -15,7 +17,11 @@ from webdnn.backend.webgl.kernels import exp
 from webdnn.backend.webgl.kernels import hard_sigmoid
 from webdnn.backend.webgl.kernels import im2col
 from webdnn.backend.webgl.kernels import leaky_relu
+from webdnn.backend.webgl.kernels import max
 from webdnn.backend.webgl.kernels import max_pooling_2d
+from webdnn.backend.webgl.kernels import min
+from webdnn.backend.webgl.kernels import partial_im2col
+from webdnn.backend.webgl.kernels import reduce
 from webdnn.backend.webgl.kernels import reinterpret_axis
 from webdnn.backend.webgl.kernels import relu
 from webdnn.backend.webgl.kernels import reshape
@@ -29,6 +35,8 @@ from webdnn.backend.webgl.kernels import sigmoid
 from webdnn.backend.webgl.kernels import softplus
 from webdnn.backend.webgl.kernels import softsign
 from webdnn.backend.webgl.kernels import space2depth
+from webdnn.backend.webgl.kernels import split_axis
+from webdnn.backend.webgl.kernels import sum
 from webdnn.backend.webgl.kernels import tanh
 from webdnn.backend.webgl.kernels import threshold_relu
 from webdnn.backend.webgl.kernels import transpose

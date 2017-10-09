@@ -7,7 +7,7 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 @wrap_template
 def template(ksize=2, stride=None, pad=0, shape=(2, 4, 6, 8), description=""):
-    vx = chainer.Variable(np.random.rand(*shape))
+    vx = chainer.Variable(np.random.rand(*shape).astype(np.float32))
     vy = chainer.functions.max_pooling_2d(vx, ksize=ksize, stride=stride, pad=pad)
 
     graph = ChainerConverter().convert([vx], [vy])

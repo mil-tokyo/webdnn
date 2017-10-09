@@ -5,9 +5,9 @@ from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelMod
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
-from webdnn.backend.webgl.operators.im2col import Im2Col
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.axis import Axis
+from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.order import OrderNHWC
 
 header = FragmentShaderPreamble + """

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SqueezeNet conversion WebDNN example</title>
+    <meta charset="utf-8">
+    <script src="../../lib/inflate.min.js"></script>
+    <script src="../../dist/webdnn.js"></script>
+    <script src="../data/imagenet_labels.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+</head>
+
+<body onload="loadImage()">
+
+<div class="container my-5">
+    <div class="row my-3">
+        <div class="col-12">
+            <h1>SqueezeNet conversion WebDNN example</h1>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row my-3">
+        <div class="col-12 col-md-auto">
+            <canvas id="input_image" width="224" height="224"></canvas>
+        </div>
+
+        <div class="col-12 col-md container-fluid">
+            <div class="row my-2 form-inline">
+                <div class="form-group">
+                    <label class="mr-3" for="image_url">Image URL</label>
+                    <input class="form-control mr-3" type="text" id="image_url" value="../data/school_bus.jpg" size="60">
+                </div>
+                <button class="btn" type="button" onclick="loadImage()">Load</button>
+            </div>
+
+            <div class="row my-2 form-inline">
+                <div class="form-group">
+                    <label class="mr-3">Backend</label>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="backend" value="" checked> auto
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="backend" value="webgpu"> webgpu
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="backend" value="webgl"> webgl
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="backend" value="webassembly"> webassembly
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="backend" value="fallback"> fallback (slow; debug
+                            only)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-2 form-inline">
+                <div class="form-group">
+                    <label class="mr-3">Framework</label>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="framework" value="keras" checked> Keras
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <button class="btn btn-block btn-primary" id="run_button" type="button" onclick="run_entry()" disabled>Run</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12" id="messages"></div>
+    </div>
+</div>
+
+</body>
+
+</html>

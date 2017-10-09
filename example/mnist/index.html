@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebDNN mnist example</title>
+    <meta charset="utf-8">
+    <script src="../../lib/inflate.min.js"></script>
+    <script src="../../dist/webdnn.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div class="container my-5">
+    <div class="row my-3">
+        <div class="col-12">
+            <h1>WebDNN mnist example</h1>
+        </div>
+    </div>
+
+    <div class="row my-2 form-inline">
+        <div class="col-12">
+            <div class="form-group">
+                <label class="mr-3">Backend</label>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="backend" value="" checked>
+                        auto
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="backend" value="webgpu">
+                        webgpu
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="backend" value="webgl">
+                        webgl
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="backend" value="webassembly">
+                        webassembly
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="backend" value="fallback">
+                        fallback(slow; debug only)
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row my-2 form-inline">
+        <div class="col-12">
+            <div class="form-group">
+                <label class="mr-3">Framework</label>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="framework" value="tensorflow">
+                        TensorFlow
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="framework" value="keras" checked>
+                        Keras
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="radio" onclick="reset()" name="framework" value="chainer">
+                        Chainer
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-12">
+            <button class="btn btn-block btn-primary" id="run_button" type="button" onclick="onButtonClick()">Run</button>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row mt-5">
+        <div class="col-12">
+            <p class="mb-3" id="message"></p>
+            <table class="table table-sm" id="result">
+                <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Predicted label</th>
+                    <th>Ground truth</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>

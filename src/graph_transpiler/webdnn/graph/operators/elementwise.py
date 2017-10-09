@@ -6,6 +6,7 @@ from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.elementwise import Elementwise as ElementwiseAttribute
 from webdnn.graph.operators.attributes.inplace import InplaceOperator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 
@@ -49,12 +50,20 @@ class Elementwise(Operator, metaclass=ABCMeta):
         self.attributes.add(InplaceOperator(self, "x0", "y"))
 
     def __call__(self, *xs: "variable.Variable"):
+        for i, x in enumerate(xs):
+            self.append_input(f"x{i}", x)
+
+        return self.exec()
+
+    def exec(self):
         y_axes = []
         y_shape_dict = AxisKeyDict()
+
         # Check variable in descent order of the number of dimensions.
-        # Without this, inputs (C, NC) produces output order CN.
+        # Without this procedure, in case that x0.order=C and x1.order=NC, the output order is CN. Expected result is NC.
+        xs = [self.inputs[f"x{i}"] for i in range(len(self.inputs))]
         xs_order = [(i, x) for i, x in enumerate(xs)]
-        xs_order.sort(key=lambda d: -d[1].ndim)
+        xs_order.sort(key=lambda d: d[1].ndim, reverse=True)
 
         for i, x in xs_order:
             for axis in x.order.axes:
@@ -75,7 +84,9 @@ class Elementwise(Operator, metaclass=ABCMeta):
                     else:
                         y_shape_dict[axis] = x.shape_dict[axis]
 
-            self.append_input(f"x{i}", x)
+        # Add tensorwise attributes
+        for axis in y_axes:
+            self.attributes.add(Tensorwise(self, axis))
 
         y = variable.Variable([y_shape_dict[axis] for axis in y_axes], Order(y_axes))
         self.append_output("y", y)

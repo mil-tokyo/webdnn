@@ -1,5 +1,7 @@
 from typing import Tuple, List
 
+import itertools
+
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -40,36 +42,38 @@ class RemoveRedundantOperator(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        ops = traverse.listup_operators(graph)  # type: List[Operator]
-        while len(ops) > 0:
-            op1 = ops.pop()
-            for x in op1.inputs.values():
-                for op2 in list(x.input_to):
-                    if op2 is op1:
-                        continue
+        variables = traverse.listup_variables(graph)
 
-                    if op2.__class__ != op1.__class__:
-                        # class is not same
-                        continue
+        while len(variables) > 0:
+            x = variables.pop()
+            for op1, op2 in itertools.permutations(x.input_to, 2):
+                if op2 is op1:
+                    continue
 
-                    if any((x_name not in op2.inputs) or (op2.inputs[x_name] != op1.inputs[x_name]) for x_name in op1.inputs.keys()):
-                        # input is not same
-                        continue
+                if op2.__class__ != op1.__class__:
+                    # class is not same
+                    continue
 
-                    if any((key not in op2.parameters) or (op2.parameters[key] != op1.parameters[key]) for key in op1.parameters.keys()):
-                        # parameter is not same
-                        continue
+                if any((x_name not in op2.inputs) or (op2.inputs[x_name] != op1.inputs[x_name]) for x_name in op1.inputs.keys()):
+                    # input is not same
+                    continue
 
-                    for y_name in list(op2.outputs.keys()):
-                        v1 = op1.outputs[y_name]
-                        v2 = op2.outputs[y_name]
+                if any((key not in op2.parameters) or (op2.parameters[key] != op1.parameters[key]) for key in op1.parameters.keys()):
+                    # parameter is not same
+                    continue
 
-                        op2.remove_output(v2)
-                        v1.replace(v2)
+                flag_changed = True
 
-                    op2.remove_all()
-                    flag_changed = True
-                    ops = traverse.listup_operators(graph)  # type: List[Operator]
-                    break
+                vs_1 = dict(op1.outputs)
+                vs_2 = dict(op2.outputs)
+
+                op2.remove_all()
+
+                for v_name, v1 in vs_1.items():
+                    v2 = vs_2[v_name]
+                    OptimizeRule.replace_variable(graph, v2, v1)
+
+                variables = traverse.listup_variables(graph)
+                break
 
         return graph, flag_changed

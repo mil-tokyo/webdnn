@@ -23,7 +23,7 @@ def test():
     generate_kernel_test_case(
         description=f"[dnn] chainer.links.model.vision.resnet.ResNet50Layers",
         graph=graph,
-        backend=["webgpu", "webassembly"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={x: vx.data},
         expected={y: vy.data},
         EPS=1e-2,

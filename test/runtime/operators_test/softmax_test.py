@@ -23,7 +23,7 @@ def template(x_order=OrderNC, y_order=OrderNC, axis=Axis.C, description: str = "
         description=f"Softmax {description}",
         graph=Graph([x], [y]),
         inputs={x: vx},
-        backend=["webgpu", "webassembly"],
+        backend=["webgpu", "webgl", "webassembly"],
         expected={y: np.transpose(vy, [x_order.axes_dict[a] for a in y.order.axes])},
     )
 

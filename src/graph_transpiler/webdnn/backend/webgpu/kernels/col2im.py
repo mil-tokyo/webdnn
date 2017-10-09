@@ -5,9 +5,9 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
-from webdnn.backend.webgpu.operators.col2im import Col2Im
 from webdnn.backend.webgpu.preset_placeholders import MAX_THREADS_PER_THREADGROUP
 from webdnn.graph.axis import Axis
+from webdnn.graph.operators.col2im import Col2Im
 from webdnn.graph.order import OrderNHWC
 
 # NOTE

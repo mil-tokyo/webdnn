@@ -1,6 +1,3 @@
-from webdnn.backend.webassembly.optimize_rules import optimize_convolution2d
-from webdnn.backend.webassembly.optimize_rules import optimize_deconvolution2d
-from webdnn.backend.webassembly.optimize_rules import optimize_linear
+from webdnn.backend.webassembly.optimize_rules import insert_transpose
 from webdnn.backend.webassembly.optimize_rules import optimize_sgemm_eigen
-from webdnn.backend.webassembly.optimize_rules import sub_rules
 from webdnn.backend.webassembly.optimize_rules import webassembly_optimize_rule

@@ -31,11 +31,11 @@ def generate_template(ksize):
     %%UNIFORM(int, PW)%%;
     
     void main() {
-        vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y);    
-        int n = int(p_Y.x);
-        int h2 = int(p_Y.y);
-        int w2 = int(p_Y.z); 
-        int c = int(p_Y.w);
+        ivec4 p_Y = convert_position_i(gl_FragCoord.xy, s_y, s_Y, d_Y);
+        int n = p_Y.x;
+        int h2 = p_Y.y;
+        int w2 = p_Y.z; 
+        int c = p_Y.w;
     
         float sum = 0.0;
         

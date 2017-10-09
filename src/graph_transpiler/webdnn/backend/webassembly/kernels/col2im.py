@@ -5,8 +5,8 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.operators.col2im import Col2Im
 from webdnn.graph.axis import Axis
+from webdnn.graph.operators.col2im import Col2Im
 from webdnn.graph.order import OrderNHWC
 
 # NOTE

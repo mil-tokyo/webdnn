@@ -1,8 +1,12 @@
 from typing import Optional, List
 
+import numpy as np
+
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 class SplitAxis(Operator):
@@ -31,6 +35,10 @@ class SplitAxis(Operator):
 
     def __call__(self, x: Variable):
         self.append_input(f"x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
 
         axis = self.parameters["axis"]
         sections = [0] + self.parameters["sections"] + [x.shape_dict[axis]]
@@ -48,4 +56,32 @@ class SplitAxis(Operator):
             outputs.append(y)
             self.append_output(f"y{i}", y)
 
+        for a in x.order.axes:
+            if a == axis:
+                continue
+
+            self.attributes.add(Tensorwise(self, a))
+
         return outputs
+
+    @property
+    def axis(self) -> Axis:
+        return self.parameters["axis"]
+
+    @property
+    def sections(self) -> List[int]:
+        return list(self.parameters["sections"])
+
+    def fold_constance(self):
+        x = self.inputs["x"]  # type: ConstantVariable
+        ys = [self.outputs[f"y{i}"] for i in range(len(self.outputs))]
+        axis = self.parameters["axis"]
+        sections = self.parameters["sections"]
+
+        self.remove_all()
+
+        y_datum = np.split(x.data, sections, x.order.axes_dict[axis])
+        for i, y in enumerate(ys):
+            y_new = ConstantVariable(y_datum[i], x.order)
+            y_new.change_order(y.order)
+            y.replace(y_new)

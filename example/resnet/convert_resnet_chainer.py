@@ -19,7 +19,6 @@ def main():
     sys.setrecursionlimit(10000)  # workaround for deep copying large graph
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="resnet50", choices=["vgg16", "resnet50"])
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
     parser.add_argument("--encoding")
     parser.add_argument('--out', '-o', default='output_chainer',
@@ -30,17 +29,8 @@ def main():
     os.makedirs(args.out, exist_ok=True)
 
     sample_image = np.zeros((224, 224, 3), dtype=np.uint8)  # PIL.Image.open("")
-    if args.model == "vgg16":
-        link = chainer.links.model.vision.vgg.VGG16Layers()
-        prepared_image = chainer.links.model.vision.vgg.prepare(sample_image)  # BGR, CHW
-
-    elif args.model == "resnet50":
-        link = chainer.links.model.vision.resnet.ResNet50Layers()
-        prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
-
-    else:
-        raise NotImplementedError
-
+    link = chainer.links.model.vision.resnet.ResNet50Layers()
+    prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
     nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
 
     if chainer.__version__ >= "2.":

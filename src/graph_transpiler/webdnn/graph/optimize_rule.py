@@ -9,17 +9,11 @@ class OptimizeRule:
     """OptimizeRule()
 
     :code:`OptimizeRule` transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.
-
-    When :func:`optimize(graph)<OptimizeRule.optimize>` is called, the transform rule is applied for given graph. In the single call,
-    the rule is applied multiple times until the graph will be not changed.
     """
 
-    def __init__(self):
-        self.sub_rules = []  # type:List["OptimizeRule"]
-
     @staticmethod
-    def replace_variable(graph: Graph, old_var: Variable, new_var: Variable):
-        old_var.replace(new_var, with_assert=False)
+    def replace_variable(graph: Graph, old_var: Variable, new_var: Variable, with_assert: bool = True):
+        old_var.replace(new_var, with_assert=with_assert)
 
         if old_var in graph.inputs:
             i = graph.inputs.index(old_var)
@@ -39,6 +33,36 @@ class OptimizeRule:
             (tuple of bool): boolean values
         """
         return []
+
+    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
+        """optimize(graph)
+
+        Optimize the given graph.
+
+        args:
+            graph(:class:`~webdnn.Graph`): Computational graph
+
+        returns:
+            (tuple of :class:`~webdnn.Graph` and bool): Optimized graph and flag whether the graph is changed or not.
+        """
+        raise NotImplementedError
+
+
+class OptimizeRuleGroup(OptimizeRule):
+    """OptimizeRuleGroup()
+
+    :code:`OptimizeRuleGroup` applies sub rules sequentially.
+
+    When :func:`optimize(graph)<OptimizeRuleGroup.optimize>` is called, the transform rule is applied for given graph.
+
+    Attributes:
+        repeat(bool): If `True`, sub rules are applied multiple times in the single `optimize()` call until the graph will be not changed.
+    """
+
+    def __init__(self, rules: List["OptimizeRule"], repeat: bool = True):
+        super(OptimizeRuleGroup, self).__init__()
+        self.repeat = repeat
+        self.sub_rules = rules  # type: List["OptimizeRule"]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         """optimize(graph)
@@ -71,11 +95,14 @@ class OptimizeRule:
                 flag_retry |= flag_changed
 
             flag_totally_changed |= flag_retry
+            
+            if not self.repeat:
+                break
 
         return graph, flag_totally_changed
 
-    def register(self, rule: "OptimizeRule"):
-        """register(rule)
+    def append_sub_rule(self, rule: "OptimizeRule"):
+        """append_sub_rule(rule)
 
         Register new sub rule. Registered sub rules are applied when this rule is applied.
 

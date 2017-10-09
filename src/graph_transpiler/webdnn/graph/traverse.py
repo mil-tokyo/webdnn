@@ -1,4 +1,4 @@
-from typing import Type, List, Iterable, Union, Tuple, Optional, Set
+from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
@@ -54,7 +54,10 @@ def search_sub_structure(graph: Graph, query: List[Query]) -> List[List[Operator
     return matches
 
 
-def filter_nodes(nodes: Iterable[Node], query: Query, mode_not: bool = False) -> List[Node]:
+T = TypeVar("T", bound=Node)
+
+
+def filter_nodes(nodes: Iterable[T], query: Query, mode_not: bool = False) -> List[T]:
     return [node for node in nodes if not mode_not == check_match(node, query)]
 
 

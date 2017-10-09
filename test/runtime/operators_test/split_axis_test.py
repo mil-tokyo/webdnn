@@ -4,8 +4,33 @@ from test.util import generate_kernel_test_case
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.split_axis import SplitAxis
-from webdnn.graph.order import OrderNHWC, OrderCNHW, OrderCHWN, OrderNCHW
+from webdnn.graph.order import OrderNHWC, OrderCNHW, OrderCHWN, OrderNCHW, OrderNC
 from webdnn.graph.variable import Variable
+
+
+def test_2d():
+    vx1 = np.random.rand(2, 3)
+    vx2 = np.random.rand(2, 3)
+    vx3 = np.random.rand(2, 3)
+    vx4 = np.random.rand(2, 3)
+    vy = np.concatenate((vx1, vx2, vx3, vx4), 0)
+
+    y = Variable(vy.shape, order=OrderNC)
+    x1, x2, x3, x4, = SplitAxis(None, axis=Axis.N, sections=[2, 4, 6])(y)
+
+    generate_kernel_test_case(
+        description=f"SplitAxis 2D",
+        graph=Graph([y], [x1, x2, x3, x4]),
+        inputs={y: vy},
+        expected={
+            x1: vx1,
+            x2: vx2,
+            x3: vx3,
+            x4: vx4
+        },
+        EPS=1e-10,
+        ABS_EPS=1e-10
+    )
 
 
 def test_major_axis():
@@ -20,7 +45,6 @@ def test_major_axis():
 
     generate_kernel_test_case(
         description=f"SplitAxis in major axis",
-        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([y], [x1, x2, x3, x4]),
         inputs={y: vy},
         expected={
@@ -28,7 +52,9 @@ def test_major_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        }
+        },
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -44,7 +70,6 @@ def test_minor_axis():
 
     generate_kernel_test_case(
         description=f"SplitAxis in minor axis",
-        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([y], [x1, x2, x3, x4]),
         inputs={y: vy},
         expected={
@@ -52,7 +77,9 @@ def test_minor_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        }
+        },
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -68,7 +95,6 @@ def test_middle_axis():
 
     generate_kernel_test_case(
         description=f"SplitAxis in middle axis",
-        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([y], [x1, x2, x3, x4]),
         inputs={y: vy},
         expected={
@@ -76,7 +102,9 @@ def test_middle_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        }
+        },
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -101,7 +129,6 @@ def test_mix_order():
 
     generate_kernel_test_case(
         description=f"SplitAxis with mix order",
-        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([y], [x1, x2, x3, x4]),
         inputs={y: vy},
         expected={
@@ -109,5 +136,7 @@ def test_mix_order():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        }
+        },
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )

@@ -5,7 +5,6 @@ from webdnn.backend.webgl.attributes.texture_shape import TextureShape
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
-from webdnn.util.misc import mul
 
 
 def _mod_snippet(t1: str, t2: str, tr: str):
@@ -18,7 +17,7 @@ def _convert_position_i_snippet(t1: str, t2: str):
     iteration_snippets = []
     for i in range(ndim1):
         iteration_snippets.append(f"""
-            index += ind_partial[{i}];
+            index += index_partial[{i}];
             m = index / s2i;
             p2i += m;
             index -= m*s2i;
@@ -26,28 +25,35 @@ def _convert_position_i_snippet(t1: str, t2: str):
 
     iteration_snippet = "\n".join(iteration_snippets)
 
-    return f"""i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
-    i{t1} ind_partial = i{t1}(p1) * i{t1}(s1);
+    return f"""
+i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2, int index_offset) {{
+    i{t1} index_partial = i{t1}(p1) * i{t1}(s1);
     i{t2} s2i = i{t2}(s2);
     i{t2} d2i = i{t2}(d2);
 
-    i{t2} index;
-    i{t2} p2i;
+    i{t2} index = i{t2}(index_offset);
+    i{t2} p2i = i{t2}(0);
     
-    index *= 0;
-    p2i *= 0;
-
     i{t2} m;
     {iteration_snippet}
 
     return p2i-(p2i/d2i)*d2i;
 }}
+
+i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+    return convert_position_i(p1, s1, s2, d2, 0);
+}}
 """
 
 
 def _convert_position_snippet(t1: str, t2: str):
-    return f"""{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
-    return {t2}(convert_position_i(p1, s1, s2, d2)) + 0.5;
+    return f"""
+{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2, int index_offset) {{
+    return {t2}(convert_position_i(p1, s1, s2, d2, index_offset)) + 0.5;
+}}
+
+{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+    return convert_position(p1, s1, s2, d2, 0);
 }}
 """
 
@@ -94,7 +100,8 @@ vec4 convert_coord(vec4 p1, vec4 s1, vec4 s2, vec4 d2) {{ return fract((floor(do
 """
 
 
-def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], Dict[Variable, AxisKeyDict[int]]]:
+def simplify_orders(variables: List[Variable],
+                    keep_axes: List[Axis] = None) -> Tuple[Dict[Variable, Order], Dict[Variable, AxisKeyDict[int]]]:
     """
     Simplify variable orders based on follow rules
 
@@ -124,20 +131,21 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
     Returns:
         (tuple of dicts) simplified orders and shape
     """
+    if keep_axes is None:
+        keep_axes = []
 
     orders = {}  # type: Dict[Variable, Order]
     shape_dicts = {}  # type: Dict[Variable, AxisKeyDict[int]]
-    axis_scalar = Axis("Scalar")
 
     # remove all axes whose size is `1`.
     for v in variables:
-        new_axes = [a for a in v.order.axes if v.shape_dict[a] != 1]
+        new_axes = [a for a in v.order.axes if v.shape_dict[a] != 1 or a in keep_axes]
         orders[v] = Order(new_axes)
         shape_dicts[v] = AxisKeyDict(new_axes, [v.shape_dict[a] for a in new_axes])
 
         if len(new_axes) == 0 and v.size == 1:
-            orders[v] = Order([axis_scalar])
-            shape_dicts[v] = AxisKeyDict([axis_scalar], [1])
+            orders[v] = Order([Axis(None)])
+            shape_dicts[v] = AxisKeyDict(orders[v].axes, [1])
 
     # list up all pair of axes and variables which have the corresponding axis
     var_dict = AxisKeyDict[Set[Variable]]()
@@ -155,7 +163,15 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
         flag_continue = False
 
         for axis1, vars1 in list(var_dict.items()):
+            if axis1 in keep_axes:
+                # This axis must be kept
+                continue
+
             for axis2, vars2 in list(var_dict.items()):
+                if axis2 in keep_axes:
+                    # This axis must be kept
+                    continue
+
                 if axis1 == axis2:
                     continue
 
@@ -188,46 +204,6 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
                 break
 
     return orders, shape_dicts
-
-
-def optimize_loop_structure(variables: List[Variable], key_variable: Variable):
-    """
-    Optimize loop structure to iterate each element in variables
-
-    Returns:
-        (tuple): two elements are returned
-
-        - First one is shape dictionary of all variables.
-        - Second one is stride dictionary of all variables.
-    """
-    orders, shape_dicts = _simplify_orders(variables)  # type: Dict[Variable, Order], Dict[Variable, AxisKeyDict[List[int]]]
-    shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
-    strides = {v: [mul(shapes[v][orders[v].axes_dict[a] + 1:]) for a in orders[v].axes] for v in variables}
-    stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
-
-    # re-ordering
-    axes = []
-    axes += [axis for axis in orders[key_variable].axes if axis not in axes]
-    for v in sorted(variables, key=lambda v: orders[v].ndim):
-        axes += [axis for axis in orders[v].axes if axis not in axes]
-
-    orders = {v: Order(list(filter(lambda x: x in orders[v].axes, axes))) for v in variables}
-    key_order = orders[key_variable]
-
-    if key_order.ndim > 4:
-        raise NotImplementedError('Currently, loop nest depth larger than 4 is not supported')
-
-    shapes = {v: [shape_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
-    strides = {v: [stride_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
-
-    for v in variables:
-        shape = shapes[v]
-        stride = strides[v]
-        while len(shape) < 4:
-            stride.append(1)
-            shape.append(1)
-
-    return shapes, strides
 
 
 def texture_shape(v: Variable):

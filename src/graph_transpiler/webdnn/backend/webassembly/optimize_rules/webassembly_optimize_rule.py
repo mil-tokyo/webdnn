@@ -1,21 +1,33 @@
-from webdnn.backend.webassembly.optimize_rules.optimize_convolution2d import OptimizeConvolution2D
-from webdnn.backend.webassembly.optimize_rules.optimize_deconvolution2d import OptimizeDeconvolution2D
-from webdnn.backend.webassembly.optimize_rules.optimize_linear import OptimizeLinear
+from webdnn.backend.webassembly.optimize_rules.insert_transpose import InsertTranspose
 from webdnn.backend.webassembly.optimize_rules.optimize_sgemm_eigen import OptimizeSgemmEigen
-from webdnn.backend.webassembly.optimize_rules.optimize_transpose import OptimizeTranspose
-from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.optimize_rule import OptimizeRuleGroup
+from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
+from webdnn.optimizer.sub_rules.merge_sgemm_and_elementwise_mul import MergeSgemmAndElementwiseMul
+from webdnn.optimizer.sub_rules.replace_convolution_by_im2col import ReplaceConvolutionByIm2Col
+from webdnn.optimizer.sub_rules.replace_deconvolution_by_col2im import ReplaceDeconvolutionByCol2Im
+from webdnn.optimizer.sub_rules.replace_linear_by_sgemm import ReplaceLinearBySgemm
 from webdnn.optimizer.sub_rules.update_inplace_attribute import UpdateInplaceAttribute
 
 
-class WebassemblyOptimizeRule(OptimizeRule):
+class WebassemblyOptimizeRule(OptimizeRuleGroup):
     def __init__(self):
-        super(WebassemblyOptimizeRule, self).__init__()
+        super(WebassemblyOptimizeRule, self).__init__([
+            InsertTranspose(),
 
-        self.register(OptimizeTranspose())
-        self.register(OptimizeConvolution2D())
-        self.register(OptimizeDeconvolution2D())
-        self.register(OptimizeLinear())
-        self.register(OptimizeSgemmEigen())
-        self.register(ElementwiseKernelFusion())
-        self.register(UpdateInplaceAttribute())
+            ReplaceConvolutionByIm2Col(),
+            MergeSgemmAndElementwiseMul(),
+            ConstantFolding(),
+
+            ReplaceDeconvolutionByCol2Im(),
+            MergeSgemmAndElementwiseMul(),
+            ConstantFolding(),
+
+            ReplaceLinearBySgemm(),
+            MergeSgemmAndElementwiseMul(),
+            ConstantFolding(),
+
+            OptimizeSgemmEigen(),
+            ElementwiseKernelFusion(),
+            UpdateInplaceAttribute()
+        ])

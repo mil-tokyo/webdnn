@@ -2,8 +2,7 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.axiswise import Axiswise
-from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.variable import Variable
 
 
@@ -38,11 +37,16 @@ class LocalResponseNormalization(Operator):
         self.parameters["k"] = k
         self.parameters["alpha"] = alpha
         self.parameters["beta"] = beta
-        self.attributes.add(PostAxiswise(self, Axis.C))
-        self.attributes.add(Axiswise(self, Axis.C))
+        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(self, Axis.H))
+        self.attributes.add(Tensorwise(self, Axis.W))
 
     def __call__(self, x: Variable):
-        y = Variable(x.shape, x.order)
         self.append_input("x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+        y = Variable(x.shape, x.order)
         self.append_output("y", y)
         return y,

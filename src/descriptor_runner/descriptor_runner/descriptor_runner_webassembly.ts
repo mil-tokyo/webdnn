@@ -231,7 +231,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
     }
 
     async run(): Promise<void> {
-        if (this._running) throw new Error('Calling another run() while running.');
+        // if (this._running) throw new Error('Calling another run() while running.');
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.worker) throw new Error('Worker is not initialized');

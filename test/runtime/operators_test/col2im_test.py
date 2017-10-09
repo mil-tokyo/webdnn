@@ -1,9 +1,8 @@
 import numpy as np
 
 from test.util import generate_kernel_test_case
-from webdnn.backend.webassembly.operators.col2im import Col2Im as WasmCol2Im
-from webdnn.backend.webgpu.operators.col2im import Col2Im as WebGPUCol2Im
 from webdnn.graph.graph import Graph
+from webdnn.graph.operators.col2im import Col2Im
 from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
 
@@ -102,27 +101,15 @@ def test_NHWC():
 
     col = Variable(v_col.shape, order=OrderNHWC)
 
-    im_wasm, = WasmCol2Im(None, ksize=3, padding=1, stride=1)(col)
-    im_wasm.change_order(OrderNHWC)
-
-    im_webgpu, = WebGPUCol2Im(None, ksize=3, padding=1, stride=1)(col)
-    im_webgpu.change_order(OrderNHWC)
+    im, = Col2Im(None, ksize=3, padding=1, stride=1)(col)
+    im.change_order(OrderNHWC)
 
     generate_kernel_test_case(
         description=f"Col2Im output=NHWC",
-        backend=["webassembly"],
-        graph=Graph([col], [im_wasm]),
+        backend=["webgpu", "webgl", "webassembly"],
+        graph=Graph([col], [im]),
         inputs={col: v_col},
-        expected={im_wasm: v_im},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Col2Im output=NHWC",
-        backend=["webgpu"],
-        graph=Graph([col], [im_webgpu]),
-        inputs={col: v_col},
-        expected={im_webgpu: v_im},
+        expected={im: v_im}
     )
 
 
@@ -131,25 +118,12 @@ def test_wide_stride_NHWC():
 
     col = Variable(v_col.shape, order=OrderNHWC)
 
-    im_wasm, = WasmCol2Im(None, ksize=2, padding=1, stride=2)(col)
-    im_wasm.change_order(OrderNHWC)
-
-    im_webgpu, = WebGPUCol2Im(None, ksize=2, padding=1, stride=2)(col)
-    im_webgpu.change_order(OrderNHWC)
+    im, = Col2Im(None, ksize=2, padding=1, stride=2)(col)
 
     generate_kernel_test_case(
         description=f"Col2Im output=NHWC stride=2",
-        backend=["webassembly"],
-        graph=Graph([col], [im_wasm]),
+        backend=["webgpu", "webgl", "webassembly"],
+        graph=Graph([col], [im]),
         inputs={col: v_col},
-        expected={im_wasm: v_im},
-        raise_skip=False
-    )
-
-    generate_kernel_test_case(
-        description=f"Col2Im output=NHWC stride=2",
-        backend=["webgpu"],
-        graph=Graph([col], [im_webgpu]),
-        inputs={col: v_col},
-        expected={im_webgpu: v_im},
+        expected={im: v_im}
     )

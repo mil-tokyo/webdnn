@@ -10,7 +10,7 @@ def template(alpha=1.0, description: str = ""):
     y = keras.layers.ELU(alpha=alpha)(x)
     model = keras.models.Model([x], [y])
 
-    vx = np.random.rand(2, 4) - 0.5
+    vx = np.random.rand(2, 4).astype(np.float32) - 0.5
     vy = model.predict(vx, batch_size=2)
 
     graph = KerasConverter(batch_size=2).convert(model)

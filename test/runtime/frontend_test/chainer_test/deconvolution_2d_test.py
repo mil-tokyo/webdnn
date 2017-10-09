@@ -8,7 +8,8 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 @wrap_template
 def template(ksize=3, stride=1, pad=0, nobias=True, description=""):
     link = chainer.links.Deconvolution2D(4, 10, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
-    vx = chainer.Variable(np.random.rand(2, 4, 6, 11).astype(np.float32))
+    link.W.data = np.random.rand(*link.W.data.shape).astype(np.float32)
+    vx = chainer.Variable(np.random.rand(*(2, 4, 6, 11)).astype(np.float32))
     vy = link(vx)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -19,7 +20,7 @@ def template(ksize=3, stride=1, pad=0, nobias=True, description=""):
     generate_kernel_test_case(
         description=f"[chainer] L.Deconvolution2D {description}",
         graph=graph,
-        backend=["webgpu", "webassembly"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={x: vx.data},
         expected={y: vy.data},
         EPS=1e-2

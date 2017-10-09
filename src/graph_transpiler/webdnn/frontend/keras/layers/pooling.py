@@ -113,8 +113,8 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
     elif k_op.padding == "same":
         padding = (ksize[0] // 2, ksize[1] // 2)
         console.warning(
-            "[KerasConverter] keras.layers.AveragePooling with padding divides summed values in window by the number "
-            "of valid elements, but WebDNN divides it by the number of elements including zero padding, so different "
+            "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
+            "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
             "result will be generated on the edge.")
 
     else:

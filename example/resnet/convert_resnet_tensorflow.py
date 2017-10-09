@@ -2,8 +2,8 @@
 Example of converting ResNet-50 Tensorflow model
 """
 import argparse
-import numpy as np
 import os
+
 import tensorflow as tf
 
 from webdnn.util import console
@@ -52,9 +52,7 @@ def main():
     sys.setrecursionlimit(10000)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="resnet50", choices=["resnet50"])
-    parser.add_argument('--out', '-o', default='output_tensorflow',
-                        help='Directory to output the graph descriptor')
+    parser.add_argument('--out', '-o', default='output_tensorflow', help='Directory to output the graph descriptor')
     parser.add_argument("--encoding", help="name of weight encoder")
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()

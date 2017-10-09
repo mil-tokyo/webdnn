@@ -1,6 +1,7 @@
 from typing import List
 
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
@@ -40,6 +41,12 @@ void main() {
 def convert_rgba_to_r(op: ConvertRGBAtoR) -> List[Kernel]:
     x0 = op.inputs["x0"]
     y = op.outputs["y"]
+
+    assert ChannelMode.get(x0) == ChannelModeEnum.RGBA
+    assert ChannelMode.get(y) == ChannelModeEnum.R
+
+    if x0.order != y.order:
+        raise NotImplementedError
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()

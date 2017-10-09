@@ -11,7 +11,6 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import console
 
 IntLike = Union[int, Placeholder]
 WebGLAllocationDict = Dict[Variable, "WebGLAllocation"]
@@ -214,7 +213,6 @@ def _optimize_buffer_reuse(allocations_dict: WebGLAllocationDict):
                     # lifetime of a1 and a2 is overlapped
                     continue
 
-                console.debug(f"MERGE: [{a1.begin}-{a1.end}) + [{a2.begin}-{a2.end}), key={key}")
                 allocations.remove(a2)
                 for v in allocation2variables[a2]:
                     allocations_dict[v] = a1

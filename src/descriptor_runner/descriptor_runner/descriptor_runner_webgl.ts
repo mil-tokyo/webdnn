@@ -10,7 +10,7 @@ import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName, isDebugMode } from "../webdnn";
-import WebGLHandler, { WebGLVertexArray } from "../webgl_handler";
+import WebGLHandler from "../webgl_handler";
 import { DescriptorRunner } from "./descriptor_runner";
 
 /**
@@ -30,7 +30,7 @@ interface RuntimeProgramInfo {
         func: (...args: any[]) => void,
         args: any[]
     }[],
-    vao: WebGLVertexArray,
+    vao: WebGLVertexArrayObject,
     output: BufferWebGL,
     disposable: BufferWebGL[]
 }
@@ -71,12 +71,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     private outputViews: SymbolicFloat32Array[] | null;
 
     static checkAvailability() {
-        //TODO(Kiikurage)
-        // Safari supports WebGL with OES_TEXTURE_FLOAT extension. However,
-        // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
-        const IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 &&
-            navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
-        return WebGLHandler.checkAvailability() && !IS_SAFARI;
+        return WebGLHandler.checkAvailability();
     }
 
     async init() {
@@ -363,7 +358,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     }
 
     async run(): Promise<void> {
-        if (this._running) throw new Error('Calling another run() while running.');
+        // if (this._running) throw new Error('Calling another run() while running.');
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -400,23 +395,27 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                    gl.finish();
+                    await this.handler.waitForComplete();
                     let elapsedTime = performance.now() - start;
-                    records.push({
-                        'Kernel': runtimeProgramInfo.name,
-                        'Elapsed time [ms]': elapsedTime
-                    });
                     totalElapsedTime += elapsedTime;
 
-                    for (let {buffer, uniformIndex} of runtimeProgramInfo.inputs) {
+                    let xs: Float32Array[] = [];
+                    for (let {buffer} of runtimeProgramInfo.inputs) {
                         buffer.unbindFromReadTexture();
                         await buffer.syncReadViews();
-                        console.log(uniformIndex, buffer.array);
+                        xs.push(buffer.array.slice());
                     }
 
                     runtimeProgramInfo.output.unbindFromDrawTexture();
                     await runtimeProgramInfo.output.syncReadViews();
-                    console.log(runtimeProgramInfo.name, runtimeProgramInfo.output.array);
+                    let y = runtimeProgramInfo.output.array.slice();
+
+                    records.push({
+                        'Kernel': runtimeProgramInfo.name,
+                        'Elapsed time [ms]': elapsedTime,
+                        'xs': xs,
+                        'y': y
+                    });
                 }
 
                 let summary = Array.from(Object.values(records.reduce((summary, record) => {

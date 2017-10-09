@@ -1,14 +1,13 @@
 from typing import Tuple, Union
 
 from webdnn.graph.graph import Graph
-from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
+from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
+from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.traverse import search_sub_structure
 from webdnn.graph.variable import Variable
-from webdnn.util import flags
 
 
 class ConcatZeroPadding(OptimizeRule):

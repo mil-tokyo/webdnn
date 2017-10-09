@@ -24,6 +24,7 @@ def template(x_order=OrderNHWC, y_order=OrderNHWC, description: str = ""):
         graph=Graph([x], [y]),
         inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
         expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},
+        EPS=1e-2
     )
 
 

@@ -2,6 +2,7 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.order import OrderNTC, OrderNT, OrderNC
 from webdnn.graph.variable import Variable
 
@@ -28,11 +29,17 @@ class Embedding(Operator):
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
-        self.attributes = set()
+        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(self, Axis.T))
 
     def __call__(self, x: Variable, w: Variable):
         self.append_input("x", x)
         self.append_input("w", w)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+        w = self.inputs["w"]
 
         # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
         if x.order != OrderNT:
