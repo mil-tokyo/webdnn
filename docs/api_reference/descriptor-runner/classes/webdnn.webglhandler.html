@@ -71,7 +71,7 @@
 										<code>
 new <wbr>WebGLHandler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="webdnn.webglhandler.html" class="signature-type">WebGLHandler</a></code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L17">[webgl_handler.ts:17]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L22">[webgl_handler.ts:22]</a>
 										</span>
 									</div>
 								</div>
@@ -102,27 +102,9 @@ new <wbr>WebGLHandler<span class="tsd-signature-symbol">(</span><span class="tsd
 								<a id="gl" class="anchor"></a>
 								<a href="#gl" class="anchor-link">#</a>
 								<code>
-gl:                    <code><span class="signature-type">WebGLRenderingContext</span>                    </code>        </code>
+gl:                <code><code><span class="signature-type">WebGLRenderingContext</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">WebGL2RenderingContext</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L15">[webgl_handler.ts:15]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
-							<div class="members-group-body">
-							</div>
-						</section>
-					</section>
-					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
-						<a name="iswebgl2" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="iswebgl2" class="anchor"></a>
-								<a href="#iswebgl2" class="anchor-link">#</a>
-								<code>
-is<wbr>WebGL2:                    <code><span class="signature-type">boolean</span>                    </code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L17">[webgl_handler.ts:17]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L21">[webgl_handler.ts:21]</a>
 								</span>
 							</header>
 						</div>
@@ -138,13 +120,31 @@ is<wbr>WebGL2:                    <code><span class="signature-type">boolean</sp
 								<a id="vao" class="anchor"></a>
 								<a href="#vao" class="anchor-link">#</a>
 								<code>
-vao:                <code><code><span class="signature-type">any</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">null</span>                    </code></code>        </code>
+vao:                <code><code><span class="signature-type">WebGLVertexArrayObjectExtension</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">null</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L16">[webgl_handler.ts:16]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L22">[webgl_handler.ts:22]</a>
 								</span>
 							</header>
 						</div>
 						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-static tsd-is-external">
+						<a name="is_safari" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="is_safari" class="anchor"></a>
+								<a href="#is_safari" class="anchor-link">#</a>
+								<code>
+IS_<wbr>SAFARI:                    <code><span class="signature-type">boolean</span>                    </code> =&nbsp; navigator.userAgent.toLowerCase().indexOf(&#x27;safari&#x27;) !&#x3D;&#x3D; -1 &amp;&amp; navigator.userAgent.toLowerCase().indexOf(&#x27;chrome&#x27;) &#x3D;&#x3D;&#x3D; -1        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L20">[webgl_handler.ts:20]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-static tsd-is-external">
 							<div class="members-group-body">
 							</div>
 						</section>
@@ -168,7 +168,7 @@ vao:                <code><code><span class="signature-type">any</span>         
 										<code>
 bind<wbr>Array<wbr>Buffer<span class="tsd-signature-symbol">(</span>buffer<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLBuffer</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L99">[webgl_handler.ts:99]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L102">[webgl_handler.ts:102]</a>
 										</span>
 									</div>
 								</div>
@@ -232,7 +232,7 @@ bind<wbr>Array<wbr>Buffer<span class="tsd-signature-symbol">(</span>buffer<span 
 										<code>
 bind<wbr>Frame<wbr>Buffer<span class="tsd-signature-symbol">(</span>frameBuffer<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLFramebuffer</span>                    </code>, width<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, height<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L103">[webgl_handler.ts:103]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L106">[webgl_handler.ts:106]</a>
 										</span>
 									</div>
 								</div>
@@ -320,9 +320,9 @@ bind<wbr>Frame<wbr>Buffer<span class="tsd-signature-symbol">(</span>frameBuffer<
 									</h3>
 									<div>
 										<code>
-bind<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span>vao<span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.webglvertexarray.html" class="signature-type">WebGLVertexArray</a></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+bind<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span>vao<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLVertexArrayObject</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L113">[webgl_handler.ts:113]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L116">[webgl_handler.ts:116]</a>
 										</span>
 									</div>
 								</div>
@@ -349,7 +349,8 @@ bind<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span>vao<span cla
 															<code>vao</code>
 														</td>
 														<td>
-															<code><a href="../interfaces/webdnn.webglvertexarray.html" class="signature-type">WebGLVertexArray</a></code>
+															<code>
+<span class="signature-type">WebGLVertexArrayObject</span>                    </code>
 														</td>
 														<td>
 														</td>
@@ -385,7 +386,7 @@ bind<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span>vao<span cla
 										<code>
 create<wbr>Array<wbr>Buffer<span class="tsd-signature-symbol">(</span>vertexArray<span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">Float32Array</span>                    </code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLBuffer</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L79">[webgl_handler.ts:79]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L82">[webgl_handler.ts:82]</a>
 										</span>
 									</div>
 								</div>
@@ -454,7 +455,7 @@ create<wbr>Array<wbr>Buffer<span class="tsd-signature-symbol">(</span>vertexArra
 										<code>
 create<wbr>Fragment<wbr>Shader<span class="tsd-signature-symbol">(</span>source<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLShader</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L48">[webgl_handler.ts:48]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L51">[webgl_handler.ts:51]</a>
 										</span>
 									</div>
 								</div>
@@ -518,7 +519,7 @@ create<wbr>Fragment<wbr>Shader<span class="tsd-signature-symbol">(</span>source<
 										<code>
 create<wbr>Frame<wbr>Buffer<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLFramebuffer</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L95">[webgl_handler.ts:95]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L98">[webgl_handler.ts:98]</a>
 										</span>
 									</div>
 								</div>
@@ -552,7 +553,7 @@ create<wbr>Frame<wbr>Buffer<span class="tsd-signature-symbol">(</span><span clas
 										<code>
 create<wbr>Program<span class="tsd-signature-symbol">(</span>vertexShader<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLShader</span>                    </code>, fragmentShader<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLShader</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLProgram</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L65">[webgl_handler.ts:65]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L68">[webgl_handler.ts:68]</a>
 										</span>
 									</div>
 								</div>
@@ -629,7 +630,7 @@ create<wbr>Program<span class="tsd-signature-symbol">(</span>vertexShader<span c
 										<code>
 create<wbr>Shader<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, source<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLShader</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L52">[webgl_handler.ts:52]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L55">[webgl_handler.ts:55]</a>
 										</span>
 									</div>
 								</div>
@@ -706,7 +707,7 @@ create<wbr>Shader<span class="tsd-signature-symbol">(</span>type<span class="tsd
 										<code>
 create<wbr>Texture<span class="tsd-signature-symbol">(</span>textureWidth<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, textureHeight<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, internalFormat<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, format<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLTexture</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L26">[webgl_handler.ts:26]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L30">[webgl_handler.ts:30]</a>
 										</span>
 									</div>
 								</div>
@@ -807,9 +808,9 @@ create<wbr>Texture<span class="tsd-signature-symbol">(</span>textureWidth<span c
 									</h3>
 									<div>
 										<code>
-create<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.webglvertexarray.html" class="signature-type">WebGLVertexArray</a></code>                    </code>
+create<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLVertexArrayObject</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L87">[webgl_handler.ts:87]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L90">[webgl_handler.ts:90]</a>
 										</span>
 									</div>
 								</div>
@@ -821,7 +822,8 @@ create<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span><span clas
 									<section class="signature-body-section">
 										<header class="signature-body-section-header">Returns</header>
 										<div class="signature-body-section-body signature-body-section-returns">
-											<code><a href="../interfaces/webdnn.webglvertexarray.html" class="signature-type">WebGLVertexArray</a></code>
+											<code>
+<span class="signature-type">WebGLVertexArrayObject</span>                    </code>
 										</div>
 									</section>
 								</div>
@@ -842,7 +844,7 @@ create<wbr>Vertex<wbr>Array<span class="tsd-signature-symbol">(</span><span clas
 										<code>
 create<wbr>Vertex<wbr>Shader<span class="tsd-signature-symbol">(</span>source<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLShader</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L44">[webgl_handler.ts:44]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L47">[webgl_handler.ts:47]</a>
 										</span>
 									</div>
 								</div>
@@ -906,7 +908,7 @@ create<wbr>Vertex<wbr>Shader<span class="tsd-signature-symbol">(</span>source<sp
 										<code>
 delete<wbr>Texture<span class="tsd-signature-symbol">(</span>texture<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLTexture</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L121">[webgl_handler.ts:121]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L124">[webgl_handler.ts:124]</a>
 										</span>
 									</div>
 								</div>
@@ -970,7 +972,7 @@ delete<wbr>Texture<span class="tsd-signature-symbol">(</span>texture<span class=
 										<code>
 use<wbr>Program<span class="tsd-signature-symbol">(</span>program<span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLProgram</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L109">[webgl_handler.ts:109]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L112">[webgl_handler.ts:112]</a>
 										</span>
 									</div>
 								</div>
@@ -1020,6 +1022,40 @@ use<wbr>Program<span class="tsd-signature-symbol">(</span>program<span class="ts
 							</div>
 						</div>
 					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="waitforcomplete" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="waitforcomplete" class="anchor"></a>
+								<a href="#waitforcomplete" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										wait<wbr>For<wbr>Complete
+									</h3>
+									<div>
+										<code>
+wait<wbr>For<wbr>Complete<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L217">[webgl_handler.ts:217]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-static tsd-is-external">
 						<a name="initializecontext" class="anchor"></a>
 						<div class="signatures">
@@ -1034,7 +1070,7 @@ use<wbr>Program<span class="tsd-signature-symbol">(</span>program<span class="ts
 										<code>
 initialize<wbr>Context<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">object</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L151">[webgl_handler.ts:151]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L161">[webgl_handler.ts:161]</a>
 										</span>
 									</div>
 								</div>
@@ -1066,9 +1102,9 @@ initialize<wbr>Context<span class="tsd-signature-symbol">(</span><span class="ts
 									</h3>
 									<div>
 										<code>
-initialize<wbr>WebGL1<wbr>Context<span class="tsd-signature-symbol">(</span>canvas<span class="tsd-signature-symbol">: </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">object</span>                    </code>                    </code>
+initialize<wbr>WebGL1<wbr>Context<span class="tsd-signature-symbol">(</span>canvas<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">object</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L137">[webgl_handler.ts:137]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L140">[webgl_handler.ts:140]</a>
 										</span>
 									</div>
 								</div>
@@ -1099,6 +1135,7 @@ initialize<wbr>WebGL1<wbr>Context<span class="tsd-signature-symbol">(</span>canv
 <span class="signature-type">HTMLCanvasElement</span>                    </code>
 														</td>
 														<td>
+															<code> document.createElement(&#x27;canvas&#x27;)</code>
 														</td>
 														<td>
 														</td>
@@ -1130,9 +1167,9 @@ initialize<wbr>WebGL1<wbr>Context<span class="tsd-signature-symbol">(</span>canv
 									</h3>
 									<div>
 										<code>
-initialize<wbr>WebGL2<wbr>Context<span class="tsd-signature-symbol">(</span>canvas<span class="tsd-signature-symbol">: </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLRenderingContext</span>                    </code>                    </code>
+initialize<wbr>WebGL2<wbr>Context<span class="tsd-signature-symbol">(</span>canvas<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">HTMLCanvasElement</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">WebGLRenderingContext</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/14e8d81/src/descriptor_runner/webgl_handler.ts#L125">[webgl_handler.ts:125]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/8b08b03/src/descriptor_runner/webgl_handler.ts#L128">[webgl_handler.ts:128]</a>
 										</span>
 									</div>
 								</div>
@@ -1163,6 +1200,7 @@ initialize<wbr>WebGL2<wbr>Context<span class="tsd-signature-symbol">(</span>canv
 <span class="signature-type">HTMLCanvasElement</span>                    </code>
 														</td>
 														<td>
+															<code> document.createElement(&#x27;canvas&#x27;)</code>
 														</td>
 														<td>
 														</td>
@@ -1206,13 +1244,13 @@ initialize<wbr>WebGL2<wbr>Context<span class="tsd-signature-symbol">(</span>canv
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
-							<a href="webdnn.webglhandler.html#iswebgl2" class="tsd-kind-icon">
-								is<wbr>WebGL2
-							</a>
-						</li>
-						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
 							<a href="webdnn.webglhandler.html#vao" class="tsd-kind-icon">
 								vao
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static tsd-is-external">
+							<a href="webdnn.webglhandler.html#is_safari" class="tsd-kind-icon">
+								IS_<wbr>SAFARI
 							</a>
 						</li>
 					</ul>
@@ -1283,6 +1321,11 @@ initialize<wbr>WebGL2<wbr>Context<span class="tsd-signature-symbol">(</span>canv
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
 							<a href="webdnn.webglhandler.html#useprogram" class="tsd-kind-icon">
 								use<wbr>Program
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.webglhandler.html#waitforcomplete" class="tsd-kind-icon">
+								wait<wbr>For<wbr>Complete
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static tsd-is-external">

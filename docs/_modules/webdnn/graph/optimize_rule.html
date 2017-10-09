@@ -177,17 +177,11 @@
     <span class="sd">&quot;&quot;&quot;OptimizeRule()</span>
 
 <span class="sd">    :code:`OptimizeRule` transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.</span>
-
-<span class="sd">    When :func:`optimize(graph)&lt;OptimizeRule.optimize&gt;` is called, the transform rule is applied for given graph. In the single call,</span>
-<span class="sd">    the rule is applied multiple times until the graph will be not changed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type:List[&quot;OptimizeRule&quot;]</span>
-
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">old_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">new_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
-        <span class="n">old_var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_var</span><span class="p">,</span> <span class="n">with_assert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">old_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">new_var</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="n">old_var</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_var</span><span class="p">,</span> <span class="n">with_assert</span><span class="o">=</span><span class="n">with_assert</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">old_var</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">old_var</span><span class="p">)</span>
@@ -209,6 +203,36 @@
         <span class="k">return</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="OptimizeRule.optimize"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Graph</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;optimize(graph)</span>
+
+<span class="sd">        Optimize the given graph.</span>
+
+<span class="sd">        args:</span>
+<span class="sd">            graph(:class:`~webdnn.Graph`): Computational graph</span>
+
+<span class="sd">        returns:</span>
+<span class="sd">            (tuple of :class:`~webdnn.Graph` and bool): Optimized graph and flag whether the graph is changed or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">OptimizeRuleGroup</span><span class="p">(</span><span class="n">OptimizeRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;OptimizeRuleGroup()</span>
+
+<span class="sd">    :code:`OptimizeRuleGroup` applies sub rules sequentially.</span>
+
+<span class="sd">    When :func:`optimize(graph)&lt;OptimizeRuleGroup.optimize&gt;` is called, the transform rule is applied for given graph.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        repeat(bool): If `True`, sub rules are applied multiple times in the single `optimize()` call until the graph will be not changed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;OptimizeRule&quot;</span><span class="p">],</span> <span class="n">repeat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OptimizeRuleGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span> <span class="o">=</span> <span class="n">repeat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span> <span class="o">=</span> <span class="n">rules</span>  <span class="c1"># type: List[&quot;OptimizeRule&quot;]</span>
+
+    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Graph</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;optimize(graph)</span>
 
 <span class="sd">        Optimize the given graph. In the single call, this rule is applied multiple times until the graph will be not changed.</span>
@@ -239,18 +263,21 @@
                 <span class="n">flag_retry</span> <span class="o">|=</span> <span class="n">flag_changed</span>
 
             <span class="n">flag_totally_changed</span> <span class="o">|=</span> <span class="n">flag_retry</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">:</span>
+                <span class="k">break</span>
 
-        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">flag_totally_changed</span></div>
+        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">flag_totally_changed</span>
 
-<div class="viewcode-block" id="OptimizeRule.register"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/optimize_rule.html#webdnn.OptimizeRule.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="s2">&quot;OptimizeRule&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;register(rule)</span>
+    <span class="k">def</span> <span class="nf">append_sub_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="s2">&quot;OptimizeRule&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;append_sub_rule(rule)</span>
 
 <span class="sd">        Register new sub rule. Registered sub rules are applied when this rule is applied.</span>
 
 <span class="sd">        args:</span>
 <span class="sd">            rule(:class:`~webdnn.OptimizeRule`): new sub rule</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
 </pre></div>
 
            </div>

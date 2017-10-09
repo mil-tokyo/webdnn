@@ -193,8 +193,6 @@
 <dt id="webdnn.OptimizeRule">
 <em class="property">class </em><code class="descclassname">webdnn.</code><code class="descname">OptimizeRule</code><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.OptimizeRule" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="code docutils literal"><span class="pre">OptimizeRule</span></code> transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.</p>
-<p>When <code class="xref py py-func docutils literal"><span class="pre">optimize(graph)</span></code> is called, the transform rule is applied for given graph. In the single call,
-the rule is applied multiple times until the graph will be not changed.</p>
 <dl class="method">
 <dt id="webdnn.OptimizeRule.flags">
 <code class="descname">flags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.OptimizeRule.flags" title="Permalink to this definition">¶</a></dt>
@@ -207,7 +205,7 @@ the rule is applied multiple times until the graph will be not changed.</p>
 <dl class="method">
 <dt id="webdnn.OptimizeRule.optimize">
 <code class="descname">optimize</code><span class="sig-paren">(</span><em>graph</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.OptimizeRule.optimize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optimize the given graph. In the single call, this rule is applied multiple times until the graph will be not changed.</p>
+<dd><p>Optimize the given graph.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -217,20 +215,6 @@ the rule is applied multiple times until the graph will be not changed.</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Optimized graph and flag whether the graph is changed or not.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(tuple of <a class="reference internal" href="graph.html#webdnn.Graph" title="webdnn.Graph"><code class="xref py py-class docutils literal"><span class="pre">Graph</span></code></a> and bool)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="webdnn.OptimizeRule.register">
-<code class="descname">register</code><span class="sig-paren">(</span><em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.OptimizeRule.register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register new sub rule. Registered sub rules are applied when this rule is applied.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule</strong> (<a class="reference internal" href="#webdnn.OptimizeRule" title="webdnn.OptimizeRule"><code class="xref py py-class docutils literal"><span class="pre">OptimizeRule</span></code></a>) &#8211; new sub rule</td>
 </tr>
 </tbody>
 </table>
