@@ -5,7 +5,7 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import Kernel, GPUSize
-from webdnn.backend.webgpu.operators.sgemm import Sgemm
+from webdnn.graph.operators.sgemm import Sgemm
 
 
 def generate_template_64(transpose_A, transpose_B, M, N, K):

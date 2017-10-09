@@ -1,12 +1,17 @@
-from typing import Type, Dict, Callable, Union
+from typing import Type, Dict, Callable, Union, List
 
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.code_generator.templates.elementwise import RegisteredItem
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import optimize_loop_structure, texture_stride, texture_shape, FragmentShaderPreamble
+from webdnn.backend.webgl.kernels.util import texture_stride, texture_shape, FragmentShaderPreamble, simplify_orders
 from webdnn.backend.webgl.uniform_injector import UniformInjector
+from webdnn.graph.axis import Axis
+from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.order import Order
+from webdnn.graph.variable import Variable
+from webdnn.util.misc import mul
 
 _registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
 
@@ -102,11 +107,53 @@ def register_elementwise_kernel(OperatorClass: Type[Elementwise],
     )
 
 
+def _optimize_loop_structure(variables: List[Variable], key_variable: Variable, keep_axes: List[Axis] = None):
+    """
+    Optimize loop structure to iterate each element in variables
+
+    Returns:
+        (tuple): two elements are returned
+
+        - First one is shape dictionary of all variables.
+        - Second one is stride dictionary of all variables.
+    """
+    orders, shape_dicts = simplify_orders(variables,
+                                          keep_axes=keep_axes)  # type: Dict[Variable, Order], Dict[Variable, AxisKeyDict[List[int]]]
+    shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
+    strides = {v: [mul(shapes[v][orders[v].axes_dict[a] + 1:]) for a in orders[v].axes] for v in variables}
+    stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
+
+    # Re-ordering shapes and strides along to key variable's order
+    axes = []
+    axes += [axis for axis in orders[key_variable].axes if axis not in axes]
+    for v in sorted(variables, key=lambda v: orders[v].ndim):
+        axes += [axis for axis in orders[v].axes if axis not in axes]
+
+    orders = {v: Order(list(filter(lambda x: x in orders[v].axes, axes))) for v in variables}
+
+    key_order = orders[key_variable]
+    shapes = {v: [shape_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
+    strides = {v: [stride_dicts[v][a] if a in orders[v].axes else 1 for a in key_order.axes] for v in variables}
+
+    # Padding shapes and strides to 4D
+    if key_order.ndim > 4:
+        raise NotImplementedError(f"Too large number of dimension: {v}")
+
+    for v in variables:
+        shape = shapes[v]
+        stride = strides[v]
+        while len(shape) < 4:
+            stride.append(1)
+            shape.append(1)
+
+    return shapes, strides
+
+
 def elementwise_kernel(op: Elementwise):
     xs = list(op.inputs.values())
     y = op.outputs["y"]
 
-    shapes, strides = optimize_loop_structure(xs + [y], y)
+    shapes, strides = _optimize_loop_structure(xs + [y], y)
 
     name_injector = KernelNameInjector(op)
     uniform_injector = UniformInjector()

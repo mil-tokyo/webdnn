@@ -1,0 +1,5 @@
+from webdnn.backend.webgl.optimize_rules.split_texture import assert_texture_size
+from webdnn.backend.webgl.optimize_rules.split_texture import check_texture_size
+from webdnn.backend.webgl.optimize_rules.split_texture import split_input_texture
+from webdnn.backend.webgl.optimize_rules.split_texture import split_output_texture
+from webdnn.backend.webgl.optimize_rules.split_texture import split_variable

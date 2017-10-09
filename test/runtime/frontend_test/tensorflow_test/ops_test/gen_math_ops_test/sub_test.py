@@ -10,15 +10,15 @@ def template(x0_shape, x1_shape, description: str = ""):
     x1 = tf.placeholder(np.float32, x1_shape, "x1")
     y = x0 - x1
 
-    vx0 = np.random.rand(*x0_shape)
-    vx1 = np.random.rand(*x1_shape)
+    vx0 = np.random.rand(*x0_shape).astype(np.float32)
+    vx1 = np.random.rand(*x1_shape).astype(np.float32)
     with tf.Session() as sess:
         vy, = sess.run([y], {x0: vx0, x1: vx1})
 
         graph = TensorFlowConverter(sess, batch_size=2).convert([x0, x1], [y])
 
     generate_kernel_test_case(
-        description=f"[TensorFlow] Add {description}",
+        description=f"[TensorFlow] Sub {description}",
         graph=graph,
         inputs={
             graph.inputs[0]: vx0,

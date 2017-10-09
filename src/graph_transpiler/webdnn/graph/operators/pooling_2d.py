@@ -2,8 +2,7 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.axiswise import Axiswise
-from webdnn.graph.operators.attributes.post_axiswise import PostAxiswise
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
@@ -36,8 +35,6 @@ class Pooling2D(Operator):
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
-        self.attributes.add(PostAxiswise(self, Axis.C))
-        self.attributes.add(Axiswise(self, Axis.C))
 
         # FIXME: This constraints are only for cover_all=True mode.
         assert self.parameters["ksize"][0] >= self.parameters["stride"][0], \
@@ -51,6 +48,17 @@ class Pooling2D(Operator):
             f"  (stride[1]) = {self.parameters['stride'][1]}"
 
     def __call__(self, x: Variable):
+        for axis in x.order.axes:
+            if axis == Axis.H or axis == Axis.W:
+                continue
+
+            self.attributes.add(Tensorwise(self, axis))
+
+        self.append_input("x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         H2 = (x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] + self.parameters["stride"][0] - self.parameters["ksize"][0] - 1) // \
@@ -69,6 +77,5 @@ class Pooling2D(Operator):
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
-        self.append_input("x", x)
         self.append_output("y", y)
         return y,

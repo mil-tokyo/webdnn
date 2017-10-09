@@ -6,7 +6,7 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 def test():
-    vx = chainer.Variable(np.random.rand(2, 4, 6, 8))
+    vx = chainer.Variable(np.random.rand(2, 4, 6, 8).astype(np.float32))
     vy = vx * 2
 
     graph = ChainerConverter().convert([vx], [vy])

@@ -50,6 +50,12 @@ class Reshape(Operator):
         self.attributes.add(InplaceOperator(self, "x", "y"))
 
     def __call__(self, x: Variable):
+        self.append_input("x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+
         in_shape = x.shape
         in_order = self.parameters["in_order"]
         out_shape = self.parameters["out_shape"]
@@ -60,7 +66,6 @@ class Reshape(Operator):
                                          f"(y.shape)={out_shape}, (y.size)={mul(out_shape)}"
 
         y = Variable(out_shape, out_order)
-        self.append_input("x", x)
         self.append_output("y", y)
 
         return y,
@@ -72,5 +77,5 @@ class Reshape(Operator):
 
         x = self.inputs["x"]
         y = self.outputs["y"]
-        y.replace(ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order))
         self.remove_all()
+        y.replace(ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order))

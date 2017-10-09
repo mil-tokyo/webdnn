@@ -6,7 +6,7 @@ _i = 0
 def _unique():
     global _i
     _i += 1
-    return f"__UNIQUE_{_i}__"
+    return f"_A{_i}"
 
 
 class Axis:

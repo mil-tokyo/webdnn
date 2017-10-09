@@ -4,6 +4,7 @@ from webdnn.graph.operators import axiswise_bias
 from webdnn.graph.operators import axiswise_bias
 from webdnn.graph.operators import broadcast
 from webdnn.graph.operators import clipped_relu
+from webdnn.graph.operators import col2im
 from webdnn.graph.operators import concat
 from webdnn.graph.operators import convolution2d
 from webdnn.graph.operators import deconvolution2d
@@ -18,12 +19,14 @@ from webdnn.graph.operators import elu
 from webdnn.graph.operators import embedding
 from webdnn.graph.operators import exp
 from webdnn.graph.operators import hard_sigmoid
+from webdnn.graph.operators import im2col
 from webdnn.graph.operators import leaky_relu
 from webdnn.graph.operators import linear
 from webdnn.graph.operators import local_response_normalization
 from webdnn.graph.operators import lstm
 from webdnn.graph.operators import max_pooling_2d
 from webdnn.graph.operators import pooling_2d
+from webdnn.graph.operators import reduce
 from webdnn.graph.operators import reinterpret_axis
 from webdnn.graph.operators import relu
 from webdnn.graph.operators import reshape

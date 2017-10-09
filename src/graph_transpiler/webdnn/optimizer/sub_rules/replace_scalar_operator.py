@@ -7,7 +7,8 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.scalar_mul import ScalarMul
-from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.optimize_rule import OptimizeRule, OptimizeRuleGroup
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import flags
 
@@ -29,6 +30,10 @@ class ReplaceScalarAffine(OptimizeRule):
         for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAffine):  # type: ScalarAffine
             x = op.inputs["x0"]
             y = op.outputs["y"]
+
+            if not Placeholder.check_resolved(x.size) or not Placeholder.check_resolved(y.size):
+                continue
+
             op.remove_all()
 
             scale = ConstantVariable(np.ones(x.shape) * op.scale, x.order)
@@ -60,6 +65,10 @@ class ReplaceScalarAdd(OptimizeRule):
         for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAdd):  # type: ScalarAdd
             x = op.inputs["x0"]
             y = op.outputs["y"]
+
+            if not Placeholder.check_resolved(x.size) or not Placeholder.check_resolved(y.size):
+                continue
+
             op.remove_all()
 
             value = ConstantVariable(np.ones(x.shape) * op.value, x.order)
@@ -90,6 +99,10 @@ class ReplaceScalarMul(OptimizeRule):
         for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarMul):  # type: ScalarMul
             x = op.inputs["x0"]
             y = op.outputs["y"]
+
+            if not Placeholder.check_resolved(x.size) or not Placeholder.check_resolved(y.size):
+                continue
+
             op.remove_all()
 
             value = ConstantVariable(np.ones(x.shape) * op.value, x.order)
@@ -103,12 +116,13 @@ class ReplaceScalarMul(OptimizeRule):
         return graph, flag_changed
 
 
-class ReplaceScalarOperator(OptimizeRule):
+class ReplaceScalarOperator(OptimizeRuleGroup):
     def __init__(self):
-        super(ReplaceScalarOperator, self).__init__()
-        self.register(ReplaceScalarAffine())
-        self.register(ReplaceScalarAdd())
-        self.register(ReplaceScalarMul())
+        super(ReplaceScalarOperator, self).__init__([
+            ReplaceScalarAffine(),
+            ReplaceScalarAdd(),
+            ReplaceScalarMul()
+        ])
 
     def flags(self):
         return [

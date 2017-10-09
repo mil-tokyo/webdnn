@@ -4,8 +4,36 @@ from test.util import generate_kernel_test_case
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.concat import Concat
-from webdnn.graph.order import OrderNHWC, OrderCNHW, OrderCHWN, OrderNCHW
+from webdnn.graph.order import OrderNHWC, OrderCNHW, OrderCHWN, OrderNCHW, OrderNC
 from webdnn.graph.variable import Variable
+
+
+def test_2d():
+    vx1 = np.random.rand(2, 3)
+    vx2 = np.random.rand(2, 3)
+    vx3 = np.random.rand(2, 3)
+    vx4 = np.random.rand(2, 3)
+    vy = np.concatenate((vx1, vx2, vx3, vx4), 0)
+
+    x1 = Variable(vx1.shape, order=OrderNC)
+    x2 = Variable(vx2.shape, order=OrderNC)
+    x3 = Variable(vx3.shape, order=OrderNC)
+    x4 = Variable(vx4.shape, order=OrderNC)
+    y, = Concat(None, axis=Axis.N)(x1, x2, x3, x4)
+
+    generate_kernel_test_case(
+        description=f"concat_2d",
+        graph=Graph([x1, x2, x3, x4], [y]),
+        inputs={
+            x1: vx1,
+            x2: vx2,
+            x3: vx3,
+            x4: vx4
+        },
+        expected={y: vy},
+        EPS=1e-10,
+        ABS_EPS=1e-10
+    )
 
 
 def test_major_axis():
@@ -23,7 +51,6 @@ def test_major_axis():
 
     generate_kernel_test_case(
         description=f"concat_in_major_axis",
-        backend=["webgpu", "webassembly", "fallback"],
         graph=Graph([x1, x2, x3, x4], [y]),
         inputs={
             x1: vx1,
@@ -31,7 +58,9 @@ def test_major_axis():
             x3: vx3,
             x4: vx4
         },
-        expected={y: vy}
+        expected={y: vy},
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -50,7 +79,6 @@ def test_minor_axis():
 
     generate_kernel_test_case(
         description=f"concat_in_minor_axis",
-        backend=["fallback", "webassembly", "webgpu"],
         graph=Graph([x1, x2, x3, x4], [y]),
         inputs={
             x1: vx1,
@@ -58,7 +86,9 @@ def test_minor_axis():
             x3: vx3,
             x4: vx4
         },
-        expected={y: vy}
+        expected={y: vy},
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -77,7 +107,6 @@ def test_middle_axis():
 
     generate_kernel_test_case(
         description=f"concat_in_middle_axis",
-        backend=["fallback", "webassembly", "webgpu"],
         graph=Graph([x1, x2, x3, x4], [y]),
         inputs={
             x1: vx1,
@@ -85,7 +114,9 @@ def test_middle_axis():
             x3: vx3,
             x4: vx4
         },
-        expected={y: vy}
+        expected={y: vy},
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )
 
 
@@ -115,7 +146,6 @@ def test_mix_order():
 
     generate_kernel_test_case(
         description=f"concat_mix_order",
-        backend=["fallback", "webassembly", "webgpu"],
         graph=Graph([x1, x2, x3, x4], [y]),
         inputs={
             x1: vx1,
@@ -123,5 +153,7 @@ def test_mix_order():
             x3: vx3,
             x4: vx4
         },
-        expected={y: vy}
+        expected={y: vy},
+        EPS=1e-10,
+        ABS_EPS=1e-10
     )

@@ -6,7 +6,7 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
-from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.optimize_rule import OptimizeRule, OptimizeRuleGroup
 from webdnn.graph.order import Order
 from webdnn.graph.traverse import search_sub_structure
 from webdnn.graph.variable import Variable
@@ -162,7 +162,7 @@ class SimplifyConcatElementwiseMul(SimplifyOperatorBase):
         return True
 
 
-class SimplifyElementwiseSequential(OptimizeRule):
+class SimplifyElementwiseSequential(OptimizeRuleGroup):
     """
     Simplify {elementwise,scalar}{Add,Mul}s
 
@@ -180,14 +180,14 @@ class SimplifyElementwiseSequential(OptimizeRule):
     """
 
     def __init__(self):
-        super(SimplifyElementwiseSequential, self).__init__()
-        self.register(ReplaceScalarOperator())
-
-        self.register(SimplifyElementwiseAddElementwiseMul())
-        self.register(SimplifyElementwiseAddElementwiseDiv())
-        self.register(SimplifyElementwiseMulElementwiseDiv())
-        self.register(SimplifyElementwiseDivElementwiseMul())
-        self.register(SimplifyConcatElementwiseMul())
+        super(SimplifyElementwiseSequential, self).__init__([
+            ReplaceScalarOperator(),
+            SimplifyElementwiseAddElementwiseMul(),
+            SimplifyElementwiseAddElementwiseDiv(),
+            SimplifyElementwiseMulElementwiseDiv(),
+            SimplifyElementwiseDivElementwiseMul(),
+            SimplifyConcatElementwiseMul()
+        ])
 
     def flags(self):
         return [

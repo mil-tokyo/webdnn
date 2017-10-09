@@ -36,6 +36,12 @@ class ReinterpretAxis(Operator):
                                                 f"in_order.ndim={in_order.ndim}, out_order.ndim={out_order.ndim}"
 
     def __call__(self, x: Variable):
+        self.append_input("x", x)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+
         in_order = self.parameters["in_order"]  # type: Order
         out_order = self.parameters["out_order"]  # type: Order
 
@@ -44,7 +50,6 @@ class ReinterpretAxis(Operator):
                                                   f"x.order={x.order}"
 
         y = Variable(x.shape, Order([out_order.axes[in_order.axes_dict[axis]] for axis in x.order.axes]))
-        self.append_input("x", x)
         self.append_output("y", y)
 
         return y,

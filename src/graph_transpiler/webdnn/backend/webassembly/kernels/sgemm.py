@@ -5,7 +5,8 @@ from webdnn.backend.code_generator.injectors.buffer_injector import BufferInject
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.backend.webassembly.operators.sgemm import Sgemm
+from webdnn.backend.webassembly.optimize_rules.optimize_sgemm_eigen import SgemmWithEigen
+from webdnn.graph.operators.sgemm import Sgemm
 
 
 def generate_template(transpose_A, transpose_B):
@@ -44,7 +45,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 
 # sgemm using eigen
 
-def generate_template_eigen(transpose_A, transpose_B, M, N, K):
+def generate_template_eigen(transpose_A, transpose_B):
     return """
 #ifndef INCLUDE_EIGEN
 #define INCLUDE_EIGEN
@@ -84,8 +85,8 @@ def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
         "sgemm_K": op.K
     })
 
-    if op.parameters["eigen"]:
-        source = generate_template_eigen(op.transpose_A, op.transpose_B, op.M, op.N, op.K)
+    if op.has_attribute(SgemmWithEigen):
+        source = generate_template_eigen(op.transpose_A, op.transpose_B)
         buffer_injector.register({
             "sgemm_A": memory_layout[A],
             "sgemm_B": memory_layout[B],

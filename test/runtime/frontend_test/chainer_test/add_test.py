@@ -6,8 +6,8 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 def test():
-    vx1 = chainer.Variable(np.random.rand(2, 4, 6, 8))
-    vx2 = chainer.Variable(np.random.rand(2, 4, 6, 8))
+    vx1 = chainer.Variable(np.random.rand(2, 4, 6, 8).astype(np.float32))
+    vx2 = chainer.Variable(np.random.rand(2, 4, 6, 8).astype(np.float32))
     vy = vx1 + vx2
 
     graph = ChainerConverter().convert([vx1, vx2], [vy])

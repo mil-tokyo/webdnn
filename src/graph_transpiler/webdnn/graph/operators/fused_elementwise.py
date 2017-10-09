@@ -78,3 +78,6 @@ class FusedElementwise(Elementwise):
 
     def __call__(self):
         raise TypeError("FusedElementwise is not callable")
+
+    def exec(self):
+        raise TypeError("FusedElementwise is not executable")

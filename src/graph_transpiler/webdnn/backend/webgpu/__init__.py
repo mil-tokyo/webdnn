@@ -3,6 +3,5 @@ from webdnn.backend.webgpu import generator
 from webdnn.backend.webgpu import graph_descriptor
 from webdnn.backend.webgpu import kernel
 from webdnn.backend.webgpu import kernels
-from webdnn.backend.webgpu import operators
 from webdnn.backend.webgpu import optimize_rules
 from webdnn.backend.webgpu import preset_placeholders

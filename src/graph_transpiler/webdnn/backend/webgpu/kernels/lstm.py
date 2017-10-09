@@ -35,10 +35,10 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const device float  *b         = %%LOAD_BUFFER(lstm_b)%%;
 
 #if USE_INITIAL_C
-        const device float  *initial_C = %%LOAD_BUFFER(lstm_initial_C)%%;
+    const device float  *initial_C = %%LOAD_BUFFER(lstm_initial_C)%%;
 #endif
 #if USE_INITIAL_H
-        const device float  *initial_H = %%LOAD_BUFFER(lstm_initial_H)%%;
+    const device float  *initial_H = %%LOAD_BUFFER(lstm_initial_H)%%;
 #endif
 
     const int N  = %%LOAD_BUFFER(lstm_N)%%;
@@ -77,6 +77,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         threadgroup_barrier(mem_flags::mem_device);
 
         //FIXME: replace here to more efficient sgemv implementation.
+        // `4` means the number of hidden matrices (input, forget, activation, output).
         for (int gid = global_index; gid < C2 * 4 * N; gid += num_threads)
         {
             const int n = gid % N;
@@ -199,14 +200,14 @@ def lstm(op: LSTM, memory_layout: MemoryLayout) -> List[Kernel]:
     name_injector = KernelNameInjector(op)
 
     if op.parameters["activation"] == "tanh":
-        activation_function = "(tanh(x))"
+        activation_function = "(metal::precise::tanh(x))"
     else:
         raise NotImplementedError
 
     if op.parameters["recurrent_activation"] == "hard_sigmoid":
         recurrent_activation_function = "((x) < -2.5 ? 0.0 : ((x) > +2.5 ? 1.0 : ((x) * 0.2 + 0.5)))"
     elif op.parameters["recurrent_activation"] == "sigmoid":
-        recurrent_activation_function = "(tanh(0.5f * (x)) * 0.5f + 0.5f)"
+        recurrent_activation_function = "(metal::precise::tanh(0.5f * (x)) * 0.5f + 0.5f)"
     else:
         raise NotImplementedError
 

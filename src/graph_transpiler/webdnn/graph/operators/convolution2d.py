@@ -2,7 +2,7 @@ from typing import Tuple, Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.have_weights import HaveWeights
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC, OrderNCHW
 from webdnn.graph.placeholder import Placeholder
@@ -43,9 +43,17 @@ class Convolution2D(Operator):
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
         self.parameters["dilation_rate"] = to_tuple(dilation_rate)
-        self.attributes.add(HaveWeights(self))
+        self.attributes.add(Tensorwise(self, Axis.N))
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
+        self.append_input("x", x)
+        self.append_input("w", w)
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+        w = self.inputs["w"]
+
         assert x.order.check_same_axes(OrderNCHW), \
             "Input variable of Convolution2D must have N, C, H, and W axes.: " \
             f"x.order.axes={x.order.axes}"
@@ -75,8 +83,6 @@ class Convolution2D(Operator):
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
-        self.append_input("x", x)
-        self.append_input("w", w)
         self.append_output("y", y)
         return y,
 

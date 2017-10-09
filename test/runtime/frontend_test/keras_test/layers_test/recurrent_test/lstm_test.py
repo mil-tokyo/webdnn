@@ -8,7 +8,7 @@ from test.util import generate_kernel_test_case, wrap_template
 def template(units=16, return_sequences=False, return_state=False, go_backwards=False, stateful=False, activation="tanh",
              recurrent_activation="hard_sigmoid", use_bias=True, description: str = ""):
     x = keras.layers.Input((14, 15))
-    vx = np.random.rand(2, 14, 15)
+    vx = np.random.rand(2, 14, 15).astype(np.float32)
     outputs = keras.layers.LSTM(units=units, return_sequences=return_sequences, return_state=return_state, go_backwards=go_backwards,
                                 stateful=stateful, activation=activation, recurrent_activation=recurrent_activation, use_bias=use_bias)(x)
 
@@ -42,7 +42,7 @@ def template(units=16, return_sequences=False, return_state=False, go_backwards=
         graph=graph,
         backend=["webgpu", "webassembly"],
         inputs={graph.inputs[0]: vx},
-        expected=expected,
+        expected=expected
     )
 
 

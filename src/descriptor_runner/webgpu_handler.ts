@@ -14,6 +14,7 @@ export default class WebGPUHandler {
     private context: WebGPURenderingContext;
     private commandQueue: WebGPUCommandQueue;
     private pipelineStates: Map<string, WebGPUComputePipelineState> = new Map();
+    private commandBuffer: WebGPUCommandBuffer | null;
 
     constructor() {
         if (!IS_WEBGPU_SUPPORTED) throw new Error('This browser does not support WebGPU');
@@ -61,8 +62,9 @@ export default class WebGPUHandler {
                                threadgroupsPerGrid: WebGPUSize,
                                threadsPerThreadgroup: WebGPUSize,
                                buffers: (WebGPUBuffer | BufferWebGPU)[],
-                               getCompletedPromise?: boolean): Promise<void> | null {
-        let commandBuffer = this.createCommandBuffer();
+                               getCompletedPromise?: boolean,
+                               flagDelay?: boolean): Promise<void> | null {
+        let commandBuffer = this.commandBuffer || (this.commandBuffer = this.createCommandBuffer());
         let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
         commandEncoder.setComputePipelineState(this.getPipelineStateByName(name));
@@ -84,6 +86,10 @@ export default class WebGPUHandler {
         if (getCompletedPromise) {
             promise = commandBuffer.completed;
         }
+
+        if (flagDelay) return null;
+        this.commandBuffer = null;
+
         commandBuffer.commit();
         return promise;
     }

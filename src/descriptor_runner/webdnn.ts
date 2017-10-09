@@ -6,7 +6,7 @@
  */
 /** Don't Remove This comment block */
 /// <reference path="./webgpu.d.ts" />
-import { DescriptorRunner, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
+import { DescriptorRunner as _DescriptorRunner, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
 import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fallback";
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
 import DescriptorRunnerWebGL from "./descriptor_runner/descriptor_runner_webgl";
@@ -43,6 +43,11 @@ export function setDebugMode(flag) {
  * Backend names supported in WebDNN
  */
 export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';
+
+/**
+ * Descriptor runner
+ */
+export type DescriptorRunner = _DescriptorRunner<GraphDescriptor>;
 
 /**
  * Backend constructor map
@@ -115,10 +120,10 @@ export function getBackendAvailability(): BackendAvailability {
  * Initialize specified backend
  * @private
  */
-async function initBackend(backendName: BackendName, option?: any): Promise<DescriptorRunner<GraphDescriptor> | null> {
+async function initBackend(backendName: BackendName, option?: any): Promise<DescriptorRunner | null> {
     if (!(backendName in descriptorRunners)) throw new Error(`Unknown backend: "${backendName}"`);
 
-    let runner: DescriptorRunner<GraphDescriptor>;
+    let runner: DescriptorRunner;
 
     try {
         runner = new descriptorRunners[backendName](option);
@@ -249,7 +254,7 @@ export interface InitOption {
  * @param initOption Initialize option
  * @return DescriptorRunner instance, which is the interface to input/output data and run the model.
  */
-export async function load(directory: string, initOption: InitOption = {}): Promise<DescriptorRunner<GraphDescriptor>> {
+export async function load(directory: string, initOption: InitOption = {}): Promise<DescriptorRunner> {
     let backendOrder = initOption.backendOrder;
     if (!backendOrder) {
         backendOrder = getBackendAvailability().defaultOrder;
@@ -275,7 +280,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
 
     while (backendOrder.length > 0) {
         let backendName = backendOrder.shift()!;
-        let runner: (DescriptorRunner<GraphDescriptor> | null) = await initBackend(backendName, backendOptions[backendName]);
+        let runner: (DescriptorRunner | null) = await initBackend(backendName, backendOptions[backendName]);
         if (!runner) continue;
         runner.ignoreCache = Boolean(initOption.ignoreCache);
 
@@ -292,7 +297,7 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
     throw new Error('No backend is available');
 }
 
-export { DescriptorRunner, GraphDescriptor }
+export { GraphDescriptor }
 
 // Export support (not-dependent) functions
 export { Math, Image }

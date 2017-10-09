@@ -21,9 +21,11 @@ def template(filters=17, kernel_size=3, strides=(1, 1), padding='valid', data_fo
     generate_kernel_test_case(
         description=f"[keras] Conv2DTranspose {description}",
         graph=graph,
-        backend=["webgpu", "webassembly"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={graph.inputs[0]: vx},
         expected={graph.outputs[0]: vy},
+
+        # TODO: replace computation algorithm with more accurate one
         EPS=1e-2
     )
 

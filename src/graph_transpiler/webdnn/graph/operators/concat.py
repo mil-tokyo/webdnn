@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
@@ -29,12 +30,26 @@ class Concat(Operator):
         self.parameters["axis"] = axis
 
     def __call__(self, *xs: Variable):
+        for i, x in enumerate(xs):
+            self.append_input(f"x{i}", x)
+
+        return self.exec()
+
+    def exec(self):
+        xs = [self.inputs[f"x{i}"] for i in range(len(self.inputs))]
         axis = self.axis
         axis_index = xs[0].order.axes_dict[axis]
         axes = xs[0].order.axes
 
         y_shape = list(xs[0].shape)  # type: List[Placeholder]
         y_shape[axis_index] = 0
+        y_order = xs[0].order
+
+        for a in y_order.axes:
+            if a == axis:
+                continue
+
+            self.attributes.add(Tensorwise(self, axis))
 
         for i, x in enumerate(xs):
             assert x.order.check_same_axes(xs[0].order), "Input variable of Concat operator must have same axes: " \
@@ -47,10 +62,9 @@ class Concat(Operator):
                                                                                      f"x0.shape_dict[{axis}]={xs[0].shape_dict[axis]}, " \
                                                                                      f"x{i}.shape_dict[{axis}]={xs[i].shape_dict[axis]}"
 
-            self.append_input(f"x{i}", x)
             y_shape[axis_index] += x.shape_dict[axis]
 
-        y = Variable(y_shape, xs[0].order)
+        y = Variable(y_shape, y_order)
         self.append_output("y", y)
         return y,
 

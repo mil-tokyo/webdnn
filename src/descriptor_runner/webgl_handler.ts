@@ -2,36 +2,39 @@
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/// <reference path="./webgl2.d.ts" />
 
 import { isDebugMode } from "./webdnn";
 
-export declare interface WebGLVertexArray {
+/**
+ * @protected
+ */
+export function isWebGL2(gl: WebGLRenderingContext | WebGL2RenderingContext): gl is WebGL2RenderingContext {
+    return gl.constructor.name === 'WebGL2RenderingContext'
 }
 
 /**
  * @protected
  */
 export default class WebGLHandler {
-    readonly gl: WebGLRenderingContext;
-    readonly vao: any | null;
-    readonly isWebGL2: boolean;
+    static IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
+    readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
+    readonly vao: WebGLVertexArrayObjectExtension | null;
 
     constructor() {
-        let {gl, vao, isWebGL2} = checkNull(WebGLHandler.initializeContext());
+        let {gl, vao} = checkNull(WebGLHandler.initializeContext());
         this.gl = gl;
         this.vao = vao;
-        this.isWebGL2 = isWebGL2;
     }
 
     createTexture(textureWidth: number, textureHeight: number, internalFormat: number, format: number) {
         let gl = this.gl;
 
         let texture = checkNull(gl.createTexture());
-        let type = gl.FLOAT;
 
         gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, textureWidth, textureHeight, 0, format, type, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, textureWidth, textureHeight, 0, format, gl.FLOAT, null);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -84,11 +87,11 @@ export default class WebGLHandler {
         return buffer
     }
 
-    createVertexArray(): WebGLVertexArray {
-        if (this.isWebGL2) {
-            return checkNull((this.gl as any).createVertexArray() as WebGLVertexArray | null);
+    createVertexArray(): WebGLVertexArrayObject {
+        if (isWebGL2(this.gl)) {
+            return checkNull(this.gl.createVertexArray());
         } else {
-            return checkNull(this.vao.createVertexArrayOES() as WebGLVertexArray | null);
+            return checkNull(this.vao!.createVertexArrayOES());
         }
     }
 
@@ -110,11 +113,11 @@ export default class WebGLHandler {
         this.gl.useProgram(program);
     }
 
-    bindVertexArray(vao: WebGLVertexArray) {
-        if (this.isWebGL2) {
-            (this.gl as any).bindVertexArray(vao);
+    bindVertexArray(vao: WebGLVertexArrayObject) {
+        if (isWebGL2(this.gl)) {
+            this.gl.bindVertexArray(vao);
         } else {
-            this.vao.bindVertexArrayOES(vao);
+            this.vao!.bindVertexArrayOES(vao);
         }
     }
 
@@ -122,10 +125,10 @@ export default class WebGLHandler {
         this.gl.deleteTexture(texture);
     }
 
-    static initializeWebGL2Context(canvas: HTMLCanvasElement) {
+    static initializeWebGL2Context(canvas: HTMLCanvasElement = document.createElement('canvas')) {
         let gl: WebGLRenderingContext | null;
 
-        gl = (canvas.getContext('webgl2')) as WebGLRenderingContext | null;
+        gl = (canvas.getContext('webgl2')) as WebGL2RenderingContext | null;
 
         if (!gl) return null;
         if (!gl.getExtension('EXT_color_buffer_float')) return null;
@@ -134,14 +137,21 @@ export default class WebGLHandler {
         return gl;
     }
 
-    static initializeWebGL1Context(canvas: HTMLCanvasElement) {
+    static initializeWebGL1Context(canvas: HTMLCanvasElement = document.createElement('canvas')) {
         let gl: WebGLRenderingContext | null;
-        let vao: any | null;
+        let vao: WebGLVertexArrayObjectExtension | null;
 
-        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext;
+        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext | null;
 
         if (!gl) return null;
         if (!gl.getExtension('OES_texture_float')) return null;
+        if (WebGLHandler.IS_SAFARI) {
+            //TODO(Kiikurage)
+            // Safari supports WebGL with OES_TEXTURE_FLOAT extension. However,
+            // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
+            return null
+        }
+
         if (!(vao = gl.getExtension('OES_vertex_array_object'))) return null;
         if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
@@ -151,12 +161,10 @@ export default class WebGLHandler {
     static initializeContext() {
         let canvas = document.createElement('canvas');
         let gl: WebGLRenderingContext | null;
-        let isWebGL2: boolean = false;
-        let vao: any | null;
+        let vao: WebGLVertexArrayObjectExtension | null = null;
 
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
-            isWebGL2 = true;
             if (isDebugMode()) console.info('WebGL2 is enabled');
 
         } else {
@@ -165,7 +173,6 @@ export default class WebGLHandler {
             if (res) {
                 gl = res.gl;
                 vao = res.vao;
-                isWebGL2 = false;
                 if (isDebugMode()) console.info('WebGL2 is disabled');
 
             } else {
@@ -183,7 +190,7 @@ export default class WebGLHandler {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.BACK);
 
-        return {gl, vao, isWebGL2};
+        return {gl, vao};
     }
 
     /**
@@ -192,8 +199,13 @@ export default class WebGLHandler {
      */
     static checkAvailability() {
         if (availability === null) {
-            if (!WebGLHandler.initializeContext()) {
+            let context = WebGLHandler.initializeContext();
+            if (!context) {
                 availability = false;
+
+            } else if (context.gl.getParameter(context.gl.MAX_TEXTURE_SIZE) < 4096) {
+                availability = false;
+
             } else {
                 availability = true;
             }
@@ -201,12 +213,30 @@ export default class WebGLHandler {
 
         return availability;
     }
+
+    async waitForComplete() {
+        let gl = this.gl;
+
+        if (isWebGL2(gl)) {
+            let sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+            let status = gl.clientWaitSync(sync, 0, 0);
+
+            while (status !== gl.CONDITION_SATISFIED && status !== gl.ALREADY_SIGNALED) {
+                await new Promise(r => setTimeout(r, 1));
+                status = gl.clientWaitSync(sync, 0, 0);
+            }
+
+            gl.deleteSync(sync);
+        } else {
+            gl.finish();
+        }
+    }
 }
 
 
 let availability: boolean | null = null;
 
 function checkNull<T>(obj: T | null) {
-    if (obj === null) throw Error('Null is deteced');
+    if (obj === null) throw Error('Null is detected');
     return obj as T;
 }

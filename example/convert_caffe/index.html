@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebDNN: CaffeNet Minimal Example</title>
+    <meta charset="utf-8">
+    <script src="../../dist/webdnn.js"></script>
+    <script src="minimal.js"></script>
+</head>
+
+<body>
+<h1>
+    WebDNN: CaffeNet Minimal Example
+</h1>
+
+<div>
+    <canvas width="227" height="227"></canvas>
+
+    <form>
+        <label>
+            <span>Image URL:</span>
+            <input type="text" value="../../resources/imagenet/ILSVRC2012_val_00000003.JPEG" size="100">
+        </label>
+
+        <button type="button" onclick="loadImage(); return false;">Load image</button>
+        <button type="button" onclick="run(); return false;">Run</button>
+    </form>
+</div>
+</body>
+
+</html>

@@ -7,7 +7,7 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 @wrap_template
 def template(description=""):
-    vx = chainer.Variable(np.random.rand(2, 4, 6, 8) - 0.5)
+    vx = chainer.Variable(np.random.rand(2, 4, 6, 8).astype(np.float32) - 0.5)
     vy = -vx
 
     graph = ChainerConverter().convert([vx], [vy])

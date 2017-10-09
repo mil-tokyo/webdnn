@@ -5,8 +5,9 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.associative import Associative
 from webdnn.graph.operators.attributes.commutative import Commutative
-from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.optimize_rule import OptimizeRule, OptimizeRuleGroup
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.util import flags
 
 
@@ -28,7 +29,7 @@ class SimplifyAssociativeOperatorLeftHand(OptimizeRule):
                 # Left hand operand(var1) has no child tree
                 continue
 
-            if var1 in graph.outputs:
+            if var1 in graph.outputs or len(var1.input_to) > 1:
                 # var1 will be removed in this optimize rule
                 continue
 
@@ -93,8 +94,8 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
                 # Right hand operand(var2) has no child tree
                 continue
 
-            if var2 in graph.outputs:
-                # var1 will be removed in this optimize rule
+            if var2 in graph.outputs or len(var2.input_to) > 1:
+                # var2 will be removed in this optimize rule
                 continue
 
             if not isinstance(op2, op.__class__):
@@ -110,14 +111,30 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
                 continue
 
             """
-                           var1 -+
-            var3 -+              +-{op1}-
-                  +-{op2}- var2 -+
-            var4 -+
+                             var1 -+
+              var3 -+              +-{op1}-
+                    +-{op2}- var2 -+
+            const4 -+
             """
 
             # Sweep out var4
-            associative1.reorder(op2)  # var1 *(var3*var4) => (var1*var3)*var4
+            associative1.reorder(op2)  # var1 *(var3*const4) => (var1*var3)*const4
             flag_changed = True
 
         return graph, flag_changed
+
+
+class SimplifyAssociativeOperator(OptimizeRuleGroup):
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE
+        ]
+
+    def __init__(self):
+        super(SimplifyAssociativeOperator, self).__init__([
+            SimplifyAssociativeOperatorRightHand(),
+            ConstantFolding(),
+            SimplifyAssociativeOperatorLeftHand(),
+            ConstantFolding()
+        ])

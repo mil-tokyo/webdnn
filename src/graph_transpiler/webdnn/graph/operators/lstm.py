@@ -46,16 +46,32 @@ class LSTM(Operator):
             y (:class:`~webdnn.graph.variable.Variable`): Output (OrderNC)
             final_c (:class:`~webdnn.graph.variable.Variable`): Last cell state (OrderNC)
         """
-        assert self.parameters["use_bias"] == (b is not None)
-        assert self.parameters["use_initial_c"] == (initial_c is not None)
-        assert self.parameters["use_initial_h"] == (initial_h is not None)
-
         self.append_input("x", x)
         self.append_input("w_input", w_input)
         self.append_input("w_hidden", w_hidden)
 
         if b is not None:
             self.append_input("b", b)
+
+        if initial_c is not None:
+            self.append_input("initial_c", initial_c)
+
+        if initial_h is not None:
+            self.append_input("initial_h", initial_h)
+
+        return self.exec()
+
+    def exec(self):
+        x = self.inputs["x"]
+        w_input = self.inputs["w_input"]
+        w_hidden = self.inputs["w_hidden"]
+        b = self.inputs["b"] if "b" in self.inputs else None
+        initial_c = self.inputs["initial_c"] if "initial_c" in self.inputs else None
+        initial_h = self.inputs["initial_h"] if "initial_h" in self.inputs else None
+
+        assert self.parameters["use_bias"] == (b is not None)
+        assert self.parameters["use_initial_c"] == (initial_c is not None)
+        assert self.parameters["use_initial_h"] == (initial_h is not None)
 
         # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
         if x.order != OrderNTC:
@@ -80,7 +96,6 @@ class LSTM(Operator):
         assert w_input_shape_dict[Axis.N] == w_hidden_shape_dict[Axis.N] == hidden_dim * 4
 
         if initial_c is not None:
-            self.append_input("initial_c", initial_c)
             initial_c_shape_dict = initial_c.shape_dict
 
             assert initial_c.order.check_same_axes(OrderNC)
@@ -88,7 +103,6 @@ class LSTM(Operator):
             assert initial_c_shape_dict[Axis.C] == hidden_dim
 
         if initial_h is not None:
-            self.append_input("initial_h", initial_h)
             initial_h_shape_dict = initial_h.shape_dict
 
             assert initial_h.order.check_same_axes(OrderNC)

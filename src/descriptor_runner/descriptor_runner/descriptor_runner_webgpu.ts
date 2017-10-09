@@ -102,10 +102,10 @@ using namespace metal;
 
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
         let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}.json`, { ignoreCache: this.ignoreCache })
+            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
                 .then(res => res.json() as Promise<GraphDescriptorWebGPU>),
 
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, { ignoreCache: this.ignoreCache, progressCallback: progressCallback })
+            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache, progressCallback: progressCallback})
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 
@@ -257,7 +257,7 @@ using namespace metal;
     }
 
     async run(): Promise<void> {
-        if (this._running) throw new Error('Calling another run() while running.');
+        // if (this._running) throw new Error('Calling another run() while running.');
         if (!this.executionInfos) throw new Error('ExecutionInfos is not loaded');
         if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.staticBuffer) throw new Error('StaticBuffer is not initialized');
@@ -324,13 +324,14 @@ using namespace metal;
                     exec_info.threadgroups_per_grid,
                     exec_info.threads_per_thread_group,
                     [staticBuffer, dynamicBuffer, metaBuffers[i]],
-                    is_last
+                    is_last,
+                    !is_last && !(i & 0x01)
                 );
             }
 
-            await complete_promise!;//wait to finish final kernel
+            return complete_promise!;//wait to finish final kernel
         }
 
-        this._running = false;
+        // this._running = false;
     }
 }

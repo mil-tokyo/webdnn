@@ -81,7 +81,8 @@ def wrap_template(fn, arg_name="description"):
     """
 
     def wrapper(*args, **kwargs):
-        kwargs[arg_name] = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        if arg_name not in kwargs.keys():
+            kwargs[arg_name] = ", ".join(f"{k}={v}" for k, v in kwargs.items())
         return fn(*args, **kwargs)
 
     return wrapper
@@ -112,7 +113,7 @@ class KernelTestCaseGenerator:
                                   expected: Dict[Variable, np.array],
                                   backend=None,
                                   raise_skip: bool = True,
-                                  EPS: float = 1.0e-3,
+                                  EPS: float = 1.0e-5,
                                   ABS_EPS: float = 0.0):
         """Generate test data for generated kernel codes
     

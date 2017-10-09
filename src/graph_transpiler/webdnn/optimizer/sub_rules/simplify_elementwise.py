@@ -1,15 +1,14 @@
-from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
+from webdnn.graph.optimize_rule import OptimizeRuleGroup
 from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.replace_scalar_operator import ReplaceScalarOperator
-from webdnn.optimizer.sub_rules.simplify_associative_operator import SimplifyAssociativeOperatorLeftHand, \
-    SimplifyAssociativeOperatorRightHand
+from webdnn.optimizer.sub_rules.simplify_associative_operator import SimplifyAssociativeOperator
 from webdnn.optimizer.sub_rules.simplify_commutative_operator import SimplifyCommutativeOperator
 from webdnn.optimizer.sub_rules.simplify_elementwise_sequential import SimplifyElementwiseSequential
+from webdnn.optimizer.sub_rules.simplify_split_axis import SimplifySplitAxis
 from webdnn.util import flags
 
 
-class SimplifyElementwise(OptimizeRule):
+class SimplifyElementwise(OptimizeRuleGroup):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
@@ -17,13 +16,11 @@ class SimplifyElementwise(OptimizeRule):
         ]
 
     def __init__(self):
-        super(SimplifyElementwise, self).__init__()
-
-        self.register(RemoveNoEffectOperator())
-        self.register(ReplaceScalarOperator())
-        self.register(SimplifyElementwiseSequential())
-        self.register(SimplifyCommutativeOperator())
-        self.register(SimplifyAssociativeOperatorRightHand())
-        self.register(ConstantFolding())
-        self.register(SimplifyAssociativeOperatorLeftHand())
-        self.register(ConstantFolding())
+        super(SimplifyElementwise, self).__init__([
+            RemoveNoEffectOperator(),
+            ReplaceScalarOperator(),
+            SimplifyElementwiseSequential(),
+            SimplifySplitAxis(),
+            SimplifyCommutativeOperator(),
+            SimplifyAssociativeOperator()
+        ])

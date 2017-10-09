@@ -41,7 +41,7 @@ class Variable(Node):
     @property
     def shape(self) -> Tuple[Union[int, Placeholder], ...]:
         """variable's shape"""
-        return tuple(self._shape)
+        return tuple(Placeholder.to_int(v) for v in self._shape)
 
     @property
     def input_to(self) -> Set["operator.Operator"]:

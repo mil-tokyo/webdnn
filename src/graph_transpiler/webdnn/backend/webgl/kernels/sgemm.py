@@ -5,8 +5,8 @@ from webdnn.backend.webgl.attributes.channel_mode import ChannelModeEnum, Channe
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
 from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
-from webdnn.backend.webgl.operators.sgemm import Sgemm
 from webdnn.backend.webgl.uniform_injector import UniformInjector
+from webdnn.graph.operators.sgemm import Sgemm
 
 header = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, A)%%;

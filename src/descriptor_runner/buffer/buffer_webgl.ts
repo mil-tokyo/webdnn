@@ -4,7 +4,7 @@
 /** Don't Remove This comment block */
 
 import { ChannelMode } from "../graph_descriptor/graph_descriptor_webgl";
-import WebGLHandler from "../webgl_handler";
+import WebGLHandler, { isWebGL2 } from "../webgl_handler";
 import { Buffer } from "./buffer";
 
 /**
@@ -47,17 +47,17 @@ export default class BufferWebGL extends Buffer {
                 throw Error('Unknown channel mode');
         }
 
-        if (BufferWebGL.handler.isWebGL2) {
+        if (isWebGL2(BufferWebGL.handler.gl)) {
             switch (channelMode) {
                 case 'RGBA':
                     this.textureFormat = BufferWebGL.handler.gl.RGBA;
-                    this.textureInternalFormat = (BufferWebGL.handler.gl as any).RGBA32F;
+                    this.textureInternalFormat = BufferWebGL.handler.gl.RGBA32F;
                     this.pixelStride = 4;
                     break;
 
                 case 'R':
-                    this.textureFormat = (BufferWebGL.handler.gl as any).RED;
-                    this.textureInternalFormat = (BufferWebGL.handler.gl as any).R32F;
+                    this.textureFormat = BufferWebGL.handler.gl.RED;
+                    this.textureInternalFormat = BufferWebGL.handler.gl.R32F;
                     this.pixelStride = 1;
                     break;
 
@@ -65,7 +65,8 @@ export default class BufferWebGL extends Buffer {
                     throw Error('Unknown channel mode');
             }
         } else {
-            // In WebGL1, RGBA channel mode is specified, but only R channel is used.
+            // In WebGL1, always RGBA channel mode is specified. If R channel mode is specified in graph descriptor,
+            // other 3 channels are not used.
             this.textureFormat = BufferWebGL.handler.gl.RGBA;
             this.textureInternalFormat = BufferWebGL.handler.gl.RGBA;
             this.pixelStride = 4;
