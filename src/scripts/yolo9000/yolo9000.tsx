@@ -18,7 +18,7 @@ class App extends AppBase {
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
                     return ma ? `https://mil-tokyo.github.io/webdnn-data/models/yolo9000/${ma[1]}?raw=true` : url;
                 },
-                backendOrder: ['webgpu']
+                backendOrder: ['webgpu', 'webgl']
             });
             // For DEBUG
             // await new Promise(r => requestAnimationFrame(r));

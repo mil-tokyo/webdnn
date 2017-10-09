@@ -8,7 +8,7 @@ class App extends AppBase {
     async initAsync() {
         let runner: WebDNN.DescriptorRunner;
         try {
-            runner = await WebDNN.load("./resnet", {
+            runner = await WebDNN.load("./squeeze_net", {
                 progressCallback: (loaded: number, total: number) => {
                     this.setState({
                         loadingProgressRate: loaded / total
@@ -18,24 +18,12 @@ class App extends AppBase {
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
                     if (ma) {
                         url = `https://mil-tokyo.github.io/webdnn-data/models/squeeze_net/${ma[1]}?raw=true`;
-
-                        // if ((/webgl/).test(ma[1])) {
-                        //     let gl = document.createElement('canvas').getContext('webgl')!;
-                        //     if (gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) {
-                        //         url = url.replace('webgl', 'webgl_16384');
-                        //     } else {
-                        //         url = url.replace('webgl', 'webgl_4096');
-                        //     }
-                        // }
                     }
 
                     return url;
                 },
                 backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
             });
-            // For DEBUG
-            // await new Promise(r => requestAnimationFrame(r));
-            // let runner = {backendName: 'webgpu'} as WebDNN.DescriptorRunner;
             this.setState({
                 runner: runner
             });

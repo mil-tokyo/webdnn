@@ -5,9 +5,9 @@ import "../../../stylus/bootstrap.scss";
 import { AppShell } from "../../common/components/app_shell/app_shell";
 import Button from "../../common/components/button/button";
 import { LayoutFrame } from "../../common/components/layout/layout";
-import WebCam from "../../common/webcam";
 import dom from "../../common/dom";
 import Labels from "../../common/imagenet_labels";
+import WebCam from "../../common/webcam";
 import * as style from "./main_layer.scss";
 
 declare function require(path: string): any;
@@ -27,23 +27,6 @@ const IMAGE_PATH_LIST = [
     require('../../../static/images/5.png')
 ];
 let random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
-
-function softmax(x: Float32Array) {
-    let max = -Infinity;
-    for (let i = 0; i < x.length; i++) max = max > x[i] ? max : x[i];
-
-    let exp = new Float32Array(x.length);
-    let sum = 0;
-    for (let i = 0; i < x.length; i++) {
-        let e = Math.exp(x[i] - max);
-        sum += e;
-        exp[i] = e;
-    }
-
-    for (let i = 0; i < exp.length; i++) exp[i] /= sum;
-
-    return exp;
-}
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
     runner: WebDNN.DescriptorRunner;
@@ -197,9 +180,10 @@ class MainLayer extends React.Component<Props, State> {
         let inputImageCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
 
         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
-            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+            dstW: 223, dstH: 223,
+            order: WebDNN.Image.Order.HWC,
             color: WebDNN.Image.Color.BGR,
-            bias: [123.68, 116.779, 103.939]
+            bias: [104.006, 116.669, 122.679]
         }));
         if (runner.backendName !== 'webgpu') {
             this.setState({ isBusy: true });
@@ -214,7 +198,6 @@ class MainLayer extends React.Component<Props, State> {
         });
 
         let output = runner.getOutputViews()[0].toActual();
-        if (runner.backendName === 'webgl') output = softmax(output);
         this.results = WebDNN.Math.argmax(output, 5)
             .map((i: number) => ({
                 label: Labels[i],
@@ -236,15 +219,15 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
 
         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromDrawable(video, {
-            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+            dstW: 223, dstH: 223,
+            order: WebDNN.Image.Order.HWC,
             color: WebDNN.Image.Color.BGR,
-            bias: [123.68, 116.779, 103.939]
+            bias: [104.006, 116.669, 122.679]
         }));
 
         await runner.run();
 
         let output = runner.getOutputViews()[0].toActual();
-        if (runner.backendName === 'webgl') output = softmax(output);
         this.results = WebDNN.Math.argmax(output, 5)
             .map((i: number) => ({
                 label: Labels[i],
@@ -282,7 +265,7 @@ class MainLayer extends React.Component<Props, State> {
 
         return (
             <div className={ classNames(style.mainLayer, this.props.className) }>
-                <AppShell title="ResNet50 Image Classification"
+                <AppShell title="SqueezeNet Image Classification"
                           subTitle={ `backend: ${this.props.runner.backendName}` }
                           progressBar={ !this.state.isVideoMode && this.state.isBusy }
                           bottomBar={ [{
