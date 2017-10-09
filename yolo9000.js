@@ -9836,7 +9836,7 @@ var App = (function (_super) {
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
                                     return ma ? "https://mil-tokyo.github.io/webdnn-data/models/yolo9000/" + ma[1] + "?raw=true" : url;
                                 },
-                                backendOrder: ['webgpu']
+                                backendOrder: ['webgpu', 'webgl']
                             })];
                     case 1:
                         runner = _a.sent();
