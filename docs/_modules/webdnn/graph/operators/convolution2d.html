@@ -170,7 +170,7 @@
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.have_weights</span> <span class="k">import</span> <span class="n">HaveWeights</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.tensorwise</span> <span class="k">import</span> <span class="n">Tensorwise</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.util</span> <span class="k">import</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">to_tuple</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNHWC</span><span class="p">,</span> <span class="n">OrderNCHW</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
@@ -211,9 +211,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;stride&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_tuple</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_tuple</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;dilation_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_tuple</span><span class="p">(</span><span class="n">dilation_rate</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">HaveWeights</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="n">Variable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Variable</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">]</span>
+
         <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">OrderNCHW</span><span class="p">),</span> \
             <span class="s2">&quot;Input variable of Convolution2D must have N, C, H, and W axes.: &quot;</span> \
             <span class="n">f</span><span class="s2">&quot;x.order.axes=</span><span class="si">{x.order.axes}</span><span class="s2">&quot;</span>
@@ -243,8 +251,6 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">H2</span><span class="p">,</span> <span class="n">W2</span><span class="p">,</span> <span class="n">C2</span><span class="p">],</span> <span class="n">OrderNHWC</span><span class="p">)</span>
         <span class="n">y</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>  <span class="c1"># output same order as input to preserve following reshape semantics</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span>
 
