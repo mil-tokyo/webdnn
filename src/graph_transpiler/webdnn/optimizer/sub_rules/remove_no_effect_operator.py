@@ -30,7 +30,7 @@ def _remove_unary_operator(graph: Graph, op: Operator):
     y = list(op.outputs.values())[0]
     op.remove_all()
 
-    OptimizeRule.replace_variable(graph, y, x)
+    OptimizeRule.replace_variable(graph, y, x, with_assert=False)
 
 
 def _remove_binary_elementwise(graph: Graph, op: Operator, v: Variable):

@@ -88,11 +88,30 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     }
 
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
+        let MAX_TEXTURE_SIZE = this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE);
+        if (MAX_TEXTURE_SIZE >= 16384) {
+            MAX_TEXTURE_SIZE = 16384;
+
+        } else if (MAX_TEXTURE_SIZE >= 8192) {
+            MAX_TEXTURE_SIZE = 8192;
+
+        } else if (MAX_TEXTURE_SIZE >= 4096) {
+            MAX_TEXTURE_SIZE = 4096;
+
+        } else {
+            throw new Error(`MAX_TEXTURE_SIZE is too small: ${MAX_TEXTURE_SIZE}`);
+        }
+
         let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache})
+            webdnnFetch(`${directory}/graph_${this.backendName}_${MAX_TEXTURE_SIZE}.json`, {
+                ignoreCache: this.ignoreCache
+            })
                 .then(res => res.json() as Promise<GraphDescriptorWebGL>),
 
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache, progressCallback: progressCallback})
+            webdnnFetch(`${directory}/weight_${this.backendName}_${MAX_TEXTURE_SIZE}.bin`, {
+                ignoreCache: this.ignoreCache,
+                progressCallback: progressCallback
+            })
                 .then(res => readArrayBufferProgressively(res, progressCallback))
         ]);
 

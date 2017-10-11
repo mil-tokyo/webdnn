@@ -682,12 +682,6 @@ combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@~2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.9.0.tgz#9c99094176e12240cb22d6c5146098400fe0f7d4"
-  dependencies:
-    graceful-readlink ">= 1.0.0"
-
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -992,10 +986,6 @@ glogg@^1.0.0:
 graceful-fs@^4.1.2, graceful-fs@^4.1.6:
   version "4.1.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.11.tgz#0e8bdfe4d1ddb8854d64e04ea7c00e2a026e5658"
-
-"graceful-readlink@>= 1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
 graphlib@^2.1.1:
   version "2.1.1"
@@ -1952,12 +1942,6 @@ rollup-plugin-typescript2@^0.5.0:
     tslib "^1.7.1"
     typescript "^2.3.4"
 
-rollup-plugin-uglify-es@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-uglify-es/-/rollup-plugin-uglify-es-0.0.1.tgz#e45644f2b685a59abdb9363407207a03a7b5a9b7"
-  dependencies:
-    uglify-es "3.0.3"
-
 rollup-pluginutils@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.0.1.tgz#7ec95b3573f6543a46a6461bd9a7c544525d0fc0"
@@ -2176,6 +2160,9 @@ typedoc-default-themes@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/typedoc-default-themes/-/typedoc-default-themes-0.5.0.tgz#6dc2433e78ed8bea8e887a3acde2f31785bd6227"
 
+"typedoc-plugin-webdnn@file:docs/template/typedoc/plugin":
+  version "0.0.1"
+
 typedoc@^0.8.0:
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.8.0.tgz#d7172bc6a29964f451b7609c005beadadefe2361"
@@ -2205,15 +2192,6 @@ typescript@2.4.1:
 typescript@^2.3.4:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.2.tgz#f8395f85d459276067c988aa41837a8f82870844"
-
-uglify-es@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/uglify-es/-/uglify-es-3.0.3.tgz#63cc84aa9468b34973a4887787c64c01a8a87576"
-  dependencies:
-    commander "~2.9.0"
-    source-map "~0.5.1"
-  optionalDependencies:
-    uglify-to-browserify "~1.0.0"
 
 uglify-js@^2.6:
   version "2.8.29"

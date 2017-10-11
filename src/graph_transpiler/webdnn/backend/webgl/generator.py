@@ -1,6 +1,6 @@
 import os
 import os.path as path
-from typing import List
+from typing import List, Dict, Tuple
 
 from webdnn.backend.interface.generator import DescriptorGenerator
 from webdnn.backend.interface.graph_descriptor import IGraphExecutionData
@@ -12,63 +12,62 @@ from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import flags
+from webdnn.util import config
 from webdnn.util.json import json
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):
-    descriptor: GraphDescriptor
-
-    def __init__(self, graph: Graph, descriptor: GraphDescriptor, constants: bytes):
+    def __init__(self, graph: Graph, data_dict: Dict[int, Tuple[GraphDescriptor, bytes]]):
         self.graph = graph
-        self.descriptor = descriptor
-        self.constants = constants
+        self.data_dict = data_dict
         self.backend_suffix = "webgl"
 
     def save(self, dirname: str):
         os.makedirs(dirname, exist_ok=True)
 
-        with open(path.join(dirname, "graph_{}.json".format(self.backend_suffix)), "w") as f:
-            json.dump(self.descriptor, f, indent=2)
+        for max_texture_size, (descriptor, constant_bytes) in self.data_dict.items():
+            with open(path.join(dirname, f"graph_{self.backend_suffix}_{max_texture_size}.json"), "w") as f:
+                json.dump(descriptor, f, indent=2)
 
-        with open(path.join(dirname, "weight_{}.bin".format(self.backend_suffix)), "wb") as f:
-            f.write(self.constants)
+            with open(path.join(dirname, f"weight_{self.backend_suffix}_{max_texture_size}.bin"), "wb") as f:
+                f.write(constant_bytes)
 
 
 class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     @classmethod
     def generate(cls, graph: Graph, **kwargs):
-        graph, _ = WebGLOptimizeRule().optimize(graph)
-        if flags.DEBUG:
-            traverse.dump(graph)
-            with open("cg.dot", "w") as f:
-                f.write(traverse.dump_dot(graph))
+        data_dict = {}  # type: Dict[int, Tuple[GraphDescriptor, bytes]]
 
-        memory_layout = allocate(graph)
+        for max_texture_size in [4096, 8192, 16384]:
+            config.WEBGL_MAX_TEXTURE_SIZE = max_texture_size
+            graph, _ = WebGLOptimizeRule().optimize(graph)
 
-        constants_map = {}
-        for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
-            constants_map[constant.name] = {
-                "byte_offset": memory_layout[constant].offset * 4,
-                "size": constant.size
-            }
+            memory_layout = allocate(graph)
 
-        constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
-        constants_bytes = constant_encoder.encode(memory_layout)
+            constants_map = {}
+            for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
+                constants_map[constant.name] = {
+                    "byte_offset": memory_layout[constant].offset * 4,
+                    "size": constant.size
+                }
 
-        kernels = cls.generate_kernels(graph)
+            constant_encoder = ConstantEncoder.get_encoder(kwargs.get("constant_encoder_name", None))
+            constants_bytes = constant_encoder.encode(memory_layout)
 
-        descriptor = GraphDescriptor(
-            kernels=kernels,
-            memory_layout=memory_layout,
-            inputs=graph.inputs,
-            outputs=graph.outputs,
-            constants_encoding=constant_encoder.name,
-            constants_map=constants_map,
-            licenses=graph.licenses
-        )
+            kernels = cls.generate_kernels(graph)
 
-        return GraphExecutionData(graph, descriptor, constants_bytes)
+            descriptor = GraphDescriptor(
+                kernels=kernels,
+                memory_layout=memory_layout,
+                inputs=graph.inputs,
+                outputs=graph.outputs,
+                constants_encoding=constant_encoder.name,
+                constants_map=constants_map,
+                licenses=graph.licenses
+            )
+            data_dict[max_texture_size] = (descriptor, constants_bytes)
+
+        return GraphExecutionData(graph, data_dict)
 
     # noinspection PyMethodOverriding
     @classmethod

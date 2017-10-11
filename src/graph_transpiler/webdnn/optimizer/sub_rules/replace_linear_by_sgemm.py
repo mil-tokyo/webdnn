@@ -20,9 +20,9 @@ class ReplaceLinearBySgemm(OptimizeRule):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]
-            assert x.order == OrderNC or x.order == OrderNHWC
-            assert w.order == OrderCN or w.order == OrderHWCN
-            assert y.order == OrderNC or y.order == OrderNHWC
+            assert x.order == OrderNC or x.order == OrderNHWC, f"(x.order) = {x.order}"
+            assert w.order == OrderCN or w.order == OrderHWCN, f"(x.order) = {w.order}"
+            assert y.order == OrderNC or y.order == OrderNHWC, f"(x.order) = {y.order}"
             assert w.ndim == x.ndim
 
             flag_changed = True
