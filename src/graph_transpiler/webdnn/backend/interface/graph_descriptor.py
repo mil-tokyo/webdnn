@@ -18,11 +18,6 @@ class IGraphExecutionData(Generic[T_KERNEL]):
     """
     Container class for graph descriptor and related datum.
     """
-    descriptor: IGraphDescriptor[T_KERNEL]
-    constants: bytes
-    backend_suffix: str
-    graph: Graph
-
     def save(self, dirname: str):
         """save(dirname)
 

@@ -674,16 +674,55 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	}
 
 }
+declare namespace WebGL2RenderingContext {
+}
+
+
+declare class WebGL2RenderingContext extends WebGLRenderingContext {
+    RED: GLenum;
+    RGBA32F: GLenum;
+    R32F: GLenum;
+    SYNC_GPU_COMMANDS_COMPLETE: GLenum;
+    ALREADY_SIGNALED: GLenum;
+    CONDITION_SATISFIED: GLenum;
+
+    createVertexArray(): WebGLVertexArrayObject;
+
+    bindVertexArray(vertexArray: WebGLVertexArrayObject): void;
+
+    fenceSync(condition: GLenum, flags: GLbitfield): WebGLSync;
+
+    clientWaitSync(sync: WebGLSync, flags: GLbitfield, timeout: 0): GLenum;
+
+    deleteSync(sync: WebGLSync): void;
+}
+
+declare class WebGLVertexArrayObject {
+
+}
+
+declare class WebGLSync {
+
+}
+
+declare interface WebGLVertexArrayObjectExtension {
+    bindVertexArrayOES(vertexArray: WebGLVertexArrayObject): void;
+
+    createVertexArrayOES(): WebGLVertexArrayObject;
+}
 declare module 'webdnn/webgl_handler' {
-	export interface WebGLVertexArray {
-	}
+	/// <reference path="webgl2.d.ts" />
+	/**
+	 * @protected
+	 */
+	export function isWebGL2(gl: WebGLRenderingContext | WebGL2RenderingContext): gl is WebGL2RenderingContext;
 	/**
 	 * @protected
 	 */
 	export default class WebGLHandler {
-	    readonly gl: WebGLRenderingContext;
-	    readonly vao: any | null;
-	    readonly isWebGL2: boolean;
+	    static IS_SAFARI: boolean;
+	    readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
+	    readonly vao: WebGLVertexArrayObjectExtension | null;
 	    constructor();
 	    createTexture(textureWidth: number, textureHeight: number, internalFormat: number, format: number): WebGLTexture;
 	    createVertexShader(source: string): WebGLShader;
@@ -691,28 +730,28 @@ declare module 'webdnn/webgl_handler' {
 	    createShader(type: number, source: string): WebGLShader;
 	    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram;
 	    createArrayBuffer(vertexArray: number | Float32Array): WebGLBuffer;
-	    createVertexArray(): WebGLVertexArray;
+	    createVertexArray(): WebGLVertexArrayObject;
 	    createFrameBuffer(): WebGLFramebuffer;
 	    bindArrayBuffer(buffer: WebGLBuffer): void;
 	    bindFrameBuffer(frameBuffer: WebGLFramebuffer, width: number, height: number): void;
 	    useProgram(program: WebGLProgram): void;
-	    bindVertexArray(vao: WebGLVertexArray): void;
+	    bindVertexArray(vao: WebGLVertexArrayObject): void;
 	    deleteTexture(texture: WebGLTexture): void;
-	    static initializeWebGL2Context(canvas: HTMLCanvasElement): WebGLRenderingContext | null;
-	    static initializeWebGL1Context(canvas: HTMLCanvasElement): {
+	    static initializeWebGL2Context(canvas?: HTMLCanvasElement): WebGLRenderingContext | null;
+	    static initializeWebGL1Context(canvas?: HTMLCanvasElement): {
 	        gl: WebGLRenderingContext;
-	        vao: any;
+	        vao: WebGLVertexArrayObjectExtension;
 	    } | null;
 	    static initializeContext(): {
 	        gl: WebGLRenderingContext;
-	        vao: any;
-	        isWebGL2: boolean;
+	        vao: WebGLVertexArrayObjectExtension | null;
 	    } | null;
 	    /**
 	     * Check whether WebGL is supported or not
 	     * @protected
 	     */
 	    static checkAvailability(): boolean;
+	    waitForComplete(): Promise<void>;
 	}
 
 }
@@ -917,12 +956,13 @@ declare module 'webdnn/webgpu_handler' {
 	    private context;
 	    private commandQueue;
 	    private pipelineStates;
+	    private commandBuffer;
 	    constructor();
 	    createBuffer(arrayBuffer: ArrayBufferView): WebGPUBuffer;
 	    loadKernel(librarySource: string, namespace?: string): void;
 	    createCommandBuffer(): WebGPUCommandBuffer;
 	    getPipelineStateByName(name: string): WebGPUComputePipelineState;
-	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[], getCompletedPromise?: boolean): Promise<void> | null;
+	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[], getCompletedPromise?: boolean, flagDelay?: boolean): Promise<void> | null;
 	    sync(): Promise<void>;
 	}
 	/**
@@ -1359,7 +1399,7 @@ declare module 'webdnn/webdnn' {
 	 * Module `WebDNN` provides main features of WebDNN.
 	 */
 	/** Don't Remove This comment block */
-	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	import { DescriptorRunner as _DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
 	import * as Image from 'webdnn/image';
 	import * as Math from 'webdnn/math';
@@ -1377,6 +1417,10 @@ declare module 'webdnn/webdnn' {
 	 * Backend names supported in WebDNN
 	 */
 	export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';
+	/**
+	 * Descriptor runner
+	 */
+	export type DescriptorRunner = _DescriptorRunner<GraphDescriptor>;
 	/**
 	 * Result structure of [[getBackendAvailability|`WebDNN.getBackendAvailability`]]
 	 */
@@ -1532,8 +1576,8 @@ declare module 'webdnn/webdnn' {
 	 * @param initOption Initialize option
 	 * @return DescriptorRunner instance, which is the interface to input/output data and run the model.
 	 */
-	export function load(directory: string, initOption?: InitOption): Promise<DescriptorRunner<GraphDescriptor>>;
-	export { DescriptorRunner, GraphDescriptor };
+	export function load(directory: string, initOption?: InitOption): Promise<DescriptorRunner>;
+	export { GraphDescriptor };
 	export { Math, Image };
 
 }

@@ -15,5 +15,5 @@ setup(
     version=version,
     package_dir={"": "src/graph_transpiler"},
     packages=find_packages("src/graph_transpiler"),
-    package_data={"": "*.js"}
+    package_data={"": "*.js"}, install_requires=['numpy']
 )

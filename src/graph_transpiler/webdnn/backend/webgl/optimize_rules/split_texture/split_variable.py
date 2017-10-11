@@ -1,4 +1,4 @@
-from typing import NamedTuple, List, Sequence, Tuple, Dict
+from typing import NamedTuple, List, Sequence, Tuple
 
 import numpy as np
 
@@ -97,9 +97,8 @@ def _split_axis(v: Variable, axis: Axis, graph):
             console.debug(f"  split axis: {axis}")
             console.debug(f"")
             console.debug(f"  related operators:")
-            for op in ops:
-                console.debug(f"  {op}")
-                console.debug(f"    splittable: {','.join(attr.axis for attr in op.get_attribute(Tensorwise))}")
+            for related_op in ops:
+                console.debug(f"  {related_op}")
             console.debug(f"")
 
             with open("cg-failed.dot", "w") as f:
@@ -703,12 +702,12 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
         Examples::
 
             A.order, A.shape
-            >>> [N, C, H, W], (1, 128, 8, 8)
+            >>> "NCHW", (1, 128, 8, 8)
 
             M = 128
             K = 64
             decompose_logical_axes([M, K], A)
-            >>> [N, C], [H, W]
+            >>> ["<Axis N>", "<Axis C>"], ["<Axis H>", "<Axis W>"]
         """
         total_size = 1
         axes1 = []  # type: List[Axis]
@@ -946,6 +945,8 @@ def _split_tensorwise(graph: Graph, op: Operator, v: Variable, v_pair: Sequence[
     for key in ys.keys():
         y = ys[key]
         if y == v:
+            op_0.outputs[key].change_order(v_pair[0].order)
+            op_1.outputs[key].change_order(v_pair[0].order)
             OptimizeRule.replace_variable(graph, op_0.outputs[key], v_pair[0])
             OptimizeRule.replace_variable(graph, op_1.outputs[key], v_pair[1])
 
@@ -984,6 +985,7 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
         return splittable_axes
 
     elif isinstance(op, Im2Col):
+        op = op  # type: Im2Col
         if v in op.outputs.values():
             if v.shape_dict[Axis.C] % (op.ksize[0] * op.ksize[1]) == 0:
                 return [Axis.N, Axis.H, Axis.W, Axis.C]
@@ -994,6 +996,7 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
             return []
 
     elif isinstance(op, PartialIm2Col):
+        op = op  # type: PartialIm2Col
         if v in op.outputs.values():
             return []
 

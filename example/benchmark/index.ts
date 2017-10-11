@@ -148,7 +148,7 @@ interface WebDNNConfiguration extends Configuration {
 }
 
 class WebDNNBenchmark extends Benchmark<WebDNNConfiguration> {
-    runner: WebDNN.DescriptorRunner<WebDNN.GraphDescriptor> | null = null;
+    runner: WebDNN.DescriptorRunner | null = null;
 
     async setupAsync() {
         let url = `./output/webdnn/${this.configuration.modelName}/${this.configuration.optimize ? '' : 'non_'}optimized`;
