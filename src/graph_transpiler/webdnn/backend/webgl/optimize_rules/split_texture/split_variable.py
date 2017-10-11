@@ -677,7 +677,7 @@ def _split_partial_im2col(graph: Graph, op: PartialIm2Col, v: Variable, v_pair: 
                 OptimizeRule.replace_variable(graph, new_col, col)
 
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
     else:
         raise UnexpectedAndPleaseReportError
