@@ -17,16 +17,7 @@ class App extends AppBase {
                 transformUrlDelegate: (url: string) => {
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
                     if (ma) {
-                        url = `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}?raw=true`;
-
-                        // if ((/webgl/).test(ma[1])) {
-                        //     let gl = document.createElement('canvas').getContext('webgl')!;
-                        //     if (gl.getParameter(gl.MAX_TEXTURE_SIZE) >= 16384) {
-                        //         url = url.replace('webgl', 'webgl_16384');
-                        //     } else {
-                        //         url = url.replace('webgl', 'webgl_4096');
-                        //     }
-                        // }
+                        url = `https://mil-tokyo.github.io/webdnn-data/models/resnet/${ma[1]}`;
                     }
 
                     return url;

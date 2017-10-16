@@ -28,23 +28,6 @@ const IMAGE_PATH_LIST = [
 ];
 let random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
 
-function softmax(x: Float32Array) {
-    let max = -Infinity;
-    for (let i = 0; i < x.length; i++) max = max > x[i] ? max : x[i];
-
-    let exp = new Float32Array(x.length);
-    let sum = 0;
-    for (let i = 0; i < x.length; i++) {
-        let e = Math.exp(x[i] - max);
-        sum += e;
-        exp[i] = e;
-    }
-
-    for (let i = 0; i < exp.length; i++) exp[i] /= sum;
-
-    return exp;
-}
-
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
     runner: WebDNN.DescriptorRunner;
 }
@@ -197,7 +180,7 @@ class MainLayer extends React.Component<Props, State> {
         let inputImageCanvas = dom.getFromRef<HTMLCanvasElement>(this, 'inputImageCanvas');
 
         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
-            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC,
             color: WebDNN.Image.Color.BGR,
             bias: [123.68, 116.779, 103.939]
         }));
@@ -214,7 +197,6 @@ class MainLayer extends React.Component<Props, State> {
         });
 
         let output = runner.getOutputViews()[0].toActual();
-        if (runner.backendName === 'webgl') output = softmax(output);
         this.results = WebDNN.Math.argmax(output, 5)
             .map((i: number) => ({
                 label: Labels[i],
@@ -236,7 +218,7 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
 
         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromDrawable(video, {
-            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC,
             color: WebDNN.Image.Color.BGR,
             bias: [123.68, 116.779, 103.939]
         }));
@@ -244,7 +226,6 @@ class MainLayer extends React.Component<Props, State> {
         await runner.run();
 
         let output = runner.getOutputViews()[0].toActual();
-        if (runner.backendName === 'webgl') output = softmax(output);
         this.results = WebDNN.Math.argmax(output, 5)
             .map((i: number) => ({
                 label: Labels[i],
