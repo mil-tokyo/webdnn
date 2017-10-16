@@ -21968,21 +21968,6 @@ var IMAGE_PATH_LIST = [
     __webpack_require__(215)
 ];
 var random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
-function softmax(x) {
-    var max = -Infinity;
-    for (var i = 0; i < x.length; i++)
-        max = max > x[i] ? max : x[i];
-    var exp = new Float32Array(x.length);
-    var sum = 0;
-    for (var i = 0; i < x.length; i++) {
-        var e = Math.exp(x[i] - max);
-        sum += e;
-        exp[i] = e;
-    }
-    for (var i = 0; i < exp.length; i++)
-        exp[i] /= sum;
-    return exp;
-}
 var MainLayer = (function (_super) {
     __extends(MainLayer, _super);
     function MainLayer() {
@@ -22213,7 +22198,7 @@ var MainLayer = (function (_super) {
                             return [2];
                         inputImageCanvas = dom_1.default.getFromRef(this, 'inputImageCanvas');
                         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromCanvas(inputImageCanvas, {
-                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC,
                             color: WebDNN.Image.Color.BGR,
                             bias: [123.68, 116.779, 103.939]
                         }));
@@ -22236,8 +22221,6 @@ var MainLayer = (function (_super) {
                     case 1:
                         _a.sent();
                         output = runner.getOutputViews()[0].toActual();
-                        if (runner.backendName === 'webgl')
-                            output = softmax(output);
                         this.results = WebDNN.Math.argmax(output, 5)
                             .map(function (i) { return ({
                             label: imagenet_labels_1.default[i],
@@ -22266,7 +22249,7 @@ var MainLayer = (function (_super) {
                             return [2];
                         video = dom_1.default.getFromRef(this, 'previewVideo');
                         runner.getInputViews()[0].set(WebDNN.Image.getImageArrayFromDrawable(video, {
-                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.CHW,
+                            dstH: 224, dstW: 224, order: WebDNN.Image.Order.HWC,
                             color: WebDNN.Image.Color.BGR,
                             bias: [123.68, 116.779, 103.939]
                         }));
@@ -22274,8 +22257,6 @@ var MainLayer = (function (_super) {
                     case 1:
                         _a.sent();
                         output = runner.getOutputViews()[0].toActual();
-                        if (runner.backendName === 'webgl')
-                            output = softmax(output);
                         this.results = WebDNN.Math.argmax(output, 5)
                             .map(function (i) { return ({
                             label: imagenet_labels_1.default[i],
