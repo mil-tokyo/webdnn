@@ -9854,7 +9854,7 @@ var App = (function (_super) {
                                 transformUrlDelegate: function (url) {
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
                                     if (ma) {
-                                        url = "https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/" + ma[1] + "?raw=true";
+                                        url = "https://mil-tokyo.github.io/webdnn-data/models/neural_style_transfer/" + ma[1];
                                     }
                                     return url;
                                 },
