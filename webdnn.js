@@ -1092,7 +1092,7 @@ class WebGLHandler {
         return gl;
     }
     static initializeWebGL1Context(canvas = document.createElement('canvas')) {
-        let gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental'));
+        let gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
         if (!gl)
             return null;
         if (!gl.getExtension('OES_texture_float'))
