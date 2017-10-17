@@ -147,7 +147,7 @@ export default class BrowserCompatibilitySection extends React.Component<React.H
                                 </td>
                                 <td className={ style.webassembly } rowSpan={ 2 }>
                                     <span className={ style.versionRange }> - 10.1</span>
-                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
+                                    <span className={ style.backend }>WebAssembly/asm.js</span>
                                 </td>
                             </tr>
                             <tr>

@@ -722,7 +722,6 @@ declare module 'webdnn/webgl_handler' {
 	export default class WebGLHandler {
 	    static IS_SAFARI: boolean;
 	    readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
-	    readonly vao: WebGLVertexArrayObjectExtension | null;
 	    constructor();
 	    createTexture(textureWidth: number, textureHeight: number, internalFormat: number, format: number): WebGLTexture;
 	    createVertexShader(source: string): WebGLShader;
@@ -730,22 +729,14 @@ declare module 'webdnn/webgl_handler' {
 	    createShader(type: number, source: string): WebGLShader;
 	    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram;
 	    createArrayBuffer(vertexArray: number | Float32Array): WebGLBuffer;
-	    createVertexArray(): WebGLVertexArrayObject;
 	    createFrameBuffer(): WebGLFramebuffer;
 	    bindArrayBuffer(buffer: WebGLBuffer): void;
 	    bindFrameBuffer(frameBuffer: WebGLFramebuffer, width: number, height: number): void;
 	    useProgram(program: WebGLProgram): void;
-	    bindVertexArray(vao: WebGLVertexArrayObject): void;
 	    deleteTexture(texture: WebGLTexture): void;
 	    static initializeWebGL2Context(canvas?: HTMLCanvasElement): WebGLRenderingContext | null;
-	    static initializeWebGL1Context(canvas?: HTMLCanvasElement): {
-	        gl: WebGLRenderingContext;
-	        vao: WebGLVertexArrayObjectExtension;
-	    } | null;
-	    static initializeContext(): {
-	        gl: WebGLRenderingContext;
-	        vao: WebGLVertexArrayObjectExtension | null;
-	    } | null;
+	    static initializeWebGL1Context(canvas?: HTMLCanvasElement): WebGLRenderingContext | null;
+	    static initializeContext(): WebGLRenderingContext | null;
 	    /**
 	     * Check whether WebGL is supported or not
 	     * @protected

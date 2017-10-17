@@ -74,7 +74,7 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                         <dd>すべての演算をGPUで行います。GPU APIにはWebGPUを使用しており、4種類の中で最も高速に動作します。ただし、
                             現在WebGPUをサポートしているブラウザはSafari Technology Preview版しかありません。
                         </dd>
-                        <dt>WebGPU backend</dt>
+                        <dt>WebGL backend</dt>
                         <dd>すべての演算をGPUで行います。GPU APIにはWebGLを使用しており、WebGPUバックエンドと同様CPUベースのバックエンドより高速に動作します。
                             また、WebGLはモダンなブラウザのほぼ全てでサポートされています。
                         </dd>
@@ -145,7 +145,7 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                                 </td>
                                 <td className={ style.webassembly } rowSpan={ 2 }>
                                     <span className={ style.versionRange }> - 10.1</span>
-                                    <span className={ style.backend }>WebGL, WebAssembly/asm.js</span>
+                                    <span className={ style.backend }>WebAssembly/asm.js</span>
                                 </td>
                             </tr>
                             <tr>
