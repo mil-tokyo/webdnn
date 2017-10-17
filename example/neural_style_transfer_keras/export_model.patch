@@ -1,0 +1,31 @@
+diff --git a/fast_style_transfer.py b/fast_style_transfer.py
+index f6bc796..9cdf5dd 100644
+--- a/fast_style_transfer.py
++++ b/fast_style_transfer.py
+@@ -54,6 +54,7 @@ if __name__ == '__main__':
+     inputs = [pastiche_net.input, class_targets, K.learning_phase()]
+ 
+     transfer_style = K.function(inputs, [pastiche_net.output])
++    pastiche_net.save("model.h5")
+ 
+     num_batches = int(np.ceil(model_args.nb_classes / float(args.batch_size)))
+ 
+diff --git a/model.py b/model.py
+index fa3920a..a37978d 100644
+--- a/model.py
++++ b/model.py
+@@ -22,10 +22,11 @@ def conv(x, n_filters, kernel_size=3, stride=1, relu=True, nb_classes=1, targets
+     '''
+     if not kernel_size % 2:
+         raise ValueError('Expected odd kernel size.')
+-    pad = (kernel_size - 1) / 2
++    pad = (kernel_size - 1) // 2
+     o = ReflectionPadding2D(padding=(pad, pad))(x)
+     o = Convolution2D(n_filters, kernel_size, kernel_size,
+-                      subsample=(stride, stride), init=weights_init)(o)
++                      #subsample=(stride, stride), init=weights_init)(o)
++                      subsample=(stride, stride))(o)
+     # o = BatchNormalization()(o)
+     if nb_classes > 1:
+         o = ConditionalInstanceNormalization(targets, nb_classes)(o)
+
