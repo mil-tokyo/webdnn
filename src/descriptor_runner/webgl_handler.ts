@@ -19,12 +19,9 @@ export function isWebGL2(gl: WebGLRenderingContext | WebGL2RenderingContext): gl
 export default class WebGLHandler {
     static IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
     readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
-    readonly vao: WebGLVertexArrayObjectExtension | null;
 
     constructor() {
-        let {gl, vao} = checkNull(WebGLHandler.initializeContext());
-        this.gl = gl;
-        this.vao = vao;
+        this.gl = checkNull(WebGLHandler.initializeContext());
     }
 
     createTexture(textureWidth: number, textureHeight: number, internalFormat: number, format: number) {
@@ -87,14 +84,6 @@ export default class WebGLHandler {
         return buffer
     }
 
-    createVertexArray(): WebGLVertexArrayObject {
-        if (isWebGL2(this.gl)) {
-            return checkNull(this.gl.createVertexArray());
-        } else {
-            return checkNull(this.vao!.createVertexArrayOES());
-        }
-    }
-
     createFrameBuffer(): WebGLFramebuffer {
         return checkNull(this.gl.createFramebuffer());
     }
@@ -111,14 +100,6 @@ export default class WebGLHandler {
 
     useProgram(program: WebGLProgram) {
         this.gl.useProgram(program);
-    }
-
-    bindVertexArray(vao: WebGLVertexArrayObject) {
-        if (isWebGL2(this.gl)) {
-            this.gl.bindVertexArray(vao);
-        } else {
-            this.vao!.bindVertexArrayOES(vao);
-        }
     }
 
     deleteTexture(texture: WebGLTexture) {
@@ -138,10 +119,7 @@ export default class WebGLHandler {
     }
 
     static initializeWebGL1Context(canvas: HTMLCanvasElement = document.createElement('canvas')) {
-        let gl: WebGLRenderingContext | null;
-        let vao: WebGLVertexArrayObjectExtension | null;
-
-        gl = (canvas.getContext('webgl') || canvas.getContext('webgl-experimental')) as WebGLRenderingContext | null;
+        let gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
 
         if (!gl) return null;
         if (!gl.getExtension('OES_texture_float')) return null;
@@ -152,27 +130,23 @@ export default class WebGLHandler {
             return null
         }
 
-        if (!(vao = gl.getExtension('OES_vertex_array_object'))) return null;
         if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
-        return {gl, vao};
+        return gl;
     }
 
     static initializeContext() {
         let canvas = document.createElement('canvas');
         let gl: WebGLRenderingContext | null;
-        let vao: WebGLVertexArrayObjectExtension | null = null;
 
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
             if (isDebugMode()) console.info('WebGL2 is enabled');
 
         } else {
-            let res = WebGLHandler.initializeWebGL1Context(canvas);
+            gl = WebGLHandler.initializeWebGL1Context(canvas);
 
-            if (res) {
-                gl = res.gl;
-                vao = res.vao;
+            if (gl) {
                 if (isDebugMode()) console.info('WebGL2 is disabled');
 
             } else {
@@ -190,7 +164,7 @@ export default class WebGLHandler {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.BACK);
 
-        return {gl, vao};
+        return gl;
     }
 
     /**
@@ -199,11 +173,11 @@ export default class WebGLHandler {
      */
     static checkAvailability() {
         if (availability === null) {
-            let context = WebGLHandler.initializeContext();
-            if (!context) {
+            let gl = WebGLHandler.initializeContext();
+            if (!gl) {
                 availability = false;
 
-            } else if (context.gl.getParameter(context.gl.MAX_TEXTURE_SIZE) < 4096) {
+            } else if (gl.getParameter(gl.MAX_TEXTURE_SIZE) < 4096) {
                 availability = false;
 
             } else {

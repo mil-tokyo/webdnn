@@ -29,7 +29,7 @@ function togglePause() {
 async function initialize() {
     try {
         //noinspection ES6ModulesDependencies
-        dnn = await WebDNN.load("./output");
+        dnn = await WebDNN.load("./output", {backendOrder:['webgpu','webgl','webassembly']});
         console.log(`backend: ${dnn.backendName}`);
 
         Webcam.set({
