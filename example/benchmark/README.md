@@ -2,22 +2,33 @@
 
 The benchmark for computing speed of DNN model on web browser
 
-- Models
-    - ResNet50
-    - VGG16
-    - Inception-v3
+### Models
 
-- Execution type
-    - WebDNN (WebGPU + Optimization)
-    - WebDNN (WebGPU)
-    - WebDNN (WebGL + Optimization)
-    - WebDNN (WebGL)
-    - WebDNN (WebAssembly + Optimization)
-    - WebDNN (WebAssembly)
-    - Keras.js (GPU)
-    - Keras.js (CPU)
-    - deeplearn.js (GPU) (Only ResNet50 is supported)
-    - deeplearn.js (CPU) (Only ResNet50 is supported)
+- ResNet50
+- VGG16
+- Inception-v3
+
+### Execution type
+
+- WebDNN (WebGPU + Optimization)
+- WebDNN (WebGPU)
+- WebDNN (WebGL + Optimization)
+- WebDNN (WebGL)
+- WebDNN (WebAssembly + Optimization)
+- WebDNN (WebAssembly)
+- Keras.js (GPU)
+- Keras.js (CPU)
+- deeplearn.js (GPU) (Only ResNet50 is supported)
+- deeplearn.js (CPU) (Only ResNet50 is supported)
+
+### Version
+
+| Framework    | Version                                    |
+|--------------|--------------------------------------------|
+| WebDNN       | Latest (use `/dist/webdnn.js`)             |
+| KerasJS      | `e0e6bd0ba9d74debcf4654697d5866169d3eb3e7` |
+| deeplearn.js | `0.3.0`                                    |
+ 
 
 ## How to run
 

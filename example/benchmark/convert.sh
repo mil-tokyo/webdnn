@@ -9,6 +9,7 @@ echo ""
 echo "Encode Keras model into Keras.js model:"
 if [ ! -e ./kerasjs ]; then
 git clone https://github.com/transcranial/keras-js.git kerasjs
+git checkout --hard e0e6bd0ba9d74debcf4654697d5866169d3eb3e7
 fi
 cd kerasjs
 python encoder.py ../output/kerasjs/resnet50/model.h5
