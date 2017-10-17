@@ -9992,7 +9992,7 @@ var BrowserCompatibilitySection = (function (_super) {
                                         React.createElement("span", { className: style.backend }, "WebAssembly/asm.js")),
                                     React.createElement("td", { className: style.webassembly, rowSpan: 2 },
                                         React.createElement("span", { className: style.versionRange }, " - 10.1"),
-                                        React.createElement("span", { className: style.backend }, "WebGL, WebAssembly/asm.js"))),
+                                        React.createElement("span", { className: style.backend }, "WebAssembly/asm.js"))),
                                 React.createElement("tr", null,
                                     React.createElement("td", { className: style.fallback, rowSpan: 1 },
                                         React.createElement("span", { className: style.versionRange }, " - 9"),
