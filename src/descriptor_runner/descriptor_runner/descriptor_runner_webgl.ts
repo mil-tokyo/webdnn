@@ -30,7 +30,7 @@ interface RuntimeProgramInfo {
         func: (...args: any[]) => void,
         args: any[]
     }[],
-    vao: WebGLVertexArrayObject,
+    loc: number,
     output: BufferWebGL,
     disposable: BufferWebGL[]
 }
@@ -340,14 +340,8 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     }
                 });
 
-                // vao
-                let vao = this.handler.createVertexArray();
-                this.handler.bindVertexArray(vao);
-
                 // attributes
                 let loc = gl.getAttribLocation(program, '_xy');
-                gl.vertexAttribPointer(loc, 2, gl.FLOAT, true, 8, 0);
-                gl.enableVertexAttribArray(loc);
 
                 // run
                 return {
@@ -358,7 +352,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     height: output.textureHeight,
                     inputs: inputs,
                     output: output,
-                    vao: vao,
+                    loc: loc,
                     uniforms: uniforms,
                     disposable: []
                 };
@@ -397,7 +391,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 for (let runtimeProgramInfo of runtimeInfo.programs) {
                     let start = performance.now();
 
-                    this.handler.bindVertexArray(runtimeProgramInfo.vao);
                     this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
 
                     // inputs
@@ -411,6 +404,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
                     // uniforms
                     for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
+
+                    // vertex attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.loc);
 
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
@@ -458,7 +455,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
             } else {
                 for (let runtimeProgramInfo of runtimeInfo.programs) {
-                    this.handler.bindVertexArray(runtimeProgramInfo.vao);
                     this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
 
                     // inputs
@@ -472,6 +468,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
                     // uniforms
                     for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
+
+                    // vertex attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.loc);
 
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
