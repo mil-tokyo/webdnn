@@ -45,9 +45,9 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
         dilated_ksize = [k + (k - 1) * (d - 1) for k, d in zip(ksize, dilation_rate)]
         pad_extra_shape = [dk - 1 for dk in dilated_ksize]
 
-        if any(p % 2 != 0 for p in pad_extra_shape):
-            raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
-                                      f"  (pad_extra_shape)=f{pad_extra_shape}")
+#        if any(p % 2 != 0 for p in pad_extra_shape):
+#            raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
+#                                      f"  (pad_extra_shape)=f{pad_extra_shape}")
 
         padding = tuple(p // 2 for p in pad_extra_shape)
 
@@ -96,11 +96,11 @@ def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Con
         # @see https://github.com/tensorflow/tensorflow/blob/e5cf6f0c13b6053e4c58af6a951b204fde263172/tensorflow/python/ops/nn_ops.py#L507-L519
         pad_extra_shape = [k - 1 for k in ksize]
 
-        if any(p % 2 != 0 for p in pad_extra_shape):
-            raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
-                                      f"  (pad_extra_shape)=f{pad_extra_shape}")
+        #if any(p % 2 != 0 for p in pad_extra_shape):
+        #    raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
+        #                              f"  (pad_extra_shape)=f{pad_extra_shape}")
 
-        padding = tuple(p // 2 for p in pad_extra_shape)
+        padding = tuple((p-1) // 2 for p in pad_extra_shape)
 
     w = converter.convert_to_constant_variable(k_op.kernel, OrderHWNC)
 
@@ -111,7 +111,7 @@ def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Con
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (ksize[0] // 2, ksize[1] // 2)
+        padding = ((ksize[0]-1) // 2, (ksize[1]-1) // 2)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
