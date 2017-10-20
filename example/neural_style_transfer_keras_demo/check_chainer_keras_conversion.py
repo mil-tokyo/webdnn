@@ -57,10 +57,30 @@ def main():
     checker.k_layer.set_weights([checker.c_link.W.data.transpose((2, 3, 1, 0)), checker.c_link.b.data])
     checker.run_compare()
 
+    # even kernel size
+    checker = CKConvertChecker((2, 6, 8, 8))
+    checker.run_chainer(chainer.links.Convolution2D(6, 4, ksize=4, stride=2, pad=1, initial_bias=1))
+    checker.add_keras(
+        keras.layers.Convolution2D(4, kernel_size=4, strides=2, padding="same", batch_input_shape=(2, 8, 8, 6)))
+    # chainer kernel: (out, in, kh, kw)
+    # keras kernel: (kh, kw, in, out)
+    checker.k_layer.set_weights([checker.c_link.W.data.transpose((2, 3, 1, 0)), checker.c_link.b.data])
+    checker.run_compare()
+
     checker = CKConvertChecker((2, 6, 5, 5))
     checker.run_chainer(chainer.links.Deconvolution2D(6, 4, ksize=3, stride=1, pad=1, initial_bias=1))
     checker.add_keras(keras.layers.Convolution2DTranspose(4, kernel_size=3, strides=1, padding="same",
                                                           batch_input_shape=(2, 5, 5, 6)))
+    # chainer kernel: (out, in, kh, kw)
+    # keras kernel: (kh, kw, in, out)
+    checker.k_layer.set_weights([checker.c_link.W.data.transpose((2, 3, 1, 0)), checker.c_link.b.data])
+    checker.run_compare()
+
+    # even kernel size
+    checker = CKConvertChecker((2, 6, 8, 8))
+    checker.run_chainer(chainer.links.Deconvolution2D(6, 4, ksize=4, stride=2, pad=1, initial_bias=1))
+    checker.add_keras(keras.layers.Convolution2DTranspose(4, kernel_size=4, strides=2, padding="same",
+                                                          batch_input_shape=(2, 8, 8, 6)))
     # chainer kernel: (out, in, kh, kw)
     # keras kernel: (kh, kw, in, out)
     checker.k_layer.set_weights([checker.c_link.W.data.transpose((2, 3, 1, 0)), checker.c_link.b.data])
@@ -74,7 +94,6 @@ def main():
     c_bn.avg_var = np.random.rand(6).astype(np.float32)
     checker.run_chainer(c_bn)
     checker.add_keras(keras.layers.BatchNormalization(batch_input_shape=(2, 3, 3, 6), epsilon=2e-5))
-    print(checker.k_layer.get_weights())
     checker.k_layer.set_weights([c_bn.gamma.data, c_bn.beta.data, c_bn.avg_mean, c_bn.avg_var])
     checker.run_compare()
 
