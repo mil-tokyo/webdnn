@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "target": "es2015",
+        "strictNullChecks": false,
+        "module": "commonjs",
+        "lib": [
+            "es2017",
+            "es2016",
+            "dom"
+        ],
+        "declaration": false,
+        "sourceMap": true
+    },
+    "files": [
+        "index.ts"
+    ]
+}

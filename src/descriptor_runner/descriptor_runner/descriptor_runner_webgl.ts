@@ -62,7 +62,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     readonly backendName: BackendName = 'webgl';
 
     private runtimeInfo: RuntimeInfo;
-    private handler: WebGLHandler;
+    handler: WebGLHandler;
     private vertexShader: WebGLShader;
     private programs: Map<string, WebGLProgram>;
     private buffers: Map<string, BufferWebGL>;

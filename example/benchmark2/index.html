@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Benchmark</title>
+    <script src="../../dist/webdnn.js"></script>
+    <script src="./deeplearn.min.js"></script>
+    <script src="index.js"></script>
+    <style>
+        body {
+            font-size: 14px;
+        }
+
+        h4 {
+            margin: 24px 0 0;
+        }
+
+        pre {
+            font-family: 'Consolas', 'Monaco', monospace, serif;
+            font-size: 12px;
+            tab-size: 2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Benchmark</h1>
+
+<form name="benchmark">
+    <div>
+        <h4>Model</h4>
+        <select id="modelName">
+            <option value="resnet50" selected>ResNet50</option>
+            <option value="vgg16">VGG16</option>
+            <option value="inception_v3">Inception v3</option>
+        </select>
+    </div>
+    <div>
+        <h4>Framework and backends</h4>
+        <select id="configurations">
+
+        </select>
+    </div>
+    <div>
+        <h4># of Iteration for Warming Up</h4>
+        <input type="number" id="warmupIteration" min="1" size="4" value="1"/>
+    </div>
+    <div>
+        <h4># of Iterations</h4>
+        <input type="number" id="iteration" min="1" size="4" value="10"/>
+    </div>
+    <div>
+        <h4># of Iteration of Test</h4>
+        <input type="number" id="testIteration" size="4" min="1" value="10"/>
+    </div>
+
+    <button type="button" id="runButton" disabled>run</button>
+    (It will take several minutes)
+</form>
+
+<div>
+    <pre id="log"></pre>
+</div>
+
+</body>
+</html>

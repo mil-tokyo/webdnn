@@ -244,7 +244,6 @@ class DeepLearnJSBenchmark extends Benchmark {
         function block(x, outChannel, stride = 1) {
             let h1 = (x.shape[2] == outChannel && stride === 1) ?
                 x :
-                //@NOTE(Kiikurage): Original model use ksize=1, however deeplearn.js cannot handle this value.
                 bn(conv2d(x, outChannel, stride, stride, 0));
             let h2 = relu(bn(conv2d(x, outChannel / 4, stride, stride, 0)));
             h2 = relu(bn(conv2d(h2, outChannel / 4, 3, 1, 1)));
