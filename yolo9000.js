@@ -9833,8 +9833,20 @@ var App = (function (_super) {
                                     });
                                 },
                                 transformUrlDelegate: function (url) {
+                                    var dict = location.search.slice(1).split('&').reduce(function (dict, keyVal) {
+                                        var _a = keyVal.split('='), key = _a[0], val = _a[1];
+                                        dict[key] = decodeURIComponent(val);
+                                        return dict;
+                                    }, {});
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
-                                    return ma ? "https://mil-tokyo.github.io/webdnn-data/models/yolo9000/" + ma[1] + "?raw=true" : url;
+                                    var directory = './';
+                                    if ('host' in dict) {
+                                        directory = dict['host'];
+                                    }
+                                    else if (ma) {
+                                        directory = 'https://mil-tokyo.github.io/webdnn-data/models/yolo9000';
+                                    }
+                                    return ma ? directory + "/" + ma[1] + "?raw=true" : url;
                                 },
                                 backendOrder: ['webgpu', 'webgl']
                             })];

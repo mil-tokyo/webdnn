@@ -23442,7 +23442,7 @@ var BrowserCompatibilitySectionJA = (function (_super) {
                     node.classList.remove(style.unsupported);
                     node.classList.add(style.disabled);
                     if (statusNode)
-                        statusNode.textContent = '無効されています';
+                        statusNode.textContent = '無効化されています';
                     this.setState({
                         flagWebGPUDisabled: true
                     });

@@ -9852,11 +9852,20 @@ var App = (function (_super) {
                                     });
                                 },
                                 transformUrlDelegate: function (url) {
+                                    var dict = location.search.slice(1).split('&').reduce(function (dict, keyVal) {
+                                        var _a = keyVal.split('='), key = _a[0], val = _a[1];
+                                        dict[key] = decodeURIComponent(val);
+                                        return dict;
+                                    }, {});
                                     var ma = url.match(/([^/]+)(?:\?.*)?$/);
-                                    if (ma) {
-                                        url = "https://mil-tokyo.github.io/webdnn-data/models/resnet/" + ma[1];
+                                    var directory = './';
+                                    if ('host' in dict) {
+                                        directory = dict['host'];
                                     }
-                                    return url;
+                                    else if (ma) {
+                                        directory = 'https://mil-tokyo.github.io/webdnn-data/models/resnet';
+                                    }
+                                    return ma ? directory + "/" + ma[1] + "?raw=true" : url;
                                 },
                                 backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
                             })];
@@ -21963,9 +21972,7 @@ var IMAGE_PATH_LIST = [
     __webpack_require__(210),
     __webpack_require__(211),
     __webpack_require__(212),
-    __webpack_require__(213),
-    __webpack_require__(214),
-    __webpack_require__(215)
+    __webpack_require__(213)
 ];
 var random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);
 var MainLayer = (function (_super) {
@@ -24458,18 +24465,6 @@ module.exports = __webpack_require__.p + "2.png";
 
 /***/ }),
 /* 213 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "3.png";
-
-/***/ }),
-/* 214 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "4.png";
-
-/***/ }),
-/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "5.png";
