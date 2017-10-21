@@ -903,6 +903,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
+	import WebGLHandler from 'webdnn/webgl_handler';
 	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
@@ -910,7 +911,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
 	    readonly backendName: BackendName;
 	    private runtimeInfo;
-	    private handler;
+	    handler: WebGLHandler;
 	    private vertexShader;
 	    private programs;
 	    private buffers;
