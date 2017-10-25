@@ -15,12 +15,23 @@ class App extends AppBase {
                     });
                 },
                 transformUrlDelegate: (url: string) => {
+                    let dict = location.search.slice(1).split('&').reduce((dict: any, keyVal) => {
+                        let [key, val] = keyVal.split('=');
+                        dict[key] = decodeURIComponent(val);
+
+                        return dict;
+                    }, {});
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
-                    if (ma) {
-                        url = `https://mil-tokyo.github.io/webdnn-data/models/squeeze_net/${ma[1]}?raw=true`;
+
+                    let directory = './';
+
+                    if ('host' in dict) {
+                        directory = dict['host'];
+                    } else if (ma) {
+                        directory = 'https://mil-tokyo.github.io/webdnn-data/models/squeeze_net';
                     }
 
-                    return url;
+                    return ma ? `${directory}/${ma[1]}?raw=true` : url;
                 },
                 backendOrder: ['webgpu', 'webgl', 'webassembly', 'fallback']
             });

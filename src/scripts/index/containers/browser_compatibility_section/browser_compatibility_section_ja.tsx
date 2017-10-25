@@ -47,7 +47,7 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                 if (backend === 'webgpu' && IS_WEBGPU_IMPLEMENTED) {
                     node.classList.remove(style.unsupported);
                     node.classList.add(style.disabled);
-                    if (statusNode) statusNode.textContent = '無効されています';
+                    if (statusNode) statusNode.textContent = '無効化されています';
                     this.setState({
                         flagWebGPUDisabled: true
                     });

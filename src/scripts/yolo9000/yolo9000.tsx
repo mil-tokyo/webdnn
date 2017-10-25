@@ -15,8 +15,23 @@ class App extends AppBase {
                     });
                 },
                 transformUrlDelegate: (url: string) => {
+                    let dict = location.search.slice(1).split('&').reduce((dict: any, keyVal) => {
+                        let [key, val] = keyVal.split('=');
+                        dict[key] = decodeURIComponent(val);
+
+                        return dict;
+                    }, {});
                     let ma = url.match(/([^/]+)(?:\?.*)?$/);
-                    return ma ? `https://mil-tokyo.github.io/webdnn-data/models/yolo9000/${ma[1]}?raw=true` : url;
+
+                    let directory = './';
+
+                    if ('host' in dict) {
+                        directory = dict['host'];
+                    } else if (ma) {
+                        directory = 'https://mil-tokyo.github.io/webdnn-data/models/yolo9000';
+                    }
+
+                    return ma ? `${directory}/${ma[1]}?raw=true` : url;
                 },
                 backendOrder: ['webgpu', 'webgl']
             });

@@ -25,8 +25,6 @@ const IMAGE_PATH_LIST = [
     require('../../../static/images/0.png'),
     require('../../../static/images/1.png'),
     require('../../../static/images/2.png'),
-    require('../../../static/images/3.png'),
-    require('../../../static/images/4.png'),
     require('../../../static/images/5.png')
 ];
 let random_image_index = Math.floor(Math.random() * IMAGE_PATH_LIST.length);

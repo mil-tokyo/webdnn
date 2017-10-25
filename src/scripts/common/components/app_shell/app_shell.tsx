@@ -6,6 +6,7 @@ import { LayoutFrame } from "../layout/layout";
 import { Navbar } from "../navbar/navbar";
 import ProgressBar from "../progress_bar/progress_bar";
 import * as style from "./app_shell.scss";
+import * as WebDNN from "webdnn";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
     title?: string
@@ -22,11 +23,23 @@ export interface BottomBarDescriptor {
     primary?: boolean
 }
 
+export const WebgpuAvailableAlert = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    if (WebDNN.getBackendAvailability().status['webgpu']) return null;
+
+    return /Safari\/604/.test(navigator.userAgent) ?
+           (<LayoutFrame column center className={ style.alert }>
+               <a href="https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" target="_blank">
+                   To enable WebGPU, please check this website!
+               </a>
+           </LayoutFrame>) :
+           null;
+};
 
 export const AppShell = (props: Props) => (
     <div className={ classNames(style.appShell, props.className) }>
         { props.progressBar ? <ProgressBar running /> : null }
         <Navbar title={ props.title } subTitle={ props.subTitle } />
+        <WebgpuAvailableAlert />
         <LayoutFrame className={ style.main } column>
             <LayoutFrame flex column>
                 { props.children }
