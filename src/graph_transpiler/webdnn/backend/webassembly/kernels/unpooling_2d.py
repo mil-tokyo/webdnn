@@ -44,7 +44,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
                 int w1 = w2 + PW - kw;
                 if (w1 < 0 || w1 >= W1 * SW) continue;
                 if (w1 % SW != 0) continue;
-                out_x /= SW;
+                w1 /= SW;
                 v += X[((n * H1 + h1) * W1 + w1) * C + c];
             }
         }
