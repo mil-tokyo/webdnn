@@ -40,4 +40,5 @@ from webdnn.backend.webgl.kernels import sum
 from webdnn.backend.webgl.kernels import tanh
 from webdnn.backend.webgl.kernels import threshold_relu
 from webdnn.backend.webgl.kernels import transpose
+from webdnn.backend.webgl.kernels import unpooling_2d
 from webdnn.backend.webgl.kernels import util

@@ -11,6 +11,7 @@ from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.elementwise import Elementwise
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.space2depth import Space2Depth
@@ -92,7 +93,8 @@ class InsertTranspose(OptimizeRule):
             elif isinstance(op, (Convolution2D, Deconvolution2D,
                                  MaxPooling2D, AveragePooling2D,
                                  Space2Depth, Depth2Space,
-                                 LocalResponseNormalization)):
+                                 LocalResponseNormalization,
+                                 Unpooling2D)):
                 flag_changed |= _replace_input(op, "x", OrderNHWC)
                 flag_changed |= _replace_output(op, "y", OrderNHWC)
                 continue

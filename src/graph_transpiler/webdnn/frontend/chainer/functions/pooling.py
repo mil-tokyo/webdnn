@@ -5,6 +5,7 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.frontend.constraints import unify_order
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.order import OrderNCHW
 from webdnn.util import console
 
@@ -83,9 +84,17 @@ def _convert_spatial_pyramid_pooling2d(converter: ChainerConverter, c_op: "chain
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Unpooling2D")
 def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.Unpooling2D"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Unpooling2D is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    unify_order(x.order, OrderNCHW)
+    pool_opr = Unpooling2D(None,
+                           ksize=(c_op.kh, c_op.kw),
+                           stride=(c_op.sy, c_op.sx),
+                           padding=(c_op.ph, c_op.pw),
+                           outsize=(c_op.outh, c_op.outw))
 
+    y, = pool_opr(x)
+
+    converter.set_variable(c_op.outputs[0](), y)
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("UnpoolingND")
