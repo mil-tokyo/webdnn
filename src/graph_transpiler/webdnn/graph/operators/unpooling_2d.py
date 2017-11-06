@@ -10,7 +10,30 @@ from webdnn.util import console
 
 
 class Unpooling2D(Operator):
-    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple, outsize: IntOrTuple):
+    """Unpooling2D(name, ksize, stride, padding, outsize)
+
+    Inverse operation of pooling for 2d array.
+    This function acts similarly to :class:`~webdnn.graph.operators.deconvolution2d.Deconvolution2D`, but
+    it spreads input 2d array's value without any parameter instead of
+    computing the inner products.
+
+    Args:
+        name (str): Operator name.
+        ksize (int or tuple of int): Kernel size.
+        stride (int or tuple of int): Stride size.
+        padding (int or tuple of int): Padding size.
+        outsize (int or tuple of int): Output size.
+
+    Signature
+        .. code::
+
+            y, = op(x)
+
+        - **x** - Input variable.
+        - **y** - Output value. Its order is same as :code:`x`.
+    """
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
+                 outsize: IntOrTuple):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
