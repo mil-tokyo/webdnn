@@ -37,4 +37,5 @@ from webdnn.backend.webassembly.kernels import split_axis
 from webdnn.backend.webassembly.kernels import tanh
 from webdnn.backend.webassembly.kernels import threshold_relu
 from webdnn.backend.webassembly.kernels import transpose
+from webdnn.backend.webassembly.kernels import unpooling_2d
 from webdnn.backend.webassembly.kernels import zero_padding_1d
