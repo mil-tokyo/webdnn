@@ -90,7 +90,7 @@ def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.U
                            ksize=(c_op.kh, c_op.kw),
                            stride=(c_op.sy, c_op.sx),
                            padding=(c_op.ph, c_op.pw),
-                           cover_all=c_op.cover_all)
+                           outsize=(c_op.outh, c_op.outw))
 
     y, = pool_opr(x)
 
