@@ -10,22 +10,23 @@ import { Buffer } from "./buffer";
  * @protected
  */
 export default class BufferWebGPU extends Buffer {
-    private static handler: WebGPUHandler;
     buffer: WebGPUBuffer;
     bufferView: Uint8Array;
+    private handler: WebGPUHandler;
 
     constructor(byteLength: number) {
         super(byteLength, 'webgpu');
         if (byteLength == 0) {
             byteLength = 4;//0 length buffer causes error
         }
-        this.buffer = BufferWebGPU.handler.createBuffer(new Uint8Array(byteLength));
+        this.handler = WebGPUHandler.getInstance();
+        this.buffer = this.handler.createBuffer(new Uint8Array(byteLength));
         this.bufferView = new Uint8Array(this.buffer.contents);
     }
 
     // async: there may be platforms synchronization is needed before writing
     async write(src: ArrayBufferView, dst_offset?: number): Promise<void> {
-        await BufferWebGPU.handler.sync();
+        await this.handler.sync();
         let viewSameType = new (<any>src.constructor)(this.bufferView.buffer);
         viewSameType.set(src, dst_offset);
     }
@@ -33,7 +34,7 @@ export default class BufferWebGPU extends Buffer {
     async read(dst: any, src_offset: number = 0, length?: number): Promise<void> {
         if (!dst) throw new Error('dst cannot be null');
 
-        await BufferWebGPU.handler.sync();
+        await this.handler.sync();
         if (this.byteLength === 0) return;
 
         let dstConstructor = dst.constructor;
@@ -41,10 +42,6 @@ export default class BufferWebGPU extends Buffer {
 
         dst.set(viewSameType);
         return;
-    }
-
-    static init(webgpuHandler: WebGPUHandler) {
-        this.handler = webgpuHandler;
     }
 
     getWriteView(offset: number, length: number, type: Int32ArrayConstructor): Int32Array;
@@ -65,6 +62,6 @@ export default class BufferWebGPU extends Buffer {
 
     async syncReadViews(): Promise<void> {
         // if the user awaits promise from final kernel execution, this function call is not needed.
-        await BufferWebGPU.handler.sync();
+        await this.handler.sync();
     }
 }

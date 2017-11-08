@@ -7,6 +7,8 @@
 
 import BufferWebGPU from "./buffer/buffer_webgpu";
 
+let instance: WebGPUHandler;
+
 /**
  * @protected
  */
@@ -16,7 +18,18 @@ export default class WebGPUHandler {
     private pipelineStates: Map<string, WebGPUComputePipelineState> = new Map();
     private commandBuffer: WebGPUCommandBuffer | null;
 
-    constructor() {
+    static getInstance() {
+        if (!instance) instance = new WebGPUHandler();
+        return instance;
+    }
+
+    /**
+     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     *
+     * Since the number of GPU contexts may be limited, the handler is used as a singleton
+     * and only one context is shared among multiple runners.
+     */
+    private constructor() {
         if (!IS_WEBGPU_SUPPORTED) throw new Error('This browser does not support WebGPU');
 
         let context: WebGPURenderingContext | null;

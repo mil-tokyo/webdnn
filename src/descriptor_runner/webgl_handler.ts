@@ -13,6 +13,7 @@ export function isWebGL2(gl: WebGLRenderingContext | WebGL2RenderingContext): gl
     return gl.constructor.name === 'WebGL2RenderingContext'
 }
 
+let instance: WebGLHandler;
 /**
  * @protected
  */
@@ -20,7 +21,18 @@ export default class WebGLHandler {
     static IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
     readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
 
-    constructor() {
+    static getInstance() {
+        if (!instance) instance = new WebGLHandler();
+        return instance;
+    }
+
+    /**
+     * WebGLHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     *
+     * Since the number of GPU contexts may be limited, the handler is used as a singleton
+     * and only one context is shared among multiple runners.
+     */
+    private constructor() {
         this.gl = checkNull(WebGLHandler.initializeContext());
     }
 
