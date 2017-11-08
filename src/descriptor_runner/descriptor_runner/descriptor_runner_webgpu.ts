@@ -50,8 +50,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
 
         // initialize webgpu, build kernels
         this.shaderLanguage = 'metal';
-        this.webgpuHandler = new WebGPUHandler();
-        BufferWebGPU.init(this.webgpuHandler);
+        this.webgpuHandler = WebGPUHandler.getInstance();
 
         this.initializeBasicKernels();
         await this.checkIncompatibleGPU();

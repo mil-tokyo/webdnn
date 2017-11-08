@@ -1234,13 +1234,25 @@ var DescriptorRunnerWebassembly = (function (_super) {
 function isWebGL2(gl) {
     return gl.constructor.name === 'WebGL2RenderingContext';
 }
+var instance;
 /**
  * @protected
  */
 var WebGLHandler = (function () {
+    /**
+     * WebGLHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     *
+     * Since the number of GPU contexts may be limited, the handler is used as a singleton
+     * and only one context is shared among multiple runners.
+     */
     function WebGLHandler() {
         this.gl = checkNull(WebGLHandler.initializeContext());
     }
+    WebGLHandler.getInstance = function () {
+        if (!instance)
+            instance = new WebGLHandler();
+        return instance;
+    };
     WebGLHandler.prototype.createTexture = function (textureWidth, textureHeight, internalFormat, format) {
         var gl = this.gl;
         var texture = checkNull(gl.createTexture());
@@ -1451,6 +1463,7 @@ var BufferWebGL = (function (_super) {
         _this._texture = null;
         _this.readTextureUnitIndices = [];
         _this.isBoundToDrawFrameBuffer = false;
+        _this.handler = WebGLHandler.getInstance();
         _this.name = name;
         _this.channelMode = channelMode;
         switch (channelMode) {
@@ -1463,16 +1476,16 @@ var BufferWebGL = (function (_super) {
             default:
                 throw Error('Unknown channel mode');
         }
-        if (isWebGL2(BufferWebGL.handler.gl)) {
+        if (isWebGL2(_this.handler.gl)) {
             switch (channelMode) {
                 case 'RGBA':
-                    _this.textureFormat = BufferWebGL.handler.gl.RGBA;
-                    _this.textureInternalFormat = BufferWebGL.handler.gl.RGBA32F;
+                    _this.textureFormat = _this.handler.gl.RGBA;
+                    _this.textureInternalFormat = _this.handler.gl.RGBA32F;
                     _this.pixelStride = 4;
                     break;
                 case 'R':
-                    _this.textureFormat = BufferWebGL.handler.gl.RED;
-                    _this.textureInternalFormat = BufferWebGL.handler.gl.R32F;
+                    _this.textureFormat = _this.handler.gl.RED;
+                    _this.textureInternalFormat = _this.handler.gl.R32F;
                     _this.pixelStride = 1;
                     break;
                 default:
@@ -1482,8 +1495,8 @@ var BufferWebGL = (function (_super) {
         else {
             // In WebGL1, always RGBA channel mode is specified. If R channel mode is specified in graph descriptor,
             // other 3 channels are not used.
-            _this.textureFormat = BufferWebGL.handler.gl.RGBA;
-            _this.textureInternalFormat = BufferWebGL.handler.gl.RGBA;
+            _this.textureFormat = _this.handler.gl.RGBA;
+            _this.textureInternalFormat = _this.handler.gl.RGBA;
             _this.pixelStride = 4;
         }
         if (_this.pixelStride < _this.elementsPerPixel)
@@ -1493,9 +1506,6 @@ var BufferWebGL = (function (_super) {
         _this.textureHeight = textureHeight;
         return _this;
     }
-    BufferWebGL.init = function (handler) {
-        this.handler = handler;
-    };
     Object.defineProperty(BufferWebGL.prototype, "texture", {
         get: function () {
             return this._texture;
@@ -1572,7 +1582,7 @@ var BufferWebGL = (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        gl = BufferWebGL.handler.gl;
+                        gl = this.handler.gl;
                         if (!this.texture)
                             this.allocateTexture();
                         tmp = this.pack(this.array);
@@ -1600,7 +1610,7 @@ var BufferWebGL = (function (_super) {
         return __awaiter(this, void 0, void 0, function () {
             var gl, ELEMENT_PER_PIXEL, FORMAT, tmp;
             return __generator(this, function (_a) {
-                gl = BufferWebGL.handler.gl;
+                gl = this.handler.gl;
                 ELEMENT_PER_PIXEL = 4;
                 FORMAT = gl.RGBA;
                 tmp = new Float32Array(this.textureWidth * this.textureHeight * ELEMENT_PER_PIXEL);
@@ -1622,7 +1632,7 @@ var BufferWebGL = (function (_super) {
                         if (this.isBoundToDrawFrameBuffer)
                             throw Error('This buffer is already registered as draw buffer. ' +
                                 'You may forgot to unbind the binding while previous operations.');
-                        gl = BufferWebGL.handler.gl;
+                        gl = this.handler.gl;
                         if (!!this.texture) return [3 /*break*/, 2];
                         this.allocateTexture();
                         return [4 /*yield*/, this.syncWriteViews()];
@@ -1639,7 +1649,7 @@ var BufferWebGL = (function (_super) {
         });
     };
     BufferWebGL.prototype.unbindFromReadTexture = function () {
-        var gl = BufferWebGL.handler.gl;
+        var gl = this.handler.gl;
         for (var _i = 0, _a = this.readTextureUnitIndices; _i < _a.length; _i++) {
             var unit = _a[_i];
             gl.activeTexture(gl.TEXTURE0 + unit);
@@ -1654,7 +1664,7 @@ var BufferWebGL = (function (_super) {
         if (this.isBoundToDrawFrameBuffer)
             throw Error('This buffer is already registered as draw buffer. ' +
                 'You may forgot to unbind the binding while previous operations.');
-        var gl = BufferWebGL.handler.gl;
+        var gl = this.handler.gl;
         if (!this.texture)
             this.allocateTexture();
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
@@ -1663,7 +1673,7 @@ var BufferWebGL = (function (_super) {
     BufferWebGL.prototype.unbindFromDrawTexture = function () {
         if (!this.isBoundToDrawFrameBuffer)
             return;
-        var gl = BufferWebGL.handler.gl;
+        var gl = this.handler.gl;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
         this.isBoundToDrawFrameBuffer = false;
     };
@@ -1696,7 +1706,7 @@ var BufferWebGL = (function (_super) {
     BufferWebGL.prototype.allocateTexture = function () {
         if (this.texture)
             throw Error('Texture is already allocated.');
-        this._texture = BufferWebGL.handler.createTexture(this.textureWidth, this.textureHeight, this.textureInternalFormat, this.textureFormat);
+        this._texture = this.handler.createTexture(this.textureWidth, this.textureHeight, this.textureInternalFormat, this.textureFormat);
     };
     return BufferWebGL;
 }(Buffer));
@@ -1734,8 +1744,7 @@ var DescriptorRunnerWebGL = (function (_super) {
             return __generator(this, function (_a) {
                 if (!DescriptorRunnerWebGL.checkAvailability())
                     throw Error('WebGL backend is not supported in this browser.');
-                this.handler = new WebGLHandler();
-                BufferWebGL.init(this.handler);
+                this.handler = WebGLHandler.getInstance();
                 vertexBuffer = this.handler.createArrayBuffer(vertexArray);
                 this.handler.bindArrayBuffer(vertexBuffer);
                 this.buffers = new Map();
@@ -2254,105 +2263,22 @@ var DescriptorRunnerWebGL = (function (_super) {
     return DescriptorRunnerWebGL;
 }(DescriptorRunner));
 
-/**
- * @module webdnn
- */
-/** Don't Remove This comment block */
-/**
- * @protected
- */
-var BufferWebGPU = (function (_super) {
-    __extends(BufferWebGPU, _super);
-    function BufferWebGPU(byteLength) {
-        var _this = _super.call(this, byteLength, 'webgpu') || this;
-        if (byteLength == 0) {
-            byteLength = 4; //0 length buffer causes error
-        }
-        _this.buffer = BufferWebGPU.handler.createBuffer(new Uint8Array(byteLength));
-        _this.bufferView = new Uint8Array(_this.buffer.contents);
-        return _this;
-    }
-    // async: there may be platforms synchronization is needed before writing
-    BufferWebGPU.prototype.write = function (src, dst_offset) {
-        return __awaiter(this, void 0, void 0, function () {
-            var viewSameType;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, BufferWebGPU.handler.sync()];
-                    case 1:
-                        _a.sent();
-                        viewSameType = new src.constructor(this.bufferView.buffer);
-                        viewSameType.set(src, dst_offset);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    BufferWebGPU.prototype.read = function (dst, src_offset, length) {
-        if (src_offset === void 0) { src_offset = 0; }
-        return __awaiter(this, void 0, void 0, function () {
-            var dstConstructor, viewSameType;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!dst)
-                            throw new Error('dst cannot be null');
-                        return [4 /*yield*/, BufferWebGPU.handler.sync()];
-                    case 1:
-                        _a.sent();
-                        if (this.byteLength === 0)
-                            return [2 /*return*/];
-                        dstConstructor = dst.constructor;
-                        viewSameType = new dstConstructor(this.bufferView.buffer, this.bufferView.byteOffset + src_offset * dstConstructor.BYTES_PER_ELEMENT, length);
-                        dst.set(viewSameType);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    BufferWebGPU.init = function (webgpuHandler) {
-        this.handler = webgpuHandler;
-    };
-    BufferWebGPU.prototype.getWriteView = function (offset, length, type) {
-        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
-    };
-    BufferWebGPU.prototype.getReadView = function (offset, length, type) {
-        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
-    };
-    BufferWebGPU.prototype.syncWriteViews = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
-            });
-        });
-    };
-    BufferWebGPU.prototype.syncReadViews = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: 
-                    // if the user awaits promise from final kernel execution, this function call is not needed.
-                    return [4 /*yield*/, BufferWebGPU.handler.sync()];
-                    case 1:
-                        // if the user awaits promise from final kernel execution, this function call is not needed.
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    return BufferWebGPU;
-}(Buffer));
-
 ///<reference path="./webgpu.d.ts" />
 /**
  * @module webdnn
  */
 /** Don't Remove This comment block */
+var instance$1;
 /**
  * @protected
  */
 var WebGPUHandler = (function () {
+    /**
+     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     *
+     * Since the number of GPU contexts may be limited, the handler is used as a singleton
+     * and only one context is shared among multiple runners.
+     */
     function WebGPUHandler() {
         this.pipelineStates = new Map();
         if (!IS_WEBGPU_SUPPORTED)
@@ -2369,6 +2295,11 @@ var WebGPUHandler = (function () {
         this.context = context;
         this.commandQueue = context.createCommandQueue();
     }
+    WebGPUHandler.getInstance = function () {
+        if (!instance$1)
+            instance$1 = new WebGPUHandler();
+        return instance$1;
+    };
     WebGPUHandler.prototype.createBuffer = function (arrayBuffer) {
         return this.context.createBuffer(arrayBuffer);
     };
@@ -2456,6 +2387,94 @@ var IS_WEBGPU_SUPPORTED = 'WebGPURenderingContext' in window && 'WebGPUComputeCo
  */
 /** Don't Remove This comment block */
 /**
+ * @protected
+ */
+var BufferWebGPU = (function (_super) {
+    __extends(BufferWebGPU, _super);
+    function BufferWebGPU(byteLength) {
+        var _this = _super.call(this, byteLength, 'webgpu') || this;
+        if (byteLength == 0) {
+            byteLength = 4; //0 length buffer causes error
+        }
+        _this.handler = WebGPUHandler.getInstance();
+        _this.buffer = _this.handler.createBuffer(new Uint8Array(byteLength));
+        _this.bufferView = new Uint8Array(_this.buffer.contents);
+        return _this;
+    }
+    // async: there may be platforms synchronization is needed before writing
+    BufferWebGPU.prototype.write = function (src, dst_offset) {
+        return __awaiter(this, void 0, void 0, function () {
+            var viewSameType;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.handler.sync()];
+                    case 1:
+                        _a.sent();
+                        viewSameType = new src.constructor(this.bufferView.buffer);
+                        viewSameType.set(src, dst_offset);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BufferWebGPU.prototype.read = function (dst, src_offset, length) {
+        if (src_offset === void 0) { src_offset = 0; }
+        return __awaiter(this, void 0, void 0, function () {
+            var dstConstructor, viewSameType;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!dst)
+                            throw new Error('dst cannot be null');
+                        return [4 /*yield*/, this.handler.sync()];
+                    case 1:
+                        _a.sent();
+                        if (this.byteLength === 0)
+                            return [2 /*return*/];
+                        dstConstructor = dst.constructor;
+                        viewSameType = new dstConstructor(this.bufferView.buffer, this.bufferView.byteOffset + src_offset * dstConstructor.BYTES_PER_ELEMENT, length);
+                        dst.set(viewSameType);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BufferWebGPU.prototype.getWriteView = function (offset, length, type) {
+        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
+    };
+    BufferWebGPU.prototype.getReadView = function (offset, length, type) {
+        return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
+    };
+    BufferWebGPU.prototype.syncWriteViews = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
+    BufferWebGPU.prototype.syncReadViews = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    // if the user awaits promise from final kernel execution, this function call is not needed.
+                    return [4 /*yield*/, this.handler.sync()];
+                    case 1:
+                        // if the user awaits promise from final kernel execution, this function call is not needed.
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return BufferWebGPU;
+}(Buffer));
+
+/**
+ * @module webdnn
+ */
+/** Don't Remove This comment block */
+/**
  * @private
  */
 var IS_IOS = navigator.userAgent.includes('iPhone');
@@ -2482,8 +2501,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
                             throw Error('WebGPU backend is not supported in this browser.');
                         // initialize webgpu, build kernels
                         this.shaderLanguage = 'metal';
-                        this.webgpuHandler = new WebGPUHandler();
-                        BufferWebGPU.init(this.webgpuHandler);
+                        this.webgpuHandler = WebGPUHandler.getInstance();
                         this.initializeBasicKernels();
                         return [4 /*yield*/, this.checkIncompatibleGPU()];
                     case 1:

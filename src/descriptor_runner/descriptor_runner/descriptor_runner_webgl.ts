@@ -62,7 +62,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     readonly backendName: BackendName = 'webgl';
 
     private runtimeInfo: RuntimeInfo;
-    handler: WebGLHandler;
+    private handler: WebGLHandler;
     private vertexShader: WebGLShader;
     private programs: Map<string, WebGLProgram>;
     private buffers: Map<string, BufferWebGL>;
@@ -77,9 +77,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     async init() {
         if (!DescriptorRunnerWebGL.checkAvailability()) throw Error('WebGL backend is not supported in this browser.');
 
-        this.handler = new WebGLHandler();
-
-        BufferWebGL.init(this.handler);
+        this.handler = WebGLHandler.getInstance();
 
         let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
         this.handler.bindArrayBuffer(vertexBuffer);

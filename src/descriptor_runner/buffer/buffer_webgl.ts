@@ -11,7 +11,7 @@ import { Buffer } from "./buffer";
  * @protected
  */
 export default class BufferWebGL extends Buffer {
-    private static handler: WebGLHandler;
+    private handler: WebGLHandler;
     readonly channelMode: ChannelMode;
     readonly elementsPerPixel: number; // ex) (ChannelMode.R)=1, (ChannelMode.RGBA)=4
     readonly pixelStride: number; // ex) (R32F & ChannelMode.R)=1, (RGBA32F & ChannelMode.R)=4, (RGBA32F & ChannelMode.RGBA)=1,
@@ -25,13 +25,10 @@ export default class BufferWebGL extends Buffer {
     private readTextureUnitIndices: number[] = [];
     private isBoundToDrawFrameBuffer: boolean = false;
 
-    static init(handler: WebGLHandler) {
-        this.handler = handler;
-    }
-
     constructor(byteLength: number, textureWidth: number, textureHeight: number,
                 name: string, array: Float32Array | null, channelMode: ChannelMode) {
         super(byteLength, 'webgl');
+        this.handler = WebGLHandler.getInstance();
         this.name = name;
         this.channelMode = channelMode;
         switch (channelMode) {
@@ -47,17 +44,17 @@ export default class BufferWebGL extends Buffer {
                 throw Error('Unknown channel mode');
         }
 
-        if (isWebGL2(BufferWebGL.handler.gl)) {
+        if (isWebGL2(this.handler.gl)) {
             switch (channelMode) {
                 case 'RGBA':
-                    this.textureFormat = BufferWebGL.handler.gl.RGBA;
-                    this.textureInternalFormat = BufferWebGL.handler.gl.RGBA32F;
+                    this.textureFormat = this.handler.gl.RGBA;
+                    this.textureInternalFormat = this.handler.gl.RGBA32F;
                     this.pixelStride = 4;
                     break;
 
                 case 'R':
-                    this.textureFormat = BufferWebGL.handler.gl.RED;
-                    this.textureInternalFormat = BufferWebGL.handler.gl.R32F;
+                    this.textureFormat = this.handler.gl.RED;
+                    this.textureInternalFormat = this.handler.gl.R32F;
                     this.pixelStride = 1;
                     break;
 
@@ -67,8 +64,8 @@ export default class BufferWebGL extends Buffer {
         } else {
             // In WebGL1, always RGBA channel mode is specified. If R channel mode is specified in graph descriptor,
             // other 3 channels are not used.
-            this.textureFormat = BufferWebGL.handler.gl.RGBA;
-            this.textureInternalFormat = BufferWebGL.handler.gl.RGBA;
+            this.textureFormat = this.handler.gl.RGBA;
+            this.textureInternalFormat = this.handler.gl.RGBA;
             this.pixelStride = 4;
         }
 
@@ -149,7 +146,7 @@ export default class BufferWebGL extends Buffer {
      * @see Buffer#getWriteView
      */
     async syncWriteViews(): Promise<void> {
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
         if (!this.texture) this.allocateTexture();
 
         let tmp = this.pack(this.array);
@@ -170,7 +167,7 @@ export default class BufferWebGL extends Buffer {
      * @see Buffer#getReadView
      */
     async syncReadViews(): Promise<void> {
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
 
         // FIXME(Kiikurage): more readable code
         const ELEMENT_PER_PIXEL = 4;
@@ -191,7 +188,7 @@ export default class BufferWebGL extends Buffer {
             throw Error('This buffer is already registered as draw buffer. ' +
                 'You may forgot to unbind the binding while previous operations.');
 
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
         if (!this.texture) {
             this.allocateTexture();
             await this.syncWriteViews();
@@ -204,7 +201,7 @@ export default class BufferWebGL extends Buffer {
     }
 
     unbindFromReadTexture() {
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
 
         for (let unit of this.readTextureUnitIndices) {
             gl.activeTexture(gl.TEXTURE0 + unit);
@@ -222,7 +219,7 @@ export default class BufferWebGL extends Buffer {
             throw Error('This buffer is already registered as draw buffer. ' +
                 'You may forgot to unbind the binding while previous operations.');
 
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
         if (!this.texture) this.allocateTexture();
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
@@ -233,7 +230,7 @@ export default class BufferWebGL extends Buffer {
     unbindFromDrawTexture() {
         if (!this.isBoundToDrawFrameBuffer) return;
 
-        let gl = BufferWebGL.handler.gl;
+        let gl = this.handler.gl;
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
 
@@ -271,7 +268,7 @@ export default class BufferWebGL extends Buffer {
     private allocateTexture() {
         if (this.texture) throw Error('Texture is already allocated.');
 
-        this._texture = BufferWebGL.handler.createTexture(
+        this._texture = this.handler.createTexture(
             this.textureWidth,
             this.textureHeight,
             this.textureInternalFormat,
