@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from typing import Dict, Iterable, List, Set, Tuple
 
 import numpy as np
@@ -159,6 +160,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             unresolved_value_lists.append([{"offset": v[0], "placeholder": v[1]} for v in unresolved_value_list])
 
         return {
+            "converted_at": int(datetime.timestamp(datetime.now())),
             "weight_encoding": self.constants_encoding,
             "memory_layout": self.memory_layout,
             "placeholders": placeholders,

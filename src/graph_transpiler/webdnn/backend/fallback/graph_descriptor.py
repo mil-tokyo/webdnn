@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from typing import Iterable, Dict, Set
 
 from webdnn.backend.code_generator.allocator import MemoryLayout
@@ -75,6 +76,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         placeholders = self.get_all_placeholders()
 
         return {
+            "converted_at": int(datetime.timestamp(datetime.now())),
             "kernel_source": self.concat_kernel_sources(),
             "exec_infos": [kernel.exec_info for kernel in self.kernels],
             "weight_encoding": self.constants_encoding,
