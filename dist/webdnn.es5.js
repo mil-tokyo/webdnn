@@ -3088,6 +3088,25 @@ function flatten$1(arr) {
     return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(function (arr) { return flatten$1(arr); })) : arr;
 }
 /**
+ * @protected
+ */
+function normalizeBiasTuple(arr) {
+    if (typeof (arr) == "number") {
+        return [arr, arr, arr];
+    }
+    else {
+        if (arr.length == 3) {
+            return [arr[0], arr[1], arr[2]];
+        }
+        else if (arr.length == 1) {
+            return [arr[0], arr[0], arr[0]];
+        }
+        else {
+            throw new Error('bias and scale must be scalar number or array of length 1 or 3.');
+        }
+    }
+}
+/**
  * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
  *
  * @returns {ArrayBufferView} buffer with specified type
@@ -3096,6 +3115,8 @@ function flatten$1(arr) {
 function getImageArrayFromImageData(imageData, options) {
     if (options === void 0) { options = {}; }
     var _a = options.type, type = _a === void 0 ? Float32Array : _a, _b = options.color, color = _b === void 0 ? Color.RGB : _b, _c = options.order, order = _c === void 0 ? Order.HWC : _c, _d = options.bias, bias = _d === void 0 ? [0, 0, 0] : _d, _e = options.scale, scale = _e === void 0 ? [1, 1, 1] : _e;
+    var bias_n = normalizeBiasTuple(bias);
+    var scale_n = normalizeBiasTuple(scale);
     var width = imageData.width;
     var height = imageData.height;
     var data = imageData.data;
@@ -3105,8 +3126,8 @@ function getImageArrayFromImageData(imageData, options) {
     switch (color) {
         case Color.RGB:
             array = new type(width * height * 3);
-            scaleR = scale[0], scaleG = scale[1], scaleB = scale[2];
-            biasR = bias[0], biasG = bias[1], biasB = bias[2];
+            scaleR = scale_n[0], scaleG = scale_n[1], scaleB = scale_n[2];
+            biasR = bias_n[0], biasG = bias_n[1], biasB = bias_n[2];
             switch (order) {
                 case Order.HWC:
                     for (var h = 0; h < height; h++) {
@@ -3130,8 +3151,8 @@ function getImageArrayFromImageData(imageData, options) {
             break;
         case Color.BGR:
             array = new type(width * height * 3);
-            biasB = bias[0], biasG = bias[1], biasR = bias[2];
-            scaleB = scale[0], scaleG = scale[1], scaleR = scale[2];
+            biasB = bias_n[0], biasG = bias_n[1], biasR = bias_n[2];
+            scaleB = scale_n[0], scaleG = scale_n[1], scaleR = scale_n[2];
             switch (order) {
                 case Order.HWC:
                     for (var h = 0; h < height; h++) {
@@ -3155,12 +3176,14 @@ function getImageArrayFromImageData(imageData, options) {
             break;
         case Color.GREY:
             array = new type(width * height);
+            scaleR = scale_n[0], scaleG = scale_n[1], scaleB = scale_n[2];
+            biasR = bias_n[0], biasG = bias_n[1], biasB = bias_n[2];
             for (var h = 0; h < height; h++) {
                 for (var w = 0; w < width; w++) {
                     var r = data[(h * width + w) * 4 + 0];
                     var g = data[(h * width + w) * 4 + 1];
                     var b = data[(h * width + w) * 4 + 2];
-                    array[h * width + w] = ((0.2126 * r + 0.7162 * g + 0.0722 * b) - bias[0]) / scale[0];
+                    array[h * width + w] = 0.2126 * (r - biasR) / scaleR + 0.7162 * (g - biasG) / scaleG + 0.0722 * (b - biasB) / scaleB;
                 }
             }
             break;
@@ -3349,6 +3372,8 @@ function getImageArray(image, options) {
 function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
     if (options === void 0) { options = {}; }
     var _a = options.color, color = _a === void 0 ? Color.RGB : _a, _b = options.order, order = _b === void 0 ? Order.HWC : _b, _c = options.srcX, srcX = _c === void 0 ? 0 : _c, _d = options.srcY, srcY = _d === void 0 ? 0 : _d, _e = options.dstX, dstX = _e === void 0 ? 0 : _e, _f = options.dstY, dstY = _f === void 0 ? 0 : _f, _g = options.dstW, dstW = _g === void 0 ? canvas.width : _g, _h = options.dstH, dstH = _h === void 0 ? canvas.height : _h, _j = options.bias, bias = _j === void 0 ? [0, 0, 0] : _j, _k = options.scale, scale = _k === void 0 ? [1, 1, 1] : _k;
+    var bias_n = normalizeBiasTuple(bias);
+    var scale_n = normalizeBiasTuple(scale);
     var srcW = imageW, srcH = imageH;
     array = flatten$1(array);
     var data = new Uint8ClampedArray(srcW * srcH * 4);
@@ -3356,8 +3381,8 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
     var scaleR, scaleG, scaleB;
     switch (color) {
         case Color.RGB:
-            biasR = bias[0], biasG = bias[1], biasB = bias[2];
-            scaleR = scale[0], scaleG = scale[1], scaleB = scale[2];
+            biasR = bias_n[0], biasG = bias_n[1], biasB = bias_n[2];
+            scaleR = scale_n[0], scaleG = scale_n[1], scaleB = scale_n[2];
             switch (order) {
                 case Order.HWC:
                     for (var h = srcY; h < srcY + srcH; h++) {
@@ -3382,8 +3407,8 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options) {
             }
             break;
         case Color.BGR:
-            biasB = bias[0], biasG = bias[1], biasR = bias[2];
-            scaleB = scale[0], scaleG = scale[1], scaleR = scale[2];
+            biasB = bias_n[0], biasG = bias_n[1], biasR = bias_n[2];
+            scaleB = scale_n[0], scaleG = scale_n[1], scaleR = scale_n[2];
             switch (order) {
                 case Order.HWC:
                     for (var h = srcY; h < srcY + srcH; h++) {
