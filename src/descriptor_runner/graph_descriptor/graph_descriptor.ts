@@ -11,6 +11,11 @@ import { MemoryLayout } from "./memory_layout";
  */
 export interface GraphDescriptor {
     /**
+     * Unix timestamp when this graph descriptor is generated
+     */
+    converted_at: number;
+
+    /**
      * input variables' name
      */
     inputs: string[];

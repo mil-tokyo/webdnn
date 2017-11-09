@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from typing import Iterable, Dict, Any
 
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
@@ -50,6 +51,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
         placeholders = []
 
         return {
+            "converted_at": int(datetime.timestamp(datetime.now())),
             "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "memory_layout": self.memory_layout,
