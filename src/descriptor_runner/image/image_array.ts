@@ -16,6 +16,23 @@ function flatten<T>(arr: ArrayLike<T>) {
 }
 
 /**
+ * @protected
+ */
+function normalizeBiasTuple(arr: number[] | number): number[] {
+    if (typeof(arr) == "number") {
+        return [arr, arr, arr];
+    } else {
+        if (arr.length == 3) {
+            return [arr[0], arr[1], arr[2]];
+        } else if (arr.length == 1) {
+            return [arr[0], arr[0], arr[0]];
+        } else {
+            throw new Error('bias and scale must be scalar number or array of length 1 or 3.');
+        }
+    }
+}
+
+/**
  * Option structure of [[webdnn/image.getImageArray|`WebDNN.Image.getImageArray`]]
  */
 export interface ImageArrayOption {
@@ -29,10 +46,10 @@ export interface ImageArrayOption {
     order?: Order,
 
     /** Bias value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
-    bias?: number[]
+    bias?: number[] | number
 
     /** Scale value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
-    scale?: number[]
+    scale?: number[] | number
 }
 
 /**
@@ -59,6 +76,9 @@ export function getImageArrayFromImageData(imageData: ImageData,
         bias = [0, 0, 0], scale = [1, 1, 1]
     } = options;
 
+    const bias_n = normalizeBiasTuple(bias);
+    const scale_n = normalizeBiasTuple(scale);
+
     const width = imageData.width;
     const height = imageData.height;
 
@@ -70,8 +90,8 @@ export function getImageArrayFromImageData(imageData: ImageData,
     switch (color) {
         case Color.RGB:
             array = new type(width * height * 3);
-            [scaleR, scaleG, scaleB] = scale;
-            [biasR, biasG, biasB] = bias;
+            [scaleR, scaleG, scaleB] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = 0; h < height; h++) {
@@ -97,8 +117,8 @@ export function getImageArrayFromImageData(imageData: ImageData,
 
         case Color.BGR:
             array = new type(width * height * 3);
-            [biasB, biasG, biasR] = bias;
-            [scaleB, scaleG, scaleR] = scale;
+            [biasB, biasG, biasR] = bias_n;
+            [scaleB, scaleG, scaleR] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = 0; h < height; h++) {
@@ -124,12 +144,14 @@ export function getImageArrayFromImageData(imageData: ImageData,
 
         case Color.GREY:
             array = new type(width * height);
+            [scaleR, scaleG, scaleB] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
             for (let h = 0; h < height; h++) {
                 for (let w = 0; w < width; w++) {
                     let r = data[(h * width + w) * 4 + 0];
                     let g = data[(h * width + w) * 4 + 1];
                     let b = data[(h * width + w) * 4 + 2];
-                    array[h * width + w] = ((0.2126 * r + 0.7162 * g + 0.0722 * b) - bias[0]) / scale[0];
+                    array[h * width + w] = 0.2126 * (r - biasR) / scaleR + 0.7162 * (g - biasG) / scaleG + 0.0722 * (b - biasB) / scaleB;
                 }
             }
             break;
@@ -335,6 +357,8 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
         dstX = 0, dstY = 0, dstW = canvas.width, dstH = canvas.height,
         bias = [0, 0, 0], scale = [1, 1, 1]
     } = options;
+    const bias_n = normalizeBiasTuple(bias);
+    const scale_n = normalizeBiasTuple(scale);
     let srcW = imageW, srcH = imageH;
 
     array = flatten(array);
@@ -344,8 +368,8 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
 
     switch (color) {
         case Color.RGB:
-            [biasR, biasG, biasB] = bias;
-            [scaleR, scaleG, scaleB] = scale;
+            [biasR, biasG, biasB] = bias_n;
+            [scaleR, scaleG, scaleB] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = srcY; h < srcY + srcH; h++) {
@@ -372,8 +396,8 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
             break;
 
         case Color.BGR:
-            [biasB, biasG, biasR] = bias;
-            [scaleB, scaleG, scaleR] = scale;
+            [biasB, biasG, biasR] = bias_n;
+            [scaleB, scaleG, scaleR] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = srcY; h < srcY + srcH; h++) {

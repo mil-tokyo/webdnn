@@ -138,6 +138,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor' {
 	 */
 	export interface GraphDescriptor {
 	    /**
+	     * Unix timestamp when this graph descriptor is generated
+	     */
+	    converted_at: number;
+	    /**
 	     * input variables' name
 	     */
 	    inputs: string[];
@@ -1199,9 +1203,9 @@ declare module 'webdnn/image/image_array' {
 	    /** The data order */
 	    order?: Order;
 	    /** Bias value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
-	    bias?: number[];
+	    bias?: number[] | number;
 	    /** Scale value, which is parsed based on [[webdnn/image.ImageArrayOption.order|`order`]] value */
-	    scale?: number[];
+	    scale?: number[] | number;
 	}
 	/**
 	 * Types which are drawable at `HTMLCanvasElement`

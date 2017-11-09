@@ -2480,6 +2480,25 @@ function flatten$1(arr) {
     return (arr instanceof Array) ? Array.prototype.concat.apply([], arr.map(arr => flatten$1(arr))) : arr;
 }
 /**
+ * @protected
+ */
+function normalizeBiasTuple(arr) {
+    if (typeof (arr) == "number") {
+        return [arr, arr, arr];
+    }
+    else {
+        if (arr.length == 3) {
+            return [arr[0], arr[1], arr[2]];
+        }
+        else if (arr.length == 1) {
+            return [arr[0], arr[0], arr[0]];
+        }
+        else {
+            throw new Error('bias and scale must be scalar number or array of length 1 or 3.');
+        }
+    }
+}
+/**
  * Get image array as `{Float32 or Int32}ArrayBufferView` from ImageData object.
  *
  * @returns {ArrayBufferView} buffer with specified type
@@ -2487,6 +2506,8 @@ function flatten$1(arr) {
  */
 function getImageArrayFromImageData(imageData, options = {}) {
     let { type = Float32Array, color = Color.RGB, order = Order.HWC, bias = [0, 0, 0], scale = [1, 1, 1] } = options;
+    const bias_n = normalizeBiasTuple(bias);
+    const scale_n = normalizeBiasTuple(scale);
     const width = imageData.width;
     const height = imageData.height;
     let data = imageData.data;
@@ -2496,8 +2517,8 @@ function getImageArrayFromImageData(imageData, options = {}) {
     switch (color) {
         case Color.RGB:
             array = new type(width * height * 3);
-            [scaleR, scaleG, scaleB] = scale;
-            [biasR, biasG, biasB] = bias;
+            [scaleR, scaleG, scaleB] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = 0; h < height; h++) {
@@ -2521,8 +2542,8 @@ function getImageArrayFromImageData(imageData, options = {}) {
             break;
         case Color.BGR:
             array = new type(width * height * 3);
-            [biasB, biasG, biasR] = bias;
-            [scaleB, scaleG, scaleR] = scale;
+            [biasB, biasG, biasR] = bias_n;
+            [scaleB, scaleG, scaleR] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = 0; h < height; h++) {
@@ -2546,12 +2567,14 @@ function getImageArrayFromImageData(imageData, options = {}) {
             break;
         case Color.GREY:
             array = new type(width * height);
+            [scaleR, scaleG, scaleB] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
             for (let h = 0; h < height; h++) {
                 for (let w = 0; w < width; w++) {
                     let r = data[(h * width + w) * 4 + 0];
                     let g = data[(h * width + w) * 4 + 1];
                     let b = data[(h * width + w) * 4 + 2];
-                    array[h * width + w] = ((0.2126 * r + 0.7162 * g + 0.0722 * b) - bias[0]) / scale[0];
+                    array[h * width + w] = 0.2126 * (r - biasR) / scaleR + 0.7162 * (g - biasG) / scaleG + 0.0722 * (b - biasB) / scaleB;
                 }
             }
             break;
@@ -2724,6 +2747,8 @@ function getImageArray(image, options = {}) {
  */
 function setImageArrayToCanvas(array, imageW, imageH, canvas, options = {}) {
     let { color = Color.RGB, order = Order.HWC, srcX = 0, srcY = 0, dstX = 0, dstY = 0, dstW = canvas.width, dstH = canvas.height, bias = [0, 0, 0], scale = [1, 1, 1] } = options;
+    const bias_n = normalizeBiasTuple(bias);
+    const scale_n = normalizeBiasTuple(scale);
     let srcW = imageW, srcH = imageH;
     array = flatten$1(array);
     let data = new Uint8ClampedArray(srcW * srcH * 4);
@@ -2731,8 +2756,8 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options = {}) {
     let scaleR, scaleG, scaleB;
     switch (color) {
         case Color.RGB:
-            [biasR, biasG, biasB] = bias;
-            [scaleR, scaleG, scaleB] = scale;
+            [biasR, biasG, biasB] = bias_n;
+            [scaleR, scaleG, scaleB] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = srcY; h < srcY + srcH; h++) {
@@ -2757,8 +2782,8 @@ function setImageArrayToCanvas(array, imageW, imageH, canvas, options = {}) {
             }
             break;
         case Color.BGR:
-            [biasB, biasG, biasR] = bias;
-            [scaleB, scaleG, scaleR] = scale;
+            [biasB, biasG, biasR] = bias_n;
+            [scaleB, scaleG, scaleR] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = srcY; h < srcY + srcH; h++) {
