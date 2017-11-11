@@ -120,7 +120,7 @@ class ConvFilterPruning(OptimizeRule):
 
             for c2_removed in sorted(c2_removed_list, reverse=True):
                 new_w1 = ConstantVariable(np.delete(w1.data, c2_removed, axis=w1.order.axes_dict[Axis.N]), w1.order)
-                w1.replace(new_w1, with_assert=False)
+                OptimizeRule.replace_variable(graph, w1, new_w1, with_assert=False)
                 w1 = new_w1
 
                 new_parameters = []
@@ -131,14 +131,14 @@ class ConvFilterPruning(OptimizeRule):
 
                     if isinstance(v, ConstantVariable):
                         new_v = ConstantVariable(np.delete(v.data, c2_removed, axis=v.order.axes_dict[Axis.C]), v.order)
-                        v.replace(new_v, with_assert=False)
+                        OptimizeRule.replace_variable(graph, v, new_v, with_assert=False)
                         new_parameters.append(new_v)
 
                     else:
                         new_shape = list(v.shape)
                         new_shape[v.order.axes_dict[Axis.C]] -= 1
                         new_v = Variable(new_shape, v.order)
-                        v.replace(new_v, with_assert=False)
+                        OptimizeRule.replace_variable(graph, v, new_v, with_assert=False)
                         new_parameters.append(new_v)
 
                 parameters = new_parameters

@@ -29,7 +29,7 @@ class UpgradeOperatorType(OptimizeRule):
             b = op.inputs["x1"]
             y = op.outputs["y"]
             op.remove_all()
-            (x + b).replace(y)
+            OptimizeRule.replace_variable(graph, (x + b).change_order(y.order), y)
 
             if flag_warn:
                 flag_warn = False
@@ -43,7 +43,7 @@ class UpgradeOperatorType(OptimizeRule):
             s = op.inputs["x1"]
             y = op.outputs["y"]
             op.remove_all()
-            (x * s).replace(y)
+            OptimizeRule.replace_variable(graph, (x * s).change_order(y.order), y)
 
             if flag_warn:
                 flag_warn = False

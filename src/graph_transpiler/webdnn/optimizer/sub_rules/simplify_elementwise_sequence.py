@@ -48,20 +48,20 @@ class SimplifyOperatorBase(OptimizeRule):
             if len(v1.input_to) > 1:
                 continue
 
-            if self.optimize_pair(op1, op2):
+            if self.optimize_pair(graph, op1, op2):
                 flag_changed = True
                 matches = search_sub_structure(graph, [self.pattern[0], Variable, self.pattern[1]])
 
         return graph, flag_changed
 
-    def optimize_pair(self, op1: Operator, op2: Operator):
+    def optimize_pair(self, graph: Graph, op1: Operator, op2: Operator):
         raise NotImplementedError
 
 
 class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
     pattern = [ElementwiseAdd, ElementwiseMul]
 
-    def optimize_pair(self, op1: ElementwiseAdd, op2: ElementwiseMul):
+    def optimize_pair(self, graph: Graph, op1: ElementwiseAdd, op2: ElementwiseMul):
         c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
         if c1 is None:
             return False
@@ -73,15 +73,15 @@ class SimplifyElementwiseAddElementwiseMul(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = (v1 * c2) + (c1 * c2)  # type: Variable
-        y.replace(y2, with_assert=False)
+        y = (v1 * c2) + (c1 * c2)
+        OptimizeRule.replace_variable(graph, y2, y.change_order(y2.order))
         return True
 
 
 class SimplifyElementwiseAddElementwiseDiv(SimplifyOperatorBase):
     pattern = [ElementwiseAdd, ElementwiseDiv]
 
-    def optimize_pair(self, op1: ElementwiseAdd, op2: ElementwiseDiv):
+    def optimize_pair(self, graph: Graph, op1: ElementwiseAdd, op2: ElementwiseDiv):
         c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
         if c1 is None:
             return False
@@ -93,15 +93,15 @@ class SimplifyElementwiseAddElementwiseDiv(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = (v1 / c2) + (c1 / c2)  # type: Variable
-        y.replace(y2, with_assert=False)
+        y = (v1 / c2) + (c1 / c2)
+        OptimizeRule.replace_variable(graph, y2, y.change_order(y2.order))
         return True
 
 
 class SimplifyElementwiseMulElementwiseDiv(SimplifyOperatorBase):
     pattern = [ElementwiseMul, ElementwiseDiv]
 
-    def optimize_pair(self, op1: ElementwiseMul, op2: ElementwiseDiv):
+    def optimize_pair(self, graph: Graph, op1: ElementwiseMul, op2: ElementwiseDiv):
         c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
         if c1 is None:
             return False
@@ -113,15 +113,15 @@ class SimplifyElementwiseMulElementwiseDiv(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = v1 * (c1 / c2)  # type: Variable
-        y.replace(y2, with_assert=False)
+        y = v1 * (c1 / c2)
+        OptimizeRule.replace_variable(graph, y2, y.change_order(y2.order))
         return True
 
 
 class SimplifyElementwiseDivElementwiseMul(SimplifyOperatorBase):
     pattern = [ElementwiseDiv, ElementwiseMul]
 
-    def optimize_pair(self, op1: ElementwiseDiv, op2: ElementwiseMul):
+    def optimize_pair(self, graph: Graph, op1: ElementwiseDiv, op2: ElementwiseMul):
         c1, v1 = _get_constant_and_variable(op1, "x0", "x1")
         if c1 is None:
             return False
@@ -133,15 +133,15 @@ class SimplifyElementwiseDivElementwiseMul(SimplifyOperatorBase):
         y2 = op2.outputs["y"]
         op2.remove_all()
         op1.remove_all()
-        y = v1 * (c2 / c1)  # type: Variable
-        y.replace(y2, with_assert=False)
+        y = v1 * (c2 / c1)
+        OptimizeRule.replace_variable(graph, y2, y.change_order(y2.order))
         return True
 
 
 class SimplifyConcatElementwiseMul(SimplifyOperatorBase):
     pattern = [Concat, ElementwiseMul]
 
-    def optimize_pair(self, op1: Concat, op2: ElementwiseMul):
+    def optimize_pair(self, graph: Graph, op1: Concat, op2: ElementwiseMul):
         x0, x1 = op1.inputs["x0"], op1.inputs["x1"]
         c, _ = _get_constant_and_variable(op2, "x0", "x1")
         if c is None:
@@ -156,8 +156,8 @@ class SimplifyConcatElementwiseMul(SimplifyOperatorBase):
         op1.remove_all()
         op2.remove_all()
 
-        y, = Concat(None, axis=op1.axis)((x0 * c0), (x1 * c1))  # type: Variable
-        y.replace(y2, with_assert=False)
+        y, = Concat(None, axis=op1.axis)((x0 * c0), (x1 * c1))
+        OptimizeRule.replace_variable(graph, y2, y.change_order(y2.order))
         return True
 
 

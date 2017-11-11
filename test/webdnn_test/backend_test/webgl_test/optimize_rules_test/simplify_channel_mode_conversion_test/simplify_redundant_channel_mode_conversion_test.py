@@ -10,7 +10,8 @@ from webdnn.graph.variable import Variable
 
 
 def test_r2rgba_1():
-    """
+    """test_r2rgba_1
+
     before)
 
     v0[R] -{ConvertRtoRGBA}- v1[RGBA] -{ConvertRtoRGBA}- v2[RGBA]
@@ -38,7 +39,8 @@ def test_r2rgba_1():
 
 
 def test_r2rgba_2():
-    """
+    """test_r2rgba_2
+
     before)
 
     v0[R] -{ConvertRtoRGBA}- v1[RGBA] -{ConvertRtoRGBA}- v2[RGBA] -{ConvertRtoRGBA} -v3[RGBA]
@@ -72,7 +74,8 @@ def test_r2rgba_2():
 
 
 def test_rgba2r_1():
-    """
+    """test_rgba2r_1
+
     before)
 
     v0[R] -{ConvertRGBAtoR}- v1[R]
@@ -96,7 +99,8 @@ def test_rgba2r_1():
 
 
 def test_rgba2r_2():
-    """
+    """test_rgba2r_2
+
     before)
 
     v0[R] -{ConvertRGBAtoR}- v1[R] -{ConvertRGBAtoR}- v2[R]

@@ -66,8 +66,7 @@ class SimplifySplitAxis(OptimizeRule):
             new_ys = SplitAxis(None, axis=op1.axis, sections=new_sections)(x)
 
             for original_y, new_y in zip(original_ys, new_ys):
-                new_y.change_order(original_y.order)
-                new_y.replace(original_y)
+                OptimizeRule.replace_variable(graph, new_y.transpose_like(original_y), original_y)
 
             matches = traverse.search_sub_structure(graph, [SplitAxis, Variable, SplitAxis])
 

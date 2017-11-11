@@ -128,7 +128,7 @@ class InsertTranspose(OptimizeRule):
                         y_dummy = hy2.transpose(y.order)
                         flag_changed = True
 
-                    y_dummy.replace(y)
+                    OptimizeRule.replace_variable(graph, y_dummy, y)
 
                     continue
 

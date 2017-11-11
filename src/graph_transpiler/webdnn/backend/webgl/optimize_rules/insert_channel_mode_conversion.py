@@ -1,8 +1,8 @@
 from typing import Tuple
 
 from webdnn.backend.webgl.attributes.channel_mode import ChannelModeEnum, ChannelMode
-from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA
-from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR
+from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA, convert_r_to_rgba
+from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR, convert_rgba_to_r
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -19,7 +19,7 @@ def _replace_input(op: Operator, var_name: str, target: ChannelModeEnum):
 
     after)
 
-        v -{conversion}- v' -{op-
+        v -{conversion}- v' -{op}-
     """
     v = op.inputs[var_name]
 
@@ -27,9 +27,9 @@ def _replace_input(op: Operator, var_name: str, target: ChannelModeEnum):
         return False
 
     if target == ChannelModeEnum.RGBA:
-        v_new, = ConvertRtoRGBA(None)(v)
+        v_new = convert_r_to_rgba(v)
     else:
-        v_new, = ConvertRGBAtoR(None)(v)
+        v_new = convert_rgba_to_r(v)
     op.replace_input(v, v_new)
     return True
 
@@ -54,9 +54,9 @@ def _replace_output(op: Operator, var_name: str, target: ChannelModeEnum):
 
     op.replace_output(v, v_new)
     if target == ChannelModeEnum.RGBA:
-        ConvertRGBAtoR(None)(v_new)[0].replace(v)
+        convert_rgba_to_r(v_new).change_order(v.order).replace(v)
     else:
-        ConvertRtoRGBA(None)(v_new)[0].replace(v)
+        convert_r_to_rgba(v_new).change_order(v.order).replace(v)
     return True
 
 
