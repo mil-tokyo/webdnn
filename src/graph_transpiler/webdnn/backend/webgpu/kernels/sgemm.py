@@ -21,6 +21,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #define M_DIVIDABLE_BY_64 %%M_DIVIDABLE_BY_64%%
 #define N_DIVIDABLE_BY_64 %%N_DIVIDABLE_BY_64%%
 #define K_DIVIDABLE_BY_8 %%K_DIVIDABLE_BY_8%%
+#define LOAD_M 0
+#define LOADED_M 0
 
 #if TRANSPOSE_A
     #define A_STRIDE_K 1
@@ -48,7 +50,9 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         : (%%LOAD_BUFFER(sgemm_A)%%);
 #endif
 
+#if (!OPTIMIZE || !M_DIVIDABLE_BY_64 || !N_DIVIDABLE_BY_64) || (!TRANSPOSE_A) 
     const int M = %%LOAD_BUFFER(sgemm_M)%%;
+#endif
     const int N = %%LOAD_BUFFER(sgemm_N)%%;
 
     const int K = %%LOAD_BUFFER(sgemm_K)%%;
@@ -360,7 +364,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #undef A_STRIDE_K
 #undef B_STRIDE_K
 #undef A_STRIDE_M
-#undef A_STRIDE_M
+#undef B_STRIDE_N
 }
 """) \
         .replace("%%M_DIVIDABLE_BY_64%%", "1" if M % 64 == 0 else "0") \

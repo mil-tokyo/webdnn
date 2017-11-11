@@ -7,12 +7,19 @@ from webdnn.graph.operators.attributes.inplace import InplaceOperator
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import flags
 
 
 class UpdateInplaceAttribute(OptimizeRule):
     """
     Update operations' inplace attributes
     """
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.OPTIMIZE_INPLACE_OPERATION
+        ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False

@@ -11,7 +11,6 @@ from webdnn.graph.order import Order
 from webdnn.graph.traverse import search_sub_structure
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.optimizer.sub_rules.replace_scalar_operator import ReplaceScalarOperator
 from webdnn.util import flags
 
 
@@ -162,7 +161,7 @@ class SimplifyConcatElementwiseMul(SimplifyOperatorBase):
         return True
 
 
-class SimplifyElementwiseSequential(OptimizeRuleGroup):
+class SimplifyElementwiseSequence(OptimizeRuleGroup):
     """
     Simplify {elementwise,scalar}{Add,Mul}s
 
@@ -180,8 +179,7 @@ class SimplifyElementwiseSequential(OptimizeRuleGroup):
     """
 
     def __init__(self):
-        super(SimplifyElementwiseSequential, self).__init__([
-            ReplaceScalarOperator(),
+        super(SimplifyElementwiseSequence, self).__init__([
             SimplifyElementwiseAddElementwiseMul(),
             SimplifyElementwiseAddElementwiseDiv(),
             SimplifyElementwiseMulElementwiseDiv(),

@@ -9,7 +9,7 @@ from typing import List, Union, Sequence, Set
 
 from chainer import Function
 
-from webdnn.frontend.constraints import AxisVar
+from webdnn import Axis
 from webdnn.frontend.converter import Converter
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
@@ -181,7 +181,7 @@ class ChainerConverter(Converter["Function"]):
     def _convert_var(self, c_var: "VariableNode", constant=False):
         assert not self.has_variable(c_var), f"{c_var} is already converted"
         ndim = len(c_var.shape)
-        order = Order([AxisVar() for _ in range(ndim)])
+        order = Order([None] * ndim)
 
         if constant:
             data = c_var.data

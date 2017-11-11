@@ -4,7 +4,6 @@ from typing import Optional
 from webdnn.graph import variable
 from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.elementwise import Elementwise as ElementwiseAttribute
 from webdnn.graph.operators.attributes.inplace import InplaceOperator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.order import Order
@@ -46,7 +45,6 @@ class Elementwise(Operator, metaclass=ABCMeta):
     def __init__(self, name: Optional[str]):
         super().__init__(name)
 
-        self.attributes.add(ElementwiseAttribute(self))
         self.attributes.add(InplaceOperator(self, "x0", "y"))
 
     def __call__(self, *xs: "variable.Variable"):

@@ -32,3 +32,7 @@ class ConvertRGBAtoR(Elementwise):
         y.replace(x)
         ChannelMode.set(x, ChannelModeEnum.R)
         x.change_order(y.order)
+
+
+def convert_rgba_to_r(x: Variable):
+    return ConvertRGBAtoR(None)(x)[0]

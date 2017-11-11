@@ -6,6 +6,5 @@
 # webdnn.frontend.tensorflow
 #
 
-from webdnn.frontend import constraints
 from webdnn.frontend import converter
 from webdnn.frontend import util

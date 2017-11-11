@@ -9,7 +9,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 EIGEN_LICENSE = "(C) Eigen authors, MPL 2.0 License"
 
 
-class SgemmWithEigen(Attribute):
+class SgemmWithEigen(Attribute[Sgemm]):
     pass
 
 

@@ -1,15 +1,13 @@
 from itertools import combinations
 
 import chainer
+
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.frontend.constraints import unify_order, AxisVar
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
-from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
-from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.order import OrderC, OrderNCHW, Order
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -43,7 +41,7 @@ def _convert_concat(converter: ChainerConverter, c_op: "chainer.functions.Concat
     xs = [converter.get_variable(x) for x in c_op.inputs]
 
     for x1, x2 in combinations(xs, 2):
-        unify_order(x1.order, x2.order)
+        x1.order.unify(x2.order)
 
     y, = Concat(None, axis=xs[0].order.axes[c_op.axis])(*xs)
     converter.set_variable(c_op.outputs[0](), y)
@@ -60,7 +58,7 @@ def _convert_copy(converter: ChainerConverter, c_op: "chainer.functions.Copy"):
 @ChainerConverter.register_handler("Depth2Space")
 def _convert_depth2space(converter: ChainerConverter, c_op: "chainer.functions.Depth2Space"):
     x = converter.get_variable(c_op.inputs[0])
-    unify_order(x.order, OrderNCHW)
+    x.order.unify(OrderNCHW)
     y, = Depth2Space(None, r=c_op.r)(x)
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -82,7 +80,7 @@ def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.E
 @ChainerConverter.register_handler("Flatten")
 def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatten"):
     x = converter.get_variable(c_op.inputs[0])
-    y, = Reshape(None, in_order=x.order, out_shape=[x.size], out_order=OrderC)  # FIXME: OrderC
+    y = x.reshape([x.size], OrderC)
     converter.set_variable(c_op.outputs[0](), y)
 
     console.warning("[ChainerConverter] In chainer.functions.Flatten, output data order is parsed as OrderC. To "
@@ -151,10 +149,10 @@ def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Resha
 
     out_shape = c_op.shape
     # noinspection PyTypeChecker
-    out_order = Order([AxisVar() for _ in out_shape])
+    out_order = Order([None] * len(out_shape))
     assert mul(out_shape) == x.size, f"[ChainerConverter] Shape mismatch: mul(out_shape)={mul(out_shape)}, x.size={x.size}"
 
-    y, = Reshape(None, in_order=x.order, out_order=out_order, out_shape=out_shape)(x)
+    y = x.reshape(out_shape, out_order)
 
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -184,7 +182,7 @@ def _convert_selected_item(converter: ChainerConverter, c_op: "chainer.functions
 @ChainerConverter.register_handler("Space2Depth")
 def _convert_space2depth(converter: ChainerConverter, c_op: "chainer.functions.Space2Depth"):
     x = converter.get_variable(c_op.inputs[0])
-    unify_order(x.order, OrderNCHW)
+    x.order.unify(OrderNCHW)
     y, = Space2Depth(None, r=c_op.r)(x)
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -242,8 +240,7 @@ def _convert_tile(converter: ChainerConverter, c_op: "chainer.functions.Tile"):
 @ChainerConverter.register_handler("Transpose")
 def _convert_transpose(converter: ChainerConverter, c_op: "chainer.functions.Transpose"):
     x = converter.get_variable(c_op.inputs[0])
-    y, = Transpose(None)(x)
-    y.change_order(Order([x.order.axes[axis] for axis in c_op.axes]))
+    y = x.transpose(Order([x.order.axes[axis] for axis in c_op.axes]))
 
     converter.set_variable(c_op.outputs[0](), y)
 

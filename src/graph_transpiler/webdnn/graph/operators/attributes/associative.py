@@ -5,7 +5,7 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
 
 
-class Associative(Attribute):
+class Associative(Attribute[Operator]):
     """Associative(op, var_keys)
     Associative property
 
@@ -29,8 +29,7 @@ class Associative(Attribute):
 
     @property
     def vars(self):
-        op = self.base  # type: Operator
-        return op.inputs[self.var_keys[0]], op.inputs[self.var_keys[1]]
+        return tuple(self.base.inputs[key] for key in self.var_keys)
 
     def reorder(self, other_op: Operator):
         """
@@ -59,11 +58,12 @@ class Associative(Attribute):
             x3 -[var2]-+
         """
         if not isinstance(other_op, self.base.__class__):
-            raise TypeError(f"The parameter \"other_op\" must be the instance of the same class as base operator: \n"
-                            f"(self.base.__class__)={self.base.__class__} \n"
-                            f"(other_op.__class__)={other_op.__class__}")
+            raise TypeError(f"""
+The parameter "other_op" must be the instance of the same class as base operator:
+    (self.base.__class__) = {self.base.__class__}
+    (other_op.__class__) = {other_op.__class__}""")
 
-        op2 = self.base  # type: Operator
+        op2 = self.base
         op1 = other_op
         op1_attr = op1.get_attribute(Associative)[0]
 
@@ -71,7 +71,7 @@ class Associative(Attribute):
 
         if self.vars[0].output_from == other_op:
             """
-            case A: (x1+x2)+x3 => x1+(x2+x3)
+            case A: First operand is created from `other_op`: (x1 + x2) + x3
 
             x1 -[var1]-+
                        +-{op1}- h -[var1]-+
@@ -79,12 +79,12 @@ class Associative(Attribute):
                                           |
             x3 --------------------[var2]-+
             """
-            h = self.vars[0]
-            x2 = op1_attr.vars[1]
+            h, x3 = self.vars
+            x1, x2 = op1_attr.vars
 
         elif self.vars[1].output_from == other_op:
             """
-            case B: x1+(x2+x3) => (x1+x2)+x3
+            case B: Second operand is created from `other_op`: x1 + (x2 + x3)
             
             x1 --------------------[var1]-+
                                           |
@@ -92,14 +92,15 @@ class Associative(Attribute):
                        +-{op1}- h -[var2]-+
             x3 -[var2]-+
             """
-            h = self.vars[1]
-            x2 = op1_attr.vars[0]
+            x1, h = self.vars
+            x2, x3 = op1_attr.vars
 
         else:
-            raise ValueError(f"The parameter \"other_op\" must be the creator of either one input variable of base operator: \n"
-                             f"(var1.output_from)={var1.output_from} \n"
-                             f"(var2.output_from)={var2.output_from} \n"
-                             f"(other_op)={other_op}")
+            raise ValueError(f"""
+The parameter "other_op" must be the creator of either one input variable of base operator:
+    (var1.output_from) = {self.vars[0].output_from}
+    (var2.output_from) = {self.vars[1].output_from}
+    (other_op) = {other_op}""")
 
         if len(h.input_to) > 1:
             raise ValueError(f"Reordering cannot be performed. Intermediate value is used by other operator.")

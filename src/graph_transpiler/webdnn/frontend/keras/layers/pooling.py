@@ -7,10 +7,9 @@ from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderNC, OrderNCHW, OrderNHWC, OrderNTC
-from webdnn.util.misc import mul
 from webdnn.util import console
+from webdnn.util.misc import mul
 
 
 @KerasConverter.register_handler("MaxPooling1D")
@@ -18,7 +17,7 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
+    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
 
     if k_op.padding == "valid":
         padding = (0, 0)
@@ -30,7 +29,7 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
 
     y, = MaxPooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
-    z, = Reshape(None, in_order=y.order, out_order=OrderNTC, out_shape=[y.shape[0], y.shape[1], y.shape[3]])(y)
+    z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
 
@@ -75,7 +74,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=x.order, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
+    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
 
     if k_op.padding == "valid":
         padding = (0, 0)
@@ -87,7 +86,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
 
     y, = AveragePooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
-    z, = Reshape(None, in_order=y.order, out_order=OrderNTC, out_shape=[y.shape[0], y.shape[1], y.shape[3]])(y)
+    z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
 
@@ -136,11 +135,11 @@ def _convert_global_max_pooling1d(converter: KerasConverter, k_op: "keras.layers
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
+    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     y, = MaxPooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
     # flatten without changing memory layout
-    z, = Reshape(None, in_order=y.order, out_order=OrderNC, out_shape=[y.shape[0], mul(y.shape[1:])])(y)
+    z = y.reshape([y.shape[0], mul(y.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
 
 
@@ -159,7 +158,7 @@ def _convert_global_max_pooling2d(converter: KerasConverter, k_op: "keras.layers
     y, = MaxPooling2D(None, ksize=(x.shape_dict[Axis.H], x.shape_dict[Axis.W]), stride=(1, 1), padding=(0, 0))(x)
 
     # flatten without changing memory layout
-    z, = Reshape(None, in_order=y.order, out_order=OrderNC, out_shape=[y.shape[0], mul(y.shape[1:])])(y)
+    z = y.reshape([y.shape[0], mul(y.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
 
 
@@ -168,11 +167,11 @@ def _convert_global_average_pooling1d(converter: KerasConverter, k_op: "keras.la
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
-    y, = Reshape(None, in_order=OrderNTC, out_order=OrderNHWC, out_shape=[x.shape[0], x.shape[1], 1, x.shape[2]])(x)
+    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     y, = AveragePooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
     # flatten without changing memory layout
-    z, = Reshape(None, in_order=y.order, out_order=OrderNC, out_shape=[y.shape[0], mul(y.shape[1:])])(y)
+    z = y.reshape([y.shape[0], mul(y.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
 
 
@@ -191,5 +190,5 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "ker
     y, = AveragePooling2D(None, ksize=(x.shape_dict[Axis.H], x.shape_dict[Axis.W]), stride=(1, 1), padding=(0, 0))(x)
 
     # flatten without changing memory layout
-    z, = Reshape(None, in_order=y.order, out_order=OrderNC, out_shape=[y.shape[0], mul(y.shape[1:])])(y)
+    z = y.reshape([y.shape[0], mul(y.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)

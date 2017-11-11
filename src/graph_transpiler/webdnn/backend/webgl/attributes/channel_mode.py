@@ -2,8 +2,6 @@ from enum import Enum, auto
 from typing import Union
 
 from webdnn.graph.attribute import Attribute
-from webdnn.graph.node import Node
-from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
 
 
@@ -12,16 +10,14 @@ class ChannelModeEnum(Enum):
     R = auto()
 
 
-class ChannelMode(Attribute):
+class ChannelMode(Attribute[Variable]):
     """
     This attribute represents the channel mode of WebGL texture buffers.
 
     - If this attribute is registered with a variable, it represents the data format of the variable.
-    - If this attribute is registered with an operator,  it represents the data format which this operator expects as input and output
-        variables
     """
 
-    def __init__(self, base: Node, mode: ChannelModeEnum):
+    def __init__(self, base: Variable, mode: ChannelModeEnum):
         if base.has_attribute(ChannelMode):
             raise ValueError(f"\'ChannelMode\' attribute has been already registered to {base}.")
 
@@ -31,15 +27,16 @@ class ChannelMode(Attribute):
     def __str__(self):
         return f"ChannelMode[{self.mode.name}]"
 
+    # noinspection PyMethodOverriding
     @staticmethod
-    def set(base: Node, mode: ChannelModeEnum):
+    def set(base: Variable, mode: ChannelModeEnum):
         if base.has_attribute(ChannelMode):
             base.get_attribute(ChannelMode)[0].mode = mode
         else:
             base.attributes.add(ChannelMode(base, mode=mode))
 
     @staticmethod
-    def get(base: Node):
+    def get(base: Variable):
         return base.get_attribute(ChannelMode)[0].mode if base.has_attribute(ChannelMode) else ChannelModeEnum.R
 
     @staticmethod
@@ -55,16 +52,3 @@ class ChannelMode(Attribute):
 
         else:
             raise NotImplementedError(f"Unknown channel mode: {mode}")
-
-
-class SupportedChannelMode(Attribute):
-    """
-    This attribute represents the supported channel mode of operators
-    """
-
-    def __init__(self, op: Operator, mode: ChannelModeEnum):
-        super(SupportedChannelMode, self).__init__(op)
-        self.mode = mode  # type: ChannelModeEnum
-
-    def __str__(self):
-        return f"SupportedChannelMode[{self.mode.name}]"

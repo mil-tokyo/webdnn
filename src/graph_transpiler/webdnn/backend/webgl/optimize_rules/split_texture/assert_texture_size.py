@@ -13,9 +13,11 @@ class AssertTextureSize(OptimizeRule):
 
         for v in traverse.listup_variables(graph):
             height, width = TextureShape.get(v)
-            assert height <= MAX_SIZE and width <= MAX_SIZE, f"Texture size is invalid: {v.name} \n" \
-                                                             f"  (variable shape)={v.shape}, \n" \
-                                                             f"  (channel mode)={ChannelMode.get(v).name}, \n" \
-                                                             f"  (texture shape)=(width={width}, height={height}), \n" \
-                                                             f"  (WEBGL_MAX_TEXTURE_SIZE)={config.WEBGL_MAX_TEXTURE_SIZE}"
+            assert height <= MAX_SIZE and width <= MAX_SIZE, f"""
+[SplitTexture] Texture size is invalid: {v.name}
+    (variable shape)={v.shape}
+    (channel mode)={ChannelMode.get(v).name}
+    (texture shape)=(width={width}, height={height})
+    (WEBGL_MAX_TEXTURE_SIZE)={config.WEBGL_MAX_TEXTURE_SIZE}"""
+
         return graph, False

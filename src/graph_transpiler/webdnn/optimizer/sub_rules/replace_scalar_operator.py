@@ -21,7 +21,6 @@ class ReplaceScalarAffine(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE,
             flags.optimize.REPLACE_SCALAR_OPERATOR
         ]
 
@@ -36,12 +35,12 @@ class ReplaceScalarAffine(OptimizeRule):
 
             op.remove_all()
 
-            scale = ConstantVariable(np.ones(x.shape) * op.scale, x.order)
-            bias = ConstantVariable(np.ones(x.shape) * op.bias, x.order)
+            scale = ConstantVariable(np.full(x.shape, op.scale), x.order)
+            bias = ConstantVariable(np.full(x.shape, op.bias), x.order)
 
             y_dummy = x * scale + bias
             y_dummy.change_order(y.order)
-            y_dummy.replace(y)
+            OptimizeRule.replace_variable(graph, y_dummy, y)
 
             flag_changed = True
 
@@ -56,7 +55,6 @@ class ReplaceScalarAdd(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE,
             flags.optimize.REPLACE_SCALAR_OPERATOR
         ]
 
@@ -71,11 +69,11 @@ class ReplaceScalarAdd(OptimizeRule):
 
             op.remove_all()
 
-            value = ConstantVariable(np.ones(x.shape) * op.value, x.order)
+            value = ConstantVariable(np.full(x.shape, op.value), x.order)
 
             y_dummy = x + value
             y_dummy.change_order(y.order)
-            y_dummy.replace(y)
+            OptimizeRule.replace_variable(graph, y_dummy, y)
 
             flag_changed = True
 
@@ -90,7 +88,6 @@ class ReplaceScalarMul(OptimizeRule):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE,
             flags.optimize.REPLACE_SCALAR_OPERATOR
         ]
 
@@ -105,11 +102,11 @@ class ReplaceScalarMul(OptimizeRule):
 
             op.remove_all()
 
-            value = ConstantVariable(np.ones(x.shape) * op.value, x.order)
+            value = ConstantVariable(np.full(x.shape, op.value), x.order)
 
             y_dummy = x * value
             y_dummy.change_order(y.order)
-            y_dummy.replace(y)
+            OptimizeRule.replace_variable(graph, y_dummy, y)
 
             flag_changed = True
 
@@ -127,6 +124,5 @@ class ReplaceScalarOperator(OptimizeRuleGroup):
     def flags(self):
         return [
             flags.optimize.OPTIMIZE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE,
             flags.optimize.REPLACE_SCALAR_OPERATOR
         ]

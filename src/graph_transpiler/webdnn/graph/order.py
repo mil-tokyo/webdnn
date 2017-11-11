@@ -1,6 +1,6 @@
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, Union
 
-from webdnn.graph.axis import Axis, AxisKeyDict
+from webdnn.graph.axis import Axis, AxisKeyDict, UnificationFailedError
 
 
 class Order:
@@ -21,8 +21,8 @@ class Order:
         axes(list of :class:`~webdnn.Axis`): list of axis.
     """
 
-    def __init__(self, axes: Sequence[Axis]):
-        self._axes = tuple(axes)
+    def __init__(self, axes: Sequence[Union[Axis, None]]):
+        self._axes = tuple(Axis() if a is None else a for a in axes)
 
     @property
     def axes(self) -> Tuple[Axis, ...]:
@@ -81,6 +81,23 @@ class Order:
             other: other order
         """
         return list(self.axes) + [axis for axis in other.axes if axis not in self.axes]
+
+    def unify(self, other: "Order"):
+        if self.ndim != other.ndim:
+            raise UnificationFailedError(f"""
+Unification failed: Number of dimension mismatch 
+    (self.ndim) = {self.ndim}
+    (other.ndim) = {other.ndim}""")
+
+        for (i, axis1), axis2 in zip(enumerate(self.axes), other.axes):
+            try:
+                axis1.unify(axis2)
+
+            except UnificationFailedError:
+                raise UnificationFailedError(f"""
+Unification failed: self.axes[{i}] != other.axes[{i}]
+    (self) = {self}
+    (other) = {other}""")
 
 
 """

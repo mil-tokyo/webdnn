@@ -549,8 +549,8 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
                 y_0_shape = [y.shape_dict[axis_y] * s1 // (s1 + s2) if a == axis_y else y.shape_dict[a] for a in y.order.axes]
                 y_1_shape = [y.shape_dict[axis_y] * s2 // (s1 + s2) if a == axis_y else y.shape_dict[a] for a in y.order.axes]
 
-                y_0, = Reshape(None, in_order=x_0.order, out_order=y.order, out_shape=y_0_shape)(x_0)
-                y_1, = Reshape(None, in_order=x_1.order, out_order=y.order, out_shape=y_1_shape)(x_1)
+                y_0 = x_0.reshape(y_0_shape, y.order)
+                y_1 = x_1.reshape(y_1_shape, y.order)
 
                 y_new, = Concat(None, axis=axis_y)(y_0, y_1)
                 OptimizeRule.replace_variable(graph, y_new, y)
@@ -583,11 +583,8 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
             if d2x == d2y:
                 x_0, x_1 = SplitAxis(None, axis=axis_x, sections=[x.shape_dict[axis_x] * s1 // (s1 + s2)])(x)
 
-                y_0_new, = Reshape(None, in_order=x_0.order, out_order=y_0.order, out_shape=y_0.shape)(x_0)
-                y_1_new, = Reshape(None, in_order=x_1.order, out_order=y_1.order, out_shape=y_1.shape)(x_1)
-
-                OptimizeRule.replace_variable(graph, y_0_new, y_0)
-                OptimizeRule.replace_variable(graph, y_1_new, y_1)
+                OptimizeRule.replace_variable(graph, x_0.reshape_like(y_0), y_0)
+                OptimizeRule.replace_variable(graph, x_1.reshape_like(y_1), y_1)
                 break
 
             elif d2y > (s1 + s2) * d2x:
@@ -620,8 +617,8 @@ def _split_im2col(graph: Graph, op: Im2Col, v: Variable, v_pair: Sequence[Variab
                                      ksize=op.ksize, stride=op.stride, padding=op.padding, dilation_rate=op.dilation_rate,
                                      axis=axis, sections=[s1])(im)
 
-        OptimizeRule.replace_variable(graph, col_0, v_pair[0])
-        OptimizeRule.replace_variable(graph, col_1, v_pair[1])
+        OptimizeRule.replace_variable(graph, col_0.transpose(v_pair[0].order), v_pair[0])
+        OptimizeRule.replace_variable(graph, col_1.transpose(v_pair[1].order), v_pair[1])
 
     elif v == im:
         raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
@@ -747,15 +744,11 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
 
             # Factorize B's axes included in K into A's corresponding axes
             if transpose_B:  # B: [k_b1, k_b2, ..., N] -{reshape}-> [k_a1, k_a2, ..., N]
-                B, = Reshape(None,
-                             in_order=B.order,
-                             out_order=Order(axes_K + [axis_N]),
-                             out_shape=[A.shape_dict[a] for a in axes_K] + [N])(B)
+                B = B.reshape(order=Order(axes_K + [axis_N]),
+                              shape=[A.shape_dict[a] for a in axes_K] + [N])
             else:  # B: [N, k_b1, k_b2, ...] -{reshape}-> [N, k_a1, k_a2, ...]
-                B, = Reshape(None,
-                             in_order=B.order,
-                             out_order=Order([axis_N] + axes_K),
-                             out_shape=[N] + [A.shape_dict[a] for a in axes_K])(B)
+                B = B.reshape(order=Order([axis_N] + axes_K),
+                              shape=[N] + [A.shape_dict[a] for a in axes_K])
 
             B1, B2 = SplitAxis(None, axis=axis, sections=[s1])(B)
 
@@ -805,8 +798,7 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
                         out_order=c_tmp_order)(A2, B)
 
             C_new, = Concat(None, axis=axis)(C1, C2)
-            C_new, = Reshape(None, in_order=c_tmp_order, out_order=C.order, out_shape=C.shape)(C_new)
-            OptimizeRule.replace_variable(graph, C_new, C)
+            OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
 
     elif v == B:
         B1, B2 = v_pair
@@ -832,15 +824,11 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
 
             # Factorize A's axes included in K into B's corresponding axes
             if transpose_A:  # A: [M, k_a1, k_a2, k_a3, ...] -{reshape}-> [M, k_b1, k_b2, ...]
-                A, = Reshape(None,
-                             in_order=A.order,
-                             out_order=Order([axis_M] + axes_K),
-                             out_shape=[M] + [B.shape_dict[a] for a in axes_K])(A)
+                A = A.reshape(order=Order([axis_M] + axes_K),
+                              shape=[M] + [B.shape_dict[a] for a in axes_K])
             else:  # A: [k_a1, k_a2, k_a3, ..., M] -{reshape}-> [k_b1, k_b2, ..., M]
-                A, = Reshape(None,
-                             in_order=A.order,
-                             out_order=Order(axes_K + [axis_M]),
-                             out_shape=[B.shape_dict[a] for a in axes_K] + [M])(A)
+                A = A.reshape(order=Order(axes_K + [axis_M]),
+                              shape=[B.shape_dict[a] for a in axes_K] + [M])
 
             A1, A2 = SplitAxis(None, axis=axis, sections=[s1])(A)
 
@@ -894,8 +882,7 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
             # C_new.shape = [M, B.shape_dict[n1], B.shape_dict[n2], ..., B1.shape_dict[axis]+B2.shape_dict[axis], ...]
             # C_new.order = [axis_M, n1, n2, ..., axis, ...]
 
-            C_new, = Reshape(None, in_order=c_tmp_order, out_order=C.order, out_shape=C.shape)(C_new)
-            OptimizeRule.replace_variable(graph, C_new, C)
+            OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
 
     elif v == C:
         """

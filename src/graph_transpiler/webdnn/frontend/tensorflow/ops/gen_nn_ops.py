@@ -2,7 +2,6 @@ from typing import List
 
 import tensorflow as tf
 
-from webdnn.frontend.constraints import unify, unify_order
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import unary_op_handler
 from webdnn.graph.axis import Axis
@@ -65,7 +64,7 @@ def batch_norm_with_global_normalization_grad_handler(converter: TensorFlowConve
 def bias_add_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     b = converter.get_variable(tf_op.inputs[1])
-    unify_order(b.order, OrderC)
+    b.order.unify(OrderC)
     y = x + b
     converter.set_variable(tf_op.outputs[0], y)
 
@@ -87,8 +86,8 @@ def conv2_d_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     w = converter.get_variable(tf_op.inputs[1])  # HWCN
     assert tf_op.get_attr("data_format") == b"NHWC"
-    unify_order(x.order, OrderNHWC)
-    unify_order(w.order, OrderHWCN)
+    x.order.unify(OrderNHWC)
+    w.order.unify(OrderHWCN)
     ksize = (w.shape_dict[Axis.H], w.shape_dict[Axis.W])
 
     stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
@@ -249,7 +248,7 @@ def max_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     assert tf_op.get_attr("data_format") == b"NHWC"
-    unify_order(x.order, OrderNHWC)
+    x.order.unify(OrderNHWC)
     ksize_nhwc = tf_op.get_attr("ksize")  # type: List[int]
     assert ksize_nhwc[0] == 1
     assert ksize_nhwc[3] == 1
@@ -377,10 +376,6 @@ def relu_grad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def softmax_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     y, = Softmax(None, axis=x.order.axes[-1])(x)
-
-    if flags.AGGRESSIVE_ORDER_INFERENCE:
-        # Assumption: Softmax is computed along to Axis.C
-        unify(x.order.axes[-1], Axis.C)
 
     converter.set_variable(tf_op.outputs[0], y)
 

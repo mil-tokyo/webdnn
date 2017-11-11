@@ -1,9 +1,10 @@
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.axis import Axis
+from webdnn.graph.operator import Operator
 from webdnn.graph.operators.lstm import LSTM
 
 
-class LSTMOptimized(Attribute):
+class LSTMOptimized(Attribute[Operator]):
     def __init__(self, base: LSTM):
         super(LSTMOptimized, self).__init__(base)
         if "w_input" not in base.inputs:

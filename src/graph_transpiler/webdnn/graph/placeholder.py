@@ -456,6 +456,23 @@ class Placeholder(json.SerializableMixin):
         else:
             return False
 
+    def unify(self, other: Union[int, "Placeholder"]):
+        if self.is_resolved and Placeholder.check_resolved(other):
+            assert self == other, f"""
+Unification failed: self != other
+  (self) = {self}
+  (other) = {other}"""
+
+        elif self.is_resolved and not Placeholder.check_resolved(other):
+            other.value = self.value
+
+        elif not self.is_resolved and Placeholder.check_resolved(self):
+            self.value = other.value
+
+        else:
+            #  FIXME
+            pass
+
     def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         other = Placeholder(value=other)
 

@@ -10,11 +10,13 @@ from webdnn.graph.optimize_rule import OptimizeRuleGroup
 from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
 from webdnn.optimizer.sub_rules.merge_sgemm_and_elementwise_mul import MergeSgemmAndElementwiseMul
+from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.remove_redundant_operator import RemoveRedundantOperator
 from webdnn.optimizer.sub_rules.replace_convolution_by_im2col import ReplaceConvolutionByIm2Col
 from webdnn.optimizer.sub_rules.replace_deconvolution_by_col2im import ReplaceDeconvolutionByCol2Im
 from webdnn.optimizer.sub_rules.replace_linear_by_sgemm import ReplaceLinearBySgemm
-from webdnn.optimizer.sub_rules.simplify_elementwise import SimplifyElementwise
+from webdnn.optimizer.sub_rules.simplify_elementwise_sequence import SimplifyElementwiseSequence
+from webdnn.optimizer.sub_rules.simplify_split_axis import SimplifySplitAxis
 from webdnn.util import flags
 
 
@@ -34,7 +36,9 @@ class WebGLOptimizeRule(OptimizeRuleGroup):
             ]),
             OptimizeRuleGroup([
                 InsertChannelModeConversion(),
-                SimplifyElementwise(),
+                RemoveNoEffectOperator(),
+                SimplifyElementwiseSequence(),
+                SimplifySplitAxis(),
                 RemoveRedundantOperator(),
                 SimplifyChannelModeConversion(),
                 FixSGEMMTextureShape(optimize_channel_mode=True),

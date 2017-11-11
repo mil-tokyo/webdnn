@@ -11,12 +11,12 @@ from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.elementwise import Elementwise
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.transpose import Transpose
+from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, Order, OrderNC
 from webdnn.graph.variable import Variable
@@ -30,9 +30,7 @@ def _replace_input(op: Operator, var_name: str, target_orders: Union[Order, List
     if v.order in target_orders:
         return False
 
-    v_new, = Transpose(None)(v)
-    op.replace_input(v, v_new, with_assert=False)
-    v_new.change_order(target_orders[0])
+    op.replace_input(v, v.transpose(target_orders[0]), with_assert=False)
     return True
 
 
@@ -46,7 +44,7 @@ def _replace_output(op: Operator, var_name: str, target_orders: Union[Order, Lis
 
     v_new = Variable(v.shape, v.order).change_order(target_orders[0])
     op.replace_output(v, v_new, with_assert=False)
-    Transpose(None)(v_new)[0].replace(v, with_assert=False)
+    v_new.transpose(v.order).replace(v, with_assert=False)
     return True
 
 
@@ -65,7 +63,7 @@ class InsertTranspose(OptimizeRule):
 
                 if x.order == y.order:
                     op.remove_all()
-                    x.replace(y)
+                    OptimizeRule.replace_variable(graph, x, y)
 
                     if x in graph.inputs:
                         index = graph.inputs.index(x)
@@ -133,15 +131,14 @@ class InsertTranspose(OptimizeRule):
                         hx1 = x
 
                     else:
-                        hx1, = Transpose(None)(x)
-                        hx1.change_order(order_nd)
+                        hx1 = x.transpose(order_nd)
                         flag_changed = True
 
                     if hx1.order == order_2d and hx1.shape == shape_2d:
                         hx2 = hx1
 
                     else:
-                        hx2, = Reshape(None, in_order=hx1.order, out_order=order_2d, out_shape=shape_2d)(hx1)
+                        hx2 = hx1.reshape(shape_2d, order_2d)
                         flag_changed = True
 
                     hy1, = Softmax(None, axis=Axis.C)(hx2)
@@ -150,18 +147,17 @@ class InsertTranspose(OptimizeRule):
                         hy2 = hy1
 
                     else:
-                        hy2, = Reshape(None, in_order=hy1.order, out_order=order_nd, out_shape=shape_nd)(hy1)
+                        hy2 = hy1.reshape(shape_nd, order_nd)
                         flag_changed = True
 
                     if hy2.order == y.order:
                         y_dummy = hy2
 
                     else:
-                        y_dummy, = Transpose(None)(hy2)
-                        y_dummy.change_order(y.order)
+                        y_dummy = hy2.transpose(y.order)
                         flag_changed = True
 
-                    y_dummy.replace(y)
+                    OptimizeRule.replace_variable(graph, y_dummy, y)
 
                     continue
 

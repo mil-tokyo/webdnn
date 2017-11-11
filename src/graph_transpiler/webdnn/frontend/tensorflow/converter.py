@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from typing import List, Set, Union, Optional, Dict
 
-from webdnn.frontend.constraints import unify, AxisVar
 from webdnn.frontend.converter import Converter
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
@@ -92,7 +91,7 @@ class TensorFlowConverter(Converter["tf.Operation"]):
             shape = [Placeholder() if dim.value is None else dim.value for dim in tensor.shape.dims]
             if isinstance(shape[0], Placeholder):
                 shape[0] = self._batch_size
-            self.set_variable(tensor, Variable(shape, Order([AxisVar() for _ in shape])))
+            self.set_variable(tensor, Variable(shape, Order([None] * len(shape))))
 
         ops = _listup_operations(inputs, outputs)
         for op in ops:
@@ -105,13 +104,7 @@ class TensorFlowConverter(Converter["tf.Operation"]):
 
                 variable = self.get_variable(tensor)
                 for axis1, axis2 in zip(variable.order.axes, order.axes):
-                    unify(axis1, axis2)
-
-        if flags.AGGRESSIVE_ORDER_INFERENCE:
-            # 1st dimension of output variable is batch size
-            for tensor in outputs:
-                variable = self.get_variable(tensor)
-                unify(variable.order.axes[0], Axis.N)
+                    axis1.unify(axis2)
 
         # Remove redundant ReinterpretAxis operators
         graph = Graph([self.get_variable(tensor) for tensor in inputs], [self.get_variable(tensor) for tensor in outputs])
@@ -159,7 +152,7 @@ class TensorFlowConverter(Converter["tf.Operation"]):
 
         else:
             if order is None:
-                order = Order([AxisVar() for _ in range(data.ndim)])
+                order = Order([None] * data.ndim)
 
             variable = ConstantVariable(data, order)
             self.set_variable(tensor, variable)

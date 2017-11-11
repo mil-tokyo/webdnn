@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-from webdnn.frontend.constraints import unify, AxisVar, unify_order
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import elementwise_binary_op_handler, unary_op_handler
 from webdnn.frontend.util import check_broadcast_constraints
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.abs import Abs
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
@@ -12,14 +12,12 @@ from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.rsqrt import Rsqrt
 from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.order import OrderNC, OrderCN, Order, OrderNHWC
-from webdnn.util import flags
 
 TensorFlowConverter.register_handler("Abs")(unary_op_handler(Abs))
 
@@ -319,38 +317,29 @@ def matmul_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     c_axes = []
     if transposed_a:
         c_axes.append(a.order.axes[-1])
-        a_axis_K = a.order.axes[-2]
 
         if a.order != OrderCN:
-            a, = ReinterpretAxis(None, in_order=a.order, out_order=OrderCN)(a)
+            a = a.reinterpret_axes(OrderCN)
 
     else:
         c_axes.append(a.order.axes[-2])
-        a_axis_K = a.order.axes[-1]
 
         if a.order != OrderNC:
-            a, = ReinterpretAxis(None, in_order=a.order, out_order=OrderNC)(a)
+            a = a.reinterpret_axes(OrderNC)
 
     if transposed_b:
-        b_axis_K = b.order.axes[-1]
 
-        c_axes.append(AxisVar())
+        c_axes.append(Axis())
         if b.order != OrderNC:
-            b, = ReinterpretAxis(None, in_order=b.order, out_order=OrderNC)(b)
+            b = b.reinterpret_axes(OrderNC)
 
     else:
-        c_axes.append(AxisVar())
+        c_axes.append(Axis())
         if b.order != OrderCN:
-            b, = ReinterpretAxis(None, in_order=b.order, out_order=OrderCN)(b)
-
-        b_axis_K = b.order.axes[-2]
-
-    if flags.AGGRESSIVE_ORDER_INFERENCE:
-        # Assumption: 2 inner multiplied axes are same.
-        unify(a_axis_K, b_axis_K)
+            b = b.reinterpret_axes(OrderCN)
 
     c_normalized, = Linear(None)(a, b)
-    c, = ReinterpretAxis(None, in_order=c_normalized.order, out_order=Order(c_axes))(c_normalized)
+    c = c_normalized.reinterpret_axes(Order(c_axes))
 
     converter.set_variable(tf_op.outputs[0], c)
 
@@ -372,7 +361,7 @@ def mean_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     assert tf_op.get_attr("keep_dims") is True
 
     in_var = converter.get_variable(tf_op.inputs[0])
-    unify_order(in_var.order, OrderNHWC)  # FIXME: assuming input order as NHWC
+    in_var.order.unify(OrderNHWC)  # FIXME: assuming input order as NHWC
     out_tf_var = tf_op.outputs[0]
     in_shape = in_var.shape
     out_shape = [s.value for s in out_tf_var.shape.dims]

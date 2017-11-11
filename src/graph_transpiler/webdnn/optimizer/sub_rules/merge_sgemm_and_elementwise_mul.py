@@ -93,7 +93,7 @@ class MergeSgemmAndElementwiseMul(OptimizeRule):
             out_order = sgemm.parameters["out_order"]
             out_shape = sgemm.parameters["out_shape"]
 
-            axis_k = Axis('AxisK')
+            axis_k = Axis()
 
             if not isinstance(sgemm.inputs["A"], ConstantVariable) and not isinstance(sgemm.inputs["B"], ConstantVariable):
                 # neither x nor w1 is constant
@@ -205,13 +205,12 @@ class MergeSgemmAndElementwiseMul(OptimizeRule):
                 continue
 
             elementwise_mul.remove_all()
-            y_dummy, = Transpose(None)(h)
-            y_dummy.change_order(y.order)
-            y_dummy.replace(y)
+            y_dummy = h.transpose(y.order)
+            OptimizeRule.replace_variable(graph, y_dummy, y)
 
             w2.change_order(w1_virtual_order)
             w_new = ConstantVariable(w1.data.reshape(w1_virtual_shape), w1_virtual_order) * w2  # type: ConstantVariable
-            w1.replace(w_new, with_assert=False)
+            OptimizeRule.replace_variable(graph, w1, w_new, with_assert=False)
 
             flag_changed = True
             matches = traverse.search_sub_structure(graph, [Sgemm, Variable, ElementwiseMul])

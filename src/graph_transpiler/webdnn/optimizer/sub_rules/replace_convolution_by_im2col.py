@@ -8,7 +8,6 @@ from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.sgemm import Sgemm
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, OrderHWCN
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 class ReplaceConvolutionByIm2Col(OptimizeRule):
@@ -23,33 +22,38 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             w = op.inputs["w"]
             y = op.outputs["y"]
 
-            assert x.order == OrderNHWC
-            assert y.order == OrderNHWC
-            assert isinstance(w, ConstantVariable)
-
             flag_changed = True
             op.remove_all()
             w.change_order(OrderHWCN)
+            transpose_B = True
 
-            if op.WH != 1 or op.WW != 1 or op.stride != (1, 1) or op.padding != (0, 0):
-                im2col = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding,
-                                dilation_rate=op.dilation_rate)
-                col, = im2col(x)
+            if op.WH == 1 and op.WW == 1 and op.stride == (1, 1) and op.padding == (0, 0):
+                # Projection
+                col = x
                 col.change_order(OrderNHWC)
+                transpose_A = True
+
+            elif op.WH == x.shape_dict[Axis.H] and op.WW == x.shape_dict[Axis.W] and op.padding == (0, 0):
+                # Global convolution
+                col = x
+                col.change_order(OrderNHWC)
+                transpose_A = True
 
             else:
-                col = x
+                # General convolution
+                col, = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding, dilation_rate=op.dilation_rate)(x)
+                col.change_order(OrderNHWC)
+                transpose_A = True
 
-            sgemm = Sgemm(None,
-                          M=col.shape_dict[Axis.N] * col.shape_dict[Axis.H] * col.shape_dict[Axis.W],
-                          N=w.shape_dict[Axis.N],
-                          K=col.shape_dict[Axis.C],
-                          out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
-                          out_order=OrderNHWC,
-                          transpose_A=True if col.order == OrderNHWC else False,
-                          transpose_B=True)
+            new_y, = Sgemm(None,
+                           M=col.shape_dict[Axis.N] * col.shape_dict[Axis.H] * col.shape_dict[Axis.W],
+                           N=w.shape_dict[Axis.N],
+                           K=col.shape_dict[Axis.C],
+                           out_shape=[col.shape_dict[Axis.N], col.shape_dict[Axis.H], col.shape_dict[Axis.W], w.shape_dict[Axis.N]],
+                           out_order=OrderNHWC,
+                           transpose_A=transpose_A, transpose_B=transpose_B)(col, w)
 
-            new_y, = sgemm(col, w)
-            new_y.replace(y)
+            new_y = new_y.transpose(y.order)
+            OptimizeRule.replace_variable(graph, new_y, y)
 
         return graph, flag_changed

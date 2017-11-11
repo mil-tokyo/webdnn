@@ -4,7 +4,7 @@ from webdnn.graph.variable import Variable
 from webdnn.util import config
 
 
-class TextureShape(Attribute):
+class TextureShape(Attribute[Variable]):
     def __init__(self, base: Variable):
         if base.has_attribute(TextureShape):
             raise ValueError(f"\'TextureShape\' attribute has been already registered to {base}.")
