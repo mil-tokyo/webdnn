@@ -4,15 +4,12 @@ import numpy as np
 import tensorflow as tf
 
 from webdnn import ConstantVariable
-from webdnn.frontend.constraints import AxisVar, unify_order
-from webdnn.graph.operators.reshape import Reshape
-from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.variable import Variable
-from webdnn.graph.axis import Axis
-from webdnn.graph.graph import Graph
-from webdnn.graph.order import Order, OrderNC, OrderNTC, OrderNHWC, OrderC
-from webdnn.graph.placeholder import Placeholder
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
+from webdnn.graph.axis import Axis
+from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
+from webdnn.graph.order import Order, OrderNHWC
+from webdnn.graph.placeholder import Placeholder
+from webdnn.graph.variable import Variable
 
 
 @TensorFlowConverter.register_handler("BatchMatrixBandPart")
@@ -81,7 +78,7 @@ def const_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
         variable = ConstantVariable(np.array([tf_op.get_attr("value").float_val._values[0]], dtype=np.float32),
                                     Order([Axis.C]))
     else:
-        variable = Variable(shape, Order([AxisVar() for _ in shape]))
+        variable = Variable(shape, Order([None] * len(shape)))
     converter.set_variable(tensor, variable)
 
 
@@ -241,7 +238,7 @@ def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     # FIXME: currently, determining padding from shape of input / output. Originally, determining by inputs[1] is correct.
 
     in_var = converter.get_variable(tf_op.inputs[0])
-    unify_order(in_var.order, OrderNHWC)  # FIXME: assuming input order as NHWC
+    in_var.order.unify(OrderNHWC)  # FIXME: assuming input order as NHWC
     out_tf_var = tf_op.outputs[0]
     # calculate output shape from out_tf_var.shape and in_var.shape
     # ZeroPadding2D operator only accepts padding for H and W axes.
@@ -367,8 +364,7 @@ def reshape_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
         if in_var.size % out_constant_prod != 0:
             raise ValueError("[TensorFlowConverter] Reshape: invalid reshape output value.")
         out_shape[out_placeholder_idx] = in_var.size // out_constant_prod
-    out_var, = Reshape(None, in_order=in_var.order, out_order=Order([AxisVar() for _ in out_shape]),
-                       out_shape=out_shape)(in_var)
+    out_var = in_var.reshape(out_shape, Order([None] * len(out_shape)))
     converter.set_variable(out_tf_var, out_var)
 
 
@@ -462,7 +458,7 @@ def squeeze_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
             out_var_shape.append(in_var_shape[dim])
             out_var_order.append(in_var.order.axes[dim])
 
-    out_var, = Reshape(None, in_order=in_var.order, out_order=Order(out_var_order), out_shape=out_var_shape)(in_var)
+    out_var = in_var.reshape(out_var_shape, Order(out_var_order))
     out_tf_var = tf_op.outputs[0]
     converter.set_variable(out_tf_var, out_var)
 

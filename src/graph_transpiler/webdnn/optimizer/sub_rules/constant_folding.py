@@ -28,7 +28,7 @@ class ConstantFolding(OptimizeRule):
                 continue
 
             if all(isinstance(v, ConstantVariable) for v in op.inputs.values()):
-                op.fold_constance()
+                op.fold_constance(graph)
                 flag_changed = True
 
         return graph, flag_changed

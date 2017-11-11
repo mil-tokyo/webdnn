@@ -73,9 +73,3 @@ class ConstantVariable(Variable):
         self.data = data
 
         return self
-
-
-def _broadcasted_order(order1: Order, order2: Order):
-    axes = list(order1.axes)
-    axes.extend([a for a in order2.axes if a not in order1.axes])
-    return Order(axes)

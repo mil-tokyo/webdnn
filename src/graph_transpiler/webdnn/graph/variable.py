@@ -1,5 +1,7 @@
 from typing import Union, List, Set, Tuple, Sequence
 
+import numpy as np
+
 import webdnn.graph
 from webdnn.graph import operator
 from webdnn.graph.axis import AxisKeyDict
@@ -247,11 +249,89 @@ class Variable(Node):
 
     def __rpow__(self, other) -> "Variable":
         if isinstance(other, (int, float)):
-            # FIXME
-            raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full([1] * self.ndim, other), self.order)
+            return other ** self
 
         elif isinstance(other, Variable):
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
+
+    # Utility functions
+
+    def reshape(self, shape: Sequence[Union[int, Placeholder]], order: Order) -> "Variable":
+        """reshape(shape, order)
+        Reshape into specified order and shape. This is alias of follow codes.
+
+            Reshape(None, in_order=v.order,
+                          out_order=order,
+                          out_shape=shape)(v)[0]
+
+        Args:
+            shape (tuple of int): shape
+            order (:class:`~Order`): order
+
+        Returns:
+            (:class:`~Variable`) new variable which has specified order and shape
+        """
+        ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=order, out_shape=shape)(self)
+        return ret
+
+    def reshape_like(self, other: "Variable") -> "Variable":
+        """reshape(shape, order)
+        Reshape into same order and shape as :code:`other`. This is alias of follow codes.
+
+            Reshape(None, in_order=v.order,
+                          out_order=other.order,
+                          out_shape=other.shape)(v)[0]
+
+        Args:
+            other (:class:`~Variable`): variable
+
+        Returns:
+            (:class:`~Variable`) new variable which has same order and shape as :code:`other`
+        """
+        ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=other.order, out_shape=other.shape)(self)
+        return ret
+
+    def transpose(self, order: Order) -> "Variable":
+        """transpose(shape, order)
+        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order(order)`
+
+        Args:
+            order (:class:`~Order`): order
+
+        Returns:
+            (:class:`~Variable`) new variable which has specified order
+        """
+        ret, = webdnn.graph.operators.transpose.Transpose(None)(self)
+        ret.change_order(order)
+        return ret
+
+    def transpose_like(self, other: "Variable") -> "Variable":
+        """reshape(shape, order)
+        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order(other.order)`
+
+        Args:
+            other (:class:`~Variable`): variable
+
+        Returns:
+            (:class:`~Variable`) new variable which has same order as :code:`other`
+        """
+        ret, = webdnn.graph.operators.transpose.Transpose(None)(self)
+        ret.change_order(other.order)
+        return ret
+
+    def reinterpret_axes(self, order: Order) -> "Variable":
+        """reshape(shape, order)
+        Reinterpret axes. This is alias of `ReinterpretAxes(None, v.order, order)(v)[0]`.
+
+        Args:
+            order (:class:`~Order`): new order
+
+        Returns:
+            (:class:`~Variable`) new variable which has same shape of original variable, but its order is :code:`order`.
+        """
+        ret, = webdnn.graph.operators.reinterpret_axis.ReinterpretAxis(None, in_order=self.order, out_order=order)(self)
+        return ret

@@ -5,7 +5,6 @@ except ImportError as e:
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.embedding import Embedding
-from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.order import OrderNC, OrderCN, OrderNT
 
 
@@ -14,7 +13,7 @@ def _convert_embedding(converter: KerasConverter, k_op: "keras.layers.Embedding"
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if x.order == OrderNC:
-        x, = ReinterpretAxis(None, in_order=OrderNC, out_order=OrderNT)(x)
+        x = x.reinterpret_axes(OrderNT)
 
     w = converter.convert_to_constant_variable(k_op.embeddings, OrderCN)
 

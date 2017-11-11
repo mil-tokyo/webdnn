@@ -20,24 +20,30 @@ class ReplaceLinearBySgemm(OptimizeRule):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]
-            assert x.order == OrderNC or x.order == OrderNHWC, f"(x.order) = {x.order}"
-            assert w.order == OrderCN or w.order == OrderHWCN, f"(x.order) = {w.order}"
-            assert y.order == OrderNC or y.order == OrderNHWC, f"(x.order) = {y.order}"
-            assert w.ndim == x.ndim
 
             flag_changed = True
             op.remove_all()
 
-            sgemm = Sgemm(None,
-                          M=y.shape_dict[Axis.N],
-                          N=y.size // y.shape_dict[Axis.N],
-                          K=x.size // x.shape_dict[Axis.N],
-                          out_shape=y.shape,
-                          out_order=y.order,
-                          transpose_A=True,
-                          transpose_B=True)
-            new_y, = sgemm(x, w)
+            if x.ndim == 2:
+                x = x.transpose(OrderNC)
+                w = w.transpose(OrderCN)
 
-            sgemm.replace_output(new_y, y)
+            elif x.ndim == 4:
+                x = x.transpose(OrderNHWC)
+                w = w.transpose(OrderHWCN)
+
+            else:
+                raise NotImplementedError
+
+            new_y, = Sgemm(None,
+                           M=y.shape_dict[Axis.N],
+                           N=y.size // y.shape_dict[Axis.N],
+                           K=x.size // x.shape_dict[Axis.N],
+                           out_shape=[y.shape_dict[Axis.N], y.size // y.shape_dict[Axis.N]],
+                           out_order=OrderNC,
+                           transpose_A=True,
+                           transpose_B=True)(x, w)
+
+            OptimizeRule.replace_variable(graph, new_y.transpose_like(y), y)
 
         return graph, flag_changed

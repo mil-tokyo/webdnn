@@ -1,4 +1,6 @@
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
@@ -25,10 +27,11 @@ class ElementwisePow(Elementwise):
             y = x0 ** x1
     """
 
-    def fold_constance(self):
+    def fold_constance(self, graph: Graph):
         x0 = self.inputs["x0"]  # type: ConstantVariable
         x1 = self.inputs["x1"]  # type: ConstantVariable
-        y = self.outputs["y"]  # type: ConstantVariable
-
-        y.replace(ConstantVariable(x0.copy().change_order(y.order).data ** x1.copy().change_order(y.order).data, y.order))
+        y = self.outputs["y"]
         self.remove_all()
+
+        new_y = ConstantVariable(x0.copy().change_order(y.order).data ** x1.copy().change_order(y.order).data, y.order)
+        OptimizeRule.replace_variable(graph, y, new_y)

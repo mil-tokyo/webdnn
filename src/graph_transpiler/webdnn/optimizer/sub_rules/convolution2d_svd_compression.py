@@ -152,7 +152,7 @@ class Convolution2DSvdCompression(OptimizeRule):
 
             conv1.attributes.add(Convolution2DSvdCompressed(conv1))
             conv2.attributes.add(Convolution2DSvdCompressed(conv2))
-            y.replace(y_new)
+            OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
 
             flag_changed = True
 

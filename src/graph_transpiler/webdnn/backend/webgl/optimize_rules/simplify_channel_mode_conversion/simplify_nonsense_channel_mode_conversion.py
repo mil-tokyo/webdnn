@@ -2,7 +2,6 @@ from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA
 from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 
@@ -30,9 +29,7 @@ class SimplifyNonsenseChannelModeConversion(OptimizeRule):
             flag_changed = True
 
             r2rgba.remove_all()
-            y_new, = Transpose(None)(x)
-            y_new.change_order(y.order)
-            OptimizeRule.replace_variable(graph, y_new, y)
+            OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
             matches = traverse.search_sub_structure(graph, [Variable, ConvertRGBAtoR, Variable, ConvertRtoRGBA, Variable])
 
             if len(h.input_to) == 0:
@@ -44,9 +41,7 @@ class SimplifyNonsenseChannelModeConversion(OptimizeRule):
             flag_changed = True
 
             rgba2r.remove_all()
-            y_new, = Transpose(None)(x)
-            y_new.change_order(y.order)
-            OptimizeRule.replace_variable(graph, y_new, y)
+            OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
             matches = traverse.search_sub_structure(graph, [Variable, ConvertRtoRGBA, Variable, ConvertRGBAtoR, Variable])
 
             if len(h.input_to) == 0:

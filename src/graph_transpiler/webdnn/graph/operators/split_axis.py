@@ -3,8 +3,10 @@ from typing import Optional, List
 import numpy as np
 
 from webdnn.graph.axis import Axis
+from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
@@ -72,7 +74,7 @@ class SplitAxis(Operator):
     def sections(self) -> List[int]:
         return list(self.parameters["sections"])
 
-    def fold_constance(self):
+    def fold_constance(self, graph: Graph):
         x = self.inputs["x"]  # type: ConstantVariable
         ys = [self.outputs[f"y{i}"] for i in range(len(self.outputs))]
         axis = self.parameters["axis"]
@@ -82,6 +84,5 @@ class SplitAxis(Operator):
 
         y_datum = np.split(x.data, sections, x.order.axes_dict[axis])
         for i, y in enumerate(ys):
-            y_new = ConstantVariable(y_datum[i], x.order)
-            y_new.change_order(y.order)
-            y.replace(y_new)
+            y_new = ConstantVariable(y_datum[i], x.order).change_order(y.order)
+            OptimizeRule.replace_variable(graph, y, y_new)

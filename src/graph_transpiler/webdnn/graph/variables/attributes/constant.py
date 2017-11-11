@@ -1,6 +1,9 @@
 from webdnn.graph.attribute import Attribute
+from webdnn.graph.variable import Variable
 
 
-# FIXME: DOCS
-class Constant(Attribute):
+class Constant(Attribute[Variable]):
+    """
+    Attribute for constant variable
+    """
     pass

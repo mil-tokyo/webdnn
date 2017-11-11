@@ -1,29 +1,27 @@
 from typing import Optional
 
-from webdnn.graph import operator
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.node import Node
+from webdnn.graph.operator import Operator
 
 
-class InplaceOperator(Attribute):
+class InplaceOperator(Attribute[Operator]):
     """
-    This attribute represents that operation can be performed as inplace for corresponding input and output variables. Not that the
+    This attribute represents that the operation can be performed as inplace for corresponding input and output variables. Note that the
     operation with this attribute is not always performed as inplace. For example, if orders of input and output variables are different,
     operation cannot be performed as inplace.
     """
 
     def __init__(self, base: Node, input_name: str, output_name: str):
         super(InplaceOperator, self).__init__(base)
-        self.input_name = input_name  # type: str
-        self.output_name = output_name  # type: str
+        self.input_name = input_name
+        self.output_name = output_name
 
     def get_input(self):
-        op = self.base  # type: operator.Operator
-        return op.inputs[self.input_name]
+        return self.base.inputs[self.input_name]
 
     def get_output(self):
-        op = self.base  # type: operator.Operator
-        return op.outputs[self.output_name]
+        return self.base.outputs[self.output_name]
 
     def get_status(self):
         return self.base.has_attribute(Inplace)
@@ -45,7 +43,7 @@ class InplaceOperator(Attribute):
             self.base.attributes.remove(self.base.get_attribute(Inplace)[0])
 
 
-class Inplace(Attribute):
+class Inplace(Attribute[Operator]):
     """
     Operation with this attribute is transpiled as inplace operation.
     """

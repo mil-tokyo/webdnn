@@ -4,7 +4,7 @@ from webdnn.graph.attribute import Attribute
 from webdnn.graph.operator import Operator
 
 
-class Commutative(Attribute):
+class Commutative(Attribute[Operator]):
     """Commutative(op, var_keys)
     Commutative property
 
@@ -24,8 +24,7 @@ class Commutative(Attribute):
 
     @property
     def vars(self):
-        op = self.base  # type: Operator
-        return op.inputs[self.var_keys[0]], op.inputs[self.var_keys[1]]
+        return tuple(self.base.inputs[key] for key in self.var_keys)
 
     def swap(self):
         """
@@ -33,7 +32,7 @@ class Commutative(Attribute):
         """
         var1_key, var2_key = self.var_keys
         var1, var2 = self.vars
-        op = self.base  # type: Operator
+        op = self.base
 
         op.remove_input(var1)
         op.remove_input(var2)

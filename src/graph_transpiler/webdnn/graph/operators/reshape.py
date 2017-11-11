@@ -1,7 +1,9 @@
 from typing import Optional, Union, Sequence
 
+from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import InplaceOperator
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
@@ -70,12 +72,14 @@ class Reshape(Operator):
 
         return y,
 
-    def fold_constance(self):
+    def fold_constance(self, graph: Graph):
         in_order = self.parameters["in_order"]
         out_shape = self.parameters["out_shape"]
         out_order = self.parameters["out_order"]
 
-        x = self.inputs["x"]
+        x = self.inputs["x"]  # type: ConstantVariable
         y = self.outputs["y"]
         self.remove_all()
-        y.replace(ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order))
+
+        new_y = ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order)
+        OptimizeRule.replace_variable(graph, y, new_y)

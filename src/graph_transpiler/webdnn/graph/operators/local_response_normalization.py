@@ -6,7 +6,6 @@ from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.variable import Variable
 
 
-# FIXME: Improve documentation
 class LocalResponseNormalization(Operator):
     """LocalResponseNormalization(name, n, k, alpha, beta)
 

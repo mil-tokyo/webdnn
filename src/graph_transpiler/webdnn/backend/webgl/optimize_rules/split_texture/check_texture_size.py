@@ -1,13 +1,13 @@
 from webdnn.backend.webgl.attributes.texture_shape import TextureShape
-from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA
 from webdnn.graph import traverse
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.variable import Variable
 from webdnn.util import config
 
 
-class SplitTarget(Attribute):
+class SplitTarget(Attribute[Variable]):
     pass
 
 

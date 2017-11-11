@@ -3,7 +3,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 
 
-class Tensorwise(Attribute):
+class Tensorwise(Attribute[Operator]):
     """Tensorwise(base, axis)
 
     Tensorwise `Tensorwise[axis]` means that attached operator satisfied follow conditions.
@@ -39,7 +39,7 @@ class Tensorwise(Attribute):
 
     def __init__(self, base: Operator, axis: Axis):
         super(Tensorwise, self).__init__(base)
-        self.axis = axis  # type: Axis
+        self.axis = axis
 
     @classmethod
     def check_splittable(cls, op: Operator, axis: Axis):

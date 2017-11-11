@@ -8,7 +8,7 @@ from webdnn.graph.operators.concat import Concat
 from webdnn.graph.optimize_rule import OptimizeRule
 
 
-class ConcatWorkspaceAttached(Attribute):
+class ConcatWorkspaceAttached(Attribute[Concat]):
     def __init__(self, base: Concat):
         super(ConcatWorkspaceAttached, self).__init__(base)
         workspace = base.outputs["y"].copy()

@@ -9,7 +9,6 @@ from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderNTC, OrderNHWC
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
@@ -52,7 +51,7 @@ def _convert_flatten(converter: KerasConverter, k_op: "keras.layers.Flatten"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # flatten without changing memory layout
-    y, = Reshape(None, in_order=x.order, out_order=OrderNC, out_shape=[x.shape[0], mul(x.shape[1:])])(x)
+    y = x.reshape([x.shape[0], mul(x.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
@@ -81,7 +80,7 @@ def _convert_reshape(converter: KerasConverter, k_op: "keras.layers.Reshape"):
                     "OrderNTC in 3D, OrderNHWC in 4D). To handle this, please overwrite keras.layers.Reshape converter "
                     "handler.")
 
-    y, = Reshape(None, in_order=x.order, out_order=target_order, out_shape=target_shape)(x)
+    y = x.reshape(target_shape, target_order)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
@@ -116,7 +115,7 @@ def _convert_repeat_vector(converter: KerasConverter, k_op: "keras.layers.Repeat
     w = ConstantVariable(np.tile(np.eye(C), (1, n)), OrderCN)
 
     y, = Linear(None)(x, w)
-    y, = Reshape(None, in_order=OrderNC, out_order=OrderNTC, out_shape=[N, n, C])(y)
+    y = y.reshape([N, n, C], OrderNTC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 

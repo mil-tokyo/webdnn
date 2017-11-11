@@ -1,7 +1,6 @@
 import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.frontend.constraints import unify
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
@@ -109,10 +108,6 @@ def _convert_slstm(converter: ChainerConverter, c_op: "chainer.functions.SLSTM")
 def _convert_softmax(converter: ChainerConverter, c_op: "chainer.functions.Softmax"):
     x = converter.get_variable(c_op.inputs[0])
     y, = Softmax(None, axis=x.order.axes[c_op.axis])(x)
-
-    if flags.AGGRESSIVE_ORDER_INFERENCE:
-        # Most of all cast, softmax is performed along to Axis.C
-        unify(y.order.axes[c_op.axis], Axis.C)
 
     converter.set_variable(c_op.outputs[0](), y)
 

@@ -1,6 +1,8 @@
 from typing import Optional
 
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
@@ -44,9 +46,10 @@ class ScalarAffine(Elementwise):
     def bias(self, value: float):
         self.parameters["bias"] = value
 
-    def fold_constance(self):
+    def fold_constance(self, graph: Graph):
         x0 = self.inputs["x0"]  # type: ConstantVariable
         y = self.outputs["y"]  # type: ConstantVariable
-
-        y.replace(ConstantVariable(x0.copy().change_order(y.order).data * self.scale + self.bias, y.order))
         self.remove_all()
+
+        new_y = ConstantVariable(x0.copy().change_order(y.order).data * self.scale + self.bias, y.order)
+        OptimizeRule.replace_variable(graph, y, new_y)

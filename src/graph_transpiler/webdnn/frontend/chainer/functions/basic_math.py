@@ -66,8 +66,8 @@ def _convert_mul(converter: ChainerConverter, c_op: "chainer.functions.math.basi
     x1 = converter.get_variable(c_op.inputs[0])
     x2 = converter.get_variable(c_op.inputs[1])
 
-    x1, = ReinterpretAxis(None, x1.order, OrderNC)(x1)
-    x2, = ReinterpretAxis(None, x2.order, OrderCN)(x2)
+    x1 = x1.reinterpret_axes(OrderNC)
+    x2 = x2.reinterpret_axes(OrderCN)
 
     y, = Linear(None)(x1, x2)
     converter.set_variable(c_op.outputs[0](), y)

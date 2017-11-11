@@ -1,5 +1,7 @@
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
@@ -25,10 +27,13 @@ class ConvertRtoRGBA(Elementwise):
         ChannelMode.set(y, ChannelModeEnum.RGBA)
         return y,
 
-    def fold_constance(self):
+    def fold_constance(self, graph: Graph):
         x = self.inputs["x0"]  # type:ConstantVariable
         y = self.outputs["y"]  # type:Variable
         self.remove_all()
-        y.replace(x)
+        OptimizeRule.replace_variable(graph, y, x.change_order(y.order))
         ChannelMode.set(x, ChannelModeEnum.RGBA)
-        x.change_order(y.order)
+
+
+def convert_r_to_rgba(x: Variable):
+    return ConvertRtoRGBA(None)(x)[0]

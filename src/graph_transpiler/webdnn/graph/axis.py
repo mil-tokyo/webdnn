@@ -1,12 +1,14 @@
-from typing import Generic, TypeVar, List, Iterable, Tuple
+from typing import Generic, Iterable, Tuple, Union, TypeVar, List, Dict
 
-_i = 0
+_internal2global = {}  # type: Dict[int, int]
+_global2internal = {}  # type: Dict[int, List[int]]
+_axis_name_dict = {}  # type: Dict[int, str]
+
+_uuid_counter = 0
 
 
-def _unique():
-    global _i
-    _i += 1
-    return f"_A{_i}"
+class UnificationFailedError(Exception):
+    pass
 
 
 class Axis:
@@ -19,28 +21,65 @@ class Axis:
     W = None  # type: "Axis"
     T = None  # type: "Axis"
 
-    def __init__(self, name):
-        if name is None:
-            name = _unique()
-        self._name = name
+    def __init__(self, name=None):
+        global _uuid_counter
+        internal_id = _uuid_counter
+        _uuid_counter += 1
+        global_id = internal_id
 
-    @property
-    def name(self):
-        return self._name
+        _internal2global[internal_id] = global_id
+        _global2internal[global_id] = [internal_id]
+        _axis_name_dict[global_id] = name
+
+        self._internal_id = internal_id
 
     def __str__(self):
-        return f"<Axis {self.name}>"
+        return f"<Axis {self.name})>"
 
     def __repr__(self):
-        return self.name
+        return self.__str__()
+
+    @property
+    def id(self) -> int:
+        return _internal2global[self._internal_id]
+
+    @property
+    def name(self) -> str:
+        name = _axis_name_dict[self.id]
+        return f"?{self.id}" if name is None else name
+
+    @property
+    def resolved(self) -> str:
+        return _axis_name_dict[self.id] is not None
+
+    def unify(self, other: "Axis"):
+        if self.id == other.id:
+            return
+
+        if self.resolved and other.resolved:
+            if self.name != other.name:
+                raise UnificationFailedError(f"""
+Unification failed: Both "self" and "other" have been resolved with different values.
+    (self.name) = {self.name}
+    (other.name) = {other.name}""")
+
+        other_id = other.id
+        _axis_name_dict[self.id] = self.name if self.resolved else other.name
+
+        p1s = _global2internal[self.id]
+        p2s = _global2internal[other_id]
+        del _global2internal[other_id]
+        del _axis_name_dict[other_id]
+
+        for p2 in p2s:
+            p1s.append(p2)
+            _internal2global[p2] = self.id
 
     def __eq__(self, other):
-        # noinspection PyBroadException
-        try:
-            return other.name == self.name
-
-        except Exception:
+        if not isinstance(other, Axis):
             return False
+
+        return self.id == other.id
 
     __hash__ = None
 
@@ -49,9 +88,18 @@ T = TypeVar('T')
 
 
 class AxisKeyDict(Generic[T]):
-    def __init__(self, keys: Iterable[Axis] = None, vals: Iterable[T] = None):
-        self._keys = list(keys if keys else [])  # type: List[Axis]
-        self._vals = list(vals if vals else [])  # type: List[T]
+    """
+    Axis is not hashable, dictionary cannot use axis object as key. AxisKeyDict allow using axis as key.
+    """
+
+    def __init__(self, keys: Union[Iterable[Axis], "AxisKeyDict"] = None, vals: Iterable[T] = None):
+        if isinstance(keys, AxisKeyDict):
+            self._keys = list(keys.keys())
+            self._vals = list(keys.values())
+
+        else:
+            self._keys = list(keys if keys else [])  # type: List[Axis]
+            self._vals = list(vals if vals else [])  # type: List[T]
 
     def __contains__(self, item: Axis) -> bool:
         return item in self._keys

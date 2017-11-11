@@ -11,7 +11,5 @@ from webdnn.optimizer.sub_rules import replace_deconvolution_by_col2im
 from webdnn.optimizer.sub_rules import replace_linear_by_sgemm
 from webdnn.optimizer.sub_rules import replace_scalar_operator
 from webdnn.optimizer.sub_rules import simplify_associative_operator
-from webdnn.optimizer.sub_rules import simplify_commutative_operator
-from webdnn.optimizer.sub_rules import simplify_elementwise
-from webdnn.optimizer.sub_rules import simplify_elementwise_sequential
+from webdnn.optimizer.sub_rules import simplify_elementwise_sequence
 from webdnn.optimizer.sub_rules import update_inplace_attribute

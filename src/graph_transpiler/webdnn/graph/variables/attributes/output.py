@@ -1,6 +1,9 @@
 from webdnn.graph.attribute import Attribute
+from webdnn.graph.variable import Variable
 
 
-# FIXME: DOCS
-class Output(Attribute):
+class Output(Attribute[Variable]):
+    """
+    Attribute for output variable of graph
+    """
     pass

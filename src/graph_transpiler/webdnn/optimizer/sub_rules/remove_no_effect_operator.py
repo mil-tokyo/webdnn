@@ -2,7 +2,6 @@ from typing import Tuple, Type
 
 import numpy as np
 
-from webdnn.frontend.constraints import AxisVar
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -136,7 +135,7 @@ class RemoveReshape(RemoveNoEffectOperatorBase):
         if x.shape == y.shape:
             # only reinterpret_axis is occurred
             op.remove_all()
-            y_dummy, = ReinterpretAxis(None, in_order=x.order, out_order=y.order)(x)
+            y_dummy = x.reinterpret_axes(y.order)
             OptimizeRule.replace_variable(graph, y_dummy, y)
             return True
 
@@ -216,14 +215,7 @@ class RemoveReinterpretAxis(RemoveNoEffectOperatorBase):
 
         flag_changed = False
         for axis1, axis2 in zip(op.parameters["in_order"].axes, op.parameters["out_order"].axes):
-            is_resolved1 = not (isinstance(axis1, AxisVar) and axis1.value is None)
-            is_resolved2 = not (isinstance(axis2, AxisVar) and axis2.value is None)
-
-            if is_resolved1 and not is_resolved2:
-                axis2.unify(axis1)
-                flag_changed = True
-
-            elif not is_resolved1 and is_resolved2:
+            if not axis1.resolved or not axis2.resolved:
                 axis1.unify(axis2)
                 flag_changed = True
 

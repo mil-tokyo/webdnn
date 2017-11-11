@@ -11,11 +11,11 @@ from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.elementwise import Elementwise
 from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.transpose import Transpose
+from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, Order
 from webdnn.graph.variable import Variable
@@ -29,9 +29,7 @@ def _replace_input(op: Operator, var_name: str, target_orders: Union[Order, List
     if v.order in target_orders:
         return False
 
-    v_new, = Transpose(None)(v)
-    op.replace_input(v, v_new, with_assert=False)
-    v_new.change_order(target_orders[0])
+    op.replace_input(v, v.transpose(target_orders[0]), with_assert=False)
     return True
 
 
@@ -45,7 +43,7 @@ def _replace_output(op: Operator, var_name: str, target_orders: Union[Order, Lis
 
     v_new = Variable(v.shape, v.order).change_order(target_orders[0])
     op.replace_output(v, v_new, with_assert=False)
-    Transpose(None)(v_new)[0].replace(v, with_assert=False)
+    v_new.transpose(v.order).replace(v, with_assert=False)
     return True
 
 

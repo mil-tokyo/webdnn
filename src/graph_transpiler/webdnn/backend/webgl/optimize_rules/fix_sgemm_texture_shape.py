@@ -9,7 +9,6 @@ from webdnn.graph.operators.sgemm import Sgemm
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 
 
 class FixSGEMMTextureShape(OptimizeRule):
@@ -80,8 +79,5 @@ class FixSGEMMTextureShape(OptimizeRule):
             if TextureShape.get(B) != texture_shape_B:
                 flag_changed = True
                 TextureShape.set(B, height=texture_shape_B[0], width=texture_shape_B[1])
-
-        if flag_changed:
-            graph, _ = ConstantFolding().optimize(graph)
 
         return graph, flag_changed
