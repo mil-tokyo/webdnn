@@ -168,7 +168,7 @@
   <h1>Source code for webdnn.graph.operator</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">variable</span><span class="p">,</span> <span class="n">graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.node</span> <span class="k">import</span> <span class="n">Node</span>
 
 
@@ -383,7 +383,7 @@
     <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.exec must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="s2">&quot;graph.Graph&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.fold_constance must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </pre></div>
 

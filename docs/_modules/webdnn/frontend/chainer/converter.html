@@ -177,7 +177,7 @@
 
 <span class="kn">from</span> <span class="nn">chainer</span> <span class="k">import</span> <span class="n">Function</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.frontend.constraints</span> <span class="k">import</span> <span class="n">AxisVar</span>
+<span class="kn">from</span> <span class="nn">webdnn</span> <span class="k">import</span> <span class="n">Axis</span>
 <span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
@@ -349,7 +349,7 @@
     <span class="k">def</span> <span class="nf">_convert_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_var</span><span class="p">:</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{c_var}</span><span class="s2"> is already converted&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">AxisVar</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)])</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">constant</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">c_var</span><span class="o">.</span><span class="n">data</span>

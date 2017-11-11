@@ -253,6 +253,23 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 </dd></dl>
 
 <dl class="method">
+<dt id="webdnn.ConstantVariable.reinterpret_axes">
+<code class="descname">reinterpret_axes</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="headerlink" href="#webdnn.ConstantVariable.reinterpret_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Reinterpret axes. This is alias of <cite>ReinterpretAxes(None, v.order, order)(v)[0]</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; new order</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same shape of original variable, but its order is <code class="code docutils literal"><span class="pre">order</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="webdnn.ConstantVariable.replace">
 <code class="descname">replace</code><span class="sig-paren">(</span><em>new_variable</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace this variable in graph by specified new variable.</p>
@@ -266,6 +283,58 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <li><strong>with_assert</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If <code class="code docutils literal"><span class="pre">True</span></code>, it is checked whether shape and order is same as variable which will be removed</li>
 </ul>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.ConstantVariable.reshape">
+<code class="descname">reshape</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape into specified order and shape. This is alias of follow codes.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Reshape(None, in_order=v.order,</dt>
+<dd>out_order=order,
+out_shape=shape)(v)[0]</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>shape</strong> (<em>tuple of int</em>) &#8211; shape</li>
+<li><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; order</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has specified order and shape</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.ConstantVariable.reshape_like">
+<code class="descname">reshape_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="headerlink" href="#webdnn.ConstantVariable.reshape_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Reshape into same order and shape as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of follow codes.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Reshape(None, in_order=v.order,</dt>
+<dd>out_order=other.order,
+out_shape=other.shape)(v)[0]</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same order and shape as <code class="code docutils literal"><span class="pre">other</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -299,6 +368,39 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <dt id="webdnn.ConstantVariable.stride_dict">
 <code class="descname">stride_dict</code><a class="headerlink" href="#webdnn.ConstantVariable.stride_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>dictionary of axis and stride size pairs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.ConstantVariable.transpose">
+<code class="descname">transpose</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transpose into specified order. This is alias of <cite>Transpose(None)(v)[0].change_order(order)</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; order</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has specified order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.ConstantVariable.transpose_like">
+<code class="descname">transpose_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="headerlink" href="#webdnn.ConstantVariable.transpose_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Transpose into same order as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of <cite>Transpose(None)(v)[0].change_order(other.order)</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same order as <code class="code docutils literal"><span class="pre">other</span></code></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
