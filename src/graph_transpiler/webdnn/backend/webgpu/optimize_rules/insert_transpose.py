@@ -13,6 +13,7 @@ from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.space2depth import Space2Depth
+from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, Order, OrderNC
@@ -57,6 +58,28 @@ class InsertTranspose(OptimizeRule):
             if isinstance(op, Reshape):
                 flag_changed |= _replace_input(op, "x", op.parameters["in_order"])
                 flag_changed |= _replace_output(op, "y", op.parameters["out_order"])
+                continue
+
+            elif isinstance(op, (Tensordot,)):
+                op = op  # type: Tensordot
+
+                # Reduced axes must be located in out side.
+                a_axes = list(op.inputs["A"].order.axes)
+                for i, axis in enumerate(op.axes[0]):
+                    a_axes.remove(axis)
+                    a_axes.insert(i, axis)
+
+                b_axes = list(op.inputs["B"].order.axes)
+                for i, axis in enumerate(op.axes[1]):
+                    b_axes.remove(axis)
+                    b_axes.insert(i, axis)
+
+                # Remained axes must be located in same order as A and B's axes order.
+                c_axes = a_axes[len(op.axes[0]):] + b_axes[len(op.axes[1]):]
+
+                flag_changed |= _replace_input(op, "A", Order(a_axes))
+                flag_changed |= _replace_input(op, "B", Order(b_axes))
+                flag_changed |= _replace_output(op, "C", Order(c_axes))
                 continue
 
             elif isinstance(op, (Convolution2D, Deconvolution2D,

@@ -18,8 +18,8 @@ class Graph:
     def __init__(self,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable]):
-        self.inputs = list(inputs)
-        self.outputs = list(outputs)
+        self.inputs = tuple(inputs)
+        self.outputs = tuple(outputs)
         self.licenses = {"webdnn": WEBDNN_LICENSE}
 
     def __repr__(self):

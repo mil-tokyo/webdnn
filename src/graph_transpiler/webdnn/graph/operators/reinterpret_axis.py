@@ -1,8 +1,11 @@
 from typing import Optional
 
+from webdnn.graph import graph
 from webdnn.graph.operator import Operator
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 class ReinterpretAxis(Operator):
@@ -32,8 +35,10 @@ class ReinterpretAxis(Operator):
 
         self.parameters["in_order"] = in_order
         self.parameters["out_order"] = out_order
-        assert in_order.ndim == out_order.ndim, "ReinterpretAxis operator must not change variable's shape: " \
-                                                f"in_order.ndim={in_order.ndim}, out_order.ndim={out_order.ndim}"
+        assert in_order.ndim == out_order.ndim, f"""
+[ReinterpretAxis] Parameter "in_order" and "out_order" must have same number of dimension.
+    (in_order) = {in_order}
+    (out_order) = {out_order}"""
 
     def __call__(self, x: Variable):
         self.append_input("x", x)
@@ -42,14 +47,28 @@ class ReinterpretAxis(Operator):
     def exec(self):
         x = self.inputs["x"]
 
-        in_order = self.parameters["in_order"]  # type: Order
-        out_order = self.parameters["out_order"]  # type: Order
+        assert self.in_order.check_same_axes(x.order), f"""
+[ReinterpretAxis] Shape mismatch:
+    (op.in_order) = {self.in_order}
+    (x.order) = {x.order}"""
 
-        assert in_order.check_same_axes(x.order), "Shape mismatch: " \
-                                                  f"op.in_order={self.parameters['in_order']}" \
-                                                  f"x.order={x.order}"
-
-        y = Variable(x.shape, Order([out_order.axes[in_order.axes_dict[axis]] for axis in x.order.axes]))
+        y = Variable(x.shape, Order([self.out_order.axes[self.in_order.axes_dict[a]] for a in x.order.axes]))
         self.append_output("y", y)
 
         return y,
+
+    def fold_constance(self, graph: "graph.Graph"):
+        x = self.inputs["x"]  # type: ConstantVariable
+        y = self.outputs["y"]
+        self.remove_all()
+
+        new_y = ConstantVariable(x.data.copy(), y.order)
+        OptimizeRule.replace_variable(graph, y, new_y)
+
+    @property
+    def in_order(self) -> Order:
+        return self.parameters["in_order"]
+
+    @property
+    def out_order(self) -> Order:
+        return self.parameters["out_order"]

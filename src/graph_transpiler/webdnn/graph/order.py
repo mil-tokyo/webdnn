@@ -1,3 +1,4 @@
+import itertools
 from typing import Tuple, Sequence, Union
 
 from webdnn.graph.axis import Axis, AxisKeyDict, UnificationFailedError
@@ -22,7 +23,13 @@ class Order:
     """
 
     def __init__(self, axes: Sequence[Union[Axis, None]]):
-        self._axes = tuple(Axis() if a is None else a for a in axes)
+        axes = tuple(Axis() if a is None else a for a in axes)
+        for a1, a2 in itertools.permutations(axes, 2):
+            assert a1 != a2, f"""
+[Order] Axes are duplicated:
+    (axes) = {axes}
+"""
+        self._axes = axes
 
     @property
     def axes(self) -> Tuple[Axis, ...]:
