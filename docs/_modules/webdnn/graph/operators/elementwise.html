@@ -172,7 +172,6 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">variable</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">AxisKeyDict</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.elementwise</span> <span class="k">import</span> <span class="n">Elementwise</span> <span class="k">as</span> <span class="n">ElementwiseAttribute</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.inplace</span> <span class="k">import</span> <span class="n">InplaceOperator</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.tensorwise</span> <span class="k">import</span> <span class="n">Tensorwise</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
@@ -214,7 +213,6 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ElementwiseAttribute</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">InplaceOperator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">xs</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>

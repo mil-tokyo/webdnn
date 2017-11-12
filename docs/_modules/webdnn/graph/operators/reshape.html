@@ -168,8 +168,10 @@
   <h1>Source code for webdnn.graph.operators.reshape</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span>
 
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.inplace</span> <span class="k">import</span> <span class="n">InplaceOperator</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.optimize_rule</span> <span class="k">import</span> <span class="n">OptimizeRule</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
@@ -238,15 +240,17 @@
 
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span>
 
-    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
         <span class="n">in_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;in_order&quot;</span><span class="p">]</span>
         <span class="n">out_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_shape&quot;</span><span class="p">]</span>
         <span class="n">out_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span>
 
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>  <span class="c1"># type: ConstantVariable</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
-        <span class="n">y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">in_order</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">out_order</span><span class="p">))</span></div>
+
+        <span class="n">new_y</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">in_order</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">out_order</span><span class="p">)</span>
+        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">new_y</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
