@@ -20,7 +20,7 @@ class FixTensordotTextureShape(OptimizeRule):
             A = op.inputs["A"]
             B = op.inputs["B"]
             axes = op.axes
-            K = mul(A.shape[-len(axes[0]):])
+            K = mul(A.shape_dict[a] for a in axes[0])
             M = A.size // K
             N = B.size // K
 
