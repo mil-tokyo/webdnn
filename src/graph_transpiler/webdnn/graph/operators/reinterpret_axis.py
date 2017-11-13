@@ -2,6 +2,7 @@ from typing import Optional
 
 from webdnn.graph import graph
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.attributes.inplace import InplaceOperator
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -39,6 +40,7 @@ class ReinterpretAxis(Operator):
 [ReinterpretAxis] Parameter "in_order" and "out_order" must have same number of dimension.
     (in_order) = {in_order}
     (out_order) = {out_order}"""
+        self.attributes.add(InplaceOperator(self, "x", "y"))
 
     def __call__(self, x: Variable):
         self.append_input("x", x)

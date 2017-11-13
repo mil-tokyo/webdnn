@@ -27,12 +27,12 @@ class ReplaceLinearBySgemm(OptimizeRule):
             a_filter = Axis()
 
             if x.ndim == 2:
-                w, = ReinterpretAxis(None, in_order=OrderNC, out_order=Order([Axis.N, a_filter]))(w)
-                new_y = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
+                w, = ReinterpretAxis(None, in_order=OrderNC, out_order=Order([Axis.C, a_filter]))(w)
+                new_y, = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
 
             elif x.ndim == 4:
                 w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(w)
-                new_y = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
+                new_y, = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
 
             else:
                 raise NotImplementedError

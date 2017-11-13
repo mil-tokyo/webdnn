@@ -32,6 +32,9 @@ def reinterpret_axis(op: ReinterpretAxis,
                      memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
+    if memory_layout[x] == memory_layout[y]:
+        # This is inplace operation
+        return []
 
     assert x.order == op.parameters["in_order"]
     assert y.order == op.parameters["out_order"]
