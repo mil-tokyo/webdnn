@@ -35,6 +35,7 @@ from webdnn.backend.webassembly.kernels import softsign
 from webdnn.backend.webassembly.kernels import space2depth
 from webdnn.backend.webassembly.kernels import split_axis
 from webdnn.backend.webassembly.kernels import tanh
+from webdnn.backend.webassembly.kernels import tensordot
 from webdnn.backend.webassembly.kernels import threshold_relu
 from webdnn.backend.webassembly.kernels import transpose
 from webdnn.backend.webassembly.kernels import unpooling_2d

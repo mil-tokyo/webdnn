@@ -6,7 +6,8 @@ from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelN
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.backend.webassembly.optimize_rules.use_eigen import UseEigenAttribute
-from webdnn.graph.operators.sgemm import Sgemm
+from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.util.misc import mul
 
 
 def generate_template(transpose_A, transpose_B):
@@ -69,24 +70,38 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         .replace("%%B_MAJOR%%", "RowMajor" if transpose_B else "ColMajor")
 
 
-@WebassemblyDescriptorGenerator.register_handler(Sgemm)
-def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
+@WebassemblyDescriptorGenerator.register_handler(Tensordot)
+def tensordot(op: Tensordot, memory_layout: MemoryLayout) -> List[Kernel]:
     A = op.inputs["A"]
     B = op.inputs["B"]
     C = op.outputs["C"]
+    axes = op.axes
+
+    # Reduced axes must be located on inside of input variables.
+    assert A.order.axes[-len(axes[0]):] == axes[0]
+    assert B.order.axes[-len(axes[1]):] == axes[1]
+
+    # output variable's axes order must be as [*a_remained_axes, *b_remained_axes]
+    assert C.order.axes[:A.ndim - len(axes[0])] == A.order.axes[:-len(axes[0])]
+    assert C.order.axes[-(B.ndim - len(axes[1])):] == B.order.axes[:-len(axes[1])]
+    assert C.ndim == A.ndim - len(axes[0]) + B.ndim - len(axes[1])
+
+    K = mul(A.shape_dict[a] for a in axes[0])
+    M = A.size // K
+    N = B.size // K
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
         "sgemm_A": memory_layout[A],
         "sgemm_B": memory_layout[B],
         "sgemm_C": memory_layout[C],
-        "sgemm_M": op.M,
-        "sgemm_N": op.N,
-        "sgemm_K": op.K
+        "sgemm_M": M,
+        "sgemm_N": N,
+        "sgemm_K": K
     })
 
     if op.has_attribute(UseEigenAttribute):
-        source = generate_template_eigen(op.transpose_A, op.transpose_B)
+        source = generate_template_eigen(True, False)
         buffer_injector.register({
             "sgemm_A": memory_layout[A],
             "sgemm_B": memory_layout[B],
@@ -94,7 +109,7 @@ def sgemm(op: Sgemm, memory_layout: MemoryLayout) -> List[Kernel]:
         })
 
     else:
-        source = generate_template(op.transpose_A, op.transpose_B)
+        source = generate_template(True, False)
         buffer_injector.register({
             "sgemm_A": memory_layout[A],
             "sgemm_B": memory_layout[B],
