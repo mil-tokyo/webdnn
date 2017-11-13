@@ -4,14 +4,15 @@ from webdnn.graph import traverse
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.linear import Linear
-from webdnn.graph.operators.sgemm import Sgemm
+from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
+from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.graph.order import OrderNHWC, OrderHWCN, OrderNC, OrderCN
+from webdnn.graph.order import OrderNHWC, OrderNC, Order
 
 
 class ReplaceLinearBySgemm(OptimizeRule):
     """
-    Replace Linear by Sgemm
+    Replace Linear by Tensordot
     """
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
@@ -23,26 +24,18 @@ class ReplaceLinearBySgemm(OptimizeRule):
 
             flag_changed = True
             op.remove_all()
+            a_filter = Axis()
 
             if x.ndim == 2:
-                x = x.transpose(OrderNC)
-                w = w.transpose(OrderCN)
+                w, = ReinterpretAxis(None, in_order=OrderNC, out_order=Order([Axis.N, a_filter]))(w)
+                new_y = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
 
             elif x.ndim == 4:
-                x = x.transpose(OrderNHWC)
-                w = w.transpose(OrderHWCN)
+                w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(w)
+                new_y = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
 
             else:
                 raise NotImplementedError
-
-            new_y, = Sgemm(None,
-                           M=y.shape_dict[Axis.N],
-                           N=y.size // y.shape_dict[Axis.N],
-                           K=x.size // x.shape_dict[Axis.N],
-                           out_shape=[y.shape_dict[Axis.N], y.size // y.shape_dict[Axis.N]],
-                           out_order=OrderNC,
-                           transpose_A=True,
-                           transpose_B=True)(x, w)
 
             OptimizeRule.replace_variable(graph, new_y.transpose_like(y), y)
 

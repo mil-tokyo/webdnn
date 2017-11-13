@@ -29,11 +29,17 @@ class SimplifyNonsenseChannelModeConversion(OptimizeRule):
             flag_changed = True
 
             r2rgba.remove_all()
-            OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
-            matches = traverse.search_sub_structure(graph, [Variable, ConvertRGBAtoR, Variable, ConvertRtoRGBA, Variable])
+
+            if x.order == y.order:
+                OptimizeRule.replace_variable(graph, x, y)
+
+            else:
+                OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
 
             if len(h.input_to) == 0:
                 rgba2r.remove_all()
+
+            matches = traverse.search_sub_structure(graph, [Variable, ConvertRGBAtoR, Variable, ConvertRtoRGBA, Variable])
 
         matches = traverse.search_sub_structure(graph, [Variable, ConvertRtoRGBA, Variable, ConvertRGBAtoR, Variable])
         while len(matches) > 0:
@@ -41,10 +47,16 @@ class SimplifyNonsenseChannelModeConversion(OptimizeRule):
             flag_changed = True
 
             rgba2r.remove_all()
-            OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
-            matches = traverse.search_sub_structure(graph, [Variable, ConvertRtoRGBA, Variable, ConvertRGBAtoR, Variable])
+
+            if x.order == y.order:
+                OptimizeRule.replace_variable(graph, x, y)
+
+            else:
+                OptimizeRule.replace_variable(graph, x.transpose(y.order), y)
 
             if len(h.input_to) == 0:
                 r2rgba.remove_all()
+
+            matches = traverse.search_sub_structure(graph, [Variable, ConvertRtoRGBA, Variable, ConvertRGBAtoR, Variable])
 
         return graph, flag_changed

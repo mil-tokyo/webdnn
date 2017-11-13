@@ -1,6 +1,7 @@
 from webdnn.backend.webgl.optimize_rules.attach_concat_workspace import AttachConcatWorkspace
 from webdnn.backend.webgl.optimize_rules.decompose_softmax import DecomposeSoftmax
 from webdnn.backend.webgl.optimize_rules.fix_sgemm_texture_shape import FixSGEMMTextureShape
+from webdnn.backend.webgl.optimize_rules.fix_tensordot_texture_shape import FixTensordotTextureShape
 from webdnn.backend.webgl.optimize_rules.insert_channel_mode_conversion import InsertChannelModeConversion
 from webdnn.backend.webgl.optimize_rules.insert_transpose import InsertTranspose
 from webdnn.backend.webgl.optimize_rules.simplify_channel_mode_conversion.simplify_channel_mode_conversion import \
@@ -31,6 +32,7 @@ class WebGLOptimizeRule(OptimizeRuleGroup):
                 ReplaceLinearBySgemm(),
                 MergeSgemmAndElementwiseMul(),
                 FixSGEMMTextureShape(optimize_channel_mode=False),
+                FixTensordotTextureShape(optimize_channel_mode=False),
                 ConstantFolding(),
                 SplitTexture(),
             ]),
@@ -42,6 +44,7 @@ class WebGLOptimizeRule(OptimizeRuleGroup):
                 RemoveRedundantOperator(),
                 SimplifyChannelModeConversion(),
                 FixSGEMMTextureShape(optimize_channel_mode=True),
+                FixTensordotTextureShape(optimize_channel_mode=True),
             ]),
             AttachConcatWorkspace(),
         ]

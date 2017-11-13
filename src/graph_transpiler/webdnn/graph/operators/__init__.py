@@ -47,3 +47,4 @@ from webdnn.graph.operators import unpooling_2d
 from webdnn.graph.operators import util
 from webdnn.graph.operators import zero_padding_1d
 from webdnn.graph.operators import zero_padding_2d
+from webdnn.graph.operators import tensordot
