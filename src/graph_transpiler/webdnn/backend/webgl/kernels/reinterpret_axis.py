@@ -3,16 +3,21 @@ from typing import List
 from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_shape
+from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_shape, texture_stride
 from webdnn.backend.webgl.uniform_injector import UniformInjector
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 
 template = FragmentShaderPreamble + """
 %%UNIFORM(sampler2D, X)%%;
-%%UNIFORM(vec2, texture_shape)%%;
+
+%%UNIFORM(vec2, s_y)%%;
+
+%%UNIFORM(vec2, d_x)%%;
+%%UNIFORM(vec2, s_x)%%;
 
 void main() {
-    gl_FragColor = texture2D(X, gl_FragCoord.xy / texture_shape); 
+    float x = texture2D(X, fract((floor((dot(gl_FragCoord.xy - 0.5, s_y) + 0.5) / s_x) + 0.5) / d_x)).r;
+    gl_FragColor = vec4(x, 0, 0, 0);
 }
 """
 
@@ -27,7 +32,11 @@ def reinterpret_axis(op: ReinterpretAxis) -> List[Kernel]:
 
     uniform_injector.register({
         "X": x,
-        "texture_shape": texture_shape(y),
+
+        "s_y": texture_stride(y),
+
+        "d_x": texture_shape(x),
+        "s_x": texture_stride(x),
     })
 
     source = template

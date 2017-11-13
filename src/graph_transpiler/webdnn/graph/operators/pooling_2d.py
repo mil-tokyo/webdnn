@@ -48,12 +48,6 @@ class Pooling2D(Operator):
             f"  (stride[1]) = {self.parameters['stride'][1]}"
 
     def __call__(self, x: Variable):
-        for axis in x.order.axes:
-            if axis == Axis.H or axis == Axis.W:
-                continue
-
-            self.attributes.add(Tensorwise(self, axis))
-
         self.append_input("x", x)
         return self.exec()
 
@@ -78,4 +72,11 @@ class Pooling2D(Operator):
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
         self.append_output("y", y)
+
+        for axis in x.order.axes:
+            if axis == Axis.H or axis == Axis.W:
+                continue
+
+            self.attributes.add(Tensorwise(self, axis))
+
         return y,

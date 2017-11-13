@@ -46,7 +46,7 @@ def _normalize_axes(axes: Union[Axis, Sequence[Union[Axis, Sequence[Axis]]]]) ->
     else:
         raise TypeError(f"""
 [Tensordot] Argument "axes" must be an instance of axis or sequence of axis.
-    axes = {axes}
+    (axes) = {axes}
     (type(axes)) = {type(axes).__name__}""")
 
 
@@ -78,6 +78,7 @@ class Tensordot(Operator):
         for axis in self.axes[0]:
             assert axis in A.order.axes, f"""
 [Tensordot] Input variable "A" must have axes "{axis}":
+    (op) = {self}
     (op.axes[0]) = {self.axes[0]}
     (A) = {A}"""
 
@@ -85,13 +86,15 @@ class Tensordot(Operator):
             if axis not in self.axes[0]:
                 assert axis in self.axes[1] or axis not in B.order.axes, f"""
 [Tensordot] Axes of "A" which are not reduced must not be contained in "B":
+    (op) = {self}
     (A.order.axes) = {A.order.axes}
-    (B.order.axes) = {A.order.axes}
+    (B.order.axes) = {B.order.axes}
     (op.axes) = {self.axes}"""
 
         for axis in self.axes[1]:
             assert axis in B.order.axes, f"""
 [Tensordot] Input variable "B" must have axes "{axis}":
+    (op) = {self}
     (op.axes[1]) = {self.axes[1]}
     (B) = {B}"""
 
@@ -99,29 +102,24 @@ class Tensordot(Operator):
             if axis not in self.axes[1]:
                 assert axis in self.axes[0] or axis not in A.order.axes, f"""
 [Tensordot] Axes of "B" which are not reduced must not be contained in "A":
+    (op) = {self}
     (A.order.axes) = {A.order.axes}
-    (B.order.axes) = {A.order.axes}
+    (B.order.axes) = {B.order.axes}
     (op.axes) = {self.axes}"""
 
         reduction_size_a = mul(A.shape_dict[a] for a in self.axes[0])
         reduction_size_b = mul(B.shape_dict[a] for a in self.axes[1])
         assert reduction_size_a == reduction_size_b, f"""
 [Tensordot] Reduction size of "A" and "B" must be same:
+    (A) = {A}
+    (B) = {B}
+    (axes) = {self.axes}
     (reduction size of A) = {reduction_size_a}
     (reduction size of B) = {reduction_size_b}
 """
 
         self.append_input("A", A)
         self.append_input("B", B)
-
-        for axis in self.axes[0]:
-            if axis not in A.order.axes:
-                self.attributes.add(Tensorwise(self, axis=axis))
-
-        for axis in self.axes[1]:
-            if axis not in B.order.axes:
-                self.attributes.add(Tensorwise(self, axis=axis))
-
         return self.exec()
 
     def exec(self):
@@ -139,6 +137,8 @@ class Tensordot(Operator):
 
         C = Variable(list(c_shape_dict.values()), Order(list(c_shape_dict.keys())))
         self.append_output("C", C)
+        for axis in C.order.axes:
+            self.attributes.add(Tensorwise(self, axis=axis))
         return C,
 
     @property

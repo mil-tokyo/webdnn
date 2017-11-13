@@ -3,6 +3,7 @@ from typing import Optional
 from webdnn.graph import graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import InplaceOperator
+from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -43,19 +44,22 @@ class ReinterpretAxis(Operator):
         self.attributes.add(InplaceOperator(self, "x", "y"))
 
     def __call__(self, x: Variable):
+        assert self.in_order.check_same_axes(x.order), f"""
+[ReinterpretAxis] Order mismatch:
+    (op.in_order) = {self.in_order}
+    (x.order) = {x.order}"""
+
         self.append_input("x", x)
         return self.exec()
 
     def exec(self):
         x = self.inputs["x"]
 
-        assert self.in_order.check_same_axes(x.order), f"""
-[ReinterpretAxis] Shape mismatch:
-    (op.in_order) = {self.in_order}
-    (x.order) = {x.order}"""
-
         y = Variable(x.shape, Order([self.out_order.axes[self.in_order.axes_dict[a]] for a in x.order.axes]))
         self.append_output("y", y)
+
+        for axis in x.order.axes:
+            self.attributes.add(Tensorwise(self, axis))
 
         return y,
 

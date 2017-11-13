@@ -25,7 +25,7 @@ class Operator(Node):
 
         - parameters
         """
-        return self.__class__(None, *self.parameters)
+        return self.__class__(None, **self.parameters)
 
     @property
     def inputs(self) -> Dict[str, "variable.Variable"]:

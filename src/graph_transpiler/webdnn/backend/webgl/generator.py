@@ -1,3 +1,4 @@
+import copy
 import os
 import os.path as path
 from typing import List, Dict, Tuple
@@ -38,9 +39,10 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
     def generate(cls, graph: Graph, **kwargs):
         data_dict = {}  # type: Dict[int, Tuple[GraphDescriptor, bytes]]
 
+        original_graph = graph
         for max_texture_size in [4096, 8192, 16384]:
             config.WEBGL_MAX_TEXTURE_SIZE = max_texture_size
-            graph, _ = WebGLOptimizeRule().optimize(graph)
+            graph, _ = WebGLOptimizeRule().optimize(copy.deepcopy(original_graph))
             if flags.DEBUG:
                 traverse.dump(graph)
 

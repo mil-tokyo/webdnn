@@ -16,6 +16,7 @@ from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.sgemm import Sgemm
 from webdnn.graph.operators.split_axis import SplitAxis
+from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -84,6 +85,9 @@ def _split_axis(v: Variable, axis: Axis, graph):
 
         elif isinstance(op, Sgemm):
             _split_sgemm(graph, op, v, [v1, v2], axis)
+
+        elif isinstance(op, Tensordot):
+            _split_tensordot(graph, op, v, [v1, v2], axis)
 
         elif Tensorwise.check_splittable(op, axis):
             _split_tensorwise(graph, op, v, [v1, v2], axis)
@@ -688,7 +692,7 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
     C = op.outputs["C"]
     transpose_A, transpose_B = op.transpose_A, op.transpose_B
     M, K, N = op.M, op.K, op.N
-    axis_M, axis_K, axis_N = Axis(None), Axis(None), Axis(None)
+    axis_M, axis_K, axis_N = Axis(), Axis(), Axis()
 
     op.remove_all()
 
@@ -797,6 +801,11 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
                         out_shape=c2_shape,
                         out_order=c_tmp_order)(A2, B)
 
+            for a1, a2 in zip(C1.order.axes, C2.order.axes):
+                if a1 == a2 == axis:
+                    continue
+                a1.unify(a2)
+
             C_new, = Concat(None, axis=axis)(C1, C2)
             OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
 
@@ -878,11 +887,104 @@ def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable
                         out_shape=c2_shape,
                         out_order=c_tmp_order)(A, B2)
 
+            for a1, a2 in zip(C1.order.axes, C2.order.axes):
+                if a1 == a2 == axis:
+                    continue
+                a1.unify(a2)
+
             C_new, = Concat(None, axis=axis)(C1, C2)
             # C_new.shape = [M, B.shape_dict[n1], B.shape_dict[n2], ..., B1.shape_dict[axis]+B2.shape_dict[axis], ...]
             # C_new.order = [axis_M, n1, n2, ..., axis, ...]
 
             OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
+
+    elif v == C:
+        """
+        before)
+
+            C[M, N] = A[M, K] @ B[K, N]
+
+        after) In case `axis` is in `N`,
+
+            C[M, N1] = Concat(A[M, K] @ B1[K, N1])
+            C[M, N2] = Concat(A[M, K] @ B2[K, N2])
+        """
+        raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
+
+    else:
+        raise UnexpectedAndPleaseReportError
+
+
+def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[Variable], axis: Axis):
+    s1 = v_pair[0].shape_dict[axis]
+    A = op.inputs["A"]
+    B = op.inputs["B"]
+    C = op.outputs["C"]
+    axes_M = tuple(filter(lambda a: a not in op.axes[0], A.order.axes))
+    axes_N = tuple(filter(lambda a: a not in op.axes[1], B.order.axes))
+
+    axes_K_A, axes_K_B = op.axes
+
+    K = mul(A.shape_dict[a] for a in axes_K_A)
+    M = A.size // K
+    N = B.size // K
+
+    shape_M = [A.shape_dict[a] for a in axes_M]
+    shape_N = [B.shape_dict[a] for a in axes_N]
+
+    op.remove_all()
+
+    if v == A:
+        A1, A2 = v_pair
+
+        if axis in axes_K_A:
+            # Factorize B's axes included in K into A's corresponding axes
+            B = B.transpose(Order(axes_N + axes_K_B))
+            B = B.reshape(order=Order((Axis(),) + axes_K_A), shape=[N] + [A.shape_dict[a] for a in axes_K_A])
+
+            B1, B2 = SplitAxis(None, axis=axis, sections=[s1])(B)
+
+            C1, = Tensordot(None, [axes_K_A, axes_K_A])(A1, B1)
+            C2, = Tensordot(None, [axes_K_A, axes_K_A])(A2, B2)
+            OptimizeRule.replace_variable(graph, (C1 + C2).reshape(shape_M + shape_N, Order(axes_M + axes_N)).transpose_like(C), C)
+
+        else:
+            C1, = Tensordot(None, op.axes)(A1, B)
+            C2, = Tensordot(None, op.axes)(A2, B)
+
+            for a1, a2 in zip(C1.order.axes, C2.order.axes):
+                if a1 == a2 == axis:
+                    continue
+                a1.unify(a2)
+
+            C_new, = Concat(None, axis=axis)(C1, C2)
+            OptimizeRule.replace_variable(graph, C_new, C)
+
+    elif v == B:
+        B1, B2 = v_pair
+
+        if axis in axes_K_B:
+            # Factorize A's axes included in K into B's corresponding axes
+            A = A.transpose(Order(axes_M + axes_K_A))
+            A = A.reshape(order=Order((Axis(),) + axes_K_B), shape=[M] + [B.shape_dict[a] for a in axes_K_B])
+
+            A1, A2 = SplitAxis(None, axis=axis, sections=[s1])(A)
+
+            C1, = Tensordot(None, [axes_K_B, axes_K_B])(A1, B1)
+            C2, = Tensordot(None, [axes_K_B, axes_K_B])(A2, B2)
+            OptimizeRule.replace_variable(graph, (C1 + C2).reshape(shape_M + shape_N, Order(axes_M + axes_N)).transpose_like(C), C)
+
+        else:
+            C1, = Tensordot(None, op.axes)(A, B1)
+            C2, = Tensordot(None, op.axes)(A, B2)
+
+            for a1, a2 in zip(C1.order.axes, C2.order.axes):
+                if a1 == a2 == axis:
+                    continue
+                a1.unify(a2)
+
+            C_new, = Concat(None, axis=axis)(C1, C2)
+            OptimizeRule.replace_variable(graph, C_new, C)
 
     elif v == C:
         """
@@ -991,6 +1093,12 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
             return [op.axis]
 
     elif isinstance(op, Sgemm):
+        if v == op.outputs["C"]:
+            return []
+        else:
+            return list(v.order.axes)
+
+    elif isinstance(op, Tensordot):
         if v == op.outputs["C"]:
             return []
         else:
