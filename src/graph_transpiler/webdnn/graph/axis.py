@@ -15,11 +15,6 @@ class Axis:
     """
     Enum class for representing semantics of each dimension of variables.
     """
-    N = None  # type: "Axis"
-    C = None  # type: "Axis"
-    H = None  # type: "Axis"
-    W = None  # type: "Axis"
-    T = None  # type: "Axis"
 
     def __init__(self, name=None):
         global _uuid_counter
@@ -139,10 +134,3 @@ class AxisKeyDict(Generic[T]):
 
     def items(self) -> Iterable[Tuple[Axis, T]]:
         return zip(self.keys(), self.values())
-
-
-Axis.N = Axis("N")  #: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
-Axis.C = Axis("C")  #: Number of features
-Axis.H = Axis("H")  #: Height of image
-Axis.W = Axis("W")  #: Width of image
-Axis.T = Axis("T")  #: Length of series

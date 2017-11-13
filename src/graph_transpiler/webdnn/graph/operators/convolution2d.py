@@ -1,11 +1,9 @@
 from typing import Tuple, Optional
 
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC, OrderNCHW
-from webdnn.graph.placeholder import Placeholder
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
@@ -19,6 +17,11 @@ class Convolution2D(Operator):
         ksize (int or tuple of int): Kernel size.
         stride (int or tuple of int): Stride size.
         padding (int or tuple of int): Padding size.
+        spatial_axis1 (:class:`~Axis`): Axis which representing first spatial dimension
+        spatial_axis2 (:class:`~Axis`): Axis which representing second spatial dimension
+        kernel_axis1 (:class:`~Axis`): Axis which representing first kernel dimension
+        kernel_axis2 (:class:`~Axis`): Axis which representing second kernel dimension
+        channel_axis (:class:`~Axis`): Axis which representing channel dimension
         dilation_rate (int or tuple of int): Dilation rate. 1 means ordinary convolution.
          Input pixels are shifted by (dilation_rate - 1) pixels.
 
@@ -27,25 +30,77 @@ class Convolution2D(Operator):
 
             y, = op(x, w)
 
-        - **x** - Input variables. It must has 4 axes, :obj:`~webdnn.Axis.N`, :obj:`~webdnn.Axis.C`,
-          :obj:`~webdnn.Axis.H`, and :obj:`~webdnn.Axis.W`.
-        - **w** - Kernel variable. It must has :obj:`~webdnn.Axis.N`, :obj:`~webdnn.Axis.C`,
-          :obj:`~webdnn.Axis.H`, :obj:`~webdnn.Axis.W`. Its size of :obj:`~webdnn.Axis.H` and
-          :obj:`~webdnn.Axis.W` must be same as kernel size. Its size of :obj:`~webdnn.Axis.C` must be same as
-          :code:`x`.
-        - **y** - Output variable. Its order is same as :code:`x`.
+        - **x** - Input variables. It must has 3 axes, :code:`spatial_axis1`, :code:`spatial_axis2`, and  :code:`channel_axis`.
+        - **w** - Kernel variables. It must has 3 axes, :code:`kernel_axis1`, :code:`kernel_axis2`, and  :code:`channel_axis`. Its size of
+            :code:`channel_axis` must be same as :code:`x`
+        - **y** - Output variable. Its has all axes of `x` and `w`, without `kernel_axis1`, `kernel_axis2`, and `channel_axis`.
     """
 
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
+                 spatial_axis1: Axis, spatial_axis2: Axis, kernel_axis1: Axis, kernel_axis2: Axis, channel_axis: Axis,
                  dilation_rate: Optional[IntOrTuple] = 1):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
         self.parameters["dilation_rate"] = to_tuple(dilation_rate)
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.parameters["spatial_axis1"] = spatial_axis1
+        self.parameters["spatial_axis2"] = spatial_axis2
+        self.parameters["kernel_axis1"] = kernel_axis1
+        self.parameters["kernel_axis2"] = kernel_axis2
+        self.parameters["channel_axis"] = channel_axis
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
+        for axis in [self.spatial_axis1, self.spatial_axis2, self.channel_axis]:
+            assert axis in x.order.axes, f"""
+[Convolution2D] Input variable "x" must has "spatial_axis1", "spatial_axis2", "channel_axis":
+    (x) = {x}
+    (spatial_axis1) = {self.spatial_axis1}
+    (spatial_axis2) = {self.spatial_axis2}
+    (channel_axis) = {self.channel_axis}
+"""
+
+        for axis in [self.kernel_axis1, self.kernel_axis2, self.channel_axis]:
+            assert axis in w.order.axes, f"""
+[Convolution2D] Input variable "w" must has "kernel_axis1", "kernel_axis2", "channel_axis":
+    (w) = {w}
+    (kernel_axis1) = {self.kernel_axis1}
+    (kernel_axis2) = {self.kernel_axis2}
+    (channel_axis) = {self.channel_axis}
+"""
+
+        assert x.shape_dict[self.channel_axis] == w.shape_dict[self.channel_axis], f"""
+[Convolution2D] Channel size mismatch:
+    (x[channel_axis]) = {x.shape_dict[self.channel_axis]}
+    (w[channel_axis]) = {w.shape_dict[self.channel_axis]}
+"""
+
+        assert w.shape_dict[self.kernel_axis1] == self.KH and w.shape_dict[self.kernel_axis2] == self.KW, f"""
+[Convolution2D] Kernel size mismatch:
+    (w[kernel_axis1]) = {w.shape_dict[self.kernel_axis1]}
+    (w[kernel_axis2]) = {w.shape_dict[self.kernel_axis2]}
+    (KH) = {self.KH}
+    (KW) = {self.KW}
+"""
+
+        for axis in x.order.axes:
+            if axis not in [self.spatial_axis1, self.spatial_axis2, self.channel_axis]:
+                assert axis in [self.kernel_axis1, self.kernel_axis2] or axis not in w.order.axes, f"""
+[Convolution2D] Axis is duplicated:
+    (x) = {x}
+    (w) = {w}
+    (duplicated axis) = {axis}
+"""
+
+        for axis in w.order.axes:
+            if axis not in [self.kernel_axis1, self.kernel_axis2, self.channel_axis]:
+                assert axis in [self.spatial_axis1, self.spatial_axis2] or axis not in w.order.axes, f"""
+[Convolution2D] Axis is duplicated:
+    (x) = {x}
+    (w) = {w}
+    (duplicated axis) = {axis}
+"""
+
         self.append_input("x", x)
         self.append_input("w", w)
         return self.exec()
@@ -54,35 +109,15 @@ class Convolution2D(Operator):
         x = self.inputs["x"]
         w = self.inputs["w"]
 
-        assert x.order.check_same_axes(OrderNCHW), \
-            "Input variable of Convolution2D must have N, C, H, and W axes.: " \
-            f"x.order.axes={x.order.axes}"
+        y_shape_dict = AxisKeyDict(x.shape_dict)
+        y_shape_dict[self.spatial_axis1] = (x.shape_dict[self.spatial_axis1] + 2 * self.PH - self.WH) // self.SH + 1
+        y_shape_dict[self.spatial_axis2] = (x.shape_dict[self.spatial_axis2] + 2 * self.PW - self.WW) // self.SW + 1
+        del y_shape_dict[self.channel_axis]
+        for axis in w.order.axes:
+            if axis not in [self.kernel_axis1, self.kernel_axis2, self.channel_axis]:
+                y_shape_dict[axis] = w.shape_dict[axis]
 
-        assert w.order.check_same_axes(OrderNCHW), \
-            "Kernel variable of Convolution2D must have N, C, H, and W axes.: " \
-            f"w.order.axes={w.order.axes}"
-
-        if Placeholder.check_resolved(w.shape_dict[Axis.H]) and Placeholder.check_resolved(w.shape_dict[Axis.W]):
-            assert (w.shape_dict[Axis.H], w.shape_dict[Axis.W]) == self.ksize, \
-                "Kernel variable of Convolution2D must be same spatial size as ksize parameter: " \
-                f"w.shape_dict[Axis.H]={w.shape_dict[Axis.H]}, " \
-                f"w.shape_dict[Axis.W]={w.shape_dict[Axis.W]}, " \
-                f"self.ksize={self.ksize}"
-
-        if Placeholder.check_resolved(w.shape_dict[Axis.C]) and Placeholder.check_resolved(x.shape_dict[Axis.C]):
-            assert w.shape_dict[Axis.C] == x.shape_dict[Axis.C], \
-                "Input and Kernel variables of Convolution2D must be same channel size: " \
-                f"x.shape_dict[Axis.C]={x.shape_dict[Axis.C]}, " \
-                f"w.shape_dict[Axis.C]={w.shape_dict[Axis.C]}"
-
-        N = x.shape_dict[Axis.N]
-        H2 = (x.shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1
-        W2 = (x.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
-        C2 = w.shape_dict[Axis.N]
-
-        y = Variable([N, H2, W2, C2], OrderNHWC)
-        y.change_order(x.order)  # output same order as input to preserve following reshape semantics
-
+        y = Variable(list(y_shape_dict.values()), Order(list(y_shape_dict.keys())))
         self.append_output("y", y)
         return y,
 
@@ -141,3 +176,23 @@ class Convolution2D(Operator):
     @property
     def WW(self) -> int:
         return self.DW * (self.KW - 1) + 1
+
+    @property
+    def spatial_axis1(self) -> Axis:
+        return self.parameters["spatial_axis1"]
+
+    @property
+    def spatial_axis2(self) -> Axis:
+        return self.parameters["spatial_axis2"]
+
+    @property
+    def kernel_axis1(self) -> Axis:
+        return self.parameters["kernel_axis1"]
+
+    @property
+    def kernel_axis2(self) -> Axis:
+        return self.parameters["kernel_axis2"]
+
+    @property
+    def channel_axis(self) -> Axis:
+        return self.parameters["channel_axis"]

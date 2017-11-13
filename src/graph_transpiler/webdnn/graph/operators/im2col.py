@@ -4,13 +4,13 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
 class Im2Col(Operator):
-    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
-                 dilation_rate: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple, dilation_rate: IntOrTuple,
+                 spatial_axis1: Axis,spatial_axis2: Axis,kernel_axis1: Axis,kernel_axis2: Axis):
         super().__init__(name)
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
