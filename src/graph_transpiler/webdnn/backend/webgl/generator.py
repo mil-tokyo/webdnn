@@ -12,7 +12,7 @@ from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util import config
+from webdnn.util import config, flags
 from webdnn.util.json import json
 
 
@@ -41,6 +41,8 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
         for max_texture_size in [4096, 8192, 16384]:
             config.WEBGL_MAX_TEXTURE_SIZE = max_texture_size
             graph, _ = WebGLOptimizeRule().optimize(graph)
+            if flags.DEBUG:
+                traverse.dump(graph)
 
             memory_layout = allocate(graph)
 

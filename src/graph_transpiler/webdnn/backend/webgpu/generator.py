@@ -87,8 +87,6 @@ class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData])
         graph, _ = WebGPUOptimizeRule().optimize(graph)
         if flags.DEBUG:
             traverse.dump(graph)
-            with open("cg.dot", "w") as f:
-                f.write(traverse.dump_dot(graph))
 
         memory_layout = allocate(graph)
         console.debug(f"[WebGPUDescriptorGenerator] memory_layout total size: {memory_layout.total_size * 4}[B]")
