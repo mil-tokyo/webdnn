@@ -8,13 +8,8 @@
 
 - Kernel Concatenation
 
-- Elementwise Kernel Builder
-
 - Implement All Kernels
-    - col2im
-    - concat
     - embedding
     - local_response_normalization
     - lstm
-    - split_axis
     - zero_padding_1d

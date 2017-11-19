@@ -6,17 +6,18 @@ from webdnn.graph.order import OrderNHWC, OrderNCHW
 
 
 @wrap_template
-def template(filters=17, kernel_size=3, strides=(1, 1), padding='valid', data_format=None, dilation_rate=(1, 1), activation=None,
+def template(N=2, H=14, W=15, C1=16, C2=17, ksize=3, strides=(1, 1), padding='valid', data_format=None, dilation=(1, 1),
+             activation=None,
              use_bias=True, description: str = ""):
-    x = keras.layers.Input((14, 15, 16))
-    y = keras.layers.Conv2DTranspose(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, data_format=data_format,
-                                     dilation_rate=dilation_rate, activation=activation, use_bias=use_bias)(x)
+    x = keras.layers.Input((H, W, C1))
+    y = keras.layers.Conv2DTranspose(filters=C2, kernel_size=ksize, strides=strides, padding=padding, data_format=data_format,
+                                     dilation_rate=dilation, activation=activation, use_bias=use_bias)(x)
     model = keras.models.Model([x], [y])
 
-    vx = np.random.randint(low=0, high=100, size=(2, 14, 15, 16)).astype(np.float32)
-    vy = model.predict(vx, batch_size=2)
+    vx = np.random.rand(N, H, W, C1).astype(np.float32)
+    vy = model.predict(vx, batch_size=N)
 
-    graph = KerasConverter(batch_size=2).convert(model, input_orders=[OrderNCHW if data_format == "channels_first" else OrderNHWC])
+    graph = KerasConverter(batch_size=N).convert(model, input_orders=[OrderNCHW if data_format == "channels_first" else OrderNHWC])
 
     generate_kernel_test_case(
         description=f"[keras] Conv2DTranspose {description}",
@@ -35,7 +36,7 @@ def test():
 
 
 def test_kernel_size():
-    template(kernel_size=2)
+    template(ksize=2)
 
 
 def test_strides():
@@ -51,7 +52,7 @@ def test_padding():
 #     template(data_format="channels_first")
 
 def test_dilation():
-    template(dilation_rate=(2, 2))
+    template(dilation=(2, 2))
 
 
 def test_activation():

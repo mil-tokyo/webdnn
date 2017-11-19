@@ -35,7 +35,7 @@ class SimplifyOperatorBase(OptimizeRule):
         return [
             flags.optimize.OPTIMIZE,
             flags.optimize.SIMPLIFY_ELEMENTWISE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE_SEQUENTIAL
+            flags.optimize.SIMPLIFY_ELEMENTWISE_SEQUENCE
         ]
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
@@ -191,5 +191,5 @@ class SimplifyElementwiseSequence(OptimizeRuleGroup):
         return [
             flags.optimize.OPTIMIZE,
             flags.optimize.SIMPLIFY_ELEMENTWISE,
-            flags.optimize.SIMPLIFY_ELEMENTWISE_SEQUENTIAL
+            flags.optimize.SIMPLIFY_ELEMENTWISE_SEQUENCE
         ]

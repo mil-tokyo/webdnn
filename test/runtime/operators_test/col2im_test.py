@@ -1,129 +1,56 @@
 import numpy as np
+from chainer.utils.conv import col2im_cpu, get_deconv_outsize
 
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.col2im import Col2Im
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import OrderNHWC, OrderNCHW
 from webdnn.graph.variable import Variable
 
 
-def generate_data_311():
-    v_col = np.array([[[[[
-        [0, 0, 0],
-        [0, 1, 2],
-        [0, 3, 4],
-    ], [
-        [0, 0, 0],
-        [1, 2, 0],
-        [3, 4, 0],
-    ]], [[
-        [0, 1, 2],
-        [0, 3, 4],
-        [0, 0, 0],
-    ], [
-        [1, 2, 0],
-        [3, 4, 0],
-        [0, 0, 0],
-    ]]], [[[
-        [0, 0, 0],
-        [0, 5, 6],
-        [0, 7, 8],
-    ], [
-        [0, 0, 0],
-        [5, 6, 0],
-        [7, 8, 0],
-    ]], [[
-        [0, 5, 6],
-        [0, 7, 8],
-        [0, 0, 0],
-    ], [
-        [5, 6, 0],
-        [7, 8, 0],
-        [0, 0, 0],
-    ]]]]]).astype(np.float)  # Order: (N, C, H, W, KH, KW)
-    v_col = np.rollaxis(v_col, 1, 6).reshape(1, 2, 2, 3 * 3 * 2)  # Order: NHWC
-    v_col /= 4
+@wrap_template
+def template(col_shape=(2, 3, 4, 5 * 3 * 3), col_order=OrderNHWC, im_order=OrderNHWC, ksize=(3, 3), padding=(1, 1), stride=(1, 1),
+             description: str = ""):
+    col = Variable(col_shape, col_order)
+    op = Col2Im(None, ksize, stride, padding)
+    im, = op(col)
+    im = im.change_order(im_order)
 
-    v_im = np.array([[[
-        [1, 2],
-        [3, 4]
-    ], [
-        [5, 6],
-        [7, 8]
-    ]]]).astype(np.float)  # Order: NCHW
-    v_im = np.rollaxis(v_im, 1, 4)  # Order: NHWC
+    vcol_shape = [col.shape_dict[Axis.N], col.shape_dict[Axis.C] // op.KH // op.KW, op.KH, op.KW, col.shape_dict[Axis.H],
+                  col.shape_dict[Axis.W]]
 
-    return v_im, v_col
+    vcol = np.random.rand(*vcol_shape).astype(np.float32)
+    h1 = get_deconv_outsize(vcol_shape[4], op.KH, op.SH, op.PH)
+    w1 = get_deconv_outsize(vcol_shape[5], op.KW, op.SW, op.PW)
+    vim = col2im_cpu(vcol, op.SH, op.SW, op.PH, op.PW, h1, w1)
 
+    vcol = vcol.transpose([0, 2, 3, 1, 4, 5])  # Order(N, KH, KW, C, H, W)
+    vcol = vcol.reshape([col.shape_dict[Axis.N], col.shape_dict[Axis.C], col.shape_dict[Axis.H], col.shape_dict[Axis.W]])
+    vcol = vcol.transpose([OrderNCHW.axes_dict[a] for a in col_order.axes])
 
-def generate_data_212():
-    v_col = np.array([[[[[
-        [0, 0],
-        [0, 1]
-    ], [
-        [0, 0],
-        [2, 0]
-    ]], [[
-        [0, 3],
-        [0, 0],
-    ], [
-        [4, 0],
-        [0, 0]
-    ]]], [[[
-        [0, 0],
-        [0, 5]
-    ], [
-        [0, 0],
-        [6, 0]
-    ]], [[
-        [0, 7],
-        [0, 0]
-    ], [
-        [8, 0],
-        [0, 0],
-    ]]]]]).astype(np.float)  # Order: (N, C, H, W, KH, KW)
-    v_col = np.rollaxis(v_col, 1, 6).reshape(1, 2, 2, 2 * 2 * 2)  # Order: NHWC
+    vim = vim.transpose([OrderNCHW.axes_dict[a] for a in im_order.axes])
 
-    v_im = np.array([[[
-        [1, 2],
-        [3, 4]
-    ], [
-        [5, 6],
-        [7, 8]
-    ]]]).astype(np.float)  # Order: NCHW
-    v_im = np.rollaxis(v_im, 1, 4)  # Order: NHWC
-
-    return v_im, v_col
+    generate_kernel_test_case(
+        description=f"Col2Im {description}",
+        backend=["webgpu", "webgl", "webassembly"],
+        graph=Graph([col], [im]),
+        inputs={col: vcol},
+        expected={im: vim},
+    )
 
 
 def test_NHWC():
-    v_im, v_col = generate_data_311()
-
-    col = Variable(v_col.shape, order=OrderNHWC)
-
-    im, = Col2Im(None, ksize=3, padding=1, stride=1)(col)
-    im.change_order(OrderNHWC)
-
-    generate_kernel_test_case(
-        description=f"Col2Im output=NHWC",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([col], [im]),
-        inputs={col: v_col},
-        expected={im: v_im}
-    )
+    template(col_order=OrderNHWC)
 
 
-def test_wide_stride_NHWC():
-    v_im, v_col = generate_data_212()
+def test_NCHW():
+    template(col_order=OrderNCHW, col_shape=(2, 3 * 3 * 5, 4, 5))
 
-    col = Variable(v_col.shape, order=OrderNHWC)
 
-    im, = Col2Im(None, ksize=2, padding=1, stride=2)(col)
+def test_wide_stride():
+    template(ksize=3, stride=2, padding=1)
 
-    generate_kernel_test_case(
-        description=f"Col2Im output=NHWC stride=2",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([col], [im]),
-        inputs={col: v_col},
-        expected={im: v_im}
-    )
+
+def test_no_padding():
+    template(padding=0)

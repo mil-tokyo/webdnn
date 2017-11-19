@@ -1099,7 +1099,7 @@ class WebGLHandler {
             return null;
         if (!gl.getExtension('EXT_color_buffer_float'))
             return null;
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info'))
             return null;
         return gl;
     }
@@ -1115,7 +1115,7 @@ class WebGLHandler {
             // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
             return null;
         }
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info'))
             return null;
         return gl;
     }
@@ -1124,13 +1124,13 @@ class WebGLHandler {
         let gl;
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
-            if (isDebugMode())
+            if (getConfiguration('DEBUG', false))
                 console.info('WebGL2 is enabled');
         }
         else {
             gl = WebGLHandler.initializeWebGL1Context(canvas);
             if (gl) {
-                if (isDebugMode())
+                if (getConfiguration('DEBUG', false))
                     console.info('WebGL2 is disabled');
             }
             else {
@@ -1158,7 +1158,7 @@ class WebGLHandler {
             if (!gl) {
                 availability = false;
             }
-            else if (gl.getParameter(gl.MAX_TEXTURE_SIZE) < 4096) {
+            else if (getConfiguration('MAX_TEXTURE_SIZE', gl.getParameter(gl.MAX_TEXTURE_SIZE)) < 4096) {
                 availability = false;
             }
             else {
@@ -1457,12 +1457,13 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
     }
     load(directory, progressCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let MAX_TEXTURE_SIZE = this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE);
+            let MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE));
+            // FIXME: In most case, MAX_TEXTURE_SIZE=4096 is the fastest (Why?).
             if (MAX_TEXTURE_SIZE >= 16384) {
-                MAX_TEXTURE_SIZE = 16384;
+                MAX_TEXTURE_SIZE = 4096;
             }
             else if (MAX_TEXTURE_SIZE >= 8192) {
-                MAX_TEXTURE_SIZE = 8192;
+                MAX_TEXTURE_SIZE = 4096;
             }
             else if (MAX_TEXTURE_SIZE >= 4096) {
                 MAX_TEXTURE_SIZE = 4096;
@@ -1671,9 +1672,29 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
                                 func: gl.uniform2fv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
+                        case 'vec3':
+                            return {
+                                func: gl.uniform3fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
                         case 'vec4':
                             return {
                                 func: gl.uniform4fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec2':
+                            return {
+                                func: gl.uniform2iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec3':
+                            return {
+                                func: gl.uniform3iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec4':
+                            return {
+                                func: gl.uniform4iv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
                         case 'sampler2D':
@@ -1729,7 +1750,7 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             if (this.runtimeInfo.programs.length > 0) {
                 for (let buffer of runtimeInfo.inputs)
                     yield buffer.syncWriteViews();
-                if (isDebugMode()) {
+                if (getConfiguration('DEBUG', false)) {
                     let records = [];
                     let totalElapsedTime = 0;
                     for (let runtimeProgramInfo of runtimeInfo.programs) {
@@ -2224,7 +2245,7 @@ using namespace metal;
             let dynamicBuffer = this.dynamicBuffer;
             let metaBuffers = this.metaBuffers;
             this._running = true;
-            if (isDebugMode()) {
+            if (getConfiguration('DEBUG', false)) {
                 let records = [];
                 let totalElapsedTime = 0;
                 for (let i = 0; i < this.executionInfos.length; i++) {
@@ -2971,20 +2992,20 @@ var math = Object.freeze({
  * DEBUG flag for developing WebDNN
  * @private
  */
-let DEBUG = false;
+let configurations = {};
 /**
- * get DEBUG flag for developing WebDNN
+ * get configuration
  * @private
  */
-function isDebugMode() {
-    return DEBUG;
+function getConfiguration(key, defaultValue) {
+    return key in configurations ? configurations[key] : defaultValue;
 }
 /**
- * set DEBUG flag for developing WebDNN
+ * set configuration
  * @private
  */
-function setDebugMode(flag) {
-    DEBUG = flag;
+function setConfiguration(key, value) {
+    configurations[key] = value;
 }
 /**
  * Backend constructor map
@@ -3108,8 +3129,8 @@ function load(directory, initOption = {}) {
     });
 }
 
-exports.isDebugMode = isDebugMode;
-exports.setDebugMode = setDebugMode;
+exports.getConfiguration = getConfiguration;
+exports.setConfiguration = setConfiguration;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
 exports.Math = math;

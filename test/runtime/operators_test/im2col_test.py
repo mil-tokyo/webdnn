@@ -1,261 +1,51 @@
 import numpy as np
+from chainer.utils.conv import im2col_cpu
 
-from test.util import generate_kernel_test_case
+from test.util import generate_kernel_test_case, wrap_template
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.im2col import Im2Col
-from webdnn.graph.order import OrderNHWC, OrderCNHW
+from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderCNHW
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-def generate_data_311():
-    v_im = np.array([[[
-        [1, 2],
-        [3, 4]
-    ], [
-        [5, 6],
-        [7, 8]
-    ]]]).astype(np.float)  # Order: NCHW
-    v_im = np.rollaxis(v_im, 1, 4)  # Order: NHWC
+@wrap_template
+def template(im_shape=[2, 3, 4, 5], im_order=OrderNHWC, col_order=OrderNHWC, ksize=(3, 3), padding=(1, 1), stride=(1, 1),
+             dilation=(1, 1), description: str = ""):
+    im = Variable(im_shape, im_order)
+    op = Im2Col(None, ksize, stride, padding, dilation_rate=dilation)
+    col, = op(im)
+    col = col.change_order(col_order)
 
-    v_col = np.array([[[[[
-        [0, 0, 0],
-        [0, 1, 2],
-        [0, 3, 4],
-    ], [
-        [0, 0, 0],
-        [1, 2, 0],
-        [3, 4, 0],
-    ]], [[
-        [0, 1, 2],
-        [0, 3, 4],
-        [0, 0, 0],
-    ], [
-        [1, 2, 0],
-        [3, 4, 0],
-        [0, 0, 0],
-    ]]], [[[
-        [0, 0, 0],
-        [0, 5, 6],
-        [0, 7, 8],
-    ], [
-        [0, 0, 0],
-        [5, 6, 0],
-        [7, 8, 0],
-    ]], [[
-        [0, 5, 6],
-        [0, 7, 8],
-        [0, 0, 0],
-    ], [
-        [5, 6, 0],
-        [7, 8, 0],
-        [0, 0, 0],
-    ]]]]]).astype(np.float)  # Order: (N, C, H, W, KH, KW)
-    v_col = np.rollaxis(v_col, 1, 6).reshape(1, 2, 2, 3 * 3 * 2)  # Order: NHWC
+    vim = np.random.rand(im.shape_dict[Axis.N], im.shape_dict[Axis.C], im.shape_dict[Axis.H], im.shape_dict[Axis.W]).astype(np.float32)
+    vcol = im2col_cpu(vim, op.KH, op.KW, op.SH, op.SW, op.PH, op.PW, dy=op.DH, dx=op.DW)
 
-    return v_im, v_col
+    vcol = vcol.transpose([0, 2, 3, 1, 4, 5])  # Order(N, KH, KW, C, H, W)
+    vcol = vcol.reshape([col.shape_dict[Axis.N], col.shape_dict[Axis.C], col.shape_dict[Axis.H], col.shape_dict[Axis.W]])
+    vcol = vcol.transpose([OrderNCHW.axes_dict[a] for a in col_order.axes])
 
+    vim = vim.transpose([OrderNCHW.axes_dict[a] for a in im_order.axes])
 
-def generate_data_212():
-    v_im = np.array([[[
-        [1, 2],
-        [3, 4]
-    ], [
-        [5, 6],
-        [7, 8]
-    ]]]).astype(np.float)  # Order: NCHW
-    v_im = np.rollaxis(v_im, 1, 4)  # Order: NHWC
-
-    v_col = np.array([[[[[
-        [0, 0],
-        [0, 1]
-    ], [
-        [0, 0],
-        [2, 0]
-    ]], [[
-        [0, 3],
-        [0, 0],
-    ], [
-        [4, 0],
-        [0, 0]
-    ]]], [[[
-        [0, 0],
-        [0, 5]
-    ], [
-        [0, 0],
-        [6, 0]
-    ]], [[
-        [0, 7],
-        [0, 0]
-    ], [
-        [8, 0],
-        [0, 0],
-    ]]]]]).astype(np.float)  # Order: (N, C, H, W, KH, KW)
-    v_col = np.rollaxis(v_col, 1, 6).reshape(1, 2, 2, 2 * 2 * 2)  # Order: NHWC
-
-    return v_im, v_col
+    generate_kernel_test_case(
+        description=f"Im2Col {description}",
+        backend=["webgpu", "webgl", "webassembly"],
+        graph=Graph([im], [col]),
+        inputs={im: vim},
+        expected={col: vcol},
+    )
 
 
 def test_NHWC():
-    v_im, v_col = generate_data_311()
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
-    col.change_order(OrderNHWC)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: v_col}
-    )
+    template(im_order=OrderNHWC)
 
 
 def test_CNHW():
-    v_im, v_col = generate_data_311()
-
-    col_dummy = ConstantVariable(v_col, order=OrderNHWC)
-    col_dummy.change_order(OrderCNHW)
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=3, padding=1, stride=1, dilation_rate=1)(im)
-    col.change_order(OrderCNHW)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: col_dummy.data}
-    )
+    template(im_order=OrderCNHW)
 
 
-def test_wide_stride_NHWC():
-    v_im, v_col = generate_data_212()
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
-    col.change_order(OrderNHWC)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC stride=2",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: v_col}
-    )
+def test_wide_stride():
+    template(ksize=3, stride=2, padding=1)
 
 
-def test_wide_stride_CNHW():
-    v_im, v_col = generate_data_212()
-
-    col_dummy = ConstantVariable(v_col, order=OrderNHWC)
-    col_dummy.change_order(OrderCNHW)
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=2, padding=1, stride=2, dilation_rate=1)(im)
-    col.change_order(OrderCNHW)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW stride=2",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: col_dummy.data}
-    )
-
-
-# Dilated convolution
-def generate_data_3112():
-    v_im = np.array([[np.arange(1, 26).reshape(5, 5),
-                      np.arange(26, 51).reshape(5, 5)]]).astype(np.float)  # Order: NCHW
-    v_im = np.rollaxis(v_im, 1, 4)  # Order: NHWC
-
-    v_col_h_w_kh_kw = np.array(
-        [[[
-            [0, 0, 0],
-            [0, 7, 9],
-            [0, 17, 19],
-        ], [
-            [0, 0, 0],
-            [6, 8, 10],
-            [16, 18, 20],
-        ], [
-            [0, 0, 0],
-            [7, 9, 0],
-            [17, 19, 0]
-        ]], [[
-            [0, 2, 4],
-            [0, 12, 14],
-            [0, 22, 24],
-        ], [
-            [1, 3, 5],
-            [11, 13, 15],
-            [21, 23, 25],
-        ], [
-            [2, 4, 0],
-            [12, 14, 0],
-            [22, 24, 0]
-        ]], [[
-            [0, 7, 9],
-            [0, 17, 19],
-            [0, 0, 0]
-        ], [
-            [6, 8, 10],
-            [16, 18, 20],
-            [0, 0, 0]
-        ], [
-            [7, 9, 0],
-            [17, 19, 0],
-            [0, 0, 0]
-        ]]],
-        dtype=np.float32
-    )
-    v_col_h_w_kh_kw_ch1 = v_col_h_w_kh_kw + 25
-    v_col_h_w_kh_kw_ch1[v_col_h_w_kh_kw == 0] = 0
-    v_col = np.array([[v_col_h_w_kh_kw, v_col_h_w_kh_kw_ch1]])  # Order: (N, C, H, W, KH, KW)
-    v_col = np.rollaxis(v_col, 1, 6).reshape(1, 3, 3, 3 * 3 * 2)  # Order: NHWC
-
-    return v_im, v_col
-
-
-def test_dilated_NHWC():
-    v_im, v_col = generate_data_3112()
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
-    col.change_order(OrderNHWC)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=NHWC dilation_rate=2",
-        backend=["webgpu", "webgl", "webassembly"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: v_col}
-    )
-
-
-def test_dilated_CNHW():
-    v_im, v_col = generate_data_3112()
-
-    col_dummy = ConstantVariable(v_col, order=OrderNHWC)
-    col_dummy.change_order(OrderCNHW)
-
-    im = Variable(v_im.shape, order=OrderNHWC)
-
-    col, = Im2Col(None, ksize=3, padding=1, stride=1, dilation_rate=2)(im)
-    col.change_order(OrderCNHW)
-
-    generate_kernel_test_case(
-        description=f"Im2Col output=CNHW dilation_rate=2",
-        backend=["webgpu"],
-        graph=Graph([im], [col]),
-        inputs={im: v_im},
-        expected={col: col_dummy.data},
-    )
+def test_dilated():
+    template(ksize=3, stride=1, padding=1, dilation=2, im_order=OrderNHWC, im_shape=[1, 3, 5, 2])

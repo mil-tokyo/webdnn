@@ -1324,7 +1324,7 @@ var WebGLHandler = (function () {
             return null;
         if (!gl.getExtension('EXT_color_buffer_float'))
             return null;
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info'))
             return null;
         return gl;
     };
@@ -1341,7 +1341,7 @@ var WebGLHandler = (function () {
             // currently when WebGLRenderingContext#readPixels is called, an error is thrown.
             return null;
         }
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info'))
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info'))
             return null;
         return gl;
     };
@@ -1350,13 +1350,13 @@ var WebGLHandler = (function () {
         var gl;
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
-            if (isDebugMode())
+            if (getConfiguration('DEBUG', false))
                 console.info('WebGL2 is enabled');
         }
         else {
             gl = WebGLHandler.initializeWebGL1Context(canvas);
             if (gl) {
-                if (isDebugMode())
+                if (getConfiguration('DEBUG', false))
                     console.info('WebGL2 is disabled');
             }
             else {
@@ -1384,7 +1384,7 @@ var WebGLHandler = (function () {
             if (!gl) {
                 availability = false;
             }
-            else if (gl.getParameter(gl.MAX_TEXTURE_SIZE) < 4096) {
+            else if (getConfiguration('MAX_TEXTURE_SIZE', gl.getParameter(gl.MAX_TEXTURE_SIZE)) < 4096) {
                 availability = false;
             }
             else {
@@ -1758,12 +1758,13 @@ var DescriptorRunnerWebGL = (function (_super) {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        MAX_TEXTURE_SIZE = this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE);
+                        MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE));
+                        // FIXME: In most case, MAX_TEXTURE_SIZE=4096 is the fastest (Why?).
                         if (MAX_TEXTURE_SIZE >= 16384) {
-                            MAX_TEXTURE_SIZE = 16384;
+                            MAX_TEXTURE_SIZE = 4096;
                         }
                         else if (MAX_TEXTURE_SIZE >= 8192) {
-                            MAX_TEXTURE_SIZE = 8192;
+                            MAX_TEXTURE_SIZE = 4096;
                         }
                         else if (MAX_TEXTURE_SIZE >= 4096) {
                             MAX_TEXTURE_SIZE = 4096;
@@ -2027,9 +2028,29 @@ var DescriptorRunnerWebGL = (function (_super) {
                                 func: gl.uniform2fv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
+                        case 'vec3':
+                            return {
+                                func: gl.uniform3fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
                         case 'vec4':
                             return {
                                 func: gl.uniform4fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec2':
+                            return {
+                                func: gl.uniform2iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec3':
+                            return {
+                                func: gl.uniform3iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+                        case 'ivec4':
+                            return {
+                                func: gl.uniform4iv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
                         case 'sampler2D':
@@ -2105,7 +2126,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                         _i++;
                         return [3 /*break*/, 1];
                     case 4:
-                        if (!isDebugMode()) return [3 /*break*/, 18];
+                        if (!getConfiguration('DEBUG', false)) return [3 /*break*/, 18];
                         records = [];
                         totalElapsedTime_1 = 0;
                         _b = 0, _c = runtimeInfo.programs;
@@ -2807,7 +2828,7 @@ var DescriptorRunnerWebGPU = (function (_super) {
                         dynamicBuffer = this.dynamicBuffer;
                         metaBuffers = this.metaBuffers;
                         this._running = true;
-                        if (!isDebugMode()) return [3 /*break*/, 5];
+                        if (!getConfiguration('DEBUG', false)) return [3 /*break*/, 5];
                         records = [];
                         totalElapsedTime_1 = 0;
                         i = 0;
@@ -3598,20 +3619,20 @@ var math = Object.freeze({
  * DEBUG flag for developing WebDNN
  * @private
  */
-var DEBUG = false;
+var configurations = {};
 /**
- * get DEBUG flag for developing WebDNN
+ * get configuration
  * @private
  */
-function isDebugMode() {
-    return DEBUG;
+function getConfiguration(key, defaultValue) {
+    return key in configurations ? configurations[key] : defaultValue;
 }
 /**
- * set DEBUG flag for developing WebDNN
+ * set configuration
  * @private
  */
-function setDebugMode(flag) {
-    DEBUG = flag;
+function setConfiguration(key, value) {
+    configurations[key] = value;
 }
 /**
  * Backend constructor map
@@ -3758,8 +3779,8 @@ function load(directory, initOption) {
     });
 }
 
-exports.isDebugMode = isDebugMode;
-exports.setDebugMode = setDebugMode;
+exports.getConfiguration = getConfiguration;
+exports.setConfiguration = setConfiguration;
 exports.getBackendAvailability = getBackendAvailability;
 exports.load = load;
 exports.Math = math;

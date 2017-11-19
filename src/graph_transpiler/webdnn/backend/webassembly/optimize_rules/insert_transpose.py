@@ -107,7 +107,7 @@ class InsertTranspose(OptimizeRule):
                     b_axes.append(axis)
 
                 # Remained axes must be located in same order as A and B's axes order.
-                if all(axis in a_axes for axis in C.order.axes[:A.ndim - len(op.axes[0])]):
+                if all(axis in op.axes[0] for axis in C.order.axes[:A.ndim - len(op.axes[0])]):
                     # C's order is as [*a_remained_axes, *b_remained_axes], so it's not need to transpose C.
                     for i, axis in enumerate(C.order.axes[:A.ndim - len(op.axes[0])]):
                         a_axes.remove(axis)
@@ -118,7 +118,7 @@ class InsertTranspose(OptimizeRule):
                         b_axes.insert(i, axis)
 
                 else:
-                    c_axes = a_axes[:len(op.axes[0])] + b_axes[:len(op.axes[1])]
+                    c_axes = a_axes[:(A.ndim - len(op.axes[0]))] + b_axes[:(B.ndim - len(op.axes[1]))]
                     flag_changed |= _replace_output(op, "C", Order(c_axes))
 
                 flag_changed |= _replace_input(op, "A", Order(a_axes))

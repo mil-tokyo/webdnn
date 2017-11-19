@@ -28,3 +28,31 @@ def template(a_shape=(2, 3, 4, 5), b_shape=(3, 4, 5, 6), axes=((1, 2, 3), (0, 1,
 
 def test():
     template()
+
+
+def test_large():
+    template(a_shape=(1024, 1024), b_shape=(1024, 1024), axes=((1,), (0,)))
+
+
+def test_vector_inner_product():
+    template(a_shape=(1, 10), b_shape=(10, 1), axes=((1,), (0,)))
+
+
+def test_vector_outer_product():
+    template(a_shape=(10, 1), b_shape=(1, 10), axes=((1,), (0,)))
+
+
+def test_NN():
+    template(a_shape=(2, 10), b_shape=(10, 2), axes=((1,), (0,)))
+
+
+def test_NT():
+    template(a_shape=(2, 10), b_shape=(2, 10), axes=((1,), (1,)))
+
+
+def test_TN():
+    template(a_shape=(10, 2), b_shape=(10, 2), axes=((0,), (0,)))
+
+
+def test_TT():
+    template(a_shape=(10, 2), b_shape=(2, 10), axes=((0,), (1,)))

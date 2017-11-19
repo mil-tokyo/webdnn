@@ -10,7 +10,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, OrderNC, Order
 
 
-class ReplaceLinearBySgemm(OptimizeRule):
+class ReplaceLinearByTensordot(OptimizeRule):
     """
     Replace Linear by Tensordot
     """
@@ -31,8 +31,8 @@ class ReplaceLinearBySgemm(OptimizeRule):
                 new_y, = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
 
             elif x.ndim == 4:
-                w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(w)
-                new_y, = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
+                w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.C, Axis.H, Axis.W, a_filter]))(w)
+                new_y, = Tensordot(None, axes=[[Axis.H, Axis.W, Axis.C], [Axis.H, Axis.W, a_filter]])(x, w)
 
             else:
                 raise NotImplementedError

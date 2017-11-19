@@ -36,10 +36,12 @@ class UniformInjector(Injector):
 
             elif typename == "vec2" or typename == "vec3" or typename == "vec4":
                 assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
+                assert len(value) == int(typename[-1]), f"len(value) = {len(value)}, int(typename[-1]) = {int(typename[-1])}"
                 injected_value_literal = f" = {typename}({', '.join([str(v) for v in value])})"
 
             elif typename == "ivec2" or typename == "ivec3" or typename == "ivec4":
                 assert isinstance(value, Sequence), f"Uniform value of '{typename}' must be sequence: type(value)={type(value)}"
+                assert len(value) == int(typename[-1]), f"len(value) = {len(value)}, int(typename[-1]) = {int(typename[-1])}"
                 for i, v in enumerate(value):
                     assert int(v) == v, f"Uniform value of '{typename}' must be sequence of integer: value[{i}]={value[i]}"
                     injected_value_literal = f" = {typename}({', '.join([str(v) for v in value])})"

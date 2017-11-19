@@ -1,10 +1,9 @@
 import numpy as np
 
 from test.util import generate_kernel_test_case
-from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
-from webdnn.graph.order import OrderC, OrderNHWC, OrderNCHW, OrderCNHW
+from webdnn.graph.order import OrderNHWC
 from webdnn.graph.variable import Variable
 
 

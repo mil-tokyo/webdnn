@@ -4,11 +4,12 @@ from webdnn.optimizer.sub_rules import conv_filter_pruning
 from webdnn.optimizer.sub_rules import convolution2d_svd_compression
 from webdnn.optimizer.sub_rules import dump_graph
 from webdnn.optimizer.sub_rules import elementwise_kernel_fusion
+from webdnn.optimizer.sub_rules import merge_tensordot_and_elementwise_mul
 from webdnn.optimizer.sub_rules import remove_no_effect_operator
 from webdnn.optimizer.sub_rules import remove_redundant_operator
 from webdnn.optimizer.sub_rules import replace_convolution_by_im2col
 from webdnn.optimizer.sub_rules import replace_deconvolution_by_col2im
-from webdnn.optimizer.sub_rules import replace_linear_by_sgemm
+from webdnn.optimizer.sub_rules import replace_linear_by_tensordot
 from webdnn.optimizer.sub_rules import replace_scalar_operator
 from webdnn.optimizer.sub_rules import simplify_associative_operator
 from webdnn.optimizer.sub_rules import simplify_elementwise_sequence

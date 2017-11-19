@@ -10,10 +10,6 @@ from webdnn.util.misc import mul
 
 
 class FixTensordotTextureShape(OptimizeRule):
-    def __init__(self, optimize_channel_mode: bool = False):
-        super(FixTensordotTextureShape, self).__init__()
-        self.optimize_channel_mode = optimize_channel_mode
-
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
         for op in traverse.filter_nodes(traverse.listup_operators(graph), Tensordot):  # type: Tensordot
@@ -24,8 +20,7 @@ class FixTensordotTextureShape(OptimizeRule):
             M = A.size // K
             N = B.size // K
 
-            if all([self.optimize_channel_mode,
-                    K % 4 == 0]):
+            if K % 4 == 0:
                 if ChannelMode.get(A) != ChannelModeEnum.RGBA:
                     flag_changed = True
                     ChannelMode.set(A, ChannelModeEnum.RGBA)
@@ -33,9 +28,6 @@ class FixTensordotTextureShape(OptimizeRule):
                 if ChannelMode.get(B) != ChannelModeEnum.RGBA:
                     flag_changed = True
                     ChannelMode.set(B, ChannelModeEnum.RGBA)
-
-                texture_shape_A = [M, K // 4]
-                texture_shape_B = [N, K // 4]
 
             else:
                 if ChannelMode.get(A) != ChannelModeEnum.R:
@@ -46,15 +38,12 @@ class FixTensordotTextureShape(OptimizeRule):
                     flag_changed = True
                     ChannelMode.set(B, ChannelModeEnum.R)
 
-                texture_shape_A = [M, K]
-                texture_shape_B = [N, K]
-
-            if TextureShape.get(A) != texture_shape_A:
+            if TextureShape.get(A) != (M, K):
                 flag_changed = True
-                TextureShape.set(A, height=texture_shape_A[0], width=texture_shape_A[1])
+                TextureShape.set(A, height=M, width=K)
 
-            if TextureShape.get(B) != texture_shape_B:
+            if TextureShape.get(B) != (N, K):
                 flag_changed = True
-                TextureShape.set(B, height=texture_shape_B[0], width=texture_shape_B[1])
+                TextureShape.set(B, height=N, width=K)
 
         return graph, flag_changed

@@ -1,58 +1,173 @@
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict, Tuple, Set, Sequence
+
+import numpy as np
 
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.attributes.texture_shape import TextureShape
+from webdnn.backend.webgl.kernel_code import Type, ExpressionNode, Expression
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
+from webdnn.util.misc import mul
+
+
+def change_order(expression: Expression, in_order: Order, out_order: Order) -> ExpressionNode:
+    assert in_order.check_same_axes(out_order), f"""
+"in_order" and "out_order" must have same axes:
+    (in_order) = {in_order}
+    (out_order) = {out_order}
+"""
+
+    if in_order == out_order:
+        return ExpressionNode(expression)
+
+    else:
+        return ExpressionNode([expression, f".{''.join(['xyzw'[in_order.axes_dict[axis]] for axis in out_order.axes])}"])
+
+
+def get_output_position(output_variable: Variable):
+    if ChannelMode.get(output_variable) == ChannelModeEnum.R:
+        return convert_position("gl_FragCoord.yx",
+                                texture_shape(output_variable)[:2],
+                                texture_stride(output_variable)[:2],
+                                output_variable.shape,
+                                output_variable.stride)
+
+    elif ChannelMode.get(output_variable) == ChannelModeEnum.RGBA:
+        return convert_position("vec3(gl_FragCoord.y, gl_FragCoord.x, 0)",
+                                texture_shape(output_variable),
+                                texture_stride(output_variable),
+                                output_variable.shape,
+                                output_variable.stride)
+
+
+def convert_position(expression: Expression,
+                     in_shape: Sequence[int], in_stride: Sequence[int],
+                     out_shape: Sequence[int], out_stride: Sequence[int]):
+    if mul(in_shape) < 1 << 20:
+        return ExpressionNode([
+            "convert_position_i(",
+            expression, ",",
+            ivec(in_stride), ", ",
+            ivec(out_stride), ", ",
+            ivec(out_shape), ")"
+        ])
+
+    else:
+        return ExpressionNode([
+            "convert_position_i(",
+            expression, ",",
+            ivec(in_stride), ", ",
+            ivec(out_stride), ", ",
+            ivec(out_shape), ")"
+        ])
+
+
+def convert_coord(expression: Expression,
+                  in_shape: Sequence[int], in_stride: Sequence[int],
+                  out_shape: Sequence[int], out_stride: Sequence[int]):
+    # noinspection PyUnresolvedReferences
+    inv_out_shape = [np.double(1.0) / np.double(v) for v in out_shape]
+
+    return ExpressionNode([
+        f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride), ") + 0.5)",
+        " * ", vec(inv_out_shape)
+    ])
+
+
+def texel_fetch(variable: Variable, expression: Expression):
+    texture_shape_xy = texture_shape(variable)[0:2][::-1]
+    texture_stride_xy = texture_stride(variable)[0:2][::-1]
+    return ExpressionNode([
+        "texture2D(",
+        variable, ",",
+        convert_coord(expression, variable.shape, variable.stride, texture_shape_xy, texture_stride_xy), ")"
+    ])
+
+
+def ivec(sequence: Sequence[int]):
+    return [int(v) for v in sequence]
+
+
+def ivec2(sequence: Sequence[int]):
+    assert len(sequence) == 2
+    return ivec(sequence)
+
+
+def ivec3(sequence: Sequence[int]):
+    assert len(sequence) == 3
+    return ivec(sequence)
+
+
+def ivec4(sequence: Sequence[int]):
+    assert len(sequence) == 4
+    return ivec(sequence)
+
+
+def vec(sequence: Sequence[float]):
+    return [float(v) for v in sequence]
+
+
+def vec2(sequence: Sequence[float]):
+    assert len(sequence) == 2
+    return vec(sequence)
+
+
+def vec3(sequence: Sequence[float]):
+    assert len(sequence) == 3
+    return vec(sequence)
+
+
+def vec4(sequence: Sequence[float]):
+    assert len(sequence) == 4
+    return vec(sequence)
 
 
 def _mod_snippet(t1: str, t2: str, tr: str):
     return f"{tr} mod({t1} x, {t2} p) {{ return x-(x/p)*p; }}"
 
 
-def _convert_position_i_snippet(t1: str, t2: str):
-    ndim1 = int(t1[-1])
-
+def _convert_position_snippet(ndim1: int, ndim2: int):
     iteration_snippets = []
     for i in range(ndim1):
         iteration_snippets.append(f"""
             index += index_partial[{i}];
-            m = index / s2i;
-            p2i += m;
-            index -= m*s2i;
+            m = index / s2;
+            p2 += m;
+            index -= m*s2;
         """)
 
     iteration_snippet = "\n".join(iteration_snippets)
 
     return f"""
-i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2, int index_offset) {{
-    i{t1} index_partial = i{t1}(p1) * i{t1}(s1);
-    i{t2} s2i = i{t2}(s2);
-    i{t2} d2i = i{t2}(d2);
-
-    i{t2} index = i{t2}(index_offset);
-    i{t2} p2i = i{t2}(0);
+ivec{ndim2} convert_position_i(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2, int index_offset) {{
+    ivec{ndim1} index_partial = p1 * s1;
+    ivec{ndim2} index = ivec{ndim2}(index_offset);
+    ivec{ndim2} p2 = ivec{ndim2}(0);
     
-    i{t2} m;
+    ivec{ndim2} m;
     {iteration_snippet}
 
-    return p2i-(p2i/d2i)*d2i;
+    return p2-(p2/d2)*d2;
 }}
 
-i{t2} convert_position_i({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+ivec{ndim2} convert_position_i(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
     return convert_position_i(p1, s1, s2, d2, 0);
 }}
-"""
 
-
-def _convert_position_snippet(t1: str, t2: str):
-    return f"""
-{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2, int index_offset) {{
-    return {t2}(convert_position_i(p1, s1, s2, d2, index_offset)) + 0.5;
+ivec{ndim2} convert_position_i(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
+    return convert_position_i(ivec{ndim1}(p1), s1, s2, d2, 0);
 }}
 
-{t2} convert_position({t1} p1, {t1} s1, {t2} s2, {t2} d2) {{
+ivec{ndim2} convert_position_i(vec{ndim1} p1, vec{ndim1} s1, vec{ndim2} s2, vec{ndim2} d2) {{
+    return convert_position_i(ivec{ndim1}(p1), ivec{ndim1}(s1), ivec{ndim2}(s2), ivec{ndim2}(d2), 0);
+}}
+
+vec{ndim2} convert_position(vec{ndim1} p1, vec{ndim1} s1, vec{ndim2} s2, vec{ndim2} d2, int index_offset) {{
+    return vec{ndim2}(convert_position_i(ivec{ndim1}(p1), ivec{ndim1}(s1), ivec{ndim2}(s2), ivec{ndim2}(d2), index_offset)) + 0.5;
+}}
+
+vec{ndim2} convert_position(vec{ndim1} p1, vec{ndim1} s1, vec{ndim2} s2, vec{ndim2} d2) {{
     return convert_position(p1, s1, s2, d2, 0);
 }}
 """
@@ -61,6 +176,7 @@ def _convert_position_snippet(t1: str, t2: str):
 FragmentShaderPreamble = f"""
 precision highp float;
 precision highp int;
+precision highp sampler2D;
 
 {_mod_snippet("int",   "int",   "int")}
 {_mod_snippet("int",   "ivec2", "ivec2")}
@@ -73,30 +189,69 @@ precision highp int;
 {_mod_snippet("ivec3", "ivec3", "ivec3")}
 {_mod_snippet("ivec4", "ivec4", "ivec4")}
 
-{_convert_position_i_snippet("vec2", "vec2")}
-{_convert_position_i_snippet("vec2", "vec3")}
-{_convert_position_i_snippet("vec2", "vec4")}
-{_convert_position_i_snippet("vec3", "vec2")}
-{_convert_position_i_snippet("vec3", "vec3")}
-{_convert_position_i_snippet("vec3", "vec4")}
-{_convert_position_i_snippet("vec4", "vec2")}
-{_convert_position_i_snippet("vec4", "vec3")}
-{_convert_position_i_snippet("vec4", "vec4")}
+{_convert_position_snippet(2, 2)}
+{_convert_position_snippet(2, 3)}
+{_convert_position_snippet(2, 4)}
+{_convert_position_snippet(3, 2)}
+{_convert_position_snippet(3, 3)}
+{_convert_position_snippet(3, 4)}
+{_convert_position_snippet(4, 2)}
+{_convert_position_snippet(4, 3)}
+{_convert_position_snippet(4, 4)}
 
-{_convert_position_snippet("vec2", "vec2")}
-{_convert_position_snippet("vec2", "vec3")}
-{_convert_position_snippet("vec2", "vec4")}
-{_convert_position_snippet("vec3", "vec2")}
-{_convert_position_snippet("vec3", "vec3")}
-{_convert_position_snippet("vec3", "vec4")}
-{_convert_position_snippet("vec4", "vec2")}
-{_convert_position_snippet("vec4", "vec3")}
-{_convert_position_snippet("vec4", "vec4")}
+vec2 var2tex(vec2 var_position, vec2 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    vec3 tex_pos = convert_position(var_position, var_stride, tex_stride, tex_shape);
+    return vec2(tex_pos.y, tex_pos.x);
+}}
+vec2 var2tex(vec3 var_position, vec3 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    vec3 tex_pos = convert_position(var_position, var_stride, tex_stride, tex_shape);
+    return vec2(tex_pos.y, tex_pos.x);
+}}
+vec2 var2tex(vec4 var_position, vec4 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    vec3 tex_pos = convert_position(var_position, var_stride, tex_stride, tex_shape);
+    return vec2(tex_pos.y, tex_pos.x);
+}}
 
-vec2 convert_coord(vec2 p1, vec2 s1, vec2 s2, vec2 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
-vec4 convert_coord(vec2 p1, vec2 s1, vec4 s2, vec4 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
-vec2 convert_coord(vec4 p1, vec4 s1, vec2 s2, vec2 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
-vec4 convert_coord(vec4 p1, vec4 s1, vec4 s2, vec4 d2) {{ return fract((floor(dot(p1 - 0.5, s1) / s2) + 0.5) / d2); }}
+
+vec2 var2tex_coord(vec2 var_position, vec2 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(var_position, var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+vec2 var2tex_coord(ivec2 var_position, vec2 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(vec2(var_position), var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+vec2 var2tex_coord(vec3 var_position, vec3 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(var_position, var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+vec2 var2tex_coord(ivec3 var_position, vec3 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(vec3(var_position), var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+vec2 var2tex_coord(vec4 var_position, vec4 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(var_position, var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+vec2 var2tex_coord(ivec4 var_position, vec4 var_stride, vec3 tex_stride, vec3 tex_shape) {{
+    return var2tex(vec4(var_position), var_stride, tex_stride, tex_shape) / tex_shape.yx;
+}}
+
+
+ivec2 tex2var(vec2 tex_position, vec3 tex_stride, vec2 var_stride, vec2 var_shape, int ch) {{
+    return convert_position_i(vec3(tex_position.y, tex_position.x, float(ch) + 0.5), tex_stride, var_stride, var_shape);
+}}
+ivec3 tex2var(vec2 tex_position, vec3 tex_stride, vec3 var_stride, vec3 var_shape, int ch) {{
+    return convert_position_i(vec3(tex_position.y, tex_position.x, float(ch) + 0.5), tex_stride, var_stride, var_shape);
+}}
+ivec4 tex2var(vec2 tex_position, vec3 tex_stride, vec4 var_stride, vec4 var_shape, int ch) {{
+    return convert_position_i(vec3(tex_position.y, tex_position.x, float(ch) + 0.5), tex_stride, var_stride, var_shape);
+}}
+
+ivec2 tex2var(vec2 tex_position, vec3 tex_stride, vec2 var_stride, vec2 var_shape) {{
+    return tex2var(tex_position, tex_stride, var_stride, var_shape, 0);
+}}
+ivec3 tex2var(vec2 tex_position, vec3 tex_stride, vec3 var_stride, vec3 var_shape) {{
+    return tex2var(tex_position, tex_stride, var_stride, var_shape, 0);
+}}
+ivec4 tex2var(vec2 tex_position, vec3 tex_stride, vec4 var_stride, vec4 var_shape) {{
+    return tex2var(tex_position, tex_stride, var_stride, var_shape, 0);
+}}
 """
 
 
@@ -208,22 +363,11 @@ def simplify_orders(variables: List[Variable],
 
 def texture_shape(v: Variable):
     height, width = TextureShape.get(v)
-    return [width, height]
+    elements_per_pixel = ChannelMode.elements_per_pixel(v)
+    width = (width + elements_per_pixel - 1) // elements_per_pixel
+    return height, width, elements_per_pixel
 
 
 def texture_stride(v: Variable):
-    result = []
-    channel_mode = ChannelMode.get(v)
-    if channel_mode == ChannelModeEnum.R:
-        s = 1
-
-    elif channel_mode == ChannelModeEnum.RGBA:
-        s = 4
-
-    else:
-        raise NotImplementedError(f"Unknown channel mode: {channel_mode}")
-
-    for d in texture_shape(v):
-        result.append(s)
-        s *= d
-    return result
+    shape = texture_shape(v)
+    return tuple(mul(shape[i + 1:]) for i in range(len(shape)))

@@ -30,9 +30,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
 
             if op.WH == 1 and op.WW == 1 and op.stride == (1, 1) and op.padding == (0, 0):
                 # Projection
-                col, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(x)
-
-                new_y, = Tensordot(None, [[a_filter], [a_kh, a_kw, a_filter]])(col, w)
+                new_y, = Tensordot(None, [[Axis.C], [a_kh, a_kw, a_filter]])(x, w)
 
             elif op.WH == x.shape_dict[Axis.H] and op.WW == x.shape_dict[Axis.W] and op.padding == (0, 0):
                 # Global convolution
@@ -43,9 +41,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             else:
                 # General convolution
                 col, = Im2Col(None, ksize=op.ksize, stride=op.stride, padding=op.padding, dilation_rate=op.dilation_rate)(x)
-                col, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(col)
-
-                new_y, = Tensordot(None, [[a_filter], [a_kh, a_kw, a_filter]])(col, w)
+                new_y, = Tensordot(None, [[Axis.C], [a_kh, a_kw, a_filter]])(col, w)
 
             new_y = new_y.transpose(y.order)
             OptimizeRule.replace_variable(graph, new_y, y)

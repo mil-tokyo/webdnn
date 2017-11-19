@@ -1,45 +1,11 @@
-from typing import List, Sequence
+from typing import List
 
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
-from webdnn.backend.webgl.uniform_injector import UniformInjector
+from webdnn.backend.webgl.kernel_code import KernelCode, Type
+from webdnn.backend.webgl.kernels.util import get_output_position, texel_fetch, change_order
 from webdnn.graph.operators.split_axis import SplitAxis
-
-template = FragmentShaderPreamble + """
-%%UNIFORM(sampler2D, sampler_x)%%;
-
-%%UNIFORM(vec2, texture_stride_y)%%;
-%%UNIFORM(vec4, variable_shape_y)%%;
-%%UNIFORM(vec4, variable_stride_y)%%;
-
-%%UNIFORM(vec4, variable_shape_x)%%;
-%%UNIFORM(vec4, variable_stride_x)%%;
-%%UNIFORM(vec2, texture_stride_x)%%;
-%%UNIFORM(vec2, texture_shape_x)%%;
-
-%%UNIFORM(vec4, offset)%%;
-
-void main() {
-    vec4 variable_position_y = convert_position(gl_FragCoord.xy, texture_stride_y, variable_stride_y, variable_shape_y);    
-    vec4 variable_position_x = variable_position_y + offset;
-    float x = texture2D(sampler_x, convert_coord(variable_position_x, variable_stride_x, texture_stride_x, texture_shape_x)).r;
-
-    gl_FragColor = vec4(x, 0, 0, 0);
-}
-"""
-
-
-def _pad_to_4d(arr: Sequence[int], val: int = 1):
-    assert len(arr) <= 4, ValueError
-
-    arr = list(arr)
-    while len(arr) < 4:
-        arr.append(val)
-
-    return arr
 
 
 @WebGLDescriptorGenerator.register_handler(SplitAxis)
@@ -55,35 +21,21 @@ def split_axis(op: SplitAxis) -> List[Kernel]:
         assert x.order.check_same_axes(y.order)
         assert ChannelMode.get(x) == ChannelMode.get(y) == ChannelModeEnum.R
 
-        name_injector = KernelNameInjector(op)
-        uniform_injector = UniformInjector()
-
-        offset = [sections[i] if a == axis else 0 for a in y.order.axes]
-        uniform_injector.register({
-            "sampler_x": x,
-
-            "texture_stride_y": texture_stride(y),
-            "variable_shape_y": _pad_to_4d(y.shape),
-            "variable_stride_y": _pad_to_4d(y.stride),
-
-            "texture_shape_x": texture_shape(x),
-            "texture_stride_x": texture_stride(x),
-            "variable_shape_x": _pad_to_4d([x.shape_dict[a] for a in y.order.axes]),
-            "variable_stride_x": _pad_to_4d([x.stride_dict[a] for a in y.order.axes]),
-
-            "offset": _pad_to_4d(offset, 0)
-        })
-
-        source = template
-        source = uniform_injector.inject(source)
-        source = name_injector.inject(source)
-        kernel = Kernel(
+        code = KernelCode([f"""
+void main() {{
+    """, Type.Ivec.get_name(x.shape), f""" variable_position_x = """, change_order(get_output_position(y), y.order, x.order), f""";     
+    variable_position_x[{x.order.axes_dict[axis]}] += {sections[i]};
+    
+    gl_FragColor.r = """, texel_fetch(x, "variable_position_x"), f""".r;
+}}
+"""])
+        source = code.generate()
+        kernels.append(Kernel(
             source,
-            name_injector.name,
-            uniform_injector.samplers,
-            uniform_injector.uniforms,
+            code.name,
+            code.samplers,
+            code.uniforms,
             y
-        )
-        kernels.append(kernel)
+        ))
 
     return kernels

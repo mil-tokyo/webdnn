@@ -1,4 +1,4 @@
-from typing import NamedTuple, List, Sequence, Tuple
+from typing import NamedTuple, List, Sequence
 
 import numpy as np
 
@@ -14,7 +14,6 @@ from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.reshape import Reshape
-from webdnn.graph.operators.sgemm import Sgemm
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
@@ -82,9 +81,6 @@ def _split_axis(v: Variable, axis: Axis, graph):
 
         elif isinstance(op, Reshape):
             _split_reshape(graph, op, v, [v1, v2], axis)
-
-        elif isinstance(op, Sgemm):
-            _split_sgemm(graph, op, v, [v1, v2], axis)
 
         elif isinstance(op, Tensordot):
             _split_tensordot(graph, op, v, [v1, v2], axis)
@@ -684,237 +680,6 @@ def _split_partial_im2col(graph: Graph, op: PartialIm2Col, v: Variable, v_pair: 
         raise UnexpectedAndPleaseReportError
 
 
-def _split_sgemm(graph: Graph, op: Sgemm, v: Variable, v_pair: Sequence[Variable], axis: Axis):
-    s1 = v_pair[0].shape_dict[axis]
-    s2 = v_pair[1].shape_dict[axis]
-    A = op.inputs["A"]
-    B = op.inputs["B"]
-    C = op.outputs["C"]
-    transpose_A, transpose_B = op.transpose_A, op.transpose_B
-    M, K, N = op.M, op.K, op.N
-    axis_M, axis_K, axis_N = Axis(), Axis(), Axis()
-
-    op.remove_all()
-
-    def decompose_logical_axes(logical_shape: Tuple[int, int], v: Variable):
-        """
-        Decompose logical axes into real axes
-
-        Examples::
-
-            A.order, A.shape
-            >>> "NCHW", (1, 128, 8, 8)
-
-            M = 128
-            K = 64
-            decompose_logical_axes([M, K], A)
-            >>> ["<Axis N>", "<Axis C>"], ["<Axis H>", "<Axis W>"]
-        """
-        total_size = 1
-        axes1 = []  # type: List[Axis]
-        axes2 = list(v.order.axes)  # type: List[Axis]
-        for size, a in zip(v.shape, v.order.axes):
-            if total_size == logical_shape[0]:
-                return axes1, axes2
-
-            elif total_size > logical_shape[0]:
-                raise ValueError
-
-            axes1.append(a)
-            axes2.remove(a)
-            total_size *= size
-
-    if v == A:
-        A1, A2 = v_pair
-        if transpose_A:  # A.shape = [M, K]
-            axes_M, axes_K = decompose_logical_axes((M, K), A)
-
-        else:  # A.shape = [K, M]
-            axes_K, axes_M = decompose_logical_axes((K, M), A)
-
-        if axis in axes_K:
-            """
-            before)
-
-                A -{sgemm}- C
-
-            after) In case `axis` is in `K`,
-
-                A_0 -{sgemm}- C_0 -+
-                                   +-{Add}- C
-                A_1 -{sgemm}- C_1 -+
-            """
-            K1, K2 = K * s1 // (s1 + s2), K * s2 // (s1 + s2)
-
-            # Factorize B's axes included in K into A's corresponding axes
-            if transpose_B:  # B: [k_b1, k_b2, ..., N] -{reshape}-> [k_a1, k_a2, ..., N]
-                B = B.reshape(order=Order(axes_K + [axis_N]),
-                              shape=[A.shape_dict[a] for a in axes_K] + [N])
-            else:  # B: [N, k_b1, k_b2, ...] -{reshape}-> [N, k_a1, k_a2, ...]
-                B = B.reshape(order=Order([axis_N] + axes_K),
-                              shape=[N] + [A.shape_dict[a] for a in axes_K])
-
-            B1, B2 = SplitAxis(None, axis=axis, sections=[s1])(B)
-
-            C1, = Sgemm(None, M=M, K=K1, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=op.parameters["out_shape"],
-                        out_order=op.parameters["out_order"])(A1, B1)
-
-            C2, = Sgemm(None, M=M, K=K2, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=op.parameters["out_shape"],
-                        out_order=op.parameters["out_order"])(A2, B2)
-
-            OptimizeRule.replace_variable(graph, C1 + C2, C)
-
-        else:
-            assert axis in axes_M
-            """
-            before)
-
-                A -{sgemm}- C
-
-            after) In case `axis` is in `M`,
-
-                A_0 -{sgemm}- C_0 -+
-                                   +-{Concat}- C
-                A_1 -{sgemm}- C_1 -+
-            """
-            M1, M2 = M * s1 // (s1 + s2), M * s2 // (s1 + s2)
-
-            c_tmp_order = Order(axes_M + [axis_N])
-            c1_shape = [A1.shape_dict[a] for a in axes_M] + [N]
-            c2_shape = [A2.shape_dict[a] for a in axes_M] + [N]
-
-            C1, = Sgemm(None, M=M1, K=K, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=c1_shape,
-                        out_order=c_tmp_order)(A1, B)
-
-            C2, = Sgemm(None, M=M2, K=K, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=c2_shape,
-                        out_order=c_tmp_order)(A2, B)
-
-            for a1, a2 in zip(C1.order.axes, C2.order.axes):
-                if a1 == a2 == axis:
-                    continue
-                a1.unify(a2)
-
-            C_new, = Concat(None, axis=axis)(C1, C2)
-            OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
-
-    elif v == B:
-        B1, B2 = v_pair
-        if transpose_B:  # B.shape = [K, N]
-            axes_K, axes_N = decompose_logical_axes((K, N), B)
-
-        else:  # B.shape = [N, K]
-            axes_N, axes_K = decompose_logical_axes((N, K), B)
-
-        if axis in axes_K:
-            """
-            before)
-    
-                B -{sgemm}- C
-    
-            after) In case `axis` is in `K`,
-    
-                B_0 -{sgemm}- C_0 -+
-                                   +-{Add}- C
-                B_1 -{sgemm}- C_1 -+
-            """
-            K1, K2 = K * s1 // (s1 + s2), K * s2 // (s1 + s2)
-
-            # Factorize A's axes included in K into B's corresponding axes
-            if transpose_A:  # A: [M, k_a1, k_a2, k_a3, ...] -{reshape}-> [M, k_b1, k_b2, ...]
-                A = A.reshape(order=Order([axis_M] + axes_K),
-                              shape=[M] + [B.shape_dict[a] for a in axes_K])
-            else:  # A: [k_a1, k_a2, k_a3, ..., M] -{reshape}-> [k_b1, k_b2, ..., M]
-                A = A.reshape(order=Order(axes_K + [axis_M]),
-                              shape=[B.shape_dict[a] for a in axes_K] + [M])
-
-            A1, A2 = SplitAxis(None, axis=axis, sections=[s1])(A)
-
-            C1, = Sgemm(None, M=M, K=K1, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=op.parameters["out_shape"],
-                        out_order=op.parameters["out_order"])(A1, B1)
-
-            C2, = Sgemm(None, M=M, K=K2, N=N,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=op.parameters["out_shape"],
-                        out_order=op.parameters["out_order"])(A2, B2)
-
-            OptimizeRule.replace_variable(graph, C1 + C2, C)
-
-        else:
-            assert axis in axes_N
-            """
-            before)
-    
-                C[M, N] = A[M, K] @ B[K, N]
-    
-            after) In case `axis` is in `N`,
-    
-                C[M, N] = Concat(C1[M, N1], C2[M, N2])
-                        = Concat(A[M, K] @ B1[K, N1], A[M, K] @ B2[K, N2]) 
-            """
-            N1, N2 = N * s1 // (s1 + s2), N * s2 // (s1 + s2)
-
-            c_tmp_order = Order([axis_M] + axes_N)
-            c1_shape = [M] + [B1.shape_dict[a] for a in axes_N]
-            c2_shape = [M] + [B2.shape_dict[a] for a in axes_N]
-
-            C1, = Sgemm(None, M=M, K=K, N=N1,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=c1_shape,
-                        out_order=c_tmp_order)(A, B1)
-            # C1.shape = [M, B.shape_dict[n1], B.shape_dict[n2], ..., B1.shape_dict[axis], ...]
-            # C1.order = [axis_M, n1, n2, ..., axis, ...]
-
-            C2, = Sgemm(None, M=M, K=K, N=N2,
-                        transpose_A=transpose_A,
-                        transpose_B=transpose_B,
-                        out_shape=c2_shape,
-                        out_order=c_tmp_order)(A, B2)
-
-            for a1, a2 in zip(C1.order.axes, C2.order.axes):
-                if a1 == a2 == axis:
-                    continue
-                a1.unify(a2)
-
-            C_new, = Concat(None, axis=axis)(C1, C2)
-            # C_new.shape = [M, B.shape_dict[n1], B.shape_dict[n2], ..., B1.shape_dict[axis]+B2.shape_dict[axis], ...]
-            # C_new.order = [axis_M, n1, n2, ..., axis, ...]
-
-            OptimizeRule.replace_variable(graph, C_new.reshape_like(C), C)
-
-    elif v == C:
-        """
-        before)
-
-            C[M, N] = A[M, K] @ B[K, N]
-
-        after) In case `axis` is in `N`,
-
-            C[M, N1] = Concat(A[M, K] @ B1[K, N1])
-            C[M, N2] = Concat(A[M, K] @ B2[K, N2])
-        """
-        raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
-
-    else:
-        raise UnexpectedAndPleaseReportError
-
-
 def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[Variable], axis: Axis):
     s1 = v_pair[0].shape_dict[axis]
     A = op.inputs["A"]
@@ -1034,16 +799,14 @@ def _split_tensorwise(graph: Graph, op: Operator, v: Variable, v_pair: Sequence[
     for key in ys.keys():
         y = ys[key]
         if y == v:
-            op_0.outputs[key].change_order(v_pair[0].order)
-            op_1.outputs[key].change_order(v_pair[0].order)
-            OptimizeRule.replace_variable(graph, op_0.outputs[key], v_pair[0])
-            OptimizeRule.replace_variable(graph, op_1.outputs[key], v_pair[1])
+            OptimizeRule.replace_variable(graph, op_0.outputs[key].transpose_like(v_pair[0]), v_pair[0])
+            OptimizeRule.replace_variable(graph, op_1.outputs[key].transpose_like(v_pair[1]), v_pair[1])
 
         else:
             y_0 = op_0.outputs[key]
             y_1 = op_1.outputs[key]
             y_new, = Concat(None, axis=axis)(y_0, y_1)
-            OptimizeRule.replace_variable(graph, y_new, y)
+            OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
 
 
 def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
@@ -1091,12 +854,6 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
 
         else:
             return [op.axis]
-
-    elif isinstance(op, Sgemm):
-        if v == op.outputs["C"]:
-            return []
-        else:
-            return list(v.order.axes)
 
     elif isinstance(op, Tensordot):
         if v == op.outputs["C"]:
@@ -1148,8 +905,9 @@ def _choose_split_axis(v: Variable) -> Axis:
     #        W is also included in width =>  W: 2048
 
     axis_corresponding_texture_size = AxisKeyDict()
-    tex_h, tex_w = TextureShape.get(v)
     element_per_pixel = ChannelMode.elements_per_pixel(v)
+    tex_h, tex_w = TextureShape.get(v)
+    tex_w = (tex_w + element_per_pixel - 1) // element_per_pixel
     for a in v.order.axes:
         if v.shape_dict[a] == 1:
             # This axis cannot be split

@@ -1,6 +1,5 @@
 from webdnn.backend.webgl.optimize_rules.attach_concat_workspace import AttachConcatWorkspace
 from webdnn.backend.webgl.optimize_rules.decompose_softmax import DecomposeSoftmax
-from webdnn.backend.webgl.optimize_rules.fix_sgemm_texture_shape import FixSGEMMTextureShape
 from webdnn.backend.webgl.optimize_rules.fix_tensordot_texture_shape import FixTensordotTextureShape
 from webdnn.backend.webgl.optimize_rules.insert_channel_mode_conversion import InsertChannelModeConversion
 from webdnn.backend.webgl.optimize_rules.insert_transpose import InsertTranspose
@@ -10,15 +9,13 @@ from webdnn.backend.webgl.optimize_rules.split_texture.split_texture import Spli
 from webdnn.graph.optimize_rule import OptimizeRuleGroup
 from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
-from webdnn.optimizer.sub_rules.merge_sgemm_and_elementwise_mul import MergeSgemmAndElementwiseMul
+from webdnn.optimizer.sub_rules.merge_tensordot_and_elementwise_mul import MergeTensordotAndElementwiseMul
 from webdnn.optimizer.sub_rules.remove_no_effect_operator import RemoveNoEffectOperator
 from webdnn.optimizer.sub_rules.remove_redundant_operator import RemoveRedundantOperator
 from webdnn.optimizer.sub_rules.replace_convolution_by_im2col import ReplaceConvolutionByIm2Col
 from webdnn.optimizer.sub_rules.replace_deconvolution_by_col2im import ReplaceDeconvolutionByCol2Im
-from webdnn.optimizer.sub_rules.replace_linear_by_sgemm import ReplaceLinearBySgemm
-from webdnn.optimizer.sub_rules.simplify_elementwise_sequence import SimplifyElementwiseSequence
-from webdnn.optimizer.sub_rules.simplify_split_axis import SimplifySplitAxis
-from webdnn.util import flags
+from webdnn.optimizer.sub_rules.replace_linear_by_tensordot import ReplaceLinearByTensordot
+from webdnn.util import flags, config
 
 
 class WebGLOptimizeRule(OptimizeRuleGroup):
@@ -26,30 +23,23 @@ class WebGLOptimizeRule(OptimizeRuleGroup):
         sub_rules = [
             OptimizeRuleGroup([
                 InsertTranspose(),
+                InsertChannelModeConversion(),
                 ReplaceConvolutionByIm2Col(),
                 ReplaceDeconvolutionByCol2Im(),
+                ReplaceLinearByTensordot(),
                 DecomposeSoftmax(),
-                ReplaceLinearBySgemm(),
-                MergeSgemmAndElementwiseMul(),
-                FixSGEMMTextureShape(optimize_channel_mode=False),
-                FixTensordotTextureShape(optimize_channel_mode=False),
+                FixTensordotTextureShape(),
+                MergeTensordotAndElementwiseMul(),
                 ConstantFolding(),
-                SplitTexture(),
-            ]),
-            OptimizeRuleGroup([
-                InsertChannelModeConversion(),
-                RemoveNoEffectOperator(),
-                SimplifyElementwiseSequence(),
-                SimplifySplitAxis(),
                 RemoveRedundantOperator(),
+                RemoveNoEffectOperator(),
                 SimplifyChannelModeConversion(),
-                FixSGEMMTextureShape(optimize_channel_mode=True),
-                FixTensordotTextureShape(optimize_channel_mode=True),
+                SplitTexture(),
             ]),
             AttachConcatWorkspace(),
         ]
 
         if flags.DEBUG:
-            sub_rules.append(DumpGraph("cg{count}.dot"))
+            sub_rules.append(DumpGraph(f"cg_{config.WEBGL_MAX_TEXTURE_SIZE}_{{count}}.dot"))
 
         super(WebGLOptimizeRule, self).__init__(sub_rules, repeat=False)

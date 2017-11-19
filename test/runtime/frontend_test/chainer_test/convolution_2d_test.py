@@ -6,10 +6,9 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 @wrap_template
-def template(n=2, c_in=4, h_in=6, w_in=8, c_out=10, ksize=3, stride=1, pad=0, nobias=True, EPS=1e-5, description=""):
+def template(n=2, c_in=4, h_in=6, w_in=8, c_out=10, ksize=3, stride=1, pad=0, nobias=True, description=""):
     link = chainer.links.Convolution2D(c_in, c_out, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
-    link.W.data = np.ones(link.W.shape).astype(np.float32)
-    vx = chainer.Variable(np.ones((n, c_in, h_in, w_in)).astype(np.float32))
+    vx = chainer.Variable(np.random.rand(n, c_in, h_in, w_in).astype(np.float32))
     vy = link(vx)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -22,7 +21,7 @@ def template(n=2, c_in=4, h_in=6, w_in=8, c_out=10, ksize=3, stride=1, pad=0, no
         graph=graph,
         inputs={x: vx.data},
         expected={y: vy.data},
-        EPS=EPS
+        EPS=1e-2
     )
 
 
