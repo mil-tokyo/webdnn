@@ -208,8 +208,9 @@
 </div>
 <dl class="method">
 <dt id="webdnn.Variable.change_order">
-<code class="descname">change_order</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.change_order" title="Permalink to this definition">¶</a></dt>
-<dd><p>Change variable order.</p>
+<code class="descname">change_order</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.change_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>change_order_statement(order)</p>
+<p>Change variable order.</p>
 <p>When number of dimension will be increased, axes whose size is one are created.
 Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -373,7 +374,7 @@ out_shape=other.shape)(v)[0]</dd>
 <dl class="method">
 <dt id="webdnn.Variable.transpose">
 <code class="descname">transpose</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.transpose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.transpose" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transpose into specified order. This is alias of <cite>Transpose(None)(v)[0].change_order(order)</cite></p>
+<dd><p>Transpose into specified order. This is alias of <cite>Transpose(None)(v)[0].change_order_statement(order)</cite></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -390,7 +391,7 @@ out_shape=other.shape)(v)[0]</dd>
 <dt id="webdnn.Variable.transpose_like">
 <code class="descname">transpose_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.transpose_like"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.transpose_like" title="Permalink to this definition">¶</a></dt>
 <dd><p>reshape(shape, order)
-Transpose into same order as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of <cite>Transpose(None)(v)[0].change_order(other.order)</cite></p>
+Transpose into same order as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of <cite>Transpose(None)(v)[0].change_order_statement(other.order)</cite></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

@@ -266,7 +266,7 @@
         <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Variable.change_order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;change_order(order)</span>
+        <span class="sd">&quot;&quot;&quot;change_order_statement(order)</span>
 
 <span class="sd">        Change variable order.</span>
 
@@ -281,7 +281,7 @@
         <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">current_shape_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
-                    <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;[Variable.change_order()] The size of axes which will be removed must be one: &quot;</span> \
+                    <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;[Variable.change_order_statement()] The size of axes which will be removed must be one: &quot;</span> \
                                       <span class="n">f</span><span class="s2">&quot;variable=</span><span class="si">{self}</span><span class="s2">, shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{size}</span><span class="s2">, new_order=</span><span class="si">{order}</span><span class="s2">.&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">new_shape</span>
@@ -465,7 +465,7 @@
 
 <div class="viewcode-block" id="Variable.transpose"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.transpose">[docs]</a>    <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;transpose(shape, order)</span>
-<span class="sd">        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order(order)`</span>
+<span class="sd">        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order_statement(order)`</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            order (:class:`~Order`): order</span>
@@ -479,7 +479,7 @@
 
 <div class="viewcode-block" id="Variable.transpose_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.transpose_like">[docs]</a>    <span class="k">def</span> <span class="nf">transpose_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
-<span class="sd">        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order(other.order)`</span>
+<span class="sd">        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order_statement(other.order)`</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            other (:class:`~Variable`): variable</span>
