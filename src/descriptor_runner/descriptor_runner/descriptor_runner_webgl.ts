@@ -9,7 +9,7 @@ import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import { BackendName, isDebugMode } from "../webdnn";
+import { BackendName, getConfiguration } from "../webdnn";
 import WebGLHandler from "../webgl_handler";
 import { DescriptorRunner } from "./descriptor_runner";
 
@@ -86,12 +86,14 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     }
 
     async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
-        let MAX_TEXTURE_SIZE = this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE);
+        let MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE));
+
+        // FIXME: In most case, MAX_TEXTURE_SIZE=4096 is the fastest (Why?).
         if (MAX_TEXTURE_SIZE >= 16384) {
-            MAX_TEXTURE_SIZE = 16384;
+            MAX_TEXTURE_SIZE = 4096;
 
         } else if (MAX_TEXTURE_SIZE >= 8192) {
-            MAX_TEXTURE_SIZE = 8192;
+            MAX_TEXTURE_SIZE = 4096;
 
         } else if (MAX_TEXTURE_SIZE >= 4096) {
             MAX_TEXTURE_SIZE = 4096;
@@ -321,9 +323,35 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                                 args: [gl.getUniformLocation(program, name), value]
                             };
 
+                        case 'vec3':
+                            return {
+                                func: gl.uniform3fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+
+
                         case 'vec4':
                             return {
                                 func: gl.uniform4fv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+
+                        case 'ivec2':
+                            return {
+                                func: gl.uniform2iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+
+                        case 'ivec3':
+                            return {
+                                func: gl.uniform3iv,
+                                args: [gl.getUniformLocation(program, name), value]
+                            };
+
+
+                        case 'ivec4':
+                            return {
+                                func: gl.uniform4iv,
                                 args: [gl.getUniformLocation(program, name), value]
                             };
 
@@ -382,7 +410,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         if (this.runtimeInfo.programs.length > 0) {
             for (let buffer of runtimeInfo.inputs) await buffer.syncWriteViews();
 
-            if (isDebugMode()) {
+            if (getConfiguration('DEBUG', false)) {
                 let records: any = [];
                 let totalElapsedTime = 0;
 

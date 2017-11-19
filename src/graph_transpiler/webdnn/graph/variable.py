@@ -98,7 +98,7 @@ class Variable(Node):
         return Variable(self.shape, self.order)
 
     def change_order(self, order: Order) -> "Variable":
-        """change_order(order)
+        """change_order_statement(order)
 
         Change variable order.
 
@@ -113,7 +113,7 @@ class Variable(Node):
         for axis, size in current_shape_dict.items():
             if axis not in order.axes:
                 if Placeholder.check_resolved(size):
-                    assert size == 1, "[Variable.change_order()] The size of axes which will be removed must be one: " \
+                    assert size == 1, "[Variable.change_order_statement()] The size of axes which will be removed must be one: " \
                                       f"variable={self}, shape_dict[{axis}]={size}, new_order={order}."
         self._order = order
         self._shape = new_shape
@@ -297,7 +297,7 @@ class Variable(Node):
 
     def transpose(self, order: Order) -> "Variable":
         """transpose(shape, order)
-        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order(order)`
+        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order_statement(order)`
 
         Args:
             order (:class:`~Order`): order
@@ -311,7 +311,7 @@ class Variable(Node):
 
     def transpose_like(self, other: "Variable") -> "Variable":
         """reshape(shape, order)
-        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order(other.order)`
+        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order_statement(other.order)`
 
         Args:
             other (:class:`~Variable`): variable

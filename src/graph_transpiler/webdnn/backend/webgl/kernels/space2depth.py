@@ -1,49 +1,14 @@
 from typing import List
 
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
+from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_stride, texture_shape
-from webdnn.backend.webgl.uniform_injector import UniformInjector
+from webdnn.backend.webgl.kernel_code import KernelCode
+from webdnn.backend.webgl.kernels.util import get_output_position
+from webdnn.backend.webgl.kernels.util import texel_fetch
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.order import OrderNHWC
-
-template = FragmentShaderPreamble + """
-%%UNIFORM(sampler2D, X)%%;
-
-%%UNIFORM(vec2, s_y)%%;
-%%UNIFORM(vec4, d_Y)%%;
-%%UNIFORM(vec4, s_Y)%%;
-
-%%UNIFORM(vec2, d_x)%%;
-%%UNIFORM(vec2, s_x)%%;
-%%UNIFORM(vec4, d_X)%%;
-%%UNIFORM(vec4, s_X)%%;
-
-%%UNIFORM(float, r)%%;
-%%UNIFORM(float, C1)%%;
-
-void main() {
-    vec4 p_Y = convert_position(gl_FragCoord.xy, s_y, s_Y, d_Y) - 0.5;    
-    
-    float n = p_Y.x;
-    float h2 = p_Y.y;
-    float w2 = p_Y.z;
-    float c2 = p_Y.w;
-    
-    float c1 = mod(c2, C1); 
-    float h1 = h2 * r + floor(floor(c2 / C1) / r); 
-    float w1 = w2 * r + mod(floor(c2 / C1), r); 
-
-    vec4 p_X = vec4(n, h1, w1, c1) + 0.5;
-    vec2 p_x = convert_position(p_X, s_X, s_x, d_x);
-
-    float v = texture2D(X, p_x / d_x).r;
-
-    gl_FragColor = vec4(v, 0, 0, 0);
-}
-"""
 
 
 @WebGLDescriptorGenerator.register_handler(Space2Depth)
@@ -51,38 +16,40 @@ def space2depth(op: Space2Depth) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
     r = op.parameters['r']
+    C1 = x.shape_dict[Axis.C]
 
-    assert x.order == OrderNHWC
-    assert y.order == OrderNHWC
+    assert x.order.check_same_axes(OrderNHWC)
+    assert y.order.check_same_axes(OrderNHWC)
+    assert ChannelMode.get(x) == ChannelModeEnum.R
+    assert ChannelMode.get(y) == ChannelModeEnum.R
 
-    name_injector = KernelNameInjector(op)
-    uniform_injector = UniformInjector()
+    code = KernelCode(["""
+    void main() {
+        ivec4 variable_position_y = """, get_output_position(y), f""";    
 
-    uniform_injector.register({
-        "X": x,
+        int n = variable_position_y[{y.order.axes_dict[Axis.N]}];
+        int h2 = variable_position_y[{y.order.axes_dict[Axis.H]}];
+        int w2 = variable_position_y[{y.order.axes_dict[Axis.W]}];
+        int c2 = variable_position_y[{y.order.axes_dict[Axis.C]}];
 
-        "s_y": texture_stride(y),
-        "d_Y": y.shape,
-        "s_Y": y.stride,
+        int c1 = mod(c2, {C1}); 
+        int h1 = h2 * {r} + c2 / {C1} / {r}; 
+        int w1 = w2 * {r} + mod(c2 / {C1}, {r});
 
-        "d_x": texture_shape(x),
-        "s_x": texture_stride(x),
-        "d_X": x.shape,
-        "s_X": x.stride,
+        ivec4 variable_position_x;
+        variable_position_x[{x.order.axes_dict[Axis.N]}] = n;
+        variable_position_x[{x.order.axes_dict[Axis.H]}] = h1;
+        variable_position_x[{x.order.axes_dict[Axis.W]}] = w1;
+        variable_position_x[{x.order.axes_dict[Axis.C]}] = c1;
 
-        "r": r,
-        "C1": x.shape_dict[Axis.C],
-    })
-
-    source = template
-    source = uniform_injector.inject(source)
-    source = name_injector.inject(source)
-    kernel = Kernel(
+        gl_FragColor.r = """, texel_fetch(x, "variable_position_x"), """.r;
+    }
+    """])
+    source = code.generate()
+    return [Kernel(
         source,
-        name_injector.name,
-        uniform_injector.samplers,
-        uniform_injector.uniforms,
+        code.name,
+        code.samplers,
+        code.uniforms,
         y
-    )
-
-    return [kernel]
+    )]

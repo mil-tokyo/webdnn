@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
@@ -80,3 +80,39 @@ class Pooling2D(Operator):
             self.attributes.add(Tensorwise(self, axis))
 
         return y,
+
+    @property
+    def ksize(self) -> Tuple[int, int]:
+        return self.parameters["ksize"]
+
+    @property
+    def stride(self) -> Tuple[int, int]:
+        return self.parameters["stride"]
+
+    @property
+    def padding(self) -> Tuple[int, int]:
+        return self.parameters["padding"]
+
+    @property
+    def KH(self) -> int:
+        return self.ksize[0]
+
+    @property
+    def KW(self) -> int:
+        return self.ksize[1]
+
+    @property
+    def SH(self) -> int:
+        return self.stride[0]
+
+    @property
+    def SW(self) -> int:
+        return self.stride[1]
+
+    @property
+    def PH(self) -> int:
+        return self.padding[0]
+
+    @property
+    def PW(self) -> int:
+        return self.padding[1]

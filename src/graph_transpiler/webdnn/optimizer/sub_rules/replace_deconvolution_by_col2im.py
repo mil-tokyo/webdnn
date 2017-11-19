@@ -28,13 +28,21 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
 
             a_filter, a_kh, a_kw = Axis(), Axis(), Axis()
             w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.C, a_kh, a_kw, a_filter]))(w)
-            x, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.H, Axis.W, a_filter]))(x)
+            if op.KH == 1 and op.KW == 1 and op.stride == (1, 1) and op.padding == (0, 0):
+                # Projection
+                w = w.transpose(Order([Axis.C, a_kh, a_kw, a_filter]))
+                w = w.reshape([w.shape_dict[Axis.C], w.shape_dict[a_filter]], Order([Axis.C, a_filter]))
+                new_y, = Tensordot(None, [Axis.C, a_filter])(x, w)
 
-            col, = Tensordot(None, axes=a_filter)(x, w)
-            col = col.transpose(Order([Axis.N, Axis.H, Axis.W, a_kh, a_kw, Axis.C]))
-            col = col.reshape(shape=[*col.shape[0:3], mul(col.shape[3:6])], order=OrderNHWC)
+            else:
+                # General deconvolution
+                w = w.transpose(Order([a_filter, a_kh, a_kw, Axis.C]))
+                col, = Tensordot(None, axes=[Axis.C, a_filter])(x, w)
+                col = col.transpose(Order([Axis.N, Axis.H, Axis.W, a_kh, a_kw, Axis.C]))
+                col = col.reshape(shape=[*col.shape[0:3], mul(col.shape[3:6])], order=OrderNHWC)
 
-            new_y, = Col2Im(None, ksize=op.ksize, stride=op.stride, padding=op.padding)(col)
+                new_y, = Col2Im(None, ksize=op.ksize, stride=op.stride, padding=op.padding)(col)
+
             OptimizeRule.replace_variable(graph, new_y.transpose_like(y), y)
 
         return graph, flag_changed

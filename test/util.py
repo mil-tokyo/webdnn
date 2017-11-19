@@ -1,7 +1,7 @@
 import atexit
 import os.path as path
 import shutil
-from typing import Dict, List
+from typing import Dict, List, Union
 from unittest import SkipTest
 
 import numpy as np
@@ -88,6 +88,9 @@ def wrap_template(fn, arg_name="description"):
     return wrapper
 
 
+EPS_DEFAULT = 1e-5
+
+
 class KernelTestCaseGenerator:
     OUTPUT_ROOT: str = path.join(path.dirname(__file__), "../build/test")
     cases: List[Dict[str, any]] = []
@@ -113,18 +116,20 @@ class KernelTestCaseGenerator:
                                   expected: Dict[Variable, np.array],
                                   backend=None,
                                   raise_skip: bool = True,
-                                  EPS: float = 1.0e-5,
+                                  EPS: Union[float, Dict[str, float]] = EPS_DEFAULT,
                                   ABS_EPS: float = 0.0):
         """Generate test data for generated kernel codes
     
         Generated data are saved in JSON format, and BrowserTestRunner executes it.
         """
-
         if not cls.flag_initialized:
             cls.setup()
 
         if backend is None:
             backend = ["webgpu", "webgl", "webassembly", "fallback"]
+
+        if isinstance(EPS, float):
+            EPS = {b: EPS for b in backend}
 
         if not isinstance(backend, str):
             for b in backend:
@@ -170,7 +175,7 @@ class KernelTestCaseGenerator:
                 "expected_ref": [cls.add_data(expected[v]) for v in graph.outputs],
                 "dirname": testcase_dirname,
                 "backend": backend,
-                "EPS": EPS,
+                "EPS": EPS_DEFAULT if backend not in EPS else EPS[backend],
                 "ABS_EPS": ABS_EPS
             })
         else:
@@ -180,7 +185,7 @@ class KernelTestCaseGenerator:
                 "expected": [expected[v].flatten().tolist() for v in graph.outputs],
                 "dirname": testcase_dirname,
                 "backend": backend,
-                "EPS": EPS,
+                "EPS": EPS_DEFAULT if backend not in EPS else EPS[backend],
                 "ABS_EPS": ABS_EPS
             })
 

@@ -27,14 +27,18 @@ def template(ksize=2, stride=None, pad=0, cover_all=True, shape=(2, 4, 6, 8), de
 def test():
     template()
 
+
 def test_padding_not_zero():
     template(pad=1)
+
 
 def test_stride_is_none():
     template(stride=None, pad=1)
 
-def test_cover_all_fasle():
+
+def test_cover_all_false():
     template(stride=2, cover_all=False)
+
 
 def test_irregular_size():
     template(ksize=(3, 4), stride=(1, 2), pad=(1, 3))

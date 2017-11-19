@@ -20,8 +20,7 @@ def template(padding=1, description: str = ""):
         graph=graph,
         backend=["webgpu", "webassembly"],
         inputs={graph.inputs[0]: vx},
-        expected={graph.outputs[0]: vy},
-        EPS=1e-2
+        expected={graph.outputs[0]: vy}
     )
 
 

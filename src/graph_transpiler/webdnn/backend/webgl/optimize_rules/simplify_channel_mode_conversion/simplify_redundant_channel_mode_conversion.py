@@ -5,9 +5,16 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
+from webdnn.util import flags
 
 
 class SimplifyRedundantChannelModeConversion(OptimizeRule):
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_REDUNDANT_CHANNEL_MODE_CONVERSION
+        ]
+
     def optimize(self, graph: Graph):
         flag_changed = False
 

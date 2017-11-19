@@ -27,7 +27,6 @@ from webdnn.backend.webassembly.kernels import scalar_add
 from webdnn.backend.webassembly.kernels import scalar_affine
 from webdnn.backend.webassembly.kernels import scalar_mul
 from webdnn.backend.webassembly.kernels import scalar_pow
-from webdnn.backend.webassembly.kernels import sgemm
 from webdnn.backend.webassembly.kernels import sigmoid
 from webdnn.backend.webassembly.kernels import softmax
 from webdnn.backend.webassembly.kernels import softplus

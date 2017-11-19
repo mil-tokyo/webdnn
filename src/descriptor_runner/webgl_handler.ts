@@ -2,9 +2,10 @@
  * @module webdnn
  */
 /** Don't Remove This comment block */
+
 /// <reference path="./webgl2.d.ts" />
 
-import { isDebugMode } from "./webdnn";
+import { getConfiguration } from "./webdnn";
 
 /**
  * @protected
@@ -125,7 +126,7 @@ export default class WebGLHandler {
 
         if (!gl) return null;
         if (!gl.getExtension('EXT_color_buffer_float')) return null;
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
         return gl;
     }
@@ -142,7 +143,7 @@ export default class WebGLHandler {
             return null
         }
 
-        if (isDebugMode() && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
+        if (getConfiguration('DEBUG', false) && !gl.getExtension('WEBGL_debug_renderer_info')) return null;
 
         return gl;
     }
@@ -153,13 +154,13 @@ export default class WebGLHandler {
 
         gl = WebGLHandler.initializeWebGL2Context(canvas);
         if (gl) {
-            if (isDebugMode()) console.info('WebGL2 is enabled');
+            if (getConfiguration('DEBUG', false)) console.info('WebGL2 is enabled');
 
         } else {
             gl = WebGLHandler.initializeWebGL1Context(canvas);
 
             if (gl) {
-                if (isDebugMode()) console.info('WebGL2 is disabled');
+                if (getConfiguration('DEBUG', false)) console.info('WebGL2 is disabled');
 
             } else {
                 return null;
@@ -189,7 +190,7 @@ export default class WebGLHandler {
             if (!gl) {
                 availability = false;
 
-            } else if (gl.getParameter(gl.MAX_TEXTURE_SIZE) < 4096) {
+            } else if (getConfiguration('MAX_TEXTURE_SIZE', gl.getParameter(gl.MAX_TEXTURE_SIZE)) < 4096) {
                 availability = false;
 
             } else {

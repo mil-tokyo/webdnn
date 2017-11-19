@@ -212,7 +212,14 @@ def dump_dot(graph: Graph, name: Optional[str] = None) -> str:
         if var in added_variables:
             return ""
         node_attrs = {}
-        node_attrs["label"] = f"\"{var.name}\n{var.shape}\nOrder={var.order}\""
+        node_attrs["label"] = f"\"{var.name}\n{var.shape}\nOrder={var.order}"
+        from webdnn.backend.webgl.attributes.texture_shape import TextureShape
+        if var.has_attribute(TextureShape):
+            node_attrs["label"] += f"\nTextureShape={TextureShape.get(var)}"
+        from webdnn.backend.webgl.attributes.channel_mode import ChannelMode
+        if var.has_attribute(ChannelMode):
+            node_attrs["label"] += f"\nChannelMode={ChannelMode.get(var).name}"
+        node_attrs["label"] += "\""
         if isinstance(var, ConstantVariable):
             node_attrs["shape"] = "doubleoctagon"
         else:

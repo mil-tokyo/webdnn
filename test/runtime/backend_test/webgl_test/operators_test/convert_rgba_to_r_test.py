@@ -8,22 +8,21 @@ from webdnn.graph.variable import Variable
 
 
 @wrap_template
-def template(x_order: Order = OrderNHWC, y_order: Order = OrderNHWC, description: str = ""):
-    vx = np.random.rand(2, 3, 4, 5) - 0.5
+def template(x_shape=(2, 3, 4, 5), x_order: Order = OrderNHWC, y_order: Order = OrderNHWC, description: str = ""):
+    vx = np.arange(np.product(x_shape)).reshape(x_shape)
     vy = vx.copy()
 
-    x = Variable(vx.shape, order=OrderNHWC)
+    x = Variable(vx.shape, order=x_order)
     y, = ConvertRGBAtoR(None)(x)
 
-    x.change_order(x_order)
     y.change_order(y_order)
 
     generate_kernel_test_case(
         description=f"ConvertRGBAtoR {description}",
         graph=Graph([x], [y]),
         backend=["webgl"],
-        inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
-        expected={y: np.transpose(vy, [OrderNHWC.axes_dict[a] for a in y.order.axes])},
+        inputs={x: vx},
+        expected={y: np.transpose(vy, [x_order.axes_dict[a] for a in y.order.axes])},
     )
 
 

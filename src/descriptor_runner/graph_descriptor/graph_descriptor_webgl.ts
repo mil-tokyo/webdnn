@@ -77,7 +77,7 @@ export interface GraphDescriptorWebGLExecInfos {
     shader_name: string,
     uniforms: {
         [name: string]: {
-            type: 'int' | 'float' | 'vec2' | 'vec4' | 'sampler2D',
+            type: 'int' | 'float' | 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4' | 'sampler2D',
             value: number
         }
     }

@@ -1,13 +1,13 @@
 from typing import Tuple
 
 from webdnn.backend.webgl.attributes.channel_mode import ChannelModeEnum, ChannelMode
-from webdnn.backend.webgl.attributes.texture_shape import TextureShape
 from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA, convert_r_to_rgba
 from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR, convert_rgba_to_r
 from webdnn.graph import traverse
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.sgemm import Sgemm
+from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
@@ -32,7 +32,6 @@ def _replace_input(op: Operator, var_name: str, target: ChannelModeEnum):
         v_new = convert_r_to_rgba(v)
     else:
         v_new = convert_rgba_to_r(v)
-    TextureShape.set(v_new, height=TextureShape.get(v)[0], width=TextureShape.get(v)[1])
     op.replace_input(v, v_new)
     return True
 
@@ -75,8 +74,15 @@ class InsertChannelModeConversion(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
         for op in traverse.listup_operators(graph):
-            if isinstance(op, (Sgemm, Tensordot)):
-                pass
+            if isinstance(op, Tensordot):
+                flag_changed |= _replace_output(op, "C", ChannelModeEnum.R)
+
+            elif isinstance(op, Im2Col):
+                flag_changed |= _replace_input(op, "im", ChannelModeEnum.R)
+                if op.outputs["col"].shape_dict[Axis.C] % 4 == 0:
+                    flag_changed |= _replace_output(op, "col", ChannelModeEnum.RGBA)
+                else:
+                    flag_changed |= _replace_output(op, "col", ChannelModeEnum.R)
 
             elif isinstance(op, ConvertRGBAtoR):
                 flag_changed |= _replace_input(op, "x0", ChannelModeEnum.RGBA)

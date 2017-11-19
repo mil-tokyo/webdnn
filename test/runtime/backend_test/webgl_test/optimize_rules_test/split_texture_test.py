@@ -109,8 +109,7 @@ def test_convolution2d_large_C_1():
         graph=graph,
         backend=["webgl"],
         inputs={x: vx.data},
-        expected={y: vy.data},
-        EPS=1e-3
+        expected={y: vy.data}
     )
 
 
@@ -136,8 +135,7 @@ def test_convolution2d_large_C_2():
         graph=graph,
         backend=["webgl"],
         inputs={x: vx.data},
-        expected={y: vy.data},
-        EPS=1e-3
+        expected={y: vy.data}
     )
 
 
@@ -184,6 +182,5 @@ def test_tensorwise():
         graph=graph,
         backend=["webgl"],
         inputs={graph.inputs[0]: x1.data},
-        expected={graph.outputs[0]: y.data},
-        EPS=1e-3
+        expected={graph.outputs[0]: y.data}
     )

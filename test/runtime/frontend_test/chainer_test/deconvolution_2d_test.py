@@ -6,10 +6,9 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 
 @wrap_template
-def template(ksize=3, stride=1, pad=0, nobias=True, description=""):
-    link = chainer.links.Deconvolution2D(4, 10, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
-    link.W.data = np.random.rand(*link.W.data.shape).astype(np.float32)
-    vx = chainer.Variable(np.random.rand(*(2, 4, 6, 11)).astype(np.float32))
+def template(N=2, H=14, W=15, C1=16, C2=17, ksize=3, stride=1, pad=1, nobias=True, description=""):
+    link = chainer.links.Deconvolution2D(C1, C2, ksize=ksize, stride=stride, pad=pad, nobias=nobias)
+    vx = chainer.Variable(np.arange(np.product([N, C1, H, W])).reshape(N, C1, H, W).astype(np.float32))
     vy = link(vx)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -31,7 +30,11 @@ def test():
     template()
 
 
-def test_nobias():
+def test_no_padding():
+    template(pad=0)
+
+
+def test_no_bias():
     template(nobias=True)
 
 

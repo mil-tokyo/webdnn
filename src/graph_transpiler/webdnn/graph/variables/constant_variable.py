@@ -25,7 +25,7 @@ class ConstantVariable(Variable):
         return ConstantVariable(self.data.copy(), self.order)
 
     def change_order(self, order: Order) -> "ConstantVariable":
-        """change_order(order)
+        """change_order_statement(order)
 
         Change variable order.
 

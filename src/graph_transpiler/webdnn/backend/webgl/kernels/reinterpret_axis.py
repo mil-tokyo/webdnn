@@ -1,25 +1,11 @@
 from typing import List
 
-from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelNameInjector
 from webdnn.backend.webgl.generator import WebGLDescriptorGenerator
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.backend.webgl.kernels.util import FragmentShaderPreamble, texture_shape, texture_stride
-from webdnn.backend.webgl.uniform_injector import UniformInjector
+from webdnn.backend.webgl.kernel_code import KernelCode
+from webdnn.backend.webgl.kernels.util import texel_fetch, change_order, get_output_position
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
-
-template = FragmentShaderPreamble + """
-%%UNIFORM(sampler2D, X)%%;
-
-%%UNIFORM(vec2, s_y)%%;
-
-%%UNIFORM(vec2, d_x)%%;
-%%UNIFORM(vec2, s_x)%%;
-
-void main() {
-    float x = texture2D(X, fract((floor((dot(gl_FragCoord.xy - 0.5, s_y) + 0.5) / s_x) + 0.5) / d_x)).r;
-    gl_FragColor = vec4(x, 0, 0, 0);
-}
-"""
+from webdnn.graph.order import Order
 
 
 @WebGLDescriptorGenerator.register_handler(ReinterpretAxis)
@@ -27,27 +13,19 @@ def reinterpret_axis(op: ReinterpretAxis) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 
-    name_injector = KernelNameInjector(op)
-    uniform_injector = UniformInjector()
+    y_axes_order_in_x_order = Order([op.out_order.axes[op.in_order.axes_dict[a]] for a in x.order.axes])
 
-    uniform_injector.register({
-        "X": x,
-
-        "s_y": texture_stride(y),
-
-        "d_x": texture_shape(x),
-        "s_x": texture_stride(x),
-    })
-
-    source = template
-    source = uniform_injector.inject(source)
-    source = name_injector.inject(source)
-    kernel = Kernel(
+    # FIXME: optimize
+    code = KernelCode([f"""
+void main() {{
+    gl_FragColor.r = """, texel_fetch(x, change_order(get_output_position(y), y.order, y_axes_order_in_x_order)), f""".r; 
+}}
+"""])
+    source = code.generate()
+    return [Kernel(
         source,
-        name_injector.name,
-        uniform_injector.samplers,
-        uniform_injector.uniforms,
+        code.name,
+        code.samplers,
+        code.uniforms,
         y
-    )
-
-    return [kernel]
+    )]

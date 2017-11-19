@@ -27,9 +27,7 @@ def test_2d():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        },
-        EPS=1e-10,
-        ABS_EPS=1e-10
+        }
     )
 
 
@@ -52,9 +50,7 @@ def test_major_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        },
-        EPS=1e-10,
-        ABS_EPS=1e-10
+        }
     )
 
 
@@ -77,9 +73,7 @@ def test_minor_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        },
-        EPS=1e-10,
-        ABS_EPS=1e-10
+        }
     )
 
 
@@ -102,9 +96,7 @@ def test_middle_axis():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        },
-        EPS=1e-10,
-        ABS_EPS=1e-10
+        }
     )
 
 
@@ -136,7 +128,5 @@ def test_mix_order():
             x2: vx2,
             x3: vx3,
             x4: vx4
-        },
-        EPS=1e-10,
-        ABS_EPS=1e-10
+        }
     )

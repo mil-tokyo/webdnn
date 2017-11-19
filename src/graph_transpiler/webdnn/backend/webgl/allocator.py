@@ -136,18 +136,21 @@ def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Va
     for v in traverse.filter_nodes(variables, ConstantVariable):  # type: ConstantVariable
         # Constant variable cannot be released
         height, width = TextureShape.get(v)
+        width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
         allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
         allocated.add(v)
 
     for v in graph.inputs:
         # Input variable cannot be released
         height, width = TextureShape.get(v)
+        width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
         allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
         allocated.add(v)
 
     for v in graph.outputs:
         # Output variable cannot be released, but it's not needed to be allocated from the begin
         height, width = TextureShape.get(v)
+        width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
         allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=_T_UNKNOWN, end=T_LAST,
                                          name=v.name)
         allocated.add(v)
@@ -162,6 +165,7 @@ def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Va
             else:
                 # Create new allocation object
                 height, width = TextureShape.get(v)
+                width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
                 allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN,
                                                  name=v.name)
                 retain_count[v] = len(v.input_to)
@@ -171,6 +175,7 @@ def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Va
             if v not in allocated:
                 # Allocate
                 height, width = TextureShape.get(v)
+                width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
                 allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN,
                                                  name=v.name)
                 retain_count[v] = len(v.input_to)

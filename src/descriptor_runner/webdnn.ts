@@ -21,22 +21,22 @@ import * as Math from "./math";
  * DEBUG flag for developing WebDNN
  * @private
  */
-let DEBUG: boolean = false;
+let configurations: { [key: string]: any } = {};
 
 /**
- * get DEBUG flag for developing WebDNN
+ * get configuration
  * @private
  */
-export function isDebugMode() {
-    return DEBUG;
+export function getConfiguration<T>(key: string, defaultValue?: T): T {
+    return key in configurations ? configurations[key] : defaultValue;
 }
 
 /**
- * set DEBUG flag for developing WebDNN
+ * set configuration
  * @private
  */
-export function setDebugMode(flag) {
-    DEBUG = flag;
+export function setConfiguration(key: string, value: any) {
+    configurations[key] = value
 }
 
 /**
