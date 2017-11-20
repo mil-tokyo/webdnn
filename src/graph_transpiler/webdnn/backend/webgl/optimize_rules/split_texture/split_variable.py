@@ -67,6 +67,25 @@ def _split_axis(v: Variable, axis: Axis, graph):
         if all(isinstance(v, ConstantVariable) for v in op.inputs.values()):
             op.fold_constance(graph)
 
+        elif isinstance(op, Tensordot):
+            # NOTE:
+            # "_split_tensordot" must be called before "_split_tensorwise".
+            #
+            # Let consider follow case:
+            #
+            #   A.order = [Axis.X, Axis.Y]
+            #   B.order = [Axis.Y, Axis.Z]
+            #   C, = Tensordot(None, [Axis.Y, Axis.Z])(A, B)  # -> C.order = [Axis.X, Axis.Y]
+            #
+            # In this case, tensordot operator has "Tensorwise[X]" and "Tensorwise[Y]" attributes, because "Tensordot" operation is
+            # tensorwise operation for each output axis. However, "Axis.Y" is also contained in reduced axes in "A". Therefore,
+            # "_split_tensorwise" incorrectly split "A".
+            #
+            _split_tensordot(graph, op, v, [v1, v2], axis)
+
+        elif Tensorwise.check_splittable(op, axis):
+            _split_tensorwise(graph, op, v, [v1, v2], axis)
+
         elif isinstance(op, SplitAxis):
             _split_splitaxis(graph, op, v, [v1, v2], axis)
 
@@ -82,28 +101,7 @@ def _split_axis(v: Variable, axis: Axis, graph):
         elif isinstance(op, Reshape):
             _split_reshape(graph, op, v, [v1, v2], axis)
 
-        elif isinstance(op, Tensordot):
-            _split_tensordot(graph, op, v, [v1, v2], axis)
-
-        elif Tensorwise.check_splittable(op, axis):
-            _split_tensorwise(graph, op, v, [v1, v2], axis)
-
         else:
-            console.debug("-------------------------------------------------")
-            console.debug(f"{v}")
-            console.debug(f"  original order: {v.order}")
-            console.debug(f"  original shape: {v.shape}")
-            console.debug(f"")
-            console.debug(f"  split axis: {axis}")
-            console.debug(f"")
-            console.debug(f"  related operators:")
-            for related_op in ops:
-                console.debug(f"  {related_op}")
-            console.debug(f"")
-
-            with open("cg-failed.dot", "w") as f:
-                f.write(traverse.dump_dot(graph))
-
             raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
 
@@ -312,7 +310,7 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
                 x_1 -{split[axis=axis]}-+
                                         +- h3 ------------------------- y3
             """
-            # find output variable which should be split
+            # find output variable which should be split ("y2" in above figure)
 
             total_size = 0
             ys_0 = []  # type: List[Variable]
@@ -839,10 +837,7 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
     elif isinstance(op, Im2Col):
         op = op  # type: Im2Col
         if v in op.outputs.values():
-            if v.shape_dict[Axis.C] % (op.ksize[0] * op.ksize[1]) == 0:
-                return [Axis.N, Axis.H, Axis.W, Axis.C]
-            else:
-                return [Axis.N, Axis.H, Axis.W]
+            return [Axis.N, Axis.H, Axis.W, Axis.C]
 
         else:
             return []
@@ -850,16 +845,17 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
     elif isinstance(op, PartialIm2Col):
         op = op  # type: PartialIm2Col
         if v in op.outputs.values():
-            return []
+            axes = [Axis.N, Axis.C]
+            if op.axis not in axes:
+                axes.append(op.axis)
+
+            return axes
 
         else:
-            return [op.axis]
+            return []
 
     elif isinstance(op, Tensordot):
-        if v == op.outputs["C"]:
-            return []
-        else:
-            return list(v.order.axes)
+        return list(v.order.axes)
 
     else:
         return list(attr.axis for attr in op.get_attribute(Tensorwise))
@@ -882,9 +878,9 @@ def _choose_split_axis(v: Variable) -> Axis:
 
     splittable_axes = list(v.order.axes)
     for op in ops:
-        _splittable_axes = _listup_splittable_axis(v, op)
-        for a in splittable_axes:
-            if a not in _splittable_axes:
+        _op_splittable_axes = _listup_splittable_axis(v, op)
+        for a in list(splittable_axes):
+            if a not in _op_splittable_axes:
                 splittable_axes.remove(a)
 
     if len(splittable_axes) == 0:
@@ -897,8 +893,8 @@ def _choose_split_axis(v: Variable) -> Axis:
     #        If axis `C` is split, then width will be changed => C: 2048 (=width)
     #
     # ex) OrderNCHW, N=1, C=512, H=13, W=13, texture(width=2048, height=43)
-    #     => TexW == W*H*(partial of C) texture width is consisted by axis W, H and C.
-    #        TexH == (partial of C)*N   texture height is consisted by axis C and N.
+    #     => TexW == W*H*(partial of C) texture width consists of axis W, H and C.
+    #        TexH == (partial of C)*N   texture height consists of axis C and N.
     #     => N cannot be split => N: -1
     #        C is related both width and height. In this case, use large one. => C: 2048
     #        H is included in width =>  H: 2048
@@ -925,17 +921,18 @@ def _choose_split_axis(v: Variable) -> Axis:
     splittable_axes.sort(key=lambda a: axis_corresponding_texture_size[a], reverse=True)
     target_axis = splittable_axes[0]
 
-    console.debug("-------------------------------------------------")
+    console.debug(f"===========================================================================")
     console.debug(f"{v}")
-    console.debug(f"  texture shape: (height={tex_h}, width={tex_w})")
     console.debug(f"  original order: {v.order}")
     console.debug(f"  original shape: {v.shape}")
     console.debug(f"")
+    console.debug(f"  splittable axis: {splittable_axes}")
     console.debug(f"  split axis: {target_axis}")
     console.debug(f"")
     console.debug(f"  related operators:")
-    for op in ops:
-        console.debug(f"  {op}")
+    for related_op in ops:
+        console.debug(f"---------------------------------------------------------------------------")
+        traverse.dump_op(related_op)
     console.debug(f"")
 
     return target_axis

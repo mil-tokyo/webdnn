@@ -53,7 +53,7 @@ void main() {{
     
     gl_FragColor.r = y;
 }}
-"""])
+"""], name=op.__class__.__name__)
 
 
 def register_reduction_kernel(OperatorClass: Type[Reduce],

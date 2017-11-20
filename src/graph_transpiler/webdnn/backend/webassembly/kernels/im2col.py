@@ -7,9 +7,9 @@ from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.im2col import Im2Col
-from webdnn.graph.order import OrderNHWC, OrderCNHW
+from webdnn.graph.order import OrderNHWC, Order
 
-template_NHWC = """
+template_NHWKKC = """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
     const float *im = %%LOAD_BUFFER(im2col_im)%%;
@@ -46,7 +46,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 }
 """
 
-template_CNHW = """
+template_KKCNHW = """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
     const float *im = %%LOAD_BUFFER(im2col_im)%%;
@@ -90,7 +90,8 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
     col = op.outputs["col"]
 
     assert im.order == OrderNHWC
-    assert col.order == OrderNHWC or col.order == OrderCNHW
+    assert col.order == Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]) or \
+           col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
@@ -114,7 +115,7 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.order == OrderCNHW else template_NHWC
+    source = template_KKCNHW if col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W]) else template_NHWKKC
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

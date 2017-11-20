@@ -45,7 +45,7 @@ void main() {
 
     gl_FragColor.r = sum / """, float(op.ksize[0] * op.ksize[1]), """;
 }
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
 
     return [Kernel(

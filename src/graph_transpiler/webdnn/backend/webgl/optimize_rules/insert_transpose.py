@@ -3,8 +3,11 @@ from typing import Tuple, Union, List, Optional
 from webdnn.backend.webgl.operators.convert_r_to_rgba import ConvertRtoRGBA
 from webdnn.backend.webgl.operators.convert_rgba_to_r import ConvertRGBAtoR
 from webdnn.graph import traverse
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
+from webdnn.graph.operators.col2im import Col2Im
+from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
@@ -129,6 +132,32 @@ class InsertTranspose(OptimizeRule):
 
                 flag_changed |= _replace_input(graph, op, "A", Order(a_axes))
                 flag_changed |= _replace_input(graph, op, "B", Order(b_axes))
+                continue
+
+            elif isinstance(op, (Im2Col,)):
+                op = op  # type: Im2Col
+                col = op.outputs["col"]
+
+                # In variable "col", Axis.KH, Axis.KW, and Axis.C must be placed in this order.
+                col_axes = list(col.order.axes)
+                for axis in (Axis.KH, Axis.KW, Axis.C):
+                    col_axes.remove(axis)
+                    col_axes.append(axis)
+
+                flag_changed |= _replace_output(graph, op, "col", Order(col_axes))
+                continue
+
+            elif isinstance(op, (Col2Im,)):
+                op = op  # type: Col2Im
+                col = op.inputs["col"]
+
+                # In variable "col", Axis.KH, Axis.KW, and Axis.C must be placed in this order.
+                col_axes = list(col.order.axes)
+                for axis in (Axis.KH, Axis.KW, Axis.C):
+                    col_axes.remove(axis)
+                    col_axes.append(axis)
+
+                flag_changed |= _replace_input(graph, op, "col", Order(col_axes))
                 continue
 
             elif isinstance(op, (ConvertRGBAtoR, ConvertRtoRGBA)):

@@ -20,6 +20,7 @@ def template(x_order=OrderNHWC, x_shape=(2, 3, 4, 5), actual_x_order=OrderNHWC,
 
     generate_kernel_test_case(
         description=f"Reshape {description}",
+        backend=["webgpu", "webgl", "webassembly"],
         graph=Graph([x], [y]),
         inputs={x: vx.transpose([x_order.axes_dict[a] for a in actual_x_order.axes])},
         expected={y: vy.transpose([y_order.axes_dict[a] for a in actual_y_order.axes])},

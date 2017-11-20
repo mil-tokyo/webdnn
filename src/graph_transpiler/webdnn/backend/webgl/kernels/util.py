@@ -46,7 +46,7 @@ def convert_position(expression: Expression,
                      out_shape: Sequence[int], out_stride: Sequence[int]):
     if mul(in_shape) < 1 << 20:
         return ExpressionNode([
-            "convert_position_i(",
+            "convert_position_fast(",
             expression, ",",
             ivec(in_stride), ", ",
             ivec(out_stride), ", ",
@@ -86,6 +86,7 @@ def texel_fetch(variable: Variable, expression: Expression):
 
 
 def ivec(sequence: Sequence[int]):
+    assert 2 <= len(sequence) <= 4
     return [int(v) for v in sequence]
 
 
@@ -105,6 +106,7 @@ def ivec4(sequence: Sequence[int]):
 
 
 def vec(sequence: Sequence[float]):
+    assert 2 <= len(sequence) <= 4
     return [float(v) for v in sequence]
 
 
@@ -125,6 +127,19 @@ def vec4(sequence: Sequence[float]):
 
 def _mod_snippet(t1: str, t2: str, tr: str):
     return f"{tr} mod({t1} x, {t2} p) {{ return x-(x/p)*p; }}"
+
+
+def _convert_position_fast_snippet(ndim1: int, ndim2: int):
+    dot = '+'.join(f'p1[{i}]*s1[{i}]' for i in range(ndim1))
+    return f"""
+ivec{ndim2} convert_position_fast(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
+    return mod(({dot}) / s2, d2);
+}}
+
+ivec{ndim2} convert_position_fast(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
+    return convert_position_fast(ivec{ndim1}(p1), s1, s2, d2);
+}}
+"""
 
 
 def _convert_position_snippet(ndim1: int, ndim2: int):
@@ -189,6 +204,15 @@ precision highp sampler2D;
 {_mod_snippet("ivec3", "ivec3", "ivec3")}
 {_mod_snippet("ivec4", "ivec4", "ivec4")}
 
+{_convert_position_fast_snippet(2, 2)}
+{_convert_position_fast_snippet(2, 3)}
+{_convert_position_fast_snippet(2, 4)}
+{_convert_position_fast_snippet(3, 2)}
+{_convert_position_fast_snippet(3, 3)}
+{_convert_position_fast_snippet(3, 4)}
+{_convert_position_fast_snippet(4, 2)}
+{_convert_position_fast_snippet(4, 3)}
+{_convert_position_fast_snippet(4, 4)}
 {_convert_position_snippet(2, 2)}
 {_convert_position_snippet(2, 3)}
 {_convert_position_snippet(2, 4)}

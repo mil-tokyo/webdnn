@@ -31,7 +31,7 @@ void main() {
 
     gl_FragColor = vec4(y0, y1, y2, y3);
 }
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

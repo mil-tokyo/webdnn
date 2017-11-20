@@ -7,10 +7,10 @@ from webdnn.backend.webgpu.generator import WebGPUDescriptorGenerator
 from webdnn.backend.webgpu.kernel import GPUSize, Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.im2col import Im2Col
-from webdnn.graph.order import OrderNHWC, OrderCNHW
+from webdnn.graph.order import OrderNHWC, Order
 
 
-def generate_template_NHWC(SH, SW, DH, DW, C1):
+def generate_template_NHWKKC(SH, SW, DH, DW, C1):
     SH_EQUAL_1 = 1 if SH == 1 else 0
     SW_EQUAL_1 = 1 if SW == 1 else 0
     DH_EQUAL_1 = 1 if DH == 1 else 0
@@ -133,7 +133,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 """
 
 
-template_CNHW = """
+template_KKCNHW = """
 kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                           device float * %%DYNAMIC_BUFFER%%[[buffer(1)]],
                           const device int * %%META_BUFFER%% [[buffer(2)]],
@@ -181,7 +181,8 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
     col = op.outputs["col"]
 
     assert im.order == OrderNHWC
-    assert col.order == OrderNHWC or col.order == OrderCNHW
+    assert col.order == Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]) or \
+           col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
 
     N = im.shape_dict[Axis.N]
     C1 = im.shape_dict[Axis.C]
@@ -213,7 +214,8 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
 
     name_injector = KernelNameInjector(op)
 
-    source = template_CNHW if col.order == OrderCNHW else generate_template_NHWC(op.SH, op.SW, op.DH, op.DW, C1)
+    source = template_KKCNHW if col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W]) \
+        else generate_template_NHWKKC(op.SH, op.SW, op.DH, op.DW, C1)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

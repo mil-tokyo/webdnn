@@ -44,7 +44,7 @@ void main() {{
 
     gl_FragColor.r = sum;
 }}
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

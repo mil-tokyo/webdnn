@@ -83,7 +83,7 @@ void main() {{
         shapes_x_dx[x], strides_x_dx[x], texture_shape(x)[:2][::-1], texture_stride(x)[:2][::-1]
     ), f""").r; 
 }}
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

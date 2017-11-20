@@ -7,12 +7,12 @@ from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.col2im import Col2Im
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import OrderNHWC, Order
 
 # NOTE
 #
-# C1, H1, W1などはすべてConvのinput, Deconvのoutputのサイズを表すために使用
-# C2, H2, W2などはすべてDeconvのinput, Convのoutputのサイズを表すために使用
+# "C1", "H1", and "W1" represent size of input variable of Convolution (or output variable of Deconvolution)
+# "C2", "H2", and "W2" represent size of output variable of Convolution (or input variable of Deconvolution)
 
 template = """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
@@ -63,7 +63,7 @@ def col2im(op: Col2Im, memory_layout: MemoryLayout) -> List[Kernel]:
     col = op.inputs["col"]
     im = op.outputs["im"]
 
-    assert col.order == OrderNHWC
+    assert col.order == Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C])
     assert im.order == OrderNHWC
 
     buffer_injector = BufferInjector()

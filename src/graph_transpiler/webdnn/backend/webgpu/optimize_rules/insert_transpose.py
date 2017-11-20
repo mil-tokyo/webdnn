@@ -1,9 +1,11 @@
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, Optional
 
 from webdnn.graph import traverse
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
+from webdnn.graph.operators.col2im import Col2Im
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.depth2space import Depth2Space
@@ -18,50 +20,81 @@ from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.graph.order import OrderNHWC, Order, OrderCNHW
+from webdnn.graph.order import OrderNHWC, Order
 from webdnn.graph.variable import Variable
 
 
-def _replace_input(op: Operator, var_name: str, target_orders: Union[Order, List[Order]]):
+def _replace_input(graph: Graph, op: Operator, var_name: str, target_orders: Union[Order, List[Order]]):
     v = op.inputs[var_name]
 
     if isinstance(target_orders, Order):
         target_orders = [target_orders]
-    if v.order in target_orders:
-        op2 = v.output_from
-        if len(v.input_to) != 1 or not isinstance(op2, Transpose) or op2.inputs["x0"].order not in target_orders:
-            return False
 
-        v2 = op2.inputs["x0"]
-        op2.remove_all()
-        op.replace_input(v, v2, with_assert=False)
-        return True
+    if v.order in target_orders:
+        return _optimize_redundant_transposed_input(graph, op, var_name, target_orders)
 
     op.replace_input(v, v.transpose(target_orders[0]), with_assert=False)
     return True
 
 
-def _replace_output(op: Operator, var_name: str, target_orders: Union[Order, List[Order]]):
+def _optimize_redundant_transposed_input(graph: Graph, op: Operator, var_name: str,
+                                         target_orders: Optional[Union[Order, List[Order]]] = None):
+    v = op.inputs[var_name]
+    op2 = v.output_from
+
+    if len(v.input_to) != 1 or not isinstance(op2, Transpose):
+        return False
+
+    if target_orders is not None:
+        if isinstance(target_orders, Order):
+            target_orders = [target_orders]
+
+        if op2.inputs["x0"].order not in target_orders:
+            return False
+
+    v2 = op2.inputs["x0"]
+    op2.remove_all()
+    OptimizeRule.replace_variable(graph, v, v2, with_assert=False)
+    return True
+
+
+def _replace_output(graph: Graph, op: Operator, var_name: str, target_orders: Union[Order, List[Order]]):
     v = op.outputs[var_name]
 
     if isinstance(target_orders, Order):
         target_orders = [target_orders]
+
     if v.order in target_orders:
-        if len(v.input_to) != 1:
-            return False
-
-        op2 = list(v.input_to)[0]
-        if not isinstance(op2, Transpose) or op2.outputs["y"].order not in target_orders:
-            return False
-
-        v2 = op2.outputs["y"]
-        op2.remove_all()
-        op.replace_output(v, v2, with_assert=False)
-        return True
+        return _optimize_redundant_transposed_output(graph, op, var_name, target_orders)
 
     v_new = Variable(v.shape, v.order).change_order(target_orders[0])
     op.replace_output(v, v_new, with_assert=False)
     v_new.transpose(v.order).replace(v, with_assert=False)
+    return True
+
+
+def _optimize_redundant_transposed_output(graph: Graph, op: Operator, var_name: str,
+                                          target_orders: Optional[Union[Order, List[Order]]] = None):
+    v = op.outputs[var_name]
+
+    if len(v.input_to) != 1:
+        return False
+
+    op2 = list(v.input_to)[0]
+
+    if not isinstance(op2, Transpose):
+        return False
+
+    if target_orders is not None:
+        if isinstance(target_orders, Order):
+            target_orders = [target_orders]
+
+        if op2.outputs["y"].order not in target_orders:
+            return False
+
+    v2 = op2.outputs["y"]
+    op2.remove_all()
+    OptimizeRule.replace_variable(graph, v, v2, with_assert=False)
     return True
 
 
@@ -75,13 +108,19 @@ class InsertTranspose(OptimizeRule):
         flag_changed = False
         for op in traverse.listup_operators(graph):
             if isinstance(op, (Reshape, ReinterpretAxis)):
-                flag_changed |= _replace_input(op, "x", op.parameters["in_order"])
-                flag_changed |= _replace_output(op, "y", op.parameters["out_order"])
+                flag_changed |= _replace_input(graph, op, "x", op.parameters["in_order"])
+                flag_changed |= _replace_output(graph, op, "y", op.parameters["out_order"])
                 continue
 
             elif isinstance(op, Im2Col):
-                flag_changed |= _replace_input(op, "im", OrderNHWC)
-                flag_changed |= _replace_output(op, "col", [OrderNHWC, OrderCNHW])
+                flag_changed |= _replace_input(graph, op, "im", OrderNHWC)
+                flag_changed |= _replace_output(graph, op, "col", [Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W]),
+                                                                   Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C])])
+                continue
+
+            elif isinstance(op, Col2Im):
+                flag_changed |= _replace_input(graph, op, "col", [Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C])])
+                flag_changed |= _replace_output(graph, op, "im", OrderNHWC)
                 continue
 
             elif isinstance(op, (Tensordot,)):
@@ -114,10 +153,10 @@ class InsertTranspose(OptimizeRule):
 
                 else:
                     c_axes = a_axes[len(op.axes[0]):] + b_axes[len(op.axes[1]):]
-                    flag_changed |= _replace_output(op, "C", Order(c_axes))
+                    flag_changed |= _replace_output(graph, op, "C", Order(c_axes))
 
-                flag_changed |= _replace_input(op, "A", Order(a_axes))
-                flag_changed |= _replace_input(op, "B", Order(b_axes))
+                flag_changed |= _replace_input(graph, op, "A", Order(a_axes))
+                flag_changed |= _replace_input(graph, op, "B", Order(b_axes))
                 continue
 
             elif isinstance(op, (Convolution2D, Deconvolution2D,
@@ -125,11 +164,20 @@ class InsertTranspose(OptimizeRule):
                                  Space2Depth, Depth2Space,
                                  LocalResponseNormalization,
                                  Unpooling2D)):
-                flag_changed |= _replace_input(op, "x", OrderNHWC)
-                flag_changed |= _replace_output(op, "y", OrderNHWC)
+                flag_changed |= _replace_input(graph, op, "x", OrderNHWC)
+                flag_changed |= _replace_output(graph, op, "y", OrderNHWC)
                 continue
 
             elif isinstance(op, Softmax):
-                flag_changed |= _replace_output(op, "y", op.inputs["x"].order)
+                flag_changed |= _replace_output(graph, op, "y", op.inputs["x"].order)
+                continue
+
+            else:
+                # "op" accepts any order. Remove redundant transpose operations if exist.
+                for key in op.inputs:
+                    flag_changed |= _optimize_redundant_transposed_input(graph, op, key, None)
+                for key in op.outputs:
+                    flag_changed |= _optimize_redundant_transposed_output(graph, op, key, None)
+                continue
 
         return graph, flag_changed

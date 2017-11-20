@@ -153,18 +153,6 @@ class RemoveTranspose(RemoveNoEffectOperatorBase):
             _remove_unary_operator(graph, op)
             return True
 
-        if x not in graph.inputs and isinstance(x.output_from, Elementwise):
-            # If x is output from elementwise operator, transpose is not needed.
-            x.change_order(y.order)
-            _remove_unary_operator(graph, op)
-            return True
-
-        if y not in graph.outputs and all(isinstance(op2, Elementwise) for op2 in y.input_to):
-            # If y is input to only elementwise operators, transpose is not needed.
-            y.change_order(x.order)
-            _remove_unary_operator(graph, op)
-            return True
-
         return False
 
 

@@ -20,6 +20,8 @@ class Axis:
     H = None  # type: "Axis"
     W = None  # type: "Axis"
     T = None  # type: "Axis"
+    KH = None  # type: "Axis"
+    KW = None  # type: "Axis"
 
     def __init__(self, name=None):
         global _uuid_counter
@@ -34,7 +36,7 @@ class Axis:
         self._internal_id = internal_id
 
     def __str__(self):
-        return f"<Axis {self.name})>"
+        return f"<Axis {self.name}>"
 
     def __repr__(self):
         return self.__str__()
@@ -64,8 +66,7 @@ Unification failed: Both "self" and "other" have been resolved with different va
     (other.name) = {other.name}""")
 
         other_id = other.id
-        _axis_name_dict[self.id] = self.name if self.resolved else other.name
-
+        _axis_name_dict[self.id] = self.name if self.resolved else _axis_name_dict[other.id]
         p1s = _global2internal[self.id]
         p2s = _global2internal[other_id]
         del _global2internal[other_id]
@@ -146,3 +147,5 @@ Axis.C = Axis("C")  #: Number of features
 Axis.H = Axis("H")  #: Height of image
 Axis.W = Axis("W")  #: Width of image
 Axis.T = Axis("T")  #: Length of series
+Axis.KH = Axis("KH")  #: Height of image
+Axis.KW = Axis("KW")  #: Width of image

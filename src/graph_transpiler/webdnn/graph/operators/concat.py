@@ -49,7 +49,7 @@ class Concat(Operator):
             if a == axis:
                 continue
 
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(self, a))
 
         for i, x in enumerate(xs):
             assert x.order.check_same_axes(xs[0].order), "Input variable of Concat operator must have same axes: " \

@@ -51,7 +51,7 @@ void main() {{
 
     gl_FragColor.r = v;
 }}
-"""])
+"""], name="Tensordot_R")
 
     elif ChannelMode.get(A) == ChannelModeEnum.RGBA:
         code = KernelCode([f"""
@@ -72,7 +72,7 @@ void main() {{
 
     gl_FragColor.r = v;
 }}
-"""])
+"""], name="Tensordot_RGBA")
 
     else:
         raise NotImplementedError

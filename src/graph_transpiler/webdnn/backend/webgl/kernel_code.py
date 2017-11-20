@@ -109,13 +109,14 @@ class UniformDeclarationNode(GlobalDeclarationNode):
 
 
 class KernelCode:
-    def __init__(self, fragments: Sequence[Any]):
+    def __init__(self, fragments: Sequence[Any], name=None):
         self.fragments = fragments
         self._varnames = {}  # type: Dict[int, str]
         self._uniforms = {}
         self._samplers = {}
         self._declared_vars = []
         self._name = None  # type: str
+        self._name_prefix = name
 
     @property
     def name(self):
@@ -244,4 +245,6 @@ class KernelCode:
 
         source = head + body
         self._name = f"{hashlib.sha224(source.encode('utf-8')).hexdigest()}"
+        if self._name_prefix is not None:
+            self._name = f"{self._name_prefix}_{self._name}"
         return source

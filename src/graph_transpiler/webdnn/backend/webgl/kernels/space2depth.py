@@ -44,7 +44,7 @@ def space2depth(op: Space2Depth) -> List[Kernel]:
 
         gl_FragColor.r = """, texel_fetch(x, "variable_position_x"), """.r;
     }
-    """])
+    """], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

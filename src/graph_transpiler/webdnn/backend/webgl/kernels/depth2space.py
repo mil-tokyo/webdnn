@@ -37,7 +37,7 @@ void main() {
 
     gl_FragColor.r = """, texel_fetch(x, change_order("vec4(n, h1, w1, c1)", OrderNHWC, x.order)), """.r;
 }
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

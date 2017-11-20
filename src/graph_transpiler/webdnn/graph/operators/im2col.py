@@ -4,7 +4,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
@@ -17,6 +17,7 @@ class Im2Col(Operator):
         self.parameters["padding"] = to_tuple(padding)
         self.parameters["dilation_rate"] = to_tuple(dilation_rate)
         self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(self, Axis.C))
 
     def __call__(self, im: Variable):
         self.append_input("im", im)
@@ -30,7 +31,7 @@ class Im2Col(Operator):
         W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
         C1 = im.shape_dict[Axis.C]
 
-        col = Variable([N, H2, W2, self.KH * self.KW * C1], OrderNHWC)
+        col = Variable([N, H2, W2, self.KH, self.KW, C1], Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]))
 
         self.append_output("col", col)
 

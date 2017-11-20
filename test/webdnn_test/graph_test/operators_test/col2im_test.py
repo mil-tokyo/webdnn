@@ -1,40 +1,37 @@
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.col2im import Col2Im
-from webdnn.graph.order import OrderHWNC, OrderNHWC, OrderCHWN, OrderCNHW, OrderNCHW, \
-    OrderHWCN
+from webdnn.graph.order import Order, OrderNHWC
 from webdnn.graph.variable import Variable
 
-orders4 = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+OrderNHWKKC = Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C])
 
 
-def main(k, s, p, n, h1, w1, c1, expected_shape_dict: AxisKeyDict[int]):
-    for order_x in orders4:
-        op = Col2Im(None, ksize=k, stride=s, padding=p)
+def main(col_shape=[1, 5, 5, 3, 3, 6], col_order=OrderNHWKKC, ksize=3, stride=1, padding=1,
+         expected_shape_dict: AxisKeyDict[int] = AxisKeyDict(OrderNHWC.axes, [1, 5, 5, 6])):
+    op = Col2Im(None, ksize=ksize, stride=stride, padding=padding)
 
-        x = Variable((n, h1, w1, c1), OrderNHWC)
-        x.change_order(order_x)
+    x = Variable(col_shape, col_order)
+    y, = op(x)
 
-        y, = op(x)
-
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == expected_shape_dict[axis]
+    for axis in y.order.axes:
+        assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 
 def test_normal():
-    main(3, 1, 1, 2, 3, 4, 45, AxisKeyDict([Axis.N, Axis.H, Axis.W, Axis.C], [2, 3, 4, 5]))
+    main()
 
 
 def test_large_stride():
-    main(3, 2, 1, 2, 3, 4, 27, AxisKeyDict([Axis.N, Axis.H, Axis.W, Axis.C], [2, 5, 7, 3]))
+    main(stride=2, expected_shape_dict=AxisKeyDict(OrderNHWC.axes, [1, 9, 9, 6]))
 
 
 def test_no_padding():
-    main(3, 1, 0, 2, 3, 5, 27, AxisKeyDict([Axis.N, Axis.H, Axis.W, Axis.C], [2, 5, 7, 3]))
+    main(padding=0, expected_shape_dict=AxisKeyDict(OrderNHWC.axes, [1, 7, 7, 6]))
 
 
 def test_projection():
-    main(1, 1, 0, 2, 5, 7, 3, AxisKeyDict([Axis.N, Axis.H, Axis.W, Axis.C], [2, 5, 7, 3]))
+    main(ksize=1, padding=0, col_shape=[1, 5, 5, 1, 1, 6], expected_shape_dict=AxisKeyDict(OrderNHWC.axes, [1, 5, 5, 6]))
 
 
 def test_fully_connected():
-    main((5, 7), 1, 0, 2, 1, 1, 105, AxisKeyDict([Axis.N, Axis.H, Axis.W, Axis.C], [2, 5, 7, 3]))
+    main(ksize=5, padding=0, col_shape=[1, 1, 1, 5, 5, 6], expected_shape_dict=AxisKeyDict(OrderNHWC.axes, [1, 5, 5, 6]))

@@ -32,7 +32,7 @@ void main() {
 
     gl_FragColor = vec4(y, 0, 0, 0);
 }
-"""])
+"""], name=op.__class__.__name__)
 
 
 def _generate_template_convert_position(op: Elementwise, shapes: Dict[Variable, Sequence[int]], strides: Dict[Variable, Sequence[int]]):
@@ -68,7 +68,7 @@ void main() {
 
     gl_FragColor = vec4(y, 0, 0, 0);
 }
-"""])
+"""], name=op.__class__.__name__)
 
 
 def register_elementwise_kernel(OperatorClass: Type[Elementwise],

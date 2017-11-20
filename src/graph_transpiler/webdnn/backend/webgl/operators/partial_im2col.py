@@ -4,7 +4,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
@@ -36,6 +36,8 @@ class PartialIm2Col(Operator):
         self.parameters["axis"] = axis
         if axis != Axis.N:
             self.attributes.add(Tensorwise(self, Axis.N))
+        if axis != Axis.C:
+            self.attributes.add(Tensorwise(self, Axis.C))
 
     def __call__(self, im: Variable):
         self.append_input(f"im", im)
@@ -49,7 +51,7 @@ class PartialIm2Col(Operator):
         H2 = (im.shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1
         W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
         C1 = im.shape_dict[Axis.C]
-        col = Variable([N, H2, W2, C1 * self.ksize[0] * self.ksize[1]], OrderNHWC)
+        col = Variable([N, H2, W2, self.KH, self.KW, C1], Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]))
 
         sections = [0] + self.parameters["sections"] + [col.shape_dict[axis]]
         cols = []

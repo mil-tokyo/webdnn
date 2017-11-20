@@ -34,7 +34,7 @@ void main() {
                      texture_position_x.z == 2 ? x.b :
                      x.a;
 }
-"""])
+"""], name=op.__class__.__name__)
     source = code.generate()
     return [Kernel(
         source,

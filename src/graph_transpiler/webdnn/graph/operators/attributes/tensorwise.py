@@ -41,6 +41,9 @@ class Tensorwise(Attribute[Operator]):
         super(Tensorwise, self).__init__(base)
         self.axis = axis
 
-    @classmethod
-    def check_splittable(cls, op: Operator, axis: Axis):
-        return any(attr.axis == axis for attr in op.get_attribute(cls))
+    def __str__(self):
+        return f"Tensorwise[{self.axis.name}]"
+
+    @staticmethod
+    def check_splittable(op: Operator, axis: Axis):
+        return any(attr.axis == axis for attr in op.get_attribute(Tensorwise))
