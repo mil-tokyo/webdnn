@@ -1,6 +1,6 @@
 import chainer
 
-from webdnn import Axis
+from webdnn.graph.axis import Axis
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -94,6 +94,7 @@ def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.U
     y, = pool_opr(x)
 
     converter.set_variable(c_op.outputs[0](), y)
+
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("UnpoolingND")

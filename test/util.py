@@ -5,7 +5,6 @@ from typing import Dict, List, Union
 from unittest import SkipTest
 
 import numpy as np
-
 from webdnn.backend.interface.generator import generate_descriptor
 from webdnn.graph import traverse
 from webdnn.graph.axis import Axis, AxisKeyDict

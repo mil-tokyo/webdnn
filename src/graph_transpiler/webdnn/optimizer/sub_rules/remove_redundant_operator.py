@@ -1,10 +1,9 @@
-from typing import Tuple, List
-
 import itertools
+from typing import Tuple
 
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.util import flags
 
@@ -71,7 +70,23 @@ class RemoveRedundantOperator(OptimizeRule):
 
                 for v_name, v1 in vs_1.items():
                     v2 = vs_2[v_name]
-                    OptimizeRule.replace_variable(graph, v2, v1)
+                    if v1.order == v2.order:
+                        """
+                                    +-{op3}-
+                        -{op1}- v1 -+
+                                    +-{op4}-
+                        """
+                        OptimizeRule.replace_variable(graph, v2, v1)
+
+                    else:
+                        """
+                                    +-{op3}-
+                        -{op1}- v1 -+
+                                    +-{Transpose}- v2 -{op4}-
+                        """
+                        v2_dummy, = Transpose(None)(v1)
+                        v2_dummy.change_order(v2.order)
+                        OptimizeRule.replace_variable(graph, v2_dummy, v2)
 
                 variables = traverse.listup_variables(graph)
                 break

@@ -2,7 +2,6 @@ from enum import auto, Enum
 from typing import Dict, List, Set, Union, Tuple
 
 import numpy as np
-
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -192,6 +191,13 @@ def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Va
                 # `t + 1` means that `v` will be released *AFTER* `op` will be finished.
                 allocations[v].end = t + 1
 
+        for a in allocations.values():
+            if a.begin == _T_UNKNOWN:
+                a.begin = 0
+
+            if a.end == _T_UNKNOWN:
+                a.end = T_LAST
+
     return allocations
 
 
@@ -264,13 +270,13 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
     First, construct "Merge Offset Table".
 
-    table = {
-        a: {},
-        b: { a: 0 },
-        c: { a: 0, b: 4, e: 3 },
-        d: { a: 0, b: 0, c: 0, e: 0 },
-        e: { a: 5, b: 4 }
-    }
+        table = {                           reduced_size = {
+            a: {},                              a: {},
+            b: { a: 0 },                        b: { a: 4 },
+            c: { a: 0, b: 4 },                  c: { a: 2, b: 0 }
+            d: { a: 0, b: 0, c: 0, e: 0 },      d: { a: 1, b: 1, c: 1, e: 1 },
+            e: { a: 5, b: 4, c: 2, d: 0 }       e: { a: 0, b: 0, c: 0, d: 1 }
+        }                                   }
 
     `table[x][y]` means offset value in case that variable `x` is merged into variable `y`. For example, when `b` is merged into
     (=reused the memory allocated for) `a`, offset value is `0` because they are not exist at same time. However, when `c` is merged into
@@ -281,35 +287,35 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
     Then merge the pair which has the largest reduced size. In this case such pair is `a` and `b`, and update the table.
 
-    table = {
-        ab: {},
-        c: { ab: 4, e: 3 },
-        d: { ab: 0, c: 0, e: 0 },
-        e: { ab: 5 }
-    }
+        table = {                           reduced_size = {
+            ab: {},                             ab: {},
+            c: { ab: 4 },                       c: { ab: 1 }
+            d: { ab: 0, c: 0, e: 0 },           d: { ab: 1, c: 1, e: 1 },
+            e: { ab: 5, c: 2, d: 0 }            e: { ab: 0, c: 0, d: 1 }
+        }                                   }
 
     Iterate this procedure until all variables are merged into single allocation.
 
     Merge `d` into `ab` with offset `0`:
 
-        table = {
-            abd: {},
-            c: { abd: 4, e: 3 },
-            e: { abd: 5 }
-        }
+        table = {                           reduced_size = {
+            abd: {},                            abd: {},
+            c: { abd: 4 },                      c: { abd: 1 },
+            e: { abd: 5, c: 2 }                 e: { abd: 0, c: 0 }
+        }                                   }
 
     Merge `c` into `abd` with offset `4`:
 
-        table = {
-            abcd: {},
-            e: { abcd: 5 }
-        }
+        table = {                           reduced_size = {
+            abcd: {},                           abcd: {},
+            e: { abcd: 5 }                      e: { abcd: 0 }
+        }                                   }
 
     Merge `e` into `abcd` with offset `5`:
 
-        table = {
-            abcde: {},
-        }
+        table = {                           reduced_size = {
+            abcde: {}                           abcde: {}
+        }                                   }
 
     Finish.
 

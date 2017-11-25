@@ -1,9 +1,10 @@
 import chainer
 
-from webdnn import Axis, ConstantVariable
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.order import OrderNCHW, OrderC
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 @ChainerConverter.register_handler("NormalizeL2")

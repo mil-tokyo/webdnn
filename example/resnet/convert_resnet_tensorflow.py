@@ -48,43 +48,38 @@ def download_model(out_dir):
     return model_path
 
 
-def main():
-    sys.setrecursionlimit(10000)
+def generate_graph(output_root):
+    os.makedirs(output_root, exist_ok=True)
 
+    slim_dir = os.path.join(output_root, "models/slim")
+    if not os.path.exists(slim_dir):
+        clone_slim(output_root)
+
+    sys.path.append(slim_dir)
+    from nets import resnet_v1
+    image_size = resnet_v1.resnet_v1.default_image_size
+
+    with slim.arg_scope(resnet_v1.resnet_arg_scope()):
+        x = tf.placeholder(tf.float32, [1, image_size, image_size, 3])
+        logits, _ = resnet_v1.resnet_v1_50(x, num_classes=1000, is_training=False)
+        y = tf.nn.softmax(logits)
+
+    model_path = download_model(output_root)
+    sess = tf.Session()
+    slim.assign_from_checkpoint_fn(model_path, slim.get_model_variables())(sess)
+
+    graph = TensorFlowConverter(sess, batch_size=1).convert([x], [y])
+    return sess, x, y, graph
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', '-o', default='output_tensorflow', help='Directory to output the graph descriptor')
     parser.add_argument("--encoding", help="name of weight encoder")
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()
 
-    os.makedirs(args.out, exist_ok=True)
-    slim_dir = os.path.join(args.out, "models/slim")
-    if not os.path.exists(slim_dir):
-        clone_slim(args.out)
-
-    model_path = download_model(args.out)
-
-    sys.path.append(slim_dir)
-    from nets import resnet_v1
-    image_size = resnet_v1.resnet_v1.default_image_size
-
-    checkpoints_dir = args.out
-    sess = tf.Session()
-    processed_images = tf.placeholder(tf.float32, [1, image_size, image_size, 3])
-
-    # Create the model, use the default arg scope to configure the batch norm parameters.
-    with slim.arg_scope(resnet_v1.resnet_arg_scope()):
-        logits, _ = resnet_v1.resnet_v1_50(processed_images, num_classes=1000, is_training=False)
-    probabilities = tf.nn.softmax(logits)
-
-    init_fn = slim.assign_from_checkpoint_fn(model_path, slim.get_model_variables())
-
-    init_fn(sess)
-
-    graph = TensorFlowConverter(sess, batch_size=1).convert([processed_images], [probabilities])
-
-    from webdnn.graph import traverse
-    traverse.dump(graph)
+    _, _, _, graph = generate_graph(args.out)
 
     for backend in args.backend.split(","):
         graph_exec_data = generate_descriptor(backend, graph, constant_encoder_name=args.encoding)

@@ -1,7 +1,8 @@
 import chainer
-
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.exp import Exp
+from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.order import Order
 
 
 # noinspection PyUnusedLocal
@@ -32,7 +33,6 @@ def _convert_batch_det(converter: ChainerConverter, c_op: "chainer.functions.Bat
     raise NotImplementedError("[ChainerConverter] BatchDet is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Exp")
 def _convert_exp(converter: ChainerConverter, c_op: "chainer.functions.Exp"):
     x = converter.get_variable(c_op.inputs[0])
@@ -145,11 +145,15 @@ def _convert_batch_mat_mul(converter: ChainerConverter, c_op: "chainer.functions
     raise NotImplementedError("[ChainerConverter] BatchMatMul is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("MatMul")
 def _convert_mat_mul(converter: ChainerConverter, c_op: "chainer.functions.MatMul"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] MatMul is not supported")
+    x0 = converter.get_variable(c_op.inputs[0])
+    x1 = converter.get_variable(c_op.inputs[1])
+    if x0.order.axes[1 if c_op.transa else 0] == x1.order.axes[0 if c_op.transb else 1]:
+        x1 = x1.reinterpret_axes(Order([None, None]))
+
+    y, = Tensordot(None, axes=[x0.order.axes[0 if c_op.transa else 1], x1.order.axes[1 if c_op.transb else 0]])(x0, x1)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

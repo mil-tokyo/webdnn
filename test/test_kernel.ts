@@ -15,6 +15,7 @@ interface DebugLogger {
 class PageLogger implements DebugLogger {
     // FIXME: better representation
     placeholder: HTMLElement;
+
     constructor() {
         this.placeholder = document.getElementById("log");
     }
@@ -165,13 +166,14 @@ const TestRunner = new class {
         let results = this.results;
         logger.group('Result');
 
+        let succeededResults = results.filter(result => result.result);
         let failedResults = results.filter(result => !result.result);
-        let warningResults = results.filter(result => result.result && result.err);
+        let numSkippedTests = this.testCases.length - failedResults.length - succeededResults.length;
 
         if (failedResults.length == 0) {
-            logger.info(`- ${results.length} PASSED / 0 FAILED`);
+            logger.info(`- ${succeededResults.length} PASSED / ${failedResults.length} FAILED / ${numSkippedTests} SKIP`);
         } else {
-            logger.error(`- ${results.length - failedResults.length} PASSED / ${failedResults.length} FAILED`);
+            logger.error(`- ${succeededResults.length} PASSED / ${failedResults.length} FAILED / ${numSkippedTests} SKIP`);
 
             logger.group('Failed');
             failedResults.forEach(result => {
@@ -183,6 +185,7 @@ const TestRunner = new class {
             logger.groupEnd();
         }
 
+        let warningResults = results.filter(result => result.result && result.err);
         if (warningResults.length > 0) {
             logger.group('Warning');
             warningResults.forEach(result => {
@@ -213,60 +216,64 @@ const TestRunner = new class {
 
         logger.group(`[${this.currentTestCaseIndex + 1}/${this.testCases.length}]${testName}`);
 
-        try {
-            assert.EPS = testCase.EPS;
-            assert.ABS_EPS = testCase.ABS_EPS;
+        if (WebDNN.getBackendAvailability().status[testCase.backend]) {
+            try {
+                assert.EPS = testCase.EPS;
+                assert.ABS_EPS = testCase.ABS_EPS;
 
-            let runner = await WebDNN.load(this.rootUrl + testCase.dirname, {
-                backendOrder: testCase.backend,
-                ignoreCache: true
-            });
-            assert.equal(testCase.backend, runner.backendName, 'backend');
+                let runner = await WebDNN.load(this.rootUrl + testCase.dirname, {
+                    backendOrder: testCase.backend,
+                    ignoreCache: true
+                });
+                assert.equal(testCase.backend, runner.backendName, 'backend');
 
-            let inputs = runner.getInputViews();
-            outputs = runner.getOutputViews();
+                let inputs = runner.getInputViews();
+                outputs = runner.getOutputViews();
 
-            testCase.inputs.forEach((data, i) => inputs[i].set(data));
-            let startTime = performance.now();
-            await runner.run();
-            elapsedTime = performance.now() - startTime;
+                testCase.inputs.forEach((data, i) => inputs[i].set(data));
+                let startTime = performance.now();
+                await runner.run();
+                elapsedTime = performance.now() - startTime;
 
-            testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual()));
+                testCase.expected.forEach((expected, i) => assert.floatArrayEqual(expected, outputs[i].toActual()));
 
-            let result = {
-                name: testName,
-                testCase: testCase,
-                result: true,
-                elapsedTime: elapsedTime,
-                outputs: outputs.map(v => v.toActual())
-            };
-            this.results.push(result);
-
-            logger.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
-            logger.log(result);
-
-        } catch (err) {
-            if (err instanceof Warning) {
-                this.results.push({
+                let result = {
                     name: testName,
                     testCase: testCase,
                     result: true,
                     elapsedTime: elapsedTime,
-                    err: err,
-                    outputs: outputs ? outputs.map(v => v.toActual()) : null
-                });
-                logger.warn(err.message);
-            } else {
-                this.results.push({
-                    name: testName,
-                    testCase: testCase,
-                    result: false,
-                    elapsedTime: -1,
-                    err: err,
-                    outputs: outputs ? outputs.map(v => v.toActual()) : null
-                });
-                logger.error(err);
+                    outputs: outputs.map(v => v.toActual())
+                };
+                this.results.push(result);
+
+                logger.log('- PASS: Elapsed time=' + (elapsedTime).toFixed(2) + '[ms]');
+                logger.log(result);
+
+            } catch (err) {
+                if (err instanceof Warning) {
+                    this.results.push({
+                        name: testName,
+                        testCase: testCase,
+                        result: true,
+                        elapsedTime: elapsedTime,
+                        err: err,
+                        outputs: outputs ? outputs.map(v => v.toActual()) : null
+                    });
+                    logger.warn(err.message);
+                } else {
+                    this.results.push({
+                        name: testName,
+                        testCase: testCase,
+                        result: false,
+                        elapsedTime: -1,
+                        err: err,
+                        outputs: outputs ? outputs.map(v => v.toActual()) : null
+                    });
+                    logger.error(err);
+                }
             }
+        } else {
+            logger.log(`backend "${testCase.backend}" is not supported in this browser, and test case is skipped.`);
         }
 
         logger.groupEnd();

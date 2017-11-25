@@ -9,6 +9,12 @@ from webdnn.util import console
 
 T_OP = TypeVar('T_OP')
 
+Handler = Callable[["Converter", T_OP], Operator]
+
+
+class CyclicGraphError(Exception):
+    pass
+
 
 class Converter(Generic[T_OP]):
     """Converter()
@@ -17,11 +23,10 @@ class Converter(Generic[T_OP]):
     If you want to implement your custom converter, see :doc:`/tutorial/custom_operator/index`.
     """
 
-    """
-    For each concrete Converter
-    """
-    _handler_map = defaultdict(dict)  # type: Dict[str, Dict[str, Callable[["Converter", T_OP], Operator]]]
-    _variable_table = defaultdict(dict)  # type: Dict[str, Dict[object, Variable]]
+    _handler_map = defaultdict(dict)  # type: Dict[str, Dict[str, Handler]]
+
+    def __init__(self):
+        self._variable_table = {}  # type: Dict[object, Variable]
 
     @abstractmethod
     def convert(self, *args, **kwargs) -> Graph:
@@ -41,9 +46,12 @@ class Converter(Generic[T_OP]):
         Args:
             key: operator type name. As default, it's the class name for each operator instance. you can change this
                  behavior by overriding :func:`~webdnn.converter.Converter.serialize_operator_type`.
+
+        Returns:
+            :
         """
 
-        def decorator(handler: Callable[["Converter", T_OP], Operator]):
+        def decorator(handler: Handler):
             if key in cls._handler_map[cls.__name__]:
                 console.warning(f"[{cls.__name__}] Converter Handler for '{key}' is already registered in {cls.__name__} and overwritten.")
 
@@ -74,19 +82,20 @@ class Converter(Generic[T_OP]):
         Returns:
             (:class:`~webdnn.Variable`):variable object in WebDNN IR Format.
         """
-        return self._variable_table[self.__class__.__name__][key]
+        return self._variable_table[key]
 
-    def set_variable(self, key: object, variable: Variable):
+    def set_variable(self, key: object, variable: Variable, overwrite: bool = False):
         """set_variable(key, variable)
         Stores variable object corresponding to the key.
 
         Args:
             key (object): key
             variable (:class:`~webdnn.Variable`): variable
+            overwrite (bool): When False, if the key is already exist, KeyError is raised.
         """
-        if key in self._variable_table[self.__class__.__name__]:
-            raise ValueError(f"Variable {key} already exists")
-        self._variable_table[self.__class__.__name__][key] = variable
+        if not overwrite and key in self._variable_table:
+            raise KeyError(f"Variable {key} already exists")
+        self._variable_table[key] = variable
 
     def has_variable(self, key: object) -> bool:
         """has_variable(key)
@@ -98,7 +107,7 @@ class Converter(Generic[T_OP]):
         Returns:
             (bool): If :code:`True`, the key is contained.
         """
-        return key in self._variable_table[self.__class__.__name__]
+        return key in self._variable_table
 
     def _convert_operator(self, operator: T_OP):
         operator_key = self.serialize_operator_type(operator)

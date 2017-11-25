@@ -5,10 +5,9 @@ from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
-from webdnn.graph.operators.linear import Linear
-from webdnn.graph.order import OrderNC, OrderNCHW, OrderCNHW, Order, OrderC
+from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.order import OrderNCHW, Order, OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util.misc import mul
 
 
 @ChainerConverter.register_handler("BilinearFunction")
@@ -23,10 +22,10 @@ def _convert_convolution_2d(converter: ChainerConverter, c_op: "chainer.function
     w = converter.get_variable(c_op.inputs[1])
 
     x.order.unify(OrderNCHW)
-    w.order.unify(OrderNCHW)
+    w.order.unify(Order([Axis.N, Axis.C, Axis.KH, Axis.KW]))
 
     conv_opr = Convolution2D(None,
-                             ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                             ksize=(w.shape_dict[Axis.KH], w.shape_dict[Axis.KW]),
                              stride=(c_op.sy, c_op.sx),
                              padding=(c_op.ph, c_op.pw))
 
@@ -55,10 +54,10 @@ def _convert_deconvolution_2d(converter: ChainerConverter, c_op: "chainer.functi
     w = converter.get_variable(c_op.inputs[1])
 
     x.order.unify(OrderNCHW)
-    w.order.unify(OrderCNHW)
+    w.order.unify(Order([Axis.C, Axis.N, Axis.KH, Axis.KW]))
 
     deconv_opr = Deconvolution2D(None,
-                                 ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                                 ksize=(w.shape_dict[Axis.KH], w.shape_dict[Axis.KW]),
                                  stride=(c_op.sy, c_op.sx),
                                  padding=(c_op.ph, c_op.pw))
 
@@ -95,11 +94,11 @@ def _convert_selected_item(converter: ChainerConverter,
     w = converter.get_variable(c_op.inputs[1])
 
     x.order.unify(OrderNCHW)
-    w.order.unify(OrderNCHW)
+    w.order.unify(Order([Axis.N, Axis.C, Axis.KH, Axis.KW]))
 
     # when dx == 1, it means ordinary convolution.
     conv_opr = Convolution2D(None,
-                             ksize=(w.shape_dict[Axis.H], w.shape_dict[Axis.W]),
+                             ksize=(w.shape_dict[Axis.KH], w.shape_dict[Axis.KW]),
                              stride=(c_op.sy, c_op.sx),
                              padding=(c_op.ph, c_op.pw),
                              dilation_rate=(c_op.dx, c_op.dy))
@@ -127,11 +126,7 @@ def _convert_linear_function(converter: ChainerConverter, c_op: "chainer.functio
     x = converter.get_variable(c_op.inputs[0])
     w = converter.get_variable(c_op.inputs[1])  # type: ConstantVariable
 
-    x2 = x.reshape([x.shape[0], mul(x.shape[1:])], OrderNC)
-    w2 = w.reinterpret_axes(OrderNC)
-
-    y, = Linear(None)(x2, w2)
-    y = y.reinterpret_axes(Order([x.order.axes[0], w.order.axes[0]]))
+    y, = Tensordot(None, axes=[x.order.axes[1:], w.order.axes[1]])(x, w)
 
     if len(c_op.inputs) == 3:
         # with bias

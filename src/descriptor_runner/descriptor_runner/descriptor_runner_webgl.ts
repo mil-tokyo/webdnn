@@ -30,7 +30,7 @@ interface RuntimeProgramInfo {
         func: (...args: any[]) => void,
         args: any[]
     }[],
-    loc: number,
+    xyAttribLoc: number,
     output: BufferWebGL,
     disposable: BufferWebGL[]
 }
@@ -367,7 +367,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                 });
 
                 // attributes
-                let loc = gl.getAttribLocation(program, '_xy');
+                let xyAttribLoc = gl.getAttribLocation(program, '_xy');
 
                 // run
                 return {
@@ -378,7 +378,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     height: output.textureHeight,
                     inputs: inputs,
                     output: output,
-                    loc: loc,
+                    xyAttribLoc: xyAttribLoc,
                     uniforms: uniforms,
                     disposable: []
                 };
@@ -431,9 +431,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     // uniforms
                     for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
 
-                    // vertex attribute
-                    gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
-                    gl.enableVertexAttribArray(runtimeProgramInfo.loc);
+                    // attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
 
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
@@ -495,9 +495,9 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     // uniforms
                     for (let uniform of runtimeProgramInfo.uniforms) uniform.func.apply(gl, uniform.args);
 
-                    // vertex attribute
-                    gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
-                    gl.enableVertexAttribArray(runtimeProgramInfo.loc);
+                    // attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
 
                     // run
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);

@@ -11,9 +11,7 @@ from webdnn.graph.order import OrderNC, OrderCN, OrderNT
 @KerasConverter.register_handler("Embedding")
 def _convert_embedding(converter: KerasConverter, k_op: "keras.layers.Embedding"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    if x.order == OrderNC:
-        x = x.reinterpret_axes(OrderNT)
+    x = x.reinterpret_axes(OrderNT)
 
     w = converter.convert_to_constant_variable(k_op.embeddings, OrderCN)
 

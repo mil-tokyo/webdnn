@@ -3,7 +3,6 @@ import numpy as np
 from test.util import generate_kernel_test_case, wrap_template
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
-from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.sum import Sum
 from webdnn.graph.order import OrderNHWC, OrderNCHW, Order
 from webdnn.graph.variable import Variable
@@ -25,7 +24,7 @@ def template(x_order=OrderNHWC, y_order=OrderNHW, axis=Axis.C, description: str 
     generate_kernel_test_case(
         description=f"Sum {description}",
         graph=Graph([x], [y]),
-        backend=["webgl"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
         expected={y: np.transpose(vy, [OrderNHW.axes_dict[a] for a in y.order.axes])},
     )

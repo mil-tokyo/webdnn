@@ -406,6 +406,9 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
             stride_name = variable2stride_name[y][d]
             expression.append(f"d{d}*{stride_name}")
 
+    if len(expression) == 0:
+        expression.append('0')
+
     buffer.exec(f"{buffer_name}[{' + '.join(expression)}] = {variable2name[y]};")
 
     # close loop

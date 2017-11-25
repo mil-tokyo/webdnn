@@ -7,7 +7,11 @@ Trains a simple deep NN on the MNIST dataset.
 import argparse
 import json
 import os
-import subprocess
+
+import keras
+
+from webdnn.backend import generate_descriptor
+from webdnn.frontend.keras import KerasConverter
 
 batch_size = 128
 num_classes = 10
@@ -15,8 +19,7 @@ epochs = 2
 img_rows, img_cols = 28, 28
 
 
-# noinspection PyPackageRequirements
-def _get_input_shape(model_type):
+def get_input_shape(model_type):
     if model_type in ["conv", "dilated_conv", "residual", "complex"]:
         return img_rows, img_cols, 1
 
@@ -27,13 +30,12 @@ def _get_input_shape(model_type):
         raise NotImplementedError("Unknown model type")
 
 
-# noinspection PyPackageRequirements
 def _setup_model(model_type):
     from keras import backend as K
     from keras.layers import Dense, Dropout, Flatten, Conv2D, AtrousConv2D, MaxPooling2D, Input, add, GlobalAveragePooling2D, Activation
     from keras.models import Sequential, Model
 
-    input_shape = _get_input_shape(model_type)
+    input_shape = get_input_shape(model_type)
 
     if model_type == "conv":
         model = Sequential()
@@ -115,8 +117,7 @@ def _setup_model(model_type):
     return model
 
 
-# noinspection PyPackageRequirements
-def train_and_save(model_type, model_path, sample_path):
+def _train_and_save(model_type, model_path, sample_path):
     import keras
     from keras import backend as K
     from keras.datasets import mnist
@@ -173,20 +174,16 @@ def train_and_save(model_type, model_path, sample_path):
         json.dump(test_samples_json, f)
 
 
-def convert(backend, model_path, input_shape, out_path):
-    print("Converting model into WebDNN format (graph descriptor)")
+def generate_graph(model_type, output_dir):
+    model_path = os.path.join(output_dir, f"./keras_model/{model_type}.h5")
+    sample_path = os.path.join(output_dir, "test_samples.json")
 
-    input_shape_with_batchsize = ('1',) + input_shape
+    if not os.path.exists(model_path):
+        _train_and_save(model_type, model_path, sample_path)
 
-    # only for demo purpose, maybe not safe
-    convert_keras_command = f"python ../../bin/convert_keras.py {model_path} " \
-                            f"--backend {backend} " \
-                            f"--input_shape '{input_shape_with_batchsize}' " \
-                            f"--out {out_path}"
-    print("$ " + convert_keras_command)
-    subprocess.check_call(convert_keras_command, shell=True)
-
-    print("Done.")
+    model = keras.models.load_model(model_path, compile=False)
+    graph = KerasConverter(batch_size=1).convert(model)
+    return model, graph
 
 
 def main():
@@ -196,13 +193,11 @@ def main():
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
     args = parser.parse_args()
 
-    model_path = os.path.join(args.out, f"./keras_model/{args.model}.h5")
-    sample_path = os.path.join(args.out, "test_samples.json")
+    model, graph = generate_graph(args.model, args.out)
 
-    if not os.path.exists(model_path):
-        train_and_save(args.model, model_path, sample_path)
-
-    convert(args.backend, model_path, _get_input_shape(args.model), args.out)
+    for backend in args.backend.split(","):
+        exec_info = generate_descriptor(backend, graph)
+        exec_info.save(args.out)
 
 
 if __name__ == "__main__":

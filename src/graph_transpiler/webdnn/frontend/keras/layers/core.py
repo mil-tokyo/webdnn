@@ -1,37 +1,45 @@
+from webdnn import Axis
+from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.operators.tile import Tile
+
 try:
     import keras
 except ImportError as e:
     pass
 
-import numpy as np
-
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
-from webdnn.graph.axis import Axis
-from webdnn.graph.operators.linear import Linear
-from webdnn.graph.order import OrderNC, OrderC, OrderCN, OrderNTC, OrderNHWC
-from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.order import OrderNC, Order
 from webdnn.util import console
 from webdnn.util.misc import mul
-
-
-@KerasConverter.register_handler("Dense")
-def _convert_dense(converter: KerasConverter, k_op: "keras.layers.Dense"):
-    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    w = converter.convert_to_constant_variable(k_op.kernel, OrderCN)
-    y, = Linear(None)(x, w)
-
-    if k_op.use_bias:
-        b = converter.convert_to_constant_variable(k_op.bias, OrderC)
-        y = y + b
-
-    y = do_activation(k_op.activation, y)
-    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
 @KerasConverter.register_handler("Activation")
 def _convert_activation(converter: KerasConverter, k_op: "keras.layers.Activation"):
     y = converter.get_variable(converter.get_input_tensor(k_op)[0])
+
+    y = do_activation(k_op.activation, y)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+
+
+# noinspection PyUnusedLocal
+@KerasConverter.register_handler("ActivityRegularization")
+def _convert_activity_regularization(converter: KerasConverter, k_op: "keras.layers.ActivityRegularization"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.ActivityRegularization is not supported')
+
+
+@KerasConverter.register_handler("Dense")
+def _convert_dense(converter: KerasConverter, k_op: "keras.layers.Dense"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    w = converter.convert_to_constant_variable(k_op.kernel, Order([None, None]))
+    y, = Tensordot(None, axes=[x.order.axes[-1], w.order.axes[0]])(x, w)
+
+    if k_op.use_bias:
+        b = converter.convert_to_constant_variable(k_op.bias, Order([None]))
+        b.order.axes[0].unify(w.order.axes[1])
+        y = y + b
 
     y = do_activation(k_op.activation, y)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
@@ -55,33 +63,18 @@ def _convert_flatten(converter: KerasConverter, k_op: "keras.layers.Flatten"):
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
-_flag_reshape_first_time = True
+# noinspection PyUnusedLocal
+@KerasConverter.register_handler("Lambda")
+def _convert_lambda(converter: KerasConverter, k_op: "keras.layers.Lambda"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.Lambda is not supported')
 
 
 # noinspection PyUnusedLocal
-@KerasConverter.register_handler("Reshape")
-def _convert_reshape(converter: KerasConverter, k_op: "keras.layers.Reshape"):
-    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    target_shape = [x.shape[0]] + list(k_op.target_shape)
-    if len(target_shape) == 2:
-        target_order = OrderNC
-
-    elif len(target_shape) == 3:
-        target_order = OrderNTC
-
-    elif len(target_shape) == 4:
-        target_order = OrderNHWC
-
-    else:
-        raise NotImplementedError(f"[KerasConverter] Unknown default order: shape={target_shape}")
-
-    console.warning("[KerasConverter] keras.layers.Reshape is parsed new data order as default order (OrderNC in 2D, "
-                    "OrderNTC in 3D, OrderNHWC in 4D). To handle this, please overwrite keras.layers.Reshape converter "
-                    "handler.")
-
-    y = x.reshape(target_shape, target_order)
-    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+@KerasConverter.register_handler("Masking")
+def _convert_masking(converter: KerasConverter, k_op: "keras.layers.Masking"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.Masking is not supported')
 
 
 # noinspection PyUnusedLocal
@@ -94,47 +87,22 @@ def _convert_permute(converter: KerasConverter, k_op: "keras.layers.Permute"):
 @KerasConverter.register_handler("RepeatVector")
 def _convert_repeat_vector(converter: KerasConverter, k_op: "keras.layers.RepeatVector"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    new_axis = Axis()
+    multiplier = AxisKeyDict(x.order.axes, [1, 1])
+    multiplier[new_axis] = k_op.n
 
-    assert x.order == OrderNC, f"[KerasConverter] Currently only OrderNC is supported for input variable order of " \
-                               f"keras.layers.RepeatVector: x.order={x.order}"
-
-    N = x.shape_dict[Axis.N]
-    n = k_op.n
-    C = x.shape_dict[Axis.C]
-
-    # TODO: Implement more efficient version
-    # ex) x.shape=(N=2, C=3), n=2
-    #
-    #  x(N, C)  *      w(C, n*C)     =      y(N, n*C)     =       y(N, n, C)
-    # -----------------------------------------------------------------------------
-    # [1, 2, 3]   [1, 0, 0, 1, 0, 0]   [1, 2, 3, 1, 2, 3]   [[1, 2, 3], [1, 2, 3]]
-    # [4, 5, 6] * [0, 1, 0, 0, 1, 0] = [4, 5, 6, 4, 5, 6] = [[4, 5, 6], [4, 5, 6]]
-    #             [0, 0, 1, 0, 0, 1]
-    #
-
-    w = ConstantVariable(np.tile(np.eye(C), (1, n)), OrderCN)
-
-    y, = Linear(None)(x, w)
-    y = y.reshape([N, n, C], OrderNTC)
+    x = x.reshape(shape=(x.shape[0], 1, x.shape[1]), order=Order([x.order.axes[0], new_axis, x.order.axes[1]]))
+    y, = Tile(None, multiplier=multiplier)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
-# noinspection PyUnusedLocal
-@KerasConverter.register_handler("Lambda")
-def _convert_lambda(converter: KerasConverter, k_op: "keras.layers.Lambda"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.Lambda is not supported')
+@KerasConverter.register_handler("Reshape")
+def _convert_reshape(converter: KerasConverter, k_op: "keras.layers.Reshape"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
+    target_shape = [x.shape[0]] + list(k_op.target_shape)
+    # noinspection PyTypeChecker
+    target_order = Order([x.order.axes[0]] + [None] * len(k_op.target_shape))
 
-# noinspection PyUnusedLocal
-@KerasConverter.register_handler("ActivityRegularization")
-def _convert_activity_regularization(converter: KerasConverter, k_op: "keras.layers.ActivityRegularization"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.ActivityRegularization is not supported')
-
-
-# noinspection PyUnusedLocal
-@KerasConverter.register_handler("Masking")
-def _convert_masking(converter: KerasConverter, k_op: "keras.layers.Masking"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.Masking is not supported')
+    y = x.reshape(target_shape, target_order)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)

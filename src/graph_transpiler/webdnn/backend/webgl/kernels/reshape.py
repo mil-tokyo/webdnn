@@ -34,7 +34,9 @@ def reshape(op: Reshape) -> List[Kernel]:
 
     out_order = op.parameters["out_order"]
 
-    if y.order == out_order:
+    dummy_y = y.copy().change_order(out_order)
+    orders_y_dy, shapes_y_dy = simplify_orders([y, dummy_y])
+    if orders_y_dy[y] == orders_y_dy[dummy_y]:
         order = Order([None] * 4)
         shape = factorize(y.size)
         stride = [mul(shape[i + 1:]) for i in range(4)]
@@ -44,12 +46,12 @@ def reshape(op: Reshape) -> List[Kernel]:
         orders_y_dy = {y: order, dummy_y: order}
 
     else:
-        dummy_y = y.copy().change_order(out_order)
-        orders_y_dy, shapes_y_dy = simplify_orders([y, dummy_y])
         shapes_y_dy = {v: [shapes_y_dy[v][a] for a in orders_y_dy[v].axes] for v in [y, dummy_y]}
         strides_y_dy = {v: [mul(shapes_y_dy[v][i + 1:]) for i in range(orders_y_dy[v].ndim)] for v in [y, dummy_y]}
 
-    if x.order == in_order:
+    dummy_x = x.copy().change_order(in_order)
+    orders_x_dx, shapes_x_dx = simplify_orders([x, dummy_x])
+    if orders_x_dx[x] == orders_x_dx[dummy_x]:
         order = Order([None] * 4)
         shape = factorize(x.size)
         stride = [mul(shape[i + 1:]) for i in range(4)]
@@ -59,8 +61,6 @@ def reshape(op: Reshape) -> List[Kernel]:
         orders_x_dx = {x: order, dummy_x: order}
 
     else:
-        dummy_x = x.copy().change_order(in_order)
-        orders_x_dx, shapes_x_dx = simplify_orders([x, dummy_x])
         shapes_x_dx = {v: [shapes_x_dx[v][a] for a in orders_x_dx[v].axes] for v in [x, dummy_x]}
         strides_x_dx = {v: [mul(shapes_x_dx[v][i + 1:]) for i in range(orders_x_dx[v].ndim)] for v in [x, dummy_x]}
 

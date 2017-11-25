@@ -28,6 +28,11 @@ class DescriptorGenerator(Generic[T_KERNEL, T_EXEC_DATA]):
 
     @classmethod
     def register_handler(cls, OperatorClass: Type[Operator]):
+        """
+
+        Returns:
+            :
+        """
         key = OperatorClass.__name__
 
         def decorator(handler: Callable[[Operator, MemoryLayout], List[T_KERNEL]]):

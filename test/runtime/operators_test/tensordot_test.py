@@ -8,7 +8,7 @@ from webdnn.graph.variable import Variable
 
 
 @wrap_template
-def template(a_shape=(2, 3, 4, 5), b_shape=(3, 4, 5, 6), axes=((1, 2, 3), (0, 1, 2)), description: str = ""):
+def template(a_shape=(2, 3, 4, 5), b_shape=(3, 4, 5, 6), axes=((1, 2, 3), (0, 1, 2)), backend=None, description: str = ""):
     va = np.random.rand(*a_shape).astype(np.float32)
     vb = np.random.rand(*b_shape).astype(np.float32)
     vc = np.tensordot(va, vb, axes)
@@ -19,7 +19,7 @@ def template(a_shape=(2, 3, 4, 5), b_shape=(3, 4, 5, 6), axes=((1, 2, 3), (0, 1,
 
     generate_kernel_test_case(
         description=f"Tensordot {description}",
-        backend=["webgpu", "webassembly", "webgl"],
+        backend=backend,
         graph=Graph([a, b], [c]),
         inputs={a: va, b: vb},
         expected={c: vc}
@@ -31,7 +31,7 @@ def test():
 
 
 def test_large():
-    template(a_shape=(1024, 1024), b_shape=(1024, 1024), axes=((1,), (0,)))
+    template(a_shape=(1024, 1024), b_shape=(1024, 1024), axes=((1,), (0,)), backend=["webgpu", "webgl", "webassembly"])
 
 
 def test_vector_inner_product():

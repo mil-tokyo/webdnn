@@ -39,20 +39,16 @@ class Operator(Node):
 
     def get_input_name(self, var: "variable.Variable"):
         for name, v in self.inputs.items():
-            if v is not var:
-                continue
-
-            return name
+            if v is var:
+                return name
 
         else:
             raise KeyError(f"'{var}' is not input of {self}")
 
     def get_output_name(self, var: "variable.Variable"):
         for name, v in self.outputs.items():
-            if v is not var:
-                continue
-
-            return name
+            if v is var:
+                return name
 
         else:
             raise KeyError(f"'{var}' is not output of {self}")
@@ -100,15 +96,18 @@ class Operator(Node):
         """
 
         if with_assert:
-            assert v_old.ndim == v_new.ndim, \
-                "[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
-                f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-            assert v_old.order == v_new.order, \
-                "[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order." + \
-                f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
-            assert v_old.shape == v_new.shape, \
-                "[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape." + \
-                f"actual: v_old.order = {v_old.shape}, v_new.order = {v_new.shape}"
+            assert v_old.ndim == v_new.ndim, f"""
+[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions.
+    (v_old.ndim) = {v_old.ndim}
+    (v_new.ndim) = {v_new.ndim}"""
+            assert v_old.order == v_new.order, f"""
+[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order.
+    (v_old.order) = {v_old.order}
+    (v_new.order) = {v_new.order}"""
+            assert v_old.shape == v_new.shape, f"""
+[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape.
+    (v_old.shape) = {v_old.shape}
+    (v_new.shape) = {v_new.shape}"""
 
         name = self.get_input_name(v_old)
         self.remove_input(v_old)
@@ -158,15 +157,18 @@ class Operator(Node):
         """
 
         if with_assert:
-            assert v_old.ndim == v_new.ndim, \
-                "[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions." + \
-                f"actual: v_old.ndim = {v_old.ndim}, v_new.ndim = {v_new.ndim}"
-            assert v_old.order == v_new.order, \
-                "[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order." + \
-                f"actual: v_old.order = {v_old.order}, v_new.order = {v_new.order}"
-            assert v_old.shape == v_new.shape, \
-                "[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape." + \
-                f"actual: v_old.shape = {v_old.shape}, v_new.shape = {v_new.shape}"
+            assert v_old.ndim == v_new.ndim, f"""
+[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions.
+    (v_old.ndim) = {v_old.ndim}
+    (v_new.ndim) = {v_new.ndim}"""
+            assert v_old.order == v_new.order, f"""
+[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order.
+    (v_old.order) = {v_old.order}
+    (v_new.order) = {v_new.order}"""
+            assert v_old.shape == v_new.shape, f"""
+[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape.
+    (v_old.shape) = {v_old.shape}
+    (v_new.shape) = {v_new.shape}"""
 
         name = self.get_output_name(v_old)
         self.remove_output(v_old)

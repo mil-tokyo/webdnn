@@ -1,15 +1,23 @@
+import itertools
 from typing import List
 
 import numpy as np
 import tensorflow as tf
-
-from webdnn import ConstantVariable
+from tensorflow.python.framework.tensor_util import MakeNdarray
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
+from webdnn.graph.operators.concat import Concat
+from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.space2depth import Space2Depth
+from webdnn.graph.operators.tile import Tile
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import Order, OrderNHWC
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.util import console
+from webdnn.util.misc import mul
 
 
 @TensorFlowConverter.register_handler("BatchMatrixBandPart")
@@ -64,27 +72,42 @@ def concat_offset_handler(converter: TensorFlowConverter, tf_op: "tf.Operation")
 
 @TensorFlowConverter.register_handler("ConcatV2")
 def concat_v2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    xs = [converter.get_variable(tf_tensor) for tf_tensor in tf_op.inputs]
+    axis = xs.pop()
+    # TODO
+    assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Dynamic axis concatenation is not supported yet."
+    axis = xs[0].order.axes[int(axis.data.flatten()[0])]
+
+    for x0, x1 in itertools.permutations(xs):
+        x0.order.unify(x1.order)
+
+    y, = Concat(None, axis=axis)(*xs)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Const")
 def const_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # FIXME: should output ConstantVariable?
     tensor = tf_op.outputs[0]
     shape = [Placeholder() if dim.value is None else dim.value for dim in tensor.shape.dims]
+    value = MakeNdarray(tf_op.get_attr("value"))
+
     if len(shape) == 0:
         # Scalar variable
-        # WebDNN's variable should have at least 1 dimension
-        variable = ConstantVariable(np.array([tf_op.get_attr("value").float_val._values[0]], dtype=np.float32),
-                                    Order([Axis.C]))
+        variable = ConstantVariable(value.reshape([1]), Order([None]))
+
     else:
-        variable = Variable(shape, Order([None] * len(shape)))
+        variable = ConstantVariable(value, Order([None] * len(shape)))
+
     converter.set_variable(tensor, variable)
 
 
 @TensorFlowConverter.register_handler("DepthToSpace")
 def depth_to_space_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    x.order.unify(OrderNHWC)
+
+    y, = Depth2Space(None, r=tf_op.get_attr("block_size"))(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Dequantize")
@@ -109,7 +132,18 @@ def edit_distance_handler(converter: TensorFlowConverter, tf_op: "tf.Operation")
 
 @TensorFlowConverter.register_handler("ExpandDims")
 def expand_dims_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    dim = converter.get_variable(tf_op.inputs[1])
+
+    if not isinstance(dim, ConstantVariable):
+        raise NotImplementedError("[TensorFlowConverter] Operator 'ExpandDims' with dynamic dimension is not supported.")
+
+    dim = dim.data.astype(np.int32).flatten()[0]
+    new_shape = list(x.shape)
+    new_shape.insert(dim, 1)
+    new_axes = list(x.order.axes)
+    new_axes.insert(dim, Axis())
+    converter.set_variable(tf_op.outputs[0], x.reshape(order=Order(new_axes), shape=new_shape))
 
 
 @TensorFlowConverter.register_handler("ExtractImagePatches")
@@ -274,7 +308,11 @@ def parallel_concat_handler(converter: TensorFlowConverter, tf_op: "tf.Operation
 
 @TensorFlowConverter.register_handler("Placeholder")
 def placeholder_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    shape = [Placeholder() if dim.size() is -1 else dim.size() for dim in tf_op.get_attr("shape").dim]
+    if any(not Placeholder.check_resolved(s) for s in shape):
+        raise NotImplementedError(f"[TensorFlowConverter] Operator \"Placeholder\" with dynamic shape variable is not supported yet.")
+
+    converter.set_variable(tf_op.outputs[0], Variable(shape, Order([None for _ in shape])))
 
 
 @TensorFlowConverter.register_handler("PlaceholderV2")
@@ -329,7 +367,10 @@ def quantized_reshape_handler(converter: TensorFlowConverter, tf_op: "tf.Operati
 
 @TensorFlowConverter.register_handler("Rank")
 def rank_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    y = ConstantVariable(np.array([x.ndim]), Order([None]))
+
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("RefIdentity")
@@ -339,33 +380,20 @@ def ref_identity_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Reshape")
 def reshape_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # input: data, output_shape
-    # output: reshaped_data
-    # Currently, ignores output_shape.
-    in_var = converter.get_variable(tf_op.inputs[0])
-    out_tf_var = tf_op.outputs[0]
-    # calculate output shape from out_tf_var.shape and in_var.shape
-    # out_tf_var.shape can have at most one placeholder.
-    out_placeholder_count = 0
-    out_placeholder_idx = None
-    out_constant_prod = 1
-    out_shape = []
-    for i, dim_size in enumerate(out_tf_var.shape.dims):
-        out_shape.append(dim_size.value)
-        if dim_size.value is None:
-            out_placeholder_count += 1
-            out_placeholder_idx = i
-        else:
-            out_constant_prod *= dim_size.value
-    if out_placeholder_count > 1:
-        raise NotImplementedError(
-            "[TensorFlowConverter] Reshape: output with more than one placeholder is not supported yet.")
-    elif out_placeholder_count == 1:
-        if in_var.size % out_constant_prod != 0:
-            raise ValueError("[TensorFlowConverter] Reshape: invalid reshape output value.")
-        out_shape[out_placeholder_idx] = in_var.size // out_constant_prod
-    out_var = in_var.reshape(out_shape, Order([None] * len(out_shape)))
-    converter.set_variable(out_tf_var, out_var)
+    x = converter.get_variable(tf_op.inputs[0])
+    shape = converter.get_variable(tf_op.inputs[1])
+
+    assert isinstance(shape, ConstantVariable), NotImplementedError(
+        f"[TensorFlowConverter] 'Shape' operator with dynamic shape is not supported.")
+
+    shape = shape.data.flatten().tolist()  # type: List[int]
+    if -1 in shape:
+        i = shape.index(-1)
+        shape.remove(-1)
+        shape.insert(i, x.size // (mul(shape)))
+
+    y = x.reshape(shape, Order([None] * len(shape)))
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("ResourceStridedSliceAssign")
@@ -400,7 +428,11 @@ def scatter_nd_non_aliasing_add_handler(converter: TensorFlowConverter, tf_op: "
 
 @TensorFlowConverter.register_handler("Shape")
 def shape_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    assert all(Placeholder.check_resolved(s) for s in x.shape), "[TensorFlowConverter] op 'Shape' with dynamic shape is not supported yet. "
+
+    y = ConstantVariable(np.array(x.shape), Order([None]))
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("ShapeN")
@@ -430,7 +462,11 @@ def space_to_batch_nd_handler(converter: TensorFlowConverter, tf_op: "tf.Operati
 
 @TensorFlowConverter.register_handler("SpaceToDepth")
 def space_to_depth_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    x.order.unify(OrderNHWC)
+
+    y, = Space2Depth(None, r=tf_op.get_attr("block_size"))(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Split")
@@ -465,7 +501,8 @@ def squeeze_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("StopGradient")
 def stop_gradient_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    console.warning("[TensorFlowConverter] StopGradient is ignored.")
+    converter.set_variable(tf_op.outputs[0], converter.get_variable(tf_op.inputs[0]))
 
 
 @TensorFlowConverter.register_handler("StridedSlice")
@@ -485,7 +522,16 @@ def strided_slice_grad_handler(converter: TensorFlowConverter, tf_op: "tf.Operat
 
 @TensorFlowConverter.register_handler("Tile")
 def tile_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    multiplier = converter.get_variable(tf_op.inputs[1])
+
+    if not isinstance(multiplier, ConstantVariable):
+        raise NotImplementedError("[TensorFlowConverter] Operator 'Tile' with dynamic multiplier is not supported yet.")
+
+    multiplier = AxisKeyDict(x.order.axes, multiplier.data.astype(int).flatten().tolist())
+    y, = Tile(None, multiplier=multiplier)(x)
+
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("TileGrad")
@@ -495,7 +541,17 @@ def tile_grad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Transpose")
 def transpose_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    indices = converter.get_variable(tf_op.inputs[1])
+
+    if not isinstance(indices, ConstantVariable):
+        raise NotImplementedError("[TensorFlowConverter] Operator 'Transpose' with dynamic indices is not supported yet.")
+
+    indices = indices.data.astype(int).flatten().tolist()  # type: List[int]
+    y, = Transpose(None)(x)
+    y.change_order(Order([x.order.axes[i] for i in indices]))
+
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Unique")

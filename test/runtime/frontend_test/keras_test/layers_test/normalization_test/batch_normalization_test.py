@@ -13,7 +13,7 @@ def template(axis=-1, epsilon=1e-3, center=True, scale=True, description: str = 
     vx = np.random.rand(2, 14, 15, 16)
     vy = model.predict(vx, batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model)
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] BatchNormalization {description}",

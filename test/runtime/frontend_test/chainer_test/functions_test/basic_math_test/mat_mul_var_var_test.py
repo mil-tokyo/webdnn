@@ -1,13 +1,14 @@
 import chainer
 import numpy as np
-
-from test.util import generate_kernel_test_case
 from webdnn.frontend.chainer.converter import ChainerConverter
 
+from test.util import generate_kernel_test_case, wrap_template
 
-def test():
-    vx1 = chainer.Variable(np.random.rand(2, 4).astype(np.float32))
-    vx2 = chainer.Variable(np.random.rand(4, 6).astype(np.float32))
+
+@wrap_template
+def template(a_shape=(2, 4), b_shape=(4, 6), description: str = ""):
+    vx1 = chainer.Variable(np.random.rand(*a_shape).astype(np.float32))
+    vx2 = chainer.Variable(np.random.rand(*b_shape).astype(np.float32))
     vy = vx1 @ vx2
 
     graph = ChainerConverter().convert([vx1, vx2], [vy])
@@ -17,7 +18,7 @@ def test():
     y = graph.outputs[0]
 
     generate_kernel_test_case(
-        description=f"[chainer] F.MatMul",
+        description=f"[chainer] F.MatMulVarVar {description}",
         graph=graph,
         inputs={
             x1: vx1.data,
@@ -25,6 +26,10 @@ def test():
         },
         expected={y: vy.data},
     )
+
+
+def test():
+    template()
 
 
 def test_itself():
@@ -37,7 +42,7 @@ def test_itself():
     y = graph.outputs[0]
 
     generate_kernel_test_case(
-        description=f"[chainer] F.MatMul itself",
+        description=f"[chainer] F.MatMulVarVar itself",
         graph=graph,
         inputs={x: vx.data},
         expected={y: vy.data},

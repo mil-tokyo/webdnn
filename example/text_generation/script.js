@@ -100,7 +100,7 @@ async function run() {
 
 document.addEventListener('DOMContentLoaded', async function (event) {
     try {
-        let response = await webdnnFetch('output/model_setting.json');
+        let response = await fetch('output/model_setting.json');
         if (!response.ok) {
             throw new Error('Metadata HTTP response is not OK');
         }

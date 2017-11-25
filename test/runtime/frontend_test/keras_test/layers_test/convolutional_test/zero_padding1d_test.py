@@ -13,7 +13,7 @@ def template(padding=1, description: str = ""):
     vx = np.random.rand(2, 14, 15)
     vy = model.predict(vx, batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model)
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] ZeroPadding1D {description}",

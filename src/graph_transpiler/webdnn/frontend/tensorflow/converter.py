@@ -1,45 +1,28 @@
 # -*- coding:utf-8 -*-
-from typing import List, Set, Union, Optional, Dict
+import traceback
+from typing import List, Union, Optional, Dict, Sequence, Tuple
 
-from webdnn.frontend.converter import Converter
+from webdnn.frontend.converter import Converter, CyclicGraphError
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
-from webdnn.graph.order import Order, OrderNC, OrderNTC, OrderNHWC, OrderC
+from webdnn.graph.optimize_rule import OptimizeRuleGroup
+from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
 from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.tensorflow_frontend_optimize_rule import TensorFlowFrontendOptimizeRule
 from webdnn.util import console
-from webdnn.util import flags
 
 FLAG_TF_INSTALLED = True
 
 try:
     import tensorflow as tf
 
-except ImportError as e:
-    console.debug("Tensorflow are not completely installed.")
-    FLAG_TF_INSTALLED = False
-    pass
-
-
-def get_default_order(ndim: int):
-    if ndim == 1:
-        return OrderC
-
-    elif ndim == 2:
-        return OrderNC
-
-    elif ndim == 3:
-        return OrderNTC
-
-    elif ndim == 4:
-        return OrderNHWC
-
-    else:
-        raise NotImplementedError(f"Unknown default data order: (ndim)={ndim}")
+except Exception as e:
+    console.warning(traceback.format_exc())
 
 
 class TensorFlowConverter(Converter["tf.Operation"]):
@@ -53,8 +36,10 @@ class TensorFlowConverter(Converter["tf.Operation"]):
     """
 
     def __init__(self, session: "tf.Session", batch_size: int = 1):
+        super(TensorFlowConverter, self).__init__()
+
         if not FLAG_TF_INSTALLED:
-            raise ImportError("ImportError is occurred when Tensorflow is loaded.")
+            raise ImportError("[TensorFlowConverter] Failed to import Tensorflow.")
 
         self.session = session
         self._batch_size = Placeholder(label=Axis.N.name, value=batch_size)
@@ -62,7 +47,7 @@ class TensorFlowConverter(Converter["tf.Operation"]):
     def serialize_operator_type(self, op: "tf.Operation") -> str:
         return op.type
 
-    def convert(self, inputs: List["tf.Tensor"], outputs: List["tf.Tensor"],
+    def convert(self, inputs: Sequence["tf.Tensor"], outputs: Sequence["tf.Tensor"],
                 order_hints: Optional[Dict[Union["tf.Tensor", "tf.Variable"], Order]] = None) -> Graph:
         """convert(model, input_orders=None)
 
@@ -96,6 +81,24 @@ class TensorFlowConverter(Converter["tf.Operation"]):
         ops = _listup_operations(inputs, outputs)
         for op in ops:
             self._convert_operator(op)
+            sub_graph = Graph([self.get_variable(tf_tensor) for tf_tensor in op.inputs if self.has_variable(tf_tensor)],
+                              [self.get_variable(tf_tensor) for tf_tensor in op.outputs if self.has_variable(tf_tensor)])
+            old_outputs = list(sub_graph.outputs)
+
+            # Constant folding improves possibility of conversion, because many tensors are used not only for main input variable but also
+            # for other parameter like indices of operation, and WebDNN doesn't support dynamic indices operation.
+            OptimizeRuleGroup([ConstantFolding()], repeat=True).optimize(sub_graph)
+
+            # After constant folding, it need to replace old variable with new constant variable
+            for tf_tensor in op.outputs:
+                if not self.has_variable(tf_tensor):
+                    # This tensor is not converted (ignored)
+                    continue
+
+                old_v = self.get_variable(tf_tensor)
+                new_v = sub_graph.outputs[old_outputs.index(old_v)]
+                if old_v != new_v:
+                    self.set_variable(tf_tensor, new_v, overwrite=True)
 
         if order_hints:
             for tensor, order in order_hints.items():
@@ -160,26 +163,49 @@ class TensorFlowConverter(Converter["tf.Operation"]):
         return variable
 
 
-def _listup_operations(inputs, outputs):
-    stack = list(outputs)  # type: List[Union[tf.Tensor, tf.Operation]]
-    resolved = set(inputs)  # type: Set[Union[tf.Tensor, tf.Operation]]
-    result = []  # type: List[tf.Operation]
+T_NODE = Union[tf.Tensor, tf.Operation]
 
-    while len(stack) > 0:
-        node = stack.pop()
-        if node in resolved:
-            continue
 
-        prev_nodes = [node.op] if isinstance(node, tf.Tensor) else node.inputs
-        unresolved_prevs = [prev_node for prev_node in prev_nodes if prev_node not in resolved]
+def _listup_operations(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
+    def get_prev_nodes(node: T_NODE) -> Sequence[T_NODE]:
+        if node in inputs:
+            return []
 
-        if len(unresolved_prevs) == 0:
-            resolved.add(node)
-            if isinstance(node, tf.Operation):
-                result.append(node)
+        elif isinstance(node, tf.Tensor):
+            return [node.op]
 
         else:
-            stack.append(node)
-            stack += unresolved_prevs
+            return node.inputs
+
+    result = []  # type: List[tf.Operation]
+    stack = [(node, None) for node in outputs]  # type: List[Tuple[T_NODE, T_NODE]]
+    dependency_count = {}  # type: Dict[T_NODE, int]
+
+    while len(stack) > 0:
+        node_from, node_to = stack.pop()
+
+        if node_from not in dependency_count:
+            stack.append((node_from, node_to))
+
+            prev_nodes = get_prev_nodes(node_from)
+            dependency_count[node_from] = 0
+            for prev_node in prev_nodes:
+                if dependency_count.get(prev_node, 1) > 0:
+                    dependency_count[node_from] += 1
+                    stack.append((prev_node, node_from))
+
+        elif dependency_count[node_from] == 0:
+            if isinstance(node_from, tf.Operation):
+                result.append(node_from)
+
+            if node_to is not None:
+                dependency_count[node_to] -= 1
+
+        else:
+            console.debug("[TensorFlowConverter] Cycle is detected in computation graph")
+            console.debug("cycle starting node:")
+            console.debug(node_from)
+
+            raise CyclicGraphError("[TensorFlowConverter] Cycles are detected, but TensorFlowConverter cannot convert cyclic graph")
 
     return result

@@ -1,12 +1,12 @@
-# -*- coding:utf-8 -*-
-
+import traceback
 from collections import defaultdict
-from typing import List
+from typing import List, Optional
 
+import numpy as np
 from webdnn.frontend.converter import Converter
-from webdnn.graph.axis import Axis, AxisKeyDict
+from webdnn.frontend.tensorflow import TensorFlowConverter
 from webdnn.graph.graph import Graph
-from webdnn.graph.order import OrderNC, Order, OrderNHWC, OrderNTC
+from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.attributes.input import Input
@@ -22,26 +22,12 @@ try:
     import tensorflow as tf
 
     if not "2." <= keras.__version__ < "3.":
-        console.debug(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
+        raise NotImplementedError(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
+
     FLAG_KERAS_INSTALLED = True
 
-except ImportError as e:
-    console.debug("Keras and Tensorflow are not completely installed.")
-    pass
-
-
-def get_default_order(tf_tensor: "tf.Tensor"):
-    if len(tf_tensor.shape) == 2:
-        return OrderNC
-
-    elif len(tf_tensor.shape) == 3:
-        return OrderNTC
-
-    elif len(tf_tensor.shape) == 4:
-        return OrderNHWC
-
-    else:
-        raise NotImplementedError(f"Unknown default data order: {tf_tensor}")
+except Exception as e:
+    console.warning(traceback.format_exc())
 
 
 def _to_list(x):
@@ -64,44 +50,69 @@ class KerasConverter(Converter["keras.layers.Layer"]):
     Args:
         batch_size(int or None): input batch size. As default, keras handle the batch size as place holder (undetermined) value. If
           :code:`None` is passed, converter handles the batch size as placeholder named "N".
+        use_tensorflow_converter(bool): If `True`, KerasConverter first tries to convert model by TensorFlowConverter. Then if it failed,
+          retry conversion with KerasConverter itself.
     """
 
-    def __init__(self, batch_size: int = 1):
+    def __init__(self, batch_size: int = 1, use_tensorflow_converter: bool = True):
+        super(KerasConverter, self).__init__()
+
         if not FLAG_KERAS_INSTALLED:
-            raise ImportError("ImportError is occurred when Keras and Tensorflow are loaded.")
+            raise ImportError("[KerasConverter] Failed to import Keras.")
+
+        if K.backend() != "tensorflow":
+            raise NotImplementedError("Only TensorFlow backend is supported.")
+
+        K.set_learning_phase(0)
 
         self._input_index_dict = defaultdict(lambda: 0)
         self._output_index_dict = defaultdict(lambda: 0)
-        self._placeholders = AxisKeyDict([Axis.N], [Placeholder(label=Axis.N.name, value=batch_size)])
         self._input_tensor_cache = None  # type: List[tf.Tensor]
         self._output_tensor_cache = None  # type: List[tf.Tensor]
+        self._batch_size = batch_size
+        self._use_tensorflow_converter = use_tensorflow_converter
 
-    def convert(self, model: "keras.models.Model", input_orders: List[Order] = None) -> Graph:
+    def convert(self, model: "keras.models.Model") -> Graph:
         """convert(model, input_orders=None)
 
-        Convert kerasmodel into WebDNN IR Graph.
+        Convert kerasmodel into WebDNN IR Graph. First, WebDNN try to convert backend TensorFlow graph by TensorFlowConverter.
+        If TensorFlowConverter failed to convert, then KerasConverter converts model by itself
 
         Args:
             model (`keras.models.Model`): keras model
-            input_orders (list of :class:`~webdnn.graph.order.Order`): Order of input tensors. If `None` is passed, default order
-                (`OrderNC` for 2D, `OrderNTC` for 3D, `OrderNHWC` for 4D) is used. If `input_orders=None`, default orders
-                are assigned to all input tensors. If `input_orders[0]=None`, only first input tensor are converted with
-                the default order.
 
-        .. admonition:: Example
+        .. example::
 
-            .. code::
-
-                model = keras.models.load_model("pre_trained_model.h5")
-                graph = KerasConverter(batch_size=1).convert(model)
+            model = keras.models.load_model("pre_trained_model.h5")
+            graph = KerasConverter(batch_size=1).convert(model)
 
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph
         """
+        if not self._use_tensorflow_converter:
+            return self._convert_fallback(model)
+
+        else:
+            # noinspection PyBroadException
+            try:
+                return TensorFlowConverter(session=K.get_session(), batch_size=self._batch_size).convert(model.inputs, model.outputs)
+
+            except Exception:
+                self._use_tensorflow_converter = False
+                console.debug(traceback.format_exc())
+                console.debug("[KerasConverter] TensorflowConverter failed to convert.")
+
+        return self._convert_fallback(model)
+
+    def _convert_fallback(self, model: "keras.models.Model") -> Graph:
         if not model.built:
             model.build(None)
 
-        self._convert_tensors(model.inputs, input_orders)
+        self._convert_tensors(model.inputs)
+        for tensor in model.inputs:
+            v = self.get_variable(tensor)
+            if not Placeholder.check_resolved(v.shape[0]):
+                v.shape[0].value = self._batch_size
 
         for depth in sorted(list(model.nodes_by_depth.keys()), reverse=True):
             for node in model.nodes_by_depth[depth]:
@@ -140,12 +151,8 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         self.get_output_tensor(k_op)
         return super(KerasConverter, self)._convert_operator(k_op)
 
-    def _convert_tensors(self, tf_tensors: List["tf.Tensor"], orders: List[Order]):
-        if orders is None:
-            orders = [None for _ in tf_tensors]
-
-        orders = [get_default_order(tf_tensor) if order is None else order
-                  for tf_tensor, order in zip(tf_tensors, orders)]
+    def _convert_tensors(self, tf_tensors: List["tf.Tensor"]):
+        orders = [Order([None] * tf_tensor.shape.ndims) for tf_tensor in tf_tensors]
 
         assert len(tf_tensors) == len(orders), f"[KerasConverter] Number of specified orders is mismatched for number " \
                                                f"of tensors: tensors={tf_tensors} orders={orders}"
@@ -154,13 +161,7 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         for tf_tensor, order in zip(tf_tensors, orders):
             shape = []
             for s, axis in zip(tf_tensor.shape, order.axes):
-                if s.value is None:
-                    if axis not in self._placeholders:
-                        self._placeholders[axis] = Placeholder(label=axis.name)
-                    shape.append(self._placeholders[axis])
-
-                else:
-                    shape.append(s.value)
+                shape.append(Placeholder() if s.value is None else s.value)
 
             variable = Variable(shape, order)
             self.set_variable(tf_tensor, variable)
@@ -168,7 +169,7 @@ class KerasConverter(Converter["keras.layers.Layer"]):
 
         return variables
 
-    def convert_to_constant_variable(self, tf_var: "tf.Variable", order: Order) -> ConstantVariable:
+    def convert_to_constant_variable(self, tf_var: "tf.Variable", order: Optional[Order] = None) -> ConstantVariable:
         """convert_to_constant_variable(tf_var, order)
 
         Convert TensorFlow variable (parameter of kerasmodel) into
@@ -187,7 +188,7 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         Returns:
             (:class:`~webdnn.graph.variables.constant_variable.ConstantVariable`): converted variable.
         """
-        data = K.batch_get_value([tf_var])[0]
+        data = K.batch_get_value([tf_var])[0]  # type:np.array
 
         if self.has_variable(tf_var):
             variable = self.get_variable(tf_var)
@@ -195,11 +196,14 @@ class KerasConverter(Converter["keras.layers.Layer"]):
                                                         f"shape mismatch is detected: (registered shape)=" \
                                                         f"{variable.shape}, (given tensorflow variable's shape)=" \
                                                         f"{data.shape}"
-            assert variable.order == order, f"[KerasConverter] {tf_var} is already registered before, and order " \
-                                            f"mismatch is detected: (registered order)={variable.order}, (given " \
-                                            f"tensorflow variable's order)={order}"
+            if order is not None:
+                assert variable.order == order, f"[KerasConverter] {tf_var} is already registered before, and order " \
+                                                f"mismatch is detected: (registered order)={variable.order}, (given " \
+                                                f"tensorflow variable's order)={order}"
 
         else:
+            if order is None:
+                order = Order([None] * data.ndim)
             variable = ConstantVariable(data, order)
             self.set_variable(tf_var, variable)
 

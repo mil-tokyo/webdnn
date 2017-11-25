@@ -1,27 +1,19 @@
-import itertools
-
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.convolution2d import Convolution2D
-from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderCHWN, OrderHWCN, OrderHWNC, OrderCNHW
+from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
 
 
 def main(k, s, p, n, h1, w1, c1, c2, expected_shape_dict: AxisKeyDict[int]):
-    orders = [OrderNHWC, OrderHWNC, OrderHWCN, OrderNCHW, OrderCNHW, OrderCHWN]
+    op = Convolution2D(None, ksize=k, stride=s, padding=p)
 
-    for order_x, order_w in itertools.product(orders, orders):
-        op = Convolution2D(None, ksize=k, stride=s, padding=p)
+    x = Variable((n, h1, w1, c1), Order([Axis.N, Axis.H, Axis.W, Axis.C]))
+    w = Variable((c1, op.ksize[0], op.ksize[1], c2), Order([Axis.C, Axis.KH, Axis.KW, Axis.N]))
 
-        x = Variable((n, h1, w1, c1), OrderNHWC)
-        x.change_order(order_x)
+    y, = op(x, w)
 
-        w = Variable((c1, op.ksize[0], op.ksize[1], c2), OrderCHWN)
-        w.change_order(order_w)
-
-        y, = op(x, w)
-
-        for axis in y.order.axes:
-            assert y.shape_dict[axis] == expected_shape_dict[axis]
+    for axis in y.order.axes:
+        assert y.shape_dict[axis] == expected_shape_dict[axis]
 
 
 def test_normal():

@@ -1,6 +1,5 @@
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
-from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.order import OrderNC
 from webdnn.graph.traverse import listup_operators
 from webdnn.graph.variable import Variable
@@ -15,36 +14,6 @@ def fn(x: Variable):
     op.append_output("y", y)
 
     return y
-
-
-def test_scalar_affine1():
-    x = Variable([5, 5], OrderNC)
-    h = fn(x)
-    y, = ScalarAffine(None, scale=1, bias=0)(h)
-
-    graph = Graph([x], [y])
-
-    flag_changed = True
-    while flag_changed:
-        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
-
-    ops = listup_operators(graph)
-    assert len(ops) == 1 and type(ops[0]) is Operator
-
-
-def test_scalar_affine2():
-    x = Variable([5, 5], OrderNC)
-    h = fn(x)
-    y, = ScalarAffine(None, scale=2, bias=0)(h)
-
-    graph = Graph([x], [y])
-
-    flag_changed = True
-    while flag_changed:
-        graph, flag_changed = RemoveNoEffectOperator().optimize(graph)
-
-    ops = listup_operators(graph)
-    assert len(ops) == 2
 
 
 def test_scalar_add1():

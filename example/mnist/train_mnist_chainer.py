@@ -90,26 +90,11 @@ class Conv(chainer.Chain):
 models = {"fc": FC, "conv": Conv}
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Chainer example: MNIST')
-    parser.add_argument("--model", default="fc", choices=["fc", "conv"])
-    parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='output_chainer', help='Directory to output the graph descriptor and sample test data')
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
-
-    args = parser.parse_args()
-
-    output_dir = os.path.join(args.out, f"./chainer_model")
-    os.makedirs(output_dir, exist_ok=True)
-
+def generate_graph(model_type, output_dir):
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(models[args.model](10))
-    if args.gpu >= 0:
-        # Make a specified GPU current
-        chainer.cuda.get_device_from_id(args.gpu).use()
-        model.to_gpu()  # Copy the model to the GPU
+    model = L.Classifier(models[model_type](10))
 
     # Setup an optimizer
     optimizer = chainer.optimizers.Adam()
@@ -122,14 +107,14 @@ def main():
     test_iter = chainer.iterators.SerialIterator(test, 128, repeat=False, shuffle=False)
 
     # Set up a trainer
-    updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
+    updater = training.StandardUpdater(train_iter, optimizer, device=-1)
     trainer = training.Trainer(updater, (2, 'epoch'), out=output_dir)
 
     # Evaluate the model with the test dataset for each epoch
-    trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
+    trainer.extend(extensions.Evaluator(test_iter, model, device=-1))
 
     # Take a snapshot for each specified epoch
-    trainer.extend(extensions.snapshot(filename=args.model), trigger=(2, 'epoch'))
+    trainer.extend(extensions.snapshot(filename=model_type), trigger=(2, 'epoch'))
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport())
@@ -145,7 +130,7 @@ def main():
     # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
 
-    snapshot_path = os.path.join(output_dir, args.model)
+    snapshot_path = os.path.join(output_dir, model_type)
     if os.path.exists(snapshot_path):
         # Resume from a snapshot
         chainer.serializers.load_npz(snapshot_path, trainer)
@@ -153,22 +138,32 @@ def main():
         # Run the training
         trainer.run()
 
-    # conversion
-    print('Transpiling model to WebDNN graph descriptor')
-
-    if args.gpu >= 0:
-        model.to_cpu()
-
     example_input = numpy.expand_dims(train[0][0], axis=0)  # example input (anything ok, (batch_size, 784))
 
     x = chainer.Variable(example_input)
     y = model.predictor(x)
     graph = ChainerConverter().convert([x], [y])  # convert graph to intermediate representation
+
+    return model, test, graph
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+    parser.add_argument("--model", default="fc", choices=["fc", "conv"])
+    parser.add_argument('--out', '-o', default='output_chainer', help='Directory to output the graph descriptor and sample test data')
+    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+
+    args = parser.parse_args()
+
+    output_dir = os.path.join(args.out, f"./chainer_model")
+    os.makedirs(output_dir, exist_ok=True)
+
+    model, test, graph = generate_graph(args.model, output_dir)
+
     for backend in args.backend.split(","):
         exec_info = generate_descriptor(backend, graph)
         exec_info.save(args.out)
 
-    print('Exporting test samples (for demo purpose)')
     test_samples_json = []
     for i in range(10):
         image, label = test[i]

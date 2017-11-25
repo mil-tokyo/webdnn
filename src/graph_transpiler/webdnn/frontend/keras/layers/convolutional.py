@@ -5,11 +5,12 @@ except ImportError as e:
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderHWCN, OrderNTC, OrderHWNC
+from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderNTC, Order
 
 
 # noinspection PyUnusedLocal
@@ -24,15 +25,15 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
+        x.order.unify(OrderNCHW)
 
     elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
+        x.order.unify(OrderNHWC)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
 
-    w = converter.convert_to_constant_variable(k_op.kernel, OrderHWCN)
+    w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.C, Axis.N]))
 
     ksize = tuple(k_op.kernel_size)
     stride = tuple(k_op.strides)
@@ -46,8 +47,9 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
         pad_extra_shape = [dk - 1 for dk in dilated_ksize]
 
         if any(p % 2 != 0 for p in pad_extra_shape):
-            raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
-                                      f"  (pad_extra_shape)=f{pad_extra_shape}")
+            raise NotImplementedError(f"""
+[KerasConverter] Currently WebDNN doesn't supports different size padding: 
+    (pad_extra_shape)=f{pad_extra_shape}""")
 
         padding = tuple(p // 2 for p in pad_extra_shape)
 
@@ -65,26 +67,19 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
 
 
 # noinspection PyUnusedLocal
-@KerasConverter.register_handler("SeparableConv2D")
-def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.SeparableConv2D"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.SeparableConv2D is not supported')
-
-
-# noinspection PyUnusedLocal
 @KerasConverter.register_handler("Conv2DTranspose")
 def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Conv2DTranspose"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
+        x.order.unify(OrderNCHW)
 
     elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
+        x.order.unify(OrderNHWC)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
 
-    w = converter.convert_to_constant_variable(k_op.kernel, OrderHWNC)
+    w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.N, Axis.C]))
 
     ksize = tuple(k_op.kernel_size)
     stride = tuple(k_op.strides)
@@ -97,21 +92,11 @@ def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Con
         pad_extra_shape = [k - 1 for k in ksize]
 
         if any(p % 2 != 0 for p in pad_extra_shape):
-            raise NotImplementedError(f"[KerasConverter] Currently WebDNN doesn't supports different size padding: "
-                                      f"  (pad_extra_shape)=f{pad_extra_shape}")
+            raise NotImplementedError(f"""
+[KerasConverter] Currently WebDNN doesn't supports different size padding: 
+    (pad_extra_shape)=f{pad_extra_shape}""")
 
         padding = tuple(p // 2 for p in pad_extra_shape)
-
-    w = converter.convert_to_constant_variable(k_op.kernel, OrderHWNC)
-
-    ksize = tuple(k_op.kernel_size)
-    stride = tuple(k_op.strides)
-
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        padding = (ksize[0] // 2, ksize[1] // 2)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
@@ -154,6 +139,13 @@ def _convert_cropping3d(converter: KerasConverter, k_op: "keras.layers.Cropping3
 
 
 # noinspection PyUnusedLocal
+@KerasConverter.register_handler("SeparableConv2D")
+def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.SeparableConv2D"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.SeparableConv2D is not supported')
+
+
+# noinspection PyUnusedLocal
 @KerasConverter.register_handler("UpSampling1D")
 def _convert_up_sampling1d(converter: KerasConverter, k_op: "keras.layers.UpSampling1D"):
     # TODO
@@ -178,7 +170,7 @@ def _convert_up_sampling2d(converter: KerasConverter, k_op: "keras.layers.UpSamp
 def _convert_zero_padding1d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
-    assert x.order == OrderNTC
+    x.order.unify(OrderNTC)
 
     y, = ZeroPadding1D(None, padding=tuple(k_op.padding))(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)

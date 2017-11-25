@@ -1,15 +1,14 @@
 from itertools import combinations
 
 import chainer
-
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
-from webdnn.graph.order import OrderC, OrderNCHW, Order
-from webdnn.util import console
+from webdnn.graph.order import Order
+from webdnn.graph.order import OrderNCHW
 from webdnn.util.misc import mul
 
 
@@ -80,11 +79,8 @@ def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.E
 @ChainerConverter.register_handler("Flatten")
 def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatten"):
     x = converter.get_variable(c_op.inputs[0])
-    y = x.reshape([x.size], OrderC)
+    y = x.reshape([x.size], Order([None]))
     converter.set_variable(c_op.outputs[0](), y)
-
-    console.warning("[ChainerConverter] In chainer.functions.Flatten, output data order is parsed as OrderC. To "
-                    "customize this, please overwrite chainer.functions.Flatten converter handler.")
 
 
 # noinspection PyUnusedLocal
@@ -148,7 +144,6 @@ def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Resha
     x = converter.get_variable(c_op.inputs[0])
 
     out_shape = c_op.shape
-    # noinspection PyTypeChecker
     out_order = Order([None] * len(out_shape))
     assert mul(out_shape) == x.size, f"[ChainerConverter] Shape mismatch: mul(out_shape)={mul(out_shape)}, x.size={x.size}"
 
@@ -211,8 +206,8 @@ def _convert_split_axis(converter: ChainerConverter, c_op: "chainer.functions.Sp
         raise NotImplementedError("[ChainerConverter] SplitAxis with indices are not supported.")
 
     ys = SplitAxis(None, sections=c_op.indices_or_sections, axis=x.order.axes[c_op.axis])(x)
-    for wref_c_y, w_y in zip(c_op.outputs, ys):
-        converter.set_variable(wref_c_y(), w_y)
+    for i, y in enumerate(ys):
+        converter.set_variable(c_op.outputs[i](), y)
 
 
 # noinspection PyUnusedLocal

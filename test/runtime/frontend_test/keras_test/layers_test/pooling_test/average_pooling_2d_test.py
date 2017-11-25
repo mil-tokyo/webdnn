@@ -13,7 +13,7 @@ def template(pool_size=(3, 3), strides=2, padding="valid", data_format=None, des
     vx = np.random.rand(2, 15, 17, 16)
     vy = model.predict(vx, batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model)
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] AveragePooling2D {description}",

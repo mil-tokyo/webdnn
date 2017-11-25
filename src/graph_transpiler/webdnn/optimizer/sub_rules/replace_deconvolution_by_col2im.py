@@ -8,7 +8,7 @@ from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.graph.order import OrderNHWC, Order
+from webdnn.graph.order import Order
 
 
 class ReplaceDeconvolutionByCol2Im(OptimizeRule):
@@ -26,7 +26,10 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
             op.remove_all()
 
             a_filter = Axis()
-            w, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.C, Axis.KH, Axis.KW, a_filter]))(w)
+            w, = ReinterpretAxis(None,
+                                 in_order=Order([Axis.N, Axis.KH, Axis.KW, Axis.C]),
+                                 out_order=Order([Axis.C, Axis.KH, Axis.KW, a_filter]))(w)
+
             if op.KH == 1 and op.KW == 1 and op.stride == (1, 1) and op.padding == (0, 0):
                 # Projection
                 w = w.transpose(Order([Axis.C, Axis.KH, Axis.KW, a_filter]))
