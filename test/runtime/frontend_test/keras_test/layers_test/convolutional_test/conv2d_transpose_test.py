@@ -2,7 +2,6 @@ import numpy as np
 
 from test.runtime.frontend_test.keras_test.util import keras, KerasConverter
 from test.util import generate_kernel_test_case, wrap_template
-from webdnn.graph.order import OrderNHWC, OrderNCHW
 
 
 @wrap_template
@@ -17,7 +16,7 @@ def template(N=2, H=14, W=15, C1=16, C2=17, ksize=3, strides=(1, 1), padding='va
     vx = np.random.rand(N, H, W, C1).astype(np.float32)
     vy = model.predict(vx, batch_size=N)
 
-    graph = KerasConverter(batch_size=N).convert(model, input_orders=[OrderNCHW if data_format == "channels_first" else OrderNHWC])
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] Conv2DTranspose {description}",

@@ -65,27 +65,21 @@ def setup_model(model_type: str):
     return x, y, t, loss, accuracy, optimizer
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="fc", choices=["fc", "conv"])
-    parser.add_argument("--out", default="output_tensorflow")
-    parser.add_argument("--backends", action="append", default=["webgpu", "webgl", "webassembly", "fallback"])
-    args = parser.parse_args()
+def generate_graph(model_type, output_dir):
+    session_path = os.path.join(output_dir, f"session/session_{model_type}")
+    sample_path = os.path.join(output_dir, "test_samples.json")
+    data_path = os.path.join(output_dir, "data")
 
-    session_path = os.path.join(args.out, "session")
-    sample_path = os.path.join(args.out, "test_samples.json")
-    data_path = os.path.join(args.out, "data")
-
-    x, y, t, loss, accuracy, optimizer = setup_model(args.model)
+    x, y, t, loss, accuracy, optimizer = setup_model(model_type)
 
     sess = tf.Session()
 
-    if os.path.exists(session_path):
+    if os.path.exists(session_path + ".index"):
         # -------------------------------------------------------------------------------
         # Load pretrained model
 
         saver = tf.train.Saver()
-        saver.restore(sess, os.path.join(session_path, f"session_{args.model}"))
+        saver.restore(sess, session_path)
 
     else:
         # -------------------------------------------------------------------------------
@@ -106,7 +100,7 @@ def main():
             print(f"accuracy: {sess.run(accuracy, feed_dict={x: mnist.test.images, t: mnist.test.labels})}")
 
             saver = tf.train.Saver()
-            saver.save(sess, os.path.join(session_path, f"session_{args.model}"))
+            saver.save(sess, session_path)
 
         with open(sample_path, "w") as f:
             json.dump([{"x": mnist.test.images[i].flatten().tolist(), "y": int(mnist.test.labels[i].argmax())} for i in range(10)], f)
@@ -114,20 +108,21 @@ def main():
     # -------------------------------------------------------------------------------
     # Convert
 
-    webdnn_graph = TensorFlowConverter(sess, batch_size=1).convert([x], [y])
+    graph = TensorFlowConverter(sess, batch_size=1).convert([x], [y])
+    return sess, x, y, graph
 
-    # # When you try to convert more complex model, maybe WebDNN failed to infer the data order.
-    # # In this case, you can give "data-order hints" to WebDNN graph converter.
-    #
-    # webdnn_graph = TensorFlowConverter(sess, batch_size=1).convert([x], [y], order_hints={
-    #     x: OrderNC,
-    #     W: OrderCN,
-    #     b: OrderC,
-    #     y: OrderNC
-    # })
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="fc", choices=["fc", "conv"])
+    parser.add_argument("--out", default="output_tensorflow")
+    parser.add_argument("--backends", action="append", default=["webgpu", "webgl", "webassembly", "fallback"])
+    args = parser.parse_args()
+
+    _, _, _, graph = generate_graph(args.model, args.out)
 
     for backend in args.backends:
-        desc = generate_descriptor(backend, webdnn_graph)
+        desc = generate_descriptor(backend, graph)
         desc.save(args.out)
 
 

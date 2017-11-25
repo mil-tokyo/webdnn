@@ -9,8 +9,10 @@ from webdnn.graph.operators.col2im import Col2Im
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
+from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.reshape import Reshape
@@ -20,7 +22,7 @@ from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.graph.order import OrderNHWC, Order
+from webdnn.graph.order import OrderNHWC, Order, OrderNT, OrderCN, OrderNTC, OrderNC
 from webdnn.graph.variable import Variable
 
 
@@ -110,6 +112,23 @@ class InsertTranspose(OptimizeRule):
             if isinstance(op, (Reshape, ReinterpretAxis)):
                 flag_changed |= _replace_input(graph, op, "x", op.parameters["in_order"])
                 flag_changed |= _replace_output(graph, op, "y", op.parameters["out_order"])
+                continue
+
+            elif isinstance(op, LSTM):
+                flag_changed |= _replace_input(graph, op, "x", OrderNTC)
+                if "w_all" in op.inputs:
+                    flag_changed |= _replace_input(graph, op, "w_all", OrderCN)
+                else:
+                    flag_changed |= _replace_input(graph, op, "w_input", OrderCN)
+                    flag_changed |= _replace_input(graph, op, "w_hidden", OrderCN)
+                flag_changed |= _replace_output(graph, op, "y", OrderNTC if op.parameters["return_sequences"] else OrderNC)
+                flag_changed |= _replace_output(graph, op, "final_c", OrderNC)
+                continue
+
+            elif isinstance(op, Embedding):
+                flag_changed |= _replace_input(graph, op, "x", OrderNT)
+                flag_changed |= _replace_input(graph, op, "w", OrderCN)
+                flag_changed |= _replace_output(graph, op, "y", OrderNTC)
                 continue
 
             elif isinstance(op, Im2Col):

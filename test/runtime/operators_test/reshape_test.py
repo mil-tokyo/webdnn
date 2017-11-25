@@ -1,9 +1,9 @@
 import numpy as np
-
-from test.util import generate_kernel_test_case, wrap_template
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderCNHW
 from webdnn.graph.variable import Variable
+
+from test.util import generate_kernel_test_case, wrap_template
 
 
 @wrap_template

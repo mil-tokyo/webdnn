@@ -62,10 +62,12 @@ class Reshape(Operator):
         in_order = self.parameters["in_order"]
         out_shape = self.parameters["out_shape"]
         out_order = self.parameters["out_order"]
-        assert x.order == in_order
-        assert x.size == mul(out_shape), f"Reshape operator must not change variable size: " \
-                                         f"(x.shape)={in_shape}, (x.size)={mul(in_shape)}, " \
-                                         f"(y.shape)={out_shape}, (y.size)={mul(out_shape)}"
+        assert x.size == mul(out_shape), f"""
+[Reshape] Variable size must not be changed:
+    (input shape)={in_shape}
+    (input size)={mul(in_shape)}
+    (output shape)={out_shape}
+    (output size)={mul(out_shape)}"""
 
         y = Variable(out_shape, out_order)
         self.append_output("y", y)

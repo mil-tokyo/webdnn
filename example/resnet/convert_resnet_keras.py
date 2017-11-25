@@ -3,13 +3,18 @@ Example of converting ResNet-50 Keras model
 """
 
 import argparse
-import sys
 
 from keras.applications import resnet50
 
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.keras import KerasConverter
 from webdnn.util import console
+
+
+def generate_graph():
+    model = resnet50.ResNet50(include_top=True, weights='imagenet')
+    graph = KerasConverter(batch_size=1).convert(model)
+    return model, graph
 
 
 def main():
@@ -19,10 +24,8 @@ def main():
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()
 
-    model = resnet50.ResNet50(include_top=True, weights='imagenet')
+    _, graph = generate_graph()
 
-    sys.setrecursionlimit(10000)
-    graph = KerasConverter(batch_size=1).convert(model)
     for backend in args.backend.split(","):
         graph_exec_data = generate_descriptor(backend, graph, constant_encoder_name=args.encoding)
         graph_exec_data.save(args.out)

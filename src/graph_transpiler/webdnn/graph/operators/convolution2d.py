@@ -4,7 +4,7 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
-from webdnn.graph.order import OrderNHWC, OrderNCHW
+from webdnn.graph.order import OrderNHWC, OrderNCHW, Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
@@ -54,26 +54,26 @@ class Convolution2D(Operator):
         x = self.inputs["x"]
         w = self.inputs["w"]
 
-        assert x.order.check_same_axes(OrderNCHW), \
-            "Input variable of Convolution2D must have N, C, H, and W axes.: " \
-            f"x.order.axes={x.order.axes}"
+        assert x.order.check_same_axes(OrderNCHW), f"""
+[Convolution2D] Input variable of Convolution2D must have N, C, H, and W axes:
+    (x.order.axes) = {x.order.axes}"""
 
-        assert w.order.check_same_axes(OrderNCHW), \
-            "Kernel variable of Convolution2D must have N, C, H, and W axes.: " \
-            f"w.order.axes={w.order.axes}"
+        assert w.order.check_same_axes(Order([Axis.N, Axis.KH, Axis.KW, Axis.C])), f"""
+[Convolution2D] Kernel variable of Convolution2D must have N, C, KH, and KW axes:
+    (w.order.axes) = {w.order.axes}"""
 
-        if Placeholder.check_resolved(w.shape_dict[Axis.H]) and Placeholder.check_resolved(w.shape_dict[Axis.W]):
-            assert (w.shape_dict[Axis.H], w.shape_dict[Axis.W]) == self.ksize, \
-                "Kernel variable of Convolution2D must be same spatial size as ksize parameter: " \
-                f"w.shape_dict[Axis.H]={w.shape_dict[Axis.H]}, " \
-                f"w.shape_dict[Axis.W]={w.shape_dict[Axis.W]}, " \
-                f"self.ksize={self.ksize}"
+        if Placeholder.check_resolved(w.shape_dict[Axis.KH]) and Placeholder.check_resolved(w.shape_dict[Axis.KW]):
+            assert (w.shape_dict[Axis.KH], w.shape_dict[Axis.KW]) == self.ksize, f"""
+[Convolution2D] Kernel variable of Convolution2D must be same spatial size as ksize parameter:
+    (w.shape_dict[Axis.KH]) = {w.shape_dict[Axis.KH]}
+    (w.shape_dict[Axis.KW]) = {w.shape_dict[Axis.KW]}
+    (self.ksize) = {self.ksize}"""
 
         if Placeholder.check_resolved(w.shape_dict[Axis.C]) and Placeholder.check_resolved(x.shape_dict[Axis.C]):
-            assert w.shape_dict[Axis.C] == x.shape_dict[Axis.C], \
-                "Input and Kernel variables of Convolution2D must be same channel size: " \
-                f"x.shape_dict[Axis.C]={x.shape_dict[Axis.C]}, " \
-                f"w.shape_dict[Axis.C]={w.shape_dict[Axis.C]}"
+            assert w.shape_dict[Axis.C] == x.shape_dict[Axis.C], f"""
+[Convolution2D] Input and Kernel variables of Convolution2D must be same channel size:
+    (x.shape_dict[Axis.C]) = {x.shape_dict[Axis.C]}
+    (w.shape_dict[Axis.C]) = {w.shape_dict[Axis.C]}"""
 
         N = x.shape_dict[Axis.N]
         H2 = (x.shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1

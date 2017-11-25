@@ -2,7 +2,9 @@ from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
 from typing import Optional
 
+from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 

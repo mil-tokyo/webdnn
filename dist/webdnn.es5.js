@@ -2063,7 +2063,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     }
                 });
                 // attributes
-                var loc = gl.getAttribLocation(program, '_xy');
+                var xyAttribLoc = gl.getAttribLocation(program, '_xy');
                 // run
                 return {
                     program: program,
@@ -2073,7 +2073,7 @@ var DescriptorRunnerWebGL = (function (_super) {
                     height: output.textureHeight,
                     inputs: inputs,
                     output: output,
-                    loc: loc,
+                    xyAttribLoc: xyAttribLoc,
                     uniforms: uniforms,
                     disposable: []
                 };
@@ -2158,9 +2158,9 @@ var DescriptorRunnerWebGL = (function (_super) {
                             uniform = _h[_g];
                             uniform.func.apply(gl, uniform.args);
                         }
-                        // vertex attribute
-                        gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
-                        gl.enableVertexAttribArray(runtimeProgramInfo.loc);
+                        // attribute
+                        gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                        gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
                         // run
                         gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
                         return [4 /*yield*/, this.handler.waitForComplete()];
@@ -2245,9 +2245,9 @@ var DescriptorRunnerWebGL = (function (_super) {
                             uniform = _s[_r];
                             uniform.func.apply(gl, uniform.args);
                         }
-                        // vertex attribute
-                        gl.vertexAttribPointer(runtimeProgramInfo.loc, 2, gl.FLOAT, true, 8, 0);
-                        gl.enableVertexAttribArray(runtimeProgramInfo.loc);
+                        // attribute
+                        gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                        gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
                         // run
                         gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
                         // release buffers and binding

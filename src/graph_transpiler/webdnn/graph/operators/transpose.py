@@ -1,6 +1,6 @@
-from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.elementwise import Elementwise
+from webdnn.graph.optimize_rule import OptimizeRule
 
 
 # FIXME: improve documentation

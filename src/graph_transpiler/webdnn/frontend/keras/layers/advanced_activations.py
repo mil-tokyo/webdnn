@@ -10,24 +10,6 @@ from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.threshold_relu import ThresholdRelu
 
 
-@KerasConverter.register_handler("LeakyReLU")
-def _convert_leaky_relu(converter: KerasConverter, k_op: "keras.layers.LeakyReLU"):
-    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    if k_op.alpha == 0:
-        y, = Relu(None)(x)
-    else:
-        y, = LeakyRelu(None, slope=k_op.alpha)(x)
-
-    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
-
-
-# noinspection PyUnusedLocal
-@KerasConverter.register_handler("PReLU")
-def _convert_prelu(converter: KerasConverter, k_op: "keras.layers.PReLU"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.PReLU is not supported')
-
-
 @KerasConverter.register_handler("ELU")
 def _convert_elu(converter: KerasConverter, k_op: "keras.layers.ELU"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
@@ -45,6 +27,24 @@ def _convert_elu(converter: KerasConverter, k_op: "keras.layers.ELU"):
         y = y1 * alpha + y2 * (1 - alpha)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+
+
+@KerasConverter.register_handler("LeakyReLU")
+def _convert_leaky_relu(converter: KerasConverter, k_op: "keras.layers.LeakyReLU"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    if k_op.alpha == 0:
+        y, = Relu(None)(x)
+    else:
+        y, = LeakyRelu(None, slope=k_op.alpha)(x)
+
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+
+
+# noinspection PyUnusedLocal
+@KerasConverter.register_handler("PReLU")
+def _convert_prelu(converter: KerasConverter, k_op: "keras.layers.PReLU"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.PReLU is not supported')
 
 
 @KerasConverter.register_handler("ThresholdedReLU")

@@ -14,7 +14,6 @@ from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.scalar_add import ScalarAdd
-from webdnn.graph.operators.scalar_affine import ScalarAffine
 from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.scalar_pow import ScalarPow
 from webdnn.graph.operators.transpose import Transpose
@@ -76,64 +75,88 @@ class RemoveNoEffectOperatorBase(OptimizeRule):
         raise NotImplementedError
 
 
-class RemoveScalarAdd(RemoveNoEffectOperatorBase):
+class RemoveNoEffectScalarAdd(RemoveNoEffectOperatorBase):
     pattern = ScalarAdd
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_SCALAR_ADD
+        ]
 
     def optimize_operator(self, graph: Graph, op: ScalarAdd):
         if op.value == 0:
+            # x + 0  ->  x
             _remove_unary_operator(graph, op)
             return True
 
         return False
 
 
-class RemoveScalarMul(RemoveNoEffectOperatorBase):
+class RemoveNoEffectScalarMul(RemoveNoEffectOperatorBase):
     pattern = ScalarMul
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_SCALAR_MUL
+        ]
 
     def optimize_operator(self, graph: Graph, op: ScalarMul):
         if op.value == 1:
+            # x * 1  ->  x
             _remove_unary_operator(graph, op)
             return True
 
         return False
 
 
-class RemoveScalarPow(RemoveNoEffectOperatorBase):
+class RemoveNoEffectScalarPow(RemoveNoEffectOperatorBase):
     pattern = ScalarPow
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_SCALAR_POW
+        ]
 
     def optimize_operator(self, graph: Graph, op: ScalarPow):
         if op.value == 1:
+            # x^1 -> x
             _remove_unary_operator(graph, op)
             return True
 
         return False
 
 
-class RemoveScalarAffine(RemoveNoEffectOperatorBase):
-    pattern = ScalarAffine
-
-    def optimize_operator(self, graph: Graph, op: ScalarAffine):
-        if op.scale == 1 and op.bias == 0:
-            _remove_unary_operator(graph, op)
-            return True
-
-        return False
-
-
-class RemoveReshape(RemoveNoEffectOperatorBase):
+class RemoveNoEffectReshape(RemoveNoEffectOperatorBase):
     pattern = Reshape
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_RESHAPE
+        ]
 
     def optimize_operator(self, graph: Graph, op: Reshape):
         x = op.inputs["x"]
         y = op.outputs["y"]
 
         if x.order == y.order and x.shape == y.shape:
-            # no reshape is occurred
+            # no reshape is required
             _remove_unary_operator(graph, op)
             return True
 
         if x.shape == y.shape:
-            # only reinterpret_axis is occurred
+            # only reinterpret_axis is required
             op.remove_all()
             y_dummy = x.reinterpret_axes(y.order)
             OptimizeRule.replace_variable(graph, y_dummy, y)
@@ -142,56 +165,95 @@ class RemoveReshape(RemoveNoEffectOperatorBase):
         return False
 
 
-class RemoveTranspose(RemoveNoEffectOperatorBase):
+class RemoveNoEffectTranspose(RemoveNoEffectOperatorBase):
     pattern = Transpose
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_TRANSPOSE
+        ]
 
     def optimize_operator(self, graph: Graph, op: Transpose):
         x = op.inputs["x0"]
         y = op.outputs["y"]
 
         if x.order == y.order:
+            # No transpose is required
             _remove_unary_operator(graph, op)
             return True
 
         return False
 
 
-class RemoveBroadcast(RemoveNoEffectOperatorBase):
+class RemoveNoEffectBroadcast(RemoveNoEffectOperatorBase):
     pattern = Broadcast
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_BROADCAST
+        ]
 
     def optimize_operator(self, graph: Graph, op: Broadcast):
         y = op.outputs["y"]
         if y not in graph.outputs and all(isinstance(op2, Elementwise) for op2 in y.input_to):
+            # If y is input to only elementwise operators, broadcast is not required.
             _remove_unary_operator(graph, op)
             return True
 
         return False
 
 
-class RemoveReinterpretAxis(RemoveNoEffectOperatorBase):
+class RemoveNoEffectReinterpretAxis(RemoveNoEffectOperatorBase):
     pattern = ReinterpretAxis
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_REINTERPRET_AXIS
+        ]
 
     def optimize_operator(self, graph: Graph, op: ReinterpretAxis):
         x = op.inputs["x"]
         y = op.outputs["y"]
 
-        if len(x.input_to) == 1 and x.output_from is None:
-            if x in graph.inputs:
-                op.remove_all()
-                index = graph.inputs.index(x)
-                graph.inputs.remove(x)
-                graph.inputs.insert(index, y)
-                return True
-
         if op.parameters["in_order"] == op.parameters["out_order"]:
             _remove_unary_operator(graph, op)
+            return True
+
+        if x in graph.inputs and len(x.input_to) == 1:
+            # before)
+            #
+            # x[Graph Input] -{ReinterpretAxis}- h -{op}->
+            #
+            # after)
+            #
+            # h[Graph Input] -{op}->
+
+            op.remove_all()
+            OptimizeRule.replace_variable(graph, x, y, with_assert=False)
             return True
 
         return False
 
 
-class RemoveElementwiseAdd(RemoveNoEffectOperatorBase):
+class RemoveNoEffectElementwiseAdd(RemoveNoEffectOperatorBase):
     pattern = ElementwiseAdd
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_ELEMENTWISE_ADD
+        ]
 
     def optimize_operator(self, graph: Graph, op: ElementwiseAdd):
         if isinstance(op.inputs["x0"], ConstantVariable):
@@ -206,14 +268,23 @@ class RemoveElementwiseAdd(RemoveNoEffectOperatorBase):
             return False
 
         if np.all(c.data == 0):
+            # x + 0 -> x
             _remove_binary_elementwise(graph, op, v)
             return True
 
         return False
 
 
-class RemoveElementwiseMul(RemoveNoEffectOperatorBase):
+class RemoveNoEffectElementwiseMul(RemoveNoEffectOperatorBase):
     pattern = ElementwiseMul
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_ELEMENTWISE_MUL
+        ]
 
     def optimize_operator(self, graph: Graph, op: ElementwiseMul):
         if isinstance(op.inputs["x0"], ConstantVariable):
@@ -228,14 +299,23 @@ class RemoveElementwiseMul(RemoveNoEffectOperatorBase):
             return False
 
         if np.all(c.data == 1):
+            # x * 1 -> x
             _remove_binary_elementwise(graph, op, v)
             return True
 
         return False
 
 
-class RemoveElementwiseDiv(RemoveNoEffectOperatorBase):
+class RemoveNoEffectElementwiseDiv(RemoveNoEffectOperatorBase):
     pattern = ElementwiseDiv
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_ELEMENTWISE_DIV
+        ]
 
     def optimize_operator(self, graph: Graph, op: ElementwiseDiv):
         if isinstance(op.inputs["x0"], ConstantVariable):
@@ -250,14 +330,23 @@ class RemoveElementwiseDiv(RemoveNoEffectOperatorBase):
             return False
 
         if np.all(c.data == 1):
+            # x / 1 -> x
             _remove_binary_elementwise(graph, op, v)
             return True
 
         return False
 
 
-class RemoveElementwisePow(RemoveNoEffectOperatorBase):
+class RemoveNoEffectElementwisePow(RemoveNoEffectOperatorBase):
     pattern = ElementwisePow
+
+    def flags(self):
+        return [
+            flags.optimize.OPTIMIZE,
+            flags.optimize.SIMPLIFY_ELEMENTWISE,
+            flags.optimize.REMOVE_NO_EFFECT_OPERATOR,
+            flags.optimize.REMOVE_NO_EFFECT_ELEMENTWISE_POW
+        ]
 
     def optimize_operator(self, graph: Graph, op: ElementwisePow):
         if isinstance(op.inputs["x0"], ConstantVariable):
@@ -272,6 +361,7 @@ class RemoveElementwisePow(RemoveNoEffectOperatorBase):
             return False
 
         if np.all(c.data == 1):
+            # x^1 -> x
             _remove_binary_elementwise(graph, op, v)
             return True
 
@@ -281,18 +371,17 @@ class RemoveElementwisePow(RemoveNoEffectOperatorBase):
 class RemoveNoEffectOperator(OptimizeRuleGroup):
     def __init__(self):
         super(RemoveNoEffectOperator, self).__init__([
-            RemoveScalarAdd(),
-            RemoveScalarMul(),
-            RemoveScalarPow(),
-            RemoveScalarAffine(),
-            RemoveReshape(),
-            RemoveTranspose(),
-            RemoveBroadcast(),
-            RemoveElementwiseAdd(),
-            RemoveElementwiseMul(),
-            RemoveElementwiseDiv(),
-            RemoveElementwisePow(),
-            RemoveReinterpretAxis()
+            RemoveNoEffectScalarAdd(),
+            RemoveNoEffectScalarMul(),
+            RemoveNoEffectScalarPow(),
+            RemoveNoEffectReshape(),
+            RemoveNoEffectTranspose(),
+            RemoveNoEffectBroadcast(),
+            RemoveNoEffectElementwiseAdd(),
+            RemoveNoEffectElementwiseMul(),
+            RemoveNoEffectElementwiseDiv(),
+            RemoveNoEffectElementwisePow(),
+            RemoveNoEffectReinterpretAxis()
         ])
 
     def flags(self):

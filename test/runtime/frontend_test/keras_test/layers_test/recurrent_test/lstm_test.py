@@ -16,7 +16,7 @@ def template(units=16, return_sequences=False, return_state=False, go_backwards=
         y, _, c = outputs
 
         model = keras.models.Model([x], [y, c])
-        graph = KerasConverter(batch_size=2).convert(model)
+        graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
         vy, vc = model.predict(vx, batch_size=2)
 
@@ -29,7 +29,7 @@ def template(units=16, return_sequences=False, return_state=False, go_backwards=
         y = outputs
 
         model = keras.models.Model([x], [y])
-        graph = KerasConverter(batch_size=2).convert(model)
+        graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
         vy = model.predict(vx, batch_size=2)
 
@@ -42,7 +42,8 @@ def template(units=16, return_sequences=False, return_state=False, go_backwards=
         graph=graph,
         backend=["webgpu", "webassembly"],
         inputs={graph.inputs[0]: vx},
-        expected=expected
+        expected=expected,
+        EPS=1e-2
     )
 
 

@@ -4,7 +4,6 @@ Example of converting ResNet-50 Chainer model
 
 import argparse
 import os
-import sys
 
 import chainer
 import chainer.computational_graph
@@ -15,32 +14,34 @@ from webdnn.frontend.chainer import ChainerConverter
 from webdnn.util import console
 
 
-def main():
-    sys.setrecursionlimit(10000)  # workaround for deep copying large graph
+def generate_graph():
+    sample_image = np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
+    model = chainer.links.model.vision.resnet.ResNet50Layers()
+    prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
+    nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
 
+    if chainer.__version__ >= "2.":
+        with chainer.using_config('train', False):
+            nn_output = model(nn_input, layers=['prob'])['prob']
+
+    else:
+        nn_output = model(nn_input, layers=['prob'], test=True)['prob']
+
+    graph = ChainerConverter().convert([nn_input], [nn_output])
+    return model, nn_input, nn_output, graph
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
     parser.add_argument("--encoding")
     parser.add_argument('--out', '-o', default='output_chainer',
                         help='Directory to output the graph descriptor')
 
+    _, _, _, graph = generate_graph()
+
     args = parser.parse_args()
-
     os.makedirs(args.out, exist_ok=True)
-
-    sample_image = np.zeros((224, 224, 3), dtype=np.uint8)  # PIL.Image.open("")
-    link = chainer.links.model.vision.resnet.ResNet50Layers()
-    prepared_image = chainer.links.model.vision.resnet.prepare(sample_image)
-    nn_input = chainer.Variable(np.array([prepared_image], dtype=np.float32))
-
-    if chainer.__version__ >= "2.":
-        with chainer.using_config('train', False):
-            nn_output = link(nn_input, layers=['prob'])['prob']
-
-    else:
-        nn_output = link(nn_input, layers=['prob'], test=True)['prob']
-
-    graph = ChainerConverter().convert([nn_input], [nn_output])  # type: Graph
 
     any_backend_failed = False
     last_backend_exception = None

@@ -36,17 +36,6 @@ class Pooling2D(Operator):
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
 
-        # FIXME: This constraints are only for cover_all=True mode.
-        assert self.parameters["ksize"][0] >= self.parameters["stride"][0], \
-            f"parameter \"ksize\" must be greater than or equal to parameter \"stride\":\n" \
-            f"  (ksize[0]) = {self.parameters['ksize'][0]}\n" \
-            f"  (stride[0]) = {self.parameters['stride'][0]}"
-
-        assert self.parameters["ksize"][1] >= self.parameters["stride"][1], \
-            f"parameter \"ksize\" must be greater than or equal to parameter \"stride\":\n" \
-            f"  (ksize[1]) = {self.parameters['ksize'][1]}\n" \
-            f"  (stride[1]) = {self.parameters['stride'][1]}"
-
     def __call__(self, x: Variable):
         self.append_input("x", x)
         return self.exec()
@@ -55,13 +44,11 @@ class Pooling2D(Operator):
         x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
-        H2 = (x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] + self.parameters["stride"][0] - self.parameters["ksize"][0] - 1) // \
-             self.parameters["stride"][0] + 1
-        W2 = (x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] + self.parameters["stride"][1] - self.parameters["ksize"][1] - 1) // \
-             self.parameters["stride"][1] + 1
+        H2 = (x_shape_dict[Axis.H] + 2 * self.PH + self.SH - self.KH - 1) // self.SH + 1
+        W2 = (x_shape_dict[Axis.W] + 2 * self.PW + self.SW - self.KW - 1) // self.SW + 1
         C2 = x_shape_dict[Axis.C]
-        if ((x_shape_dict[Axis.H] + 2 * self.parameters["padding"][0] - self.parameters["ksize"][0]) % self.parameters["stride"][0] != 0) or \
-            ((x_shape_dict[Axis.W] + 2 * self.parameters["padding"][1] - self.parameters["ksize"][1]) % self.parameters["stride"][1] != 0):
+        if ((x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0) or \
+            ((x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0):
             # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
             console.warning(
                 "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +

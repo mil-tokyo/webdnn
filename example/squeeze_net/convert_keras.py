@@ -7,6 +7,13 @@ from webdnn.frontend.keras import KerasConverter
 from webdnn.util import console
 
 
+def generate_graph():
+    model = SqueezeNet()
+    graph = KerasConverter(batch_size=1).convert(model)
+
+    return model, graph
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', '-o', default='output_keras', help='Directory to output the graph descriptor')
@@ -14,9 +21,8 @@ def main():
     parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
     args = parser.parse_args()
 
-    model = SqueezeNet()
+    _, graph = generate_graph()
 
-    graph = KerasConverter(batch_size=1).convert(model)
     for backend in args.backend.split(","):
         graph_exec_data = generate_descriptor(backend, graph, constant_encoder_name=args.encoding)
         graph_exec_data.save(args.out)

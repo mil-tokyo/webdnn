@@ -2,21 +2,21 @@ import numpy as np
 
 from test.runtime.frontend_test.keras_test.util import keras, KerasConverter
 from test.util import generate_kernel_test_case, wrap_template
-from webdnn.graph.order import OrderNHWC, OrderNCHW
 
 
 @wrap_template
-def template(filters=5, kernel_size=3, strides=(1, 1), padding='valid', data_format="channels_last", dilation_rate=(1, 1), activation=None,
+def template(shape=(14, 15, 4), filters=5, kernel_size=3, strides=(1, 1), padding='valid', data_format="channels_last",
+             dilation_rate=(1, 1), activation=None,
              use_bias=True, description: str = ""):
-    x = keras.layers.Input((14, 15, 4))
+    x = keras.layers.Input(shape)
     y = keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, data_format=data_format,
                             dilation_rate=dilation_rate, activation=activation, use_bias=use_bias)(x)
     model = keras.models.Model([x], [y])
 
-    vx = np.random.randint(low=0, high=100, size=(2, 14, 15, 4)).astype(np.float32)
+    vx = np.random.randint(low=0, high=100, size=(2, *shape)).astype(np.float32)
     vy = model.predict(vx, batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model, input_orders=[OrderNCHW if data_format == "channels_first" else OrderNHWC])
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] Conv2D {description}",
@@ -49,8 +49,8 @@ def test_padding():
 # def test_data_format():
 #     template(data_format="channels_first")
 
-def test_dilation():
-    template(dilation_rate=(2, 2))
+# def test_dilation():
+#     template(shape=(14, 14, 4), dilation_rate=(2, 2))
 
 
 def test_activation():

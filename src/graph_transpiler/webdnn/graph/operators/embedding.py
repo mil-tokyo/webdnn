@@ -3,7 +3,7 @@ from typing import Optional
 from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
-from webdnn.graph.order import OrderNTC, OrderNT, OrderNC
+from webdnn.graph.order import OrderNTC, OrderNC, OrderNT
 from webdnn.graph.variable import Variable
 
 
@@ -41,16 +41,16 @@ class Embedding(Operator):
         x = self.inputs["x"]
         w = self.inputs["w"]
 
-        # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
-        if x.order != OrderNT:
-            raise NotImplementedError("Currently, Embedding supports only OrderNT variable for input sequence variable: "
-                                      f"x.order={x.order}")
-
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
-        assert w.order.check_same_axes(OrderNC), "Dictionary variable of Embedding operator must has only Axis.N and Axis.C: " \
-                                                 f"w.order.axes={w.order.axes}"
+        assert x.order.check_same_axes(OrderNT), f"""
+[Embedding] Input variable "x" must have only Axis.N and Axis.T:
+    (x.order.axes) = {w.order.axes}"""
+
+        assert w.order.check_same_axes(OrderNC), f"""
+[Embedding] Dictionary variable "w" must have only Axis.N and Axis.C:
+    (w.order.axes) = {w.order.axes}"""
 
         batch_size = x_shape_dict[Axis.N]
         sequence_len = x_shape_dict[Axis.T]

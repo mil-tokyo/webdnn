@@ -1,7 +1,6 @@
 import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.graph.axis import Axis
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elu import Elu
@@ -12,7 +11,6 @@ from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.tanh import Tanh
-from webdnn.util import flags
 
 
 @ChainerConverter.register_handler("ClippedReLU")

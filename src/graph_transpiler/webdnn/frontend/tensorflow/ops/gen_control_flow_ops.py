@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 @TensorFlowConverter.register_handler("Abort")
@@ -75,4 +76,14 @@ def ref_switch_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Switch")
 def switch_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    data = converter.get_variable(tf_op.inputs[0])
+    pred = converter.get_variable(tf_op.inputs[1])
+
+    assert isinstance(pred, ConstantVariable), NotImplementedError(
+        f"[TensorFlowConverter] 'Switch' operator with dynamic condition is not supported.")
+
+    pred = pred.data
+    if pred.flatten()[0]:
+        converter.set_variable(tf_op.outputs[1], data)
+    else:
+        converter.set_variable(tf_op.outputs[0], data)

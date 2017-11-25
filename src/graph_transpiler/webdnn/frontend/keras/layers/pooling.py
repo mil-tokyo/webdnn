@@ -12,80 +12,29 @@ from webdnn.util import console
 from webdnn.util.misc import mul
 
 
-@KerasConverter.register_handler("MaxPooling1D")
-def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPooling1D"):
-    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    # FIXME: More effective implementation
-    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
-
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        padding = (k_op.pool_size[0] // 2, 0)
-
-    else:
-        raise NotImplementedError(f"Unknown padding: {k_op.padding}")
-
-    y, = MaxPooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
-    z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
-
-    converter.set_variable(converter.get_output_tensor(k_op)[0], z)
-
-
-@KerasConverter.register_handler("MaxPooling2D")
-def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPooling2D"):
-    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
-
-    elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
-
-    ksize = tuple(k_op.pool_size)
-    stride = tuple(k_op.strides)
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        padding = (ksize[0] // 2, ksize[1] // 2)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
-
-    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
-    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
-
-
-# noinspection PyUnusedLocal
-@KerasConverter.register_handler("MaxPooling3D")
-def _convert_max_pooling3d(converter: KerasConverter, k_op: "keras.layers.MaxPooling3D"):
-    # TODO
-    raise NotImplementedError('[KerasConverter] keras.layers.MaxPooling3D is not supported')
-
-
 @KerasConverter.register_handler("AveragePooling1D")
 def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.AveragePooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
+    ksize = (k_op.pool_size[0], 1)
+    stride = (k_op.strides[0], 1)
 
     if k_op.padding == "valid":
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (k_op.pool_size[0] // 2, 0)
+        # https://www.tensorflow.org/api_guides/python/nn#convolution
+        if x.shape_dict[Axis.H] % stride[0] == 0:
+            padding = (max(ksize[0] - stride[0], 0) // 2, 0)
+        else:
+            padding = (max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0) // 2, 0)
 
     else:
         raise NotImplementedError(f"Unknown padding: {k_op.padding}")
 
-    y, = AveragePooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
+    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding)(y)
     z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
@@ -96,10 +45,10 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
     if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
+        x.order.unify(OrderNCHW)
 
     elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
+        x.order.unify(OrderNHWC)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
@@ -110,7 +59,18 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
         padding = (0, 0)
 
     elif k_op.padding == "same":
-        padding = (ksize[0] // 2, ksize[1] // 2)
+        # https://www.tensorflow.org/api_guides/python/nn#convolution
+        if x.shape_dict[Axis.H] % stride[0] == 0:
+            pad_h = max(ksize[0] - stride[0], 0)
+        else:
+            pad_h = max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0)
+
+        if x.shape_dict[Axis.W] % stride[1] == 0:
+            pad_w = max(ksize[1] - stride[1], 0)
+        else:
+            pad_w = max(ksize[1] - (x.shape_dict[Axis.W] % stride[1]), 0)
+
+        padding = (pad_h // 2, pad_w // 2)
         console.warning(
             "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
             "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
@@ -147,10 +107,10 @@ def _convert_global_max_pooling1d(converter: KerasConverter, k_op: "keras.layers
 def _convert_global_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalMaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
+        x.order.unify(OrderNCHW)
 
     elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
+        x.order.unify(OrderNHWC)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
@@ -179,10 +139,10 @@ def _convert_global_average_pooling1d(converter: KerasConverter, k_op: "keras.la
 def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalAveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     if k_op.data_format == "channels_first":
-        assert x.order == OrderNCHW
+        x.order.unify(OrderNCHW)
 
     elif k_op.data_format == "channels_last":
-        assert x.order == OrderNHWC
+        x.order.unify(OrderNHWC)
 
     else:
         raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
@@ -192,3 +152,71 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "ker
     # flatten without changing memory layout
     z = y.reshape([y.shape[0], mul(y.shape[1:])], OrderNC)
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
+
+
+@KerasConverter.register_handler("MaxPooling1D")
+def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPooling1D"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+
+    # FIXME: More effective implementation
+    y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
+
+    if k_op.padding == "valid":
+        padding = (0, 0)
+
+    elif k_op.padding == "same":
+        padding = (k_op.pool_size[0] // 2, 0)
+
+    else:
+        raise NotImplementedError(f"Unknown padding: {k_op.padding}")
+
+    y, = MaxPooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
+    z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
+
+    converter.set_variable(converter.get_output_tensor(k_op)[0], z)
+
+
+@KerasConverter.register_handler("MaxPooling2D")
+def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPooling2D"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+
+    if k_op.data_format == "channels_first":
+        x.order.unify(OrderNCHW)
+
+    elif k_op.data_format == "channels_last":
+        x.order.unify(OrderNHWC)
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+
+    ksize = tuple(k_op.pool_size)
+    stride = tuple(k_op.strides)
+    if k_op.padding == "valid":
+        padding = (0, 0)
+
+    elif k_op.padding == "same":
+        # https://www.tensorflow.org/api_guides/python/nn#convolution
+        if x.shape_dict[Axis.H] % stride[0] == 0:
+            pad_h = max(ksize[0] - stride[0], 0)
+        else:
+            pad_h = max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0)
+
+        if x.shape_dict[Axis.W] % stride[1] == 0:
+            pad_w = max(ksize[1] - stride[1], 0)
+        else:
+            pad_w = max(ksize[1] - (x.shape_dict[Axis.W] % stride[1]), 0)
+
+        padding = (pad_h // 2, pad_w // 2)
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
+
+    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+
+
+# noinspection PyUnusedLocal
+@KerasConverter.register_handler("MaxPooling3D")
+def _convert_max_pooling3d(converter: KerasConverter, k_op: "keras.layers.MaxPooling3D"):
+    # TODO
+    raise NotImplementedError('[KerasConverter] keras.layers.MaxPooling3D is not supported')

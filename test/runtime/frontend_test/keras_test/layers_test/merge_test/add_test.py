@@ -15,7 +15,7 @@ def template(description: str = ""):
     vx2 = np.random.rand(2, 14, 15, 16)
     vy = model.predict([vx1, vx2], batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model)
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] Add {description}",

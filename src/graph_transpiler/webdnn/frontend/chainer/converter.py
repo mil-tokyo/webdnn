@@ -4,13 +4,12 @@
 Chainer Link -> Graph object converters
 Assuming Chainer 1.23-1.24 or 2.0
 """
+import traceback
 import warnings
-from typing import List, Union, Sequence, Set
+from typing import List, Union, Sequence, Dict, Tuple
 
 from chainer import Function
-
-from webdnn import Axis
-from webdnn.frontend.converter import Converter
+from webdnn.frontend.converter import Converter, CyclicGraphError
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -25,19 +24,21 @@ try:
     import chainer
     import chainer.computational_graph
 
-    if chainer.__version__ >= "2.":
+    if "2." <= chainer.__version__ < "3.":
         chainer_v2 = True
-        # noinspection PyUnresolvedReferences
         VariableNode = chainer.variable.VariableNode
-    else:
+
+    elif "1." <= chainer.__version__ < "2.":
         chainer_v2 = False
         VariableNode = chainer.variable.Variable
 
+    else:
+        raise NotImplementedError(f"WebDNN supports Chainer v1 and v2. Currently, Chainer {chainer.__version__} is installed.")
+
     FLAG_CHAINER_INSTALLED = True
 
-except ImportError as e:
-    console.debug("Chainer is not completely installed.")
-    pass
+except Exception as e:
+    console.warning(traceback.format_exc())
 
 
 def _to_variable_node(chainer_variable: Union["chainer.Variable", "VariableNode"]) -> "VariableNode":
@@ -49,30 +50,46 @@ def _to_variable_node(chainer_variable: Union["chainer.Variable", "VariableNode"
         return chainer_variable
 
 
-def _listup_functions(inputs: Sequence["VariableNode"], outputs: Sequence["VariableNode"]):
-    stack = list(outputs)  # type: List[Union[VariableNode, Function]]
-    resolved = set(inputs)  # type: Set[Union[VariableNode, Function]]
+T_NODE = Union["VariableNode", "Function"]
+
+
+def _listup_functions(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
+    def get_prev_nodes(node: T_NODE) -> Sequence[T_NODE]:
+        if node in inputs:
+            return []
+
+        elif isinstance(node, VariableNode):
+            return [] if node.creator is None else [node.creator]
+
+        else:
+            return node.inputs
+
     result = []  # type: List[Function]
+    stack = [(node, None) for node in outputs]  # type: List[Tuple[T_NODE, T_NODE]]
+    dependency_count = {}  # type: Dict[T_NODE, int]
 
     while len(stack) > 0:
-        node = stack.pop()
-        if node in resolved:
-            continue
+        node_from, node_to = stack.pop()
 
-        if isinstance(node, VariableNode):
-            prev_nodes = [] if node.creator is None else [node.creator]
+        if node_from not in dependency_count:
+            stack.append((node_from, node_to))
+
+            prev_nodes = get_prev_nodes(node_from)
+            dependency_count[node_from] = 0
+            for prev_node in prev_nodes:
+                if dependency_count.get(prev_node, 1) > 0:
+                    dependency_count[node_from] += 1
+                    stack.append((prev_node, node_from))
+
+        elif dependency_count[node_from] == 0:
+            if isinstance(node_from, Function):
+                result.append(node_from)
+
+            if node_to is not None:
+                dependency_count[node_to] -= 1
+
         else:
-            prev_nodes = node.inputs
-        unresolved_prevs = [prev_node for prev_node in prev_nodes if prev_node not in resolved]
-
-        if len(unresolved_prevs) == 0:
-            resolved.add(node)
-            if isinstance(node, Function):
-                result.append(node)
-
-        else:
-            stack.append(node)
-            stack += unresolved_prevs
+            raise CyclicGraphError("[ChainerConverter] Cycles are detected, but ChainerConverter cannot convert cyclic graph")
 
     return result
 
@@ -84,8 +101,10 @@ class ChainerConverter(Converter["Function"]):
     """
 
     def __init__(self):
+        super(ChainerConverter, self).__init__()
+
         if not FLAG_CHAINER_INSTALLED:
-            raise ImportError("ImportError is occurred when chainer is loaded.")
+            raise ImportError("[ChainerConverter] Failed to import Chainer.")
 
     def convert_from_inout_vars(self, inputs: List["chainer.Variable"], outputs: List["chainer.Variable"]):
         """convert_from_inout_vars(inputs, output)
@@ -160,7 +179,7 @@ class ChainerConverter(Converter["Function"]):
                 # If :code:`creator is None` and it's not input variable, it's parameter.
 
                 # NOTE(Kiikurage):
-                # In chainer v1.x, `Variable` doesn't support `__eq__` method and `list.__contains__` cannot be used for
+                # In chainer v1.x and v2.x, `Variable` doesn't support `__eq__` method and `list.__contains__` cannot be used for
                 # Variable list. However, `Variable.__hash__` is implemented and `set.__contains__` is available.
                 self._convert_var(c_var, constant=c_var not in input_set)
 

@@ -1,36 +1,60 @@
 from typing import List
 
 import tensorflow as tf
-
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import unary_op_handler
 from webdnn.graph.axis import Axis
+from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.convolution2d import Convolution2D
+from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.softsign import Softsign
-from webdnn.graph.order import OrderHWCN, OrderNHWC, OrderC
-from webdnn.util import flags
+from webdnn.graph.order import OrderNHWC, Order
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-def padding_same(width: int, ksize: int, stride: int) -> int:
+def padding_same(in_size: int, ksize: int, stride: int) -> int:
     # https://www.tensorflow.org/api_guides/python/nn#Notes_on_SAME_Convolution_Padding
-    if width % stride == 0:
+    if in_size % stride == 0:
         pad_total = max(ksize - stride, 0)
     else:
-        pad_total = max(ksize - width % stride, 0)
+        pad_total = max(ksize - in_size % stride, 0)
     pad_one_size = pad_total // 2 + pad_total % 2
     return pad_one_size
 
 
 @TensorFlowConverter.register_handler("AvgPool")
 def avg_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # FIXME
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])  # NHWC
+    assert tf_op.get_attr("data_format") == b"NHWC"
+    x.order.unify(OrderNHWC)
+
+    ksize_nhwc = tf_op.get_attr("ksize")  # type: List[int]
+    assert ksize_nhwc[0] == 1
+    assert ksize_nhwc[3] == 1
+    ksize_hw = ksize_nhwc[1:3]
+
+    stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
+    assert stride_nhwc[0] == 1
+    assert stride_nhwc[3] == 1
+    stride_hw = stride_nhwc[1:3]
+
+    padding_name = tf_op.get_attr("padding")  # type: str
+    if padding_name == b"SAME":
+        padding = (padding_same(x.shape_dict[Axis.H], ksize_hw[0], stride_hw[0]),
+                   padding_same(x.shape_dict[Axis.W], ksize_hw[1], stride_hw[1]))
+    elif padding_name == b"VALID":
+        padding = (0, 0)
+    else:
+        raise NotImplementedError(f"[TensorFlowConverter] AvgPool: padding '{padding_name}' is not supported yet.")
+
+    y, = AveragePooling2D(None, ksize=ksize_hw, stride=stride_hw, padding=padding)(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("AvgPool3D")
@@ -64,7 +88,17 @@ def batch_norm_with_global_normalization_grad_handler(converter: TensorFlowConve
 def bias_add_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     b = converter.get_variable(tf_op.inputs[1])
-    b.order.unify(OrderC)
+    data_format = tf_op.get_attr("data_format")
+
+    if data_format == b"NCHW":
+        b.order.axes[0].unify(x.order.axes[1])
+
+    elif data_format == b"NHWC":
+        b.order.axes[0].unify(x.order.axes[-1])
+
+    else:
+        raise NotImplementedError("Unknown data format")
+
     y = x + b
     converter.set_variable(tf_op.outputs[0], y)
 
@@ -82,28 +116,29 @@ def bias_add_v1_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Conv2D")
 def conv2_d_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # FIXME
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     w = converter.get_variable(tf_op.inputs[1])  # HWCN
+
     assert tf_op.get_attr("data_format") == b"NHWC"
     x.order.unify(OrderNHWC)
-    w.order.unify(OrderHWCN)
-    ksize = (w.shape_dict[Axis.H], w.shape_dict[Axis.W])
+    w.order.unify(Order([Axis.KH, Axis.KW, Axis.C, Axis.N]))
+    ksize_hw = (w.shape_dict[Axis.KH], w.shape_dict[Axis.KW])
 
     stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
     assert stride_nhwc[0] == 1
     assert stride_nhwc[3] == 1
     stride_hw = stride_nhwc[1:3]
+
     padding_name = tf_op.get_attr("padding")  # type: str
     if padding_name == b"SAME":
-        padding = (padding_same(x.shape_dict[Axis.H], ksize[0], stride_hw[0]),
-                   padding_same(x.shape_dict[Axis.W], ksize[1], stride_hw[1]))
+        padding = (padding_same(x.shape_dict[Axis.H], ksize_hw[0], stride_hw[0]),
+                   padding_same(x.shape_dict[Axis.W], ksize_hw[1], stride_hw[1]))
     elif padding_name == b"VALID":
         padding = (0, 0)
     else:
         raise NotImplementedError(f"[TensorFlowConverter] Conv2D: padding '{padding_name}' is not supported yet.")
 
-    y, = Convolution2D(None, ksize=ksize, stride=stride_hw, padding=padding)(x, w)
+    y, = Convolution2D(None, ksize=ksize_hw, stride=stride_hw, padding=padding)(x, w)
     converter.set_variable(tf_op.outputs[0], y)
 
 
@@ -114,7 +149,34 @@ def conv2_d_backprop_filter_handler(converter: TensorFlowConverter, tf_op: "tf.O
 
 @TensorFlowConverter.register_handler("Conv2DBackpropInput")
 def conv2_d_backprop_input_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    input_sizes = converter.get_variable(tf_op.inputs[0])  # input_sizes is not needed
+    assert input_sizes.size == 4 and isinstance(input_sizes, ConstantVariable)
+    x_shape = input_sizes.data.flatten().astype(int).tolist()  # type: List[int]
+
+    w = converter.get_variable(tf_op.inputs[1])  # HWNC
+    gy = converter.get_variable(tf_op.inputs[2])  # NHWC
+
+    assert tf_op.get_attr("data_format") == b"NHWC"
+    w.order.unify(Order([Axis.KH, Axis.KW, Axis.N, Axis.C]))
+    gy.order.unify(OrderNHWC)
+    ksize_hw = (w.shape_dict[Axis.KH], w.shape_dict[Axis.KW])
+
+    stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
+    assert stride_nhwc[0] == 1
+    assert stride_nhwc[3] == 1
+    stride_hw = stride_nhwc[1:3]
+
+    padding_name = tf_op.get_attr("padding")  # type: str
+    if padding_name == b"SAME":
+        padding = (padding_same(x_shape[gy.order.axes_dict[Axis.H]], ksize_hw[0], stride_hw[0]),
+                   padding_same(x_shape[gy.order.axes_dict[Axis.W]], ksize_hw[1], stride_hw[1]))
+    elif padding_name == b"VALID":
+        padding = (0, 0)
+    else:
+        raise NotImplementedError(f"[TensorFlowConverter] Conv2D: padding '{padding_name}' is not supported yet.")
+
+    x, = Deconvolution2D(None, ksize=ksize_hw, stride=stride_hw, padding=padding)(gy, w)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Conv3D")
@@ -194,8 +256,31 @@ def fractional_max_pool_grad_handler(converter: TensorFlowConverter, tf_op: "tf.
 
 @TensorFlowConverter.register_handler("FusedBatchNorm")
 def fused_batch_norm_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # FIXME
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    scale = converter.get_variable(tf_op.inputs[1])
+    offset = converter.get_variable(tf_op.inputs[2])
+    mean = converter.get_variable(tf_op.inputs[3])
+    variance = converter.get_variable(tf_op.inputs[4])
+    epsilon = tf_op.get_attr("epsilon")
+    data_format = tf_op.get_attr("data_format")
+
+    if data_format == b"NHWC":
+        channel_axis = x.order.axes[3]
+
+    elif data_format == b"NCHW":
+        channel_axis = x.order.axes[1]
+
+    else:
+        raise NotImplementedError("Unknown data format")
+
+    scale.order.axes[0].unify(channel_axis)
+    offset.order.axes[0].unify(channel_axis)
+    mean.order.axes[0].unify(channel_axis)
+    variance.order.axes[0].unify(channel_axis)
+
+    y = (x - mean) / ((variance + epsilon) ** 0.5) * scale + offset
+
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("FusedPadConv2D")
@@ -249,25 +334,27 @@ def max_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])  # NHWC
     assert tf_op.get_attr("data_format") == b"NHWC"
     x.order.unify(OrderNHWC)
+
     ksize_nhwc = tf_op.get_attr("ksize")  # type: List[int]
     assert ksize_nhwc[0] == 1
     assert ksize_nhwc[3] == 1
-    ksize = (ksize_nhwc[1], ksize_nhwc[2])
+    ksize_hw = ksize_nhwc[1:3]
 
     stride_nhwc = tf_op.get_attr("strides")  # type: List[int]
     assert stride_nhwc[0] == 1
     assert stride_nhwc[3] == 1
     stride_hw = stride_nhwc[1:3]
+
     padding_name = tf_op.get_attr("padding")  # type: str
     if padding_name == b"SAME":
-        padding = (padding_same(x.shape_dict[Axis.H], ksize[0], stride_hw[0]),
-                   padding_same(x.shape_dict[Axis.W], ksize[1], stride_hw[1]))
+        padding = (padding_same(x.shape_dict[Axis.H], ksize_hw[0], stride_hw[0]),
+                   padding_same(x.shape_dict[Axis.W], ksize_hw[1], stride_hw[1]))
     elif padding_name == b"VALID":
         padding = (0, 0)
     else:
         raise NotImplementedError(f"[TensorFlowConverter] MaxPool: padding '{padding_name}' is not supported yet.")
 
-    y, = MaxPooling2D(None, ksize=ksize, stride=stride_hw, padding=padding)(x)
+    y, = MaxPooling2D(None, ksize=ksize_hw, stride=stride_hw, padding=padding)(x)
     converter.set_variable(tf_op.outputs[0], y)
 
 

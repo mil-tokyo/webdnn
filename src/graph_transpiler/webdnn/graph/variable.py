@@ -145,17 +145,17 @@ class Variable(Node):
 
     # Unary operators
     def __pos__(self) -> "Variable":
-        return webdnn.graph.operators.scalar_affine.ScalarAffine(None, scale=+1, bias=0)(self)[0]
+        return webdnn.graph.operators.scalar_mul.ScalarMul(None, value=+1)(self)[0]
 
     def __neg__(self) -> "Variable":
-        return webdnn.graph.operators.scalar_affine.ScalarAffine(None, scale=-1, bias=0)(self)[0]
+        return webdnn.graph.operators.scalar_mul.ScalarMul(None, value=-1)(self)[0]
 
     def __abs__(self) -> "Variable":
         return webdnn.graph.operators.abs.Abs(None)(self)[0]
 
     # Binary operators
     def __add__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -165,7 +165,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for +: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __radd__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -175,7 +175,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for +: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __sub__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, -other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -185,7 +185,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for -: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rsub__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(-self)[0]
 
         elif isinstance(other, Variable):
@@ -195,7 +195,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for -: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __mul__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -205,7 +205,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for *: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rmul__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -225,7 +225,7 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for /: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rtruediv__(self, other) -> "Variable":
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self ** -1)[0]
 
         elif isinstance(other, Variable):
@@ -238,7 +238,7 @@ class Variable(Node):
         if modulo is not None:
             raise NotImplementedError("Variable.__pow__ is not supported modulo argument")
 
-        elif isinstance(power, (int, float)):
+        elif isinstance(power, (int, float, Placeholder)):
             return webdnn.graph.operators.scalar_pow.ScalarPow(None, power)(self)[0]
 
         elif isinstance(power, Variable):
@@ -248,15 +248,89 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(self).__name__}' and '{type(power).__name__}'")
 
     def __rpow__(self, other) -> "Variable":
+        if isinstance(other, Placeholder):
+            if not Placeholder.check_resolved(other):
+                raise TypeError(f"unsupported operand type(s) for ** or pow: 'Placeholder(unresolved)' and '{type(self).__name__}'")
+            else:
+                other = Placeholder.force_int(other)
+
         if isinstance(other, (int, float)):
-            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full([1] * self.ndim, other), self.order)
-            return other ** self
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
+            return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
 
         elif isinstance(other, Variable):
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
+
+    def __gt__(self, other) -> "Variable":
+        if isinstance(other, Placeholder):
+            if not Placeholder.check_resolved(other):
+                raise TypeError(f"unsupported operand type(s) for >: '{type(self).__name__}' and 'Placeholder(unresolved)'")
+            else:
+                other = Placeholder.force_int(other)
+
+        if isinstance(other, (int, float)):
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
+            return webdnn.graph.operators.greater.Greater(None)(self, other)[0]
+
+        elif isinstance(other, Variable):
+            return webdnn.graph.operators.greater.Greater(None)(self, other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for >: '{type(self).__name__}' and '{type(other).__name__}'")
+
+    def __ge__(self, other) -> "Variable":
+        if isinstance(other, Placeholder):
+            if not Placeholder.check_resolved(other):
+                raise TypeError(f"unsupported operand type(s) for >=: '{type(self).__name__}' and 'Placeholder(unresolved)'")
+            else:
+                other = Placeholder.force_int(other)
+
+        if isinstance(other, (int, float)):
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
+            return webdnn.graph.operators.greater_equal.GreaterEqual(None)(self, other)[0]
+
+        elif isinstance(other, Variable):
+            return webdnn.graph.operators.greater_equal.GreaterEqual(None)(self, other)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for >=: '{type(self).__name__}' and '{type(other).__name__}'")
+
+    def __lt__(self, other) -> "Variable":
+        if isinstance(other, Placeholder):
+            if not Placeholder.check_resolved(other):
+                raise TypeError(f"unsupported operand type(s) for <: '{type(self).__name__}' and 'Placeholder(unresolved)'")
+            else:
+                other = Placeholder.force_int(other)
+
+        if isinstance(other, (int, float)):
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
+            return webdnn.graph.operators.greater.Greater(None)(other, self)[0]
+
+        elif isinstance(other, Variable):
+            return webdnn.graph.operators.greater.Greater(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for <: '{type(self).__name__}' and '{type(other).__name__}'")
+
+    def __le__(self, other) -> "Variable":
+        if isinstance(other, Placeholder):
+            if not Placeholder.check_resolved(other):
+                raise TypeError(f"unsupported operand type(s) for <=: '{type(self).__name__}' and 'Placeholder(unresolved)'")
+            else:
+                other = Placeholder.force_int(other)
+
+        if isinstance(other, (int, float)):
+            other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
+            return webdnn.graph.operators.greater_equal.GreaterEqual(None)(other, self)[0]
+
+        elif isinstance(other, Variable):
+            return webdnn.graph.operators.greater_equal.GreaterEqual(None)(other, self)[0]
+
+        else:
+            raise TypeError(f"unsupported operand type(s) for <=: '{type(self).__name__}' and '{type(other).__name__}'")
 
     # Utility functions
 

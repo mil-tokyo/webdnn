@@ -3,7 +3,6 @@ from typing import List
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.fallback.generator import FallbackDescriptorGenerator
 from webdnn.backend.fallback.kernel import Kernel
-from webdnn.backend.fallback.kernels.util import calculate_stride
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.convolution2d import Convolution2D
 
@@ -73,11 +72,6 @@ for (var batch = 0; batch < n; batch++) {
 """
 
 
-def calculate_all_strides(var):
-    return [calculate_stride(var, axis) for axis in [Axis.N, Axis.H, Axis.W, Axis.C]]
-
-
-# noinspection PyUnusedLocal
 @FallbackDescriptorGenerator.register_handler(Convolution2D)
 def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
@@ -94,9 +88,9 @@ def convolution_2d(op: Convolution2D, memory_layout: MemoryLayout) -> List[Kerne
                      "out_size": y.shape_dict[Axis.C],
                      "in_size": x.shape_dict[Axis.C],
                      "out_spatial": [y.shape_dict[Axis.H], y.shape_dict[Axis.W]],
-                     "strides_x": calculate_all_strides(x),
-                     "strides_w": calculate_all_strides(w),
-                     "strides_y": calculate_all_strides(y),
+                     "strides_x": [x.stride_dict[a] for a in [Axis.N, Axis.H, Axis.W, Axis.C]],
+                     "strides_w": [w.stride_dict[a] for a in [Axis.N, Axis.KH, Axis.KW, Axis.C]],
+                     "strides_y": [y.stride_dict[a] for a in [Axis.N, Axis.H, Axis.W, Axis.C]],
                      "padding": op.padding,
                      "stride": op.stride,
                      "ksize": op.ksize,

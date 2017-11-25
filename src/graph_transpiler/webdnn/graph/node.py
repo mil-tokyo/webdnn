@@ -29,16 +29,24 @@ class Node:
         self.parameters = {}  # type: Dict[str, any]
         self.attributes = set()  # type: Set["attribute.Attribute"]
         self.name = name
-        self.prevs = set()  # type: Set["Node"]
-        self.nexts = set()  # type: Set["Node"]
+        self._prevs = []  # type: List["Node"]
+        self._nexts = []  # type: List["Node"]
+
+    @property
+    def prevs(self) -> Set["Node"]:
+        return set(self._prevs)
+
+    @property
+    def nexts(self) -> Set["Node"]:
+        return set(self._nexts)
 
     def append_prev(self, prev: "Node"):
-        prev.nexts.add(self)
-        self.prevs.add(prev)
+        prev._nexts.append(self)
+        self._prevs.append(prev)
 
     def remove_prev(self, prev: "Node"):
-        prev.nexts.remove(self)
-        self.prevs.remove(prev)
+        prev._nexts.remove(self)
+        self._prevs.remove(prev)
 
     def append_next(self, next: "Node"):
         next.append_prev(self)

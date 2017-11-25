@@ -24,7 +24,7 @@ def template(x_order=OrderNHWC, y_order=OrderNHW, axis=Axis.C, description: str 
     generate_kernel_test_case(
         description=f"Max {description}",
         graph=Graph([x], [y]),
-        backend=["webgl"],
+        backend=["webgpu", "webgl", "webassembly"],
         inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
         expected={y: np.transpose(vy, [OrderNHW.axes_dict[a] for a in y.order.axes])},
     )

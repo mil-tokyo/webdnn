@@ -73,10 +73,6 @@ class LSTM(Operator):
         assert self.parameters["use_initial_c"] == (initial_c is not None)
         assert self.parameters["use_initial_h"] == (initial_h is not None)
 
-        # @TODO: this is too strict condition. It should be supported in optimization phase, not here.
-        if x.order != OrderNTC:
-            raise NotImplementedError("Currently, LSTM supports only OrderNTC variable for input sequence variable.")
-
         x_shape_dict = x.shape_dict
         w_input_shape_dict = w_input.shape_dict
         w_hidden_shape_dict = w_hidden.shape_dict

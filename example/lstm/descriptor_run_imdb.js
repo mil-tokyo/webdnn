@@ -56,7 +56,7 @@ async function run() {
 }
 
 async function fetchSamples(path) {
-    let response = await webdnnFetch(path);
+    let response = await fetch(path);
     if (!response.ok) {
         throw new Error('Failed to load test samples');
     }

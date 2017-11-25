@@ -1,6 +1,11 @@
+from typing import List
+
 import tensorflow as tf
 
+from webdnn import ConstantVariable
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
+from webdnn.graph.axis import Axis
+from webdnn.graph.order import OrderNHWC
 
 
 @TensorFlowConverter.register_handler("AdjustContrast")

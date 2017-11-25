@@ -13,11 +13,12 @@ def template(description: str = ""):
     vx = np.random.rand(2, 14, 15, 16)
     vy = model.predict(vx, batch_size=2)
 
-    graph = KerasConverter(batch_size=2).convert(model)
+    graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
 
     generate_kernel_test_case(
         description=f"[keras] GlobalAveragePooling2D {description}",
         graph=graph,
+        backend=["webgpu", "webassembly", "webgl"],
         inputs={graph.inputs[0]: vx},
         expected={graph.outputs[0]: vy},
     )
