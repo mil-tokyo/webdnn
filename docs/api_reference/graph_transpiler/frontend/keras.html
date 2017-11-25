@@ -207,37 +207,29 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; input batch size. As default, keras handle the batch size as place holder (undetermined) value. If
-<code class="code docutils literal"><span class="pre">None</span></code> is passed, converter handles the batch size as placeholder named &#8220;N&#8221;.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; input batch size. As default, keras handle the batch size as place holder (undetermined) value. If
+<code class="code docutils literal"><span class="pre">None</span></code> is passed, converter handles the batch size as placeholder named &#8220;N&#8221;.</li>
+<li><strong>use_tensorflow_converter</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If <cite>True</cite>, KerasConverter first tries to convert model by TensorFlowConverter. Then if it failed,
+retry conversion with KerasConverter itself.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="webdnn.frontend.keras.KerasConverter.convert">
 <code class="descname">convert</code><span class="sig-paren">(</span><em>model</em>, <em>input_orders=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/keras/converter.html#KerasConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.keras.KerasConverter.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert kerasmodel into WebDNN IR Graph.</p>
+<dd><p>Convert kerasmodel into WebDNN IR Graph. First, WebDNN try to convert backend TensorFlow graph by TensorFlowConverter.
+If TensorFlowConverter failed to convert, then KerasConverter converts model by itself</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<cite>keras.models.Model</cite>) &#8211; keras model</li>
-<li><strong>input_orders</strong> (list of <code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; Order of input tensors. If <cite>None</cite> is passed, default order
-(<cite>OrderNC</cite> for 2D, <cite>OrderNTC</cite> for 3D, <cite>OrderNHWC</cite> for 4D) is used. If <cite>input_orders=None</cite>, default orders
-are assigned to all input tensors. If <cite>input_orders[0]=None</cite>, only first input tensor are converted with
-the default order.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<cite>keras.models.Model</cite>) &#8211; keras model</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition-example admonition">
-<p class="first admonition-title">Example</p>
-<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;pre_trained_model.h5&quot;</span><span class="p">)</span>
-<span class="n">graph</span> <span class="o">=</span> <span class="n">KerasConverter</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

@@ -196,6 +196,11 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">OperatorClass</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Operator</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">OperatorClass</span><span class="o">.</span><span class="vm">__name__</span>
 
         <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Operator</span><span class="p">,</span> <span class="n">MemoryLayout</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">T_KERNEL</span><span class="p">]]):</span>

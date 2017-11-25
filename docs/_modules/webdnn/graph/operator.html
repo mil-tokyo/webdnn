@@ -207,20 +207,16 @@
 
     <span class="k">def</span> <span class="nf">get_input_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">var</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">return</span> <span class="n">name</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="n">var</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">name</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{var}</span><span class="s2">&#39; is not input of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_output_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">var</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">return</span> <span class="n">name</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="n">var</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">name</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{var}</span><span class="s2">&#39; is not output of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -268,15 +264,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">with_assert</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.ndim = </span><span class="si">{v_old.ndim}</span><span class="s2">, v_new.ndim = </span><span class="si">{v_new.ndim}</span><span class="s2">&quot;</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.order = </span><span class="si">{v_old.order}</span><span class="s2">, v_new.order = </span><span class="si">{v_new.order}</span><span class="s2">&quot;</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.order = </span><span class="si">{v_old.shape}</span><span class="s2">, v_new.order = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_input(v_old, v_new)] v_old and v_new must have same number of dimensions.</span>
+<span class="s2">    (v_old.ndim) = </span><span class="si">{v_old.ndim}</span><span class="s2"></span>
+<span class="s2">    (v_new.ndim) = </span><span class="si">{v_new.ndim}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_input(v_old, v_new)] v_old and v_new must be same data order.</span>
+<span class="s2">    (v_old.order) = </span><span class="si">{v_old.order}</span><span class="s2"></span>
+<span class="s2">    (v_new.order) = </span><span class="si">{v_new.order}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_input(v_old, v_new)] v_old and v_new must be same shape.</span>
+<span class="s2">    (v_old.shape) = </span><span class="si">{v_old.shape}</span><span class="s2"></span>
+<span class="s2">    (v_new.shape) = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;&quot;&quot;</span>
 
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_input_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_input</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
@@ -326,15 +325,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">with_assert</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.ndim = </span><span class="si">{v_old.ndim}</span><span class="s2">, v_new.ndim = </span><span class="si">{v_new.ndim}</span><span class="s2">&quot;</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.order = </span><span class="si">{v_old.order}</span><span class="s2">, v_new.order = </span><span class="si">{v_new.order}</span><span class="s2">&quot;</span>
-            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> \
-                <span class="s2">&quot;[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape.&quot;</span> <span class="o">+</span> \
-                <span class="n">f</span><span class="s2">&quot;actual: v_old.shape = </span><span class="si">{v_old.shape}</span><span class="s2">, v_new.shape = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_output(v_old, v_new)] v_old and v_new must have same number of dimensions.</span>
+<span class="s2">    (v_old.ndim) = </span><span class="si">{v_old.ndim}</span><span class="s2"></span>
+<span class="s2">    (v_new.ndim) = </span><span class="si">{v_new.ndim}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_output(v_old, v_new)] v_old and v_new must be same data order.</span>
+<span class="s2">    (v_old.order) = </span><span class="si">{v_old.order}</span><span class="s2"></span>
+<span class="s2">    (v_new.order) = </span><span class="si">{v_new.order}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">assert</span> <span class="n">v_old</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v_new</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[operator.replace_output(v_old, v_new)] v_old and v_new must be same shape.</span>
+<span class="s2">    (v_old.shape) = </span><span class="si">{v_old.shape}</span><span class="s2"></span>
+<span class="s2">    (v_new.shape) = </span><span class="si">{v_new.shape}</span><span class="s2">&quot;&quot;&quot;</span>
 
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_output_name</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
