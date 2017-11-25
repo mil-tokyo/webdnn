@@ -171,7 +171,7 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.tensorwise</span> <span class="k">import</span> <span class="n">Tensorwise</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNTC</span><span class="p">,</span> <span class="n">OrderNT</span><span class="p">,</span> <span class="n">OrderNC</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">OrderNTC</span><span class="p">,</span> <span class="n">OrderNC</span><span class="p">,</span> <span class="n">OrderNT</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
 
 
@@ -209,16 +209,16 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">]</span>
 
-        <span class="c1"># @TODO: this is too strict condition. It should be supported in optimization phase, not here.</span>
-        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span> <span class="o">!=</span> <span class="n">OrderNT</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Currently, Embedding supports only OrderNT variable for input sequence variable: &quot;</span>
-                                      <span class="n">f</span><span class="s2">&quot;x.order=</span><span class="si">{x.order}</span><span class="s2">&quot;</span><span class="p">)</span>
-
         <span class="n">x_shape_dict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span>
         <span class="n">w_shape_dict</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape_dict</span>
 
-        <span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">OrderNC</span><span class="p">),</span> <span class="s2">&quot;Dictionary variable of Embedding operator must has only Axis.N and Axis.C: &quot;</span> \
-                                                 <span class="n">f</span><span class="s2">&quot;w.order.axes=</span><span class="si">{w.order.axes}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">OrderNT</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Embedding] Input variable &quot;x&quot; must have only Axis.N and Axis.T:</span>
+<span class="s2">    (x.order.axes) = </span><span class="si">{w.order.axes}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">OrderNC</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Embedding] Dictionary variable &quot;w&quot; must have only Axis.N and Axis.C:</span>
+<span class="s2">    (w.order.axes) = </span><span class="si">{w.order.axes}</span><span class="s2">&quot;&quot;&quot;</span>
 
         <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x_shape_dict</span><span class="p">[</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">]</span>
         <span class="n">sequence_len</span> <span class="o">=</span> <span class="n">x_shape_dict</span><span class="p">[</span><span class="n">Axis</span><span class="o">.</span><span class="n">T</span><span class="p">]</span>

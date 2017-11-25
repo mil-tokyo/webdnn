@@ -230,10 +230,12 @@
         <span class="n">in_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;in_order&quot;</span><span class="p">]</span>
         <span class="n">out_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_shape&quot;</span><span class="p">]</span>
         <span class="n">out_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">in_order</span>
-        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">mul</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;Reshape operator must not change variable size: &quot;</span> \
-                                         <span class="n">f</span><span class="s2">&quot;(x.shape)=</span><span class="si">{in_shape}</span><span class="s2">, (x.size)={mul(in_shape)}, &quot;</span> \
-                                         <span class="n">f</span><span class="s2">&quot;(y.shape)=</span><span class="si">{out_shape}</span><span class="s2">, (y.size)={mul(out_shape)}&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">mul</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Reshape] Variable size must not be changed:</span>
+<span class="s2">    (input shape)=</span><span class="si">{in_shape}</span><span class="s2"></span>
+<span class="s2">    (input size)={mul(in_shape)}</span>
+<span class="s2">    (output shape)=</span><span class="si">{out_shape}</span><span class="s2"></span>
+<span class="s2">    (output size)={mul(out_shape)}&quot;&quot;&quot;</span>
 
         <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">out_order</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>

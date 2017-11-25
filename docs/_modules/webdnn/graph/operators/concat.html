@@ -168,11 +168,16 @@
   <h1>Source code for webdnn.graph.operators.concat</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.tensorwise</span> <span class="k">import</span> <span class="n">Tensorwise</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.optimize_rule</span> <span class="k">import</span> <span class="n">OptimizeRule</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
 
 
 <div class="viewcode-block" id="Concat"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.concat.Concat">[docs]</a><span class="k">class</span> <span class="nc">Concat</span><span class="p">(</span><span class="n">Operator</span><span class="p">):</span>
@@ -220,15 +225,17 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
-            <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">order</span><span class="p">),</span> <span class="s2">&quot;Input variable of Concat operator must have same axes: &quot;</span> \
-                                                         <span class="n">f</span><span class="s2">&quot;x0.order.axes=</span><span class="si">{xs[0].order.axes}</span><span class="s2">, x</span><span class="si">{i}</span><span class="s2">.order.axes=</span><span class="si">{xs[i].order.axes}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">order</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Concat] Input variable of Concat operator must have same axes</span>
+<span class="s2">  (x0.order.axes) = </span><span class="si">{xs[0].order.axes}</span><span class="s2"></span>
+<span class="s2">  (x</span><span class="si">{i}</span><span class="s2">.order.axes) = </span><span class="si">{xs[i].order.axes}</span><span class="s2">&quot;&quot;&quot;</span>
 
             <span class="k">for</span> <span class="n">other_axis</span> <span class="ow">in</span> <span class="p">[</span><span class="n">other_axis</span> <span class="k">for</span> <span class="n">other_axis</span> <span class="ow">in</span> <span class="n">axes</span> <span class="k">if</span> <span class="n">other_axis</span> <span class="o">!=</span> <span class="n">axis</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">])</span> <span class="ow">and</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">]):</span>
-                    <span class="k">assert</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">],</span> <span class="s2">&quot;Input variable of Concat operator must be same &quot;</span> \
-                                                                                     <span class="n">f</span><span class="s2">&quot;shape except the specified axis: &quot;</span> \
-                                                                                     <span class="n">f</span><span class="s2">&quot;x0.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{xs[0].shape_dict[axis]}</span><span class="s2">, &quot;</span> \
-                                                                                     <span class="n">f</span><span class="s2">&quot;x</span><span class="si">{i}</span><span class="s2">.shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{xs[i].shape_dict[axis]}</span><span class="s2">&quot;</span>
+                    <span class="k">assert</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">other_axis</span><span class="p">],</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Concat] Input variable of Concat operator must be same shape except the specified axis:</span>
+<span class="s2">  (x0.shape_dict[</span><span class="si">{other_axis}</span><span class="s2">]) = </span><span class="si">{xs[0].shape_dict[other_axis]}</span><span class="s2"></span>
+<span class="s2">  (x</span><span class="si">{i}</span><span class="s2">.shape_dict[</span><span class="si">{other_axis}</span><span class="s2">]) = </span><span class="si">{xs[i].shape_dict[other_axis]}</span><span class="s2">&quot;&quot;&quot;</span>
 
             <span class="n">y_shape</span><span class="p">[</span><span class="n">axis_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
 
@@ -238,7 +245,16 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Axis</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
+        <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;x</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">))]</span>  <span class="c1"># type: List[ConstantVariable]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">])</span>
+        <span class="n">new_y</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">new_y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

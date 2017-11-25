@@ -177,6 +177,12 @@
 
 <span class="n">T_OP</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T_OP&#39;</span><span class="p">)</span>
 
+<span class="n">Handler</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="s2">&quot;Converter&quot;</span><span class="p">,</span> <span class="n">T_OP</span><span class="p">],</span> <span class="n">Operator</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">CyclicGraphError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
 
 <div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter">[docs]</a><span class="k">class</span> <span class="nc">Converter</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_OP</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;Converter()</span>
@@ -185,11 +191,10 @@
 <span class="sd">    If you want to implement your custom converter, see :doc:`/tutorial/custom_operator/index`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    For each concrete Converter</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_handler_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># type: Dict[str, Dict[str, Callable[[&quot;Converter&quot;, T_OP], Operator]]]</span>
-    <span class="n">_variable_table</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># type: Dict[str, Dict[object, Variable]]</span>
+    <span class="n">_handler_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># type: Dict[str, Dict[str, Handler]]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[object, Variable]</span>
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="Converter.convert"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Graph</span><span class="p">:</span>
@@ -209,9 +214,12 @@
 <span class="sd">        Args:</span>
 <span class="sd">            key: operator type name. As default, it&#39;s the class name for each operator instance. you can change this</span>
 <span class="sd">                 behavior by overriding :func:`~webdnn.converter.Converter.serialize_operator_type`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="s2">&quot;Converter&quot;</span><span class="p">,</span> <span class="n">T_OP</span><span class="p">],</span> <span class="n">Operator</span><span class="p">]):</span>
+        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Handler</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_handler_map</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]:</span>
                 <span class="n">console</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[</span><span class="si">{cls.__name__}</span><span class="s2">] Converter Handler for &#39;</span><span class="si">{key}</span><span class="s2">&#39; is already registered in </span><span class="si">{cls.__name__}</span><span class="s2"> and overwritten.&quot;</span><span class="p">)</span>
 
@@ -242,19 +250,20 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Variable`):variable object in WebDNN IR Format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Converter.set_variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter.set_variable">[docs]</a>    <span class="k">def</span> <span class="nf">set_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="Converter.set_variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter.set_variable">[docs]</a>    <span class="k">def</span> <span class="nf">set_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;set_variable(key, variable)</span>
 <span class="sd">        Stores variable object corresponding to the key.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            key (object): key</span>
 <span class="sd">            variable (:class:`~webdnn.Variable`): variable</span>
+<span class="sd">            overwrite (bool): When False, if the key is already exist, KeyError is raised.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Variable </span><span class="si">{key}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Variable </span><span class="si">{key}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span></div>
 
 <div class="viewcode-block" id="Converter.has_variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter.has_variable">[docs]</a>    <span class="k">def</span> <span class="nf">has_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;has_variable(key)</span>
@@ -266,7 +275,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (bool): If :code:`True`, the key is contained.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_table</span></div>
 
     <span class="k">def</span> <span class="nf">_convert_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">T_OP</span><span class="p">):</span>
         <span class="n">operator_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize_operator_type</span><span class="p">(</span><span class="n">operator</span><span class="p">)</span>
