@@ -179,6 +179,14 @@ def _convert_zero_padding1d(converter: KerasConverter, k_op: "keras.layers.ZeroP
 @KerasConverter.register_handler("ZeroPadding2D")
 def _convert_zero_padding2d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    if k_op.data_format == "channels_first":
+        x.order.unify(OrderNCHW)
+
+    elif k_op.data_format == "channels_last":
+        x.order.unify(OrderNHWC)
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
 
     padding = k_op.padding
     top = padding[0][0]
