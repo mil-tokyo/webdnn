@@ -4,10 +4,11 @@ except ImportError as e:
     pass
 
 from webdnn.frontend.keras.converter import KerasConverter
+from webdnn.frontend.keras.layers.util import check_data_format
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
-from webdnn.graph.order import OrderNC, OrderNCHW, OrderNHWC, OrderNTC
+from webdnn.graph.order import OrderNC, OrderNHWC, OrderNTC
 from webdnn.util import console
 from webdnn.util.misc import mul
 
@@ -43,15 +44,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
 @KerasConverter.register_handler("AveragePooling2D")
 def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.AveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     ksize = tuple(k_op.pool_size)
     stride = tuple(k_op.strides)
@@ -106,14 +99,7 @@ def _convert_global_max_pooling1d(converter: KerasConverter, k_op: "keras.layers
 @KerasConverter.register_handler("GlobalMaxPooling2D")
 def _convert_global_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalMaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     y, = MaxPooling2D(None, ksize=(x.shape_dict[Axis.H], x.shape_dict[Axis.W]), stride=(1, 1), padding=(0, 0))(x)
 
@@ -138,14 +124,7 @@ def _convert_global_average_pooling1d(converter: KerasConverter, k_op: "keras.la
 @KerasConverter.register_handler("GlobalAveragePooling2D")
 def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "keras.layers.GlobalAveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     y, = AveragePooling2D(None, ksize=(x.shape_dict[Axis.H], x.shape_dict[Axis.W]), stride=(1, 1), padding=(0, 0))(x)
 
@@ -179,15 +158,7 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
 @KerasConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     ksize = tuple(k_op.pool_size)
     stride = tuple(k_op.strides)

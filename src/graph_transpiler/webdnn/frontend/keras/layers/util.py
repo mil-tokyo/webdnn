@@ -1,3 +1,5 @@
+from webdnn.graph.order import OrderNCHW, OrderNHWC
+
 try:
     import keras
 except ImportError as e:
@@ -44,3 +46,14 @@ def do_activation(activation: any, x: Variable) -> Variable:
 
     else:
         raise NotImplementedError(f"[KerasConverter] Unknown activation: {activation}")
+
+
+def check_data_format(v: Variable, data_format: str):
+    if data_format == "channels_first":
+        v.order.unify(OrderNCHW)
+
+    elif data_format == "channels_last":
+        v.order.unify(OrderNHWC)
+
+    else:
+        raise ValueError(f"[KerasConverter] Unknown data format: {data_format}")
