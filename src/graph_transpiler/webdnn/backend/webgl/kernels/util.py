@@ -43,14 +43,15 @@ def get_output_position(output_variable: Variable):
 
 def convert_position(expression: Expression,
                      in_shape: Sequence[int], in_stride: Sequence[int],
-                     out_shape: Sequence[int], out_stride: Sequence[int]):
+                     out_shape: Sequence[int], out_stride: Sequence[int], index_offset: int = 0):
     if mul(in_shape) < 1 << 20:
         return ExpressionNode([
             "convert_position_fast(",
             expression, ",",
             ivec(in_stride), ", ",
             ivec(out_stride), ", ",
-            ivec(out_shape), ")"
+            ivec(out_shape), ", ",
+            index_offset, ")"
         ])
 
     else:
@@ -59,19 +60,20 @@ def convert_position(expression: Expression,
             expression, ",",
             ivec(in_stride), ", ",
             ivec(out_stride), ", ",
-            ivec(out_shape), ")"
+            ivec(out_shape), ", ",
+            index_offset, ")"
         ])
 
 
 def convert_coord(expression: Expression,
                   in_shape: Sequence[int], in_stride: Sequence[int],
-                  out_shape: Sequence[int], out_stride: Sequence[int]):
+                  out_shape: Sequence[int], out_stride: Sequence[int], index_offset: int = 0):
     # noinspection PyUnresolvedReferences
     inv_out_shape = [np.double(1.0) / np.double(v) for v in out_shape]
 
     return ExpressionNode([
-        f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride), ") + 0.5)",
-        " * ", vec(inv_out_shape)
+        f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride, index_offset), ")",
+        " + 0.5) * ", vec(inv_out_shape)
     ])
 
 
@@ -132,12 +134,20 @@ def _mod_snippet(t1: str, t2: str, tr: str):
 def _convert_position_fast_snippet(ndim1: int, ndim2: int):
     dot = '+'.join(f'p1[{i}]*s1[{i}]' for i in range(ndim1))
     return f"""
+ivec{ndim2} convert_position_fast(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2, int offset) {{
+    return mod(({dot} + offset) / s2, d2);
+}}
+
 ivec{ndim2} convert_position_fast(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
-    return mod(({dot}) / s2, d2);
+    return convert_position_fast(p1, s1, s2, d2, 0);
+}}
+
+ivec{ndim2} convert_position_fast(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2, int offset) {{
+    return convert_position_fast(ivec{ndim1}(p1), s1, s2, d2, offset);
 }}
 
 ivec{ndim2} convert_position_fast(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
-    return convert_position_fast(ivec{ndim1}(p1), s1, s2, d2);
+    return convert_position_fast(ivec{ndim1}(p1), s1, s2, d2, 0);
 }}
 """
 

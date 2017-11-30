@@ -33,6 +33,7 @@ from webdnn.backend.webgpu.kernels import scalar_mul
 from webdnn.backend.webgpu.kernels import scalar_pow
 from webdnn.backend.webgpu.kernels import select
 from webdnn.backend.webgpu.kernels import sigmoid
+from webdnn.backend.webgpu.kernels import slice
 from webdnn.backend.webgpu.kernels import softmax
 from webdnn.backend.webgpu.kernels import softplus
 from webdnn.backend.webgpu.kernels import softsign

@@ -4,13 +4,13 @@ except ImportError as e:
     pass
 
 from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.frontend.keras.layers.util import do_activation
+from webdnn.frontend.keras.layers.util import do_activation, check_data_format
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
-from webdnn.graph.order import OrderC, OrderNCHW, OrderNHWC, OrderNTC, Order
+from webdnn.graph.order import OrderC, OrderNTC, Order
 
 
 # noinspection PyUnusedLocal
@@ -23,15 +23,7 @@ def _convert_conv1d(converter: KerasConverter, k_op: "keras.layers.Conv1D"):
 @KerasConverter.register_handler("Conv2D")
 def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.C, Axis.N]))
 
@@ -70,14 +62,7 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
 @KerasConverter.register_handler("Conv2DTranspose")
 def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Conv2DTranspose"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.N, Axis.C]))
 
@@ -179,14 +164,7 @@ def _convert_zero_padding1d(converter: KerasConverter, k_op: "keras.layers.ZeroP
 @KerasConverter.register_handler("ZeroPadding2D")
 def _convert_zero_padding2d(converter: KerasConverter, k_op: "keras.layers.ZeroPadding2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    if k_op.data_format == "channels_first":
-        x.order.unify(OrderNCHW)
-
-    elif k_op.data_format == "channels_last":
-        x.order.unify(OrderNHWC)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown data format is detected: {k_op.data_format}")
+    check_data_format(x, k_op.data_format)
 
     padding = k_op.padding
     top = padding[0][0]

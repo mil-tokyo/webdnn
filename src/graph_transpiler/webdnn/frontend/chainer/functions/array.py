@@ -1,6 +1,7 @@
 from itertools import combinations
 
 import chainer
+
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
@@ -97,11 +98,11 @@ def _convert_flip_ud(converter: ChainerConverter, c_op: "chainer.functions.FlipU
     raise NotImplementedError("[ChainerConverter] FlipUD is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("GetItem")
 def _convert_get_item(converter: ChainerConverter, c_op: "chainer.functions.GetItem"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] GetItem is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = x[c_op.slices]
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal,PyUnresolvedReferences

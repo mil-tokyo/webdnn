@@ -4,7 +4,7 @@ import numpy as np
 
 import webdnn.graph
 from webdnn.graph import operator
-from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.node import Node
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
@@ -331,6 +331,30 @@ class Variable(Node):
 
         else:
             raise TypeError(f"unsupported operand type(s) for <=: '{type(self).__name__}' and '{type(other).__name__}'")
+
+    def __getitem__(self, slices) -> "Variable":
+        slices = list(slices) if isinstance(slices, Sequence) else [slices]
+
+        if Ellipsis in slices:
+            ellipsis_position = slices.index(Ellipsis)
+            slices.remove(Ellipsis)
+        else:
+            ellipsis_position = len(slices)
+
+        while len(slices) < self.ndim:
+            slices.insert(ellipsis_position, slice(None))
+
+        x_axis_index = 0
+        indices = AxisKeyDict()
+        for index in slices:
+            if isinstance(index, (slice, int)):
+                indices[self.order.axes[x_axis_index]] = index
+                x_axis_index += 1
+
+            elif index is None:
+                indices[Axis()] = None
+
+        return webdnn.graph.operators.slice.Slice(None, indices=indices)(self)[0]
 
     # Utility functions
 
