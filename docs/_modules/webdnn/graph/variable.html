@@ -172,7 +172,7 @@
 
 <span class="kn">import</span> <span class="nn">webdnn.graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph</span> <span class="k">import</span> <span class="n">operator</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">AxisKeyDict</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">AxisKeyDict</span><span class="p">,</span> <span class="n">Axis</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.node</span> <span class="k">import</span> <span class="n">Node</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
@@ -499,6 +499,30 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &lt;=: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slices</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">slices</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">slices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">Ellipsis</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">:</span>
+            <span class="n">ellipsis_position</span> <span class="o">=</span> <span class="n">slices</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">Ellipsis</span><span class="p">)</span>
+            <span class="n">slices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">Ellipsis</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ellipsis_position</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="n">slices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ellipsis_position</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+
+        <span class="n">x_axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">indices</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">x_axis_index</span><span class="p">]]</span> <span class="o">=</span> <span class="n">index</span>
+                <span class="n">x_axis_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">elif</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">indices</span><span class="p">[</span><span class="n">Axis</span><span class="p">()]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Utility functions</span>
 
