@@ -4,10 +4,12 @@ from typing import List
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework.tensor_util import MakeNdarray
+
 from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.slice import Slice
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.tile import Tile
 from webdnn.graph.operators.transpose import Transpose
@@ -447,7 +449,17 @@ def size_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Slice")
 def slice_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    begin = converter.get_variable(tf_op.inputs[1])
+    size = converter.get_variable(tf_op.inputs[2])
+
+    assert isinstance(begin, ConstantVariable), "[TensorFlowConverter] op 'Slice' with dynamic position is not supported yet. "
+    assert isinstance(size, ConstantVariable), "[TensorFlowConverter] op 'Slice' with dynamic size is not supported yet. "
+
+    begin = begin.data.flatten().astype(np.int32).tolist()
+    size = size.data.flatten().astype(np.int32).tolist()
+    y, = Slice(None, indices=AxisKeyDict(x.order.axes, [slice(b, b + s) for b, s in zip(begin, size)]))(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("SpaceToBatch")
@@ -507,7 +519,52 @@ def stop_gradient_handler(converter: TensorFlowConverter, tf_op: "tf.Operation")
 
 @TensorFlowConverter.register_handler("StridedSlice")
 def strided_slice_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+
+    begin = converter.get_variable(tf_op.inputs[1])
+    end = converter.get_variable(tf_op.inputs[2])
+    strides = converter.get_variable(tf_op.inputs[3])
+
+    assert isinstance(begin, ConstantVariable), "[TensorFlowConverter] op 'Slice' with dynamic index is not supported yet. "
+    assert isinstance(end, ConstantVariable), "[TensorFlowConverter] op 'Slice' with dynamic index is not supported yet. "
+    assert isinstance(strides, ConstantVariable), "[TensorFlowConverter] op 'Slice' with dynamic index is not supported yet. "
+
+    begin_mask = tf_op.get_attr("begin_mask")
+    end_mask = tf_op.get_attr("end_mask")
+    ellipsis_mask = tf_op.get_attr("ellipsis_mask")
+    new_axis_mask = tf_op.get_attr("new_axis_mask")
+    shrink_axis_mask = tf_op.get_attr("shrink_axis_mask")
+
+    begin = begin.data.flatten().astype(np.int32).tolist()
+    end = end.data.flatten().astype(np.int32).tolist()
+    strides = strides.data.flatten().astype(np.int32).tolist()
+
+    for i in range(x.ndim):
+        if begin_mask & (1 << i):
+            begin[i] = None
+
+        if end_mask & (1 << i):
+            end[i] = None
+
+    slices = []
+    for i in range(len(begin)):
+        if ellipsis_mask & (1 << i):
+            slices.append(Ellipsis)
+
+        elif new_axis_mask & (1 << i):
+            # insert new axis
+            slices.append(None)
+
+        elif shrink_axis_mask & (1 << i):
+            # shrink axis
+            slices.append(begin[i])
+
+        else:
+            # general slice
+            slices.append(slice(begin[i], end[i], strides[i]))
+
+    y = x[slices]
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("StridedSliceAssign")

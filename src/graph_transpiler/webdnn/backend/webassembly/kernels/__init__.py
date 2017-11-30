@@ -33,6 +33,7 @@ from webdnn.backend.webassembly.kernels import scalar_mul
 from webdnn.backend.webassembly.kernels import scalar_pow
 from webdnn.backend.webassembly.kernels import select
 from webdnn.backend.webassembly.kernels import sigmoid
+from webdnn.backend.webassembly.kernels import slice
 from webdnn.backend.webassembly.kernels import softmax
 from webdnn.backend.webassembly.kernels import softplus
 from webdnn.backend.webassembly.kernels import softsign

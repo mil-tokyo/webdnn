@@ -38,6 +38,7 @@ from webdnn.graph.operators import scalar_mul
 from webdnn.graph.operators import scalar_pow
 from webdnn.graph.operators import select
 from webdnn.graph.operators import sigmoid
+from webdnn.graph.operators import slice
 from webdnn.graph.operators import softmax
 from webdnn.graph.operators import softplus
 from webdnn.graph.operators import softsign

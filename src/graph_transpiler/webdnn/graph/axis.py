@@ -129,6 +129,9 @@ class AxisKeyDict(Generic[T]):
     def __iter__(self) -> Iterable[Axis]:
         return self.keys()
 
+    def __str__(self) -> str:
+        return "{" + ", ".join(a.name + ':' + str(v) for a, v in self.items()) + "}"
+
     def get(self, k: Axis, default: T) -> T:
         return self[k] if k in self else default
 

@@ -34,6 +34,7 @@ from webdnn.backend.webgl.kernels import scalar_mul
 from webdnn.backend.webgl.kernels import scalar_pow
 from webdnn.backend.webgl.kernels import select
 from webdnn.backend.webgl.kernels import sigmoid
+from webdnn.backend.webgl.kernels import slice
 from webdnn.backend.webgl.kernels import softplus
 from webdnn.backend.webgl.kernels import softsign
 from webdnn.backend.webgl.kernels import space2depth
