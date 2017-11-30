@@ -2,7 +2,9 @@ import chainer
 import numpy as np
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.operators.exp import Exp
+from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.sum import Sum
@@ -180,18 +182,28 @@ def _convert_mat_mul(converter: ChainerConverter, c_op: "chainer.functions.MatMu
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Maximum")
 def _convert_maximum(converter: ChainerConverter, c_op: "chainer.functions.Maximum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Maximum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = converter.get_variable(c_op.inputs[1])
+
+    check_broadcast_constraints(x, y)
+
+    tmp, = Greater(None)(x, y)
+    z = x * tmp + y * (1 - tmp)
+    converter.set_variable(c_op.outputs[0](), z)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Minimum")
 def _convert_minimum(converter: ChainerConverter, c_op: "chainer.functions.Minimum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Minimum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = converter.get_variable(c_op.inputs[1])
+
+    check_broadcast_constraints(x, y)
+
+    tmp, = Greater(None)(x, y)
+    z = x * (1 - tmp) + y * tmp
+    converter.set_variable(c_op.outputs[0](), z)
 
 
 # noinspection PyUnusedLocal
