@@ -6,10 +6,10 @@ from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-class Exp(Elementwise):
-    """Exp(name)
+class Log(Elementwise):
+    """Log(name)
 
-    Exponential operator.
+    Logarithm operator.
 
     Args:
         name (str): Operator name.
@@ -28,5 +28,5 @@ class Exp(Elementwise):
         y = self.outputs["y"]
         self.remove_all()
 
-        new_y = ConstantVariable(np.exp(x0.copy().change_order(y.order).data), y.order)
+        new_y = ConstantVariable(np.log(x0.copy().change_order(y.order).data), y.order)
         OptimizeRule.replace_variable(graph, y, new_y)

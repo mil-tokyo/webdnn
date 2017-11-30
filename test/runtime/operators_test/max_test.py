@@ -4,29 +4,26 @@ from test.util import generate_kernel_test_case, wrap_template
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.max import Max
-from webdnn.graph.order import OrderNHWC, OrderNCHW, Order
+from webdnn.graph.order import OrderNHWC, OrderNCHW, OrderC
 from webdnn.graph.variable import Variable
-
-OrderNHW = Order([Axis.N, Axis.H, Axis.W])
 
 
 @wrap_template
-def template(x_order=OrderNHWC, y_order=OrderNHW, axis=Axis.C, description: str = ""):
-    vx = np.arange(120).reshape(2, 3, 4, 5)
-    vy = np.max(vx, axis=OrderNHWC.axes_dict[axis])
+def template(x_shape=[2, 3, 4, 5], x_order=OrderNHWC, y_order=OrderNHWC, axis=Axis.C, description: str = ""):
+    vx = np.random.rand(*x_shape)
+    vy = np.max(vx, axis=x_order.axes_dict[axis], keepdims=True)
 
-    x = Variable(vx.shape, order=OrderNHWC)
+    x = Variable(vx.shape, order=x_order)
     y, = Max(None, axis=axis)(x)
 
-    x.change_order(x_order)
     y.change_order(y_order)
 
     generate_kernel_test_case(
         description=f"Max {description}",
         graph=Graph([x], [y]),
         backend=["webgpu", "webgl", "webassembly"],
-        inputs={x: np.transpose(vx, [OrderNHWC.axes_dict[a] for a in x.order.axes])},
-        expected={y: np.transpose(vy, [OrderNHW.axes_dict[a] for a in y.order.axes])},
+        inputs={x: vx},
+        expected={y: np.transpose(vy, [x.order.axes_dict[a] for a in y.order.axes])},
     )
 
 
@@ -36,3 +33,7 @@ def test():
 
 def test_different_order():
     template(x_order=OrderNCHW)
+
+
+def test_reduced_to_scalar():
+    template(x_shape=[10], x_order=OrderC, y_order=OrderC)

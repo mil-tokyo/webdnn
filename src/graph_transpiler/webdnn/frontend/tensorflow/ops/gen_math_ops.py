@@ -13,6 +13,7 @@ from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.greater_equal import GreaterEqual
+from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.min import Min
 from webdnn.graph.operators.prod import Prod
@@ -319,12 +320,19 @@ def lin_space_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Log")
 def log_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    y, = Log(None)(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Log1p")
 def log1p_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    console.warning(
+        "[TensorFlowConverter] In WebDNN, \"Log1p(x)\" is converted into \"Log(1+x)\", which is not enough accurate as Log1p when"
+        "x is so small that \"1 + x == 1\" in floating point accuracy.")
+    x = converter.get_variable(tf_op.inputs[0])
+    y, = Log(None)(1 + x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("LogicalAnd")
@@ -381,8 +389,8 @@ def max_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
         v, = Max(None, axis=axis)(v)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
+        v = v.squeeze(axis)
 
     converter.set_variable(tf_op.outputs[0], v)
 
@@ -416,8 +424,8 @@ def min_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
         v, = Min(None, axis=axis)(v)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
+        v = v.squeeze(axis)
 
     converter.set_variable(tf_op.outputs[0], v)
 
@@ -474,8 +482,8 @@ def prod_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
         v, = Prod(None, axis=axis)(v)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
+        v = v.squeeze(axis)
 
     converter.set_variable(tf_op.outputs[0], v)
 
@@ -705,8 +713,8 @@ def sum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
         v, = Sum(None, axis=axis)(v)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
+        v = v.squeeze(axis)
 
     converter.set_variable(tf_op.outputs[0], v)
 

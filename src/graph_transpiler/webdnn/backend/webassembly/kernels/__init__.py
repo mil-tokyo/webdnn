@@ -19,6 +19,7 @@ from webdnn.backend.webassembly.kernels import hard_sigmoid
 from webdnn.backend.webassembly.kernels import im2col
 from webdnn.backend.webassembly.kernels import leaky_relu
 from webdnn.backend.webassembly.kernels import local_response_normalization
+from webdnn.backend.webassembly.kernels import log
 from webdnn.backend.webassembly.kernels import lstm
 from webdnn.backend.webassembly.kernels import max
 from webdnn.backend.webassembly.kernels import max_pooling_2d
