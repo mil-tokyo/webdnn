@@ -102,11 +102,10 @@ def _convert_sinh(converter: ChainerConverter, c_op: "chainer.functions.Sinh"):
     raise NotImplementedError("[ChainerConverter] Sinh is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Identity")
 def _convert_identity(converter: ChainerConverter, c_op: "chainer.functions.Identity"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Identity is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal
