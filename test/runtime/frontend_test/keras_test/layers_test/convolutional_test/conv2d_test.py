@@ -45,12 +45,12 @@ def test_padding():
     template(padding="same")
 
 
-# FIXME: Not supported yet
-# def test_data_format():
-#     template(data_format="channels_first")
+def test_data_format():
+    template(data_format="channels_first")
 
-# def test_dilation():
-#     template(shape=(14, 14, 4), dilation_rate=(2, 2))
+
+def test_dilation():
+    template(shape=(14, 14, 4), dilation_rate=(2, 2))
 
 
 def test_activation():
