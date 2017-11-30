@@ -4,7 +4,7 @@ except ImportError as e:
     pass
 
 from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.frontend.keras.layers.util import check_data_format
+from webdnn.frontend.keras.layers.util import check_data_format, parse_padding
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -21,19 +21,7 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     ksize = (k_op.pool_size[0], 1)
     stride = (k_op.strides[0], 1)
-
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        # https://www.tensorflow.org/api_guides/python/nn#convolution
-        if x.shape_dict[Axis.H] % stride[0] == 0:
-            padding = (max(ksize[0] - stride[0], 0) // 2, 0)
-        else:
-            padding = (max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0) // 2, 0)
-
-    else:
-        raise NotImplementedError(f"Unknown padding: {k_op.padding}")
+    padding = (parse_padding(k_op.padding, ksize[0], 1), 0)
 
     y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding)(y)
     z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
@@ -48,29 +36,13 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
 
     ksize = tuple(k_op.pool_size)
     stride = tuple(k_op.strides)
-    if k_op.padding == "valid":
-        padding = (0, 0)
+    padding = (parse_padding(k_op.padding, ksize[0], 1), parse_padding(k_op.padding, ksize[1], 1))
 
-    elif k_op.padding == "same":
-        # https://www.tensorflow.org/api_guides/python/nn#convolution
-        if x.shape_dict[Axis.H] % stride[0] == 0:
-            pad_h = max(ksize[0] - stride[0], 0)
-        else:
-            pad_h = max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0)
-
-        if x.shape_dict[Axis.W] % stride[1] == 0:
-            pad_w = max(ksize[1] - stride[1], 0)
-        else:
-            pad_w = max(ksize[1] - (x.shape_dict[Axis.W] % stride[1]), 0)
-
-        padding = (pad_h // 2, pad_w // 2)
+    if k_op.padding == "same":
         console.warning(
             "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
             "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
             "result will be generated on the edge.")
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
 
     y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
@@ -139,17 +111,11 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
 
     # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
+    ksize = (k_op.pool_size[0], 1)
+    stride = (k_op.strides[0], 1)
+    padding = (parse_padding(k_op.padding, ksize[0], 1), 0)
 
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        padding = (k_op.pool_size[0] // 2, 0)
-
-    else:
-        raise NotImplementedError(f"Unknown padding: {k_op.padding}")
-
-    y, = MaxPooling2D(None, ksize=(k_op.pool_size[0], 1), stride=(1, 1), padding=padding)(y)
+    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding)(y)
     z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
@@ -162,25 +128,7 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
 
     ksize = tuple(k_op.pool_size)
     stride = tuple(k_op.strides)
-    if k_op.padding == "valid":
-        padding = (0, 0)
-
-    elif k_op.padding == "same":
-        # https://www.tensorflow.org/api_guides/python/nn#convolution
-        if x.shape_dict[Axis.H] % stride[0] == 0:
-            pad_h = max(ksize[0] - stride[0], 0)
-        else:
-            pad_h = max(ksize[0] - (x.shape_dict[Axis.H] % stride[0]), 0)
-
-        if x.shape_dict[Axis.W] % stride[1] == 0:
-            pad_w = max(ksize[1] - stride[1], 0)
-        else:
-            pad_w = max(ksize[1] - (x.shape_dict[Axis.W] % stride[1]), 0)
-
-        padding = (pad_h // 2, pad_w // 2)
-
-    else:
-        raise ValueError(f"[KerasConverter] Unknown padding: {k_op.padding}")
+    padding = (parse_padding(k_op.padding, ksize[0], 1), parse_padding(k_op.padding, ksize[1], 1))
 
     y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)

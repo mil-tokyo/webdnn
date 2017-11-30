@@ -1,10 +1,13 @@
 from typing import Optional, Union
 
 from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
+from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
+from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 def normalize_slice(s: slice, size: int):
@@ -146,3 +149,16 @@ class Slice(Operator):
     @property
     def indices(self) -> AxisKeyDict[Union[slice, int, None]]:
         return self.parameters["indices"]
+
+    def fold_constance(self, graph: Graph):
+        x = self.inputs["x"]  # type: ConstantVariable
+        y = self.outputs["y"]
+
+        remained_axes_in_x_order = [a for a in x.order.axes if a in y.order.axes]
+        new_axes = [a for a in y.order.axes if a not in x.order.axes]
+        slices = [self.indices[a] for a in x.order.axes] + [None] * len(new_axes)
+
+        new_y = ConstantVariable(x.data[slices], Order(remained_axes_in_x_order + new_axes))
+        new_y.change_order(y.order)
+        OptimizeRule.replace_variable(graph, y, new_y)
+        self.remove_all()
