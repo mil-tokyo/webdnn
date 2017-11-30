@@ -67,11 +67,13 @@ def _convert_log2(converter: ChainerConverter, c_op: "chainer.functions.Log2"):
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Expm1")
 def _convert_expm1(converter: ChainerConverter, c_op: "chainer.functions.Expm1"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Expm1 is not supported")
+    console.warning("[ChainerConverter] In WebDNN, \"Expm1(x)\" is converted into \"Exp(x)-1\", which is not enough accurate as Expm1 when"
+                    "x is so small that \"Exp(x) == 1\" in floating point accuracy.")
+    x = converter.get_variable(c_op.inputs[0])
+    y = Exp(None)(x)[0] - 1
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

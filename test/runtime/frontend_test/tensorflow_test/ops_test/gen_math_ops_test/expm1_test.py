@@ -9,7 +9,7 @@ def template(x_shape, description: str = ""):
     x = tf.placeholder(np.float32, x_shape, "x")
     y = tf.expm1(x)
 
-    vx = np.random.rand(*x_shape).astype(np.float32) - 0.5
+    vx = np.random.rand(*x_shape).astype(np.float32) + 1
     with tf.Session() as sess:
         vy, = sess.run([y], {x: vx})
 

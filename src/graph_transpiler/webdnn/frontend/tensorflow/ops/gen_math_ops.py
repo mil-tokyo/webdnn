@@ -201,10 +201,12 @@ TensorFlowConverter.register_handler("Exp")(unary_op_handler(Exp))
 
 @TensorFlowConverter.register_handler("Expm1")
 def expm1_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
+    console.warning(
+        "[TensorFlowConverter] In WebDNN, \"Expm1(x)\" is converted into \"Exp(x)-1\", which is not enough accurate as Expm1 when"
+        "x is so small that \"Exp(x) == 1\" in floating point accuracy.")
     x = converter.get_variable(tf_op.inputs[0])
-    y, = Exp(None)(x)
-    y = y - 1
-    converter.set_variable(tf_op.outputs[0], y)
+    y = Exp(None)(x)[0] - 1
+    converter.set_variable(tf_op.outputs[0](), y)
 
 
 @TensorFlowConverter.register_handler("Floor")

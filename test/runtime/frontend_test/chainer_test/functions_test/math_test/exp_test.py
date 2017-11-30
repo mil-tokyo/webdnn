@@ -16,7 +16,7 @@ def template(description: str = ""):
     y = graph.outputs[0]
 
     generate_kernel_test_case(
-        description=f"[chainer] F.elu {description}",
+        description=f"[chainer] F.exp {description}",
         graph=graph,
         inputs={x: vx.data},
         expected={y: vy.data},
