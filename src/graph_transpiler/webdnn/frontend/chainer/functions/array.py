@@ -3,6 +3,7 @@ from itertools import combinations
 import chainer
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
@@ -70,11 +71,11 @@ def _convert_dstack(converter: ChainerConverter, c_op: "chainer.functions.array.
     raise NotImplementedError("[ChainerConverter] Dstack is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("ExpandDims")
 def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.ExpandDims"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ExpandDims is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = x.expand_dims(Axis(), c_op.axis)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Flatten")

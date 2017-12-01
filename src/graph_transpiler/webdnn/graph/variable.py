@@ -393,6 +393,8 @@ class Variable(Node):
         Returns:
             (:class:`~Variable`) expanded variable
         """
+        if index < 0:
+            index += 1
         new_axes = list(self.order.axes)
         new_axes.insert(index, axis)
         return self.reshape(shape=[1 if a == axis else self.shape_dict[a] for a in new_axes], order=Order(new_axes))
