@@ -1,7 +1,7 @@
 from itertools import combinations
 
 import chainer
-
+import numpy as np
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.broadcast import Broadcast
@@ -238,8 +238,13 @@ def _convert_squeeze(converter: ChainerConverter, c_op: "chainer.functions.Squee
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Swapaxes")
 def _convert_swapaxes(converter: ChainerConverter, c_op: "chainer.functions.Swapaxes"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Swapaxes is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    index = list(range(x.ndim))
+    index[c_op.axis1] = c_op.axis2
+    index[c_op.axis2] = c_op.axis1
+    y = x.transpose(Order([x.order.axes[i] for i in index]))
+
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
