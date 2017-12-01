@@ -206,7 +206,7 @@ def expm1_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
         "x is so small that \"Exp(x) == 1\" in floating point accuracy.")
     x = converter.get_variable(tf_op.inputs[0])
     y = Exp(None)(x)[0] - 1
-    converter.set_variable(tf_op.outputs[0](), y)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Floor")
