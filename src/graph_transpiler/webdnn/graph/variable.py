@@ -1,4 +1,4 @@
-from typing import Union, List, Set, Tuple, Sequence
+from typing import Union, List, Set, Tuple, Sequence, Optional
 
 import numpy as np
 
@@ -375,6 +375,102 @@ class Variable(Node):
         """
         ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=order, out_shape=shape)(self)
         return ret
+
+    def expand_dims(self, axis: Axis, index: int) -> "Variable":
+        """expand_dims(shape, axis, index)
+        Insert new axis whose size is 1. This is alias of follow codes.
+
+            new_axes = list(v.order.axes)
+            new_axes.insert(index, axis)
+            Reshape(None, in_order=v.order,
+                          out_order=Order(new_axes),
+                          out_shape=[1 if a == axis else self.shape_dict[a] for a in new_axes])(v)[0]
+
+        Args:
+            axis (:class:`~Axis`): inserted axis
+            index (int): insert position
+
+        Returns:
+            (:class:`~Variable`) expanded variable
+        """
+        if index < 0:
+            index += 1
+        new_axes = list(self.order.axes)
+        new_axes.insert(index, axis)
+        return self.reshape(shape=[1 if a == axis else self.shape_dict[a] for a in new_axes], order=Order(new_axes))
+
+    def squeeze(self, axis: Optional[Axis] = None) -> "Variable":
+        """expand_dims(shape, axis, index)
+        Remove axis whose size is 1. This is alias of follow codes.
+
+            new_axes = list(v.order.axes)
+            new_axes.remove(axis)
+            Reshape(None, in_order=v.order,
+                          out_order=Order(new_axes),
+                          out_shape=[self.shape_dict[a] for a in new_axes])(v)[0]
+
+        Args:
+            axis (:class:`~Axis`): removed axis. If it's "None", all axes whose size are 1 is removed.
+
+        Returns:
+            (:class:`~Variable`) squeezed variable
+        """
+        new_axes = list(self.order.axes)
+        if axis is None:
+            for axis in self.order.axes:
+                if self.shape_dict[axis] == 1:
+                    new_axes.remove(axis)
+        else:
+            new_axes.remove(axis)
+        return self.reshape(shape=[self.shape_dict[a] for a in new_axes], order=Order(new_axes))
+
+    def combine_axes(self, axes: Sequence[Axis], axis: Axis) -> "Variable":
+        """combine_axes(shape, axes, axis)
+        Combine some axes into one axis.
+
+        Examples:
+
+            x = Variable([2, 3, 4, 5], OrderNHWC)
+
+            y = x.combine_axes([Axis.W, Axis.H], Axis.W)
+            # # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because "axes" parameter is [W, H].
+            # y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)
+
+            print(y.shape, y.order)
+            >>> "[2, 12, 5]", "[N, H, C]"
+
+        Args:
+            axes (sequence of :class:`~Axis`): Axes which are combined. All axes must be contained in original variable.
+            axis (:class:`~Axis`): Axis created from `axes`. If new axis is specified, which is inserted at last.
+
+        Returns:
+            (:class:`~Variable`) reshaped variable
+        """
+        out_axes = list(self.order.axes)
+        out_shape_dict = AxisKeyDict(self.shape_dict)
+        if axis not in out_shape_dict:
+            out_shape_dict[axis] = 1
+            out_axes.append(axis)
+
+        for combined_axis in axes:
+            if combined_axis == axis:
+                continue
+
+            out_shape_dict[axis] *= out_shape_dict[combined_axis]
+            out_axes.remove(combined_axis)
+
+        in_axes = list(out_axes)
+        if axis in in_axes:
+            i = in_axes.index(axis)
+            in_axes = in_axes[:i] + list(axes) + in_axes[i + 1:]
+
+        else:
+            in_axes += list(axes)
+
+        return webdnn.graph.operators.reshape.Reshape(None,
+                                                      in_order=Order(in_axes),
+                                                      out_order=Order(out_axes),
+                                                      out_shape=[out_shape_dict[a] for a in out_axes])(self)[0]
 
     def reshape_like(self, other: "Variable") -> "Variable":
         """reshape(shape, order)

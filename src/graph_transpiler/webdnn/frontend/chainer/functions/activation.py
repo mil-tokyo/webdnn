@@ -4,12 +4,16 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.clipped_relu import ClippedRelu
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elu import Elu
+from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid
 from webdnn.graph.operators.leaky_relu import LeakyRelu
+from webdnn.graph.operators.log import Log
+from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.relu import Relu
 from webdnn.graph.operators.sigmoid import Sigmoid
 from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
+from webdnn.graph.operators.sum import Sum
 from webdnn.graph.operators.tanh import Tanh
 
 
@@ -60,11 +64,18 @@ def _convert_leaky_relu(converter: ChainerConverter, c_op: "chainer.functions.Le
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("LogSoftmax")
 def _convert_log_softmax(converter: ChainerConverter, c_op: "chainer.functions.LogSoftmax"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] LogSoftmax is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    axis = x.order.axes[1]
+
+    max_x, = Max(None, axis=axis)(x)
+    exp_delta_x, = Exp(None)(x - max_x)
+    sum_exp_delta_x, = Sum(None, axis=axis)(exp_delta_x)
+    log_sum_delta_exp, = Log(None)(sum_exp_delta_x)
+
+    y = x - (log_sum_delta_exp + max_x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

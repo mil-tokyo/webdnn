@@ -5,9 +5,9 @@ from test.util import generate_kernel_test_case, wrap_template
 
 
 @wrap_template
-def template(x_shape, description: str = ""):
+def template(x_shape=[2, 3, 4, 5], description: str = ""):
     x = tf.placeholder(np.float32, x_shape, "x")
-    y = tf.expm1(x)
+    y = tf.log1p(x)
 
     vx = np.random.rand(*x_shape).astype(np.float32) + 1
     with tf.Session() as sess:
@@ -16,13 +16,13 @@ def template(x_shape, description: str = ""):
         graph = TensorFlowConverter(sess, batch_size=2).convert([x], [y])
 
     generate_kernel_test_case(
-        description=f"[TensorFlow] Expm1 {description}",
+        description=f"[TensorFlow] Log1p {description}",
         graph=graph,
-        inputs={graph.inputs[0]: vx, },
+        inputs={graph.inputs[0]: vx},
         expected={graph.outputs[0]: vy},
         EPS=1e-2
     )
 
 
 def test():
-    template(x_shape=[2, 3, 4, 5])
+    template()

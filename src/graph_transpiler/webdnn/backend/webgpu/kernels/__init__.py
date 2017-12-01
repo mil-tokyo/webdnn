@@ -19,6 +19,7 @@ from webdnn.backend.webgpu.kernels import hard_sigmoid
 from webdnn.backend.webgpu.kernels import im2col
 from webdnn.backend.webgpu.kernels import leaky_relu
 from webdnn.backend.webgpu.kernels import local_response_normalization
+from webdnn.backend.webgpu.kernels import log
 from webdnn.backend.webgpu.kernels import lstm
 from webdnn.backend.webgpu.kernels import max
 from webdnn.backend.webgpu.kernels import max_pooling_2d

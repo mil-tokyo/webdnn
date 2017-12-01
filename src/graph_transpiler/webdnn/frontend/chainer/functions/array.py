@@ -1,13 +1,16 @@
 from itertools import combinations
 
 import chainer
-
+import numpy as np
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
+from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
+from webdnn.graph.operators.tile import Tile
 from webdnn.graph.order import Order
 from webdnn.graph.order import OrderNCHW
 from webdnn.util.misc import mul
@@ -70,11 +73,11 @@ def _convert_dstack(converter: ChainerConverter, c_op: "chainer.functions.array.
     raise NotImplementedError("[ChainerConverter] Dstack is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("ExpandDims")
 def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.ExpandDims"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ExpandDims is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = x.expand_dims(Axis(), c_op.axis)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("Flatten")
@@ -84,18 +87,16 @@ def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatt
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("FlipLR")
 def _convert_flip_lr(converter: ChainerConverter, c_op: "chainer.functions.FlipLR"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] FlipLR is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x[:, ::-1])
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("FlipUD")
 def _convert_flip_ud(converter: ChainerConverter, c_op: "chainer.functions.FlipUD"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] FlipUD is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x[::-1, :])
 
 
 @ChainerConverter.register_handler("GetItem")
@@ -112,11 +113,21 @@ def _convert_hstack(converter: ChainerConverter, c_op: "chainer.functions.array.
     raise NotImplementedError("[ChainerConverter] Hstack is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Im2Col")
 def _convert_im2col(converter: ChainerConverter, c_op: "chainer.functions.Im2Col"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Im2Col is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    x.order.unify(OrderNCHW)
+    if c_op.cover_all:
+        raise NotImplementedError("[ChainerConverter] \"Im2Col\" function with \"cover_all=True\" is not supported")
+
+    y, = Im2Col(None,
+                ksize=(c_op.kh, c_op.kw),
+                stride=(c_op.sy, c_op.sx),
+                padding=(c_op.ph, c_op.pw),
+                dilation_rate=(c_op.dy, c_op.dx))(x)
+
+    y = y.combine_axes([Axis.C, Axis.KH, Axis.KW], Axis.C).change_order(OrderNCHW)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
@@ -211,25 +222,46 @@ def _convert_split_axis(converter: ChainerConverter, c_op: "chainer.functions.Sp
         converter.set_variable(c_op.outputs[i](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Squeeze")
 def _convert_squeeze(converter: ChainerConverter, c_op: "chainer.functions.Squeeze"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Squeeze is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    if c_op.axis is None:
+        axes = [a for a in x.order.axes if x.shape_dict[a] == 1]
+    else:
+        axes = [x.order.axes[i] for i in c_op.axis]
+
+    for axis in axes:
+        x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Swapaxes")
 def _convert_swapaxes(converter: ChainerConverter, c_op: "chainer.functions.Swapaxes"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Swapaxes is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    index = list(range(x.ndim))
+    index[c_op.axis1] = c_op.axis2
+    index[c_op.axis2] = c_op.axis1
+    y = x.transpose(Order([x.order.axes[i] for i in index]))
+
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Tile")
 def _convert_tile(converter: ChainerConverter, c_op: "chainer.functions.Tile"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Tile is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    reps = c_op.reps
+
+    if x.ndim > len(reps):
+        reps = (1,) * (x.ndim - len(reps)) + reps
+
+    else:
+        while x.ndim < len(c_op.reps):
+            x = x.expand_dims(Axis(), 0)
+
+    y, = Tile(None, AxisKeyDict(x.order.axes, reps))(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal

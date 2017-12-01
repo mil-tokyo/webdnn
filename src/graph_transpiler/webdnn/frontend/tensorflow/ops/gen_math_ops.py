@@ -13,6 +13,7 @@ from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.greater_equal import GreaterEqual
+from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.min import Min
 from webdnn.graph.operators.prod import Prod
@@ -200,9 +201,11 @@ TensorFlowConverter.register_handler("Exp")(unary_op_handler(Exp))
 
 @TensorFlowConverter.register_handler("Expm1")
 def expm1_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
+    console.warning(
+        "[TensorFlowConverter] In WebDNN, \"Expm1(x)\" is converted into \"Exp(x)-1\", which is not enough accurate as Expm1 when"
+        "x is so small that \"Exp(x) == 1\" in floating point accuracy.")
     x = converter.get_variable(tf_op.inputs[0])
-    y, = Exp(None)(x)
-    y = y - 1
+    y = Exp(None)(x)[0] - 1
     converter.set_variable(tf_op.outputs[0], y)
 
 
@@ -319,12 +322,19 @@ def lin_space_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Log")
 def log_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    y, = Log(None)(x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("Log1p")
 def log1p_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    console.warning(
+        "[TensorFlowConverter] In WebDNN, \"Log1p(x)\" is converted into \"Log(1+x)\", which is not enough accurate as Log1p when"
+        "x is so small that \"1 + x == 1\" in floating point accuracy.")
+    x = converter.get_variable(tf_op.inputs[0])
+    y, = Log(None)(1 + x)
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("LogicalAnd")
@@ -373,18 +383,15 @@ def matmul_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def max_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Max' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Max(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Max(None, axis=axis)(x)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Maximum")
@@ -408,18 +415,15 @@ def mean_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def min_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Min' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Min(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Min(None, axis=axis)(x)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Minimum")
@@ -466,18 +470,15 @@ TensorFlowConverter.register_handler("Pow")(elementwise_binary_op_handler(Elemen
 def prod_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Prod' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Prod(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Prod(None, axis=axis)(x)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("QuantizeDownAndShrinkRange")
@@ -697,18 +698,15 @@ def sub_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def sum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Sum' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Sum(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Sum(None, axis=axis)(x)
 
-    if tf_op.get_attr("keep_dims") or x.ndim == 1:
-        v = v.reshape(order=x.order, shape=[v.shape_dict[a] if a in v.order.axes else 1 for a in x.order.axes])
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Tan")

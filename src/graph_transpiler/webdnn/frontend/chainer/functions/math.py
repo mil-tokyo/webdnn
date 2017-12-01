@@ -1,8 +1,17 @@
 import chainer
+import numpy as np
+
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.operators.exp import Exp
+from webdnn.graph.operators.greater import Greater
+from webdnn.graph.operators.log import Log
+from webdnn.graph.operators.max import Max
+from webdnn.graph.operators.min import Min
+from webdnn.graph.operators.sum import Sum
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
+from webdnn.util import console
 
 
 # noinspection PyUnusedLocal
@@ -40,32 +49,34 @@ def _convert_exp(converter: ChainerConverter, c_op: "chainer.functions.Exp"):
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Log")
 def _convert_log(converter: ChainerConverter, c_op: "chainer.functions.Log"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Log is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Log(None)(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Log10")
 def _convert_log10(converter: ChainerConverter, c_op: "chainer.functions.Log10"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Log10 is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Log(None)(x) / np.log(10)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Log2")
 def _convert_log2(converter: ChainerConverter, c_op: "chainer.functions.Log2"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Log2 is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Log(None)(x) / np.log(2)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Expm1")
 def _convert_expm1(converter: ChainerConverter, c_op: "chainer.functions.Expm1"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Expm1 is not supported")
+    console.warning("[ChainerConverter] In WebDNN, \"Expm1(x)\" is converted into \"Exp(x)-1\", which is not enough accurate as Expm1 when"
+                    "x is so small that \"Exp(x) == 1\" in floating point accuracy.")
+    x = converter.get_variable(c_op.inputs[0])
+    y = Exp(None)(x)[0] - 1
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
@@ -96,11 +107,10 @@ def _convert_sinh(converter: ChainerConverter, c_op: "chainer.functions.Sinh"):
     raise NotImplementedError("[ChainerConverter] Sinh is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Identity")
 def _convert_identity(converter: ChainerConverter, c_op: "chainer.functions.Identity"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Identity is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal
@@ -124,18 +134,35 @@ def _convert_linear_interpolate(converter: ChainerConverter, c_op: "chainer.func
     raise NotImplementedError("[ChainerConverter] LinearInterpolate is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Log1p")
 def _convert_log1p(converter: ChainerConverter, c_op: "chainer.functions.Log1p"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Log1p is not supported")
+    console.warning("[ChainerConverter] In WebDNN, \"Log1p(x)\" is converted into \"Log(1+x)\", which is not enough accurate as Log1p when"
+                    "x is so small that \"1 + x == 1\" in floating point accuracy.")
+    x = converter.get_variable(c_op.inputs[0])
+    y, = Log(None)(x + 1)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("LogSumExp")
 def _convert_logsumexp(converter: ChainerConverter, c_op: "chainer.functions.LogSumExp"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] LogSumExp is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+
+    if c_op.axis is None:
+        axes = list(x.order.axes)
+    else:
+        axes = [x.order.axes[i] for i in c_op.axis]
+
+    max_x = x
+    for axis in axes:
+        max_x, = Max(None, axis=axis)(max_x)
+    exp_delta_x, = Exp(None)(x - max_x)
+
+    sum_exp_delta_x = exp_delta_x
+    for axis in axes:
+        sum_exp_delta_x, = Sum(None, axis=axis)(sum_exp_delta_x)
+
+    y = Log(None)(sum_exp_delta_x)[0] + max_x
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
@@ -156,18 +183,28 @@ def _convert_mat_mul(converter: ChainerConverter, c_op: "chainer.functions.MatMu
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Maximum")
 def _convert_maximum(converter: ChainerConverter, c_op: "chainer.functions.Maximum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Maximum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = converter.get_variable(c_op.inputs[1])
+
+    check_broadcast_constraints(x, y)
+
+    tmp, = Greater(None)(x, y)
+    z = x * tmp + y * (1 - tmp)
+    converter.set_variable(c_op.outputs[0](), z)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Minimum")
 def _convert_minimum(converter: ChainerConverter, c_op: "chainer.functions.Minimum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Minimum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    y = converter.get_variable(c_op.inputs[1])
+
+    check_broadcast_constraints(x, y)
+
+    tmp, = Greater(None)(x, y)
+    z = x * (1 - tmp) + y * tmp
+    converter.set_variable(c_op.outputs[0](), z)
 
 
 # noinspection PyUnusedLocal
@@ -184,18 +221,28 @@ def _convert_argMin(converter: ChainerConverter, c_op: "chainer.functions.ArgMin
     raise NotImplementedError("[ChainerConverter] ArgMin is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Max")
 def _convert_max(converter: ChainerConverter, c_op: "chainer.functions.Max"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Max is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Max(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Min")
 def _convert_min(converter: ChainerConverter, c_op: "chainer.functions.Min"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Min is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Min(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal
@@ -219,11 +266,16 @@ def _convert_squared_difference(converter: ChainerConverter, c_op: "chainer.func
     raise NotImplementedError("[ChainerConverter] SquaredDifference is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Sum")
 def _convert_sum(converter: ChainerConverter, c_op: "chainer.functions.Sum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Sum(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal

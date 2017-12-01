@@ -25,6 +25,7 @@ from webdnn.graph.operators import im2col
 from webdnn.graph.operators import leaky_relu
 from webdnn.graph.operators import linear
 from webdnn.graph.operators import local_response_normalization
+from webdnn.graph.operators import log
 from webdnn.graph.operators import lstm
 from webdnn.graph.operators import max_pooling_2d
 from webdnn.graph.operators import pooling_2d

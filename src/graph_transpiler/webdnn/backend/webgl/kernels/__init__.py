@@ -19,6 +19,7 @@ from webdnn.backend.webgl.kernels import greater_equal
 from webdnn.backend.webgl.kernels import hard_sigmoid
 from webdnn.backend.webgl.kernels import im2col
 from webdnn.backend.webgl.kernels import leaky_relu
+from webdnn.backend.webgl.kernels import log
 from webdnn.backend.webgl.kernels import max
 from webdnn.backend.webgl.kernels import max_pooling_2d
 from webdnn.backend.webgl.kernels import min

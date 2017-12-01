@@ -37,7 +37,7 @@ def slice_handler(op: Slice) -> List[Kernel]:
             continue
 
         index = normalize_slice(op.indices[axis], x.shape_dict[axis])
-        if index.start != 0 and index.stop != x.shape_dict[axis] and index.step != 1:
+        if index.start != 0 or index.stop != x.shape_dict[axis] or index.step != 1:
             flag_removed = False
             merge_target = None
             continue
