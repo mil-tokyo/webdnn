@@ -85,18 +85,16 @@ def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatt
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("FlipLR")
 def _convert_flip_lr(converter: ChainerConverter, c_op: "chainer.functions.FlipLR"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] FlipLR is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x[:, ::-1])
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("FlipUD")
 def _convert_flip_ud(converter: ChainerConverter, c_op: "chainer.functions.FlipUD"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] FlipUD is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    converter.set_variable(c_op.outputs[0](), x[::-1, :])
 
 
 @ChainerConverter.register_handler("GetItem")
