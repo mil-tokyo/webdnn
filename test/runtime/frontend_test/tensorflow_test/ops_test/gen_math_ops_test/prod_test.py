@@ -2,37 +2,43 @@ import numpy as np
 
 from test.runtime.frontend_test.tensorflow_test.util import TensorFlowConverter, tf
 from test.util import generate_kernel_test_case, wrap_template
-from webdnn.graph.axis import Axis
-from webdnn.graph.order import OrderNHWC
 
 
 @wrap_template
-def template(x_shape=[2, 3, 4, 5], x_order=OrderNHWC, axis=Axis.C, keep_dims=False, description: str = ""):
-    x = tf.placeholder(np.float32, x_shape)
-    y = tf.reduce_prod(x, axis=x_order.axes_dict[axis], keep_dims=keep_dims)
+def template(axis, keep_dims, description: str = ""):
+    x = tf.placeholder(np.float32, [2, 3, 4, 5])
+    y = tf.reduce_prod(x, axis=axis, keep_dims=keep_dims)
 
-    vx = np.random.rand(*x_shape).astype(np.float32)
+    vx = np.random.rand(2, 3, 4, 5).astype(np.float32)
     with tf.Session() as sess:
         vy, = sess.run([y], {x: vx})
 
         graph = TensorFlowConverter(sess, batch_size=2).convert([x], [y])
 
-    assert list(vy.shape) == list(graph.outputs[0].shape)
+    x = graph.inputs[0]
+    y = graph.outputs[0]
 
+    assert list(vy.shape) == list(y.shape), f"{vy.shape}, {y.shape}"
     generate_kernel_test_case(
         description=f"[TensorFlow] Prod {description}",
         graph=graph,
-        backend=["webgpu", "webassembly", "webgl"],
-        inputs={
-            graph.inputs[0]: vx
-        },
-        expected={graph.outputs[0]: vy},
+        backend=["webgpu", "webgl", "webassembly"],
+        inputs={x: vx},
+        expected={y: vy},
     )
 
 
-def test():
-    template()
+def test_axis_tuple():
+    template(axis=(1, 3), keep_dims=True)
 
 
-def test_keep_dims():
-    template(keep_dims=True)
+def test_axis_int():
+    template(axis=1, keep_dims=True)
+
+
+def test_axis_none():
+    template(axis=None, keep_dims=True)
+
+
+def test_no_keepdims():
+    template(axis=(1, 3), keep_dims=False)

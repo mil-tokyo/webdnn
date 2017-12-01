@@ -7,6 +7,7 @@ from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
+from webdnn.graph.operators.min import Min
 from webdnn.graph.operators.sum import Sum
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
@@ -220,18 +221,28 @@ def _convert_argMin(converter: ChainerConverter, c_op: "chainer.functions.ArgMin
     raise NotImplementedError("[ChainerConverter] ArgMin is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Max")
 def _convert_max(converter: ChainerConverter, c_op: "chainer.functions.Max"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Max is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Max(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Min")
 def _convert_min(converter: ChainerConverter, c_op: "chainer.functions.Min"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Min is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Min(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal
@@ -255,11 +266,16 @@ def _convert_squared_difference(converter: ChainerConverter, c_op: "chainer.func
     raise NotImplementedError("[ChainerConverter] SquaredDifference is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Sum")
 def _convert_sum(converter: ChainerConverter, c_op: "chainer.functions.Sum"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sum is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
+        x, = Sum(None, axis=axis)(x)
+
+        if not c_op.keepdims and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(c_op.outputs[0](), x)
 
 
 # noinspection PyUnusedLocal

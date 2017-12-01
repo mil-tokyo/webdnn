@@ -383,18 +383,15 @@ def matmul_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def max_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Max' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Max(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Max(None, axis=axis)(x)
 
-    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
-        v = v.squeeze(axis)
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Maximum")
@@ -418,18 +415,15 @@ def mean_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def min_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Min' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Min(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Min(None, axis=axis)(x)
 
-    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
-        v = v.squeeze(axis)
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Minimum")
@@ -476,18 +470,15 @@ TensorFlowConverter.register_handler("Pow")(elementwise_binary_op_handler(Elemen
 def prod_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Prod' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Prod(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Prod(None, axis=axis)(x)
 
-    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
-        v = v.squeeze(axis)
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("QuantizeDownAndShrinkRange")
@@ -707,18 +698,15 @@ def sub_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def sum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
     axis = converter.get_variable(tf_op.inputs[1])
-    v = x
-
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Sum' with dynamic axis  is not supported yet."
-    for i_axis in sorted(axis.data.astype(int).flatten().tolist(), reverse=True):
-        axis = v.order.axes[i_axis]
 
-        v, = Sum(None, axis=axis)(v)
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Sum(None, axis=axis)(x)
 
-    if not tf_op.get_attr("keep_dims") and v.ndim > 1:
-        v = v.squeeze(axis)
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
 
-    converter.set_variable(tf_op.outputs[0], v)
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("Tan")
