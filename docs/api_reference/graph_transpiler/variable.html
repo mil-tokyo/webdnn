@@ -223,6 +223,63 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="webdnn.Variable.combine_axes">
+<code class="descname">combine_axes</code><span class="sig-paren">(</span><em>shape</em>, <em>axes</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.combine_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.combine_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine some axes into one axis.</p>
+<p class="rubric">Examples</p>
+<p>x = Variable([2, 3, 4, 5], OrderNHWC)</p>
+<p>y = x.combine_axes([Axis.W, Axis.H], Axis.W)
+# # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because &#8220;axes&#8221; parameter is [W, H].
+# y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)</p>
+<p>print(y.shape, y.order)
+&gt;&gt;&gt; &#8220;[2, 12, 5]&#8221;, &#8220;[N, H, C]&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>axes</strong> (sequence of <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; Axes which are combined. All axes must be contained in original variable.</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; Axis created from <cite>axes</cite>. If new axis is specified, which is inserted at last.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) reshaped variable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.Variable.expand_dims">
+<code class="descname">expand_dims</code><span class="sig-paren">(</span><em>shape</em>, <em>axis</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.expand_dims"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.expand_dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert new axis whose size is 1. This is alias of follow codes.</p>
+<blockquote>
+<div><p>new_axes = list(v.order.axes)
+new_axes.insert(index, axis)
+Reshape(None, in_order=v.order,</p>
+<blockquote>
+<div>out_order=Order(new_axes),
+out_shape=[1 if a == axis else self.shape_dict[a] for a in new_axes])(v)[0]</div></blockquote>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; inserted axis</li>
+<li><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; insert position</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) expanded variable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="webdnn.Variable.input_to">
 <code class="descname">input_to</code><a class="headerlink" href="#webdnn.Variable.input_to" title="Permalink to this definition">¶</a></dt>
@@ -357,6 +414,31 @@ out_shape=other.shape)(v)[0]</dd>
 <dt id="webdnn.Variable.size">
 <code class="descname">size</code><a class="headerlink" href="#webdnn.Variable.size" title="Permalink to this definition">¶</a></dt>
 <dd><p>number of elements</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.Variable.squeeze">
+<code class="descname">squeeze</code><span class="sig-paren">(</span><em>axis: typing.Union[webdnn.graph.axis.Axis</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.squeeze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.squeeze" title="Permalink to this definition">¶</a></dt>
+<dd><p>expand_dims(shape, axis, index)
+Remove axis whose size is 1. This is alias of follow codes.</p>
+<blockquote>
+<div><p>new_axes = list(v.order.axes)
+new_axes.remove(axis)
+Reshape(None, in_order=v.order,</p>
+<blockquote>
+<div>out_order=Order(new_axes),
+out_shape=[self.shape_dict[a] for a in new_axes])(v)[0]</div></blockquote>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; removed axis. If it&#8217;s &#8220;None&#8221;, all axes whose size are 1 is removed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) squeezed variable</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">

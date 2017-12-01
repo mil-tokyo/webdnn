@@ -166,7 +166,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.variable</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -543,6 +543,102 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ret</span><span class="p">,</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">out_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Variable.expand_dims"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.expand_dims">[docs]</a>    <span class="k">def</span> <span class="nf">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
+<span class="sd">        Insert new axis whose size is 1. This is alias of follow codes.</span>
+
+<span class="sd">            new_axes = list(v.order.axes)</span>
+<span class="sd">            new_axes.insert(index, axis)</span>
+<span class="sd">            Reshape(None, in_order=v.order,</span>
+<span class="sd">                          out_order=Order(new_axes),</span>
+<span class="sd">                          out_shape=[1 if a == axis else self.shape_dict[a] for a in new_axes])(v)[0]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            axis (:class:`~Axis`): inserted axis</span>
+<span class="sd">            index (int): insert position</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~Variable`) expanded variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">new_axes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">axis</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Variable.squeeze"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.squeeze">[docs]</a>    <span class="k">def</span> <span class="nf">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Axis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
+<span class="sd">        Remove axis whose size is 1. This is alias of follow codes.</span>
+
+<span class="sd">            new_axes = list(v.order.axes)</span>
+<span class="sd">            new_axes.remove(axis)</span>
+<span class="sd">            Reshape(None, in_order=v.order,</span>
+<span class="sd">                          out_order=Order(new_axes),</span>
+<span class="sd">                          out_shape=[self.shape_dict[a] for a in new_axes])(v)[0]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            axis (:class:`~Axis`): removed axis. If it&#39;s &quot;None&quot;, all axes whose size are 1 is removed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~Variable`) squeezed variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">new_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Variable.combine_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.combine_axes">[docs]</a>    <span class="k">def</span> <span class="nf">combine_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;combine_axes(shape, axes, axis)</span>
+<span class="sd">        Combine some axes into one axis.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            x = Variable([2, 3, 4, 5], OrderNHWC)</span>
+
+<span class="sd">            y = x.combine_axes([Axis.W, Axis.H], Axis.W)</span>
+<span class="sd">            # # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because &quot;axes&quot; parameter is [W, H].</span>
+<span class="sd">            # y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)</span>
+
+<span class="sd">            print(y.shape, y.order)</span>
+<span class="sd">            &gt;&gt;&gt; &quot;[2, 12, 5]&quot;, &quot;[N, H, C]&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            axes (sequence of :class:`~Axis`): Axes which are combined. All axes must be contained in original variable.</span>
+<span class="sd">            axis (:class:`~Axis`): Axis created from `axes`. If new axis is specified, which is inserted at last.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~Variable`) reshaped variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">out_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out_shape_dict</span><span class="p">:</span>
+            <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">out_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">combined_axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">combined_axis</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">*=</span> <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">combined_axis</span><span class="p">]</span>
+            <span class="n">out_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">combined_axis</span><span class="p">)</span>
+
+        <span class="n">in_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out_axes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">in_axes</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">in_axes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+            <span class="n">in_axes</span> <span class="o">=</span> <span class="n">in_axes</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">+</span> <span class="n">in_axes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">in_axes</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span>
+                                                      <span class="n">in_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">in_axes</span><span class="p">),</span>
+                                                      <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">out_axes</span><span class="p">),</span>
+                                                      <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="n">out_shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">out_axes</span><span class="p">])(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Variable.reshape_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.reshape_like">[docs]</a>    <span class="k">def</span> <span class="nf">reshape_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
