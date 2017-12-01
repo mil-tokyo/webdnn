@@ -3,13 +3,14 @@ from itertools import combinations
 import chainer
 import numpy as np
 from webdnn.frontend.chainer.converter import ChainerConverter
-from webdnn.graph.axis import Axis
+from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.broadcast import Broadcast
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
+from webdnn.graph.operators.tile import Tile
 from webdnn.graph.order import Order
 from webdnn.graph.order import OrderNCHW
 from webdnn.util.misc import mul
@@ -247,11 +248,20 @@ def _convert_swapaxes(converter: ChainerConverter, c_op: "chainer.functions.Swap
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Tile")
 def _convert_tile(converter: ChainerConverter, c_op: "chainer.functions.Tile"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Tile is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+    reps = c_op.reps
+
+    if x.ndim > len(reps):
+        reps = (1,) * (x.ndim - len(reps)) + reps
+
+    else:
+        while x.ndim < len(c_op.reps):
+            x = x.expand_dims(Axis(), 0)
+
+    y, = Tile(None, AxisKeyDict(x.order.axes, reps))(x)
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 # noinspection PyUnusedLocal
