@@ -6,6 +6,14 @@ from webdnn.frontend.tensorflow.converter import TensorFlowConverter
 from webdnn.frontend.tensorflow.util import elementwise_binary_op_handler, unary_op_handler
 from webdnn.frontend.util import check_broadcast_constraints
 from webdnn.graph.operators.abs import Abs
+from webdnn.graph.operators.acos import Acos
+from webdnn.graph.operators.acosh import Acosh
+from webdnn.graph.operators.asin import Asin
+from webdnn.graph.operators.asinh import Asinh
+from webdnn.graph.operators.atan import Atan
+from webdnn.graph.operators.atanh import Atanh
+from webdnn.graph.operators.cos import Cos
+from webdnn.graph.operators.cosh import Cosh
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
@@ -22,7 +30,10 @@ from webdnn.graph.operators.scalar_add import ScalarAdd
 from webdnn.graph.operators.scalar_mul import ScalarMul
 from webdnn.graph.operators.select import Select
 from webdnn.graph.operators.sigmoid import Sigmoid
+from webdnn.graph.operators.sin import Sin
+from webdnn.graph.operators.sinh import Sinh
 from webdnn.graph.operators.sum import Sum
+from webdnn.graph.operators.tan import Tan
 from webdnn.graph.operators.tanh import Tanh
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
@@ -31,16 +42,9 @@ from webdnn.util import console
 
 TensorFlowConverter.register_handler("Abs")(unary_op_handler(Abs))
 
+TensorFlowConverter.register_handler("Acos")(unary_op_handler(Acos))
 
-@TensorFlowConverter.register_handler("Acos")
-def acos_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
-
-
-@TensorFlowConverter.register_handler("Acosh")
-def acosh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
-
+TensorFlowConverter.register_handler("Acosh")(unary_op_handler(Acosh))
 
 TensorFlowConverter.register_handler("Add")(elementwise_binary_op_handler(ElementwiseAdd, ScalarAdd))
 
@@ -72,19 +76,11 @@ def arg_min_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-@TensorFlowConverter.register_handler("Asin")
-def asin_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Asin")(unary_op_handler(Asin))
 
+TensorFlowConverter.register_handler("Asinh")(unary_op_handler(Asinh))
 
-@TensorFlowConverter.register_handler("Asinh")
-def asinh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
-
-
-@TensorFlowConverter.register_handler("Atan")
-def atan_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Atan")(unary_op_handler(Atan))
 
 
 @TensorFlowConverter.register_handler("Atan2")
@@ -92,9 +88,7 @@ def atan2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-@TensorFlowConverter.register_handler("Atanh")
-def atanh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Atanh")(unary_op_handler(Atanh))
 
 
 @TensorFlowConverter.register_handler("BatchMatMul")
@@ -148,14 +142,9 @@ def conj_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-@TensorFlowConverter.register_handler("Cos")
-def cos_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Cos")(unary_op_handler(Cos))
 
-
-@TensorFlowConverter.register_handler("Cosh")
-def cosh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Cosh")(unary_op_handler(Cosh))
 
 
 @TensorFlowConverter.register_handler("Cross")
@@ -626,14 +615,9 @@ def sign_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
 
 
-@TensorFlowConverter.register_handler("Sin")
-def sin_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Sin")(unary_op_handler(Sin))
 
-
-@TensorFlowConverter.register_handler("Sinh")
-def sinh_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+TensorFlowConverter.register_handler("Sinh")(unary_op_handler(Sinh))
 
 
 @TensorFlowConverter.register_handler("SparseMatMul")
@@ -709,10 +693,7 @@ def sum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     converter.set_variable(tf_op.outputs[0], x)
 
 
-@TensorFlowConverter.register_handler("Tan")
-def tan_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
-
+TensorFlowConverter.register_handler("Tan")(unary_op_handler(Tan))
 
 TensorFlowConverter.register_handler("Tanh")(unary_op_handler(Tanh))
 

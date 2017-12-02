@@ -7,7 +7,7 @@ from test.util import generate_kernel_test_case, wrap_template
 @wrap_template
 def template(x_shape, description: str = ""):
     x = tf.placeholder(np.float32, x_shape, "x")
-    y = tf.tanh(x)
+    y = tf.atan(x)
 
     vx = np.random.rand(*x_shape).astype(np.float32) - 0.5
     with tf.Session() as sess:
@@ -16,7 +16,7 @@ def template(x_shape, description: str = ""):
         graph = TensorFlowConverter(sess, batch_size=2).convert([x], [y])
 
     generate_kernel_test_case(
-        description=f"[TensorFlow] Tanh {description}",
+        description=f"[TensorFlow] Atan {description}",
         graph=graph,
         inputs={graph.inputs[0]: vx, },
         expected={graph.outputs[0]: vy},
