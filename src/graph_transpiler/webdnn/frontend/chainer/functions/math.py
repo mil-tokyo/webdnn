@@ -2,13 +2,22 @@ import chainer
 import numpy as np
 
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.util import unary_op_handler
 from webdnn.frontend.util import check_broadcast_constraints
+from webdnn.graph.operators.acos import Acos
+from webdnn.graph.operators.asin import Asin
+from webdnn.graph.operators.atan import Atan
+from webdnn.graph.operators.cos import Cos
+from webdnn.graph.operators.cosh import Cosh
 from webdnn.graph.operators.exp import Exp
 from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.min import Min
+from webdnn.graph.operators.sin import Sin
+from webdnn.graph.operators.sinh import Sinh
 from webdnn.graph.operators.sum import Sum
+from webdnn.graph.operators.tan import Tan
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
 from webdnn.util import console
@@ -42,18 +51,9 @@ def _convert_batch_det(converter: ChainerConverter, c_op: "chainer.functions.Bat
     raise NotImplementedError("[ChainerConverter] BatchDet is not supported")
 
 
-@ChainerConverter.register_handler("Exp")
-def _convert_exp(converter: ChainerConverter, c_op: "chainer.functions.Exp"):
-    x = converter.get_variable(c_op.inputs[0])
-    y, = Exp(None)(x)
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Exp")(unary_op_handler(Exp))
 
-
-@ChainerConverter.register_handler("Log")
-def _convert_log(converter: ChainerConverter, c_op: "chainer.functions.Log"):
-    x = converter.get_variable(c_op.inputs[0])
-    y, = Log(None)(x)
-    converter.set_variable(c_op.outputs[0](), y)
+ChainerConverter.register_handler("Log")(unary_op_handler(Log))
 
 
 @ChainerConverter.register_handler("Log10")
@@ -93,18 +93,9 @@ def _convert_fmod(converter: ChainerConverter, c_op: "chainer.functions.Fmod"):
     raise NotImplementedError("[ChainerConverter] Fmod is not supported")
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Cosh")
-def _convert_cosh(converter: ChainerConverter, c_op: "chainer.functions.Cosh"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Cosh is not supported")
+ChainerConverter.register_handler("Cosh")(unary_op_handler(Cosh))
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Sinh")
-def _convert_sinh(converter: ChainerConverter, c_op: "chainer.functions.Sinh"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sinh is not supported")
+ChainerConverter.register_handler("Sinh")(unary_op_handler(Sinh))
 
 
 @ChainerConverter.register_handler("Identity")
@@ -278,43 +269,14 @@ def _convert_sum(converter: ChainerConverter, c_op: "chainer.functions.Sum"):
     converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Arccos")
-def _convert_arccos(converter: ChainerConverter, c_op: "chainer.functions.Arccos"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Arccos is not supported")
+ChainerConverter.register_handler("Arccos")(unary_op_handler(Acos))
 
+ChainerConverter.register_handler("Arcsin")(unary_op_handler(Asin))
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Arcsin")
-def _convert_arcsin(converter: ChainerConverter, c_op: "chainer.functions.Arcsin"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Arcsin is not supported")
+ChainerConverter.register_handler("Arctan")(unary_op_handler(Atan))
 
+ChainerConverter.register_handler("Cos")(unary_op_handler(Cos))
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Arctan")
-def _convert_arctan(converter: ChainerConverter, c_op: "chainer.functions.Arctan"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Arctan is not supported")
+ChainerConverter.register_handler("Sin")(unary_op_handler(Sin))
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Cos")
-def _convert_cos(converter: ChainerConverter, c_op: "chainer.functions.Cos"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Cos is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Sin")
-def _convert_sin(converter: ChainerConverter, c_op: "chainer.functions.Sin"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sin is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Tan")
-def _convert_tan(converter: ChainerConverter, c_op: "chainer.functions.Tan"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Tan is not supported")
+ChainerConverter.register_handler("Tan")(unary_op_handler(Tan))
