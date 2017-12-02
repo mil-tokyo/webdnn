@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.graph.operators.tensordot &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.graph.operators.tensordot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.graph.operators.tensordot</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">AxisKeyDict</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.attributes.tensorwise</span> <span class="k">import</span> <span class="n">Tensorwise</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.util.misc</span> <span class="k">import</span> <span class="n">mul</span>
+
+<span class="n">_AxisSequence</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_normalize_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]]]])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">Axis</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">axes</span><span class="p">,),</span> <span class="p">(</span><span class="n">axes</span><span class="p">,)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] When the argument &quot;axes&quot; is sequence, its length must be 2:</span>
+<span class="s2">    (axes) = </span><span class="si">{axes}</span><span class="s2"></span>
+<span class="s2">    (len(axes)) = {len(axes)}&quot;&quot;&quot;</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Axis</span><span class="p">):</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,))</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">aa</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">Axis</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] When the argument &quot;axes&quot; is sequence, its contents must be instance of axis or sequence of axis:</span>
+<span class="s2">    (axes) = </span><span class="si">{axes}</span><span class="s2"></span>
+<span class="s2">    (type(axes[</span><span class="si">{i}</span><span class="s2">][</span><span class="si">{j}</span><span class="s2">])) = {type(axes[i][j]).__name__}&quot;&quot;&quot;</span><span class="p">)</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] When the argument &quot;axes&quot; is sequence, its contents must be instance of axis or sequence of axis:</span>
+<span class="s2">    (axes) = </span><span class="si">{axes}</span><span class="s2"></span>
+<span class="s2">    (type(axes[</span><span class="si">{i}</span><span class="s2">])) = {type(axes[i]).__name__}&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>  <span class="c1"># type: Tuple[Tuple[Axis, ...], Tuple[Axis, ...]]</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Argument &quot;axes&quot; must be an instance of axis or sequence of axis.</span>
+<span class="s2">    (axes) = </span><span class="si">{axes}</span><span class="s2"></span>
+<span class="s2">    (type(axes)) = {type(axes).__name__}&quot;&quot;&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Tensordot"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.tensordot.Tensordot">[docs]</a><span class="k">class</span> <span class="nc">Tensordot</span><span class="p">(</span><span class="n">Operator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tensordot(name, axes)</span>
+
+<span class="sd">    Tensordot operator</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): Operator name.</span>
+<span class="sd">        axes (:class:`~Axis`, list of :class:`~Axis`, list of list of :class:`~Axis`): axes which are reduced</span>
+<span class="sd">            If `axes` is an :class:`~Axis` instance,</span>
+
+<span class="sd">    Signature</span>
+<span class="sd">        .. code::</span>
+
+<span class="sd">            C, = op(A, B)</span>
+
+<span class="sd">        - **A**, **B** - Input variables.</span>
+<span class="sd">        - **C** - Output variable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">axes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]]]]):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;axes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_normalize_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">A</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Input variable &quot;A&quot; must have axes &quot;</span><span class="si">{axis}</span><span class="s2">&quot;:</span>
+<span class="s2">    (op) = </span><span class="si">{self}</span><span class="s2"></span>
+<span class="s2">    (op.axes[0]) = </span><span class="si">{self.axes[0]}</span><span class="s2"></span>
+<span class="s2">    (A) = </span><span class="si">{A}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">A</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">assert</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">B</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Axes of &quot;A&quot; which are not reduced must not be contained in &quot;B&quot;:</span>
+<span class="s2">    (op) = </span><span class="si">{self}</span><span class="s2"></span>
+<span class="s2">    (A.order.axes) = </span><span class="si">{A.order.axes}</span><span class="s2"></span>
+<span class="s2">    (B.order.axes) = </span><span class="si">{B.order.axes}</span><span class="s2"></span>
+<span class="s2">    (op.axes) = </span><span class="si">{self.axes}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">B</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Input variable &quot;B&quot; must have axes &quot;</span><span class="si">{axis}</span><span class="s2">&quot;:</span>
+<span class="s2">    (op) = </span><span class="si">{self}</span><span class="s2"></span>
+<span class="s2">    (op.axes[1]) = </span><span class="si">{self.axes[1]}</span><span class="s2"></span>
+<span class="s2">    (B) = </span><span class="si">{B}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">B</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">assert</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">A</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Axes of &quot;B&quot; which are not reduced must not be contained in &quot;A&quot;:</span>
+<span class="s2">    (op) = </span><span class="si">{self}</span><span class="s2"></span>
+<span class="s2">    (A.order.axes) = </span><span class="si">{A.order.axes}</span><span class="s2"></span>
+<span class="s2">    (B.order.axes) = </span><span class="si">{B.order.axes}</span><span class="s2"></span>
+<span class="s2">    (op.axes) = </span><span class="si">{self.axes}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="n">reduction_size_a</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">reduction_size_b</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">reduction_size_a</span> <span class="o">==</span> <span class="n">reduction_size_b</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Tensordot] Reduction size of &quot;A&quot; and &quot;B&quot; must be same:</span>
+<span class="s2">    (A) = </span><span class="si">{A}</span><span class="s2"></span>
+<span class="s2">    (B) = </span><span class="si">{B}</span><span class="s2"></span>
+<span class="s2">    (axes) = </span><span class="si">{self.axes}</span><span class="s2"></span>
+<span class="s2">    (reduction size of A) = </span><span class="si">{reduction_size_a}</span><span class="s2"></span>
+<span class="s2">    (reduction size of B) = </span><span class="si">{reduction_size_b}</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">]</span>
+        <span class="n">c_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">A</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">c_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">B</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">c_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">c_shape_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">Order</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">c_shape_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">C</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">C</span><span class="p">,</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;axes&quot;</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

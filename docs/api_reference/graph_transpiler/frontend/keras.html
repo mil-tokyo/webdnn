@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../../../search.html"/>
     <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
         <link rel="up" title="frontend" href="index.html"/>
-        <link rel="next" title="backend" href="../backend/index.html"/>
-        <link rel="prev" title="ChainerConverter" href="chainer.html"/> 
+        <link rel="next" title="ONNXConverter" href="onnx.html"/>
+        <link rel="prev" title="Converter" href="converter.html"/> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
@@ -100,9 +100,12 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">frontend</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="chainer.html">ChainerConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">KerasConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onnx.html">ONNXConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pytorch.html">PyTorchConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensorflow.html">TensorFlowConverter</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../backend/index.html">backend</a></li>
@@ -195,7 +198,7 @@
 <dl class="class">
 <dt id="webdnn.frontend.keras.KerasConverter">
 <em class="property">class </em><code class="descclassname">webdnn.frontend.keras.</code><code class="descname">KerasConverter</code><span class="sig-paren">(</span><em>batch_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/keras/converter.html#KerasConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.keras.KerasConverter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert keras.models.model into WebDNN IR.</p>
+<dd><p>Converter for <a class="reference external" href="https://keras.io/">Keras</a>.</p>
 <p><strong>Limitations</strong></p>
 <ul class="simple">
 <li>Only Keras v2+ is supported.</li>
@@ -230,6 +233,17 @@ If TensorFlowConverter failed to convert, then KerasConverter converts model by 
 </tr>
 </tbody>
 </table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">example</p>
+<p>Convert pre-trained keras ResNet model.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">keras</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.keras</span> <span class="k">import</span> <span class="n">KerasConverter</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span><span class="n">include_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">KerasConverter</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -323,10 +337,10 @@ is valid</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../backend/index.html" class="btn btn-neutral float-right" title="backend" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="onnx.html" class="btn btn-neutral float-right" title="ONNXConverter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="chainer.html" class="btn btn-neutral" title="ChainerConverter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="converter.html" class="btn btn-neutral" title="Converter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

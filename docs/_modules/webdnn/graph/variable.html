@@ -530,6 +530,8 @@
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
 <span class="sd">        Reshape into specified order and shape. This is alias of follow codes.</span>
 
+<span class="sd">        .. code::</span>
+
 <span class="sd">            Reshape(None, in_order=v.order,</span>
 <span class="sd">                          out_order=order,</span>
 <span class="sd">                          out_shape=shape)(v)[0]</span>
@@ -547,6 +549,8 @@
 <div class="viewcode-block" id="Variable.expand_dims"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.expand_dims">[docs]</a>    <span class="k">def</span> <span class="nf">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
 <span class="sd">        Insert new axis whose size is 1. This is alias of follow codes.</span>
+
+<span class="sd">        .. code::</span>
 
 <span class="sd">            new_axes = list(v.order.axes)</span>
 <span class="sd">            new_axes.insert(index, axis)</span>
@@ -570,6 +574,8 @@
 <div class="viewcode-block" id="Variable.squeeze"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.squeeze">[docs]</a>    <span class="k">def</span> <span class="nf">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Axis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
 <span class="sd">        Remove axis whose size is 1. This is alias of follow codes.</span>
+
+<span class="sd">        .. code::</span>
 
 <span class="sd">            new_axes = list(v.order.axes)</span>
 <span class="sd">            new_axes.remove(axis)</span>
@@ -596,7 +602,7 @@
         <span class="sd">&quot;&quot;&quot;combine_axes(shape, axes, axis)</span>
 <span class="sd">        Combine some axes into one axis.</span>
 
-<span class="sd">        Examples:</span>
+<span class="sd">        .. code::</span>
 
 <span class="sd">            x = Variable([2, 3, 4, 5], OrderNHWC)</span>
 
@@ -643,6 +649,8 @@
 <div class="viewcode-block" id="Variable.reshape_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.reshape_like">[docs]</a>    <span class="k">def</span> <span class="nf">reshape_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
 <span class="sd">        Reshape into same order and shape as :code:`other`. This is alias of follow codes.</span>
+
+<span class="sd">        .. code::</span>
 
 <span class="sd">            Reshape(None, in_order=v.order,</span>
 <span class="sd">                          out_order=other.order,</span>

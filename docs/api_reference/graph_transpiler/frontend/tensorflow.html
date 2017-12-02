@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TensorFlowConverter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="frontend" href="index.html"/>
+        <link rel="next" title="backend" href="../backend/index.html"/>
+        <link rel="prev" title="PyTorchConverter" href="pytorch.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">frontend</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="chainer.html">ChainerConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="keras.html">KerasConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onnx.html">ONNXConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pytorch.html">PyTorchConverter</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">TensorFlowConverter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../backend/index.html">backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../operators.html">operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../graph.html">Graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../operator.html">Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../variable.html">Variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../axis.html">Axis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../order.html">Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../constant_variable.html">ConstantVariable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimize_rule.html">OptimizeRule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../placeholder.html">Placeholder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../environment_variable.html">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Python API</a> &raquo;</li>
+        
+          <li><a href="index.html">frontend</a> &raquo;</li>
+        
+      <li>TensorFlowConverter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/api_reference/graph_transpiler/frontend/tensorflow.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tensorflowconverter">
+<h1>TensorFlowConverter<a class="headerlink" href="#tensorflowconverter" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="webdnn.frontend.tensorflow.TensorFlowConverter">
+<em class="property">class </em><code class="descclassname">webdnn.frontend.tensorflow.</code><code class="descname">TensorFlowConverter</code><span class="sig-paren">(</span><em>batch_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/tensorflow/converter.html#TensorFlowConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.tensorflow.TensorFlowConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converter for <a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session</strong> (<code class="code docutils literal"><span class="pre">tf.Session</span></code>) &#8211; Session. As default, <cite>tf.get_default_session()</cite> is used.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.frontend.tensorflow.TensorFlowConverter.convert">
+<code class="descname">convert</code><span class="sig-paren">(</span><em>model</em>, <em>input_orders=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/tensorflow/converter.html#TensorFlowConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.tensorflow.TensorFlowConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputs</strong> (list of <cite>tf.Tensor</cite>) &#8211; tensorflow input tensors</li>
+<li><strong>outputs</strong> (list of <cite>tf.Tensor</cite>) &#8211; tensorflow output tensors</li>
+<li><strong>order_hints</strong> &#8211; Order annotations which helps webdnn&#8217;s optimizer.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">example</p>
+<p>Convert TensorFlow model.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.tensorflow</span> <span class="k">import</span> <span class="n">TensorFlowConverter</span>
+
+<span class="c1"># y = x @ W + b</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">784</span><span class="p">])</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">784</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">10</span><span class="p">]))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">TensorFlowConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">WebDNN IR Graph</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Graph</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.frontend.tensorflow.TensorFlowConverter.convert_to_constant_variable">
+<code class="descname">convert_to_constant_variable</code><span class="sig-paren">(</span><em>tf_var</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/tensorflow/converter.html#TensorFlowConverter.convert_to_constant_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.tensorflow.TensorFlowConverter.convert_to_constant_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert tf.Tensor into <code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code>.</p>
+<p>This method also registers the mapping information between TensorFlow variable and WebDNN constant variable.
+If specified TensorFlow variable is already registered into converter, converter checks that the shape and order
+is valid</p>
+<p><strong>This method is provided only for implementing custom converter handler.</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tensor</strong> (<code class="code docutils literal"><span class="pre">tf.Tensor</span></code>) &#8211; TensorFlow tensor</li>
+<li><strong>order</strong> &#8211; (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) data order. As default, default order is used.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">converted variable.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../backend/index.html" class="btn btn-neutral float-right" title="backend" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pytorch.html" class="btn btn-neutral" title="PyTorchConverter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

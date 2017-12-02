@@ -306,7 +306,12 @@
 
 
 <div class="viewcode-block" id="ChainerConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter">[docs]</a><span class="k">class</span> <span class="nc">ChainerConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;T_FUNCTION&quot;</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;ChainerConverter()&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;ChainerConverter()</span>
+
+<span class="sd">    Converter for `Chainer &lt;https://chainer.org/&gt;`_.</span>
+
+<span class="sd">    Currently, from :code:`v1.23` to :code:`v3.1.0` is supported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ChainerConverter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -328,18 +333,6 @@
 <span class="sd">            This method will be removed in the future version. Use :func:`~webdnn.frontend.chainer.ChainerConverter.convert(inputs,</span>
 <span class="sd">            outputs)`.</span>
 
-<span class="sd">        .. admonition:: Example</span>
-
-<span class="sd">            .. code::</span>
-
-<span class="sd">                model = chainer.links.model.vision.resnet.ResNet50Layers()</span>
-
-<span class="sd">                # Forward propagation with dummy input to build computational graph</span>
-<span class="sd">                x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))</span>
-<span class="sd">                y = model(x, layers=[&quot;fc6&quot;])[&quot;fc6&quot;]</span>
-
-<span class="sd">                graph = ChainerConverter().convert_from_inout_vars([x], [y])</span>
-
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -356,7 +349,9 @@
 <span class="sd">            inputs(list of chainer.Variable): input chainer variables</span>
 <span class="sd">            outputs(list of chainer.Variable): output chainer variables</span>
 
-<span class="sd">        .. admonition:: Example</span>
+<span class="sd">        .. admonition:: example</span>
+
+<span class="sd">            Convert pre-trained ResNet model</span>
 
 <span class="sd">            .. code::</span>
 
@@ -366,7 +361,7 @@
 <span class="sd">                x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))</span>
 <span class="sd">                y = model(x, layers=[&quot;fc6&quot;])[&quot;fc6&quot;]</span>
 
-<span class="sd">                graph = ChainerConverter().convert_from_inout_vars([x], [y])</span>
+<span class="sd">                graph = ChainerConverter().convert([x], [y])</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
