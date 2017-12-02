@@ -7,7 +7,9 @@ Tutorial
     ./introduction
     ./setup
     ./setup_windows
-    ./keras
     ./caffe
     ./chainer
+    ./keras
+    ./pytorch
+    ./tensorflow
     ./custom_operator/index

@@ -362,6 +362,8 @@ class Variable(Node):
         """reshape(shape, order)
         Reshape into specified order and shape. This is alias of follow codes.
 
+        .. code::
+
             Reshape(None, in_order=v.order,
                           out_order=order,
                           out_shape=shape)(v)[0]
@@ -379,6 +381,8 @@ class Variable(Node):
     def expand_dims(self, axis: Axis, index: int) -> "Variable":
         """expand_dims(shape, axis, index)
         Insert new axis whose size is 1. This is alias of follow codes.
+
+        .. code::
 
             new_axes = list(v.order.axes)
             new_axes.insert(index, axis)
@@ -402,6 +406,8 @@ class Variable(Node):
     def squeeze(self, axis: Optional[Axis] = None) -> "Variable":
         """expand_dims(shape, axis, index)
         Remove axis whose size is 1. This is alias of follow codes.
+
+        .. code::
 
             new_axes = list(v.order.axes)
             new_axes.remove(axis)
@@ -428,7 +434,7 @@ class Variable(Node):
         """combine_axes(shape, axes, axis)
         Combine some axes into one axis.
 
-        Examples:
+        .. code::
 
             x = Variable([2, 3, 4, 5], OrderNHWC)
 
@@ -475,6 +481,8 @@ class Variable(Node):
     def reshape_like(self, other: "Variable") -> "Variable":
         """reshape(shape, order)
         Reshape into same order and shape as :code:`other`. This is alias of follow codes.
+
+        .. code::
 
             Reshape(None, in_order=v.order,
                           out_order=other.order,

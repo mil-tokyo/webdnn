@@ -75,10 +75,13 @@ class Elementwise(Operator, metaclass=ABCMeta):
 
                 if Placeholder.check_resolved(x.shape_dict[axis]):
                     if Placeholder.check_resolved(y_shape_dict[axis]):
-                        assert y_shape_dict[axis] == x.shape_dict[axis] or x.shape_dict[axis] == 1, \
-                            "All input variables of elementwise operator should be same shape: " \
-                            f"y.shape_dict[{axis}]={y_shape_dict[axis]}, " \
-                            f"x{i}.shape_dict[{axis}]={x.shape_dict[axis]}"
+                        assert y_shape_dict[axis] == x.shape_dict[axis] or x.shape_dict[axis] == 1, f"""
+[Elementwise] All input variables of elementwise operator should be same shape:
+    (y.shape) = {y_shape_dict[a] for a in y_axes}
+    (x{i}.shape) = {x.shape}
+    (y.shape[{axis}]) = {y_shape_dict[axis]}
+    (x{i}.shape[{axis}]) = {x.shape_dict[axis]}"""
+
                     else:
                         y_shape_dict[axis] = x.shape_dict[axis]
 

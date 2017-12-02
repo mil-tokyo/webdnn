@@ -3,6 +3,7 @@
 #
 # webdnn.frontend.chainer
 # webdnn.frontend.keras
+# webdnn.frontend.onnx
 # webdnn.frontend.tensorflow
 #
 

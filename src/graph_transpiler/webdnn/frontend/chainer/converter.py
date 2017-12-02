@@ -138,7 +138,12 @@ def _listup_functions(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
 
 
 class ChainerConverter(Converter["T_FUNCTION"]):
-    """ChainerConverter()"""
+    """ChainerConverter()
+
+    Converter for `Chainer <https://chainer.org/>`_.
+
+    Currently, from :code:`v1.23` to :code:`v3.1.0` is supported.
+    """
 
     def __init__(self):
         super(ChainerConverter, self).__init__()
@@ -160,18 +165,6 @@ class ChainerConverter(Converter["T_FUNCTION"]):
             This method will be removed in the future version. Use :func:`~webdnn.frontend.chainer.ChainerConverter.convert(inputs,
             outputs)`.
 
-        .. admonition:: Example
-
-            .. code::
-
-                model = chainer.links.model.vision.resnet.ResNet50Layers()
-
-                # Forward propagation with dummy input to build computational graph
-                x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))
-                y = model(x, layers=["fc6"])["fc6"]
-
-                graph = ChainerConverter().convert_from_inout_vars([x], [y])
-
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
@@ -188,7 +181,9 @@ class ChainerConverter(Converter["T_FUNCTION"]):
             inputs(list of chainer.Variable): input chainer variables
             outputs(list of chainer.Variable): output chainer variables
 
-        .. admonition:: Example
+        .. admonition:: example
+
+            Convert pre-trained ResNet model
 
             .. code::
 
@@ -198,7 +193,7 @@ class ChainerConverter(Converter["T_FUNCTION"]):
                 x = chainer.Variable(np.empty((1, 3, 224, 224), dtype=np.float32))
                 y = model(x, layers=["fc6"])["fc6"]
 
-                graph = ChainerConverter().convert_from_inout_vars([x], [y])
+                graph = ChainerConverter().convert([x], [y])
 
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph

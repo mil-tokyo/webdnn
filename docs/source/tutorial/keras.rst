@@ -1,4 +1,4 @@
-Use with keras model
+Use with Keras model
 ====================
 
 In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained in Keras [#f2]_ into WebDNN execution format.
@@ -6,7 +6,7 @@ In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained 
 1. Export Keras pretrained model
 --------------------------------
 
-.. code::
+.. code-block:: python
 
     from keras.applications import resnet50
     model = resnet50.ResNet50(include_top=True, weights='imagenet')
@@ -15,7 +15,7 @@ In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained 
 2. Convert Keras model to our computation graph format
 ------------------------------------------------------
 
-.. code::
+.. code-block:: python
 
     python bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
 
@@ -23,7 +23,7 @@ At least you need to specify the model file and the shape of input array.
 
 Also you can convert via python script
 
-.. code::
+.. code-block:: python
 
     from webdnn.frontend.keras import KerasConverter
     from webdnn.backend import generate_descriptor
