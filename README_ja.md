@@ -8,6 +8,13 @@
 - [website](https://mil-tokyo.github.io/webdnn/index_ja.html)
 - [document](https://mil-tokyo.github.io/webdnn/docs)
 
+WebDNNでは、以下のフレームワークで学習されたDNNモデルをウェブブラウザ上で実行することができます
+
+- [TensorFlow](https://github.com/tensorflow/tensorflow) (`v1.2.0` - `v1.4.0`)
+- [Keras](https://github.com/fchollet/keras) (`v2.0.0` - `v2.1.1`)
+- [Chainer](https://github.com/chainer/chainer) (`v1.23.0` - `v3.1.0`)
+- [Caffe](https://github.com/BVLC/caffe)
+
 # Why is WebDNN needed?
 
 DNNは様々なタスクについて顕著な成果をおさめていますが、アプリケーションへの実応用の上では、その計算コストが大きな問題となっています。
