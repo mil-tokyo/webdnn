@@ -205,7 +205,7 @@
 <div class="viewcode-block" id="KerasConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/keras.html#webdnn.frontend.keras.KerasConverter">[docs]</a><span class="k">class</span> <span class="nc">KerasConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;keras.layers.Layer&quot;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;KerasConverter(batch_size=1)</span>
 
-<span class="sd">    Convert keras.models.model into WebDNN IR.</span>
+<span class="sd">    Converter for `Keras &lt;https://keras.io/&gt;`_.</span>
 
 <span class="sd">    **Limitations**</span>
 
@@ -249,10 +249,17 @@
 <span class="sd">        Args:</span>
 <span class="sd">            model (`keras.models.Model`): keras model</span>
 
-<span class="sd">        .. example::</span>
+<span class="sd">        .. admonition:: example</span>
 
-<span class="sd">            model = keras.models.load_model(&quot;pre_trained_model.h5&quot;)</span>
-<span class="sd">            graph = KerasConverter(batch_size=1).convert(model)</span>
+<span class="sd">            Convert pre-trained keras ResNet model.</span>
+
+<span class="sd">            .. code::</span>
+
+<span class="sd">                import keras</span>
+<span class="sd">                from webdnn.frontend.keras import KerasConverter</span>
+
+<span class="sd">                model = keras.applications.resnet50.ResNet50(include_top=True, weights=&#39;imagenet&#39;)</span>
+<span class="sd">                graph = KerasConverter(batch_size=1).convert(model)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph</span>

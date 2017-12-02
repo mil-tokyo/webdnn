@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.frontend.pytorch.converter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.frontend.pytorch.converter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.frontend.pytorch.converter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">PyTorch Frontend</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.onnx</span> <span class="k">import</span> <span class="n">ONNXConverter</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
+
+<span class="n">FLAG_PYTORCH_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">torch</span>
+    <span class="kn">import</span> <span class="nn">torch.onnx</span>
+
+    <span class="n">FLAG_PYTORCH_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PyTorch is not completely installed.&quot;</span><span class="p">)</span>
+    <span class="k">pass</span>
+
+<span class="n">FLAG_ONNX_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">onnx</span>
+
+    <span class="n">FLAG_ONNX_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ONNX is not completely installed.&quot;</span><span class="p">)</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="PyTorchConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/pytorch.html#webdnn.frontend.pytorch.PyTorchConverter">[docs]</a><span class="k">class</span> <span class="nc">PyTorchConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;torch.nn.Module&quot;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;PyTorchConverter()</span>
+
+<span class="sd">    Converter for `PyTorch &lt;http://pytorch.org/&gt;`_.</span>
+
+<span class="sd">    In conversion, model is exported as ONNX format, and then converted by :class:`~webdnn.frontend.onnx.ONNXConverter`.</span>
+<span class="sd">    Therefore both torch and onnx python package are required.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        PyTorch supports onnx export, but currently (12.01.2017), :code:`torch.onnx` module is not included in release build of pytorch.</span>
+<span class="sd">        Therefore you have to build pytorch from source.</span>
+<span class="sd">        See `https://github.com/pytorch/pytorch#from-source &lt;https://github.com/pytorch/pytorch#from-source&gt;`_.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PyTorchConverter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">FLAG_PYTORCH_INSTALLED</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Module &quot;pytorch&quot; cannot be imported. Please check that follow command works correctly.</span>
+<span class="s2">    </span>
+<span class="s2">    python -c &quot;import torch&quot;</span>
+
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">FLAG_ONNX_INSTALLED</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Module &quot;onnx&quot; cannot be imported. Please check that follow command works correctly.</span>
+
+<span class="s2">    python -c &quot;import onnx&quot;</span>
+
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PyTorchConverter.convert"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/pytorch.html#webdnn.frontend.pytorch.PyTorchConverter.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;torch.nn.Module&quot;</span><span class="p">,</span> <span class="n">dummy_inputs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Graph</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;convert(model)</span>
+
+<span class="sd">        Convert PyTorch computational graph into WebDNN IR.</span>
+
+<span class="sd">        .. admonition:: example</span>
+
+<span class="sd">            Convert PyTorch pre-trained AlexNet model.</span>
+
+<span class="sd">            .. code::</span>
+
+<span class="sd">                import torch, torchvision</span>
+<span class="sd">                from webdnn.frontend.pytorch import PyTorchConverter</span>
+
+<span class="sd">                model = torchvision.models.alexnet(pretrained=True)</span>
+<span class="sd">                dummy_input = torch.autograd.Variable(torch.randn(1, 3, 224, 224))</span>
+
+<span class="sd">                graph = PyTorchConverter().convert(model, dummy_input)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">proto_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;model.proto&quot;</span><span class="p">)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dummy_inputs</span><span class="p">,</span> <span class="n">proto_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">ONNXConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">proto_path</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">graph</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

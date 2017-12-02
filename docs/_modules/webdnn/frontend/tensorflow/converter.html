@@ -1,0 +1,452 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>webdnn.frontend.tensorflow.converter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/graph_transpiler/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>webdnn.frontend.tensorflow.converter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for webdnn.frontend.tensorflow.converter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding:utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span><span class="p">,</span> <span class="n">CyclicGraphError</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.optimize_rule</span> <span class="k">import</span> <span class="n">OptimizeRuleGroup</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.input</span> <span class="k">import</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.output</span> <span class="k">import</span> <span class="n">Output</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
+<span class="kn">from</span> <span class="nn">webdnn.optimizer.sub_rules.constant_folding</span> <span class="k">import</span> <span class="n">ConstantFolding</span>
+<span class="kn">from</span> <span class="nn">webdnn.optimizer.tensorflow_frontend_optimize_rule</span> <span class="k">import</span> <span class="n">TensorFlowFrontendOptimizeRule</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
+
+<span class="n">FLAG_TF_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="TensorFlowConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/tensorflow.html#webdnn.frontend.tensorflow.TensorFlowConverter">[docs]</a><span class="k">class</span> <span class="nc">TensorFlowConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;tf.Operation&quot;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;TensorFlowConverter(batch_size=1)</span>
+
+<span class="sd">    Converter for `TensorFlow &lt;https://www.tensorflow.org/&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (:code:`tf.Session`): Session. As default, `tf.get_default_session()` is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="s2">&quot;tf.Session&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TensorFlowConverter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">FLAG_TF_INSTALLED</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;[TensorFlowConverter] Failed to import Tensorflow.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_default_session</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">serialize_operator_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="s2">&quot;tf.Operation&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">type</span>
+
+<div class="viewcode-block" id="TensorFlowConverter.convert"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/tensorflow.html#webdnn.frontend.tensorflow.TensorFlowConverter.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;tf.Tensor&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;tf.Tensor&quot;</span><span class="p">],</span>
+                <span class="n">order_hints</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s2">&quot;tf.Tensor&quot;</span><span class="p">,</span> <span class="s2">&quot;tf.Variable&quot;</span><span class="p">],</span> <span class="n">Order</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Graph</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;convert(model, input_orders=None)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (list of `tf.Tensor`): tensorflow input tensors</span>
+<span class="sd">            outputs (list of `tf.Tensor`): tensorflow output tensors</span>
+<span class="sd">            order_hints: Order annotations which helps webdnn&#39;s optimizer.</span>
+
+<span class="sd">        .. admonition:: example</span>
+
+<span class="sd">            Convert TensorFlow model.</span>
+
+<span class="sd">            .. code::</span>
+
+<span class="sd">                import tensorflow as tf</span>
+<span class="sd">                from webdnn.frontend.tensorflow import TensorFlowConverter</span>
+
+<span class="sd">                # y = x @ W + b</span>
+<span class="sd">                x = tf.placeholder(tf.float32, [None, 784])</span>
+<span class="sd">                W = tf.Variable(tf.zeros([784, 10]))</span>
+<span class="sd">                b = tf.Variable(tf.zeros([10]))</span>
+<span class="sd">                y = tf.nn.softmax(tf.matmul(x, W) + b)</span>
+
+<span class="sd">                graph = TensorFlowConverter().convert([x], [y])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">Placeholder</span><span class="p">()</span> <span class="k">if</span> <span class="n">dim</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dim</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Placeholder</span><span class="p">):</span>
+                <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">Variable</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">))))</span>
+
+        <span class="n">ops</span> <span class="o">=</span> <span class="n">_listup_operations</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_operator</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="n">sub_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">tf_tensor</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">inputs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">)],</span>
+                              <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">tf_tensor</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">outputs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">)])</span>
+            <span class="n">old_outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sub_graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="c1"># Constant folding improves possibility of conversion, because many tensors are used not only for main input variable but also</span>
+            <span class="c1"># for other parameter like indices of operation, and WebDNN doesn&#39;t support dynamic indices operation.</span>
+            <span class="n">OptimizeRuleGroup</span><span class="p">([</span><span class="n">ConstantFolding</span><span class="p">()],</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">sub_graph</span><span class="p">)</span>
+
+            <span class="c1"># After constant folding, it need to replace old variable with new constant variable</span>
+            <span class="k">for</span> <span class="n">tf_tensor</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">):</span>
+                    <span class="c1"># This tensor is not converted (ignored)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">old_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">)</span>
+                <span class="n">new_v</span> <span class="o">=</span> <span class="n">sub_graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="n">old_outputs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">old_v</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="n">old_v</span> <span class="o">!=</span> <span class="n">new_v</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">tf_tensor</span><span class="p">,</span> <span class="n">new_v</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">order_hints</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">order_hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+                    <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+
+                <span class="n">variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">axis1</span><span class="p">,</span> <span class="n">axis2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">):</span>
+                    <span class="n">axis1</span><span class="o">.</span><span class="n">unify</span><span class="p">(</span><span class="n">axis2</span><span class="p">)</span>
+
+        <span class="c1"># Remove redundant ReinterpretAxis operators</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">TensorFlowFrontendOptimizeRule</span><span class="p">()</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">graph</span></div>
+
+<div class="viewcode-block" id="TensorFlowConverter.convert_to_constant_variable"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/tensorflow.html#webdnn.frontend.tensorflow.TensorFlowConverter.convert_to_constant_variable">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_constant_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="s2">&quot;tf.Tensor&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Order</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConstantVariable</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;convert_to_constant_variable(tf_var, order)</span>
+
+<span class="sd">        Convert tf.Tensor into :class:`~webdnn.graph.variables.constant_variable.ConstantVariable`.</span>
+
+<span class="sd">        This method also registers the mapping information between TensorFlow variable and WebDNN constant variable.</span>
+<span class="sd">        If specified TensorFlow variable is already registered into converter, converter checks that the shape and order</span>
+<span class="sd">        is valid</span>
+
+<span class="sd">        **This method is provided only for implementing custom converter handler.**</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tensor (:code:`tf.Tensor`): TensorFlow tensor</span>
+<span class="sd">            order: (:class:`~webdnn.graph.order.Order`) data order. As default, default order is used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~webdnn.graph.variables.constant_variable.ConstantVariable`): converted variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">tensor</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
+            <span class="n">variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">variable</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;[TensorFlowConverter] </span><span class="si">{tensor}</span><span class="s2"> is already registered before, and &quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;shape mismatch is detected: (registered shape)=&quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{variable.shape}</span><span class="s2">, (given tensor&#39;s shape)=&quot;</span> \
+                                                        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{tensor.shape}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">variable</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">order</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;[TensorFlowConverter] </span><span class="si">{tensor}</span><span class="s2"> is already registered before, and order &quot;</span> \
+                                                <span class="n">f</span><span class="s2">&quot;mismatch is detected: (registered order)=</span><span class="si">{variable.order}</span><span class="s2">, (given &quot;</span> \
+                                                <span class="n">f</span><span class="s2">&quot;order)=</span><span class="si">{order}</span><span class="s2">&quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">variable</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">variable</span></div></div>
+
+
+<span class="n">T_NODE</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Operation</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_listup_operations</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">],</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">get_prev_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">T_NODE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">inputs</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[tf.Operation]</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>  <span class="c1"># type: List[Tuple[T_NODE, T_NODE]]</span>
+    <span class="n">dependency_count</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[T_NODE, int]</span>
+
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">node_from</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dependency_count</span><span class="p">:</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">))</span>
+
+            <span class="n">prev_nodes</span> <span class="o">=</span> <span class="n">get_prev_nodes</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
+            <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">prev_node</span> <span class="ow">in</span> <span class="n">prev_nodes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dependency_count</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prev_node</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prev_node</span><span class="p">,</span> <span class="n">node_from</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">node_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_to</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[TensorFlowConverter] Cycle is detected in computation graph&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;cycle starting node:&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
+
+            <span class="k">raise</span> <span class="n">CyclicGraphError</span><span class="p">(</span><span class="s2">&quot;[TensorFlowConverter] Cycles are detected, but TensorFlowConverter cannot convert cyclic graph&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

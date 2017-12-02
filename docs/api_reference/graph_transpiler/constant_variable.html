@@ -227,13 +227,16 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <dt id="webdnn.ConstantVariable.combine_axes">
 <code class="descname">combine_axes</code><span class="sig-paren">(</span><em>shape</em>, <em>axes</em>, <em>axis</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.combine_axes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Combine some axes into one axis.</p>
-<p class="rubric">Examples</p>
-<p>x = Variable([2, 3, 4, 5], OrderNHWC)</p>
-<p>y = x.combine_axes([Axis.W, Axis.H], Axis.W)
-# # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because &#8220;axes&#8221; parameter is [W, H].
-# y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)</p>
-<p>print(y.shape, y.order)
-&gt;&gt;&gt; &#8220;[2, 12, 5]&#8221;, &#8220;[N, H, C]&#8221;</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">OrderNHWC</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">combine_axes</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">],</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+<span class="c1"># # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because &quot;axes&quot; parameter is [W, H].</span>
+<span class="c1"># y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s2">&quot;[2, 12, 5]&quot;</span><span class="p">,</span> <span class="s2">&quot;[N, H, C]&quot;</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -255,14 +258,13 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <dt id="webdnn.ConstantVariable.expand_dims">
 <code class="descname">expand_dims</code><span class="sig-paren">(</span><em>shape</em>, <em>axis</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.expand_dims" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert new axis whose size is 1. This is alias of follow codes.</p>
-<blockquote>
-<div><p>new_axes = list(v.order.axes)
-new_axes.insert(index, axis)
-Reshape(None, in_order=v.order,</p>
-<blockquote>
-<div>out_order=Order(new_axes),
-out_shape=[1 if a == axis else self.shape_dict[a] for a in new_axes])(v)[0]</div></blockquote>
-</div></blockquote>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+<span class="n">new_axes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+<span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">),</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">axis</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">])(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -350,13 +352,11 @@ Reinterpret axes. This is alias of <cite>ReinterpretAxes(None, v.order, order)(v
 <dt id="webdnn.ConstantVariable.reshape">
 <code class="descname">reshape</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="headerlink" href="#webdnn.ConstantVariable.reshape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reshape into specified order and shape. This is alias of follow codes.</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Reshape(None, in_order=v.order,</dt>
-<dd>out_order=order,
-out_shape=shape)(v)[0]</dd>
-</dl>
-</div></blockquote>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -379,13 +379,11 @@ out_shape=shape)(v)[0]</dd>
 <code class="descname">reshape_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="headerlink" href="#webdnn.ConstantVariable.reshape_like" title="Permalink to this definition">¶</a></dt>
 <dd><p>reshape(shape, order)
 Reshape into same order and shape as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of follow codes.</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Reshape(None, in_order=v.order,</dt>
-<dd>out_order=other.order,
-out_shape=other.shape)(v)[0]</dd>
-</dl>
-</div></blockquote>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">)(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -421,14 +419,13 @@ out_shape=other.shape)(v)[0]</dd>
 <code class="descname">squeeze</code><span class="sig-paren">(</span><em>axis: typing.Union[webdnn.graph.axis.Axis</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="headerlink" href="#webdnn.ConstantVariable.squeeze" title="Permalink to this definition">¶</a></dt>
 <dd><p>expand_dims(shape, axis, index)
 Remove axis whose size is 1. This is alias of follow codes.</p>
-<blockquote>
-<div><p>new_axes = list(v.order.axes)
-new_axes.remove(axis)
-Reshape(None, in_order=v.order,</p>
-<blockquote>
-<div>out_order=Order(new_axes),
-out_shape=[self.shape_dict[a] for a in new_axes])(v)[0]</div></blockquote>
-</div></blockquote>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+<span class="n">new_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+<span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">),</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">])(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../../../search.html"/>
     <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
         <link rel="up" title="frontend" href="index.html"/>
-        <link rel="next" title="KerasConverter" href="keras.html"/>
-        <link rel="prev" title="Converter" href="converter.html"/> 
+        <link rel="next" title="Converter" href="converter.html"/>
+        <link rel="prev" title="frontend" href="index.html"/> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
@@ -100,9 +100,12 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">frontend</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">ChainerConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="keras.html">KerasConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onnx.html">ONNXConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pytorch.html">PyTorchConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensorflow.html">TensorFlowConverter</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../backend/index.html">backend</a></li>
@@ -195,7 +198,9 @@
 <dl class="class">
 <dt id="webdnn.frontend.chainer.ChainerConverter">
 <em class="property">class </em><code class="descclassname">webdnn.frontend.chainer.</code><code class="descname">ChainerConverter</code><a class="reference internal" href="../../../_modules/webdnn/frontend/chainer/converter.html#ChainerConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.chainer.ChainerConverter" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Converter for <a class="reference external" href="https://chainer.org/">Chainer</a>.</p>
+<p>Currently, from <code class="code docutils literal"><span class="pre">v1.23</span></code> to <code class="code docutils literal"><span class="pre">v3.1.0</span></code> is supported.</p>
+<dl class="method">
 <dt id="webdnn.frontend.chainer.ChainerConverter.convert">
 <code class="descname">convert</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/chainer/converter.html#ChainerConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.chainer.ChainerConverter.convert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert chainer computational graph into WebDNN IR.</p>
@@ -212,14 +217,15 @@
 </tbody>
 </table>
 <div class="admonition-example admonition">
-<p class="first admonition-title">Example</p>
+<p class="first admonition-title">example</p>
+<p>Convert pre-trained ResNet model</p>
 <div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>
 
 <span class="c1"># Forward propagation with dummy input to build computational graph</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">])[</span><span class="s2">&quot;fc6&quot;</span><span class="p">]</span>
 
-<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert_from_inout_vars</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -256,18 +262,6 @@
 <p class="last">This method will be removed in the future version. Use <code class="xref py py-func docutils literal"><span class="pre">convert(inputs,</span>
 <span class="pre">outputs)()</span></code>.</p>
 </div>
-<div class="admonition-example admonition">
-<p class="first admonition-title">Example</p>
-<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>
-
-<span class="c1"># Forward propagation with dummy input to build computational graph</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">])[</span><span class="s2">&quot;fc6&quot;</span><span class="p">]</span>
-
-<span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert_from_inout_vars</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -294,10 +288,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="keras.html" class="btn btn-neutral float-right" title="KerasConverter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="converter.html" class="btn btn-neutral float-right" title="Converter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="converter.html" class="btn btn-neutral" title="Converter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="frontend" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

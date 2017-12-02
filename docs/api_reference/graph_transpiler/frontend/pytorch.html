@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PyTorchConverter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="frontend" href="index.html"/>
+        <link rel="next" title="TensorFlowConverter" href="tensorflow.html"/>
+        <link rel="prev" title="ONNXConverter" href="onnx.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> MIL WebDNN
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips/index.html">Tips</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">frontend</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="chainer.html">ChainerConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="converter.html">Converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="keras.html">KerasConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onnx.html">ONNXConverter</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">PyTorchConverter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensorflow.html">TensorFlowConverter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../backend/index.html">backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../operators.html">operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../graph.html">Graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../operator.html">Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../variable.html">Variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../axis.html">Axis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../order.html">Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../constant_variable.html">ConstantVariable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimize_rule.html">OptimizeRule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../placeholder.html">Placeholder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../environment_variable.html">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../descriptor-runner/index.html">JavaScript API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">How to Contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MIL WebDNN</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Python API</a> &raquo;</li>
+        
+          <li><a href="index.html">frontend</a> &raquo;</li>
+        
+      <li>PyTorchConverter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/api_reference/graph_transpiler/frontend/pytorch.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pytorchconverter">
+<h1>PyTorchConverter<a class="headerlink" href="#pytorchconverter" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="webdnn.frontend.pytorch.PyTorchConverter">
+<em class="property">class </em><code class="descclassname">webdnn.frontend.pytorch.</code><code class="descname">PyTorchConverter</code><a class="reference internal" href="../../../_modules/webdnn/frontend/pytorch/converter.html#PyTorchConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.pytorch.PyTorchConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converter for <a class="reference external" href="http://pytorch.org/">PyTorch</a>.</p>
+<p>In conversion, model is exported as ONNX format, and then converted by <a class="reference internal" href="onnx.html#webdnn.frontend.onnx.ONNXConverter" title="webdnn.frontend.onnx.ONNXConverter"><code class="xref py py-class docutils literal"><span class="pre">ONNXConverter</span></code></a>.
+Therefore both torch and onnx python package are required.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">PyTorch supports onnx export, but currently (12.01.2017), <code class="code docutils literal"><span class="pre">torch.onnx</span></code> module is not included in release build of pytorch.
+Therefore you have to build pytorch from source.
+See <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">https://github.com/pytorch/pytorch#from-source</a>.</p>
+</div>
+<dl class="method">
+<dt id="webdnn.frontend.pytorch.PyTorchConverter.convert">
+<code class="descname">convert</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/pytorch/converter.html#PyTorchConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.pytorch.PyTorchConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert PyTorch computational graph into WebDNN IR.</p>
+<div class="admonition-example admonition">
+<p class="first admonition-title">example</p>
+<p>Convert PyTorch pre-trained AlexNet model.</p>
+<div class="code last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span><span class="o">,</span> <span class="nn">torchvision</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.pytorch</span> <span class="k">import</span> <span class="n">PyTorchConverter</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">alexnet</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dummy_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">PyTorchConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dummy_input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">WebDNN Graph</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="../graph.html#webdnn.Graph" title="webdnn.Graph"><code class="xref py py-class docutils literal"><span class="pre">Graph</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tensorflow.html" class="btn btn-neutral float-right" title="TensorFlowConverter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="onnx.html" class="btn btn-neutral" title="ONNXConverter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, MIL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
