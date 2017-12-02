@@ -8,7 +8,12 @@
 - [website](https://mil-tokyo.github.io/webdnn)
 - [document](https://mil-tokyo.github.io/webdnn/docs)
 
-Currently, WebDNN can convert **Keras, Caffe, Chainer, and TensorFlow(experimental)** models into browser-executable format.
+WebDNN can execute DNN models trained by follow deep learning frameworks on web browser.
+
+- [TensorFlow](https://github.com/tensorflow/tensorflow) (`v1.2.0` - `v1.4.0`)
+- [Keras](https://github.com/fchollet/keras) (`v2.0.0` - `v2.1.1`)
+- [Chainer](https://github.com/chainer/chainer) (`v1.23.0` - `v3.1.0`)
+- [Caffe](https://github.com/BVLC/caffe)
 
 # Why is WebDNN needed?
 
