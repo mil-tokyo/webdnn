@@ -1,11 +1,11 @@
-Use with chainer model
+Use with Chainer model
 ======================
 
 In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained in Chainer [#f2]_ into WebDNN execution format.
 
 1. Load chainer pretrained model
 
-.. code::
+.. code-block:: python
 
     import chainer
 
@@ -13,7 +13,7 @@ In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained 
 
 2. Execute model with dummy data. In chainer, computation graph are defined by run. Therefore we need execute model at least once to construct the graph.
 
-.. code::
+.. code-block:: python
 
     import numpy as np
 
@@ -22,7 +22,7 @@ In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained 
 
 3. Convert chainer computation graph to our computation graph format
 
-.. code::
+.. code-block:: python
 
     from webdnn.frontend.chainer import ChainerConverter
 
@@ -30,7 +30,7 @@ In this tutorial, we'll convert ResNet50 [#f1]_ classification model pretrained 
 
 4. Generate and save execution information.
 
-.. code::
+.. code-block:: python
 
     from webdnn.backend import generate_descriptor
 

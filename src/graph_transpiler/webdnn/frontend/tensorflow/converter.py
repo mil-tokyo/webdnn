@@ -28,18 +28,20 @@ except Exception as e:
 class TensorFlowConverter(Converter["tf.Operation"]):
     """TensorFlowConverter(batch_size=1)
 
-    Convert tf.Graph into WebDNN IR.
+    Converter for `TensorFlow <https://www.tensorflow.org/>`_
 
     Args:
-        session (:code:`tf.Session`): Session
-
+        session (:code:`tf.Session`): Session. As default, `tf.get_default_session()` is used.
     """
 
-    def __init__(self, session: "tf.Session", batch_size: int = 1):
+    def __init__(self, session: "tf.Session" = None, batch_size: int = 1):
         super(TensorFlowConverter, self).__init__()
 
         if not FLAG_TF_INSTALLED:
             raise ImportError("[TensorFlowConverter] Failed to import Tensorflow.")
+
+        if session is None:
+            session = tf.get_default_session()
 
         self.session = session
         self._batch_size = Placeholder(label=Axis.N.name, value=batch_size)
@@ -56,9 +58,14 @@ class TensorFlowConverter(Converter["tf.Operation"]):
             outputs (list of `tf.Tensor`): tensorflow output tensors
             order_hints: Order annotations which helps webdnn's optimizer.
 
-        .. admonition:: Example
+        .. admonition:: example
+
+            Convert TensorFlow model.
 
             .. code::
+
+                import tensorflow as tf
+                from webdnn.frontend.tensorflow import TensorFlowConverter
 
                 # y = x @ W + b
                 x = tf.placeholder(tf.float32, [None, 784])
@@ -66,7 +73,7 @@ class TensorFlowConverter(Converter["tf.Operation"]):
                 b = tf.Variable(tf.zeros([10]))
                 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
-                webdnn_graph = TensorFlowConverter().convert([x], [y])
+                graph = TensorFlowConverter().convert([x], [y])
 
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph

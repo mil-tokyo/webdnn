@@ -6,7 +6,7 @@ from webdnn.util import console
 
 @ChainerConverter.register_handler("Dropout")
 def _convert_dropout(converter: ChainerConverter, c_op: "chainer.functions.Dropout"):
-    console.warning("Dropout is omitted")
+    console.warning("[ChainerConverter] Dropout is ignored")
 
     x = converter.get_variable(c_op.inputs[0])
 

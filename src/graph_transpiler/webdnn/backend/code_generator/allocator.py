@@ -461,8 +461,10 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
                     # del a4s[a2]
 
     console.debug(f"Memory allocation optimization: 100.0% complete.")
-    # Update all allocation offset value
-    list(offset_table.keys())[0].offset = 0
+
+    if len(offset_table) > 0:
+        # Shift allocation block to 0-offset.
+        list(offset_table.keys())[0].offset = 0
 
     for a2, (a1, offset) in merge_tree.items():
         while a1 in merge_tree:

@@ -37,7 +37,7 @@ def _to_list(x):
 class KerasConverter(Converter["keras.layers.Layer"]):
     """KerasConverter(batch_size=1)
 
-    Convert keras.models.model into WebDNN IR.
+    Converter for `Keras <https://keras.io/>`_.
 
     **Limitations**
 
@@ -81,10 +81,17 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         Args:
             model (`keras.models.Model`): keras model
 
-        .. example::
+        .. admonition:: example
 
-            model = keras.models.load_model("pre_trained_model.h5")
-            graph = KerasConverter(batch_size=1).convert(model)
+            Convert pre-trained keras ResNet model.
+
+            .. code::
+
+                import keras
+                from webdnn.frontend.keras import KerasConverter
+
+                model = keras.applications.resnet50.ResNet50(include_top=True, weights='imagenet')
+                graph = KerasConverter(batch_size=1).convert(model)
 
         Returns:
             (:class:`~webdnn.graph.graph.Graph`): WebDNN IR Graph
