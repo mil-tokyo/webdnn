@@ -1,3 +1,5 @@
+from unittest import SkipTest
+
 import chainer
 import numpy as np
 
@@ -14,9 +16,18 @@ default_order = {
 
 @wrap_template
 def template(axis=1, ndim=2, description: str = ""):
+    if chainer.__version__ < "1.24" and axis != 1:
+        raise SkipTest(
+            f"chainer.functions.softmax support \"xis\" parameter since v1.24, current installed version is {chainer.__version__}")
+
     shape = (np.arange(ndim, ) + 2).tolist()
     vx = chainer.Variable(np.arange(mul(shape)).reshape(shape).astype(np.float32))
-    vy = chainer.functions.softmax(vx, axis)
+
+    if chainer.__version__ < "1.24":
+        vy = chainer.functions.softmax(vx)
+
+    else:
+        vy = chainer.functions.softmax(vx, axis=axis)
 
     graph = ChainerConverter().convert([vx], [vy])
 

@@ -1,3 +1,5 @@
+from unittest import SkipTest
+
 import chainer
 import numpy as np
 
@@ -7,6 +9,9 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 @wrap_template
 def template(x_shape=(2, 3, 16, 16), ksize=3, stride=1, pad=1, dilate=1, description=""):
+    if chainer.__version__ < "2.":
+        raise SkipTest("chainer.functions.im2col is not exist in this version of Chainer.")
+
     vx = chainer.Variable(np.random.rand(*x_shape).astype(np.float32))
     vy = chainer.functions.im2col(vx, ksize=ksize, stride=stride, pad=pad, dilate=dilate)
 

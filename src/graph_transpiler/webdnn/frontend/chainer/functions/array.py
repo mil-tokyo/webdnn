@@ -155,8 +155,13 @@ def _convert_permutate(converter: ChainerConverter, c_op: "chainer.functions.Per
 def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Reshape"):
     x = converter.get_variable(c_op.inputs[0])
 
-    out_shape = c_op.shape
+    out_shape = list(c_op.shape)
     out_order = Order([None] * len(out_shape))
+    if -1 in out_shape:
+        i = out_shape.index(-1)
+        out_shape.pop(i)
+        out_shape.insert(i, x.size // mul(out_shape))
+
     assert mul(out_shape) == x.size, f"[ChainerConverter] Shape mismatch: mul(out_shape)={mul(out_shape)}, x.size={x.size}"
 
     y = x.reshape(out_shape, out_order)

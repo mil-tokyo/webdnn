@@ -2,13 +2,14 @@
 
 """
 Chainer Link -> Graph object converters
-Assuming Chainer 1.23-1.24 or 2.0
+Assuming Chainer >=1.23-1.24, <4.0.0
 """
 import traceback
 import warnings
 from typing import List, Union, Sequence, Dict, Tuple
 
-from chainer import Function
+import numpy as np
+
 from webdnn.frontend.converter import Converter, CyclicGraphError
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
@@ -18,22 +19,71 @@ from webdnn.graph.variables.attributes.output import Output
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
+# Function and type declarations (actual implementation is depend on installed Chainer version)
+
+# T_FUNCTION: type of function node in computation graph
+# T_VARIABLE: type of variable node in computation graph
+T_NODE = Union["T_VARIABLE", "T_FUNCTION"]
+
+
+def get_variable_data(variable: "T_VARIABLE") -> Union[np.ndarray, "chainer.cuda.ndarray"]: ...  # return variable's data
+
+
+def to_variable_node(c_var: "chainer.Variable") -> "T_VARIABLE": ...  # convert "chainer.Variable" into variable node (T_VARIABLE instance)
+
+
 FLAG_CHAINER_INSTALLED = False
 
 try:
     import chainer
     import chainer.computational_graph
 
-    if "2." <= chainer.__version__ < "3.":
-        chainer_v2 = True
-        VariableNode = chainer.variable.VariableNode
+    if "3." <= chainer.__version__ < "4.":
+        # v3.x.x
 
-    elif "1." <= chainer.__version__ < "2.":
-        chainer_v2 = False
-        VariableNode = chainer.variable.Variable
+        # In v3, Many functions are represented as instance of `chainer.function_node.FunctionNode`. However some functions are still
+        # instance of `chainer.function.Function` (ex. Im2Col).
+        T_FUNCTION = (chainer.FunctionNode, chainer.Function)
+        T_VARIABLE = chainer.variable.VariableNode
+
+
+        def get_variable_data(variable: T_VARIABLE):
+            # noinspection PyProtectedMember
+            return variable._variable().data if variable.data is None else variable.data
+
+
+        def to_variable_node(c_var: chainer.Variable):
+            return c_var.node
+
+    elif "2." <= chainer.__version__ < "3.":
+        # v2.x.x
+        T_FUNCTION = chainer.Function
+        T_VARIABLE = chainer.variable.VariableNode
+
+
+        def get_variable_data(variable: T_VARIABLE):
+            # noinspection PyProtectedMember
+            return variable._variable().data if variable.data is None else variable.data
+
+
+        def to_variable_node(c_var: chainer.Variable):
+            return c_var.node
+
+    elif "1.23" <= chainer.__version__ < "2.":
+        # v1.x.x
+        T_FUNCTION = chainer.Function
+        T_VARIABLE = chainer.Variable
+
+
+        def get_variable_data(variable: T_VARIABLE):
+            return variable.data
+
+
+        def to_variable_node(c_var: chainer.Variable):
+            return c_var
 
     else:
-        raise NotImplementedError(f"WebDNN supports Chainer v1 and v2. Currently, Chainer {chainer.__version__} is installed.")
+        raise NotImplementedError(f"WebDNN supports Chainer from v1.23 to v3. Currently, Chainer {chainer.__version__} is installed.")
 
     FLAG_CHAINER_INSTALLED = True
 
@@ -41,30 +91,23 @@ except Exception as e:
     console.warning(traceback.format_exc())
 
 
-def _to_variable_node(chainer_variable: Union["chainer.Variable", "VariableNode"]) -> "VariableNode":
-    if chainer_v2 and not isinstance(chainer_variable, VariableNode):
-        # noinspection PyUnresolvedReferences
-        return chainer_variable.node
-    else:
-        # noinspection PyTypeChecker
-        return chainer_variable
-
-
-T_NODE = Union["VariableNode", "Function"]
-
-
 def _listup_functions(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
+    input_set = set(inputs)
+
     def get_prev_nodes(node: T_NODE) -> Sequence[T_NODE]:
-        if node in inputs:
+        # NOTE(Kiikurage):
+        # In chainer v1, "Variable" doesn't support "__eq__" method, so "list.__contains__" cannot be used for list of variables.
+        # However, "Variable.__hash__" is implemented and "set.__contains__" is available.
+        if node in input_set:
             return []
 
-        elif isinstance(node, VariableNode):
+        elif isinstance(node, T_VARIABLE):
             return [] if node.creator is None else [node.creator]
 
         else:
             return node.inputs
 
-    result = []  # type: List[Function]
+    result = []  # type: List[T_FUNCTION]
     stack = [(node, None) for node in outputs]  # type: List[Tuple[T_NODE, T_NODE]]
     dependency_count = {}  # type: Dict[T_NODE, int]
 
@@ -82,7 +125,7 @@ def _listup_functions(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
                     stack.append((prev_node, node_from))
 
         elif dependency_count[node_from] == 0:
-            if isinstance(node_from, Function):
+            if isinstance(node_from, T_FUNCTION):
                 result.append(node_from)
 
             if node_to is not None:
@@ -94,11 +137,8 @@ def _listup_functions(inputs: Sequence[T_NODE], outputs: Sequence[T_NODE]):
     return result
 
 
-class ChainerConverter(Converter["Function"]):
-    """ChainerConverter()
-
-
-    """
+class ChainerConverter(Converter["T_FUNCTION"]):
+    """ChainerConverter()"""
 
     def __init__(self):
         super(ChainerConverter, self).__init__()
@@ -163,31 +203,26 @@ class ChainerConverter(Converter["Function"]):
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
-        chainer_graph = chainer.computational_graph.build_computational_graph(outputs)
+        inputs = [to_variable_node(v) for v in inputs]
+        outputs = [to_variable_node(v) for v in outputs]
 
-        # In chainer v2, variables are represented as Variable and VariableNode object, and
-        # graph information such as edge connection is contained in variable node.
-        # Therefore all chainer variable must be normalized into variable node.
-        c_vars = list(map(_to_variable_node,
-                          filter(lambda v: isinstance(v, VariableNode), chainer_graph.nodes)))  # type: List[VariableNode]
-        inputs = [_to_variable_node(v) for v in inputs]
-        outputs = [_to_variable_node(v) for v in outputs]
+        # Convert parameters into constant variable
         input_set = set(inputs)
-
-        for c_var in c_vars:
-            if c_var.creator is None:
-                # If :code:`creator is None` and it's not input variable, it's parameter.
+        for node in chainer.computational_graph.build_computational_graph(outputs).nodes:
+            if isinstance(node, T_VARIABLE) and node.creator is None:
+                # If "c_var.creator" is None, it's input variable or parameters.
 
                 # NOTE(Kiikurage):
-                # In chainer v1.x and v2.x, `Variable` doesn't support `__eq__` method and `list.__contains__` cannot be used for
-                # Variable list. However, `Variable.__hash__` is implemented and `set.__contains__` is available.
-                self._convert_var(c_var, constant=c_var not in input_set)
+                # In chainer v1, "Variable" doesn't support "__eq__" method, so "list.__contains__" cannot be used for list of variables.
+                # However, "Variable.__hash__" is implemented and "set.__contains__" is available.
+                self._convert_var(node, constant=node not in input_set)
 
+        # Convert each Chainer function into WebDNN operators
         for c_opr in _listup_functions(inputs, outputs):
             self._convert_operator(c_opr)
 
-        graph = Graph([self.get_variable(c_var) for c_var in inputs],
-                      [self.get_variable(c_var) for c_var in outputs])
+        # Build graph
+        graph = Graph([self.get_variable(c_var) for c_var in inputs], [self.get_variable(c_var) for c_var in outputs])
 
         for v in graph.inputs:
             v.attributes.add(Input(v))
@@ -197,17 +232,13 @@ class ChainerConverter(Converter["Function"]):
 
         return graph
 
-    def _convert_var(self, c_var: "VariableNode", constant=False):
+    def _convert_var(self, c_var: T_VARIABLE, constant=False):
         assert not self.has_variable(c_var), f"{c_var} is already converted"
         ndim = len(c_var.shape)
         order = Order([None] * ndim)
 
         if constant:
-            data = c_var.data
-            if chainer_v2 and data is None:
-                # noinspection PyProtectedMember
-                data = c_var._variable().data
-
+            data = get_variable_data(c_var)
             n_var = ConstantVariable(chainer.cuda.to_cpu(data), order)  # force on CPU
 
         else:

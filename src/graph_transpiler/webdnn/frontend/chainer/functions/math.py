@@ -263,7 +263,11 @@ def _convert_sum(converter: ChainerConverter, c_op: "chainer.functions.Sum"):
     for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
         x, = Sum(None, axis=axis)(x)
 
-        if not c_op.keepdims and x.ndim > 1:
+        # chainer.functions.sum supported "keepdims" parameter since v1.24
+        if chainer.__version__ >= "1.24" and c_op.keepdims and x.ndim > 1:
+            pass
+
+        else:
             x = x.squeeze(axis)
 
     converter.set_variable(c_op.outputs[0](), x)
