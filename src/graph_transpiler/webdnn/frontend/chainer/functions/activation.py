@@ -116,7 +116,14 @@ def _convert_slstm(converter: ChainerConverter, c_op: "chainer.functions.SLSTM")
 @ChainerConverter.register_handler("Softmax")
 def _convert_softmax(converter: ChainerConverter, c_op: "chainer.functions.Softmax"):
     x = converter.get_variable(c_op.inputs[0])
-    y, = Softmax(None, axis=x.order.axes[c_op.axis])(x)
+
+    # chainer.functions.softmax supported "axis" parameter since v1.24
+    if chainer.__version__ < "1.24":
+        axis = 1
+    else:
+        axis = c_op.axis
+
+    y, = Softmax(None, axis=x.order.axes[axis])(x)
 
     converter.set_variable(c_op.outputs[0](), y)
 

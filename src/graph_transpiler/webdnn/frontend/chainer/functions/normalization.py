@@ -55,3 +55,26 @@ def _convert_batch_normalization_function(converter: ChainerConverter,
 
     y = (x - mean) / ((variance + c_op.eps) ** 0.5) * gamma + beta
     converter.set_variable(c_op.outputs[0](), y)
+
+
+@ChainerConverter.register_handler("FixedBatchNormalization")
+def _convert_fixed_batch_normalization(converter: ChainerConverter,
+                                       c_op: "chainer.functions.normalization.batch_normalization.FixedBatchNormalization"):
+    x = converter.get_variable(c_op.inputs[0])
+    x.order.axes[0].unify(Axis.N)
+    x.order.axes[1].unify(Axis.C)
+
+    gamma = converter.get_variable(c_op.inputs[1])
+    gamma.order.unify(OrderC)
+
+    beta = converter.get_variable(c_op.inputs[2])
+    beta.order.unify(OrderC)
+
+    mean = converter.get_variable(c_op.inputs[3])
+    mean.order.unify(OrderC)
+
+    variance = converter.get_variable(c_op.inputs[4])
+    variance.order.unify(OrderC)
+
+    y = (x - mean) / ((variance + c_op.eps) ** 0.5) * gamma + beta
+    converter.set_variable(c_op.outputs[0](), y)

@@ -1,3 +1,5 @@
+from unittest import SkipTest
+
 import chainer
 import numpy as np
 
@@ -7,8 +9,17 @@ from webdnn.frontend.chainer.converter import ChainerConverter
 
 @wrap_template
 def template(axis, keepdims, description: str = ""):
+    if chainer.__version__ < "1.24" and keepdims:
+        raise SkipTest(
+            f"chainer.functions.sum support \"keepdims\" parameter since v1.24, current installed version is {chainer.__version__}")
+
     vx = chainer.Variable(np.random.rand(2, 5, 6, 8).astype(np.float32))
-    vy = chainer.functions.sum(vx, axis=axis, keepdims=keepdims)
+
+    if chainer.__version__ < "1.24":
+        vy = chainer.functions.sum(vx, axis=axis)
+
+    else:
+        vy = chainer.functions.sum(vx, axis=axis, keepdims=keepdims)
 
     graph = ChainerConverter().convert([vx], [vy])
 
