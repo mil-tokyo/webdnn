@@ -170,13 +170,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Chainer Link -&gt; Graph object converters</span>
-<span class="sd">Assuming Chainer 1.23-1.24 or 2.0</span>
+<span class="sd">Assuming Chainer &gt;=1.23-1.24, &lt;4.0.0</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="kn">from</span> <span class="nn">chainer</span> <span class="k">import</span> <span class="n">Function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span><span class="p">,</span> <span class="n">CyclicGraphError</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
@@ -186,22 +187,71 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
 <span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">console</span>
 
+<span class="c1"># Function and type declarations (actual implementation is depend on installed Chainer version)</span>
+
+<span class="c1"># T_FUNCTION: type of function node in computation graph</span>
+<span class="c1"># T_VARIABLE: type of variable node in computation graph</span>
+<span class="n">T_NODE</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;T_VARIABLE&quot;</span><span class="p">,</span> <span class="s2">&quot;T_FUNCTION&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_variable_data</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="s2">&quot;T_VARIABLE&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;chainer.cuda.ndarray&quot;</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># return variable&#39;s data</span>
+
+
+<span class="k">def</span> <span class="nf">to_variable_node</span><span class="p">(</span><span class="n">c_var</span><span class="p">:</span> <span class="s2">&quot;chainer.Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;T_VARIABLE&quot;</span><span class="p">:</span> <span class="o">...</span>  <span class="c1"># convert &quot;chainer.Variable&quot; into variable node (T_VARIABLE instance)</span>
+
+
 <span class="n">FLAG_CHAINER_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">chainer</span>
     <span class="kn">import</span> <span class="nn">chainer.computational_graph</span>
 
-    <span class="k">if</span> <span class="s2">&quot;2.&quot;</span> <span class="o">&lt;=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s2">&quot;3.&quot;</span><span class="p">:</span>
-        <span class="n">chainer_v2</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">VariableNode</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">VariableNode</span>
+    <span class="k">if</span> <span class="s2">&quot;3.&quot;</span> <span class="o">&lt;=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s2">&quot;4.&quot;</span><span class="p">:</span>
+        <span class="c1"># v3.x.x</span>
 
-    <span class="k">elif</span> <span class="s2">&quot;1.&quot;</span> <span class="o">&lt;=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s2">&quot;2.&quot;</span><span class="p">:</span>
-        <span class="n">chainer_v2</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">VariableNode</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span>
+        <span class="c1"># In v3, Many functions are represented as instance of `chainer.function_node.FunctionNode`. However some functions are still</span>
+        <span class="c1"># instance of `chainer.function.Function` (ex. Im2Col).</span>
+        <span class="n">T_FUNCTION</span> <span class="o">=</span> <span class="p">(</span><span class="n">chainer</span><span class="o">.</span><span class="n">FunctionNode</span><span class="p">,</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Function</span><span class="p">)</span>
+        <span class="n">T_VARIABLE</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">VariableNode</span>
+
+
+        <span class="k">def</span> <span class="nf">get_variable_data</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="n">T_VARIABLE</span><span class="p">):</span>
+            <span class="c1"># noinspection PyProtectedMember</span>
+            <span class="k">return</span> <span class="n">variable</span><span class="o">.</span><span class="n">_variable</span><span class="p">()</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">variable</span><span class="o">.</span><span class="n">data</span>
+
+
+        <span class="k">def</span> <span class="nf">to_variable_node</span><span class="p">(</span><span class="n">c_var</span><span class="p">:</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">c_var</span><span class="o">.</span><span class="n">node</span>
+
+    <span class="k">elif</span> <span class="s2">&quot;2.&quot;</span> <span class="o">&lt;=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s2">&quot;3.&quot;</span><span class="p">:</span>
+        <span class="c1"># v2.x.x</span>
+        <span class="n">T_FUNCTION</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Function</span>
+        <span class="n">T_VARIABLE</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">VariableNode</span>
+
+
+        <span class="k">def</span> <span class="nf">get_variable_data</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="n">T_VARIABLE</span><span class="p">):</span>
+            <span class="c1"># noinspection PyProtectedMember</span>
+            <span class="k">return</span> <span class="n">variable</span><span class="o">.</span><span class="n">_variable</span><span class="p">()</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">variable</span><span class="o">.</span><span class="n">data</span>
+
+
+        <span class="k">def</span> <span class="nf">to_variable_node</span><span class="p">(</span><span class="n">c_var</span><span class="p">:</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">c_var</span><span class="o">.</span><span class="n">node</span>
+
+    <span class="k">elif</span> <span class="s2">&quot;1.23&quot;</span> <span class="o">&lt;=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s2">&quot;2.&quot;</span><span class="p">:</span>
+        <span class="c1"># v1.x.x</span>
+        <span class="n">T_FUNCTION</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Function</span>
+        <span class="n">T_VARIABLE</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span>
+
+
+        <span class="k">def</span> <span class="nf">get_variable_data</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="n">T_VARIABLE</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">variable</span><span class="o">.</span><span class="n">data</span>
+
+
+        <span class="k">def</span> <span class="nf">to_variable_node</span><span class="p">(</span><span class="n">c_var</span><span class="p">:</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">c_var</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Chainer v1 and v2. Currently, Chainer </span><span class="si">{chainer.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Chainer from v1.23 to v3. Currently, Chainer </span><span class="si">{chainer.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
 
     <span class="n">FLAG_CHAINER_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -209,30 +259,23 @@
     <span class="n">console</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
 
 
-<span class="k">def</span> <span class="nf">_to_variable_node</span><span class="p">(</span><span class="n">chainer_variable</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;chainer.Variable&quot;</span><span class="p">,</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">chainer_v2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chainer_variable</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">):</span>
-        <span class="c1"># noinspection PyUnresolvedReferences</span>
-        <span class="k">return</span> <span class="n">chainer_variable</span><span class="o">.</span><span class="n">node</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># noinspection PyTypeChecker</span>
-        <span class="k">return</span> <span class="n">chainer_variable</span>
-
-
-<span class="n">T_NODE</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;VariableNode&quot;</span><span class="p">,</span> <span class="s2">&quot;Function&quot;</span><span class="p">]</span>
-
-
 <span class="k">def</span> <span class="nf">_listup_functions</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">],</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">]):</span>
+    <span class="n">input_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">get_prev_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">T_NODE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_NODE</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+        <span class="c1"># NOTE(Kiikurage):</span>
+        <span class="c1"># In chainer v1, &quot;Variable&quot; doesn&#39;t support &quot;__eq__&quot; method, so &quot;list.__contains__&quot; cannot be used for list of variables.</span>
+        <span class="c1"># However, &quot;Variable.__hash__&quot; is implemented and &quot;set.__contains__&quot; is available.</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">input_set</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">T_VARIABLE</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">creator</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">inputs</span>
 
-    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[Function]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[T_FUNCTION]</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>  <span class="c1"># type: List[Tuple[T_NODE, T_NODE]]</span>
     <span class="n">dependency_count</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[T_NODE, int]</span>
 
@@ -250,7 +293,7 @@
                     <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prev_node</span><span class="p">,</span> <span class="n">node_from</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">Function</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">T_FUNCTION</span><span class="p">):</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">node_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -262,11 +305,8 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
-<div class="viewcode-block" id="ChainerConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter">[docs]</a><span class="k">class</span> <span class="nc">ChainerConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;Function&quot;</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;ChainerConverter()</span>
-
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ChainerConverter"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/frontend/chainer.html#webdnn.frontend.chainer.ChainerConverter">[docs]</a><span class="k">class</span> <span class="nc">ChainerConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">[</span><span class="s2">&quot;T_FUNCTION&quot;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;ChainerConverter()&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ChainerConverter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -331,31 +371,26 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">chainer_graph</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">computational_graph</span><span class="o">.</span><span class="n">build_computational_graph</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
 
-        <span class="c1"># In chainer v2, variables are represented as Variable and VariableNode object, and</span>
-        <span class="c1"># graph information such as edge connection is contained in variable node.</span>
-        <span class="c1"># Therefore all chainer variable must be normalized into variable node.</span>
-        <span class="n">c_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_to_variable_node</span><span class="p">,</span>
-                          <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">VariableNode</span><span class="p">),</span> <span class="n">chainer_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)))</span>  <span class="c1"># type: List[VariableNode]</span>
-        <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+        <span class="c1"># Convert parameters into constant variable</span>
         <span class="n">input_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">c_vars</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">c_var</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># If :code:`creator is None` and it&#39;s not input variable, it&#39;s parameter.</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">chainer</span><span class="o">.</span><span class="n">computational_graph</span><span class="o">.</span><span class="n">build_computational_graph</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">T_VARIABLE</span><span class="p">)</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># If &quot;c_var.creator&quot; is None, it&#39;s input variable or parameters.</span>
 
                 <span class="c1"># NOTE(Kiikurage):</span>
-                <span class="c1"># In chainer v1.x and v2.x, `Variable` doesn&#39;t support `__eq__` method and `list.__contains__` cannot be used for</span>
-                <span class="c1"># Variable list. However, `Variable.__hash__` is implemented and `set.__contains__` is available.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">c_var</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="n">c_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_set</span><span class="p">)</span>
+                <span class="c1"># In chainer v1, &quot;Variable&quot; doesn&#39;t support &quot;__eq__&quot; method, so &quot;list.__contains__&quot; cannot be used for list of variables.</span>
+                <span class="c1"># However, &quot;Variable.__hash__&quot; is implemented and &quot;set.__contains__&quot; is available.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_convert_var</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_set</span><span class="p">)</span>
 
+        <span class="c1"># Convert each Chainer function into WebDNN operators</span>
         <span class="k">for</span> <span class="n">c_opr</span> <span class="ow">in</span> <span class="n">_listup_functions</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_convert_operator</span><span class="p">(</span><span class="n">c_opr</span><span class="p">)</span>
 
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">],</span>
-                      <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
+        <span class="c1"># Build graph</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">c_var</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
             <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
@@ -365,17 +400,13 @@
 
         <span class="k">return</span> <span class="n">graph</span></div>
 
-    <span class="k">def</span> <span class="nf">_convert_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_var</span><span class="p">:</span> <span class="s2">&quot;VariableNode&quot;</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_convert_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_var</span><span class="p">:</span> <span class="n">T_VARIABLE</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">c_var</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{c_var}</span><span class="s2"> is already converted&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">constant</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">c_var</span><span class="o">.</span><span class="n">data</span>
-            <span class="k">if</span> <span class="n">chainer_v2</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># noinspection PyProtectedMember</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">c_var</span><span class="o">.</span><span class="n">_variable</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-
+            <span class="n">data</span> <span class="o">=</span> <span class="n">get_variable_data</span><span class="p">(</span><span class="n">c_var</span><span class="p">)</span>
             <span class="n">n_var</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">chainer</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">to_cpu</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">order</span><span class="p">)</span>  <span class="c1"># force on CPU</span>
 
         <span class="k">else</span><span class="p">:</span>
