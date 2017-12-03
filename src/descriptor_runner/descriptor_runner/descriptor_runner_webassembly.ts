@@ -8,8 +8,14 @@ import webDNNFetch, { readArrayBufferProgressively, transformUrl } from "../fetc
 import { GraphDescriptorWebassembly } from "../graph_descriptor/graph_descriptor_webassembly";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import * as localforage_ from "../third/localforage.nopromises.min";
 import { BackendName } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
+
+/**
+ * @private
+ */
+const localforage = localforage_.default;
 
 /**
  * @private
@@ -19,7 +25,7 @@ declare let WebAssembly: any;
 /**
  * @protected
  */
-export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly> {
+export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly, ArrayBuffer> {
     readonly backendName: BackendName = 'webassembly';
 
     private inputViews: SymbolicFloat32Array[] | null;
@@ -28,6 +34,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
     private worker_entry_js_path;
     private worker_promise_reject_func: any = null;
     private worker_initial_error: any = null;
+    private directory: string;
 
     static checkAvailability() {
         return 'Worker' in window;
@@ -48,28 +55,19 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         return Promise.resolve();
     }
 
-    async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
-        let graph_url = `${directory}/graph_${this.backendName}.json`;
-        let graph_fetch = await webDNNFetch(graph_url, {ignoreCache: this.ignoreCache});
-
-        this.descriptor = await graph_fetch.json();
+    async setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void> {
+        this.descriptor = descriptor;
         this.placeholderContext = new PlaceholderContext(this.descriptor!.placeholders);
 
         // for browsers which does not support wasm, try asm.js code
         let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
-        let worker_entry_js_path = `${directory}/kernels_${kernel_backend}.js`;
-        if (this.ignoreCache) {
-            worker_entry_js_path += '?t=' + Date.now();
-        }
+        let worker_entry_js_path = `${this.directory}/kernels_${kernel_backend}.js`;
         worker_entry_js_path = transformUrl(worker_entry_js_path);
         this.worker_entry_js_path = worker_entry_js_path;
 
         await this.compile();
 
-        let weight_url = `${directory}/weight_${this.backendName}.bin`;
-        let weight_fetch = await webDNNFetch(weight_url, {ignoreCache: this.ignoreCache, progressCallback: progressCallback});
-        let weights_data_ab = await readArrayBufferProgressively(weight_fetch, progressCallback);
-        await this.loadWeights(new Uint8Array(weights_data_ab));
+        await this.loadWeights(new Uint8Array(parameters));
 
         //assign buffer to input/output buffer view
         (await this.getInputViews())
@@ -80,6 +78,76 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
             .filter(view => !view.isDynamic)
             .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer))
     }
+
+    /**
+     * Fetch graph descriptor from specified directory.
+     *
+     * @param directory directory where descriptor is contained.
+     * You can also provide URL of other domain like this.
+     *
+     * ```javascript
+     * await runner.load('://my.other.domain.com/my_model');
+     * ```
+     *
+     * However sometimes it can't because of Cross-Origin-Resource-Security policy.
+     *
+     * @protected
+     */
+    async fetchDescriptor(directory: string): Promise<GraphDescriptorWebassembly> {
+        this.directory = directory;
+        let res = await webDNNFetch(`${directory}/graph_${this.backendName}.json`);
+        return res.json();
+    }
+
+    /**
+     * Fetch parameter files from specified directory.
+     *
+     * @param directory directory where descriptor is contained.
+     * You can also provide URL of other domain like this.
+     *
+     * ```javascript
+     * await runner.load('://my.other.domain.com/my_model');
+     * ```
+     *
+     * However sometimes it can't because of Cross-Origin-Resource-Security policy.
+     *
+     * @param progressCallback callback which is called to notice the loading is progressing.
+     * @protected
+     */
+    async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer> {
+        let weight_url = `${directory}/weight_${this.backendName}.bin`;
+        let weight_fetch = await webDNNFetch(weight_url);
+        return readArrayBufferProgressively(weight_fetch, progressCallback);
+    }
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebassembly | null> {
+        this.directory = directory;
+        return localforage.getItem<GraphDescriptorWebassembly>(`${directory}_${this.backendName}_descriptor`).catch(() => null);
+    }
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer | null> {
+        let parameter = await localforage.getItem<ArrayBuffer>(`${directory}_${this.backendName}_parameters`).catch(() => null);
+        if (parameter && progressCallback) progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter
+    }
+
+    /**
+     * save cache
+     */
+    async saveCache(directory: string, descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void> {
+        await Promise.all([
+            localforage.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
+            localforage.setItem(`${directory}_${this.backendName}_parameters`, parameters)
+        ]);
+    };
 
     async setPlaceholderValue(values: { [key: string]: number }): Promise<void> {
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized.');
@@ -137,7 +205,6 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         let worker = new Worker(this.worker_entry_js_path);
         worker.onerror = (event) => {
             console.error(event);
-            this._running = false;
             // console.error('Worker Exception: ' + event.message);
             if (this.worker_promise_reject_func) {
                 this.worker_promise_reject_func(event);
@@ -249,12 +316,10 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
                     for (let i = 0; i < event.data.length; i++) {
                         outputViews[i].set(event.data[i]);
                     }
-                    this._running = false;
                     resolve();
                 } else {
                     console.log(event.data);
                     worker.terminate();
-                    this._running = false;
                     reject(new Error(event.data));
                 }
             };
@@ -289,7 +354,6 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
                 }
             }
 
-            this._running = true;
             worker.postMessage({type: 'run', inputs: inputs, outputs: outputs});
         });
 

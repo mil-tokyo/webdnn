@@ -1,4 +1,5 @@
 import typescript from 'rollup-plugin-typescript2'
+import commonjs from "rollup-plugin-commonjs";
 
 export default {
     entry: './src/descriptor_runner/webdnn.ts',
@@ -15,6 +16,7 @@ export default {
         typescript({
             typescript: require('typescript'),
             tsconfig: './src/descriptor_runner/tsconfig.es5.json'
-        })
+        }),
+        commonjs()
     ]
 }

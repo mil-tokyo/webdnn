@@ -8,7 +8,7 @@ import { GraphDescriptor } from "./graph_descriptor";
 import { Allocation, MemoryLayout, ResolvedAllocation } from "./memory_layout";
 
 /**
- * @protecte
+ * @protected
  */
 export type ChannelMode = 'RGBA' | 'R';
 

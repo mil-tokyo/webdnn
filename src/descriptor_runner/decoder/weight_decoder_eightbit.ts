@@ -3,12 +3,13 @@
  */
 /** Don't Remove This comment block */
 
+import * as pako_ from "pako";
 import WeightDecoder from "./weight_decoder";
 
 /**
  * @private
  */
-declare const Zlib: any;
+const pako = pako_.default;
 
 /**
  * @protected
@@ -58,8 +59,7 @@ export default class WeightDecoderEightbit implements WeightDecoder {
 
             // do decode
             let src_data_view = new Uint8Array(data.buffer, data.byteOffset + src_offset, body_size);
-            let inflate = new Zlib.Inflate(src_data_view);
-            let decompressed = inflate.decompress();
+            let decompressed = pako.inflate(src_data_view);
             let dec_size = decompressed.length;
             let decoded_array = new Float32Array(dec_size);
             for (let s = 0; s < dec_size; s++) {

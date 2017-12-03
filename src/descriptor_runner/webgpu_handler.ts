@@ -7,6 +7,9 @@
 
 import BufferWebGPU from "./buffer/buffer_webgpu";
 
+/**
+ * @private
+ */
 let instance: WebGPUHandler;
 
 /**
@@ -42,6 +45,8 @@ export default class WebGPUHandler {
 
         this.context = context;
         this.commandQueue = context.createCommandQueue();
+
+        this.loadKernel('kernel void sync(){}', 'basic');
     }
 
     createBuffer(arrayBuffer: ArrayBufferView): WebGPUBuffer {
@@ -75,8 +80,7 @@ export default class WebGPUHandler {
                                threadgroupsPerGrid: WebGPUSize,
                                threadsPerThreadgroup: WebGPUSize,
                                buffers: (WebGPUBuffer | BufferWebGPU)[],
-                               getCompletedPromise?: boolean,
-                               flagDelay?: boolean): Promise<void> | null {
+                               getCompletedPromise?: boolean): Promise<void> | null {
         let commandBuffer = this.commandBuffer || (this.commandBuffer = this.createCommandBuffer());
         let commandEncoder = commandBuffer.createComputeCommandEncoder();
 
@@ -100,7 +104,6 @@ export default class WebGPUHandler {
             promise = commandBuffer.completed;
         }
 
-        if (flagDelay) return null;
         this.commandBuffer = null;
 
         commandBuffer.commit();

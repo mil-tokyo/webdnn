@@ -9,8 +9,15 @@ import { GraphDescriptorFallback } from "../graph_descriptor/graph_descriptor_fa
 import { Allocation, ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import * as localforage_ from "../third/localforage.nopromises.min";
 import { BackendName } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
+
+/**
+ * @private
+ */
+const localforage = localforage_.default;
+
 
 /**
  * @private
@@ -23,7 +30,7 @@ function wait(duration: number = 10) {
 /**
  * @protected
  */
-export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback> {
+export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDescriptorFallback, ArrayBuffer> {
     readonly backendName: BackendName = 'fallback';
 
     private kernelObj: any;
@@ -41,21 +48,51 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
         //nothing to do
     }
 
-    async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
-        let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}.json`, {ignoreCache: this.ignoreCache, progressCallback: progressCallback})
-                .then(res => res.json() as Promise<GraphDescriptorFallback>),
-
-            webdnnFetch(`${directory}/weight_${this.backendName}.bin`, {ignoreCache: this.ignoreCache})
-                .then(res => readArrayBufferProgressively(res, progressCallback))
-        ]);
-
+    async setDescriptorAndParameters(descriptor: GraphDescriptorFallback, parameters: ArrayBuffer) {
         this.setDescriptor(descriptor);
 
         await this.compile();
-        await this.initializeStaticBuffer(weightRawArray);
+        await this.initializeStaticBuffer(parameters);
         if (this.placeholderContext && this.placeholderContext.isResolved) await this.initializeDynamicBuffer();
     }
+
+    async fetchDescriptor(directory: string) {
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
+        return res.json();
+    }
+
+    async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any) {
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
+        return readArrayBufferProgressively(res, progressCallback);
+    }
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedDescriptor(directory: string): Promise<GraphDescriptorFallback | null> {
+        return localforage.getItem<GraphDescriptorFallback>(`${directory}_${this.backendName}_descriptor`).catch(() => null);
+    }
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer | null> {
+        let parameter = await localforage.getItem<ArrayBuffer>(`${directory}_${this.backendName}_parameters`).catch(() => null);
+        if (parameter && progressCallback) progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter
+    }
+
+    /**
+     * save cache
+     */
+    async saveCache(directory: string, descriptor: GraphDescriptorFallback, parameters: ArrayBuffer): Promise<void> {
+        await Promise.all([
+            localforage.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
+            localforage.setItem(`${directory}_${this.backendName}_parameters`, parameters)
+        ]);
+    };
 
     private setDescriptor(descriptor: GraphDescriptorFallback) {
         this.descriptor = descriptor;
@@ -158,7 +195,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     }
 
     async run(): Promise<void> {
-        if (this._running) throw new Error('Calling another run() while running.');
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('placeholderContext is not initialized');
         if (!this.variableMap) throw new Error('Variable map is not initialized');
@@ -174,7 +210,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
         let startDate = Date.now();
         let lastDate = Date.now();
 
-        this._running = true;
         for (let i = 0; i < executionInfos.length; i++) {
             let currentDate = Date.now();
             if (currentDate - lastDate >= 1000) {
@@ -190,7 +225,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
             this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
         }
         console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
-        this._running = false;
     }
 
     getInputViews() {

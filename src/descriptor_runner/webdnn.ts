@@ -6,7 +6,7 @@
  */
 /** Don't Remove This comment block */
 /// <reference path="./webgpu.d.ts" />
-import { DescriptorRunner as _DescriptorRunner, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
+import { DescriptorRunner as DescriptorRunnerGeneric, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
 import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fallback";
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
 import DescriptorRunnerWebGL from "./descriptor_runner/descriptor_runner_webgl";
@@ -47,13 +47,13 @@ export type BackendName = 'webgpu' | 'webgl' | 'webassembly' | 'fallback';
 /**
  * Descriptor runner
  */
-export type DescriptorRunner = _DescriptorRunner<GraphDescriptor>;
+export type DescriptorRunner = DescriptorRunnerGeneric<GraphDescriptor, any>;
 
 /**
  * Backend constructor map
  * @private
  */
-const descriptorRunners: { [k in BackendName]: DescriptorRunnerConstructor<GraphDescriptor> } = {
+const descriptorRunners: { [k in BackendName]: DescriptorRunnerConstructor<GraphDescriptor, any> } = {
     webgpu: DescriptorRunnerWebGPU,
     webgl: DescriptorRunnerWebGL,
     webassembly: DescriptorRunnerWebassembly,
@@ -108,7 +108,7 @@ export function getBackendAvailability(): BackendAvailability {
         'fallback': descriptorRunners['fallback'].checkAvailability(),
     };
 
-    let order = (['webgpu', 'webassembly', 'webgl', 'fallback'] as BackendName[]).filter(backend => status[backend]);
+    let order = (['webgpu', 'webgl', 'webassembly', 'fallback'] as BackendName[]).filter(backend => status[backend]);
 
     return {
         status: status,
@@ -149,12 +149,6 @@ export interface InitOption {
      * Backend-specific options. Currently (v1.3), this option has no effect.
      */
     backendOptions?: { [key: string]: any },
-
-    /**
-     * If true, WebDNN fetches binary data even if the data is already cached (append tiestamp to request url).
-     * Otherwise, WebDNN fetches same URL and generally browser cache is used.
-     */
-    ignoreCache?: boolean,
 
     /**
      * Callback function which is called to notice the progress status of loading binary data.
@@ -221,7 +215,39 @@ export interface InitOption {
      * });
      * ```
      */
-    transformUrlDelegate?: (url: string) => string
+    transformUrlDelegate?: (url: string) => string,
+
+    /**
+     * WebDNN cache strategy. One of follows is available.
+     *
+     * - `latest` (default)
+     *
+     *  Fetch `descriptor.json` at first and check whether assets in server is same as cached assets. If it's same, use cached assets,
+     *  otherwise, fetch all assets and replace cached assets.
+     *
+     * - `networkFirst`
+     *
+     *  Fetch all asset files. If it succeeds, use fetched assets. If failed, use cached assets if exist, otherwise, an error is thrown.
+     *
+     * - `cacheFirst`
+     *
+     *  If cache is exist, use cache, otherwise, fetch assets. If it failed, an error is thrown.
+     *
+     * - `networkOnly`
+     *
+     *  Fetch all asset files. If failed, an error is thrown.
+     *
+     * - `cacheOnly`
+     *
+     *  If cache is exist, use cache, otherwise, an error is thrown.
+     *
+     */
+    cacheStrategy?: 'latest' | 'networkFirst' | 'cacheFirst' | 'networkOnly' | 'cacheOnly',
+
+    /**
+     * If true, WebDNN save fetched parameter data cache in available `WebStorage`. As default, it's `true`.
+     */
+    saveCache?: boolean
 }
 
 /**
@@ -255,37 +281,117 @@ export interface InitOption {
  * @return DescriptorRunner instance, which is the interface to input/output data and run the model.
  */
 export async function load(directory: string, initOption: InitOption = {}): Promise<DescriptorRunner> {
-    let backendOrder = initOption.backendOrder;
-    if (!backendOrder) {
-        backendOrder = getBackendAvailability().defaultOrder;
-    } else if (typeof backendOrder === 'string') {
-        backendOrder = [backendOrder];
-    }
+    let {
+        backendOrder = null,
+        backendOptions = {},
+        cacheStrategy = 'latest',
+        saveCache = true,
+        progressCallback,
+        weightDirectory,
+        transformUrlDelegate
+    } = initOption;
+
+    if (!backendOrder) backendOrder = getBackendAvailability().defaultOrder;
+    if (typeof backendOrder === 'string') backendOrder = [backendOrder];
     backendOrder = backendOrder.slice();
     if (backendOrder.indexOf('fallback') === -1) backendOrder.concat(['fallback']);
 
     registerTransformUrlDelegate((url) => {
-        if (initOption.weightDirectory) {
+        if (weightDirectory) {
             if ((/\.bin/).test(url)) {
-                url = url.replace(directory, initOption.weightDirectory);
+                url = url.replace(directory, weightDirectory);
             }
         }
-        if (initOption.transformUrlDelegate) {
-            url = initOption.transformUrlDelegate(url);
-        }
+        if (transformUrlDelegate) url = transformUrlDelegate(url);
         return url;
     });
-
-    let backendOptions = initOption.backendOptions || {};
 
     while (backendOrder.length > 0) {
         let backendName = backendOrder.shift()!;
         let runner: (DescriptorRunner | null) = await initBackend(backendName, backendOptions[backendName]);
         if (!runner) continue;
-        runner.ignoreCache = Boolean(initOption.ignoreCache);
 
         try {
-            await runner.load(directory, initOption.progressCallback);
+            let descriptor: GraphDescriptor;
+            let parameters: any;
+            let fetchedDescriptor: GraphDescriptor | null;
+            let cachedDescriptor: GraphDescriptor | null;
+
+
+            switch (cacheStrategy) {
+                case 'latest':
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+
+                    if (cachedDescriptor && fetchedDescriptor && cachedDescriptor.converted_at === fetchedDescriptor.converted_at) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    throw Error('Network error is occurred and no cache is exist.');
+
+                case 'networkOnly':
+                case 'networkFirst':
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    if (cacheStrategy === 'networkOnly') throw Error('Network error is occurred in "networkOnly" cache strategy');
+
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    throw Error('Network error is occurred and no cache is exist.');
+
+                case 'cacheOnly':
+                case 'cacheFirst':
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    if (cacheStrategy === 'cacheOnly') throw Error('No cache is exist in "cacheOnly" cache strategy');
+
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters) break;
+                    }
+
+                    throw Error('Network error is occurred and no cache is exist.');
+
+                default:
+                    throw Error(`"${cacheStrategy}" is not valid cache strategy name: "latest", "networkFirst", "networkOnly", "cacheFirst", "cacheOnly" is available.`)
+            }
+
+            await runner.setDescriptorAndParameters(descriptor, parameters);
+
+            if (saveCache) {
+                await runner.saveCache(directory, descriptor, parameters);
+            }
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
             continue;
