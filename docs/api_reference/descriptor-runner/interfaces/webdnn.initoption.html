@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="../assets/css/style.css">
 	<link rel="stylesheet" href="../assets/css/prism.css">
 	<script src="../assets/js/prism.js"></script>
-	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
 </head>
 <body>
 <div class="sidenav">
@@ -69,7 +68,7 @@
 								<code>
 backend<wbr>Options:                    <code><span class="signature-type">object</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L151">[webdnn.ts:151]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L151">[webdnn.ts:151]</a>
 								</span>
 							</header>
 						</div>
@@ -92,7 +91,7 @@ backend<wbr>Options:                    <code><span class="signature-type">objec
 								<code>
 backend<wbr>Order:                <code><code><a href="../modules/webdnn.html#backendname" class="signature-type">BackendName</a></code><span class="signature-symbol"> | </span><code><span class="signature-type">Array</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L146">[webdnn.ts:146]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L146">[webdnn.ts:146]</a>
 								</span>
 							</header>
 						</div>
@@ -107,15 +106,15 @@ backend<wbr>Order:                <code><code><a href="../modules/webdnn.html#ba
 						</section>
 					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface">
-						<a name="ignorecache" class="anchor"></a>
+						<a name="cachestrategy" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="ignorecache" class="anchor"></a>
-								<a href="#ignorecache" class="anchor-link">#</a>
+								<a id="cachestrategy" class="anchor"></a>
+								<a href="#cachestrategy" class="anchor-link">#</a>
 								<code>
-ignore<wbr>Cache:                    <code><span class="signature-type">boolean</span>                    </code>        </code>
+cache<wbr>Strategy:                <code><code><span class="signature-type">"latest"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"networkFirst"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"cacheFirst"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"networkOnly"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"cacheOnly"</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L157">[webdnn.ts:157]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L245">[webdnn.ts:245]</a>
 								</span>
 							</header>
 						</div>
@@ -123,9 +122,26 @@ ignore<wbr>Cache:                    <code><span class="signature-type">boolean<
 							<div class="members-group-body">
 								<div class="tsd-comment tsd-typography">
 									<div class="lead">
-										<p>If true, WebDNN fetches binary data even if the data is already cached (append tiestamp to request url).
-										Otherwise, WebDNN fetches same URL and generally browser cache is used.</p>
+										<p>WebDNN cache strategy. One of follows is available.</p>
 									</div>
+									<ul>
+										<li><p><code>latest</code> (default)</p>
+											<p>Fetch <code>descriptor.json</code> at first and check whether assets in server is same as cached assets. If it&#39;s same, use cached assets,
+											otherwise, fetch all assets and replace cached assets.</p>
+										</li>
+										<li><p><code>networkFirst</code></p>
+											<p>Fetch all asset files. If it succeeds, use fetched assets. If failed, use cached assets if exist, otherwise, an error is thrown.</p>
+										</li>
+										<li><p><code>cacheFirst</code></p>
+											<p>If cache is exist, use cache, otherwise, fetch assets. If it failed, an error is thrown.</p>
+										</li>
+										<li><p><code>networkOnly</code></p>
+											<p>Fetch all asset files. If failed, an error is thrown.</p>
+										</li>
+										<li><p><code>cacheOnly</code></p>
+											<p>If cache is exist, use cache, otherwise, an error is thrown.</p>
+										</li>
+									</ul>
 								</div>
 							</div>
 						</section>
@@ -139,7 +155,7 @@ ignore<wbr>Cache:                    <code><span class="signature-type">boolean<
 								<code>
 progress<wbr>Callback:                    <code><span class="signature-type">function</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L173">[webdnn.ts:173]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L167">[webdnn.ts:167]</a>
 								</span>
 							</header>
 						</div>
@@ -161,6 +177,29 @@ progress<wbr>Callback:                    <code><span class="signature-type">fun
 						</section>
 					</section>
 					<section class="member tsd-kind-property tsd-parent-kind-interface">
+						<a name="savecache" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="savecache" class="anchor"></a>
+								<a href="#savecache" class="anchor-link">#</a>
+								<code>
+save<wbr>Cache:                    <code><span class="signature-type">boolean</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L250">[webdnn.ts:250]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-interface">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>If true, WebDNN save fetched parameter data cache in available <code>WebStorage</code>. As default, it&#39;s <code>true</code>.</p>
+									</div>
+								</div>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-property tsd-parent-kind-interface">
 						<a name="transformurldelegate" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -169,7 +208,7 @@ progress<wbr>Callback:                    <code><span class="signature-type">fun
 								<code>
 transform<wbr>Url<wbr>Delegate:                    <code><span class="signature-type">function</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L224">[webdnn.ts:224]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L218">[webdnn.ts:218]</a>
 								</span>
 							</header>
 						</div>
@@ -212,7 +251,7 @@ WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>, 
 								<code>
 weight<wbr>Directory:                    <code><span class="signature-type">string</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L194">[webdnn.ts:194]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L188">[webdnn.ts:188]</a>
 								</span>
 							</header>
 						</div>
@@ -257,13 +296,18 @@ WebDNN.load(<span class="hljs-string">'https://original.host.com/model'</span>, 
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface">
-							<a href="webdnn.initoption.html#ignorecache" class="tsd-kind-icon">
-								ignore<wbr>Cache
+							<a href="webdnn.initoption.html#cachestrategy" class="tsd-kind-icon">
+								cache<wbr>Strategy
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface">
 							<a href="webdnn.initoption.html#progresscallback" class="tsd-kind-icon">
 								progress<wbr>Callback
+							</a>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<a href="webdnn.initoption.html#savecache" class="tsd-kind-icon">
+								save<wbr>Cache
 							</a>
 						</li>
 						<li class="tsd-kind-property tsd-parent-kind-interface">

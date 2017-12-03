@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="../assets/css/style.css">
 	<link rel="stylesheet" href="../assets/css/prism.css">
 	<script src="../assets/js/prism.js"></script>
-	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
 </head>
 <body>
 <div class="sidenav">
@@ -57,7 +56,7 @@
 								<code>
 Backend<wbr>Name:                <code><code><span class="signature-type">"webgpu"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"webgl"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"webassembly"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"fallback"</span>                    </code></code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L45">[webdnn.ts:45]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L45">[webdnn.ts:45]</a>
 								</span>
 							</header>
 						</div>
@@ -71,30 +70,6 @@ Backend<wbr>Name:                <code><code><span class="signature-type">"webgp
 							</div>
 						</section>
 					</section>
-					<section class="member tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
-						<a name="channelmode" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="channelmode" class="anchor"></a>
-								<a href="#channelmode" class="anchor-link">#</a>
-								<code>
-Channel<wbr>Mode:                <code><code><span class="signature-type">"RGBA"</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">"R"</span>                    </code></code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/graph_descriptor/graph_descriptor_webgl.ts#L13">[graph_descriptor/graph_descriptor_webgl.ts:13]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
-							<div class="members-group-body">
-								<div class="tsd-comment tsd-typography">
-									<dl class="tsd-comment-tags">
-										<dt>protecte</dt>
-										<dd></dd>
-									</dl>
-								</div>
-							</div>
-						</section>
-					</section>
 					<section class="member tsd-kind-type-alias tsd-parent-kind-external-module">
 						<a name="descriptorrunner-1" class="anchor"></a>
 						<div class="signatures">
@@ -102,9 +77,9 @@ Channel<wbr>Mode:                <code><code><span class="signature-type">"RGBA"
 								<a id="descriptorrunner-1" class="anchor"></a>
 								<a href="#descriptorrunner-1" class="anchor-link">#</a>
 								<code>
-Descriptor<wbr>Runner:                    <code><span class="signature-type">_DescriptorRunner</span><span class="signature-symbol">&lt;</span><code><a href="../interfaces/webdnn.graphdescriptor.html" class="signature-type">GraphDescriptor</a></code><span class="signature-symbol">&gt;</span>                    </code>        </code>
+Descriptor<wbr>Runner:                    <code><span class="signature-type">DescriptorRunnerGeneric</span><span class="signature-symbol">&lt;</span><code><a href="../interfaces/webdnn.graphdescriptor.html" class="signature-type">GraphDescriptor</a></code><span class="signature-symbol">, </span><code><span class="signature-type">any</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L50">[webdnn.ts:50]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L50">[webdnn.ts:50]</a>
 								</span>
 							</header>
 						</div>
@@ -115,65 +90,6 @@ Descriptor<wbr>Runner:                    <code><span class="signature-type">_De
 										<p>Descriptor runner</p>
 									</div>
 								</div>
-							</div>
-						</section>
-					</section>
-				</div>
-			</section>
-			<section class="members-group ">
-				<header class="members-group-header">Variables</header>
-				<div class="members-group-body">
-					<section class="member tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-						<a name="availability" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="availability" class="anchor"></a>
-								<a href="#availability" class="anchor-link">#</a>
-								<code>
-availability:                <code><code><span class="signature-type">boolean</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">null</span>                    </code></code> =&nbsp; null        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webgl_handler.ts#L224">[webgl_handler.ts:224]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<div class="members-group-body">
-							</div>
-						</section>
-					</section>
-					<section class="member tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-						<a name="instance" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="instance" class="anchor"></a>
-								<a href="#instance" class="anchor-link">#</a>
-								<code>
-instance:<code><a href="../classes/webdnn.webgpuhandler.html" class="signature-type">WebGPUHandler</a></code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webgpu_handler.ts#L10">[webgpu_handler.ts:10]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<div class="members-group-body">
-							</div>
-						</section>
-					</section>
-					<section class="member tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-						<a name="instance-1" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="instance-1" class="anchor"></a>
-								<a href="#instance-1" class="anchor-link">#</a>
-								<code>
-instance:<code><a href="../classes/webdnn.webglhandler.html" class="signature-type">WebGLHandler</a></code>        </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webgl_handler.ts#L17">[webgl_handler.ts:17]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<div class="members-group-body">
 							</div>
 						</section>
 					</section>
@@ -196,7 +112,7 @@ instance:<code><a href="../classes/webdnn.webglhandler.html" class="signature-ty
 										<code>
 check<wbr>Null&lt;T&gt;<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><code><code><span class="signature-type">T</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">null</span>                    </code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">T</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webgl_handler.ts#L226">[webgl_handler.ts:226]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webgl_handler.ts#L250">[webgl_handler.ts:250]</a>
 										</span>
 									</div>
 								</div>
@@ -274,7 +190,7 @@ check<wbr>Null&lt;T&gt;<span class="tsd-signature-symbol">(</span>obj<span class
 										<code>
 get<wbr>Backend<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.backendavailability.html" class="signature-type">BackendAvailability</a></code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L103">[webdnn.ts:103]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L103">[webdnn.ts:103]</a>
 										</span>
 									</div>
 								</div>
@@ -316,7 +232,7 @@ get<wbr>Backend<wbr>Availability<span class="tsd-signature-symbol">(</span><span
 										<code>
 load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, initOption<span class="tsd-signature-symbol">?: </span><code><a href="../interfaces/webdnn.initoption.html" class="signature-type">InitOption</a></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><a href="../classes/webdnn.descriptorrunner.html" class="signature-type">DescriptorRunner</a></code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/webdnn.ts#L257">[webdnn.ts:257]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/webdnn.ts#L283">[webdnn.ts:283]</a>
 										</span>
 									</div>
 								</div>
@@ -458,34 +374,9 @@ load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signatu
 								Backend<wbr>Name
 							</a>
 						</li>
-						<li class="tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-external">
-							<a href="webdnn.html#channelmode" class="tsd-kind-icon">
-								Channel<wbr>Mode
-							</a>
-						</li>
 						<li class="tsd-kind-type-alias tsd-parent-kind-external-module">
 							<a href="webdnn.html#descriptorrunner-1" class="tsd-kind-icon">
 								Descriptor<wbr>Runner
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li>
-					<header class="toc-header">Variables</header>
-					<ul class="toc-list">
-						<li class="tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<a href="webdnn.html#availability" class="tsd-kind-icon">
-								availability
-							</a>
-						</li>
-						<li class="tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<a href="webdnn.html#instance" class="tsd-kind-icon">
-								instance
-							</a>
-						</li>
-						<li class="tsd-kind-variable tsd-parent-kind-external-module tsd-is-external tsd-is-not-exported">
-							<a href="webdnn.html#instance-1" class="tsd-kind-icon">
-								instance
 							</a>
 						</li>
 					</ul>
