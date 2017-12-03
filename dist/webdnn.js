@@ -6852,6 +6852,9 @@ var pako_1 = pako$1;
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 const pako = pako_1;
 /**
  * @protected
@@ -7363,6 +7366,9 @@ class DescriptorRunner {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 const localforage = localforage_nopromises_min;
 /**
  * @private
@@ -7593,6 +7599,9 @@ class DescriptorRunnerFallback extends DescriptorRunner {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 const localforage$1 = localforage_nopromises_min;
 /**
  * @protected
@@ -7928,6 +7937,9 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
 function isWebGL2(gl) {
     return gl.constructor.name === 'WebGL2RenderingContext';
 }
+/**
+ * @private
+ */
 let instance;
 /**
  * @protected
@@ -8120,6 +8132,9 @@ class WebGLHandler {
     }
 }
 WebGLHandler.IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
+/**
+ * @private
+ */
 let availability = null;
 function checkNull(obj) {
     if (obj === null)
@@ -8358,6 +8373,9 @@ class BufferWebGL extends Buffer {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 const localforage$2 = localforage_nopromises_min;
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 /**
@@ -8797,6 +8815,9 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 let instance$1;
 /**
  * @protected
@@ -8965,6 +8986,9 @@ class BufferWebGPU extends Buffer {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 const localforage$3 = localforage_nopromises_min;
 /**
  * Check this device is iOS devices or not.
@@ -10230,7 +10254,12 @@ function load(directory, initOption = {}) {
                 }
                 yield runner.setDescriptorAndParameters(descriptor, parameters);
                 if (saveCache) {
-                    yield runner.saveCache(directory, descriptor, parameters);
+                    try {
+                        yield runner.saveCache(directory, descriptor, parameters);
+                    }
+                    catch (e) {
+                        /* do nothing */
+                    }
                 }
             }
             catch (ex) {

@@ -692,7 +692,7 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgl' {
 	import { GraphDescriptor } from 'webdnn/graph_descriptor/graph_descriptor';
 	import { Allocation, MemoryLayout, ResolvedAllocation } from 'webdnn/graph_descriptor/memory_layout';
 	/**
-	 * @protecte
+	 * @protected
 	 */
 	export type ChannelMode = 'RGBA' | 'R';
 	/**
@@ -1790,7 +1790,7 @@ declare module 'webdnn/webdnn' {
 	     *
 	     *  Fetch all asset files. If failed, an error is thrown.
 	     *
-	     * - `cacheFirst`
+	     * - `cacheOnly`
 	     *
 	     *  If cache is exist, use cache, otherwise, an error is thrown.
 	     *

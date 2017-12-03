@@ -6888,6 +6888,9 @@ var pako_1 = pako$1;
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var pako = pako_1;
 /**
  * @protected
@@ -7449,6 +7452,9 @@ var DescriptorRunner = /** @class */ (function () {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var localforage = localforage_nopromises_min;
 /**
  * @private
@@ -7785,6 +7791,9 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var localforage$1 = localforage_nopromises_min;
 /**
  * @protected
@@ -8199,6 +8208,9 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
 function isWebGL2(gl) {
     return gl.constructor.name === 'WebGL2RenderingContext';
 }
+/**
+ * @private
+ */
 var instance;
 /**
  * @protected
@@ -8410,6 +8422,9 @@ var WebGLHandler = /** @class */ (function () {
     WebGLHandler.IS_SAFARI = navigator.userAgent.toLowerCase().indexOf('safari') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome') === -1;
     return WebGLHandler;
 }());
+/**
+ * @private
+ */
 var availability = null;
 function checkNull(obj) {
     if (obj === null)
@@ -8700,6 +8715,9 @@ var BufferWebGL = /** @class */ (function (_super) {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var localforage$2 = localforage_nopromises_min;
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 /**
@@ -9318,6 +9336,9 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var instance$1;
 /**
  * @protected
@@ -9523,6 +9544,9 @@ var BufferWebGPU = /** @class */ (function (_super) {
  * @module webdnn
  */
 /** Don't Remove This comment block */
+/**
+ * @private
+ */
 var localforage$3 = localforage_nopromises_min;
 /**
  * Check this device is iOS devices or not.
@@ -10867,7 +10891,7 @@ function initBackend(backendName, option) {
 function load(directory, initOption) {
     if (initOption === void 0) { initOption = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var _a, backendOrder, _b, backendOptions, _c, cacheStrategy, _d, saveCache, progressCallback, weightDirectory, transformUrlDelegate, backendName, runner, descriptor, parameters, fetchedDescriptor, cachedDescriptor, _e, ex_2;
+        var _a, backendOrder, _b, backendOptions, _c, cacheStrategy, _d, saveCache, progressCallback, weightDirectory, transformUrlDelegate, backendName, runner, descriptor, parameters, fetchedDescriptor, cachedDescriptor, _e, e_1, ex_2;
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
@@ -10891,7 +10915,7 @@ function load(directory, initOption) {
                     });
                     _f.label = 1;
                 case 1:
-                    if (!(backendOrder.length > 0)) return [3 /*break*/, 34];
+                    if (!(backendOrder.length > 0)) return [3 /*break*/, 36];
                     backendName = backendOrder.shift();
                     return [4 /*yield*/, initBackend(backendName, backendOptions[backendName])];
                 case 2:
@@ -10900,7 +10924,7 @@ function load(directory, initOption) {
                         return [3 /*break*/, 1];
                     _f.label = 3;
                 case 3:
-                    _f.trys.push([3, 32, , 33]);
+                    _f.trys.push([3, 34, , 35]);
                     descriptor = void 0;
                     parameters = void 0;
                     fetchedDescriptor = void 0;
@@ -11003,18 +11027,24 @@ function load(directory, initOption) {
                 case 28: return [4 /*yield*/, runner.setDescriptorAndParameters(descriptor, parameters)];
                 case 29:
                     _f.sent();
-                    if (!saveCache) return [3 /*break*/, 31];
-                    return [4 /*yield*/, runner.saveCache(directory, descriptor, parameters)];
+                    if (!saveCache) return [3 /*break*/, 33];
+                    _f.label = 30;
                 case 30:
+                    _f.trys.push([30, 32, , 33]);
+                    return [4 /*yield*/, runner.saveCache(directory, descriptor, parameters)];
+                case 31:
                     _f.sent();
-                    _f.label = 31;
-                case 31: return [3 /*break*/, 33];
+                    return [3 /*break*/, 33];
                 case 32:
+                    e_1 = _f.sent();
+                    return [3 /*break*/, 33];
+                case 33: return [3 /*break*/, 35];
+                case 34:
                     ex_2 = _f.sent();
                     console.warn("Model loading failed for " + backendName + " backend. Trying next backend: " + ex_2.message);
                     return [3 /*break*/, 1];
-                case 33: return [2 /*return*/, runner];
-                case 34: throw new Error('No backend is available');
+                case 35: return [2 /*return*/, runner];
+                case 36: throw new Error('No backend is available');
             }
         });
     });

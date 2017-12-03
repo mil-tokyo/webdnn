@@ -390,7 +390,11 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
             await runner.setDescriptorAndParameters(descriptor, parameters);
 
             if (saveCache) {
-                await runner.saveCache(directory, descriptor, parameters);
+                try {
+                    await runner.saveCache(directory, descriptor, parameters);
+                } catch (e) {
+                    /* do nothing */
+                }
             }
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
