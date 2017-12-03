@@ -14,7 +14,11 @@ export function isWebGL2(gl: WebGLRenderingContext | WebGL2RenderingContext): gl
     return gl.constructor.name === 'WebGL2RenderingContext'
 }
 
+/**
+ * @private
+ */
 let instance: WebGLHandler;
+
 /**
  * @protected
  */
@@ -218,9 +222,29 @@ export default class WebGLHandler {
             gl.finish();
         }
     }
+
+    get MAX_TEXTURE_SIZE() {
+        let MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE));
+
+        // FIXME: In most case, MAX_TEXTURE_SIZE=4096 is the fastest (Why?).
+        if (MAX_TEXTURE_SIZE >= 16384) {
+            return 4096;
+
+        } else if (MAX_TEXTURE_SIZE >= 8192) {
+            return 4096;
+
+        } else if (MAX_TEXTURE_SIZE >= 4096) {
+            return 4096;
+
+        } else {
+            throw new Error(`MAX_TEXTURE_SIZE is too small: ${MAX_TEXTURE_SIZE}`);
+        }
+    }
 }
 
-
+/**
+ * @private
+ */
 let availability: boolean | null = null;
 
 function checkNull<T>(obj: T | null) {

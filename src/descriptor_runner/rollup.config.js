@@ -1,3 +1,4 @@
+import commonjs from 'rollup-plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2'
 
 export default {
@@ -15,6 +16,7 @@ export default {
         typescript({
             typescript: require('typescript'),
             tsconfig: './src/descriptor_runner/tsconfig.json'
-        })
+        }),
+        commonjs()
     ]
 }

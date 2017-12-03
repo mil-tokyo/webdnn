@@ -11,8 +11,8 @@ import { BackendName } from "../webdnn";
 /**
  * @protected
  */
-export interface DescriptorRunnerConstructor<D extends GraphDescriptor> {
-    new(option?: any): DescriptorRunner<D>
+export interface DescriptorRunnerConstructor<D extends GraphDescriptor, P> {
+    new(option?: any): DescriptorRunner<D, P>
 
     checkAvailability(): boolean;
 }
@@ -20,9 +20,9 @@ export interface DescriptorRunnerConstructor<D extends GraphDescriptor> {
 /**
  * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
  */
-export abstract class DescriptorRunner<D extends GraphDescriptor> {
+export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
     /**
-     * For Developper:
+     * For Developer:
      *
      * `DescriptorRunner` executes computation based on `GraphDescriptor`.
      *
@@ -52,31 +52,61 @@ export abstract class DescriptorRunner<D extends GraphDescriptor> {
      */
 
     /**
-     * The name of active backend
+     * backend name
+     * @type {string}
      */
     readonly backendName: BackendName;
 
-    protected _running: boolean = false;
-
+    /**
+     * descriptor
+     * @type {null}
+     */
     protected descriptor: D | null = null;
 
+    /**
+     * placeholder context which manages all placeholders and their values
+     */
     protected placeholderContext: PlaceholderContext | null;
 
     /**
-     * @protected
+     * Return `true` if this backend is available in this environment.
+     * @returns {boolean}
      */
-    ignoreCache: boolean = false;
-
+    static checkAvailability() {
+        return false;
+    }
 
     /**
-     * Initialize this runner
-     *
-     * @protected
+     * Initialize descriptor runner asynchronously
+     * @returns {Promise<void>} Promise object which is resolved when the initialization finished.
      */
     abstract async init(): Promise<void>;
 
     /**
-     * Fetch descriptor from specified directory.
+     * set graph descriptor and parameters
+     * @protected
+     */
+    abstract async setDescriptorAndParameters(descriptor: D, parameters: P): Promise<void>;
+
+    /**
+     * Fetch graph descriptor from specified directory.
+     *
+     * @param directory directory where descriptor is contained.
+     * You can also provide URL of other domain like this.
+     *
+     * ```javascript
+     * await runner.load('://my.other.domain.com/my_model');
+     * ```
+     *
+     * However sometimes it can't because of Cross-Origin-Resource-Security policy.
+     *
+     * @protected
+     */
+    abstract async fetchDescriptor(directory: string): Promise<D>;
+
+    /**
+     * Fetch parameter files from specified directory.
+     *
      * @param directory directory where descriptor is contained.
      * You can also provide URL of other domain like this.
      *
@@ -89,7 +119,25 @@ export abstract class DescriptorRunner<D extends GraphDescriptor> {
      * @param progressCallback callback which is called to notice the loading is progressing.
      * @protected
      */
-    abstract async load(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<void>;
+    abstract async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<P>;
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    abstract async restoreCachedDescriptor(directory: string): Promise<D | null>
+
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    abstract async restoreCachedParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<P | null>;
+
+    /**
+     * save cache
+     * @protected
+     */
+    abstract async saveCache(directory: string, descriptor: D, parameters: P): Promise<void>;
 
     /**
      * Set actual value into placeholders. If no placeholder is exist in graph descriptor, it's no need to call this function.
@@ -118,12 +166,4 @@ export abstract class DescriptorRunner<D extends GraphDescriptor> {
      * [[webdnn.DescriptorRunner.getOutputViews|`getOutputViews`]] before calling this function.
      */
     abstract async run(): Promise<void>;
-
-    /**
-     * Return `true` if model is running.
-     * While running, calling run() again or modifying input is invalid.
-     */
-    get running(): boolean {
-        return this._running;
-    }
 }

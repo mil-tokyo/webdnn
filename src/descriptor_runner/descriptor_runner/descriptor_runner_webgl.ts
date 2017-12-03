@@ -9,9 +9,15 @@ import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGL } from "../graph_descriptor/graph_descriptor_webgl";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
+import * as localforage_ from "../third/localforage.nopromises.min";
 import { BackendName, getConfiguration } from "../webdnn";
 import WebGLHandler from "../webgl_handler";
 import { DescriptorRunner } from "./descriptor_runner";
+
+/**
+ * @private
+ */
+const localforage = localforage_.default;
 
 /**
  * @protected
@@ -58,7 +64,7 @@ const vertexArray = new Float32Array([
 /**
  * @protected
  */
-export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL> {
+export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescriptorWebGL, ArrayBuffer> {
     readonly backendName: BackendName = 'webgl';
 
     private runtimeInfo: RuntimeInfo;
@@ -85,40 +91,49 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         this.buffers = new Map();
     }
 
-    async load(directory: string, progressCallback?: (loaded: number, total: number) => any) {
-        let MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.handler.gl.getParameter(this.handler.gl.MAX_TEXTURE_SIZE));
+    async fetchDescriptor(directory: string) {
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.json`);
+        return res.json();
+    }
 
-        // FIXME: In most case, MAX_TEXTURE_SIZE=4096 is the fastest (Why?).
-        if (MAX_TEXTURE_SIZE >= 16384) {
-            MAX_TEXTURE_SIZE = 4096;
+    async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any) {
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.bin`);
+        return readArrayBufferProgressively(res, progressCallback);
+    }
 
-        } else if (MAX_TEXTURE_SIZE >= 8192) {
-            MAX_TEXTURE_SIZE = 4096;
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebGL | null> {
+        return localforage.getItem<GraphDescriptorWebGL>(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`).catch(() => null);
+    }
 
-        } else if (MAX_TEXTURE_SIZE >= 4096) {
-            MAX_TEXTURE_SIZE = 4096;
+    /**
+     * Load cached descriptor from WebStorage
+     * @protected
+     */
+    async restoreCachedParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer | null> {
+        let parameter = await localforage.getItem<ArrayBuffer>(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`).catch(() => null);
+        if (parameter && progressCallback) progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter
+    }
 
-        } else {
-            throw new Error(`MAX_TEXTURE_SIZE is too small: ${MAX_TEXTURE_SIZE}`);
-        }
-
-        let [descriptor, weightRawArray] = await Promise.all([
-            webdnnFetch(`${directory}/graph_${this.backendName}_${MAX_TEXTURE_SIZE}.json`, {
-                ignoreCache: this.ignoreCache
-            })
-                .then(res => res.json() as Promise<GraphDescriptorWebGL>),
-
-            webdnnFetch(`${directory}/weight_${this.backendName}_${MAX_TEXTURE_SIZE}.bin`, {
-                ignoreCache: this.ignoreCache,
-                progressCallback: progressCallback
-            })
-                .then(res => readArrayBufferProgressively(res, progressCallback))
+    /**
+     * save cache
+     */
+    async saveCache(directory: string, descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer): Promise<void> {
+        await Promise.all([
+            localforage.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`, descriptor),
+            localforage.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`, parameters)
         ]);
+    };
 
+    async setDescriptorAndParameters(descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer) {
         await this.setDescriptor(descriptor);
         await this.compile();
 
-        await this.initializeStaticBuffer(weightRawArray);
+        await this.initializeStaticBuffer(parameters);
         if (this.placeholderContext && this.placeholderContext.isResolved) await this.initializeDynamicBuffer();
     }
 
@@ -402,7 +417,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
         if (!this.placeholderContext.isResolved) throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
-        this._running = true;
 
         let gl = this.handler.gl;
         let runtimeInfo = this.runtimeInfo;
@@ -512,6 +526,5 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             for (let buffer of runtimeInfo.outputs) await buffer.syncReadViews();
         }
 
-        this._running = false;
     }
 }

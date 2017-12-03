@@ -10,7 +10,7 @@ import WeightDecoderRaw from "./weight_decoder_raw";
 /**
  * @protected
  */
-export default function get_weight_decoder(name: string): WeightDecoder {
+export default function getWeightDecoder(name: string): WeightDecoder {
     switch (name) {
         case 'raw':
             return new WeightDecoderRaw();
