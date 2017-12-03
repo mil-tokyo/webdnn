@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="../assets/css/style.css">
 	<link rel="stylesheet" href="../assets/css/prism.css">
 	<script src="../assets/js/prism.js"></script>
-	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">-->
 </head>
 <body>
 <div class="sidenav">
@@ -48,7 +47,7 @@
 					<div class="members-group-body">
 						<ul class="tsd-hierarchy">
 							<li>
-								<code><a href="webdnn.descriptorrunner.html" class="signature-type">DescriptorRunner</a><span class="signature-symbol">&lt;</span><code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code><span class="signature-symbol">&gt;</span></code>
+								<code><a href="webdnn.descriptorrunner.html" class="signature-type">DescriptorRunner</a><span class="signature-symbol">&lt;</span><code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code><span class="signature-symbol">, </span><code><span class="signature-type">ArrayBuffer</span>                    </code><span class="signature-symbol">&gt;</span></code>
 								<ul class="tsd-hierarchy">
 									<li>
 										<code class="target">DescriptorRunnerFallback</code>
@@ -71,7 +70,7 @@
 								<code>
 backend<wbr>Name:<code><a href="../modules/webdnn.html#backendname" class="signature-type">BackendName</a></code> =&nbsp;&quot;fallback&quot;        </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L27">[descriptor_runner/descriptor_runner_fallback.ts:27]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L34">[descriptor_runner/descriptor_runner_fallback.ts:34]</a>
 								</span>
 							</header>
 						</div>
@@ -82,62 +81,24 @@ backend<wbr>Name:<code><a href="../modules/webdnn.html#backendname" class="signa
 					</section>
 				</div>
 			</section>
-			<section class="members-group tsd-is-inherited tsd-is-external">
-				<header class="members-group-header">Accessors</header>
-				<div class="members-group-body">
-					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited tsd-is-external">
-						<a name="running" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="running" class="anchor"></a>
-								<a href="#running" class="anchor-link">#</a>
-								<code>
-<span>get</span> running<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">boolean</span>                    </code>                </code>
-								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner.ts#L126">[descriptor_runner/descriptor_runner.ts:126]</a>
-								</span>
-							</header>
-						</div>
-						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited tsd-is-external">
-							<div class="members-group-body">
-								<section class="signature-body-section signature-body-comment">
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>Return <code>true</code> if model is running.
-											While running, calling run() again or modifying input is invalid.</p>
-										</div>
-									</div>
-								</section>
-								<section class="signature-body-section">
-									<header class="signature-body-section-header">Returns</header>
-									<div class="signature-body-section-body signature-body-section-returns">
-										<code>
-<span class="signature-type">boolean</span>                    </code>
-									</div>
-								</section>
-							</div>
-						</section>
-					</section>
-				</div>
-			</section>
 			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Methods</header>
 				<div class="members-group-body">
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-						<a name="getinputviews" class="anchor"></a>
+						<a name="fetchdescriptor" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="getinputviews" class="anchor"></a>
-								<a href="#getinputviews" class="anchor-link anchor-link-large">#</a>
+								<a id="fetchdescriptor" class="anchor"></a>
+								<a href="#fetchdescriptor" class="anchor-link anchor-link-large">#</a>
 								<div class="signature-header-titles">
 									<h3 class="signatures-header-title">
-										get<wbr>Input<wbr>Views
+										fetch<wbr>Descriptor
 									</h3>
 									<div>
 										<code>
-get<wbr>Input<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>                    </code>
+fetch<wbr>Descriptor<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">any</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L196">[descriptor_runner/descriptor_runner_fallback.ts:196]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L59">[descriptor_runner/descriptor_runner_fallback.ts:59]</a>
 										</span>
 									</div>
 								</div>
@@ -147,44 +108,40 @@ get<wbr>Input<wbr>Views<span class="tsd-signature-symbol">(</span><span class="t
 									<section class="signature-body-section signature-body-comment">
 									</section>
 									<section class="signature-body-section">
-										<header class="signature-body-section-header">Returns</header>
-										<div class="signature-body-section-body signature-body-section-returns">
-											<code>
-<code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>directory</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">string</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
 										</div>
-									</section>
-								</div>
-							</div>
-						</div>
-					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-						<a name="getoutputviews" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="getoutputviews" class="anchor"></a>
-								<a href="#getoutputviews" class="anchor-link anchor-link-large">#</a>
-								<div class="signature-header-titles">
-									<h3 class="signatures-header-title">
-										get<wbr>Output<wbr>Views
-									</h3>
-									<div>
-										<code>
-get<wbr>Output<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>                    </code>
-										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L214">[descriptor_runner/descriptor_runner_fallback.ts:214]</a>
-										</span>
-									</div>
-								</div>
-							</header>
-							<div class="signatures-body">
-								<div>
-									<section class="signature-body-section signature-body-comment">
 									</section>
 									<section class="signature-body-section">
 										<header class="signature-body-section-header">Returns</header>
 										<div class="signature-body-section-body signature-body-section-returns">
 											<code>
-<code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">any</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
 										</div>
 									</section>
 								</div>
@@ -192,54 +149,20 @@ get<wbr>Output<wbr>Views<span class="tsd-signature-symbol">(</span><span class="
 						</div>
 					</section>
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-						<a name="init" class="anchor"></a>
+						<a name="fetchparameters" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
-								<a id="init" class="anchor"></a>
-								<a href="#init" class="anchor-link anchor-link-large">#</a>
+								<a id="fetchparameters" class="anchor"></a>
+								<a href="#fetchparameters" class="anchor-link anchor-link-large">#</a>
 								<div class="signature-header-titles">
 									<h3 class="signatures-header-title">
-										init
+										fetch<wbr>Parameters
 									</h3>
 									<div>
 										<code>
-init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+fetch<wbr>Parameters<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, progressCallback<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">function</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">ArrayBuffer</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L40">[descriptor_runner/descriptor_runner_fallback.ts:40]</a>
-										</span>
-									</div>
-								</div>
-							</header>
-							<div class="signatures-body">
-								<div>
-									<section class="signature-body-section signature-body-comment">
-									</section>
-									<section class="signature-body-section">
-										<header class="signature-body-section-header">Returns</header>
-										<div class="signature-body-section-body signature-body-section-returns">
-											<code>
-<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
-										</div>
-									</section>
-								</div>
-							</div>
-						</div>
-					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-						<a name="load" class="anchor"></a>
-						<div class="signatures">
-							<header class="signatures-header">
-								<a id="load" class="anchor"></a>
-								<a href="#load" class="anchor-link anchor-link-large">#</a>
-								<div class="signature-header-titles">
-									<h3 class="signatures-header-title">
-										load
-									</h3>
-									<div>
-										<code>
-load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, progressCallback<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">function</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
-										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L44">[descriptor_runner/descriptor_runner_fallback.ts:44]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L64">[descriptor_runner/descriptor_runner_fallback.ts:64]</a>
 										</span>
 									</div>
 								</div>
@@ -295,6 +218,108 @@ load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signatu
 										<header class="signature-body-section-header">Returns</header>
 										<div class="signature-body-section-body signature-body-section-returns">
 											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">ArrayBuffer</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+						<a name="getinputviews" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="getinputviews" class="anchor"></a>
+								<a href="#getinputviews" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										get<wbr>Input<wbr>Views
+									</h3>
+									<div>
+										<code>
+get<wbr>Input<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L230">[descriptor_runner/descriptor_runner_fallback.ts:230]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+						<a name="getoutputviews" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="getoutputviews" class="anchor"></a>
+								<a href="#getoutputviews" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										get<wbr>Output<wbr>Views
+									</h3>
+									<div>
+										<code>
+get<wbr>Output<wbr>Views<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L248">[descriptor_runner/descriptor_runner_fallback.ts:248]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<code><a href="webdnn.symbolicfloat32array.html" class="signature-type">SymbolicFloat32Array</a></code><span class="signature-symbol">[]</span>                </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+						<a name="init" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="init" class="anchor"></a>
+								<a href="#init" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										init
+									</h3>
+									<div>
+										<code>
+init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L47">[descriptor_runner/descriptor_runner_fallback.ts:47]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
 <span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
 										</div>
 									</section>
@@ -316,7 +341,7 @@ load<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signatu
 										<code>
 run<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L160">[descriptor_runner/descriptor_runner_fallback.ts:160]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L197">[descriptor_runner/descriptor_runner_fallback.ts:197]</a>
 										</span>
 									</div>
 								</div>
@@ -324,6 +349,176 @@ run<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol"
 							<div class="signatures-body">
 								<div>
 									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+						<a name="savecache" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="savecache" class="anchor"></a>
+								<a href="#savecache" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										save<wbr>Cache
+									</h3>
+									<div>
+										<code>
+save<wbr>Cache<span class="tsd-signature-symbol">(</span>directory<span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>, descriptor<span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code>, parameters<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayBuffer</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L90">[descriptor_runner/descriptor_runner_fallback.ts:90]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>save cache</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>directory</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">string</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>descriptor</code>
+														</td>
+														<td>
+															<code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>parameters</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">ArrayBuffer</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+						<a name="setdescriptorandparameters" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="setdescriptorandparameters" class="anchor"></a>
+								<a href="#setdescriptorandparameters" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										set<wbr>Descriptor<wbr>And<wbr>Parameters
+									</h3>
+									<div>
+										<code>
+set<wbr>Descriptor<wbr>And<wbr>Parameters<span class="tsd-signature-symbol">(</span>descriptor<span class="tsd-signature-symbol">: </span><code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code>, parameters<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayBuffer</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L51">[descriptor_runner/descriptor_runner_fallback.ts:51]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>descriptor</code>
+														</td>
+														<td>
+															<code><a href="../interfaces/webdnn.graphdescriptorfallback.html" class="signature-type">GraphDescriptorFallback</a></code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>parameters</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">ArrayBuffer</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
 									</section>
 									<section class="signature-body-section">
 										<header class="signature-body-section-header">Returns</header>
@@ -350,7 +545,7 @@ run<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol"
 										<code>
 set<wbr>Placeholder<wbr>Value<span class="tsd-signature-symbol">(</span>values<span class="tsd-signature-symbol">: </span><code><span class="signature-type">object</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">Promise</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">void</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L150">[descriptor_runner/descriptor_runner_fallback.ts:150]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L187">[descriptor_runner/descriptor_runner_fallback.ts:187]</a>
 										</span>
 									</div>
 								</div>
@@ -400,7 +595,7 @@ set<wbr>Placeholder<wbr>Value<span class="tsd-signature-symbol">(</span>values<s
 							</div>
 						</div>
 					</section>
-					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-static tsd-is-external">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-static tsd-is-external">
 						<a name="checkavailability" class="anchor"></a>
 						<div class="signatures">
 							<header class="signatures-header">
@@ -414,7 +609,7 @@ set<wbr>Placeholder<wbr>Value<span class="tsd-signature-symbol">(</span>values<s
 										<code>
 check<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">boolean</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/36444eb/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L36">[descriptor_runner/descriptor_runner_fallback.ts:36]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/d1f698e/src/descriptor_runner/descriptor_runner/descriptor_runner_fallback.ts#L43">[descriptor_runner/descriptor_runner_fallback.ts:43]</a>
 										</span>
 									</div>
 								</div>
@@ -450,18 +645,18 @@ check<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="ts
 					</ul>
 				</li>
 				<li>
-					<header class="toc-header">Accessors</header>
-					<ul class="toc-list">
-						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited tsd-is-external">
-							<a href="webdnn.descriptorrunnerfallback.html#running" class="tsd-kind-icon">
-								running
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li>
 					<header class="toc-header">Methods</header>
 					<ul class="toc-list">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.descriptorrunnerfallback.html#fetchdescriptor" class="tsd-kind-icon">
+								fetch<wbr>Descriptor
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.descriptorrunnerfallback.html#fetchparameters" class="tsd-kind-icon">
+								fetch<wbr>Parameters
+							</a>
+						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
 							<a href="webdnn.descriptorrunnerfallback.html#getinputviews" class="tsd-kind-icon">
 								get<wbr>Input<wbr>Views
@@ -478,13 +673,18 @@ check<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="ts
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-							<a href="webdnn.descriptorrunnerfallback.html#load" class="tsd-kind-icon">
-								load
+							<a href="webdnn.descriptorrunnerfallback.html#run" class="tsd-kind-icon">
+								run
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
-							<a href="webdnn.descriptorrunnerfallback.html#run" class="tsd-kind-icon">
-								run
+							<a href="webdnn.descriptorrunnerfallback.html#savecache" class="tsd-kind-icon">
+								save<wbr>Cache
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
+							<a href="webdnn.descriptorrunnerfallback.html#setdescriptorandparameters" class="tsd-kind-icon">
+								set<wbr>Descriptor<wbr>And<wbr>Parameters
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-external">
@@ -492,7 +692,7 @@ check<wbr>Availability<span class="tsd-signature-symbol">(</span><span class="ts
 								set<wbr>Placeholder<wbr>Value
 							</a>
 						</li>
-						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static tsd-is-external">
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-static tsd-is-external">
 							<a href="webdnn.descriptorrunnerfallback.html#checkavailability" class="tsd-kind-icon">
 								check<wbr>Availability
 							</a>
