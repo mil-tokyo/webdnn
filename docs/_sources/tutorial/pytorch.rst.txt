@@ -3,16 +3,6 @@ Use with PyTorch model
 
 In this tutorial, we'll convert AlexNet [#f1]_ pretrained in PyTorch [#f2]_ into WebDNN execution format.
 
-
-.. warning::
-
-    PyTorch convert use :class:`~webdnn.frontend.onnx.ONNXConverter` in conversion. Therefore both :code:`torch` and :code:`onnx`
-    python package are required.
-
-    PyTorch supports onnx export, but currently (12.01.2017), :code:`torch.onnx` module is not included in release build of pytorch.
-    Therefore you have to build pytorch from source.
-    See `https://github.com/pytorch/pytorch#from-source <https://github.com/pytorch/pytorch#from-source>`_.
-
 1. Load PyTorch pretrained model
 
 .. code-block:: python
