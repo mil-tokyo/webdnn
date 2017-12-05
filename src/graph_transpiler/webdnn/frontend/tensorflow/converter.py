@@ -21,6 +21,10 @@ FLAG_TF_INSTALLED = True
 try:
     import tensorflow as tf
 
+    if not "1.2" <= tf.VERSION < "1.4":
+        raise NotImplementedError(f"WebDNN supports Keras >=v1.2.0,<=v1.4.0 Currently, TensorFlow {tf.VERSION} is installed.")
+
+
 except Exception as e:
     console.warning(traceback.format_exc())
 

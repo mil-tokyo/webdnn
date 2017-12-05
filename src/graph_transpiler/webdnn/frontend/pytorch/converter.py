@@ -14,6 +14,9 @@ try:
     import torch
     import torch.onnx
 
+    if not "0.3" <= torch.__version__:
+        raise NotImplementedError(f"WebDNN supports PyTorch >= v0.3 Currently, PyTorch {torch.__version__} is installed.")
+
     FLAG_PYTORCH_INSTALLED = True
 
 except ImportError as e:
@@ -38,13 +41,6 @@ class PyTorchConverter(Converter["torch.nn.Module"]):
 
     In conversion, model is exported as ONNX format, and then converted by :class:`~webdnn.frontend.onnx.ONNXConverter`.
     Therefore both torch and onnx python package are required.
-
-    .. warning::
-
-        PyTorch supports onnx export, but currently (12.01.2017), :code:`torch.onnx` module is not included in release build of pytorch.
-        Therefore you have to build pytorch from source.
-        See `https://github.com/pytorch/pytorch#from-source <https://github.com/pytorch/pytorch#from-source>`_.
-
     """
 
     def __init__(self):
