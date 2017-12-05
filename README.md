@@ -12,6 +12,7 @@ WebDNN can execute DNN models trained by follow deep learning frameworks on web 
 
 - [TensorFlow](https://github.com/tensorflow/tensorflow) (`v1.2.0` - `v1.4.0`)
 - [Keras](https://github.com/fchollet/keras) (`v2.0.0` - `v2.1.1`)
+- [PyTorch](https://github.com/pytorch/pytorch) (`v0.3.0`)
 - [Chainer](https://github.com/chainer/chainer) (`v1.23.0` - `v3.1.0`)
 - [Caffe](https://github.com/BVLC/caffe)
 
