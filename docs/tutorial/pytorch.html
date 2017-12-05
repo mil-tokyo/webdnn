@@ -184,14 +184,6 @@
   <div class="section" id="use-with-pytorch-model">
 <h1>Use with PyTorch model<a class="headerlink" href="#use-with-pytorch-model" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we&#8217;ll convert AlexNet <a class="footnote-reference" href="#f1" id="id1">[1]</a> pretrained in PyTorch <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>PyTorch convert use <a class="reference internal" href="../api_reference/graph_transpiler/frontend/onnx.html#webdnn.frontend.onnx.ONNXConverter" title="webdnn.frontend.onnx.ONNXConverter"><code class="xref py py-class docutils literal"><span class="pre">ONNXConverter</span></code></a> in conversion. Therefore both <code class="code docutils literal"><span class="pre">torch</span></code> and <code class="code docutils literal"><span class="pre">onnx</span></code>
-python package are required.</p>
-<p class="last">PyTorch supports onnx export, but currently (12.01.2017), <code class="code docutils literal"><span class="pre">torch.onnx</span></code> module is not included in release build of pytorch.
-Therefore you have to build pytorch from source.
-See <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">https://github.com/pytorch/pytorch#from-source</a>.</p>
-</div>
 <ol class="arabic simple">
 <li>Load PyTorch pretrained model</li>
 </ol>

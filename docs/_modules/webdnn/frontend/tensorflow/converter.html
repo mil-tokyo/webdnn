@@ -189,6 +189,10 @@
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
+    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;1.2&quot;</span> <span class="o">&lt;=</span> <span class="n">tf</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&lt;</span> <span class="s2">&quot;1.4&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Keras &gt;=v1.2.0,&lt;=v1.4.0 Currently, TensorFlow </span><span class="si">{tf.VERSION}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
+
+
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="n">console</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
 

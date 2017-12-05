@@ -201,12 +201,6 @@
 <dd><p>Converter for <a class="reference external" href="http://pytorch.org/">PyTorch</a>.</p>
 <p>In conversion, model is exported as ONNX format, and then converted by <a class="reference internal" href="onnx.html#webdnn.frontend.onnx.ONNXConverter" title="webdnn.frontend.onnx.ONNXConverter"><code class="xref py py-class docutils literal"><span class="pre">ONNXConverter</span></code></a>.
 Therefore both torch and onnx python package are required.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">PyTorch supports onnx export, but currently (12.01.2017), <code class="code docutils literal"><span class="pre">torch.onnx</span></code> module is not included in release build of pytorch.
-Therefore you have to build pytorch from source.
-See <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">https://github.com/pytorch/pytorch#from-source</a>.</p>
-</div>
 <dl class="method">
 <dt id="webdnn.frontend.pytorch.PyTorchConverter.convert">
 <code class="descname">convert</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/pytorch/converter.html#PyTorchConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.pytorch.PyTorchConverter.convert" title="Permalink to this definition">¶</a></dt>
