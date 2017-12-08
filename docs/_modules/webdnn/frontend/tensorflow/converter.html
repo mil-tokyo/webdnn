@@ -171,6 +171,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span><span class="p">,</span> <span class="n">CyclicGraphError</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.util</span> <span class="k">import</span> <span class="n">semver</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.optimize_rule</span> <span class="k">import</span> <span class="n">OptimizeRuleGroup</span>
@@ -189,8 +190,9 @@
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;1.2&quot;</span> <span class="o">&lt;=</span> <span class="n">tf</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&lt;</span> <span class="s2">&quot;1.4&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Keras &gt;=v1.2.0,&lt;=v1.4.0 Currently, TensorFlow </span><span class="si">{tf.VERSION}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
+    <span class="n">VERSION_MAJOR</span><span class="p">,</span> <span class="n">VERSION_MINOR</span><span class="p">,</span> <span class="n">VERSION_PATCH</span> <span class="o">=</span> <span class="n">semver</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">VERSION</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="n">VERSION_MAJOR</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">VERSION_MINOR</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports TensorFlow &gt;=v1.2.0,&lt;=v1.4.0 Currently, TensorFlow </span><span class="si">{tf.VERSION}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
 
 
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
