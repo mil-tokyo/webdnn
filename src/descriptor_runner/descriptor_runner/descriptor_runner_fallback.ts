@@ -4,7 +4,7 @@
 /** Don't Remove This comment block */
 
 import get_weight_decoder from "../decoder/get_weight_decoder";
-import webdnnFetch, { readArrayBufferProgressively } from "../fetch"
+import webdnnFetch, { readArrayBufferProgressively, transformUrl } from "../fetch"
 import { GraphDescriptorFallback } from "../graph_descriptor/graph_descriptor_fallback";
 import { Allocation, ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
@@ -119,22 +119,22 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
             let script = document.createElement("script");
             script.type = "text/javascript";
             let promise = new Promise((resolve, reject) => {
-               if ((script as any).readyState){  //IE
-                    (script as any).onreadystatechange = function() {
+                if ((script as any).readyState) {  //IE
+                    (script as any).onreadystatechange = function () {
                         if ((script as any).readyState == "loaded" ||
-                                (script as any).readyState == "complete") {
+                            (script as any).readyState == "complete") {
                             (script as any).onreadystatechange = null;
                             resolve();
                         }
                     };
                 } else {  //Others
-                    script.onload = function(){
+                    script.onload = function () {
                         resolve();
                     };
                 }
             });
 
-            script.src = url;
+            script.src = transformUrl(url);
             document.getElementsByTagName("head")[0].appendChild(script);
             return promise;
         }
