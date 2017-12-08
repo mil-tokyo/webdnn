@@ -20,7 +20,10 @@ class Color:
 
 
 def colorize(text: str, color: int, bright: bool = False):
-    return f"{ESC}[{'1' if bright else '0'};3{color}m{text}{ESC}[0;39m"
+    if sys.platform == 'win32':
+      return text
+    else:
+      return f"{ESC}[{'1' if bright else '0'};3{color}m{text}{ESC}[0;39m"
 
 
 def warning(message: str, category: Optional[Type[Warning]] = Warning):

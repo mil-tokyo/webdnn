@@ -39,6 +39,7 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     private outputViews: SymbolicFloat32Array[] | null;
     private staticBuffer: Float32Array | null;
     private dynamicBuffer: Float32Array | null;
+    private directory: string;
 
     static checkAvailability() {
         return true;
@@ -57,6 +58,7 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     }
 
     async fetchDescriptor(directory: string) {
+        this.directory = directory;
         let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
         return res.json();
     }
@@ -111,10 +113,35 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     private async compile(): Promise<void> {
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
 
-        let dnn_fallback_kernel: any = null;
-        eval(this.descriptor.kernel_source);
+        let local_dnn_fallback_kernel = null;
 
-        this.kernelObj = dnn_fallback_kernel;
+        function loadScript(url) {
+            let script = document.createElement("script");
+            script.type = "text/javascript";
+            let promise = new Promise((resolve, reject) => {
+               if ((script as any).readyState){  //IE
+                    (script as any).onreadystatechange = function() {
+                        if ((script as any).readyState == "loaded" ||
+                                (script as any).readyState == "complete") {
+                            (script as any).onreadystatechange = null;
+                            resolve();
+                        }
+                    };
+                } else {  //Others
+                    script.onload = function(){
+                        resolve();
+                    };
+                }
+            });
+
+            script.src = url;
+            document.getElementsByTagName("head")[0].appendChild(script);
+            return promise;
+        }
+
+        await loadScript(`${this.directory}/kernels_fallback.js`);
+        local_dnn_fallback_kernel = (window as any).dnn_fallback_kernel; // "window.dnn_fallback_kernel" is defined in "kernels_fallback.js"
+        this.kernelObj = local_dnn_fallback_kernel;
     }
 
     private async initializeStaticBuffer(weightRawArray: ArrayBuffer) {

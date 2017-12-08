@@ -1,7 +1,10 @@
 import pkg_resources
 
-__version__ = pkg_resources.require("webdnn")[0].version
-
+try:
+  __version__ = pkg_resources.require("webdnn")[0].version
+except:
+  __version__ = '1.x.x.git'
+  pass
 from webdnn import backend
 from webdnn import encoder
 from webdnn import frontend
