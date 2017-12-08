@@ -6,6 +6,7 @@ from os import path
 
 from webdnn.frontend.converter import Converter
 from webdnn.frontend.onnx import ONNXConverter
+from webdnn.frontend.util import semver
 from webdnn.graph.graph import Graph
 from webdnn.util import console
 
@@ -14,7 +15,8 @@ try:
     import torch
     import torch.onnx
 
-    if not "0.3" <= torch.__version__:
+    VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(torch.__version__)
+    if not ((VERSION_MAJOR == 0) and (VERSION_MINOR >= 0.3)):
         raise NotImplementedError(f"WebDNN supports PyTorch >= v0.3 Currently, PyTorch {torch.__version__} is installed.")
 
     FLAG_PYTORCH_INSTALLED = True
