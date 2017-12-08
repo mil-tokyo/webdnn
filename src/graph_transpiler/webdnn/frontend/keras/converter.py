@@ -3,8 +3,10 @@ from collections import defaultdict
 from typing import List, Optional
 
 import numpy as np
+
 from webdnn.frontend.converter import Converter
 from webdnn.frontend.tensorflow import TensorFlowConverter
+from webdnn.frontend.util import semver
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
@@ -21,7 +23,8 @@ try:
     import keras.backend as K
     import tensorflow as tf
 
-    if not "2." <= keras.__version__ < "3.":
+    VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(keras.__version__)
+    if not (VERSION_MAJOR == 2):
         raise NotImplementedError(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
 
     FLAG_KERAS_INSTALLED = True

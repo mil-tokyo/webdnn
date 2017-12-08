@@ -11,6 +11,7 @@ from typing import List, Union, Sequence, Dict, Tuple
 import numpy as np
 
 from webdnn.frontend.converter import Converter, CyclicGraphError
+from webdnn.frontend.util import semver
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
@@ -38,7 +39,9 @@ try:
     import chainer
     import chainer.computational_graph
 
-    if "3." <= chainer.__version__ < "4.":
+    VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(chainer.__version__)
+
+    if VERSION_MAJOR == 3:
         # v3.x.x
 
         # In v3, Many functions are represented as instance of `chainer.function_node.FunctionNode`. However some functions are still
@@ -55,7 +58,7 @@ try:
         def to_variable_node(c_var: chainer.Variable):
             return c_var.node
 
-    elif "2." <= chainer.__version__ < "3.":
+    elif VERSION_MAJOR == 2:
         # v2.x.x
         T_FUNCTION = chainer.Function
         T_VARIABLE = chainer.variable.VariableNode
@@ -69,7 +72,7 @@ try:
         def to_variable_node(c_var: chainer.Variable):
             return c_var.node
 
-    elif "1.23" <= chainer.__version__ < "2.":
+    elif (VERSION_MAJOR == 1) and (VERSION_MINOR >= 23):
         # v1.x.x
         T_FUNCTION = chainer.Function
         T_VARIABLE = chainer.Variable

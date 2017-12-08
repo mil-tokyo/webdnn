@@ -3,6 +3,7 @@ import traceback
 from typing import List, Union, Optional, Dict, Sequence, Tuple
 
 from webdnn.frontend.converter import Converter, CyclicGraphError
+from webdnn.frontend.util import semver
 from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRuleGroup
@@ -21,8 +22,9 @@ FLAG_TF_INSTALLED = True
 try:
     import tensorflow as tf
 
-    if not "1.2" <= tf.VERSION < "1.4":
-        raise NotImplementedError(f"WebDNN supports Keras >=v1.2.0,<=v1.4.0 Currently, TensorFlow {tf.VERSION} is installed.")
+    VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(tf.VERSION)
+    if not ((VERSION_MAJOR == 1) and (2 <= VERSION_MINOR <= 4)):
+        raise NotImplementedError(f"WebDNN supports TensorFlow >=v1.2.0,<=v1.4.0 Currently, TensorFlow {tf.VERSION} is installed.")
 
 
 except Exception as e:

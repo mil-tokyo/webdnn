@@ -1,3 +1,6 @@
+import re
+from typing import Tuple
+
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 
@@ -29,3 +32,14 @@ Shape mismatch: a.shape[{i_a}] != b.shape[{i_b}]
 
         else:
             raise ValueError(f"Broadcast is failed: (a.shape)={a.shape}, (b.shape)={b.shape}")
+
+
+_REG_SEMVER = re.compile(r"""^(?P<major>(?:0|[1-9][0-9]*))(?:\.(?P<minor>(?:0|[1-9][0-9]*))(?:\.(?P<patch>(?:0|[1-9][0-9]*)))?)?""",
+                         re.VERBOSE)
+
+
+def semver(version_string) -> Tuple[int, int, int]:
+    match = _REG_SEMVER.match(version_string)
+
+    version_parts = match.groupdict()
+    return int(version_parts['major']), int(version_parts['minor'] or 0), int(version_parts['patch'] or 0)
