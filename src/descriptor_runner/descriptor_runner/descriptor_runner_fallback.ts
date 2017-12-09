@@ -113,35 +113,26 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     private async compile(): Promise<void> {
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
 
-        let local_dnn_fallback_kernel = null;
-
-        function loadScript(url) {
+        await new Promise((resolve) => {
             let script = document.createElement("script");
             script.type = "text/javascript";
-            let promise = new Promise((resolve, reject) => {
-                if ((script as any).readyState) {  //IE
-                    (script as any).onreadystatechange = function () {
-                        if ((script as any).readyState == "loaded" ||
-                            (script as any).readyState == "complete") {
-                            (script as any).onreadystatechange = null;
-                            resolve();
-                        }
-                    };
-                } else {  //Others
-                    script.onload = function () {
+
+            if ((script as any).readyState) {  //IE
+                (script as any).onreadystatechange = () => {
+                    if ((script as any).readyState == "loaded" || (script as any).readyState == "complete") {
+                        (script as any).onreadystatechange = null;
                         resolve();
-                    };
-                }
-            });
+                    }
+                };
+            } else {  //Others
+                script.onload = resolve;
+            }
 
-            script.src = transformUrl(url);
+            script.src = transformUrl(`${this.directory}/kernels_fallback.js`);
             document.getElementsByTagName("head")[0].appendChild(script);
-            return promise;
-        }
+        });
 
-        await loadScript(`${this.directory}/kernels_fallback.js`);
-        local_dnn_fallback_kernel = (window as any).dnn_fallback_kernel; // "window.dnn_fallback_kernel" is defined in "kernels_fallback.js"
-        this.kernelObj = local_dnn_fallback_kernel;
+        this.kernelObj = (window as any).dnn_fallback_kernel; // "window.dnn_fallback_kernel" is defined in "kernels_fallback.js"
     }
 
     private async initializeStaticBuffer(weightRawArray: ArrayBuffer) {
