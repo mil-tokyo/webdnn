@@ -56,7 +56,7 @@ class Tile(Operator):
         x = self.inputs["x"]  # type: ConstantVariable
         y = self.outputs["y"]
 
-        new_y = ConstantVariable(np.tile(x.data, self.multiplier), x.order)
+        new_y = ConstantVariable(np.tile(x.data, [self.multiplier[a] for a in x.order.axes]), x.order)
         new_y.change_order(y.order)
         OptimizeRule.replace_variable(graph, y, new_y)
         self.remove_all()

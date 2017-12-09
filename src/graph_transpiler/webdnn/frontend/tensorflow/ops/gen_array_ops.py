@@ -245,7 +245,49 @@ def matrix_set_diag_handler(converter: TensorFlowConverter, tf_op: "tf.Operation
 
 @TensorFlowConverter.register_handler("MirrorPad")
 def mirror_pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+
+    paddings = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(paddings, ConstantVariable):
+        raise NotImplementedError('[TensorFlowConverter] PadV2 with dynamic padding size is not supported')
+
+    paddings = paddings.data.astype(np.int).tolist()
+
+    mode = tf_op.get_attr("mode")  # type: byte
+
+    for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+        xs = []
+
+        if pad_begin > 0:
+            if mode == b'SYMMETRIC':
+                slices = [slice(pad_begin - 1, None, -1) if a == axis else slice(None) for a in x.order.axes]
+
+            elif mode == b'REFLECT':
+                slices = [slice(pad_begin, 0, -1) if a == axis else slice(None) for a in x.order.axes]
+
+            else:
+                raise NotImplementedError(f"[TensorFlowConverter] Unknown mirror pad mode: {mode}")
+
+            xs.append(x[slices])
+
+        xs.append(x)
+
+        if pad_end > 0:
+            if mode == b'SYMMETRIC':
+                slices = [slice(-1, - 1 - pad_end, -1) if a == axis else slice(None) for a in x.order.axes]
+
+            elif mode == b'REFLECT':
+                slices = [slice(-2, - 2 - pad_end, -1) if a == axis else slice(None) for a in x.order.axes]
+
+            else:
+                raise NotImplementedError(f"[TensorFlowConverter] Unknown mirror pad mode: {mode}")
+
+            xs.append(x[slices])
+
+        if len(xs) > 1:
+            x, = Concat(None, axis=axis)(*xs)
+
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("MirrorPadGrad")
@@ -270,37 +312,73 @@ def pack_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Pad")
 def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    # Zero padding
-    # FIXME: currently, determining padding from shape of input / output. Originally, determining by inputs[1] is correct.
+    x = converter.get_variable(tf_op.inputs[0])
 
-    in_var = converter.get_variable(tf_op.inputs[0])
-    in_var.order.unify(OrderNHWC)  # FIXME: assuming input order as NHWC
-    out_tf_var = tf_op.outputs[0]
-    # calculate output shape from out_tf_var.shape and in_var.shape
-    # ZeroPadding2D operator only accepts padding for H and W axes.
-    padding = [0, 0]
-    for dim in range(in_var.ndim):
-        in_size = in_var.shape[dim]
-        out_size = out_tf_var.shape.dims[dim].value
-        assert isinstance(in_size, int), "[TensorFlowConverter] Pad: Placeholder for input shape is not supported yet."
-        assert isinstance(out_size, int), "[TensorFlowConverter] Pad: Placeholder for output shape is not supported yet."
-        axis = in_var.order.axes[dim]
-        if axis in [Axis.H, Axis.W]:
-            assert (out_size - in_size % 2) != 0, "[TensorFlowConverter] Pad: Uneven padding is not supported yet."
-            pad_size = (out_size - in_size) // 2
-            if axis == Axis.H:
-                padding[0] = pad_size
-            elif axis == Axis.W:
-                padding[1] = pad_size
-        else:
-            assert out_size == in_size, "[TensorFlowConverter] Pad: padding for axis other than H and W is not supported yet."
-    out_var, = ZeroPadding2D(None, padding=tuple(padding))(in_var)
-    converter.set_variable(out_tf_var, out_var)
+    paddings = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(paddings, ConstantVariable):
+        raise NotImplementedError('[TensorFlowConverter] Pad with dynamic padding size is not supported')
+
+    paddings = paddings.data.astype(np.int).tolist()
+
+    if x.order.check_same_axes(OrderNHWC) and all([
+        paddings[x.order.axes_dict[Axis.N]][0] == paddings[x.order.axes_dict[Axis.N]][1] == 0,
+        paddings[x.order.axes_dict[Axis.H]][0] == paddings[x.order.axes_dict[Axis.H]][1],
+        paddings[x.order.axes_dict[Axis.W]][0] == paddings[x.order.axes_dict[Axis.W]][1],
+        paddings[x.order.axes_dict[Axis.C]][0] == paddings[x.order.axes_dict[Axis.C]][1] == 0
+    ]):
+        # Padding for only spatial axes: use ZeroPadding2D
+        y, = ZeroPadding2D(None, padding=tuple(paddings[x.order.axes_dict[Axis.H]][0], paddings[x.order.axes_dict[Axis.W]][0]))(x)
+
+    else:
+        # General case: Use Concat
+        for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+            xs = []
+
+            if pad_begin > 0:
+                xs.append(ConstantVariable(np.zeros([pad_begin if a is axis else x.shape_dict[a] for a in x.order.axes]), x.order))
+
+            xs.append(x)
+
+            if pad_end > 0:
+                xs.append(ConstantVariable(np.zeros([pad_end if a is axis else x.shape_dict[a] for a in x.order.axes]), x.order))
+
+            if len(xs) > 1:
+                x, = Concat(None, axis=axis)(*xs)
+
+        y = x
+
+    converter.set_variable(tf_op.outputs[0], y)
 
 
 @TensorFlowConverter.register_handler("PadV2")
 def pad_v2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+
+    paddings = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(paddings, ConstantVariable):
+        raise NotImplementedError('[TensorFlowConverter] PadV2 with dynamic padding size is not supported')
+
+    paddings = paddings.data.astype(np.int).tolist()
+
+    constant_values = converter.get_variable(tf_op.inputs[2]).change_order(x.order)
+
+    for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+        xs = []
+
+        if pad_begin > 0:
+            multiplier = AxisKeyDict(x.order.axes, [pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes])
+            xs.append(Tile(None, multiplier)(constant_values)[0])
+
+        xs.append(x)
+
+        if pad_end > 0:
+            multiplier = AxisKeyDict(x.order.axes, [pad_end if a == axis else x.shape_dict[a] for a in x.order.axes])
+            xs.append(Tile(None, multiplier)(constant_values)[0])
+
+        if len(xs) > 1:
+            x, = Concat(None, axis=axis)(*xs)
+
+    converter.set_variable(tf_op.outputs[0], x)
 
 
 @TensorFlowConverter.register_handler("ParallelConcat")
