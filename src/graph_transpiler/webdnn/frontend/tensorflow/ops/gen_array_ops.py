@@ -466,7 +466,7 @@ def reshape_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     assert isinstance(shape, ConstantVariable), NotImplementedError(
         f"[TensorFlowConverter] 'Shape' operator with dynamic shape is not supported.")
 
-    shape = shape.data.flatten().tolist()  # type: List[int]
+    shape = shape.data.astype(np.int).flatten().tolist()  # type: List[int]
     if -1 in shape:
         i = shape.index(-1)
         shape.remove(-1)

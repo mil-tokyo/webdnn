@@ -7,6 +7,7 @@ from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC, OrderNCHW, Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
+from webdnn.util.assertion import assert_sequence_type
 
 
 class Convolution2D(Operator):
@@ -39,10 +40,14 @@ class Convolution2D(Operator):
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple,
                  dilation_rate: Optional[IntOrTuple] = 1):
         super().__init__(name)
-        self.parameters["ksize"] = to_tuple(ksize)
-        self.parameters["stride"] = to_tuple(stride)
-        self.parameters["padding"] = to_tuple(padding)
-        self.parameters["dilation_rate"] = to_tuple(dilation_rate)
+        self.parameters["ksize"] = assert_sequence_type(to_tuple(ksize), int, message=f"""
+[Convolution2D] Parameter "ksize" must be integer or tuple of integer""")
+        self.parameters["stride"] = assert_sequence_type(to_tuple(stride), int, message=f"""
+[Convolution2D] Parameter "stride" must be integer or tuple of integer""")
+        self.parameters["padding"] = assert_sequence_type(to_tuple(padding), int, message=f"""
+[Convolution2D] Parameter "padding" must be integer or tuple of integer""")
+        self.parameters["dilation_rate"] = assert_sequence_type(to_tuple(dilation_rate), int, message=f"""
+[Convolution2D] Parameter "dilation_rate" must be integer or tuple of integer""")
         self.attributes.add(Tensorwise(self, Axis.N))
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
