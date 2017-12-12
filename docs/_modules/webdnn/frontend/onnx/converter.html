@@ -169,9 +169,9 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">ONNX (https://github.com/onnx) Frontend</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Set</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span>
+<span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span><span class="p">,</span> <span class="n">CyclicGraphError</span>
 <span class="kn">from</span> <span class="nn">webdnn.frontend.onnx.type_hint</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
@@ -303,56 +303,64 @@
 
 
 <span class="k">def</span> <span class="nf">_listup_functions</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">IGraphProto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">INodeProto</span><span class="p">]:</span>
-    <span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
-
     <span class="k">class</span> <span class="nc">Container</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Proto object is not hashable. this container supports hash operation with proto object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">:</span> <span class="n">INodeProto</span><span class="p">):</span>
-            <span class="k">nonlocal</span> <span class="n">_counter</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proto</span> <span class="o">=</span> <span class="n">proto</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">_counter</span><span class="p">)</span>
-            <span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">output</span><span class="p">]</span>  <span class="c1"># type: List[Union[Container, str]]</span>
-    <span class="n">resolved</span> <span class="o">=</span> <span class="p">{</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">input</span><span class="p">}</span>  <span class="c1"># type: Set[Union[Container, str]]</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[INodeProto]</span>
+        <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Container</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">proto</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">proto</span>
 
     <span class="n">creator_map</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">proto</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
             <span class="n">creator_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Container</span><span class="p">(</span><span class="n">proto</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">get_prev_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Container</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Container</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">nonlocal</span> <span class="n">creator_map</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">input</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Container</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">input</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">creator_map</span> <span class="k">else</span> <span class="p">[</span><span class="n">creator_map</span><span class="p">[</span><span class="n">node</span><span class="p">]]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[Container]</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">output</span><span class="p">]</span>  <span class="c1"># type: List[Tuple[Union[Container, str], Union[Container, str]]]</span>
+    <span class="n">dependency_count</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[Union[Container, str], int]</span>
+
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">node</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">resolved</span><span class="p">:</span>
-            <span class="k">continue</span>
+        <span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="c1"># node is tensor&#39;s name</span>
-            <span class="n">prev_nodes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">creator_map</span> <span class="k">else</span> <span class="p">[</span><span class="n">creator_map</span><span class="p">[</span><span class="n">node</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">node_from</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dependency_count</span><span class="p">:</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">))</span>
+
+            <span class="n">prev_nodes</span> <span class="o">=</span> <span class="n">get_prev_nodes</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
+            <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">prev_node</span> <span class="ow">in</span> <span class="n">prev_nodes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dependency_count</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prev_node</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prev_node</span><span class="p">,</span> <span class="n">node_from</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_from</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">Container</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_from</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">node_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dependency_count</span><span class="p">[</span><span class="n">node_to</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># node is container of operator proto</span>
-            <span class="n">prev_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">CyclicGraphError</span><span class="p">(</span><span class="s2">&quot;[ONNXConverter] Cycles are detected&quot;</span><span class="p">)</span>
 
-        <span class="n">unresolved_prevs</span> <span class="o">=</span> <span class="p">[</span><span class="n">prev_node</span> <span class="k">for</span> <span class="n">prev_node</span> <span class="ow">in</span> <span class="n">prev_nodes</span> <span class="k">if</span> <span class="n">prev_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resolved</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unresolved_prevs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">resolved</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">proto</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-            <span class="n">stack</span> <span class="o">+=</span> <span class="n">unresolved_prevs</span>
-
-    <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">proto</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
 </pre></div>
 
            </div>
