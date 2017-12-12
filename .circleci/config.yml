@@ -1,0 +1,138 @@
+version: 2
+
+jobs:
+  test:
+    working_directory: ~/webdnn
+
+    docker:
+      - image: python:3.6.1
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements/dev.txt" }}
+            - v1-dependencies-
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements/dev.txt
+
+      - save_cache:
+          paths:
+            - "venv"
+          key: deps1-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          name: Install WebDNN
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python3 setup.py install
+
+      - run:
+          name: Run compile-time test
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            nosetests
+            pycodestyle --config=.pycodestyle src/ test/
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+  build-docs:
+    working_directory: ~/webdnn
+
+    docker:
+      - image: python:3.6.1
+      - image: node:latest
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements/dev.txt" }}
+            - v1-dependencies-
+
+      - run:
+          name: Setup node
+          command: |
+            apt-get update
+            apt-get install -y build-essential libssl-dev
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | NVM_DIR=/usr/local/nvm bash
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v8
+            nvm alias default v8
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements/dev.txt
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            npm install
+
+      - save_cache:
+          paths:
+            - "venv"
+          key: deps1-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          name: Install WebDNN
+          command: |
+            . venv/bin/activate
+            python3 setup.py install
+
+      - run:
+          name: Build docs
+          command: |
+            . venv/bin/activate
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            npm run build-doc
+
+      - run:
+          name: Update docs
+          command: |
+            mkdir -p ~/docs
+            cd ~/docs
+            git clone -b gh-pages "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
+            git checkout -b "docs-update"
+            git config user.name "CircleCI"
+            git config user.email "circleci@mi.t.u-tokyo.ac.jp"
+            cp -r ~/webdnn/docs/build/html/* ./docs/
+            git add .
+            git commit -m "update docs"
+            git push -u origin docs-update
+
+      - run:
+          name: Send PR
+          command: |
+            curl -X POST -u "Kiikurage:$GITHUB_ACCESS_TOKEN" -d '{"base":"gh-pages","head":"docs-update","title":"Update docs"}' https://api.github.com/repos/mil-tokyo/webdnn/pulls
+
+workflows:
+  version: 2
+  build_and_docs:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - webpage-src
+                - docs-update
+
+      - build-docs:
+          filters:
+            branches:
+              only: master
