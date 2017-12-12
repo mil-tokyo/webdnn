@@ -4,6 +4,7 @@ https://github.com/onnx/onnx/blob/09ada0f107f1cc1877f9194475c98d2d8512e188/onnx/
 
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.order import Order
@@ -37,8 +38,15 @@ def _convert_reshape(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Concat")
 def _convert_concat(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"Concat\" is not supported yet.")
+    xs = [converter.get_variable(v) for v in onnx_op.input]
+    for x in xs[1:]:
+        xs[0].order.unify(x.order)
+        
+    attrs = attribute_dict(onnx_op)
+    axis = xs[0].order.axes[attrs["axis"].i]
+
+    y, = Concat(None, axis=axis)(*xs)
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("Split")
