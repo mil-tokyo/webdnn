@@ -166,9 +166,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.operators.scalar_add</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.optimize_rule</span> <span class="k">import</span> <span class="n">OptimizeRule</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operators.elementwise</span> <span class="k">import</span> <span class="n">Elementwise</span>
@@ -208,7 +206,7 @@
     <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span>  <span class="c1"># type: ConstantVariable</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>  <span class="c1"># type: ConstantVariable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
