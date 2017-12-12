@@ -7,11 +7,13 @@ from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
 from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operators.concat import Concat
+from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tile import Tile
 from webdnn.graph.operators.transpose import Transpose
-from webdnn.graph.order import Order
+from webdnn.graph.order import Order, OrderNCHW
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -162,3 +164,29 @@ def _convert_pad(converter: ONNXConverter, onnx_op: INodeProto):
             x, = Concat(None, axis=axis)(*xs)
 
     converter.set_variable(onnx_op.output[0], x)
+
+
+@ONNXConverter.register_handler("SpaceToDepth")
+def _convert_space_to_depth(converter: ONNXConverter, onnx_op: INodeProto):
+    x = converter.get_variable(onnx_op.input[0])
+    x.order.unify(OrderNCHW)
+
+    attrs = attribute_dict(onnx_op)
+    blocksize = attrs["blocksize"].i
+
+    y, = Space2Depth(None, blocksize)(x)
+
+    converter.set_variable(onnx_op.output[0], y)
+
+
+@ONNXConverter.register_handler("DepthToSpace")
+def _convert_depth_to_space(converter: ONNXConverter, onnx_op: INodeProto):
+    x = converter.get_variable(onnx_op.input[0])
+    x.order.unify(OrderNCHW)
+
+    attrs = attribute_dict(onnx_op)
+    blocksize = attrs["blocksize"].i
+
+    y, = Depth2Space(None, blocksize)(x)
+
+    converter.set_variable(onnx_op.output[0], y)
