@@ -9,10 +9,11 @@ from webdnn.util.misc import mul
 @wrap_template
 def template(x_shape, axis, description: str = ""):
     np_axis = 1 if axis is None else axis
-    vx = np.random.rand(*x_shape) - 0.5
+    vx = np.random.rand(*x_shape)
     new_shape = [mul(vx.shape[:np_axis]), mul(vx.shape[np_axis:])]
-    vy = vx.reshape(new_shape)
-    vy = np.exp(vy) / np.sum(np.exp(vy), axis=1, keepdims=True)
+    max_i = np.argmax(vx.reshape(new_shape), axis=1)
+    vy = np.zeros(new_shape)
+    vy[np.arange(vy.shape[0]), max_i] = 1
 
     x = make_tensor_value_info("x", vx.shape)
     y = make_tensor_value_info("y", vy.shape)
@@ -20,7 +21,7 @@ def template(x_shape, axis, description: str = ""):
     kwargs = {}
     if axis is not None:
         kwargs["axis"] = axis
-    operator = make_node("Softmax", ["x"], ["y"], **kwargs)
+    operator = make_node("Hardmax", ["x"], ["y"], **kwargs)
 
     model = make_model([operator], [x], [y])
 
@@ -28,7 +29,7 @@ def template(x_shape, axis, description: str = ""):
 
     assert tuple(vy.shape) == tuple(graph.outputs[0].shape), f"vy: {vy.shape}, graph.outputs[0]: {graph.outputs[0].shape}"
     generate_kernel_test_case(
-        description=f"[ONNX] Softmax {description}",
+        description=f"[ONNX] Hardmax {description}",
         graph=graph,
         backend=["webgpu", "webgl", "webassembly"],
         inputs={graph.inputs[0]: vx},
