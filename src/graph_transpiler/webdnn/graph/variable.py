@@ -1,4 +1,4 @@
-from typing import Union, List, Set, Tuple, Sequence, Optional
+from typing import Union, List, Set, Tuple, Sequence
 
 import numpy as np
 
@@ -378,7 +378,7 @@ class Variable(Node):
         ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=order, out_shape=shape)(self)
         return ret
 
-    def expand_dims(self, axis: Axis, index: int) -> "Variable":
+    def expand_dims(self, axis: Axis, index: int = -1) -> "Variable":
         """expand_dims(shape, axis, index)
         Insert new axis whose size is 1. This is alias of follow codes.
 
@@ -392,18 +392,18 @@ class Variable(Node):
 
         Args:
             axis (:class:`~Axis`): inserted axis
-            index (int): insert position
+            index (int, optional): insert position, As default, inserted at last.
 
         Returns:
             (:class:`~Variable`) expanded variable
         """
         if index < 0:
-            index += 1
+            index += self.ndim + 1
         new_axes = list(self.order.axes)
         new_axes.insert(index, axis)
         return self.reshape(shape=[1 if a == axis else self.shape_dict[a] for a in new_axes], order=Order(new_axes))
 
-    def squeeze(self, axis: Optional[Axis] = None) -> "Variable":
+    def squeeze(self, axis: Union[Axis, Sequence[Axis]] = None) -> "Variable":
         """expand_dims(shape, axis, index)
         Remove axis whose size is 1. This is alias of follow codes.
 
@@ -416,7 +416,8 @@ class Variable(Node):
                           out_shape=[self.shape_dict[a] for a in new_axes])(v)[0]
 
         Args:
-            axis (:class:`~Axis`): removed axis. If it's "None", all axes whose size are 1 is removed.
+            axis (:class:`~Axis` or sequence of Axis, optional): removed axis.
+                As default, all axes whose size are 1 is removed.
 
         Returns:
             (:class:`~Variable`) squeezed variable
@@ -427,7 +428,12 @@ class Variable(Node):
                 if self.shape_dict[axis] == 1:
                     new_axes.remove(axis)
         else:
-            new_axes.remove(axis)
+            if isinstance(axis, Sequence):
+                for a in axis:
+                    new_axes.remove(a)
+            else:
+                new_axes.remove(axis)
+
         return self.reshape(shape=[self.shape_dict[a] for a in new_axes], order=Order(new_axes))
 
     def combine_axes(self, axes: Sequence[Axis], axis: Axis) -> "Variable":
