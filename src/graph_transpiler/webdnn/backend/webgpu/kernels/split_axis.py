@@ -35,7 +35,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             y_size *= y_shape[d];
         }
 
-        while (y_index < y_size) { 
+        while (y_index < y_size) {
             int x_index = x_offset;
             int s = y_index;
             for (int d = D-1; d >= 0; d--) {

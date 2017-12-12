@@ -64,8 +64,8 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         final_C[gid] = 0;
 #endif
     }
-    
-    for (int t = 0; t < T; t++) 
+
+    for (int t = 0; t < T; t++)
     {
         for (int gid = global_index; gid < C1 * N; gid += num_threads)
         {
@@ -73,7 +73,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             const int c1 = gid / N;
             XH_X[gid] = X[(n * T + t) * C1 + c1];
         }
-        
+
         threadgroup_barrier(mem_flags::mem_device);
 
         //FIXME: replace here to more efficient sgemv implementation.
@@ -82,17 +82,17 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         {
             const int n = gid % N;
             const int c2_4 = gid / N;
-            
+
             float v = b[c2_4];
-            
+
             for (int c1c2 = 0; c1c2 < C1 + C2; c1c2++)
             {
-                v += XH[c1c2 * N + n] * W_all[c1c2 * C2 * 4 + c2_4]; 
+                v += XH[c1c2 * N + n] * W_all[c1c2 * C2 * 4 + c2_4];
             }
-            
+
             workspace[gid] = v;
         }
-        
+
         threadgroup_barrier(mem_flags::mem_device);
 
         for (int gid = global_index; gid < C2 * N; gid += num_threads)
@@ -110,7 +110,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             f = recurrent_activation_function(f);
             a = activation_function(a);
             o = recurrent_activation_function(o);
-    
+
             c = a * i + c * f;
 
             final_C[n * C2 + c2] = c;

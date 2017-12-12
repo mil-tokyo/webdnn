@@ -51,7 +51,7 @@ class PyTorchConverter(Converter["torch.nn.Module"]):
         if not FLAG_PYTORCH_INSTALLED:
             raise ImportError("""
 Module "pytorch" cannot be imported. Please check that follow command works correctly.
-    
+
     python -c "import torch"
 
 """)

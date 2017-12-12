@@ -200,10 +200,7 @@ class KernelCode:
 
             if isinstance(node, Variable):
                 varname = self.get_varname(node)
-                que = [
-                          UniformDeclarationNode(Type.Sampler2D, varname, value=node),
-                          varname
-                      ] + que
+                que = [UniformDeclarationNode(Type.Sampler2D, varname, value=node), varname] + que
                 continue
 
             if not isinstance(node, str) and isinstance(node, Sequence):
@@ -216,10 +213,7 @@ class KernelCode:
 
                     node = tuple(node)
                     varname = self.get_varname((Type.Ivec, node))
-                    que = [
-                              GlobalDeclarationNode(Type.Ivec, varname, value=node, with_value=True),
-                              varname
-                          ] + que
+                    que = [GlobalDeclarationNode(Type.Ivec, varname, value=node, with_value=True), varname] + que
                     continue
 
                 if all(isinstance(v, float) for v in node):
@@ -228,10 +222,7 @@ class KernelCode:
 
                     node = tuple(node)
                     varname = self.get_varname((Type.Vec, node))
-                    que = [
-                              GlobalDeclarationNode(Type.Vec, varname, value=node, with_value=True),
-                              varname
-                          ] + que
+                    que = [GlobalDeclarationNode(Type.Vec, varname, value=node, with_value=True), varname] + que
                     continue
 
                 que = list(node) + que

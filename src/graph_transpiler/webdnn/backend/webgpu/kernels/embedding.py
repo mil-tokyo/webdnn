@@ -20,7 +20,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const device float *X = %%LOAD_BUFFER(embedding_X)%%;
     device float       *Y = %%LOAD_BUFFER(embedding_Y)%%;
     const device float *W = %%LOAD_BUFFER(embedding_W)%%;
-    
+
     const int T = %%LOAD_BUFFER(embedding_T)%%;
     const int N = %%LOAD_BUFFER(embedding_N)%%;
     const int C = %%LOAD_BUFFER(embedding_C)%%;

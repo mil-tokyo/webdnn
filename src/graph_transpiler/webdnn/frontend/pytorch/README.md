@@ -4,7 +4,7 @@ WebDNN Converter Frontend for PyTorch.
 
 This converter convert PyTorch model through [ONNX](http://onnx.ai/) format.
 
-PyTorch supports onnx, but currently (12.01.2017), `torch.onnx` module is not included in release build of pytorch. 
+PyTorch supports onnx, but currently (12.01.2017), `torch.onnx` module is not included in release build of pytorch.
 You have to build torch from source. See [https://github.com/pytorch/pytorch#from-source](https://github.com/pytorch/pytorch#from-source).
 
 ## Example

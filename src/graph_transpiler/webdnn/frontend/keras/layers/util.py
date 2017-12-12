@@ -70,7 +70,7 @@ def parse_padding(padding_type: str, ksize: int, dilation_rate: int) -> int:
 
         if pad_extra_shape % 2 != 0:
             raise NotImplementedError(f"""
-[KerasConverter] Currently WebDNN doesn't supports different size padding: 
+[KerasConverter] Currently WebDNN doesn't supports different size padding:
     (pad_extra_shape)=f{pad_extra_shape}""")
 
         return pad_extra_shape // 2

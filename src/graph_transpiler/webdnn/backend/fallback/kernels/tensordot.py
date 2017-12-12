@@ -25,7 +25,7 @@ var pos2index = function(pos, stride) {
 };
 
 var c_index, c_pos;
-var a_base_index, a_offset; 
+var a_base_index, a_offset;
 var b_base_index, b_offset;
 var reduction_index;
 var sum = 0;
@@ -33,14 +33,14 @@ for (c_index = 0; c_index < C.length; c_index++) {
     c_pos = index2pos(c_index, option.stride_C, option.shape_C);
     a_base_index = pos2index(c_pos, option.stride_A_for_C_axes);
     b_base_index = pos2index(c_pos, option.stride_B_for_C_axes);
-    
+
     sum = 0;
     for (reduction_index = 0; reduction_index < option.reduction_size; reduction_index++) {
         a_offset = pos2index(index2pos(reduction_index, option.stride_A_reduced_axes, option.shape_A_reduced_axes), option.stride_A_reduced_axes_for_whole);
         b_offset = pos2index(index2pos(reduction_index, option.stride_B_reduced_axes, option.shape_B_reduced_axes), option.stride_B_reduced_axes_for_whole);
-        
+
         sum += A[a_base_index + a_offset] * B[b_base_index + b_offset];
-    } 
+    }
     C[c_index] = sum;
 }
 

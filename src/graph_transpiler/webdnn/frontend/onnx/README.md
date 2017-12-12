@@ -22,7 +22,7 @@ python -c "import onnx"
 
 ### PyTorch
 
-PyTorch supports onnx, but currently (11.09.2017), `torch.onnx` module is not included in release build of pytorch. 
+PyTorch supports onnx, but currently (11.09.2017), `torch.onnx` module is not included in release build of pytorch.
 You have to build torch from source. See [https://github.com/pytorch/pytorch#from-source](https://github.com/pytorch/pytorch#from-source).
 
 

@@ -24,11 +24,11 @@ for (var i = 0; i < ys.length; i++) {
     stride = strides[i];
     shape = shapes[i];
     position = [];
-    
+
     for (var j = 0; j < shape.length; j++) {
         position[j] = 0;
     }
-    
+
     do {
         set(y, shape, position, x[offset + dot(stride, position)]);
     } while (increment(shape, position))
@@ -53,7 +53,7 @@ function set(x, shape, position, v) {
 function increment(shape, position) {
     var d = shape.length - 1;
     position[d]++;
-    
+
     while (position[d] === shape[d]) {
         if (d == 0) return false;
 
@@ -61,7 +61,7 @@ function increment(shape, position) {
         d--;
         position[d]++;
     }
-    
+
     return true;
 }
 

@@ -49,7 +49,7 @@ def _convert_max_pooling2d(converter: ChainerConverter, c_op: "chainer.functions
                             ksize=(c_op.kh, c_op.kw),
                             stride=(c_op.sy, c_op.sx),
                             padding=(c_op.ph, c_op.pw))
-    if c_op.cover_all == False:
+    if not c_op.cover_all:
         console.warning(
             "[MaxPooling2D] MaxPooling2D in WebDNN is always calculated as cover_all=True mode. "
             "Therefore the result may be difference from chainer's output.")

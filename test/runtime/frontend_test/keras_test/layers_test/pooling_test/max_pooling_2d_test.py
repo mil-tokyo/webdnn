@@ -34,5 +34,6 @@ def test_irregular_size():
 def test_padding_valid():
     template(padding="valid")
 
+
 def test_padding_same():
     template(padding="same")

@@ -18,7 +18,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int M = %%LOAD_BUFFER(linear_M)%%;
     const int N = %%LOAD_BUFFER(linear_N)%%;
     const int K = %%LOAD_BUFFER(linear_K)%%;
-    
+
     for (int gid = 0; gid < M * N; gid += 1) {
         int n = gid % N;
         int m = gid / N;

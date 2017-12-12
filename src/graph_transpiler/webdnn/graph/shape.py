@@ -12,7 +12,7 @@ _reg_placeholder = re.compile("[a-zA-Z_]+")
 def _normalize_text(text: str) -> str:
     text = _reg_quote.sub(lambda ma: " ", text)
     text = _reg_trail_space.sub(lambda ma: " ", text)
-    text = _reg_placeholder.sub(lambda ma: f"'{ma[0]}'" , text)
+    text = _reg_placeholder.sub(lambda ma: f"'{ma[0]}'", text)
     return text
 
 

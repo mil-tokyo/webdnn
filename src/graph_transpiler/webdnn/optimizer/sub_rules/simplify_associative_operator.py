@@ -57,7 +57,7 @@ class SimplifyAssociativeOperatorLeftHand(OptimizeRule):
 
             """
             (var3 * var4) * var2
-            
+
             var3 -+
                   +-{op2}- var1 -+
             var4 -+              +-{op1}-
@@ -72,19 +72,19 @@ class SimplifyAssociativeOperatorLeftHand(OptimizeRule):
                 if isinstance(var2, ConstantVariable):
                     """
                     case a) Fold VAR3 and VAR2
-                    
+
                     initial state:
-                    
+
                         (VAR3 * var4) * VAR2
-                        
+
                     commutative2.swap()
 
                         (var4 * VAR3) * VAR2
-                    
+
                     associative1.reorder:
-    
+
                         var4 * (VAR3 * VAR2)
-                    
+
                     """
                     if not op2.has_attribute(Commutative):
                         continue
@@ -97,13 +97,13 @@ class SimplifyAssociativeOperatorLeftHand(OptimizeRule):
                 else:
                     """
                     case b) Sweep out VAR3
-    
+
                     initial state:
-                    
+
                         (VAR3 * var4) * var2
-                    
+
                     associative1.reorder:
-                    
+
                         VAR3 * (var4 * var2)
                     """
                     associative1.reorder(op2)
@@ -233,7 +233,7 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
                     initial state:
 
                         var1 * (VAR3 * var4)
-                    
+
                     commutative2.swap()
 
                         var1 * (var4 * VAR3)
@@ -254,19 +254,19 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
                 if isinstance(var1, ConstantVariable):
                     """
                     case a) Fold VAR4 and VAR1
-    
+
                     initial state:
-    
+
                         VAR1 * (var3 * VAR4)
-    
+
                     commutative2.reorder:
-    
+
                         VAR1 * (VAR4 * var3)
-    
+
                     associative1.reorder:
-    
+
                         (VAR1 * VAR4) * var3
-    
+
                     """
                     if not op2.has_attribute(Commutative):
                         continue
@@ -279,13 +279,13 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
                 else:
                     """
                     case b) Sweep out VAR4
-    
+
                     initial state:
-    
+
                         var1 * (var3 * VAR4)
-    
+
                     associative1.reorder:
-    
+
                         (var1 * var3) * VAR4
                     """
                     associative1.reorder(op2)

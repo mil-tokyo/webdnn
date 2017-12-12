@@ -2,7 +2,7 @@
 
 ## TODO
 
-- WebGL Context release 
+- WebGL Context release
 
     Browser cannot hold so many rendering context. It becomes a problem during unit tests.
 

@@ -32,7 +32,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int SW = %%LOAD_BUFFER(average_pooling_2d_SW)%%;
     const int PH = %%LOAD_BUFFER(average_pooling_2d_PH)%%;
     const int PW = %%LOAD_BUFFER(average_pooling_2d_PW)%%;
-    
+
     for (int gid = index; gid < N * H2 * W2 * C; gid += num_threads) {
         const int c = gid % C;
         const int w2 = gid / C % W2;
@@ -43,7 +43,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         for (int kh = 0; kh < KH; kh++) {
             const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
-            
+
             for (int kw = 0; kw < KW; kw++) {
                 const int w1 = w2 * SW - PW + kw;
                 if (w1 < 0 || w1 >= W1) continue;

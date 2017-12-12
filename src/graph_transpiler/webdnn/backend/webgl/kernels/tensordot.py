@@ -62,7 +62,7 @@ void main() {{
     int n = variable_position_c.y;
 
     float v = 0.0;
-    
+
     for (int k = 0; k < {int(K // 4)}; k++) {{
         vec4 v_a = texture2D(""", A, f""", (vec2(k, m) + 0.5) * """, vec([1.0 / (K // 4), 1.0 / M]), f""");
         vec4 v_b = texture2D(""", B, f""", (vec2(k, n) + 0.5) * """, vec([1.0 / (K // 4), 1.0 / N]), f""");

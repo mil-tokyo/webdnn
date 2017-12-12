@@ -51,8 +51,10 @@ class Pooling2D(Operator):
         H2 = (x_shape_dict[Axis.H] + 2 * self.PH + self.SH - self.KH - 1) // self.SH + 1
         W2 = (x_shape_dict[Axis.W] + 2 * self.PW + self.SW - self.KW - 1) // self.SW + 1
         C2 = x_shape_dict[Axis.C]
-        if ((x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0) or \
-            ((x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0):
+
+        odd_padding_height = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0
+        odd_padding_width = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0
+        if odd_padding_height or odd_padding_width:
             # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
             console.warning(
                 "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +

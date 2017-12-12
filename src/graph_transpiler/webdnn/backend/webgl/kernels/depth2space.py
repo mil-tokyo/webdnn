@@ -24,13 +24,13 @@ def depth2space(op: Depth2Space) -> List[Kernel]:
 
     code = KernelCode(["""
 void main() {
-    ivec4 variable_position_y = """, change_order(get_output_position(y), y.order, OrderNHWC), f""";    
+    ivec4 variable_position_y = """, change_order(get_output_position(y), y.order, OrderNHWC), f""";
 
     int n = variable_position_y.x;
     int h2 = variable_position_y.y;
     int w2 = variable_position_y.z;
     int c2 = variable_position_y.w;
-    
+
     int h1 = h2 / {r};
     int w1 = w2 / {r};
     int c1 = c2 + (w2-w1*{r})*{C2} + (h2-h1*{r})*{C2}*{r};

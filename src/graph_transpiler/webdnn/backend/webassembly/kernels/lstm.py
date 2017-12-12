@@ -33,7 +33,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int ofs_c = hidden_dim * 2;
     const int ofs_o = hidden_dim * 3;
     %%BIAS_INITIALIZER%%
-    
+
     auto activation = [](float x) {
         %%ACTIVATION_CORE%%
     };
@@ -79,7 +79,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
                 mem_h[dim + n * hidden_dim] = activation(val_c) * recurrent_activation(val_o);
             }
         }
-        
+
         //write output on sequence
 #ifdef SEQUENCE_OUTPUT
         for (int n = 0; n < batch_size; n++) {

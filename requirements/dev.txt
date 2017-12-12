@@ -7,3 +7,4 @@ typing==3.6.1
 recommonmark==0.4.0
 Sphinx==1.5.5
 sphinx-rtd-theme==0.2.4
+pycodestyle==2.3.1

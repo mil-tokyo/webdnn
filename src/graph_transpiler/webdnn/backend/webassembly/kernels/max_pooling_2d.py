@@ -37,7 +37,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         for (int kh = 0; kh < KH; kh++) {
             const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
-            
+
             for (int kw = 0; kw < KW; kw++) {
                 const int w1 = w2 * SW - PW + kw;
                 if (w1 < 0 || w1 >= W1) continue;

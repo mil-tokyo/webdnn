@@ -32,7 +32,7 @@ void main() {
 
     int n = variable_position_im.x;
     int h1 = variable_position_im.y;
-    int w1 = variable_position_im.z; 
+    int w1 = variable_position_im.z;
     int c1 = variable_position_im.w;
 
     float sum = 0.0;

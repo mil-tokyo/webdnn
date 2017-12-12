@@ -32,11 +32,10 @@ class Dependency:
 
             return all([Placeholder._check_deep_equal(p1, p2) for p1, p2 in zip(operands1, operands2)])
 
-        elif d1.operator == PlaceholderOperator.Mod or \
-                d1.operator == PlaceholderOperator.Mod or \
-                d1.operator == PlaceholderOperator.FloorDiv:
-            return Placeholder._check_deep_equal(d1.operands[0], d2.operands[0]) and \
-                   Placeholder._check_deep_equal(d1.operands[1], d2.operands[1])
+        elif d1.operator == PlaceholderOperator.Mod or d1.operator == PlaceholderOperator.FloorDiv:
+            is_d1_same = Placeholder._check_deep_equal(d1.operands[0], d2.operands[0])
+            is_d2_same = Placeholder._check_deep_equal(d1.operands[1], d2.operands[1])
+            return is_d1_same and is_d2_same
 
     def __init__(self, operator: PlaceholderOperator, operands: List[Union[int, "Placeholder"]]):
         self.operator = operator

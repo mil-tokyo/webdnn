@@ -43,7 +43,7 @@ def slice_handler(op: Slice) -> List[Kernel]:
             continue
 
         # This axis is not changed, so it can be simplified
-        if flag_removed == True:
+        if flag_removed:
             del x_stride_dict[axis]
             x_axes.remove(axis)
             del y_stride_dict[axis]
@@ -71,7 +71,7 @@ def slice_handler(op: Slice) -> List[Kernel]:
         y_stride.append(1)
         x_stride.append(0)
         x_shape.append(0)
-        
+
     code = KernelCode(["""
 void main() {
     gl_FragColor.r = texture2D(""", x, ", (", convert_coord(

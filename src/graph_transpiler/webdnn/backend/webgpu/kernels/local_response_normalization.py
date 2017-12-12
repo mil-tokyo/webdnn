@@ -134,20 +134,20 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
     int D3 = 1;
     for (int d = d_target + 1; d < D; d++) D3 *= x_shape[d];
-    
+
     for (int gid = index; gid < size; gid += num_threads) {
-        
+
         int y_offset = 0;
         int s = gid;
         for (int d = D - 1; d >= 0; d--) {
             y_offset += x_stride_in_y[d] * (s % x_shape[d]);
             s /= x_shape[d];
         }
-        
+
         const int d3 = gid % D3;
         const int d2 = gid / D3 % D2;
         const int d1 = gid / D3 / D2;
-        
+
         int ch_low = max(d2 - Phalfn, 0);
         int ch_high = min(d2 + Phalfn + 1, D2);
 

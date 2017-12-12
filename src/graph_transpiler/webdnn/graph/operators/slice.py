@@ -44,7 +44,7 @@ class Slice(Operator):
                 raise TypeError(f"""
 [Slice] Each index must be an instance of slice, int, or NoneType:
     (indices) = {indices}
-    (type(indices[{axis.name}])) = {type(index)} 
+    (type(indices[{axis.name}])) = {type(index)}
 """)
 
         self.parameters["indices"] = indices
@@ -56,13 +56,14 @@ class Slice(Operator):
                 if isinstance(index, slice):
                     index = normalize_slice(index, x.shape_dict[axis])
 
-                    if not (-x.shape_dict[axis] <= index.start <= x.shape_dict[axis]) or \
-                        not (-x.shape_dict[axis] <= index.stop <= x.shape_dict[axis]):
+                    valid_start = -x.shape_dict[axis] <= index.start <= x.shape_dict[axis]
+                    valid_stop = -x.shape_dict[axis] <= index.stop <= x.shape_dict[axis]
+                    if not valid_start or not valid_stop:
                         raise ValueError(f"""
 [Slice] Index {index} in {axis} is out of range:
-    (x.order) = {x.order} 
+    (x.order) = {x.order}
     (x.shape) = {x.shape}
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
     (indices[{axis.name}]) = {index}
 """)
 
@@ -71,7 +72,7 @@ class Slice(Operator):
 [Slice] Slice operator doesn't support 0-size output:
     (x.order) = {x.order}
     (x.shape) = {x.shape}
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
     (indices[{axis.name}]) = {index}
 """)
 
@@ -79,19 +80,19 @@ class Slice(Operator):
                     if not -x.shape_dict[axis] <= index < x.shape_dict[axis]:
                         raise ValueError(f"""
 [Slice] Index {index} in {axis} is out of range:
-    (x.order) = {x.order} 
+    (x.order) = {x.order}
     (x.shape) = {x.shape}
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
     (indices[{axis.name}]) = {index}
-    (valid range) = [{-x.shape_dict[axis]}, {x.shape_dict[axis]}) 
+    (valid range) = [{-x.shape_dict[axis]}, {x.shape_dict[axis]})
 """)
 
                 elif index is None:
                     raise ValueError(f"""
 [Slice] Axis {axis} is already exist:
-    (x.order) = {x.order} 
+    (x.order) = {x.order}
     (x.shape) = {x.shape}
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
     (indices[{axis.name}]) = {index}
 """)
 
@@ -99,16 +100,16 @@ class Slice(Operator):
                 if index is not None:
                     raise ValueError(f"""
 [Slice] Axis {axis} is not exist in input variable. In this case, index must be "None" (=insert new axis):
-    (x.order) = {x.order} 
+    (x.order) = {x.order}
     (x.shape) = {x.shape}
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
     (indices[{axis.name}]) = {index}
 """)
 
         if all(isinstance(index, int) for index in self.indices.values()):
             raise NotImplementedError(f"""
 [Slice] Accessing to one element is not supported:
-    (indices) = {self.indices} 
+    (indices) = {self.indices}
 """)
 
         self.append_input("x", x)

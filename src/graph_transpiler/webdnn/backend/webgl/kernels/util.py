@@ -169,7 +169,7 @@ ivec{ndim2} convert_position_i(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, i
     ivec{ndim1} index_partial = p1 * s1;
     ivec{ndim2} index = ivec{ndim2}(index_offset);
     ivec{ndim2} p2 = ivec{ndim2}(0);
-    
+
     ivec{ndim2} m;
     {iteration_snippet}
 

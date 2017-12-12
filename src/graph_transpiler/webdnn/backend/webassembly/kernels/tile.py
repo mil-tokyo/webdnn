@@ -22,7 +22,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         int i = 0;
         for (int d = 0; d < D; d++) i += ((gid / y_stride[d]) % x_shape[d]) * x_stride[d];
 
-        Y[gid] = X[i]; 
+        Y[gid] = X[i];
     }
 }
 """

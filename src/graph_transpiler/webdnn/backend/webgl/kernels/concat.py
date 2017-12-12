@@ -51,13 +51,13 @@ void main() {{
     """, Type.Ivec.get_name(shapes[x]), f""" variable_position_x = """, change_order(
             convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]),
             orders[y], orders[x]
-        ), f""";     
+        ), f""";
     variable_position_x[{orders[x].axes_dict[axis]}] -= {sections[i]};
 
     gl_FragColor.r = (
             variable_position_x[{orders[x].axes_dict[axis]}] < 0 || variable_position_x[{orders[x].axes_dict[axis]}] >= {shape_dicts[x][axis]}
-        ) 
-        ? texture2D(""", workspace, """, gl_FragCoord.xy * """, inv_texture_shape_workspace, """).r 
+        )
+        ? texture2D(""", workspace, """, gl_FragCoord.xy * """, inv_texture_shape_workspace, """).r
         : texture2D(""", x, ",", convert_coord("variable_position_x", shapes[x], strides[x], texture_shape(x)[:2][::-1],
                                                texture_stride(x)[:2][::-1]), f""").r;
 }}

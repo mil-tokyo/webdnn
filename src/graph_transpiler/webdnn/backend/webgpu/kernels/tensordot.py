@@ -28,12 +28,12 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 #define B_STRIDE_N 1
 
 #if K_DIVIDABLE_BY_8 && M_DIVIDABLE_BY_64 && N_DIVIDABLE_BY_64 && OPTIMIZE
-    const device float4 *load_target4 = (index & 32) 
-        ? (const device float4 *)(%%LOAD_BUFFER(sgemm_B)%%) 
+    const device float4 *load_target4 = (index & 32)
+        ? (const device float4 *)(%%LOAD_BUFFER(sgemm_B)%%)
         : (const device float4 *)(%%LOAD_BUFFER(sgemm_A)%%);
 #else
-    const device float *load_target = (index & 32) 
-        ? (%%LOAD_BUFFER(sgemm_B)%%) 
+    const device float *load_target = (index & 32)
+        ? (%%LOAD_BUFFER(sgemm_B)%%)
         : (%%LOAD_BUFFER(sgemm_A)%%);
 #endif
 
@@ -85,25 +85,25 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 load_target[track0 + stride_mn * 1],
                 load_target[track0 + stride_mn * 2],
                 load_target[track0 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 2] = float4(
                 load_target[track2 + stride_mn * 0],
                 load_target[track2 + stride_mn * 1],
                 load_target[track2 + stride_mn * 2],
                 load_target[track2 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 4] = float4(
                 load_target[track4 + stride_mn * 0],
                 load_target[track4 + stride_mn * 1],
                 load_target[track4 + stride_mn * 2],
                 load_target[track4 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 6] = float4(
                 load_target[track6 + stride_mn * 0],
                 load_target[track6 + stride_mn * 1],
                 load_target[track6 + stride_mn * 2],
                 load_target[track6 + stride_mn * 3]
-            ); 
+            );
         #endif
     #else
             shared4[shared_offset4 + 32 * 0] = float4(
@@ -111,25 +111,25 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (mn_load_offset + 1 >= max_MN) ? 0 : load_target[track0 + stride_mn * 1],
                 (mn_load_offset + 2 >= max_MN) ? 0 : load_target[track0 + stride_mn * 2],
                 (mn_load_offset + 3 >= max_MN) ? 0 : load_target[track0 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 2] = float4(
                 (mn_load_offset + 0 >= max_MN) ? 0 : load_target[track2 + stride_mn * 0],
                 (mn_load_offset + 1 >= max_MN) ? 0 : load_target[track2 + stride_mn * 1],
                 (mn_load_offset + 2 >= max_MN) ? 0 : load_target[track2 + stride_mn * 2],
                 (mn_load_offset + 3 >= max_MN) ? 0 : load_target[track2 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 4] = float4(
                 (mn_load_offset + 0 >= max_MN) ? 0 : load_target[track4 + stride_mn * 0],
                 (mn_load_offset + 1 >= max_MN) ? 0 : load_target[track4 + stride_mn * 1],
                 (mn_load_offset + 2 >= max_MN) ? 0 : load_target[track4 + stride_mn * 2],
                 (mn_load_offset + 3 >= max_MN) ? 0 : load_target[track4 + stride_mn * 3]
-            ); 
+            );
             shared4[shared_offset4 + 32 * 6] = float4(
                 (mn_load_offset + 0 >= max_MN) ? 0 : load_target[track6 + stride_mn * 0],
                 (mn_load_offset + 1 >= max_MN) ? 0 : load_target[track6 + stride_mn * 1],
                 (mn_load_offset + 2 >= max_MN) ? 0 : load_target[track6 + stride_mn * 2],
                 (mn_load_offset + 3 >= max_MN) ? 0 : load_target[track6 + stride_mn * 3]
-            ); 
+            );
     #endif
 
             k += 8;
@@ -140,7 +140,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K) ? 0 : load_target[track0 + stride_mn * 1],
                 (k + k_load_offset >= K) ? 0 : load_target[track0 + stride_mn * 2],
                 (k + k_load_offset >= K) ? 0 : load_target[track0 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 2] = float4(
@@ -148,7 +148,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K) ? 0 : load_target[track2 + stride_mn * 1],
                 (k + k_load_offset >= K) ? 0 : load_target[track2 + stride_mn * 2],
                 (k + k_load_offset >= K) ? 0 : load_target[track2 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 4] = float4(
@@ -156,7 +156,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K) ? 0 : load_target[track4 + stride_mn * 1],
                 (k + k_load_offset >= K) ? 0 : load_target[track4 + stride_mn * 2],
                 (k + k_load_offset >= K) ? 0 : load_target[track4 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 6] = float4(
@@ -164,7 +164,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K) ? 0 : load_target[track6 + stride_mn * 1],
                 (k + k_load_offset >= K) ? 0 : load_target[track6 + stride_mn * 2],
                 (k + k_load_offset >= K) ? 0 : load_target[track6 + stride_mn * 3]
-            ); 
+            );
             k += 2;
     #else
             shared4[shared_offset4 + 32 * 0] = float4(
@@ -172,7 +172,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K || mn_load_offset + 1 >= max_MN) ? 0 : load_target[track0 + stride_mn * 1],
                 (k + k_load_offset >= K || mn_load_offset + 2 >= max_MN) ? 0 : load_target[track0 + stride_mn * 2],
                 (k + k_load_offset >= K || mn_load_offset + 3 >= max_MN) ? 0 : load_target[track0 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 2] = float4(
@@ -180,7 +180,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K || mn_load_offset + 1 >= max_MN) ? 0 : load_target[track2 + stride_mn * 1],
                 (k + k_load_offset >= K || mn_load_offset + 2 >= max_MN) ? 0 : load_target[track2 + stride_mn * 2],
                 (k + k_load_offset >= K || mn_load_offset + 3 >= max_MN) ? 0 : load_target[track2 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 4] = float4(
@@ -188,7 +188,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K || mn_load_offset + 1 >= max_MN) ? 0 : load_target[track4 + stride_mn * 1],
                 (k + k_load_offset >= K || mn_load_offset + 2 >= max_MN) ? 0 : load_target[track4 + stride_mn * 2],
                 (k + k_load_offset >= K || mn_load_offset + 3 >= max_MN) ? 0 : load_target[track4 + stride_mn * 3]
-            ); 
+            );
             k += 2;
 
             shared4[shared_offset4 + 32 * 6] = float4(
@@ -196,7 +196,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 (k + k_load_offset >= K || mn_load_offset + 1 >= max_MN) ? 0 : load_target[track6 + stride_mn * 1],
                 (k + k_load_offset >= K || mn_load_offset + 2 >= max_MN) ? 0 : load_target[track6 + stride_mn * 2],
                 (k + k_load_offset >= K || mn_load_offset + 3 >= max_MN) ? 0 : load_target[track6 + stride_mn * 3]
-            ); 
+            );
             k += 2;
     #endif
 #endif
@@ -292,7 +292,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     }
 
     {
-    
+
 #if OPTIMIZE && N_DIVIDABLE_BY_64
         device float4 *C4 = (device float4 *)(%%LOAD_BUFFER(sgemm_C)%%);
         const int N4 = N >> 2;
@@ -310,7 +310,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
 
             C4[m * N4 + n + 0] = result0;
             C4[m * N4 + n + 1] = result1;
-            
+
             m++;
         }
 #else
@@ -333,7 +333,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                     n++;
                 }
             }
-            
+
             m++;
         }
 #endif

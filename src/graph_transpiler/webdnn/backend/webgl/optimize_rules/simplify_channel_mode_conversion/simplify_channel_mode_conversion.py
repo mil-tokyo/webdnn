@@ -21,4 +21,3 @@ class SimplifyChannelModeConversion(OptimizeRuleGroup):
             flags.optimize.OPTIMIZE,
             flags.optimize.SIMPLIFY_CHANNEL_MODE_CONVERSION
         ]
-

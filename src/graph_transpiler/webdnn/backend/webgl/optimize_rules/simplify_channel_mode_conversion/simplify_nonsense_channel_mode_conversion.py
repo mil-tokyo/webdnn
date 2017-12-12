@@ -19,11 +19,11 @@ class SimplifyNonsenseChannelModeConversion(OptimizeRule):
 
         """
         before)
-        
+
                        +-{r2rgba}- y -
         x -{rgba2r}- h +
                        +-
-        
+
         after)
 
            +-{rgba2r}- h -

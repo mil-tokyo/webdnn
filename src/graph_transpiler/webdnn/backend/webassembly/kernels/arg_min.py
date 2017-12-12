@@ -28,7 +28,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         float min_x = +1.0e10;
         for (int i = 0; i < N; i++) {
             const float x = X[x_index];
-            
+
             if (x < min_x) {
                 min_x = x;
                 min_i = i;
