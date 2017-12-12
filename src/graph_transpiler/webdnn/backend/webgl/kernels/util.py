@@ -180,8 +180,16 @@ ivec{ndim2} convert_position_i(ivec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, i
     return convert_position_i(p1, s1, s2, d2, 0);
 }}
 
+ivec{ndim2} convert_position_i(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2, int index_offset) {{
+    return convert_position_i(ivec{ndim1}(p1), s1, s2, d2, index_offset);
+}}
+
 ivec{ndim2} convert_position_i(vec{ndim1} p1, ivec{ndim1} s1, ivec{ndim2} s2, ivec{ndim2} d2) {{
     return convert_position_i(ivec{ndim1}(p1), s1, s2, d2, 0);
+}}
+
+ivec{ndim2} convert_position_i(vec{ndim1} p1, vec{ndim1} s1, vec{ndim2} s2, vec{ndim2} d2, int index_offset) {{
+    return convert_position_i(ivec{ndim1}(p1), ivec{ndim1}(s1), ivec{ndim2}(s2), ivec{ndim2}(d2), index_offset);
 }}
 
 ivec{ndim2} convert_position_i(vec{ndim1} p1, vec{ndim1} s1, vec{ndim2} s2, vec{ndim2} d2) {{

@@ -8,7 +8,7 @@ class Select(Elementwise):
 
     .. math::
 
-        f(x) = x2 ? x0 : x1;
+        f(x) = x0 ? x1 : x2;
 
     Signature
         .. code::

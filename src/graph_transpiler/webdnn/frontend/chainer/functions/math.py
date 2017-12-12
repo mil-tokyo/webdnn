@@ -10,7 +10,6 @@ from webdnn.graph.operators.atan import Atan
 from webdnn.graph.operators.cos import Cos
 from webdnn.graph.operators.cosh import Cosh
 from webdnn.graph.operators.exp import Exp
-from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.min import Min
@@ -181,7 +180,7 @@ def _convert_maximum(converter: ChainerConverter, c_op: "chainer.functions.Maxim
 
     check_broadcast_constraints(x, y)
 
-    tmp, = Greater(None)(x, y)
+    tmp = x > y
     z = x * tmp + y * (1 - tmp)
     converter.set_variable(c_op.outputs[0](), z)
 
@@ -193,7 +192,7 @@ def _convert_minimum(converter: ChainerConverter, c_op: "chainer.functions.Minim
 
     check_broadcast_constraints(x, y)
 
-    tmp, = Greater(None)(x, y)
+    tmp = x > y
     z = x * (1 - tmp) + y * tmp
     converter.set_variable(c_op.outputs[0](), z)
 

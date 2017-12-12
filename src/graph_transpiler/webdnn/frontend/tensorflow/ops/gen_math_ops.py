@@ -220,7 +220,7 @@ def greater_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     check_broadcast_constraints(x, y)
 
-    z, = Greater(None)(x, y)
+    z = x > y
     converter.set_variable(tf_op.outputs[0], z)
 
 
@@ -231,7 +231,7 @@ def greater_equal_handler(converter: TensorFlowConverter, tf_op: "tf.Operation")
 
     check_broadcast_constraints(x, y)
 
-    z, = GreaterEqual(None)(x, y)
+    z = x >= y
     converter.set_variable(tf_op.outputs[0], z)
 
 
@@ -284,7 +284,7 @@ def less_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     check_broadcast_constraints(x, y)
 
-    z, = Greater(None)(y, x)
+    z = y > x
     converter.set_variable(tf_op.outputs[0], z)
 
 
@@ -295,7 +295,7 @@ def less_equal_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     check_broadcast_constraints(x, y)
 
-    z, = GreaterEqual(None)(y, x)
+    z = y >= x
     converter.set_variable(tf_op.outputs[0], z)
 
 
@@ -390,7 +390,7 @@ def maximum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     check_broadcast_constraints(x, y)
 
-    tmp, = Greater(None)(x, y)
+    tmp = x > y
     z = x * tmp + y * (1 - tmp)
     converter.set_variable(tf_op.outputs[0], z)
 
@@ -422,7 +422,7 @@ def minimum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     check_broadcast_constraints(x, y)
 
-    tmp, = Greater(None)(x, y)
+    tmp = x > y
     z = x * (1 - tmp) + y * tmp
     converter.set_variable(tf_op.outputs[0], z)
 

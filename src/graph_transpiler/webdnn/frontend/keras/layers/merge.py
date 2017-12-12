@@ -56,7 +56,7 @@ def _convert_maximum(converter: KerasConverter, k_op: "keras.layers.Maximum"):
 
     y = xs[0]
     for x in xs[1:]:
-        cond, = Greater(None)(y, x)
+        cond = y > x
         y, = Select(None)(cond, y, x)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
@@ -70,7 +70,7 @@ def _convert_minimum(converter: KerasConverter, k_op: "keras.layers.Minimum"):
 
     y = xs[0]
     for x in xs[1:]:
-        cond, = Greater(None)(y, x)
+        cond = y > x
         y, = Select(None)(cond, x, y)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
