@@ -271,7 +271,7 @@ Conversely when number of dimension will be decreased, the size of axes which wi
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; inserted axis</li>
-<li><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; insert position</li>
+<li><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>optional</em>) &#8211; insert position, As default, inserted at last.</li>
 </ul>
 </td>
 </tr>
@@ -416,7 +416,7 @@ Reshape into same order and shape as <code class="code docutils literal"><span c
 
 <dl class="method">
 <dt id="webdnn.Variable.squeeze">
-<code class="descname">squeeze</code><span class="sig-paren">(</span><em>axis: typing.Union[webdnn.graph.axis.Axis</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.squeeze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.squeeze" title="Permalink to this definition">¶</a></dt>
+<code class="descname">squeeze</code><span class="sig-paren">(</span><em>axis: typing.Union[webdnn.graph.axis.Axis</em>, <em>typing.Sequence[webdnn.graph.axis.Axis]] = None</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.squeeze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.Variable.squeeze" title="Permalink to this definition">¶</a></dt>
 <dd><p>expand_dims(shape, axis, index)
 Remove axis whose size is 1. This is alias of follow codes.</p>
 <div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
@@ -430,7 +430,8 @@ Remove axis whose size is 1. This is alias of follow codes.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; removed axis. If it&#8217;s &#8220;None&#8221;, all axes whose size are 1 is removed.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> or sequence of Axis, optional) &#8211; removed axis.
+As default, all axes whose size are 1 is removed.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) squeezed variable</td>
 </tr>
