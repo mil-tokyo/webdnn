@@ -7,8 +7,11 @@ from webdnn.frontend.onnx.type_hint import INodeProto
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.max import Max
+from webdnn.graph.operators.sum import Sum
 from webdnn.graph.order import OrderC, OrderNCHW, Order
 from webdnn.util import console
+from webdnn.util.misc import mul
 
 
 @ONNXConverter.register_handler("AveragePool")
@@ -107,14 +110,35 @@ def _convert_conv_transpose(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("GlobalAveragePool")
 def _convert_global_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"GlobalAveragePooling\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+    if x.ndim == 4:
+        x.order.unify(OrderNCHW)
+
+    reduction_size = mul(x.shape[2:])
+    reduction_axis = Axis()
+
+    x = x.reshape([x.shape[0], x.shape[1], reduction_size],
+                  Order([x.order.axes[0], x.order.axes[1], reduction_axis]))
+    y, = Sum(None, axis=reduction_axis)(x)
+    y /= reduction_size
+
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("GlobalMaxPool")
 def _convert_global_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"GlobalMaxPool\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+    if x.ndim == 4:
+        x.order.unify(OrderNCHW)
+
+    reduction_size = mul(x.shape[2:])
+    reduction_axis = Axis()
+
+    x = x.reshape([x.shape[0], x.shape[1], reduction_size],
+                  Order([x.order.axes[0], x.order.axes[1], reduction_axis]))
+    y, = Max(None, axis=reduction_axis)(x)
+
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("BatchNormalization")
@@ -132,8 +156,17 @@ def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Flatten")
 def _convert_flatten(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"Flatten\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+
+    attrs = attribute_dict(onnx_op)
+    axis = attrs["axis"].i if "axis" in attrs else 1
+
+    new_shape = [mul(x.shape[:axis]), mul(x.shape[axis:])]
+    new_order = Order([None, None])
+
+    y = x.reshape(shape=new_shape, order=new_order)
+
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("LRN")
