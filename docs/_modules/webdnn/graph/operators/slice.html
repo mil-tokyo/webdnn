@@ -212,7 +212,7 @@
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Each index must be an instance of slice, int, or NoneType:</span>
 <span class="s2">    (indices) = </span><span class="si">{indices}</span><span class="s2"></span>
-<span class="s2">    (type(indices[</span><span class="si">{axis.name}</span><span class="s2">])) = {type(index)} </span>
+<span class="s2">    (type(indices[</span><span class="si">{axis.name}</span><span class="s2">])) = {type(index)}</span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">indices</span>
@@ -224,13 +224,14 @@
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
                     <span class="n">index</span> <span class="o">=</span> <span class="n">normalize_slice</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
 
-                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span> <span class="ow">or</span> \
-                        <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="o">.</span><span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]):</span>
+                    <span class="n">valid_start</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+                    <span class="n">valid_stop</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="o">.</span><span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_start</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">valid_stop</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Index </span><span class="si">{index}</span><span class="s2"> in </span><span class="si">{axis}</span><span class="s2"> is out of range:</span>
-<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"> </span>
+<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"></span>
 <span class="s2">    (x.shape) = </span><span class="si">{x.shape}</span><span class="s2"></span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">    (indices[</span><span class="si">{axis.name}</span><span class="s2">]) = </span><span class="si">{index}</span><span class="s2"></span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
@@ -239,7 +240,7 @@
 <span class="s2">[Slice] Slice operator doesn&#39;t support 0-size output:</span>
 <span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"></span>
 <span class="s2">    (x.shape) = </span><span class="si">{x.shape}</span><span class="s2"></span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">    (indices[</span><span class="si">{axis.name}</span><span class="s2">]) = </span><span class="si">{index}</span><span class="s2"></span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
@@ -247,19 +248,19 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Index </span><span class="si">{index}</span><span class="s2"> in </span><span class="si">{axis}</span><span class="s2"> is out of range:</span>
-<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"> </span>
+<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"></span>
 <span class="s2">    (x.shape) = </span><span class="si">{x.shape}</span><span class="s2"></span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">    (indices[</span><span class="si">{axis.name}</span><span class="s2">]) = </span><span class="si">{index}</span><span class="s2"></span>
-<span class="s2">    (valid range) = [{-x.shape_dict[axis]}, </span><span class="si">{x.shape_dict[axis]}</span><span class="s2">) </span>
+<span class="s2">    (valid range) = [{-x.shape_dict[axis]}, </span><span class="si">{x.shape_dict[axis]}</span><span class="s2">)</span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
                 <span class="k">elif</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Axis </span><span class="si">{axis}</span><span class="s2"> is already exist:</span>
-<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"> </span>
+<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"></span>
 <span class="s2">    (x.shape) = </span><span class="si">{x.shape}</span><span class="s2"></span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">    (indices[</span><span class="si">{axis.name}</span><span class="s2">]) = </span><span class="si">{index}</span><span class="s2"></span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
@@ -267,16 +268,16 @@
                 <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Axis </span><span class="si">{axis}</span><span class="s2"> is not exist in input variable. In this case, index must be &quot;None&quot; (=insert new axis):</span>
-<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"> </span>
+<span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2"></span>
 <span class="s2">    (x.shape) = </span><span class="si">{x.shape}</span><span class="s2"></span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">    (indices[</span><span class="si">{axis.name}</span><span class="s2">]) = </span><span class="si">{index}</span><span class="s2"></span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Slice] Accessing to one element is not supported:</span>
-<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"> </span>
+<span class="s2">    (indices) = </span><span class="si">{self.indices}</span><span class="s2"></span>
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
