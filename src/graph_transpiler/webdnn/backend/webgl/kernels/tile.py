@@ -18,7 +18,7 @@ void main() {{
     gl_FragColor.r = """, texel_fetch(x, change_order(
         ExpressionNode(["mod(", get_output_position(y), ", ", ivec([x.shape_dict[a] for a in y.order.axes]), ")"]),
         y.order, x.order
-    )), f""".r; 
+    )), f""".r;
 }}
 """], name=op.__class__.__name__)
     source = code.generate()

@@ -54,7 +54,7 @@ class SimplifyRedundantChannelModeConversion(OptimizeRule):
 
         after)
 
-        v0[R] -{Transpose}- v1[R] 
+        v0[R] -{Transpose}- v1[R]
         """
         matches = traverse.search_sub_structure(graph, [Variable, ConvertRGBAtoR, Variable])
         while len(matches) > 0:

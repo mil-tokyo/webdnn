@@ -1,0 +1,3 @@
+[pycodestyle]
+exclude=caffe_pb*,.eggs,*.egg,build
+ignore = E501, E704, E303

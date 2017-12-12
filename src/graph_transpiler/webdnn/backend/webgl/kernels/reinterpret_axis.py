@@ -18,7 +18,7 @@ def reinterpret_axis(op: ReinterpretAxis) -> List[Kernel]:
     # FIXME: optimize
     code = KernelCode([f"""
 void main() {{
-    gl_FragColor.r = """, texel_fetch(x, change_order(get_output_position(y), y.order, y_axes_order_in_x_order)), f""".r; 
+    gl_FragColor.r = """, texel_fetch(x, change_order(get_output_position(y), y.order, y_axes_order_in_x_order)), f""".r;
 }}
 """], name=op.__class__.__name__)
     source = code.generate()

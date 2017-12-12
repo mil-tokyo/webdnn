@@ -45,7 +45,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         const int n  = gid / C1 / W1 / H1;
 
         float sum = 0;
-        
+
         for (int kh = 0; kh < KH; kh++) {
             const int h2 = (h1 + PH - kh) / SH;
             if ((h1 + PH - kh) % SH != 0 || h2 < 0 || h2 >= H2) continue;
@@ -53,12 +53,12 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             for (int kw = 0; kw < KW; kw++) {
                 const int w2 = (w1 + PW - kw) / SW;
                 if ((w1 + PW - kw) % SW != 0 || w2 < 0 || w2 >= W2) continue;
-                
+
                 sum += col[((((n * H2 + h2) * W2 + w2) * KH + kh) * KW + kw) * C1 + c1];
             }
         }
-        
-        im[gid] = sum; 
+
+        im[gid] = sum;
     }
 }
 """

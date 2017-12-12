@@ -33,7 +33,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         float max_x = -1.0e10;
         for (int i = 0; i < N; i++) {
             const float x = X[x_index];
-            
+
             if (x > max_x) {
                 max_x = x;
                 max_i = i;

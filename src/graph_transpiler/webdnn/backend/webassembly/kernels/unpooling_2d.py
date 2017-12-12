@@ -54,9 +54,9 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 }
 """
 
+
 @WebassemblyDescriptorGenerator.register_handler(Unpooling2D)
-def unpooling_2d(op: Unpooling2D,
-                       memory_layout: MemoryLayout) -> List[Kernel]:
+def unpooling_2d(op: Unpooling2D, memory_layout: MemoryLayout) -> List[Kernel]:
     x = op.inputs["x"]
     y = op.outputs["y"]
 

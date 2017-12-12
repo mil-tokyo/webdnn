@@ -46,13 +46,13 @@ for (var batch = 0; batch < n; batch++) {
         if (ch_high > out_size) {
           ch_high = out_size;
         }
-        
+
         var sq_sum = 0.0;
         for (var ic = ch_low; ic < ch_high; ic++) {
           var val = get_x(batch, oy, ox, ic);
           sq_sum += val * val;
         }
-        
+
         var scale = Math.pow(sq_sum * p_alpha + p_k, p_minus_beta);
         var ret = get_x(batch, oy, ox, oc) * scale;
         set_y(batch, oy, ox, oc, ret);

@@ -22,7 +22,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const float Pk = *((const float *)(& %%LOAD_BUFFER(local_response_normalization_param_k)%%));
     const float Palpha = *((const float *)(& %%LOAD_BUFFER(local_response_normalization_param_alpha)%%));
     const float Pmbeta = *((const float *)(& %%LOAD_BUFFER(local_response_normalization_param_minus_beta)%%));
-    
+
     for (int gid = 0; gid < N * H * W * C; gid += 1) {
         const int c = gid % C;
         const int w = gid / C % W;
@@ -37,16 +37,16 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         if (ch_high > C) {
             ch_high = C;
         }
-        
+
         float sq_sum = 0.0;
         for (; ch_low < ch_high; ch_low++) {
             float val = X[((n * H + h) * W + w) * C + ch_low];
             sq_sum += val * val;
         }
-        
+
         float scale = powf(sq_sum * Palpha + Pk, Pmbeta);
         float v = X[gid] * scale;
-        
+
         Y[gid] = v;
     }
 }

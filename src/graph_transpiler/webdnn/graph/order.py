@@ -92,7 +92,7 @@ class Order:
     def unify(self, other: "Order"):
         if self.ndim != other.ndim:
             raise UnificationFailedError(f"""
-Unification failed: Number of dimension mismatch 
+Unification failed: Number of dimension mismatch
     (self.ndim) = {self.ndim}
     (other.ndim) = {other.ndim}""")
 
@@ -121,7 +121,7 @@ OrderNC = Order([Axis.N, Axis.C])
 
 """
 usage:
-    Fully-Connected Filter 
+    Fully-Connected Filter
 """
 OrderCN = Order([Axis.C, Axis.N])
 

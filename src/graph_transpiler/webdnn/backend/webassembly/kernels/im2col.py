@@ -37,7 +37,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         const int w2 = gid / C1 / KW / KH % W2;
         const int h2 = gid / C1 / KW / KH / W2 % H2;
         const int  n = gid / C1 / KW / KH / W2 / H2;
-        
+
         const int h1 = h2 * SH - PH + kh * DH;
         const int w1 = w2 * SW - PW + kw * DW;
 
@@ -90,8 +90,11 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
     col = op.outputs["col"]
 
     assert im.order == OrderNHWC
-    assert col.order == Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]) or \
-           col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
+    col_acceptable_order = [
+        Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]),
+        Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
+    ]
+    assert col.order in col_acceptable_order
 
     buffer_injector = BufferInjector()
     buffer_injector.register({

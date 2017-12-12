@@ -38,9 +38,9 @@ void main() {{
     """, Type.Ivec.get_name(shapes[x]), f""" variable_position_x = """, change_order(
             convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]),
             orders[y], orders[x]
-        ), f""";     
+        ), f""";
     variable_position_x[{orders[x].axes_dict[axis]}] += {sections[i]};
-    
+
     gl_FragColor.r = texture2D(""", x, ",", convert_coord("variable_position_x", shapes[x], strides[x], texture_shape(x)[:2][::-1],
                                                           texture_stride(x)[:2][::-1]), f""").r;
 }}

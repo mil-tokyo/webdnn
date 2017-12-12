@@ -66,7 +66,7 @@ def reshape(op: Reshape) -> List[Kernel]:
 
     # FIXME: optimize
     # y -{change_order}-> dummy_y -{convert_position}-> dummy_x -{change_order}-> x
-    
+
     code = KernelCode([f"""
 void main() {{
     gl_FragColor.r = texture2D(""", x, """,""", convert_coord(
@@ -81,7 +81,7 @@ void main() {{
             orders_x_dx[dummy_x], orders_x_dx[x]
         ),
         shapes_x_dx[x], strides_x_dx[x], texture_shape(x)[:2][::-1], texture_stride(x)[:2][::-1]
-    ), f""").r; 
+    ), f""").r;
 }}
 """], name=op.__class__.__name__)
     source = code.generate()

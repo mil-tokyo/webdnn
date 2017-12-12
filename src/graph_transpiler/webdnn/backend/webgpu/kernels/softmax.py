@@ -38,7 +38,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     for (int gid = index; gid < D1 * D3; gid += num_threads) {
         const int d3 = gid % D3;
         const int d1 = gid / D3;
-        
+
         float set_max = 0.0f;
         for (int d2 = 0; d2 < D2; d2++) {
             float val = X[(d1 * D2 + d2) * D3 + d3];
@@ -46,7 +46,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 set_max = val;
             }
         }
-        
+
         float sum_exp = 0.0f;
         for (int d2 = 0; d2 < D2; d2++) {
             float val = X[(d1 * D2 + d2) * D3 + d3];
@@ -54,7 +54,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
             sum_exp += exp_x;
             Y[(d1 * D2 + d2) * D3 + d3] = exp_x;
         }
-        
+
         for (int d2 = 0; d2 < D2; d2++) {
             Y[(d1 * D2 + d2) * D3 + d3] /= sum_exp;
         }

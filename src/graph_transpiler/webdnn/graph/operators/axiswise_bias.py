@@ -9,7 +9,7 @@ class AxiswiseBias(ElementwiseAdd):
     """AxiswiseBias(name, axis)
 
     Adds a bias value along to specified axis.
-    
+
     Args:
         name (str): Operator name.
         axis (:obj:`~webdnn.Axis`): target axis

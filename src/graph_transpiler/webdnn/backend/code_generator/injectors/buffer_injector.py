@@ -235,7 +235,7 @@ class BufferInjector(Injector):
 
                         value = [static1, dynamic2, ..., staticK]  # allocations list whose length is K
                         tag = "float *x_i = %%LOAD_BUFFER(xs, i)%%"
-                    
+
                     1. pack offset of each allocation into meta buffer like single allocation:
 
                         meta_buffer[M + 0]   = static1.offset
@@ -245,11 +245,11 @@ class BufferInjector(Injector):
 
                     2. pack buffer type flag:
 
-                        meta_buffer[M + K + 0]   = 1  // 1 means that static1 is in STATIC buffer 
-                        meta_buffer[M + K + 1]   = 0  // 0 means that dynamic2 is in DYNAMIC buffer
+                        meta_buffer[M + K + 0]  = 1  // 1 means that static1 is in STATIC buffer
+                        meta_buffer[M + K + 1]  = 0  // 0 means that dynamic2 is in DYNAMIC buffer
                         ...
                         meta_buffer[M + K + K-1] = 0
-                        
+
                     3. generate text:
 
                         >> "float *x_i = (meta_buffer[M+K+ (i)] ? static_buffer : dynamic_buffer)[ meta_buffer[M + (i)] ]"
@@ -270,7 +270,7 @@ class BufferInjector(Injector):
             else:
                 raise TypeError(
                     "[BufferInjector] Only int, float, bytes, allocation, placeholder and list of placeholders is supported for injection. "
-                    + f"'{key}' is {value}, whose type is {type(value)}.")
+                    f"'{key}' is {value}, whose type is {type(value)}.")
 
         self.offset_map = offset_map
         self.buffer = buffer

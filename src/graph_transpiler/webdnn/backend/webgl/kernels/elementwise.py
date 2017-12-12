@@ -62,7 +62,7 @@ void main() {
     float y;
 
     ivec4 variable_position_y = """,
-                       convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]), """;    
+                       convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]), """;
 
 """, load_nodes, _registered_items[op.__class__].code, """
 

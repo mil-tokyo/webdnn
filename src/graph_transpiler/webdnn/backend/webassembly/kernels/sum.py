@@ -27,7 +27,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         float y = 0.0f;
         for (int i = 0; i < N; i++) {
             const float x = X[x_index];
-            
+
             y += x;
 
             x_index += x_target_axis_stride;

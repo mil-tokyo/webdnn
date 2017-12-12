@@ -41,7 +41,7 @@ class ONNXConverter(Converter["onnx.NodeProto"]):
         if not FLAG_ONNX_INSTALLED:
             raise ImportError("""
 Module "onnx" cannot be imported. Please check that follow command works correctly.
-    
+
     python -c "import onnx"
 
 """)

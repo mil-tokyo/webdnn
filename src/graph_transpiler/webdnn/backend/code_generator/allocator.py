@@ -529,7 +529,7 @@ def _visualize_allocation(operators: List[Operator], variables: List[Variable], 
 style="top: {self.top}; height: {self.height}; left: {self.left}; width: {self.width}" title="{", ".join(self.names)}
 size: {self.size}
 offset: {self.offset}
-lifetime: {self.lifetime[0]} - {self.lifetime[1]} 
+lifetime: {self.lifetime[0]} - {self.lifetime[1]}
 ">
     <p>{", ".join(self.names)}</p>
 </div>"""

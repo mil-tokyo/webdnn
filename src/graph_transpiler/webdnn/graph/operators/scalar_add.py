@@ -1,5 +1,3 @@
-from webdnn.graph.graph import Graph
-from webdnn.graph.optimize_rule import OptimizeRule
 from typing import Optional
 
 from webdnn.graph.graph import Graph
@@ -40,7 +38,7 @@ class ScalarAdd(Elementwise):
     def value(self) -> float:
         return self.parameters["value"]
 
-    def fold_constance(self,graph: Graph):
+    def fold_constance(self, graph: Graph):
         x0 = self.inputs["x0"]  # type: ConstantVariable
         y = self.outputs["y"]  # type: ConstantVariable
         self.remove_all()

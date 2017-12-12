@@ -13,7 +13,7 @@ class LocalResponseNormalization(Operator):
     axis.
 
     For more detail, see: http://caffe.berkeleyvision.org/tutorial/layers/lrn.html
-    
+
     Args:
         name (str): Operator name.
         n (float): Parameter n.

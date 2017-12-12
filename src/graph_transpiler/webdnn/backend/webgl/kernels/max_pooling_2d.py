@@ -26,7 +26,7 @@ void main() {
     ivec4 variable_position_y = """, change_order(get_output_position(y), y.order, OrderNHWC), f""";
     int n = variable_position_y.x;
     int h2 = variable_position_y.y;
-    int w2 = variable_position_y.z; 
+    int w2 = variable_position_y.z;
     int c = variable_position_y.w;
 
     float v = -1e5;
@@ -38,7 +38,7 @@ void main() {
         for (int kw = 0; kw < {op.KW}; kw++) {{
             int w1 = w2 * {op.SW} - {op.PW} + kw;
             if (w1 < 0 || w1 >= {x.shape_dict[Axis.W]}) continue;
-            
+
             v = max(""", texel_fetch(x, change_order("vec4(n, h1, w1, c)", OrderNHWC, x.order)), """.r, v);
         }
     }

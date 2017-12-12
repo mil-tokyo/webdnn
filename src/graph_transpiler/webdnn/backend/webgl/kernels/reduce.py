@@ -31,14 +31,14 @@ def _generate_template(op: Reduce, reduction_size: int, shapes: Dict[Variable, S
     return KernelCode([f"""
 void main() {{
     ivec4 variable_position_y = """,
-                       convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]), f""";    
+                       convert_position("gl_FragCoord.yx", texture_shape(y)[:2], texture_stride(y)[:2], shapes[y], strides[y]), f""";
     ivec4 variable_position_x = mod(variable_position_y, """, ivec(shapes[x]), f""");
     const int n_x = {reduction_size};
     float y;
 
-    """, params, f"""    
+    """, params, f"""
     """, _registered_items[op.__class__].pre_reduction_snippet, f"""
-    
+
     for (int i_x = 0; i_x < {reduction_size}; i_x++) {{
         variable_position_x.w = i_x;
         float x = texture2D(""", x, ", ",
@@ -50,7 +50,7 @@ void main() {{
     }}
 
     """, _registered_items[op.__class__].post_reduction_snippet, f"""
-    
+
     gl_FragColor.r = y;
 }}
 """], name=op.__class__.__name__)

@@ -13,7 +13,7 @@ class LeakyRelu(Elementwise):
         f(x) = max(x, ax)
 
     where :math:`a` is slope value.
-    
+
     Args:
         slope (float): slope value
 

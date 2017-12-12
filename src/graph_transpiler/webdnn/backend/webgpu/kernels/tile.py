@@ -22,12 +22,12 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const device int *x_shape = %%LOAD_BUFFER(tile_x_shape)%%;
     const int D = %%LOAD_BUFFER(tile_D)%%;
     const int MAX_GID = %%LOAD_BUFFER(tile_MAX_GID)%%;
-    
+
     for (int gid = index; gid < MAX_GID; gid += num_threads) {
         int i = 0;
         for (int d = 0; d < D; d++) i += ((gid / y_stride[d]) % x_shape[d]) * x_stride[d];
-        
-        Y[gid] = X[i]; 
+
+        Y[gid] = X[i];
     }
 }
 """

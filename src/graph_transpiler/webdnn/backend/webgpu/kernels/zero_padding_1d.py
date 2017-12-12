@@ -24,7 +24,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     const int C = %%LOAD_BUFFER(zero_padding_1d_C)%%;
     const int T2 = %%LOAD_BUFFER(zero_padding_1d_T2)%%;
     const int Pad1L = %%LOAD_BUFFER(zero_padding_1d_Pad1L)%%;
-    
+
     for (int gid = index; gid < N * T2 * C; gid += num_threads) {
         const int c = gid % C;
         const int t2 = gid / C % T2;
@@ -35,7 +35,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         if ((t1 >= 0) && (t1 < T1)) {
             v = X[(n * T1 + t1) * C + c];
         }
-        
+
         Y[gid] = v;
     }
 }

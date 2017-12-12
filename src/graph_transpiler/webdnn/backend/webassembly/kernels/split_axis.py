@@ -16,33 +16,33 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
     const int *x_offsets = %%LOAD_BUFFER(split_axis_x_offsets)%%;
     const int *y_shapes = %%LOAD_BUFFER(split_axis_y_shapes)%%;
     const int *y_strides_in_x = %%LOAD_BUFFER(split_axis_y_strides_in_x)%%;
-    
+
     int y_index = 0;
-    
+
     for (int n = 0; n < N; n++) {
         float *y = %%LOAD_BUFFER(split_axis_ys, n)%%;
         const int x_offset = x_offsets[n];
         const int *y_shape = y_shapes + n * D;
         const int *y_stride_in_x = y_strides_in_x + n * D;
-        
+
         int y_size = 1;
         for (int d = 0; d < D; d++) {
             y_size *= y_shape[d];
         }
-        
-        while (y_index < y_size) { 
+
+        while (y_index < y_size) {
             int x_index = x_offset;
             int s = y_index;
             for (int d = D-1; d >= 0; d--) {
                 x_index += y_stride_in_x[d] * (s % y_shape[d]);
                 s /= y_shape[d];
             }
-        
+
             y[y_index] = x[x_index];
-            
+
             y_index++;
         }
-        
+
         y_index -= y_size;
     }
 }

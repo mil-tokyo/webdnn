@@ -85,7 +85,7 @@ The parameter "other_op" must be the instance of the same class as base operator
         elif self.vars[1].output_from == other_op:
             """
             case B: Second operand is created from `other_op`: x1 + (x2 + x3)
-            
+
             x1 --------------------[var1]-+
                                           |
             x2 -[var1]-+                  +-{op2}- y -
@@ -108,11 +108,11 @@ The parameter "other_op" must be the creator of either one input variable of bas
         op2.replace_input(h, x2, with_assert=False)
         """
             case A: (x1+x2)+x3 => x1+(x2+x3)
-            
+
             x1 -[var1]-+
                        +-{op1}- h
             x2 -[var2]-+
-                
+
             x2 -[var1]-+
                        +-{op2}- y
             x3 -[var2]-+
@@ -120,7 +120,7 @@ The parameter "other_op" must be the creator of either one input variable of bas
             -------------------------------------------------------
 
             case B: x1+(x2+x3) => (x1+x2)+x3
-            
+
             x1 -[var1]-+
                        +-{op2}- y -
             x2 -[var2]-+
@@ -150,7 +150,7 @@ The parameter "other_op" must be the creator of either one input variable of bas
             x1 -[var1]-+
                        +-{op2}- y -
             x2 -[var2]-+
-            
+
             h_new -[var2]-+
                           +-{op1}- h
                x3 -[var1]-+
@@ -166,7 +166,7 @@ The parameter "other_op" must be the creator of either one input variable of bas
             x3 -[var2]-+
 
             -------------------------------------------------------
-            
+
             case B: x1+(x2+x3) => (x1+x2)+x3
 
             x1 -[var1]-+
@@ -185,7 +185,7 @@ The parameter "other_op" must be the creator of either one input variable of bas
             x3 -[var2]-+
 
             -------------------------------------------------------
-            
+
             case B: x1+(x2+x3) => (x1+x2)+x3
 
             x1 -[var1]-+

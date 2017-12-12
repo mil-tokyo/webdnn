@@ -119,7 +119,7 @@ def make_tensor(name: str, vals: np.ndarray) -> ITensorProto:
     this case.
     """
     vals = vals.astype(np.float32)
-    
+
     tensor = TensorProto()
     tensor.data_type = DataType.FLOAT
     tensor.name = name

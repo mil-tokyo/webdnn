@@ -118,7 +118,7 @@ class KernelTestCaseGenerator:
                                   EPS: Union[float, Dict[str, float]] = EPS_DEFAULT,
                                   ABS_EPS: float = 0.0):
         """Generate test data for generated kernel codes
-    
+
         Generated data are saved in JSON format, and BrowserTestRunner executes it.
         """
         if not cls.flag_initialized:

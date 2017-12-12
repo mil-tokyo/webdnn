@@ -26,7 +26,7 @@ void main() {
     ivec4 variable_position_y = """, change_order(get_output_position(y), y.order, OrderNHWC), f""";
     int n = variable_position_y.x;
     int h2 = variable_position_y.y;
-    int w2 = variable_position_y.z; 
+    int w2 = variable_position_y.z;
     int c = variable_position_y.w;
 
     float sum = 0.0;

@@ -86,7 +86,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
     #else
             const int h2 = h1 + PH - kh * DH;
     #endif
-    
+
 #else
         for (int kh = (h1 + PH) % SH; kh < KH; kh += SH) {{
     #if DH_EQUAL_1
@@ -181,8 +181,11 @@ def im2col(op: Im2Col, memory_layout: MemoryLayout) -> List[Kernel]:
     col = op.outputs["col"]
 
     assert im.order == OrderNHWC
-    assert col.order == Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]) or \
-           col.order == Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
+    col_acceptable_order = [
+        Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]),
+        Order([Axis.KH, Axis.KW, Axis.C, Axis.N, Axis.H, Axis.W])
+    ]
+    assert col.order in col_acceptable_order
 
     N = im.shape_dict[Axis.N]
     C1 = im.shape_dict[Axis.C]

@@ -30,7 +30,7 @@ void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
         if ((t1 >= 0) && (t1 < T1)) {
             v = X[(n * T1 + t1) * C + c];
         }
-        
+
         Y[gid] = v;
     }
 }

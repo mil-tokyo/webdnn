@@ -12,6 +12,6 @@ def calculate_stride(var: Variable, axis: Axis) -> Union[int, Placeholder]:
 
     :param var: variable
     :param axis: axis
-    :return: 
+    :return:
     """
     return mul(var.shape[var.order.axes_dict[axis] + 1:])

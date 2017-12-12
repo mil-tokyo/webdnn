@@ -25,15 +25,15 @@ def space2depth(op: Space2Depth) -> List[Kernel]:
 
     code = KernelCode(["""
     void main() {
-        ivec4 variable_position_y = """, get_output_position(y), f""";    
+        ivec4 variable_position_y = """, get_output_position(y), f""";
 
         int n = variable_position_y[{y.order.axes_dict[Axis.N]}];
         int h2 = variable_position_y[{y.order.axes_dict[Axis.H]}];
         int w2 = variable_position_y[{y.order.axes_dict[Axis.W]}];
         int c2 = variable_position_y[{y.order.axes_dict[Axis.C]}];
 
-        int c1 = mod(c2, {C1}); 
-        int h1 = h2 * {r} + c2 / {C1} / {r}; 
+        int c1 = mod(c2, {C1});
+        int h1 = h2 * {r} + c2 / {C1} / {r};
         int w1 = w2 * {r} + mod(c2 / {C1}, {r});
 
         ivec4 variable_position_x;

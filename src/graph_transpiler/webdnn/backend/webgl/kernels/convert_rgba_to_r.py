@@ -28,7 +28,7 @@ void main() {
                                                      texture_stride(x)), """;
     vec2 texture_coord_x = (vec2(texture_position_x.yx) + 0.5) * """, vec2(inv_x_shape), """;
     vec4 x = texture2D(""", x, """, texture_coord_x);
-    
+
     gl_FragColor.r = texture_position_x.z == 0 ? x.r :
                      texture_position_x.z == 1 ? x.g :
                      texture_position_x.z == 2 ? x.b :

@@ -188,7 +188,7 @@ def _split_concat(graph: Graph, op: Concat, v: Variable, v_pair: Sequence[Variab
             after)
                 x1 ------------------------------+
                                                  +-{concat[axis=axis]}- y_0
-                                       +- y_0_1 -+ 
+                                       +- y_0_1 -+
                 x2 -{split[axis=axis]}-+
                                        +- y_1_0 -+
                                                  +-{concat[axis=axis]}- y_1
@@ -259,7 +259,7 @@ def _split_concat(graph: Graph, op: Concat, v: Variable, v_pair: Sequence[Variab
 
             after)
                                   +- x1_0 -+
-                x1 -{split[axis]}-+        | 
+                x1 -{split[axis]}-+        |
                                   +- x1_1 ---+
                                            | |
                                   +- x2_0 -+-|-{concat[op.axis]}- y_0
@@ -267,7 +267,7 @@ def _split_concat(graph: Graph, op: Concat, v: Variable, v_pair: Sequence[Variab
                                   +- x2_1 ---+-{concat[op.axis]}- y_1
                                            | |
                                   +- x3_0 -+ |
-                x3 -{split[axis]}-+          | 
+                x3 -{split[axis]}-+          |
                                   +- x3_1 ---+
 
             """
@@ -296,9 +296,9 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
             """
             before)
                                       +-y1
-                                      |  
+                                      |
                 x -{split[axis=axis]}-+-y2
-                                      |  
+                                      |
                                       +-y3
 
             after)
@@ -386,7 +386,7 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
         else:
             """
             before)
-                                         +- y1 
+                                         +- y1
                                          |
                 x -{split[axis=op.axis]}-+- y2
                                          |
@@ -396,14 +396,14 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
                                                +--- y1_0 -+
                                                |          +-{concat[axis=axis]}- y1
                                                | +- y1_1 -+
-                                               | |      
-                    x_0 -{split[axis=op.axis]}-+-|- y2_0 -+ 
+                                               | |
+                    x_0 -{split[axis=op.axis]}-+-|- y2_0 -+
                                                | |        +-{concat[axis=axis]}- y2
                     x_1 -{split[axis=op.axis]}---+- y2_1 -+
                                                | |
                                                +-|- y3_0 -+
                                                  |        +-{concat[axis=axis]}- y3
-                                                 +- y3_1 -+  
+                                                 +- y3_1 -+
             """
             ys_0 = SplitAxis(None, axis=op.axis, sections=op.sections)(x_0)
             ys_1 = SplitAxis(None, axis=op.axis, sections=op.sections)(x_1)
@@ -460,22 +460,22 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
         else:
             """
             before)
-            
+
                  y1 y2 y3      y1   y2   y3
                 +--+--+--+    +--+ +--+ +--+
                 |  :  :  |    |  | |  | |  |
                 |  :  :  | => |  | |  | |  |
                 |  :  :  |    |  | |  | |  |
                 +--+--+--+    +--+ +--+ +--+
-                
+
                                     +- y1
                                     |
                 x -{split[op.axis]}-+- y2
                                     |
                                     +- y3
-                
+
             after) split y2 into y2_0 and y2_1
-            
+
                                                 y1_0 y2_0 y3_0         y2_0
                                   +--+--+--+    +--+ +--+ +--+     y1  +--+  y3
               0 +--+--+--+    x_0 |  :  :  |    |  | |  | |  |    +--+ |  | +--+
@@ -485,9 +485,9 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
                 +--+--+--+    x_1 |  :  :  |    |  | |  | |  |    +--+ |  | +--+
                                   +--+--+--+    +--+ +--+ +--+         +--+
                     x                           y1_1 y2_1 y3_1         y2_1
-                                  
+
                                                           +--- y1_0 -+
-                                                          |          +-{concat[axis]}- y1   
+                                                          |          +-{concat[axis]}- y1
                                                           | +- y1_1 -+
                                                           | |
                                  +- x_0 -{split[op.axis]}-+-|------------------------- y2_0
@@ -495,7 +495,7 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
                                  +- x_1 -{split[op.axis]}---+------------------------- y2_1
                                                           | |
                                                           +-|- y3_0 -+
-                                                            |        +-{concat[axis]}- y3 
+                                                            |        +-{concat[axis]}- y3
                                                             +- y3_1 -+
             """
             x_0, x_1 = SplitAxis(None, axis=axis, sections=[s1])(x)
@@ -560,7 +560,7 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
     elif v == y:
         """
         Same algorithm in case `v == y` (above).
-        
+
         before)
 
             x -{reshape}- y
@@ -568,7 +568,7 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
         after)
 
                        +- x_0 -{reshape}- y_0
-            x -{split}-+  
+            x -{split}-+
                        +- x_1 -{reshape}- y_1
         """
 
@@ -641,14 +641,14 @@ def _split_partial_im2col(graph: Graph, op: PartialIm2Col, v: Variable, v_pair: 
             """
             before)
                                 +- col0
-                                | 
+                                |
             im -{PartialIm2Col}-+- col1
                                 |
                                 +- col2
 
             after)
                                 +- col0
-                                | 
+                                |
                                 +- col1_0
             im -{PartialIm2Col}-+
                                 +- col1_1

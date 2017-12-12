@@ -16,8 +16,10 @@ class CustomJSONEncoder(JSONEncoder):
             # noinspection PyProtectedMember
             return obj._to_serializable_()
 
-        if isinstance(obj, np.int64) or isinstance(obj, np.int32) or isinstance(obj, np.int16) or isinstance(obj, np.int8) or \
-            isinstance(obj, np.uint32) or isinstance(obj, np.uint16) or isinstance(obj, np.uint8):
+        if (
+            isinstance(obj, np.int64) or isinstance(obj, np.int32) or isinstance(obj, np.int16) or isinstance(obj, np.int8) or
+            isinstance(obj, np.uint32) or isinstance(obj, np.uint16) or isinstance(obj, np.uint8)
+        ):
             # noinspection PyTypeChecker
             return int(obj)
 
