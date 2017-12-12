@@ -93,8 +93,13 @@ def _convert_gather(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Squeeze")
 def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"Squeeze\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+
+    attrs = attribute_dict(onnx_op)
+    axes = [x.order.axes[i] for i in attrs["axes"].ints]
+
+    y = x.squeeze(axes)
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("Pad")
