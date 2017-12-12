@@ -7,11 +7,7 @@ from webdnn.graph.order import OrderNCHW, OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-@ChainerConverter.register_handler("NormalizeL2")
-def _convert_normalize_l2(converter: ChainerConverter, c_op: "chainer.functions.NormalizeL2"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NormalizeL2 is not supported")
-
+# TODO: NormalizeL2
 
 @ChainerConverter.register_handler("LocalResponseNormalization")
 def _convert_local_response_normalization(converter: ChainerConverter,

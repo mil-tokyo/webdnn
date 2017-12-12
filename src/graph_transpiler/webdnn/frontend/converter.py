@@ -112,8 +112,11 @@ class Converter(Generic[T_OP]):
     def _convert_operator(self, operator: T_OP):
         operator_key = self.serialize_operator_type(operator)
         if operator_key not in self._handler_map[self.__class__.__name__].keys():
-            raise NotImplementedError(f"Operator '{operator_key}' is not handled any converter handlers.")
+            self._not_implemented_handler(operator)
 
         self._handler_map[self.__class__.__name__][operator_key](self, operator)
 
         return None
+
+    def _not_implemented_handler(self, operator: T_OP):
+        raise NotImplementedError(f"[{self.__class__.__name__}] \"{self.serialize_operator_type(operator)}\" is not supported")

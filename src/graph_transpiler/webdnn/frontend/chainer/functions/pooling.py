@@ -30,12 +30,7 @@ def _convert_average_pooling2d(converter: ChainerConverter, c_op: "chainer.funct
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("AveragePoolingND")
-def _convert_average_pooling_nd(converter: ChainerConverter, c_op: "chainer.functions.AveragePoolingND"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] AveragePoolingND is not supported")
-
+# TODO: AveragePoolingND
 
 @ChainerConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: ChainerConverter, c_op: "chainer.functions.MaxPooling2D"):
@@ -59,28 +54,12 @@ def _convert_max_pooling2d(converter: ChainerConverter, c_op: "chainer.functions
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("MaxPoolingND")
-def _convert_max_pooling_nd(converter: ChainerConverter, c_op: "chainer.functions.MaxPoolingND"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] MaxPoolingND is not supported")
+# TODO: MaxPoolingND
 
+# TODO: ROIPooling2D
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("ROIPooling2D")
-def _convert_roi_pooling2d(converter: ChainerConverter, c_op: "chainer.functions.ROIPooling2D"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ROIPooling2D is not supported")
+# TODO: SpatialPyramidPooling2D
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SpatialPyramidPooling2D")
-def _convert_spatial_pyramid_pooling2d(converter: ChainerConverter, c_op: "chainer.functions.SpatialPyramidPooling2D"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SpatialPyramidPooling2D is not supported")
-
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Unpooling2D")
 def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.Unpooling2D"):
     x = converter.get_variable(c_op.inputs[0])
@@ -95,16 +74,6 @@ def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.U
 
     converter.set_variable(c_op.outputs[0](), y)
 
+# TODO: UnpoolingND
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("UnpoolingND")
-def _convert_unpooling_nd(converter: ChainerConverter, c_op: "chainer.functions.UnpoolingND"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] UnpoolingND is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Upsampling2D")
-def _convert_upsampling2d(converter: ChainerConverter, c_op: "chainer.functions.Upsampling2D"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Upsampling2D is not supported")
+# TODO: Upsampling2D

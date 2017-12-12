@@ -10,11 +10,7 @@ from webdnn.graph.order import OrderNCHW, Order, OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
-@ChainerConverter.register_handler("BilinearFunction")
-def _convert_bilinear_function(converter: ChainerConverter, c_op: "chainer.functions.connection.bilinear.BilinearFunction"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BilinearFunction is not supported")
-
+# TODO: BilinearFunction
 
 @ChainerConverter.register_handler("Convolution2DFunction")
 def _convert_convolution_2d(converter: ChainerConverter, c_op: "chainer.functions.connection.convolution_2d.Convolution2DFunction"):
@@ -40,16 +36,10 @@ def _convert_convolution_2d(converter: ChainerConverter, c_op: "chainer.function
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("ConvolutionND")
-def _convert_convolution_nd(converter: ChainerConverter, c_op: "chainer.functions.connection.convolution_nd.ConvolutionND"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ConvolutionND is not supported")
+# TODO: ConvolutionND
 
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Deconvolution2DFunction")
-def _convert_deconvolution_2d(converter: ChainerConverter, c_op: "chainer.functions.connection.deconvolution_2d.Deconvolution2DFunction"):
+def _convert_deconvolution_2d(converter: ChainerConverter, c_op: "chainer.FunctionNode"):
     x = converter.get_variable(c_op.inputs[0])
     w = converter.get_variable(c_op.inputs[1])
 
@@ -72,20 +62,9 @@ def _convert_deconvolution_2d(converter: ChainerConverter, c_op: "chainer.functi
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("DeconvolutionND")
-def _convert_deconvolution_nd(converter: ChainerConverter, c_op: "chainer.functions.connection.deconvolution_nd.DeconvolutionND"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] DeconvolutionND is not supported")
+# TODO: DeconvolutionND
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("DepthwiseConvolution2D")
-def _convert_depthwise_convolution_2d(converter: ChainerConverter,
-                                      c_op: "chainer.functions.connection.depthwise_convolution_2d.DepthwiseConvolution2D"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] DepthwiseConvolution2D is not supported")
-
+# TODO: DepthwiseConvolution2D
 
 @ChainerConverter.register_handler("DilatedConvolution2DFunction")
 def _convert_selected_item(converter: ChainerConverter,
@@ -114,12 +93,7 @@ def _convert_selected_item(converter: ChainerConverter,
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("EmbedIDFunction")
-def _convert_embed_id(converter: ChainerConverter, c_op: "chainer.functions.connection.embed_id.EmbedIDFunction"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] EmbedIDFunction is not supported")
-
+# TODO: EmbedIDFunction
 
 @ChainerConverter.register_handler("LinearFunction")
 def _convert_linear_function(converter: ChainerConverter, c_op: "chainer.functions.connection.linear.LinearFunction"):
@@ -136,58 +110,18 @@ def _convert_linear_function(converter: ChainerConverter, c_op: "chainer.functio
 
     converter.set_variable(c_op.outputs[0](), y)
 
+# TODO: NStepBiGRU
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepBiGRU")
-def _convert_n_step_bigru(converter: ChainerConverter, c_op: "chainer.functions.NStepBiGRU"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepBiGRU is not supported")
+# TODO: NStepGRU
 
+# TODO: NStepBiLSTM
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepGRU")
-def _convert_n_step_gru(converter: ChainerConverter, c_op: "chainer.functions.NStepGRU"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepGRU is not supported")
+# TODO: NStepLSTM
 
+# TODO: NStepBiRNNReLU
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepBiLSTM")
-def _convert_n_step_bilstm(converter: ChainerConverter, c_op: "chainer.functions.NStepBiLSTM"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepBiLSTM is not supported")
+# TODO: NStepBiRNNTanh
 
+# TODO: NStepRNNReLU
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepLSTM")
-def _convert_n_step_lstm(converter: ChainerConverter, c_op: "chainer.functions.NStepLSTM"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepLSTM is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepBiRNNReLU")
-def _convert_n_step_birnn_relu(converter: ChainerConverter, c_op: "chainer.functions.NStepBiRNNReLU"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepBiRNNReLU is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepBiRNNTanh")
-def _convert_n_step_birnn_tanh(converter: ChainerConverter, c_op: "chainer.functions.NStepBiRNNTanh"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepBiRNNTanh is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepRNNReLU")
-def _convert_n_step_rnn_relu(converter: ChainerConverter, c_op: "chainer.functions.NStepRNNReLU"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepRNNReLU is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("NStepRNNTanh")
-def _convert_n_step_rnn_tanh(converter: ChainerConverter, c_op: "chainer.functions.NStepRNNTanh"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NStepRNNTanh is not supported")
+# TODO: NStepRNNTanh

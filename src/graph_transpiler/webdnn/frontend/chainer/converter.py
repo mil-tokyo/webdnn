@@ -4,6 +4,7 @@
 Chainer Link -> Graph object converters
 Assuming Chainer >=1.23-1.24, <4.0.0
 """
+import inspect
 import traceback
 import warnings
 from typing import List, Union, Sequence, Dict, Tuple
@@ -244,3 +245,70 @@ class ChainerConverter(Converter["T_FUNCTION"]):
 
         self.set_variable(c_var, n_var)
         return n_var
+
+    def _not_implemented_handler(self, c_op: T_FUNCTION):
+        op_type = self.serialize_operator_type(c_op)
+
+        # input variables
+        get_inputs_snippets = []
+        for i, v in enumerate(c_op.inputs):
+            name = f"x{i}" if v.name is None else v.name.lower()
+            get_inputs_snippets.append(f"    {name} = converter.get_variable(c_op.inputs[{i}])")
+
+        get_inputs_snippet = "\n".join(get_inputs_snippets)
+
+        # parameters
+        get_parameter_snippets = []
+        sig = inspect.signature(c_op.__class__.__init__)
+        for param in list(sig.parameters.values())[1:]:
+
+            if hasattr(c_op, param.name):
+                get_parameter_snippets.append(f"    {param.name} = c_op.{param.name}")
+
+        get_parameter_snippet = "\n".join(get_parameter_snippets)
+
+        # output variables
+        set_outputs_snippets = []
+        for i, v in enumerate(c_op.outputs):
+            v = v()
+            name = f"y{i}" if v.name is None else v.name.lower()
+            set_outputs_snippets.append(f"    converter.set_variable(c_op.inputs[{i}], {name})")
+
+        set_outputs_snippet = "\n".join(set_outputs_snippets)
+
+        raise NotImplementedError(f"""
+[ChainerConverter] Function "{op_type}" is not supported. Before conversion, define the converter handler like follows:
+
+----------------------------------------------------------------
+
+import chainer
+from webdnn.frontend.chainer import ChainerConverter
+
+
+@ChainerConverter.register_handler("{op_type}")
+def _convert_{op_type.lower()}(converter: ChainerConverter, c_op: Union["chainer.Function", "chainer.FunctionNode"]):
+    \"\"\"
+    Converter handler for "{op_type}" in Chainer.
+        
+    args:
+        converter : WebDNN chainer converter 
+        c_op: {op_type} function node
+    \"\"\"
+    
+    # 1. get input variables
+{get_inputs_snippet}
+    
+    # 2. get parameters
+{get_parameter_snippet}
+    
+    # 3. build WebDNN computation graph
+    # @see https://mil-tokyo.github.io/webdnn/docs/tutorial/custom_operator/index.html
+
+    #
+    # WRITE_ME !!!!!!!
+    #
+     
+    # 4. register output variables
+{set_outputs_snippet}
+
+""")

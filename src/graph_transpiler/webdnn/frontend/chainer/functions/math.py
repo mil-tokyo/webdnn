@@ -22,34 +22,13 @@ from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
 from webdnn.util import console
 
+# TODO: BatchL2NormSquared
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("BatchL2NormSquared")
-def _convert_batch_l2_norm_squared(converter: ChainerConverter, c_op: "chainer.functions.BatchL2NormSquared"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BatchL2NormSquared is not supported")
+# TODO: Ceil
 
+# TODO: Clip
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Ceil")
-def _convert_ceil(converter: ChainerConverter, c_op: "chainer.functions.Ceil"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Ceil is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Clip")
-def _convert_clip(converter: ChainerConverter, c_op: "chainer.functions.Clip"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Clip is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("BatchDet")
-def _convert_batch_det(converter: ChainerConverter, c_op: "chainer.functions.BatchDet"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BatchDet is not supported")
-
+# TODO: BatchDet
 
 ChainerConverter.register_handler("Exp")(unary_op_handler(Exp))
 
@@ -79,19 +58,9 @@ def _convert_expm1(converter: ChainerConverter, c_op: "chainer.functions.Expm1")
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Floor")
-def _convert_floor(converter: ChainerConverter, c_op: "chainer.functions.Floor"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Floor is not supported")
+# TODO: Floor
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Fmod")
-def _convert_fmod(converter: ChainerConverter, c_op: "chainer.functions.Fmod"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Fmod is not supported")
-
+# TODO: Fmod
 
 ChainerConverter.register_handler("Cosh")(unary_op_handler(Cosh))
 
@@ -104,25 +73,11 @@ def _convert_identity(converter: ChainerConverter, c_op: "chainer.functions.Iden
     converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("BatchInv")
-def _convert_batch_inv(converter: ChainerConverter, c_op: "chainer.functions.BatchInv"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BatchInv is not supported")
+# TODO: BatchInv
 
+# TODO: Inv
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Inv")
-def _convert_inv(converter: ChainerConverter, c_op: "chainer.functions.Inv"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Inv is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("LinearInterpolate")
-def _convert_linear_interpolate(converter: ChainerConverter, c_op: "chainer.functions.LinearInterpolate"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] LinearInterpolate is not supported")
+# TODO: LinearInterpolate
 
 
 @ChainerConverter.register_handler("Log1p")
@@ -156,12 +111,7 @@ def _convert_logsumexp(converter: ChainerConverter, c_op: "chainer.functions.Log
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("BatchMatMul")
-def _convert_batch_mat_mul(converter: ChainerConverter, c_op: "chainer.functions.BatchMatMul"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] BatchMatMul is not supported")
-
+# TODO: BatchMatMul
 
 @ChainerConverter.register_handler("MatMul")
 def _convert_mat_mul(converter: ChainerConverter, c_op: "chainer.functions.MatMul"):
@@ -198,19 +148,9 @@ def _convert_minimum(converter: ChainerConverter, c_op: "chainer.functions.Minim
     converter.set_variable(c_op.outputs[0](), z)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("ArgMax")
-def _convert_argmax(converter: ChainerConverter, c_op: "chainer.functions.ArgMax"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ArgMax is not supported")
+# TODO: ArgMax
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("ArgMin")
-def _convert_argMin(converter: ChainerConverter, c_op: "chainer.functions.ArgMin"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ArgMin is not supported")
-
+# TODO: ArgMin
 
 @ChainerConverter.register_handler("Max")
 def _convert_max(converter: ChainerConverter, c_op: "chainer.functions.Max"):
@@ -236,26 +176,11 @@ def _convert_min(converter: ChainerConverter, c_op: "chainer.functions.Min"):
     converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Sqrt")
-def _convert_sqrt(converter: ChainerConverter, c_op: "chainer.functions.Sqrt"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sqrt is not supported")
+# TODO: Sqrt
 
+# TODO: Square
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Square")
-def _convert_square(converter: ChainerConverter, c_op: "chainer.functions.Square"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Square is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SquaredDifference")
-def _convert_squared_difference(converter: ChainerConverter, c_op: "chainer.functions.SquaredDifference"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SquaredDifference is not supported")
-
+# TODO: SquaredDifference
 
 @ChainerConverter.register_handler("Sum")
 def _convert_sum(converter: ChainerConverter, c_op: "chainer.functions.Sum"):

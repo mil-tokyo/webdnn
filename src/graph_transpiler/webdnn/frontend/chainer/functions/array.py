@@ -16,14 +16,8 @@ from webdnn.graph.order import OrderNCHW
 from webdnn.util.misc import mul
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Broadcast")
-def _convert_broadcast(converter: ChainerConverter, c_op: "chainer.functions.Broadcast"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Broadcast is not supported")
+# TODO: Broadcast
 
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("BroadcastTo")
 def _convert_broadcast_to(converter: ChainerConverter, c_op: "chainer.functions.BroadcastTo"):
     x = converter.get_variable(c_op.inputs[0])
@@ -32,12 +26,7 @@ def _convert_broadcast_to(converter: ChainerConverter, c_op: "chainer.functions.
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Cast")
-def _convert_cast(converter: ChainerConverter, c_op: "chainer.functions.Cast"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Cast is not supported")
-
+# TODO: Cast
 
 @ChainerConverter.register_handler("Concat")
 def _convert_concat(converter: ChainerConverter, c_op: "chainer.functions.Concat"):
@@ -50,14 +39,8 @@ def _convert_concat(converter: ChainerConverter, c_op: "chainer.functions.Concat
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Copy")
-def _convert_copy(converter: ChainerConverter, c_op: "chainer.functions.Copy"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Copy is not supported")
+# TODO: Copy
 
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Depth2Space")
 def _convert_depth2space(converter: ChainerConverter, c_op: "chainer.functions.Depth2Space"):
     x = converter.get_variable(c_op.inputs[0])
@@ -66,12 +49,7 @@ def _convert_depth2space(converter: ChainerConverter, c_op: "chainer.functions.D
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
-@ChainerConverter.register_handler("Dstack")
-def _convert_dstack(converter: ChainerConverter, c_op: "chainer.functions.array.dstack.Dstack"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Dstack is not supported")
-
+# TODO: Dstack
 
 @ChainerConverter.register_handler("ExpandDims")
 def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.ExpandDims"):
@@ -106,12 +84,7 @@ def _convert_get_item(converter: ChainerConverter, c_op: "chainer.functions.GetI
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal,PyUnresolvedReferences
-@ChainerConverter.register_handler("Hstack")
-def _convert_hstack(converter: ChainerConverter, c_op: "chainer.functions.array.hstack.Hstack"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Hstack is not supported")
-
+# TODO: HStack
 
 @ChainerConverter.register_handler("Im2Col")
 def _convert_im2col(converter: ChainerConverter, c_op: "chainer.functions.Im2Col"):
@@ -130,26 +103,11 @@ def _convert_im2col(converter: ChainerConverter, c_op: "chainer.functions.Im2Col
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Pad")
-def _convert_pad(converter: ChainerConverter, c_op: "chainer.functions.Pad"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Pad is not supported")
+# TODO: Pad
 
+# TODO: PadSequence
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("PadSequence")
-def _convert_pad_sequence(converter: ChainerConverter, c_op: "chainer.functions.PadSequence"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] PadSequence is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Permutate")
-def _convert_permutate(converter: ChainerConverter, c_op: "chainer.functions.Permutate"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Permutate is not supported")
-
+# TODO: Permutate
 
 @ChainerConverter.register_handler("Reshape")
 def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Reshape"):
@@ -169,28 +127,12 @@ def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Resha
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("ResizeImages")
-def _convert_resize_images(converter: ChainerConverter, c_op: "chainer.functions.ResizeImages"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] ResizeImages is not supported")
+# TODO: ResizeImages
 
+# TODO: Rollaxis
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Rollaxis")
-def _convert_rollaxis(converter: ChainerConverter, c_op: "chainer.functions.Rollaxis"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Rollaxis is not supported")
+# TODO: SelectItem
 
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SelectItem")
-def _convert_selected_item(converter: ChainerConverter, c_op: "chainer.functions.SelectItem"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SelectItem is not supported")
-
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Space2Depth")
 def _convert_space2depth(converter: ChainerConverter, c_op: "chainer.functions.Space2Depth"):
     x = converter.get_variable(c_op.inputs[0])
@@ -199,22 +141,10 @@ def _convert_space2depth(converter: ChainerConverter, c_op: "chainer.functions.S
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SpatialTransformerGrid")
-def _convert_spatial_transformer_grid(converter: ChainerConverter, c_op: "chainer.functions.SpatialTransformerGrid"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SpatialTransformerGrid is not supported")
+# TODO: SpatialTransformerGrid
 
+# TODO: SpatialTransformerSampler
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SpatialTransformerSampler")
-def _convert_spatial_transformer_sampler(converter: ChainerConverter,
-                                         c_op: "chainer.functions.SpatialTransformerSampler"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SpatialTransformerSampler is not supported")
-
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("SplitAxis")
 def _convert_split_axis(converter: ChainerConverter, c_op: "chainer.functions.SplitAxis"):
     x = converter.get_variable(c_op.inputs[0])
@@ -241,7 +171,6 @@ def _convert_squeeze(converter: ChainerConverter, c_op: "chainer.functions.Squee
     converter.set_variable(c_op.outputs[0](), x)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Swapaxes")
 def _convert_swapaxes(converter: ChainerConverter, c_op: "chainer.functions.Swapaxes"):
     x = converter.get_variable(c_op.inputs[0])
@@ -269,7 +198,6 @@ def _convert_tile(converter: ChainerConverter, c_op: "chainer.functions.Tile"):
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Transpose")
 def _convert_transpose(converter: ChainerConverter, c_op: "chainer.functions.Transpose"):
     x = converter.get_variable(c_op.inputs[0])
@@ -277,16 +205,6 @@ def _convert_transpose(converter: ChainerConverter, c_op: "chainer.functions.Tra
 
     converter.set_variable(c_op.outputs[0](), y)
 
+# TODO: TransposeSequence
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("TransposeSequence")
-def _convert_transpose_sequence(converter: ChainerConverter, c_op: "chainer.functions.TransposeSequence"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] TransposeSequence is not supported")
-
-
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Where")
-def _convert_where(converter: ChainerConverter, c_op: "chainer.functions.Where"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Where is not supported")
+# TODO: Where

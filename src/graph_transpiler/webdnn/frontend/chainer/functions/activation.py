@@ -78,18 +78,9 @@ def _convert_log_softmax(converter: ChainerConverter, c_op: "chainer.functions.L
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("LSTM")
-def _convert_lstm(converter: ChainerConverter, c_op: "chainer.functions.LSTM"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] LSTM is not supported")
+# TODO: LSTM
 
-
-# noinspection PyUnusedLocal,PyUnresolvedReferences
-@ChainerConverter.register_handler("PReLU")
-def _convert_prelu(converter: ChainerConverter, c_op: "chainer.functions.activation.prelu.PReLUFunction"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] PReLU is not supported")
+# TODO: PReLU
 
 
 @ChainerConverter.register_handler("ReLU")
@@ -106,11 +97,7 @@ def _convert_sigmoid(converter: ChainerConverter, c_op: "chainer.functions.Sigmo
     converter.set_variable(c_op.outputs[0](), y)
 
 
-# noinspection PyUnusedLocal
-@ChainerConverter.register_handler("SLSTM")
-def _convert_slstm(converter: ChainerConverter, c_op: "chainer.functions.SLSTM"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] SLSTM is not supported")
+# TODO: SLSTM
 
 
 @ChainerConverter.register_handler("Softmax")
