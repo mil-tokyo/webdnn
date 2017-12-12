@@ -1,11 +1,13 @@
 """
 https://github.com/onnx/onnx/blob/09ada0f107f1cc1877f9194475c98d2d8512e188/onnx/defs/tensor/defs.cc
 """
+import numpy as np
 
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.order import Order
 from webdnn.util import console
@@ -41,7 +43,7 @@ def _convert_concat(converter: ONNXConverter, onnx_op: INodeProto):
     xs = [converter.get_variable(v) for v in onnx_op.input]
     for x in xs[1:]:
         xs[0].order.unify(x.order)
-        
+
     attrs = attribute_dict(onnx_op)
     axis = xs[0].order.axes[attrs["axis"].i]
 
@@ -51,8 +53,20 @@ def _convert_concat(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Split")
 def _convert_split(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"Split\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+
+    attrs = attribute_dict(onnx_op)
+
+    axis = x.order.axes[attrs["axis"].i]
+
+    if "split" not in attrs:
+        raise NotImplementedError("[ONNXConverter] Operator \"Split\" without \"split\" parameter is not supported yet.")
+    split = attrs["split"].ints
+    sections = np.cumsum(split).tolist()[:-1]
+
+    ys = SplitAxis(None, axis=axis, sections=sections)(x)
+    for i, y in enumerate(ys):
+        converter.set_variable(onnx_op.output[i], y)
 
 
 @ONNXConverter.register_handler("Slice")

@@ -1,9 +1,9 @@
 """
 ONNX (https://github.com/onnx) Frontend
 """
-from typing import Set, List, Union, Dict
+from typing import List, Union, Dict, Tuple
 
-from webdnn.frontend.converter import Converter
+from webdnn.frontend.converter import Converter, CyclicGraphError
 from webdnn.frontend.onnx.type_hint import *
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import Order
@@ -135,53 +135,61 @@ def _convert_value_info_proto(proto: IValueInfoProto) -> Variable:
 
 
 def _listup_functions(graph: IGraphProto) -> Sequence[INodeProto]:
-    _counter = 0
-
     class Container:
         """
         Proto object is not hashable. this container supports hash operation with proto object.
         """
 
         def __init__(self, proto: INodeProto):
-            nonlocal _counter
             self.proto = proto
-            self._hash = id(_counter)
-            _counter += 1
 
         def __hash__(self):
-            return self._hash
+            return hash(self.proto.name)
 
-    stack = [proto.name for proto in graph.output]  # type: List[Union[Container, str]]
-    resolved = {proto.name for proto in graph.input}  # type: Set[Union[Container, str]]
-    result = []  # type: List[INodeProto]
+        def __eq__(self, other):
+            return isinstance(other, Container) and self.proto == other.proto
 
     creator_map = {}
     for proto in graph.node:
         for name in proto.output:
             creator_map[name] = Container(proto)
 
+    def get_prev_nodes(node: Union[Container, str]) -> Sequence[Union[Container, str]]:
+        nonlocal creator_map
+        if node in graph.input:
+            return []
+
+        elif isinstance(node, Container):
+            return node.proto.input
+
+        else:
+            return [] if node not in creator_map else [creator_map[node]]
+
+    result = []  # type: List[Container]
+    stack = [(node.name, None) for node in graph.output]  # type: List[Tuple[Union[Container, str], Union[Container, str]]]
+    dependency_count = {}  # type: Dict[Union[Container, str], int]
+
     while len(stack) > 0:
-        node = stack.pop()
-        if node in resolved:
-            continue
+        node_from, node_to = stack.pop()
 
-        if isinstance(node, str):
-            # node is tensor's name
-            prev_nodes = [] if node not in creator_map else [creator_map[node]]
+        if node_from not in dependency_count:
+            stack.append((node_from, node_to))
+
+            prev_nodes = get_prev_nodes(node_from)
+            dependency_count[node_from] = 0
+            for prev_node in prev_nodes:
+                if dependency_count.get(prev_node, 1) > 0:
+                    dependency_count[node_from] += 1
+                    stack.append((prev_node, node_from))
+
+        elif dependency_count[node_from] == 0:
+            if isinstance(node_from, Container):
+                result.append(node_from)
+
+            if node_to is not None:
+                dependency_count[node_to] -= 1
 
         else:
-            # node is container of operator proto
-            prev_nodes = list(node.proto.input)
+            raise CyclicGraphError("[ONNXConverter] Cycles are detected")
 
-        unresolved_prevs = [prev_node for prev_node in prev_nodes if prev_node not in resolved]
-
-        if len(unresolved_prevs) == 0:
-            resolved.add(node)
-            if not isinstance(node, str):
-                result.append(node.proto)
-
-        else:
-            stack.append(node)
-            stack += unresolved_prevs
-
-    return result
+    return [r.proto for r in result]
