@@ -5,11 +5,14 @@ import numpy as np
 
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
+from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.split_axis import SplitAxis
+from webdnn.graph.operators.tile import Tile
 from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.order import Order
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 from webdnn.util.misc import mul
 
@@ -104,5 +107,58 @@ def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Pad")
 def _convert_pad(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"Pad\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+
+    attrs = attribute_dict(onnx_op)
+
+    pads = attrs["pads"].ints
+    if len(pads) != 2 * x.ndim:
+        raise ValueError("[ONNXConverter] The length of parameter \"pads\" in \"Pad\" node must be double of input tensor's dimension")
+    pads_begin = pads[:x.ndim]
+    pads_end = pads[x.ndim:]
+
+    mode = attrs["mode"].s if "mode" in attrs else b"constant"
+    value = attrs["value"].f if "value" in attrs else 0
+    constant_values = ConstantVariable(np.full([1] * x.ndim, value), x.order)
+
+    for pad_begin, pad_end, axis in zip(pads_begin, pads_end, x.order.axes):
+        xs = []
+
+        if pad_begin > 0:
+            if mode == b"constant":
+                multiplier = AxisKeyDict(x.order.axes, [pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes])
+                xs.append(Tile(None, multiplier)(constant_values)[0])
+
+            elif mode == b"reflect":
+                slices = [slice(pad_begin, 0, -1) if a == axis else slice(None) for a in x.order.axes]
+                xs.append(x[slices])
+
+            elif mode == b"edge":
+                slices = [slice(pad_begin - 1, None, -1) if a == axis else slice(None) for a in x.order.axes]
+                xs.append(x[slices])
+
+            else:
+                raise NotImplementedError(f"[ONNXConverter] Unknown mode \"{mode}\"")
+
+        xs.append(x)
+
+        if pad_end > 0:
+            if mode == b"constant":
+                multiplier = AxisKeyDict(x.order.axes, [pad_end if a == axis else x.shape_dict[a] for a in x.order.axes])
+                xs.append(Tile(None, multiplier)(constant_values)[0])
+
+            elif mode == b"reflect":
+                slices = [slice(-2, - 2 - pad_end, -1) if a == axis else slice(None) for a in x.order.axes]
+                xs.append(x[slices])
+
+            elif mode == b"edge":
+                slices = [slice(-1, - 1 - pad_end, -1) if a == axis else slice(None) for a in x.order.axes]
+                xs.append(x[slices])
+
+            else:
+                raise NotImplementedError(f"[ONNXConverter] Unknown mode \"{mode}\"")
+
+        if len(xs) > 1:
+            x, = Concat(None, axis=axis)(*xs)
+
+    converter.set_variable(onnx_op.output[0], x)
