@@ -10,6 +10,7 @@ from typing import List, Union, Sequence, Dict, Tuple
 
 import numpy as np
 
+from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 from webdnn.frontend.converter import Converter, CyclicGraphError
 from webdnn.frontend.util import semver
 from webdnn.graph.graph import Graph
@@ -201,13 +202,19 @@ class ChainerConverter(Converter["T_FUNCTION"]):
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
+
+        for v in inputs:
+            if isinstance(v, PlaceholderVariable):
+                n_var = Variable(v.actual_shape, Order([None] * v.ndim))
+                self.set_variable(to_variable_node(v), n_var)
+
         inputs = [to_variable_node(v) for v in inputs]
         outputs = [to_variable_node(v) for v in outputs]
 
         # Convert parameters into constant variable
         input_set = set(inputs)
         for node in chainer.computational_graph.build_computational_graph(outputs).nodes:
-            if isinstance(node, T_VARIABLE) and node.creator is None:
+            if isinstance(node, T_VARIABLE) and not self.has_variable(node) and node.creator is None:
                 # If "c_var.creator" is None, it's input variable or parameters.
 
                 # NOTE(Kiikurage):

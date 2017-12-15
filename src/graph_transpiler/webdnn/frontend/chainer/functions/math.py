@@ -19,6 +19,7 @@ from webdnn.graph.operators.sum import Sum
 from webdnn.graph.operators.tan import Tan
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
+from webdnn.graph.placeholder import Placeholder
 from webdnn.util import console
 
 
@@ -142,6 +143,10 @@ def _convert_logsumexp(converter: ChainerConverter, c_op: "chainer.functions.Log
     else:
         axes = [x.order.axes[i] for i in c_op.axis]
 
+    # TODO: Conversion result is wrong in case x.shape[category_axis] is placeholder.
+    if any(not Placeholder.check_resolved(x.shape_dict[axis]) for axis in axes):
+        raise NotImplementedError("[ChainerConverter] \"LogSumExp\" for dynamic number of categories is not supported")
+
     max_x = x
     for axis in axes:
         max_x, = Max(None, axis=axis)(max_x)
@@ -214,11 +219,16 @@ def _convert_argMin(converter: ChainerConverter, c_op: "chainer.functions.ArgMin
 @ChainerConverter.register_handler("Max")
 def _convert_max(converter: ChainerConverter, c_op: "chainer.functions.Max"):
     x = converter.get_variable(c_op.inputs[0])
+
+    remove_axes = []
+
     for axis in list(x.order.axes) if c_op.axis is None else [x.order.axes[i] for i in c_op.axis]:
         x, = Max(None, axis=axis)(x)
-
         if not c_op.keepdims and x.ndim > 1:
-            x = x.squeeze(axis)
+            remove_axes.append(axis)
+
+    if not c_op.keepdims and x.ndim > 1:
+        x = x.squeeze(remove_axes)
 
     converter.set_variable(c_op.outputs[0](), x)
 

@@ -15,6 +15,7 @@ from webdnn.graph.operators.softmax import Softmax
 from webdnn.graph.operators.softplus import Softplus
 from webdnn.graph.operators.sum import Sum
 from webdnn.graph.operators.tanh import Tanh
+from webdnn.graph.placeholder import Placeholder
 
 
 @ChainerConverter.register_handler("ClippedReLU")
@@ -68,6 +69,10 @@ def _convert_leaky_relu(converter: ChainerConverter, c_op: "chainer.functions.Le
 def _convert_log_softmax(converter: ChainerConverter, c_op: "chainer.functions.LogSoftmax"):
     x = converter.get_variable(c_op.inputs[0])
     axis = x.order.axes[1]
+
+    # TODO: Conversion result is wrong in case x.shape[1] is placeholder.
+    if not Placeholder.check_resolved(x.shape[1]):
+        raise NotImplementedError("[ChainerConverter] \"LogSoftMax\" for dynamic number of cateogries is not supported")
 
     max_x, = Max(None, axis=axis)(x)
     exp_delta_x, = Exp(None)(x - max_x)

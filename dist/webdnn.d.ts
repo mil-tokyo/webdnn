@@ -555,6 +555,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	    private outputViews;
 	    private staticBuffer;
 	    private dynamicBuffer;
+	    private directory;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorFallback, parameters: ArrayBuffer): Promise<void>;

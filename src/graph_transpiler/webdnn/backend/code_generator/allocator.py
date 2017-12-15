@@ -2,6 +2,7 @@ from enum import auto, Enum
 from typing import Dict, List, Set, Union, Tuple
 
 import numpy as np
+
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -126,7 +127,8 @@ def allocate(graph: Graph) -> MemoryLayout:
     data = _update_constant_offset(constant_allocations)
 
     for allocation in set(variable_allocations.values()):
-        allocation.offset += data.size
+        if allocation.buffer_type == BufferType.Static:
+            allocation.offset += data.size
 
     allocations = variable_allocations
     allocations.update(constant_allocations)
@@ -212,7 +214,7 @@ def _update_offset(allocations: AllocationDict):
 
         else:
             allocation.offset = dynamic_offset
-            dynamic_offset += _align(dynamic_offset + allocation.size)
+            dynamic_offset = (dynamic_offset + allocation.size)
 
 
 def _update_constant_offset(allocations: AllocationDict):
@@ -234,7 +236,12 @@ def _optimize_inplace(operators: List[Operator], allocations_dict: AllocationDic
 
     for op in operators:
         for attr in op.get_attribute(Inplace):  # type: Inplace
-            _merge_allocation(allocations_dict, allocations_dict[attr.get_input()], allocations_dict[attr.get_output()])
+            a1 = allocations_dict[attr.get_input()]
+            a2 = allocations_dict[attr.get_output()]
+            if not Placeholder.check_resolved(a1.size) or not Placeholder.check_resolved(a2.size):
+                continue
+
+            _merge_allocation(allocations_dict, a1, a2)
 
 
 def _optimize_buffer_reuse(allocations_dict: AllocationDict):
@@ -330,7 +337,8 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
         console.debug('_optimize_buffer_reuse is skipped')
         return
 
-    allocations = list(set(filter(lambda x: Placeholder.check_resolved(x), allocations_dict.values())))
+    allocations = list(
+        set(filter(lambda x: Placeholder.check_resolved(x.size) and Placeholder.check_resolved(x.offset), allocations_dict.values())))
     allocations = sorted(allocations, key=lambda a: a.size, reverse=True)
 
     # Construct offset table

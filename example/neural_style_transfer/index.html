@@ -2,58 +2,18 @@
 <html>
 
 <head>
-    <title>WebDNN test</title>
+    <title>Neural Style Transfer</title>
     <meta charset="utf-8">
-    <script src="../../lib/inflate.min.js"></script>
-    <script src="../../dist/webdnn.js"></script>
-    <script src="webcam.min.js"></script>
-    <script src="script.js"></script>
-    <style>
-        .Layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .OutputLayer {
-            z-index: 2;
-        }
-        .CameraLayer {
-            z-index: 1;
-        }
-        .UILayer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            background: rgba(0, 0, 0, 0.5);
-            color: #fff;
-        }
-        .OutputLayer canvas,
-        .CameraLayer object {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
 </head>
 
 <body>
 
-<div class="Layer OutputLayer" onclick="togglePause(); return false;">
-    <canvas id="result" width="192" height="144"></canvas>
-</div>
-
-<div class="Layer CameraLayer"></div>
-
-<div class="Layer UILayer" onclick="togglePause(); return false;">
-    <span id="status">Initializing</span>
-</div>
-
-<canvas id="snap" width="192" height="144" style="border: 1px solid #000; display: none; margin-right: 32px;"></canvas>
+<h1>Neural Style Transfer</h1>
+This example contains two applications.
+<ol>
+    <li><a href="./image.html">processing static image input</a></li>
+    <li><a href="./video.html">processing webcam video input</a></li>
+</ol>
 
 </body>
 </html>

@@ -2,7 +2,9 @@ import chainer
 import numpy as np
 
 from test.util import generate_kernel_test_case, wrap_template
+from webdnn import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 
 
 @wrap_template
@@ -42,3 +44,25 @@ def test_cover_all_false():
 
 def test_irregular_size():
     template(ksize=(3, 4), stride=(1, 2), pad=(1, 3))
+
+
+def test_with_placeholder():
+    vx = chainer.Variable(np.random.rand(2, 16, 7, 7).astype(np.float32))
+    vy = chainer.functions.unpooling_2d(vx, ksize=3, stride=2, pad=0)
+
+    N = Placeholder(label="N")
+    C = Placeholder(label="C")
+    px = PlaceholderVariable([N, C, 7, 7])
+    py = chainer.functions.unpooling_2d(px, ksize=3, stride=2, pad=0)
+
+    graph = ChainerConverter().convert([px], [py])
+
+    N.value = 2
+    C.value = 16
+    generate_kernel_test_case(
+        description=f"[chainer] F.unpooling_2d with placeholder",
+        graph=graph,
+        backend=["webgpu", "webassembly"],
+        inputs={graph.inputs[0]: vx.data},
+        expected={graph.outputs[0]: vy.data},
+    )

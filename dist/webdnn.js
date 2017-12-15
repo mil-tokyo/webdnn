@@ -4,43 +4,6 @@
 	(factory((global.WebDNN = {})));
 }(this, (function (exports) { 'use strict';
 
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
-
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
-***************************************************************************** */
-/* global Reflect, Promise */
-
-
-
-
-
-
-
-
-
-
-
-
-
-function __awaiter(thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-}
-
 function commonjsRequire () {
 	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
 }
@@ -6860,45 +6823,43 @@ const pako = pako_1;
  * @protected
  */
 class WeightDecoderEightbit {
-    decode(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // FIXME: store decoded total size in 'data'
-            // currently, decoding each block and concatenating them at the end are needed.
-            let decoded_arrays = [];
-            let total_dst_length = 0;
-            let data_view = new DataView(data.buffer, data.byteOffset);
-            let src_offset = 0;
-            while (src_offset < data.length) {
-                let dst_offset = data_view.getInt32(src_offset, true);
-                src_offset += 4;
-                let body_size = data_view.getInt32(src_offset, true);
-                src_offset += 4;
-                let scale = data_view.getFloat32(src_offset, true);
-                src_offset += 8;
-                let scaled_table = new Float32Array(256);
-                for (let i = 0; i < 256; i++) {
-                    scaled_table[i] = WeightDecoderEightbit.decode_table[i & 0x7F] * scale * (i < 128 ? 1.0 : -1.0);
-                }
-                // do decode
-                let src_data_view = new Uint8Array(data.buffer, data.byteOffset + src_offset, body_size);
-                let decompressed = pako.inflate(src_data_view);
-                let dec_size = decompressed.length;
-                let decoded_array = new Float32Array(dec_size);
-                for (let s = 0; s < dec_size; s++) {
-                    decoded_array[s] = scaled_table[decompressed[s]];
-                }
-                decoded_arrays.push(decoded_array);
-                total_dst_length += dec_size;
-                src_offset += body_size;
+    async decode(data) {
+        // FIXME: store decoded total size in 'data'
+        // currently, decoding each block and concatenating them at the end are needed.
+        let decoded_arrays = [];
+        let total_dst_length = 0;
+        let data_view = new DataView(data.buffer, data.byteOffset);
+        let src_offset = 0;
+        while (src_offset < data.length) {
+            let dst_offset = data_view.getInt32(src_offset, true);
+            src_offset += 4;
+            let body_size = data_view.getInt32(src_offset, true);
+            src_offset += 4;
+            let scale = data_view.getFloat32(src_offset, true);
+            src_offset += 8;
+            let scaled_table = new Float32Array(256);
+            for (let i = 0; i < 256; i++) {
+                scaled_table[i] = WeightDecoderEightbit.decode_table[i & 0x7F] * scale * (i < 128 ? 1.0 : -1.0);
             }
-            let dst = new Float32Array(total_dst_length);
-            let dst_offset = 0;
-            for (let i = 0; i < decoded_arrays.length; i++) {
-                dst.set(decoded_arrays[i], dst_offset);
-                dst_offset += decoded_arrays[i].length;
+            // do decode
+            let src_data_view = new Uint8Array(data.buffer, data.byteOffset + src_offset, body_size);
+            let decompressed = pako.inflate(src_data_view);
+            let dec_size = decompressed.length;
+            let decoded_array = new Float32Array(dec_size);
+            for (let s = 0; s < dec_size; s++) {
+                decoded_array[s] = scaled_table[decompressed[s]];
             }
-            return dst;
-        });
+            decoded_arrays.push(decoded_array);
+            total_dst_length += dec_size;
+            src_offset += body_size;
+        }
+        let dst = new Float32Array(total_dst_length);
+        let dst_offset = 0;
+        for (let i = 0; i < decoded_arrays.length; i++) {
+            dst.set(decoded_arrays[i], dst_offset);
+            dst_offset += decoded_arrays[i].length;
+        }
+        return dst;
     }
 }
 WeightDecoderEightbit.decode_table = [0.0, 2.750000021e-06, 7.249999726e-06, 1.875000089e-05, 3.624999954e-05, 5.874999624e-05, 8.624999464e-05,
@@ -6932,10 +6893,8 @@ WeightDecoderEightbit.decode_table = [0.0, 2.750000021e-06, 7.249999726e-06, 1.8
  * @protected
  */
 class WeightDecoderRaw {
-    decode(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4);
-        });
+    async decode(data) {
+        return new Float32Array(data.buffer, data.byteOffset, data.byteLength / 4);
     }
 }
 
@@ -7038,27 +6997,25 @@ function registerTransformUrlDelegate(delegate) {
  * @returns Response
  * @protected
  */
-function webdnnFetch(input, init) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (typeof input == 'string') {
-            input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
-        }
-        else {
-            input = Object.assign({}, input, {
-                url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
-            });
-        }
-        let res;
-        if (typeof input == 'string' && isXHR2WithBlobSupported()) {
-            res = yield fetchUsingXHR(input, init && init.progressCallback);
-        }
-        else {
-            res = yield fetch(input, init);
-        }
-        if (!res.ok)
-            throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
-        return res;
-    });
+async function webdnnFetch(input, init) {
+    if (typeof input == 'string') {
+        input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
+    }
+    else {
+        input = Object.assign({}, input, {
+            url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
+        });
+    }
+    let res;
+    if (typeof input == 'string' && isXHR2WithBlobSupported()) {
+        res = await fetchUsingXHR(input, init && init.progressCallback);
+    }
+    else {
+        res = await fetch(input, init);
+    }
+    if (!res.ok)
+        throw new Error(`Fetch returns status code ${res.status}: ${res.statusText}`);
+    return res;
 }
 /**
  * Read `Response.body` stream as ArrayBuffer. This function provide progress information by callback.
@@ -7388,63 +7345,50 @@ class DescriptorRunnerFallback extends DescriptorRunner {
     static checkAvailability() {
         return true;
     }
-    init() {
-        return __awaiter(this, void 0, void 0, function* () {
-            //nothing to do
-        });
+    async init() {
+        //nothing to do
     }
-    setDescriptorAndParameters(descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.setDescriptor(descriptor);
-            yield this.compile();
-            yield this.initializeStaticBuffer(parameters);
-            if (this.placeholderContext && this.placeholderContext.isResolved)
-                yield this.initializeDynamicBuffer();
-        });
+    async setDescriptorAndParameters(descriptor, parameters) {
+        this.setDescriptor(descriptor);
+        await this.compile();
+        await this.initializeStaticBuffer(parameters);
+        if (this.placeholderContext && this.placeholderContext.isResolved)
+            await this.initializeDynamicBuffer();
     }
-    fetchDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/graph_${this.backendName}.json`);
-            return res.json();
-        });
+    async fetchDescriptor(directory) {
+        this.directory = directory;
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
+        return res.json();
     }
-    fetchParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
-            return readArrayBufferProgressively(res, progressCallback);
-        });
+    async fetchParameters(directory, progressCallback) {
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
+        return readArrayBufferProgressively(res, progressCallback);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return localforage.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
-        });
+    async restoreCachedDescriptor(directory) {
+        return localforage.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let parameter = yield localforage.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
-            if (parameter && progressCallback)
-                progressCallback(parameter.byteLength, parameter.byteLength);
-            return parameter;
-        });
+    async restoreCachedParameters(directory, progressCallback) {
+        let parameter = await localforage.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
+        if (parameter && progressCallback)
+            progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter;
     }
     /**
      * save cache
      */
-    saveCache(directory, descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield Promise.all([
-                localforage.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
-                localforage.setItem(`${directory}_${this.backendName}_parameters`, parameters)
-            ]);
-        });
+    async saveCache(directory, descriptor, parameters) {
+        await Promise.all([
+            localforage.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
+            localforage.setItem(`${directory}_${this.backendName}_parameters`, parameters)
+        ]);
     }
     ;
     setDescriptor(descriptor) {
@@ -7459,107 +7403,112 @@ class DescriptorRunnerFallback extends DescriptorRunner {
         this.staticBuffer = null;
         this.dynamicBuffer = null;
     }
-    compile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let dnn_fallback_kernel = null;
-            eval(this.descriptor.kernel_source);
-            this.kernelObj = dnn_fallback_kernel;
-        });
-    }
-    initializeStaticBuffer(weightRawArray) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let descriptor = this.descriptor;
-            let staticBuffer = new Float32Array(descriptor.memory_layout.static.size);
-            this.staticBuffer = staticBuffer;
-            let variableMap = this.variableMap || new Map();
-            this.variableMap = variableMap;
-            Object.entries(descriptor.memory_layout.static.allocations)
-                .forEach(([name, allocation]) => {
-                variableMap.set(name, new Float32Array(staticBuffer.buffer, allocation.offset * Float32Array.BYTES_PER_ELEMENT, allocation.size));
-            });
-            let decoder = getWeightDecoder(this.descriptor.weight_encoding);
-            staticBuffer.set(yield decoder.decode(new Uint8Array(weightRawArray)));
-            (yield this.getInputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
-            (yield this.getOutputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
-        });
-    }
-    initializeDynamicBuffer() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized');
-            let descriptor = this.descriptor;
-            let placeholderContext = this.placeholderContext;
-            let dynamicBuffer = new Float32Array(placeholderContext.resolve(descriptor.memory_layout.dynamic.size));
-            this.dynamicBuffer = dynamicBuffer;
-            let variableMap = this.variableMap || new Map();
-            this.variableMap = variableMap;
-            Object.entries(descriptor.memory_layout.dynamic.allocations)
-                .forEach(([name, allocation]) => {
-                variableMap.set(name, new Float32Array(dynamicBuffer.buffer, placeholderContext.resolve(allocation.offset) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(allocation.size)));
-            });
-            (yield this.getInputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
-            (yield this.getOutputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
-        });
-    }
-    setPlaceholderValue(values) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.placeholderContext)
-                throw new Error('placeholderContext is not initialized');
-            let placeholderContext = this.placeholderContext;
-            placeholderContext.update(values);
-            if (!placeholderContext.isResolved)
-                return;
-            yield this.initializeDynamicBuffer();
-        });
-    }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.placeholderContext)
-                throw new Error('placeholderContext is not initialized');
-            if (!this.variableMap)
-                throw new Error('Variable map is not initialized');
-            if (!this.staticBuffer)
-                throw new Error('StaticBuffer map is not initialized');
-            if (!this.dynamicBuffer)
-                throw new Error('DynamicBuffer map is not initialized');
-            if (!this.inputViews || !this.outputViews)
-                throw new Error('getInputViews() and getOutputViews() must be called prior to run');
-            let variableMap = this.variableMap;
-            let placeholderContext = this.placeholderContext;
-            let executionInfos = this.descriptor.exec_infos
-                .map(executionInfo => placeholderContext.resolve(executionInfo));
-            let startDate = Date.now();
-            let lastDate = Date.now();
-            for (let i = 0; i < executionInfos.length; i++) {
-                let currentDate = Date.now();
-                if (currentDate - lastDate >= 1000) {
-                    console.log(`Processed ${i}/${executionInfos.length} kernels in ${currentDate - startDate} ms`);
-                    lastDate = currentDate;
-                    yield wait();
-                }
-                let executionInfo = executionInfos[i];
-                let inputs = executionInfo.inputs.map((name) => variableMap.get(name));
-                let outputs = executionInfo.outputs.map((name) => variableMap.get(name));
-                this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
+    async compile() {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        await new Promise((resolve) => {
+            let script = document.createElement("script");
+            script.type = "text/javascript";
+            if (script.readyState) {
+                script.onreadystatechange = () => {
+                    if (script.readyState == "loaded" || script.readyState == "complete") {
+                        script.onreadystatechange = null;
+                        resolve();
+                    }
+                };
             }
-            console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
+            else {
+                script.onload = resolve;
+            }
+            script.src = transformUrl(`${this.directory}/kernels_fallback.js`);
+            document.getElementsByTagName("head")[0].appendChild(script);
         });
+        this.kernelObj = window.dnn_fallback_kernel; // "window.dnn_fallback_kernel" is defined in "kernels_fallback.js"
+    }
+    async initializeStaticBuffer(weightRawArray) {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        let descriptor = this.descriptor;
+        let staticBuffer = new Float32Array(descriptor.memory_layout.static.size);
+        this.staticBuffer = staticBuffer;
+        let variableMap = this.variableMap || new Map();
+        this.variableMap = variableMap;
+        Object.entries(descriptor.memory_layout.static.allocations)
+            .forEach(([name, allocation]) => {
+            variableMap.set(name, new Float32Array(staticBuffer.buffer, allocation.offset * Float32Array.BYTES_PER_ELEMENT, allocation.size));
+        });
+        let decoder = getWeightDecoder(this.descriptor.weight_encoding);
+        staticBuffer.set(await decoder.decode(new Uint8Array(weightRawArray)));
+        (await this.getInputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+        (await this.getOutputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+    }
+    async initializeDynamicBuffer() {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        let descriptor = this.descriptor;
+        let placeholderContext = this.placeholderContext;
+        let dynamicBuffer = new Float32Array(placeholderContext.resolve(descriptor.memory_layout.dynamic.size));
+        this.dynamicBuffer = dynamicBuffer;
+        let variableMap = this.variableMap || new Map();
+        this.variableMap = variableMap;
+        Object.entries(descriptor.memory_layout.dynamic.allocations)
+            .forEach(([name, allocation]) => {
+            variableMap.set(name, new Float32Array(dynamicBuffer.buffer, placeholderContext.resolve(allocation.offset) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(allocation.size)));
+        });
+        (await this.getInputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+        (await this.getOutputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+    }
+    async setPlaceholderValue(values) {
+        if (!this.placeholderContext)
+            throw new Error('placeholderContext is not initialized');
+        let placeholderContext = this.placeholderContext;
+        placeholderContext.update(values);
+        if (!placeholderContext.isResolved)
+            return;
+        await this.initializeDynamicBuffer();
+    }
+    async run() {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.placeholderContext)
+            throw new Error('placeholderContext is not initialized');
+        if (!this.variableMap)
+            throw new Error('Variable map is not initialized');
+        if (!this.staticBuffer)
+            throw new Error('StaticBuffer map is not initialized');
+        if (!this.dynamicBuffer)
+            throw new Error('DynamicBuffer map is not initialized');
+        if (!this.inputViews || !this.outputViews)
+            throw new Error('getInputViews() and getOutputViews() must be called prior to run');
+        let variableMap = this.variableMap;
+        let placeholderContext = this.placeholderContext;
+        let executionInfos = this.descriptor.exec_infos
+            .map(executionInfo => placeholderContext.resolve(executionInfo));
+        let startDate = Date.now();
+        let lastDate = Date.now();
+        for (let i = 0; i < executionInfos.length; i++) {
+            let currentDate = Date.now();
+            if (currentDate - lastDate >= 1000) {
+                console.log(`Processed ${i}/${executionInfos.length} kernels in ${currentDate - startDate} ms`);
+                lastDate = currentDate;
+                await wait();
+            }
+            let executionInfo = executionInfos[i];
+            let inputs = executionInfo.inputs.map((name) => variableMap.get(name));
+            let outputs = executionInfo.outputs.map((name) => variableMap.get(name));
+            this.kernelObj[executionInfo.entry_func_name](inputs, outputs, executionInfo.call_option);
+        }
+        console.log(`Processed ${executionInfos.length}/${executionInfos.length} kernels in ${Date.now() - startDate} ms`);
     }
     getInputViews() {
         if (this.inputViews)
@@ -7627,25 +7576,23 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
         //nothing to do
         return Promise.resolve();
     }
-    setDescriptorAndParameters(descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.descriptor = descriptor;
-            this.placeholderContext = new PlaceholderContext(this.descriptor.placeholders);
-            // for browsers which does not support wasm, try asm.js code
-            let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
-            let worker_entry_js_path = `${this.directory}/kernels_${kernel_backend}.js`;
-            worker_entry_js_path = transformUrl(worker_entry_js_path);
-            this.worker_entry_js_path = worker_entry_js_path;
-            yield this.compile();
-            yield this.loadWeights(new Uint8Array(parameters));
-            //assign buffer to input/output buffer view
-            (yield this.getInputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
-            (yield this.getOutputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
-        });
+    async setDescriptorAndParameters(descriptor, parameters) {
+        this.descriptor = descriptor;
+        this.placeholderContext = new PlaceholderContext(this.descriptor.placeholders);
+        // for browsers which does not support wasm, try asm.js code
+        let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
+        let worker_entry_js_path = `${this.directory}/kernels_${kernel_backend}.js`;
+        worker_entry_js_path = transformUrl(worker_entry_js_path);
+        this.worker_entry_js_path = worker_entry_js_path;
+        await this.compile();
+        await this.loadWeights(new Uint8Array(parameters));
+        //assign buffer to input/output buffer view
+        (await this.getInputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+        (await this.getOutputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
     }
     /**
      * Fetch graph descriptor from specified directory.
@@ -7661,12 +7608,10 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
      *
      * @protected
      */
-    fetchDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.directory = directory;
-            let res = yield webdnnFetch(`${directory}/graph_${this.backendName}.json`);
-            return res.json();
-        });
+    async fetchDescriptor(directory) {
+        this.directory = directory;
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
+        return res.json();
     }
     /**
      * Fetch parameter files from specified directory.
@@ -7683,76 +7628,66 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
      * @param progressCallback callback which is called to notice the loading is progressing.
      * @protected
      */
-    fetchParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let weight_url = `${directory}/weight_${this.backendName}.bin`;
-            let weight_fetch = yield webdnnFetch(weight_url);
-            return readArrayBufferProgressively(weight_fetch, progressCallback);
-        });
+    async fetchParameters(directory, progressCallback) {
+        let weight_url = `${directory}/weight_${this.backendName}.bin`;
+        let weight_fetch = await webdnnFetch(weight_url);
+        return readArrayBufferProgressively(weight_fetch, progressCallback);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.directory = directory;
-            return localforage$1.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
-        });
+    async restoreCachedDescriptor(directory) {
+        this.directory = directory;
+        return localforage$1.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let parameter = yield localforage$1.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
-            if (parameter && progressCallback)
-                progressCallback(parameter.byteLength, parameter.byteLength);
-            return parameter;
-        });
+    async restoreCachedParameters(directory, progressCallback) {
+        let parameter = await localforage$1.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
+        if (parameter && progressCallback)
+            progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter;
     }
     /**
      * save cache
      */
-    saveCache(directory, descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield Promise.all([
-                localforage$1.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
-                localforage$1.setItem(`${directory}_${this.backendName}_parameters`, parameters)
-            ]);
-        });
+    async saveCache(directory, descriptor, parameters) {
+        await Promise.all([
+            localforage$1.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
+            localforage$1.setItem(`${directory}_${this.backendName}_parameters`, parameters)
+        ]);
     }
     ;
-    setPlaceholderValue(values) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized.');
-            let placeholderContext = this.placeholderContext;
-            placeholderContext.update(values);
-            if (!placeholderContext.isResolved)
-                return;
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let descriptor = this.descriptor;
-            let unresolvedValueLists = descriptor.unresolved_value_lists;
-            let metaBufferFillList = [];
-            for (let kernel_order = 0; kernel_order < unresolvedValueLists.length; kernel_order++) {
-                let unresolvedValueList = unresolvedValueLists[kernel_order];
-                unresolvedValueList.forEach((offset_placeholder) => {
-                    let resolved_value = placeholderContext.resolve(offset_placeholder.placeholder);
-                    metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
-                });
-            }
-            (yield this.getInputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
-            (yield this.getOutputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
-            let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
-            yield this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList));
-        });
+    async setPlaceholderValue(values) {
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized.');
+        let placeholderContext = this.placeholderContext;
+        placeholderContext.update(values);
+        if (!placeholderContext.isResolved)
+            return;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        let descriptor = this.descriptor;
+        let unresolvedValueLists = descriptor.unresolved_value_lists;
+        let metaBufferFillList = [];
+        for (let kernel_order = 0; kernel_order < unresolvedValueLists.length; kernel_order++) {
+            let unresolvedValueList = unresolvedValueLists[kernel_order];
+            unresolvedValueList.forEach((offset_placeholder) => {
+                let resolved_value = placeholderContext.resolve(offset_placeholder.placeholder);
+                metaBufferFillList.push(kernel_order, offset_placeholder.offset, resolved_value);
+            });
+        }
+        (await this.getInputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+        (await this.getOutputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+        let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
+        await this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList));
     }
     setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray) {
         if (!this.worker)
@@ -7803,31 +7738,29 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
         this.worker = worker;
         return promise;
     }
-    loadWeights(weightsData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.worker)
-                throw new Error('Worker is not initialized');
-            let decoder = getWeightDecoder(this.descriptor.weight_encoding);
-            let weight_data = yield decoder.decode(weightsData);
-            let worker = this.worker;
-            let promise = new Promise((resolve, reject) => {
-                this.worker_promise_reject_func = reject;
-                worker.onmessage = (event) => {
-                    if (event.data === 0) {
-                        resolve();
-                    }
-                    else {
-                        console.log(event.data);
-                        worker.terminate();
-                        reject(new Error(event.data));
-                    }
-                };
-                worker.postMessage({ type: 'weight', data: weight_data }, [weight_data.buffer]);
-            });
-            return promise;
+    async loadWeights(weightsData) {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.worker)
+            throw new Error('Worker is not initialized');
+        let decoder = getWeightDecoder(this.descriptor.weight_encoding);
+        let weight_data = await decoder.decode(weightsData);
+        let worker = this.worker;
+        let promise = new Promise((resolve, reject) => {
+            this.worker_promise_reject_func = reject;
+            worker.onmessage = (event) => {
+                if (event.data === 0) {
+                    resolve();
+                }
+                else {
+                    console.log(event.data);
+                    worker.terminate();
+                    reject(new Error(event.data));
+                }
+            };
+            worker.postMessage({ type: 'weight', data: weight_data }, [weight_data.buffer]);
         });
+        return promise;
     }
     getInputViews() {
         if (this.inputViews)
@@ -7862,67 +7795,65 @@ class DescriptorRunnerWebassembly extends DescriptorRunner {
         });
         return this.outputViews;
     }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // if (this._running) throw new Error('Calling another run() while running.');
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.inputViews || !this.outputViews)
-                throw new Error('getInputViews and getOutputViews must be called prior to run');
-            if (!this.worker)
-                throw new Error('Worker is not initialized');
-            let descriptor = this.descriptor;
-            let worker = this.worker;
-            let inputViews = this.inputViews;
-            let outputViews = this.outputViews;
-            let promise = new Promise((resolve, reject) => {
-                // TODO: better way not to generate function on every run
-                this.worker_promise_reject_func = reject;
-                worker.onmessage = (event) => {
-                    if (Array.isArray(event.data)) {
-                        for (let i = 0; i < event.data.length; i++) {
-                            outputViews[i].set(event.data[i]);
-                        }
-                        resolve();
+    async run() {
+        // if (this._running) throw new Error('Calling another run() while running.');
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.inputViews || !this.outputViews)
+            throw new Error('getInputViews and getOutputViews must be called prior to run');
+        if (!this.worker)
+            throw new Error('Worker is not initialized');
+        let descriptor = this.descriptor;
+        let worker = this.worker;
+        let inputViews = this.inputViews;
+        let outputViews = this.outputViews;
+        let promise = new Promise((resolve, reject) => {
+            // TODO: better way not to generate function on every run
+            this.worker_promise_reject_func = reject;
+            worker.onmessage = (event) => {
+                if (Array.isArray(event.data)) {
+                    for (let i = 0; i < event.data.length; i++) {
+                        outputViews[i].set(event.data[i]);
                     }
-                    else {
-                        console.log(event.data);
-                        worker.terminate();
-                        reject(new Error(event.data));
-                    }
-                };
-                let allocations = [descriptor.memory_layout.static.allocations, descriptor.memory_layout.dynamic.allocations];
-                let inputs = [];
-                for (let i = 0; i < descriptor.inputs.length; i++) {
-                    for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
-                        let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
-                        if (var_alloc) {
-                            let symAb = inputViews[i];
-                            inputs.push({
-                                space: allocation_space,
-                                offset: symAb.offset,
-                                size: symAb.length,
-                                data: symAb.toActual()
-                            });
-                            break;
-                        }
+                    resolve();
+                }
+                else {
+                    console.log(event.data);
+                    worker.terminate();
+                    reject(new Error(event.data));
+                }
+            };
+            let allocations = [descriptor.memory_layout.static.allocations, descriptor.memory_layout.dynamic.allocations];
+            let inputs = [];
+            for (let i = 0; i < descriptor.inputs.length; i++) {
+                for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
+                    let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
+                    if (var_alloc) {
+                        let symAb = inputViews[i];
+                        inputs.push({
+                            space: allocation_space,
+                            offset: symAb.offset,
+                            size: symAb.length,
+                            data: symAb.toActual()
+                        });
+                        break;
                     }
                 }
-                let outputs = [];
-                for (let i = 0; i < descriptor.outputs.length; i++) {
-                    for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
-                        let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
-                        if (var_alloc) {
-                            let symAb = outputViews[i];
-                            outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
-                            break;
-                        }
+            }
+            let outputs = [];
+            for (let i = 0; i < descriptor.outputs.length; i++) {
+                for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
+                    let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
+                    if (var_alloc) {
+                        let symAb = outputViews[i];
+                        outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                        break;
                     }
                 }
-                worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
-            });
-            return promise;
+            }
+            worker.postMessage({ type: 'run', inputs: inputs, outputs: outputs });
         });
+        return promise;
     }
 }
 
@@ -8097,22 +8028,20 @@ class WebGLHandler {
         }
         return availability;
     }
-    waitForComplete() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let gl = this.gl;
-            if (isWebGL2(gl)) {
-                let sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-                let status = gl.clientWaitSync(sync, 0, 0);
-                while (status !== gl.CONDITION_SATISFIED && status !== gl.ALREADY_SIGNALED) {
-                    yield new Promise(r => setTimeout(r, 1));
-                    status = gl.clientWaitSync(sync, 0, 0);
-                }
-                gl.deleteSync(sync);
+    async waitForComplete() {
+        let gl = this.gl;
+        if (isWebGL2(gl)) {
+            let sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+            let status = gl.clientWaitSync(sync, 0, 0);
+            while (status !== gl.CONDITION_SATISFIED && status !== gl.ALREADY_SIGNALED) {
+                await new Promise(r => setTimeout(r, 1));
+                status = gl.clientWaitSync(sync, 0, 0);
             }
-            else {
-                gl.finish();
-            }
-        });
+            gl.deleteSync(sync);
+        }
+        else {
+            gl.finish();
+        }
     }
     get MAX_TEXTURE_SIZE() {
         let MAX_TEXTURE_SIZE = getConfiguration('MAX_TEXTURE_SIZE', this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE));
@@ -8225,11 +8154,9 @@ class BufferWebGL extends Buffer {
      * @param {ArrayBufferView} src contents source buffer
      * @param {number} offset position where contents are written on
      */
-    write(src, offset) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.array.set(src, offset);
-            yield this.syncWriteViews();
-        });
+    async write(src, offset) {
+        this.array.set(src, offset);
+        await this.syncWriteViews();
     }
     /**
      * Read contents from specified position synchronously.
@@ -8238,13 +8165,11 @@ class BufferWebGL extends Buffer {
      * @param {number} offset position where contents are read from
      * @param {length} length contents length
      */
-    read(dst, offset = 0, length) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (dst !== Float32Array)
-                throw new Error('Currently, only Float32Array is supported for parameter \'dst\'.');
-            yield this.syncReadViews();
-            new Float32Array(this.array.buffer, offset * Float32Array.BYTES_PER_ELEMENT, length);
-        });
+    async read(dst, offset = 0, length) {
+        if (dst !== Float32Array)
+            throw new Error('Currently, only Float32Array is supported for parameter \'dst\'.');
+        await this.syncReadViews();
+        new Float32Array(this.array.buffer, offset * Float32Array.BYTES_PER_ELEMENT, length);
     }
     getWriteView(offset, length, type) {
         return new type(this.array.buffer, offset * type.BYTES_PER_ELEMENT, length);
@@ -8258,55 +8183,49 @@ class BufferWebGL extends Buffer {
      *
      * @see Buffer#getWriteView
      */
-    syncWriteViews() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let gl = this.handler.gl;
-            if (!this.texture)
-                this.allocateTexture();
-            let tmp = this.pack(this.array);
-            if (tmp.length != this.textureWidth * this.textureHeight * this.pixelStride) {
-                let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * this.elementsPerPixel);
-                tmp2.set(tmp, 0);
-                tmp = tmp2;
-            }
-            yield this.bindToReadTexture(9); //TODO: texture unit 9 is always available?
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, this.textureFormat, gl.FLOAT, tmp);
-            this.unbindFromReadTexture();
-        });
+    async syncWriteViews() {
+        let gl = this.handler.gl;
+        if (!this.texture)
+            this.allocateTexture();
+        let tmp = this.pack(this.array);
+        if (tmp.length != this.textureWidth * this.textureHeight * this.pixelStride) {
+            let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * this.elementsPerPixel);
+            tmp2.set(tmp, 0);
+            tmp = tmp2;
+        }
+        await this.bindToReadTexture(9); //TODO: texture unit 9 is always available?
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.textureWidth, this.textureHeight, this.textureFormat, gl.FLOAT, tmp);
+        this.unbindFromReadTexture();
     }
     /**
      * Sync memory data into buffer view.
      *
      * @see Buffer#getReadView
      */
-    syncReadViews() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let gl = this.handler.gl;
-            // FIXME(Kiikurage): more readable code
-            const ELEMENT_PER_PIXEL = 4;
-            const FORMAT = gl.RGBA;
-            let tmp = new Float32Array(this.textureWidth * this.textureHeight * ELEMENT_PER_PIXEL);
-            this.bindToDrawTexture();
-            gl.readPixels(0, 0, this.textureWidth, this.textureHeight, FORMAT, gl.FLOAT, tmp);
-            this.unbindFromDrawTexture();
-            tmp = this.unpack(tmp);
-            this.array.set(tmp.slice(0, this.length), 0);
-        });
+    async syncReadViews() {
+        let gl = this.handler.gl;
+        // FIXME(Kiikurage): more readable code
+        const ELEMENT_PER_PIXEL = 4;
+        const FORMAT = gl.RGBA;
+        let tmp = new Float32Array(this.textureWidth * this.textureHeight * ELEMENT_PER_PIXEL);
+        this.bindToDrawTexture();
+        gl.readPixels(0, 0, this.textureWidth, this.textureHeight, FORMAT, gl.FLOAT, tmp);
+        this.unbindFromDrawTexture();
+        tmp = this.unpack(tmp);
+        this.array.set(tmp.slice(0, this.length), 0);
     }
-    bindToReadTexture(unit) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.isBoundToDrawFrameBuffer)
-                throw Error('This buffer is already registered as draw buffer. ' +
-                    'You may forgot to unbind the binding while previous operations.');
-            let gl = this.handler.gl;
-            if (!this.texture) {
-                this.allocateTexture();
-                yield this.syncWriteViews();
-            }
-            gl.activeTexture(gl.TEXTURE0 + unit);
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            this.readTextureUnitIndices.push(unit);
-        });
+    async bindToReadTexture(unit) {
+        if (this.isBoundToDrawFrameBuffer)
+            throw Error('This buffer is already registered as draw buffer. ' +
+                'You may forgot to unbind the binding while previous operations.');
+        let gl = this.handler.gl;
+        if (!this.texture) {
+            this.allocateTexture();
+            await this.syncWriteViews();
+        }
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        this.readTextureUnitIndices.push(unit);
     }
     unbindFromReadTexture() {
         let gl = this.handler.gl;
@@ -8398,162 +8317,138 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
     static checkAvailability() {
         return WebGLHandler.checkAvailability();
     }
-    init() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!DescriptorRunnerWebGL.checkAvailability())
-                throw Error('WebGL backend is not supported in this browser.');
-            this.handler = WebGLHandler.getInstance();
-            let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
-            this.handler.bindArrayBuffer(vertexBuffer);
-            this.buffers = new Map();
-        });
+    async init() {
+        if (!DescriptorRunnerWebGL.checkAvailability())
+            throw Error('WebGL backend is not supported in this browser.');
+        this.handler = WebGLHandler.getInstance();
+        let vertexBuffer = this.handler.createArrayBuffer(vertexArray);
+        this.handler.bindArrayBuffer(vertexBuffer);
+        this.buffers = new Map();
     }
-    fetchDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/graph_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.json`);
-            return res.json();
-        });
+    async fetchDescriptor(directory) {
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.json`);
+        return res.json();
     }
-    fetchParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/weight_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.bin`);
-            return readArrayBufferProgressively(res, progressCallback);
-        });
+    async fetchParameters(directory, progressCallback) {
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.bin`);
+        return readArrayBufferProgressively(res, progressCallback);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return localforage$2.getItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`).catch(() => null);
-        });
+    async restoreCachedDescriptor(directory) {
+        return localforage$2.getItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`).catch(() => null);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let parameter = yield localforage$2.getItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`).catch(() => null);
-            if (parameter && progressCallback)
-                progressCallback(parameter.byteLength, parameter.byteLength);
-            return parameter;
-        });
+    async restoreCachedParameters(directory, progressCallback) {
+        let parameter = await localforage$2.getItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`).catch(() => null);
+        if (parameter && progressCallback)
+            progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter;
     }
     /**
      * save cache
      */
-    saveCache(directory, descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield Promise.all([
-                localforage$2.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`, descriptor),
-                localforage$2.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`, parameters)
-            ]);
-        });
+    async saveCache(directory, descriptor, parameters) {
+        await Promise.all([
+            localforage$2.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_descriptor`, descriptor),
+            localforage$2.setItem(`${directory}_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}_parameters`, parameters)
+        ]);
     }
     ;
-    setDescriptorAndParameters(descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.setDescriptor(descriptor);
-            yield this.compile();
-            yield this.initializeStaticBuffer(parameters);
-            if (this.placeholderContext && this.placeholderContext.isResolved)
-                yield this.initializeDynamicBuffer();
-        });
+    async setDescriptorAndParameters(descriptor, parameters) {
+        await this.setDescriptor(descriptor);
+        await this.compile();
+        await this.initializeStaticBuffer(parameters);
+        if (this.placeholderContext && this.placeholderContext.isResolved)
+            await this.initializeDynamicBuffer();
     }
-    initializeStaticBuffer(weightRawArray) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let descriptor = this.descriptor;
-            let decoder = getWeightDecoder(this.descriptor.weight_encoding);
-            let weight = yield decoder.decode(new Uint8Array(weightRawArray));
-            let buffers = this.buffers;
-            let mapping = descriptor.memory_layout.mapping;
-            Object.entries(descriptor.memory_layout.static.allocations)
-                .forEach(([name, { width, height, size, channel_mode }]) => {
-                buffers.set(name, new BufferWebGL(size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
-            });
-            Object.entries(descriptor.constants_map)
-                .forEach(([name, { size, byte_offset }]) => {
-                buffers.get(name).array.set(new Float32Array(weight.buffer, byte_offset, size));
-            });
-            (yield this.getInputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, view.length, Float32Array).buffer));
-            (yield this.getOutputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, view.length, Float32Array).buffer));
+    async initializeStaticBuffer(weightRawArray) {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        let descriptor = this.descriptor;
+        let decoder = getWeightDecoder(this.descriptor.weight_encoding);
+        let weight = await decoder.decode(new Uint8Array(weightRawArray));
+        let buffers = this.buffers;
+        let mapping = descriptor.memory_layout.mapping;
+        Object.entries(descriptor.memory_layout.static.allocations)
+            .forEach(([name, { width, height, size, channel_mode }]) => {
+            buffers.set(name, new BufferWebGL(size * Float32Array.BYTES_PER_ELEMENT, width, height, name, null, channel_mode));
         });
-    }
-    initializeDynamicBuffer() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw Error("GraphDescriptor is not loaded.");
-            if (!this.placeholderContext)
-                throw Error("PlaceholderContext is not initialized.");
-            let descriptor = this.descriptor;
-            let placeholderContext = this.placeholderContext;
-            let buffers = this.buffers;
-            let mapping = descriptor.memory_layout.mapping;
-            Object.entries(descriptor.memory_layout.dynamic.allocations)
-                .forEach(([name, { width, height, size, channel_mode }]) => {
-                buffers.set(name, new BufferWebGL(placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
-            });
-            (yield this.getInputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
-            (yield this.getOutputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
-            this.buildPipeline();
+        Object.entries(descriptor.constants_map)
+            .forEach(([name, { size, byte_offset }]) => {
+            buffers.get(name).array.set(new Float32Array(weight.buffer, byte_offset, size));
         });
+        (await this.getInputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, view.length, Float32Array).buffer));
+        (await this.getOutputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, view.length, Float32Array).buffer));
     }
-    setDescriptor(descriptor) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.descriptor = descriptor;
-            //reset all datum depend on old descriptor
-            this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
+    async initializeDynamicBuffer() {
+        if (!this.descriptor)
+            throw Error("GraphDescriptor is not loaded.");
+        if (!this.placeholderContext)
+            throw Error("PlaceholderContext is not initialized.");
+        let descriptor = this.descriptor;
+        let placeholderContext = this.placeholderContext;
+        let buffers = this.buffers;
+        let mapping = descriptor.memory_layout.mapping;
+        Object.entries(descriptor.memory_layout.dynamic.allocations)
+            .forEach(([name, { width, height, size, channel_mode }]) => {
+            buffers.set(name, new BufferWebGL(placeholderContext.resolve(size) * Float32Array.BYTES_PER_ELEMENT, placeholderContext.resolve(width), placeholderContext.resolve(height), name, null, channel_mode));
         });
+        (await this.getInputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+        (await this.getOutputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+        this.buildPipeline();
     }
-    compile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            let descriptor = this.descriptor;
-            this.programs = new Map();
-            this.vertexShader = this.handler.createVertexShader(`
+    async setDescriptor(descriptor) {
+        this.descriptor = descriptor;
+        //reset all datum depend on old descriptor
+        this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
+    }
+    async compile() {
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        let descriptor = this.descriptor;
+        this.programs = new Map();
+        this.vertexShader = this.handler.createVertexShader(`
             precision highp float;
             attribute vec2 _xy;
             void main() { 
               gl_Position = vec4(_xy, 0, 1); 
             }
         `);
-            Object.keys(descriptor.shader_sources)
-                .forEach(name => {
-                let fragmentShader = this.handler.createFragmentShader(descriptor.shader_sources[name]);
-                let program = this.handler.createProgram(this.vertexShader, fragmentShader);
-                this.programs.set(name, program);
-            });
+        Object.keys(descriptor.shader_sources)
+            .forEach(name => {
+            let fragmentShader = this.handler.createFragmentShader(descriptor.shader_sources[name]);
+            let program = this.handler.createProgram(this.vertexShader, fragmentShader);
+            this.programs.set(name, program);
         });
     }
-    setPlaceholderValue(values) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized.');
-            let placeholderContext = this.placeholderContext;
-            placeholderContext.update(values);
-            if (!placeholderContext.isResolved)
-                return;
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            yield this.initializeDynamicBuffer();
-            // resolve placeholders in execution info
-            // TODO:
-            if (Object.keys(this.descriptor.placeholders).length > 0)
-                throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
-        });
+    async setPlaceholderValue(values) {
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized.');
+        let placeholderContext = this.placeholderContext;
+        placeholderContext.update(values);
+        if (!placeholderContext.isResolved)
+            return;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        await this.initializeDynamicBuffer();
+        // resolve placeholders in execution info
+        // TODO:
+        if (Object.keys(this.descriptor.placeholders).length > 0)
+            throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
     }
     getInputViews() {
         if (this.inputViews)
@@ -8706,107 +8601,105 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             });
         }
     }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // if (this._running) throw new Error('Calling another run() while running.');
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.inputViews || !this.outputViews)
-                throw new Error('getInputViews and getOutputViews must be called prior to run');
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized');
-            if (!this.placeholderContext.isResolved)
-                throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
-            let gl = this.handler.gl;
-            let runtimeInfo = this.runtimeInfo;
-            if (this.runtimeInfo.programs.length > 0) {
-                for (let buffer of runtimeInfo.inputs)
-                    yield buffer.syncWriteViews();
-                if (getConfiguration('DEBUG', false)) {
-                    let records = [];
-                    let totalElapsedTime = 0;
-                    for (let runtimeProgramInfo of runtimeInfo.programs) {
-                        let start = performance.now();
-                        this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        // inputs
-                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
-                            yield buffer.bindToReadTexture(uniformIndex);
-                        // output
-                        runtimeProgramInfo.output.bindToDrawTexture();
-                        // shader
-                        this.handler.useProgram(runtimeProgramInfo.program);
-                        // uniforms
-                        for (let uniform of runtimeProgramInfo.uniforms)
-                            uniform.func.apply(gl, uniform.args);
-                        // attribute
-                        gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
-                        gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
-                        // run
-                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                        yield this.handler.waitForComplete();
-                        let elapsedTime = performance.now() - start;
-                        totalElapsedTime += elapsedTime;
-                        let xs = [];
-                        for (let { buffer } of runtimeProgramInfo.inputs) {
-                            buffer.unbindFromReadTexture();
-                            yield buffer.syncReadViews();
-                            xs.push(buffer.array.slice());
-                        }
-                        runtimeProgramInfo.output.unbindFromDrawTexture();
-                        yield runtimeProgramInfo.output.syncReadViews();
-                        let y = runtimeProgramInfo.output.array.slice();
-                        records.push({
-                            'Kernel': runtimeProgramInfo.name,
-                            'Elapsed time [ms]': elapsedTime,
-                            'xs': xs,
-                            'y': y
-                        });
+    async run() {
+        // if (this._running) throw new Error('Calling another run() while running.');
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.inputViews || !this.outputViews)
+            throw new Error('getInputViews and getOutputViews must be called prior to run');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        if (!this.placeholderContext.isResolved)
+            throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+        let gl = this.handler.gl;
+        let runtimeInfo = this.runtimeInfo;
+        if (this.runtimeInfo.programs.length > 0) {
+            for (let buffer of runtimeInfo.inputs)
+                await buffer.syncWriteViews();
+            if (getConfiguration('DEBUG', false)) {
+                let records = [];
+                let totalElapsedTime = 0;
+                for (let runtimeProgramInfo of runtimeInfo.programs) {
+                    let start = performance.now();
+                    this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                    // inputs
+                    for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
+                        await buffer.bindToReadTexture(uniformIndex);
+                    // output
+                    runtimeProgramInfo.output.bindToDrawTexture();
+                    // shader
+                    this.handler.useProgram(runtimeProgramInfo.program);
+                    // uniforms
+                    for (let uniform of runtimeProgramInfo.uniforms)
+                        uniform.func.apply(gl, uniform.args);
+                    // attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
+                    // run
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    await this.handler.waitForComplete();
+                    let elapsedTime = performance.now() - start;
+                    totalElapsedTime += elapsedTime;
+                    let xs = [];
+                    for (let { buffer } of runtimeProgramInfo.inputs) {
+                        buffer.unbindFromReadTexture();
+                        await buffer.syncReadViews();
+                        xs.push(buffer.array.slice());
                     }
-                    let summary = Array.from(Object.values(records.reduce((summary, record) => {
-                        if (!(record['Kernel'] in summary)) {
-                            summary[record['Kernel']] = {
-                                'Kernel': record['Kernel'],
-                                'Count': 0,
-                                'Elapsed time [ms]': 0,
-                            };
-                        }
-                        summary[record['Kernel']]['Count']++;
-                        summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
-                        return summary;
-                    }, {})));
-                    summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
-                    console.table(records);
-                    console.table(summary);
+                    runtimeProgramInfo.output.unbindFromDrawTexture();
+                    await runtimeProgramInfo.output.syncReadViews();
+                    let y = runtimeProgramInfo.output.array.slice();
+                    records.push({
+                        'Kernel': runtimeProgramInfo.name,
+                        'Elapsed time [ms]': elapsedTime,
+                        'xs': xs,
+                        'y': y
+                    });
                 }
-                else {
-                    for (let runtimeProgramInfo of runtimeInfo.programs) {
-                        this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
-                        // inputs
-                        for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
-                            yield buffer.bindToReadTexture(uniformIndex);
-                        // output
-                        runtimeProgramInfo.output.bindToDrawTexture();
-                        // shader
-                        this.handler.useProgram(runtimeProgramInfo.program);
-                        // uniforms
-                        for (let uniform of runtimeProgramInfo.uniforms)
-                            uniform.func.apply(gl, uniform.args);
-                        // attribute
-                        gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
-                        gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
-                        // run
-                        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
-                        // release buffers and binding
-                        // for (let buffer of runtimeProgramInfo.disposable) buffer.releaseGPUMemory();
-                        for (let { buffer } of runtimeProgramInfo.inputs)
-                            buffer.unbindFromReadTexture();
-                        runtimeProgramInfo.output.unbindFromDrawTexture();
+                let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                    if (!(record['Kernel'] in summary)) {
+                        summary[record['Kernel']] = {
+                            'Kernel': record['Kernel'],
+                            'Count': 0,
+                            'Elapsed time [ms]': 0,
+                        };
                     }
-                }
-                for (let buffer of runtimeInfo.outputs)
-                    yield buffer.syncReadViews();
+                    summary[record['Kernel']]['Count']++;
+                    summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+                    return summary;
+                }, {})));
+                summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
+                console.table(records);
+                console.table(summary);
             }
-        });
+            else {
+                for (let runtimeProgramInfo of runtimeInfo.programs) {
+                    this.handler.bindFrameBuffer(runtimeProgramInfo.frameBuffer, runtimeProgramInfo.width, runtimeProgramInfo.height);
+                    // inputs
+                    for (let { buffer, uniformIndex } of runtimeProgramInfo.inputs)
+                        await buffer.bindToReadTexture(uniformIndex);
+                    // output
+                    runtimeProgramInfo.output.bindToDrawTexture();
+                    // shader
+                    this.handler.useProgram(runtimeProgramInfo.program);
+                    // uniforms
+                    for (let uniform of runtimeProgramInfo.uniforms)
+                        uniform.func.apply(gl, uniform.args);
+                    // attribute
+                    gl.vertexAttribPointer(runtimeProgramInfo.xyAttribLoc, 2, gl.FLOAT, true, 8, 0);
+                    gl.enableVertexAttribArray(runtimeProgramInfo.xyAttribLoc);
+                    // run
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexArray.length / 2);
+                    // release buffers and binding
+                    // for (let buffer of runtimeProgramInfo.disposable) buffer.releaseGPUMemory();
+                    for (let { buffer } of runtimeProgramInfo.inputs)
+                        buffer.unbindFromReadTexture();
+                    runtimeProgramInfo.output.unbindFromDrawTexture();
+                }
+            }
+            for (let buffer of runtimeInfo.outputs)
+                await buffer.syncReadViews();
+        }
     }
 }
 
@@ -8898,25 +8791,23 @@ class WebGPUHandler {
         commandBuffer.commit();
         return promise;
     }
-    sync() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let commandBuffer = this.createCommandBuffer();
-            let commandEncoder = commandBuffer.createComputeCommandEncoder();
-            commandEncoder.setComputePipelineState(this.getPipelineStateByName('basic.sync'));
-            commandEncoder.dispatch({
-                width: 1,
-                height: 1,
-                depth: 1
-            }, {
-                width: 1,
-                height: 1,
-                depth: 1
-            });
-            commandEncoder.endEncoding();
-            let promise = commandBuffer.completed;
-            commandBuffer.commit();
-            return promise;
+    async sync() {
+        let commandBuffer = this.createCommandBuffer();
+        let commandEncoder = commandBuffer.createComputeCommandEncoder();
+        commandEncoder.setComputePipelineState(this.getPipelineStateByName('basic.sync'));
+        commandEncoder.dispatch({
+            width: 1,
+            height: 1,
+            depth: 1
+        }, {
+            width: 1,
+            height: 1,
+            depth: 1
         });
+        commandEncoder.endEncoding();
+        let promise = commandBuffer.completed;
+        commandBuffer.commit();
+        return promise;
     }
 }
 /**
@@ -8943,25 +8834,21 @@ class BufferWebGPU extends Buffer {
         this.bufferView = new Uint8Array(this.buffer.contents);
     }
     // async: there may be platforms synchronization is needed before writing
-    write(src, dst_offset) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.handler.sync();
-            let viewSameType = new src.constructor(this.bufferView.buffer);
-            viewSameType.set(src, dst_offset);
-        });
+    async write(src, dst_offset) {
+        await this.handler.sync();
+        let viewSameType = new src.constructor(this.bufferView.buffer);
+        viewSameType.set(src, dst_offset);
     }
-    read(dst, src_offset = 0, length) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!dst)
-                throw new Error('dst cannot be null');
-            yield this.handler.sync();
-            if (this.byteLength === 0)
-                return;
-            let dstConstructor = dst.constructor;
-            let viewSameType = new dstConstructor(this.bufferView.buffer, this.bufferView.byteOffset + src_offset * dstConstructor.BYTES_PER_ELEMENT, length);
-            dst.set(viewSameType);
+    async read(dst, src_offset = 0, length) {
+        if (!dst)
+            throw new Error('dst cannot be null');
+        await this.handler.sync();
+        if (this.byteLength === 0)
             return;
-        });
+        let dstConstructor = dst.constructor;
+        let viewSameType = new dstConstructor(this.bufferView.buffer, this.bufferView.byteOffset + src_offset * dstConstructor.BYTES_PER_ELEMENT, length);
+        dst.set(viewSameType);
+        return;
     }
     getWriteView(offset, length, type) {
         return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
@@ -8969,16 +8856,12 @@ class BufferWebGPU extends Buffer {
     getReadView(offset, length, type) {
         return new type(this.bufferView.buffer, this.bufferView.byteOffset + offset * type.BYTES_PER_ELEMENT, length);
     }
-    syncWriteViews() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // no sync needed
-        });
+    async syncWriteViews() {
+        // no sync needed
     }
-    syncReadViews() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // if the user awaits promise from final kernel execution, this function call is not needed.
-            yield this.handler.sync();
-        });
+    async syncReadViews() {
+        // if the user awaits promise from final kernel execution, this function call is not needed.
+        await this.handler.sync();
     }
 }
 
@@ -9019,29 +8902,26 @@ class DescriptorRunnerWebGPU extends DescriptorRunner {
      * Initialize descriptor runner asynchronously
      * @returns {Promise<void>} Promise object which is resolved when the initialization finished.
      */
-    init() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.webgpuHandler = WebGPUHandler.getInstance();
-            yield this.checkIncompatibleGPU();
-        });
+    async init() {
+        this.webgpuHandler = WebGPUHandler.getInstance();
+        await this.checkIncompatibleGPU();
     }
     /**
      * Check whether current GPU is supported or not. If it's not supported, an error is thrown.
      * @returns {Promise<void>}
      */
-    checkIncompatibleGPU() {
-        return __awaiter(this, void 0, void 0, function* () {
-            /**
-             * It is reported that AMD GPU crashes when performing sgemm (matrix multiplication).
-             * Until this problem is solved, blocking WebGPU backend in the environment is needed.
-             * API in WebGPU does not directly gives hardware information, so trying to determine hardware heuristically.
-             *
-             * Criteria: thread_execution_width == 32 is required
-             * (on AMD FirePro D500, thread_execution_width == 64)
-             *
-             * @see https://github.com/mil-tokyo/webdnn/issues/286
-             */
-            this.webgpuHandler.loadKernel(`
+    async checkIncompatibleGPU() {
+        /**
+         * It is reported that AMD GPU crashes when performing sgemm (matrix multiplication).
+         * Until this problem is solved, blocking WebGPU backend in the environment is needed.
+         * API in WebGPU does not directly gives hardware information, so trying to determine hardware heuristically.
+         *
+         * Criteria: thread_execution_width == 32 is required
+         * (on AMD FirePro D500, thread_execution_width == 64)
+         *
+         * @see https://github.com/mil-tokyo/webdnn/issues/286
+         */
+        this.webgpuHandler.loadKernel(`
 #include <metal_stdlib>
 using namespace metal;
         kernel void check_compatibility(
@@ -9053,13 +8933,12 @@ using namespace metal;
                 A[0] = thread_execution_width;
             }
         }`, 'basic');
-            let buffer = this.webgpuHandler.createBuffer(new Uint32Array(1));
-            yield this.webgpuHandler.executeSinglePipelineState('basic.check_compatibility', { width: 1, height: 1, depth: 1 }, { width: 1, height: 1, depth: 1 }, [buffer], true);
-            let threadExecutionWidth = (new Uint32Array(buffer.contents))[0];
-            if (threadExecutionWidth != 32) {
-                throw new Error(`Sorry, this GPU does not compatible with WebGPU (thread_execution_width == ${threadExecutionWidth}. See checkIncompatibleGPU method of https://github.com/mil-tokyo/webdnn/blob/master/src/descriptor_runner/descriptor_runner/descriptor_runner_webgpu.ts`);
-            }
-        });
+        let buffer = this.webgpuHandler.createBuffer(new Uint32Array(1));
+        await this.webgpuHandler.executeSinglePipelineState('basic.check_compatibility', { width: 1, height: 1, depth: 1 }, { width: 1, height: 1, depth: 1 }, [buffer], true);
+        let threadExecutionWidth = (new Uint32Array(buffer.contents))[0];
+        if (threadExecutionWidth != 32) {
+            throw new Error(`Sorry, this GPU does not compatible with WebGPU (thread_execution_width == ${threadExecutionWidth}. See checkIncompatibleGPU method of https://github.com/mil-tokyo/webdnn/blob/master/src/descriptor_runner/descriptor_runner/descriptor_runner_webgpu.ts`);
+        }
     }
     /**
      * Fetch graph descriptor from specified directory.
@@ -9075,11 +8954,9 @@ using namespace metal;
      *
      * @protected
      */
-    fetchDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/graph_${this.backendName}.json`);
-            return res.json();
-        });
+    async fetchDescriptor(directory) {
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
+        return res.json();
     }
     /**
      * Fetch parameter files from specified directory.
@@ -9096,64 +8973,54 @@ using namespace metal;
      * @param progressCallback callback which is called to notice the loading is progressing.
      * @protected
      */
-    fetchParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let res = yield webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
-            return readArrayBufferProgressively(res, progressCallback);
-        });
+    async fetchParameters(directory, progressCallback) {
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
+        return readArrayBufferProgressively(res, progressCallback);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedDescriptor(directory) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return localforage$3.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
-        });
+    async restoreCachedDescriptor(directory) {
+        return localforage$3.getItem(`${directory}_${this.backendName}_descriptor`).catch(() => null);
     }
     /**
      * Load cached descriptor from WebStorage
      * @protected
      */
-    restoreCachedParameters(directory, progressCallback) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let parameter = yield localforage$3.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
-            if (parameter && progressCallback)
-                progressCallback(parameter.byteLength, parameter.byteLength);
-            return parameter;
-        });
+    async restoreCachedParameters(directory, progressCallback) {
+        let parameter = await localforage$3.getItem(`${directory}_${this.backendName}_parameters`).catch(() => null);
+        if (parameter && progressCallback)
+            progressCallback(parameter.byteLength, parameter.byteLength);
+        return parameter;
     }
     /**
      * save cache
      */
-    saveCache(directory, descriptor, parameters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield Promise.all([
-                localforage$3.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
-                localforage$3.setItem(`${directory}_${this.backendName}_parameters`, parameters)
-            ]);
-        });
+    async saveCache(directory, descriptor, parameters) {
+        await Promise.all([
+            localforage$3.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
+            localforage$3.setItem(`${directory}_${this.backendName}_parameters`, parameters)
+        ]);
     }
     ;
-    setDescriptorAndParameters(descriptor, parameter) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.descriptor = descriptor;
-            //reset all datum depend on old descriptor
-            this.staticBuffer = null;
-            this.dynamicBuffer = null;
-            this.metaBuffers = null;
-            this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
-            this.executionInfos = descriptor.exec_infos;
-            //compile kernels
-            this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
-            yield this.initializeStaticBuffer(parameter);
-            yield this.initializeMetaBuffers();
-            yield this.setPlaceholderValue({
-                '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
-            });
-            if (this.placeholderContext && this.placeholderContext.isResolved)
-                yield this.initializeDynamicBuffer();
+    async setDescriptorAndParameters(descriptor, parameter) {
+        this.descriptor = descriptor;
+        //reset all datum depend on old descriptor
+        this.staticBuffer = null;
+        this.dynamicBuffer = null;
+        this.metaBuffers = null;
+        this.placeholderContext = new PlaceholderContext(descriptor.placeholders);
+        this.executionInfos = descriptor.exec_infos;
+        //compile kernels
+        this.webgpuHandler.loadKernel(this.descriptor.kernel_source, 'descriptor');
+        await this.initializeStaticBuffer(parameter);
+        await this.initializeMetaBuffers();
+        await this.setPlaceholderValue({
+            '__MAX_THREADS_PER_THREADGROUP__': IS_IOS ? 512 : 1024
         });
+        if (this.placeholderContext && this.placeholderContext.isResolved)
+            await this.initializeDynamicBuffer();
     }
     /**
      * Initialize static buffers, whose size and position can be determined in compile time.
@@ -9161,37 +9028,33 @@ using namespace metal;
      * @param {ArrayBuffer} weightRawArray constant weight buffer
      * @returns {Promise<void>}
      */
-    initializeStaticBuffer(weightRawArray) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw Error("GraphDescriptor is not loaded.");
-            let descriptor = this.descriptor;
-            let staticBuffer = new BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
-            this.staticBuffer = staticBuffer;
-            let decoder = getWeightDecoder(descriptor.weight_encoding);
-            yield staticBuffer.write(yield decoder.decode(new Uint8Array(weightRawArray)));
-            (yield this.getInputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
-            (yield this.getOutputViews())
-                .filter(view => !view.isDynamic)
-                .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
-        });
+    async initializeStaticBuffer(weightRawArray) {
+        if (!this.descriptor)
+            throw Error("GraphDescriptor is not loaded.");
+        let descriptor = this.descriptor;
+        let staticBuffer = new BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
+        this.staticBuffer = staticBuffer;
+        let decoder = getWeightDecoder(descriptor.weight_encoding);
+        await staticBuffer.write(await decoder.decode(new Uint8Array(weightRawArray)));
+        (await this.getInputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
+        (await this.getOutputViews())
+            .filter(view => !view.isDynamic)
+            .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
     }
     /**
      * Initialize meta buffers, which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
      * @returns {Promise<void>}
      */
-    initializeMetaBuffers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw Error("GraphDescriptor is not loaded.");
-            this.metaBuffers = yield Promise.all(this.descriptor.exec_infos.map((executionInfo) => __awaiter(this, void 0, void 0, function* () {
-                let buffer = new BufferWebGPU(executionInfo.meta_buffer.length * Int32Array.BYTES_PER_ELEMENT);
-                yield buffer.write(new Uint8Array(executionInfo.meta_buffer));
-                return buffer;
-            })));
-        });
+    async initializeMetaBuffers() {
+        if (!this.descriptor)
+            throw Error("GraphDescriptor is not loaded.");
+        this.metaBuffers = await Promise.all(this.descriptor.exec_infos.map(async (executionInfo) => {
+            let buffer = new BufferWebGPU(executionInfo.meta_buffer.length * Int32Array.BYTES_PER_ELEMENT);
+            await buffer.write(new Uint8Array(executionInfo.meta_buffer));
+            return buffer;
+        }));
     }
     /**
      * Initialize dynamic buffers, whose size and position cannot be determined without runtime-information such as input image size
@@ -9200,24 +9063,22 @@ using namespace metal;
      *
      * @returns {Promise<void>}
      */
-    initializeDynamicBuffer() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.descriptor)
-                throw Error("GraphDescriptor is not loaded.");
-            if (!this.placeholderContext)
-                throw Error("PlaceholderContext is not initialized.");
-            let descriptor = this.descriptor;
-            let placeholderContext = this.placeholderContext;
-            let dynamicBufferSize = placeholderContext.resolve(descriptor.memory_layout.dynamic.size);
-            let dynamicBuffer = new BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
-            this.dynamicBuffer = dynamicBuffer;
-            (yield this.getInputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
-            (yield this.getOutputViews())
-                .filter(view => view.isDynamic)
-                .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
-        });
+    async initializeDynamicBuffer() {
+        if (!this.descriptor)
+            throw Error("GraphDescriptor is not loaded.");
+        if (!this.placeholderContext)
+            throw Error("PlaceholderContext is not initialized.");
+        let descriptor = this.descriptor;
+        let placeholderContext = this.placeholderContext;
+        let dynamicBufferSize = placeholderContext.resolve(descriptor.memory_layout.dynamic.size);
+        let dynamicBuffer = new BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
+        this.dynamicBuffer = dynamicBuffer;
+        (await this.getInputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
+        (await this.getOutputViews())
+            .filter(view => view.isDynamic)
+            .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
     }
     /**
      * Set actual value into placeholder. If all placeholder is resolved,
@@ -9226,31 +9087,29 @@ using namespace metal;
      * @param values mapping object of placeholder name and value
      * @returns {Promise<void>}
      */
-    setPlaceholderValue(values) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized.');
-            let placeholderContext = this.placeholderContext;
-            placeholderContext.update(values);
-            if (!placeholderContext.isResolved)
-                return;
-            if (!this.descriptor)
-                throw new Error('Descriptor is not loaded');
-            if (!this.metaBuffers)
-                throw new Error('MetaBuffers are not initialized');
-            let descriptor = this.descriptor;
-            let metaBuffers = this.metaBuffers;
-            yield this.initializeDynamicBuffer();
-            // resolve placeholders in execution info
-            this.executionInfos = yield Promise.all(descriptor.exec_infos.map((executionInfo, i) => __awaiter(this, void 0, void 0, function* () {
-                // resolve placeholders in meta buffer
-                let bufferView = new Int32Array(metaBuffers[i].bufferView.buffer);
-                for (let unresolved_value of executionInfo.unresolved_value_list) {
-                    bufferView[unresolved_value.offset] = placeholderContext.resolve(unresolved_value.placeholder);
-                }
-                return placeholderContext.resolve(executionInfo);
-            })));
-        });
+    async setPlaceholderValue(values) {
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized.');
+        let placeholderContext = this.placeholderContext;
+        placeholderContext.update(values);
+        if (!placeholderContext.isResolved)
+            return;
+        if (!this.descriptor)
+            throw new Error('Descriptor is not loaded');
+        if (!this.metaBuffers)
+            throw new Error('MetaBuffers are not initialized');
+        let descriptor = this.descriptor;
+        let metaBuffers = this.metaBuffers;
+        await this.initializeDynamicBuffer();
+        // resolve placeholders in execution info
+        this.executionInfos = await Promise.all(descriptor.exec_infos.map(async (executionInfo, i) => {
+            // resolve placeholders in meta buffer
+            let bufferView = new Int32Array(metaBuffers[i].bufferView.buffer);
+            for (let unresolved_value of executionInfo.unresolved_value_list) {
+                bufferView[unresolved_value.offset] = placeholderContext.resolve(unresolved_value.placeholder);
+            }
+            return placeholderContext.resolve(executionInfo);
+        }));
     }
     /**
      * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
@@ -9298,66 +9157,64 @@ using namespace metal;
      * Run descriptor. You must call [[webdnn.DescriptorRunner.getInputViews|`getInputViews`]] and
      * [[webdnn.DescriptorRunner.getOutputViews|`getOutputViews`]] before calling this function.
      */
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.executionInfos)
-                throw new Error('ExecutionInfos is not loaded');
-            if (!this.inputViews || !this.outputViews)
-                throw new Error('getInputViews and getOutputViews must be called prior to run');
-            if (!this.staticBuffer)
-                throw new Error('StaticBuffer is not initialized');
-            if (!this.dynamicBuffer)
-                throw new Error('DynamicBuffer is not initialized');
-            if (!this.metaBuffers)
-                throw new Error('MetaBuffer is not initialized');
-            if (!this.placeholderContext)
-                throw new Error('PlaceholderContext is not initialized');
-            if (!this.placeholderContext.isResolved)
-                throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
-            let staticBuffer = this.staticBuffer;
-            let dynamicBuffer = this.dynamicBuffer;
-            let metaBuffers = this.metaBuffers;
-            if (getConfiguration('DEBUG', false)) {
-                let records = [];
-                let totalElapsedTime = 0;
-                for (let i = 0; i < this.executionInfos.length; i++) {
-                    let exec_info = this.executionInfos[i];
-                    let start = performance.now();
-                    yield this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true);
-                    let elapsedTime = performance.now() - start;
-                    records.push({
-                        'Kernel': exec_info.entry_func_name,
-                        'Elapsed time [ms]': elapsedTime
-                    });
-                    totalElapsedTime += elapsedTime;
-                }
-                let summary = Array.from(Object.values(records.reduce((summary, record) => {
-                    if (!(record['Kernel'] in summary)) {
-                        summary[record['Kernel']] = {
-                            'Kernel': record['Kernel'],
-                            'Count': 0,
-                            'Elapsed time [ms]': 0,
-                        };
-                    }
-                    summary[record['Kernel']]['Count']++;
-                    summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
-                    return summary;
-                }, {})));
-                summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
-                console.table(records);
-                console.table(summary);
+    async run() {
+        if (!this.executionInfos)
+            throw new Error('ExecutionInfos is not loaded');
+        if (!this.inputViews || !this.outputViews)
+            throw new Error('getInputViews and getOutputViews must be called prior to run');
+        if (!this.staticBuffer)
+            throw new Error('StaticBuffer is not initialized');
+        if (!this.dynamicBuffer)
+            throw new Error('DynamicBuffer is not initialized');
+        if (!this.metaBuffers)
+            throw new Error('MetaBuffer is not initialized');
+        if (!this.placeholderContext)
+            throw new Error('PlaceholderContext is not initialized');
+        if (!this.placeholderContext.isResolved)
+            throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
+        let staticBuffer = this.staticBuffer;
+        let dynamicBuffer = this.dynamicBuffer;
+        let metaBuffers = this.metaBuffers;
+        if (getConfiguration('DEBUG', false)) {
+            let records = [];
+            let totalElapsedTime = 0;
+            for (let i = 0; i < this.executionInfos.length; i++) {
+                let exec_info = this.executionInfos[i];
+                let start = performance.now();
+                await this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], true);
+                let elapsedTime = performance.now() - start;
+                records.push({
+                    'Kernel': exec_info.entry_func_name,
+                    'Elapsed time [ms]': elapsedTime
+                });
+                totalElapsedTime += elapsedTime;
             }
-            else {
-                let complete_promise = null;
-                for (let i = 0; i < this.executionInfos.length; i++) {
-                    let exec_info = this.executionInfos[i];
-                    let is_last = i == this.executionInfos.length - 1;
-                    complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
+            let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                if (!(record['Kernel'] in summary)) {
+                    summary[record['Kernel']] = {
+                        'Kernel': record['Kernel'],
+                        'Count': 0,
+                        'Elapsed time [ms]': 0,
+                    };
                 }
-                return complete_promise; //wait to finish final kernel
+                summary[record['Kernel']]['Count']++;
+                summary[record['Kernel']]['Elapsed time [ms]'] += record['Elapsed time [ms]'];
+                return summary;
+            }, {})));
+            summary.forEach(record => record['Ratio [%]'] = (record['Elapsed time [ms]'] / totalElapsedTime).toFixed(2));
+            console.table(records);
+            console.table(summary);
+        }
+        else {
+            let complete_promise = null;
+            for (let i = 0; i < this.executionInfos.length; i++) {
+                let exec_info = this.executionInfos[i];
+                let is_last = i == this.executionInfos.length - 1;
+                complete_promise = this.webgpuHandler.executeSinglePipelineState('descriptor.' + exec_info.entry_func_name, exec_info.threadgroups_per_grid, exec_info.threads_per_thread_group, [staticBuffer, dynamicBuffer, metaBuffers[i]], is_last);
             }
-            // this._running = false;
-        });
+            return complete_promise; //wait to finish final kernel
+        }
+        // this._running = false;
     }
 }
 
@@ -9513,16 +9370,14 @@ function setImageDataToCanvas(imageData, canvas, options = {}) {
  * @param {string} url the image url
  * @returns {Promise<HTMLImageElement>} image element
  */
-function loadImageByUrl(url) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let image = document.createElement('img');
-        return new Promise((resolve, reject) => {
-            image.onload = resolve;
-            image.onerror = reject;
-            image.src = url;
-        })
-            .then(() => image);
-    });
+async function loadImageByUrl(url) {
+    let image = document.createElement('img');
+    return new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = reject;
+        image.src = url;
+    })
+        .then(() => image);
 }
 /* istanbul ignore next */
 /**
@@ -9531,14 +9386,12 @@ function loadImageByUrl(url) {
  * @param {HTMLInputElement} input the `<input type="file">` element
  * @returns {Promise<HTMLImageElement>} image element
  */
-function loadImageFromFileInput(input) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let files = input.files;
-        if (!files || files.length == 0)
-            throw new Error('No file is selected');
-        let url = URL.createObjectURL(files[0]);
-        return loadImageByUrl(url);
-    });
+async function loadImageFromFileInput(input) {
+    let files = input.files;
+    if (!files || files.length == 0)
+        throw new Error('No file is selected');
+    let url = URL.createObjectURL(files[0]);
+    return loadImageByUrl(url);
 }
 /* istanbul ignore next */
 /**
@@ -9550,15 +9403,13 @@ function loadImageFromFileInput(input) {
  * @returns {Promise<HTMLImageElement>} image element
  * @protected
  */
-function loadImageByDialog() {
-    return __awaiter(this, void 0, void 0, function* () {
-        let input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        return new Promise((resolve) => {
-            input.onchange = () => resolve(loadImageFromFileInput(input));
-            input.click();
-        });
+async function loadImageByDialog() {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    return new Promise((resolve) => {
+        input.onchange = () => resolve(loadImageFromFileInput(input));
+        input.click();
     });
 }
 
@@ -9783,27 +9634,25 @@ function getImageArrayFromDrawable(drawable, options = {}) {
  * @param options please see above descriptions.
  * @returns Created typed array
  */
-function getImageArray(image, options = {}) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (typeof image === 'string') {
-            return getImageArrayFromDrawable(yield loadImageByUrl(image), options);
-        }
-        else if (image instanceof HTMLInputElement) {
-            return getImageArrayFromDrawable(yield loadImageFromFileInput(image), options);
-        }
-        else if (image instanceof HTMLCanvasElement) {
-            return getImageArrayFromCanvas(image, options);
-        }
-        else if (image instanceof HTMLImageElement || image instanceof HTMLVideoElement) {
-            return getImageArrayFromDrawable(image, options);
-            // FIXME: This feature is not supported for all web browsers.
-            // } else if (image === null) {
-            //     return getImageArrayFromDrawable(await loadImageByDialog(), options);
-        }
-        else
-            throw TypeError('Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
-                ' HTMLInputElement, HTMLCanvasElement, HTMLImageElement, or HTMLVideoElement object');
-    });
+async function getImageArray(image, options = {}) {
+    if (typeof image === 'string') {
+        return getImageArrayFromDrawable(await loadImageByUrl(image), options);
+    }
+    else if (image instanceof HTMLInputElement) {
+        return getImageArrayFromDrawable(await loadImageFromFileInput(image), options);
+    }
+    else if (image instanceof HTMLCanvasElement) {
+        return getImageArrayFromCanvas(image, options);
+    }
+    else if (image instanceof HTMLImageElement || image instanceof HTMLVideoElement) {
+        return getImageArrayFromDrawable(image, options);
+        // FIXME: This feature is not supported for all web browsers.
+        // } else if (image === null) {
+        //     return getImageArrayFromDrawable(await loadImageByDialog(), options);
+    }
+    else
+        throw TypeError('Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
+            ' HTMLInputElement, HTMLCanvasElement, HTMLImageElement, or HTMLVideoElement object');
 }
 /**
  * Set image array data into canvas.
@@ -10112,21 +9961,19 @@ function getBackendAvailability() {
  * Initialize specified backend
  * @private
  */
-function initBackend(backendName, option) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!(backendName in descriptorRunners))
-            throw new Error(`Unknown backend: "${backendName}"`);
-        let runner;
-        try {
-            runner = new descriptorRunners[backendName](option);
-            yield runner.init();
-        }
-        catch (ex) {
-            console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
-            return null;
-        }
-        return runner;
-    });
+async function initBackend(backendName, option) {
+    if (!(backendName in descriptorRunners))
+        throw new Error(`Unknown backend: "${backendName}"`);
+    let runner;
+    try {
+        runner = new descriptorRunners[backendName](option);
+        await runner.init();
+    }
+    catch (ex) {
+        console.warn(`Failed to initialize ${backendName} backend: ${ex}`);
+        return null;
+    }
+    return runner;
 }
 /**
  * Initialize descriptor runner. This function performs follow things.
@@ -10158,118 +10005,116 @@ function initBackend(backendName, option) {
  * @param initOption Initialize option
  * @return DescriptorRunner instance, which is the interface to input/output data and run the model.
  */
-function load(directory, initOption = {}) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let { backendOrder = null, backendOptions = {}, cacheStrategy = 'latest', saveCache = true, progressCallback, weightDirectory, transformUrlDelegate } = initOption;
-        if (!backendOrder)
-            backendOrder = getBackendAvailability().defaultOrder;
-        if (typeof backendOrder === 'string')
-            backendOrder = [backendOrder];
-        backendOrder = backendOrder.slice();
-        if (backendOrder.indexOf('fallback') === -1)
-            backendOrder.concat(['fallback']);
-        registerTransformUrlDelegate((url) => {
-            if (weightDirectory) {
-                if ((/\.bin/).test(url)) {
-                    url = url.replace(directory, weightDirectory);
-                }
+async function load(directory, initOption = {}) {
+    let { backendOrder = null, backendOptions = {}, cacheStrategy = 'latest', saveCache = true, progressCallback, weightDirectory, transformUrlDelegate } = initOption;
+    if (!backendOrder)
+        backendOrder = getBackendAvailability().defaultOrder;
+    if (typeof backendOrder === 'string')
+        backendOrder = [backendOrder];
+    backendOrder = backendOrder.slice();
+    if (backendOrder.indexOf('fallback') === -1)
+        backendOrder.concat(['fallback']);
+    registerTransformUrlDelegate((url) => {
+        if (weightDirectory) {
+            if ((/\.bin/).test(url)) {
+                url = url.replace(directory, weightDirectory);
             }
-            if (transformUrlDelegate)
-                url = transformUrlDelegate(url);
-            return url;
-        });
-        while (backendOrder.length > 0) {
-            let backendName = backendOrder.shift();
-            let runner = yield initBackend(backendName, backendOptions[backendName]);
-            if (!runner)
-                continue;
-            try {
-                let descriptor;
-                let parameters;
-                let fetchedDescriptor;
-                let cachedDescriptor;
-                switch (cacheStrategy) {
-                    case 'latest':
-                        fetchedDescriptor = yield runner.fetchDescriptor(directory).catch(() => null);
-                        cachedDescriptor = yield runner.restoreCachedDescriptor(directory);
-                        if (cachedDescriptor && fetchedDescriptor && cachedDescriptor.converted_at === fetchedDescriptor.converted_at) {
-                            descriptor = cachedDescriptor;
-                            parameters = yield runner.restoreCachedParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        if (fetchedDescriptor) {
-                            descriptor = fetchedDescriptor;
-                            parameters = yield runner.fetchParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        if (cachedDescriptor) {
-                            descriptor = cachedDescriptor;
-                            parameters = yield runner.restoreCachedParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        throw Error('Network error is occurred and no cache is exist.');
-                    case 'networkOnly':
-                    case 'networkFirst':
-                        fetchedDescriptor = yield runner.fetchDescriptor(directory).catch(() => null);
-                        if (fetchedDescriptor) {
-                            descriptor = fetchedDescriptor;
-                            parameters = yield runner.fetchParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        if (cacheStrategy === 'networkOnly')
-                            throw Error('Network error is occurred in "networkOnly" cache strategy');
-                        cachedDescriptor = yield runner.restoreCachedDescriptor(directory);
-                        if (cachedDescriptor) {
-                            descriptor = cachedDescriptor;
-                            parameters = yield runner.restoreCachedParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        throw Error('Network error is occurred and no cache is exist.');
-                    case 'cacheOnly':
-                    case 'cacheFirst':
-                        cachedDescriptor = yield runner.restoreCachedDescriptor(directory);
-                        if (cachedDescriptor) {
-                            descriptor = cachedDescriptor;
-                            parameters = yield runner.restoreCachedParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        if (cacheStrategy === 'cacheOnly')
-                            throw Error('No cache is exist in "cacheOnly" cache strategy');
-                        fetchedDescriptor = yield runner.fetchDescriptor(directory).catch(() => null);
-                        if (fetchedDescriptor) {
-                            descriptor = fetchedDescriptor;
-                            parameters = yield runner.fetchParameters(directory, progressCallback);
-                            if (parameters)
-                                break;
-                        }
-                        throw Error('Network error is occurred and no cache is exist.');
-                    default:
-                        throw Error(`"${cacheStrategy}" is not valid cache strategy name: "latest", "networkFirst", "networkOnly", "cacheFirst", "cacheOnly" is available.`);
-                }
-                yield runner.setDescriptorAndParameters(descriptor, parameters);
-                if (saveCache) {
-                    try {
-                        yield runner.saveCache(directory, descriptor, parameters);
-                    }
-                    catch (e) {
-                        /* do nothing */
-                    }
-                }
-            }
-            catch (ex) {
-                console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
-                continue;
-            }
-            return runner;
         }
-        throw new Error('No backend is available');
+        if (transformUrlDelegate)
+            url = transformUrlDelegate(url);
+        return url;
     });
+    while (backendOrder.length > 0) {
+        let backendName = backendOrder.shift();
+        let runner = await initBackend(backendName, backendOptions[backendName]);
+        if (!runner)
+            continue;
+        try {
+            let descriptor;
+            let parameters;
+            let fetchedDescriptor;
+            let cachedDescriptor;
+            switch (cacheStrategy) {
+                case 'latest':
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+                    if (cachedDescriptor && fetchedDescriptor && cachedDescriptor.converted_at === fetchedDescriptor.converted_at) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    throw Error('Network error is occurred and no cache is exist.');
+                case 'networkOnly':
+                case 'networkFirst':
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    if (cacheStrategy === 'networkOnly')
+                        throw Error('Network error is occurred in "networkOnly" cache strategy');
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    throw Error('Network error is occurred and no cache is exist.');
+                case 'cacheOnly':
+                case 'cacheFirst':
+                    cachedDescriptor = await runner.restoreCachedDescriptor(directory);
+                    if (cachedDescriptor) {
+                        descriptor = cachedDescriptor;
+                        parameters = await runner.restoreCachedParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    if (cacheStrategy === 'cacheOnly')
+                        throw Error('No cache is exist in "cacheOnly" cache strategy');
+                    fetchedDescriptor = await runner.fetchDescriptor(directory).catch(() => null);
+                    if (fetchedDescriptor) {
+                        descriptor = fetchedDescriptor;
+                        parameters = await runner.fetchParameters(directory, progressCallback);
+                        if (parameters)
+                            break;
+                    }
+                    throw Error('Network error is occurred and no cache is exist.');
+                default:
+                    throw Error(`"${cacheStrategy}" is not valid cache strategy name: "latest", "networkFirst", "networkOnly", "cacheFirst", "cacheOnly" is available.`);
+            }
+            await runner.setDescriptorAndParameters(descriptor, parameters);
+            if (saveCache) {
+                try {
+                    await runner.saveCache(directory, descriptor, parameters);
+                }
+                catch (e) {
+                    /* do nothing */
+                }
+            }
+        }
+        catch (ex) {
+            console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
+            continue;
+        }
+        return runner;
+    }
+    throw new Error('No backend is available');
 }
 
 exports.getConfiguration = getConfiguration;

@@ -1,5 +1,6 @@
 import chainer
 
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.axis import Axis
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -80,11 +81,13 @@ def _convert_spatial_pyramid_pooling2d(converter: ChainerConverter, c_op: "chain
     raise NotImplementedError("[ChainerConverter] SpatialPyramidPooling2D is not supported")
 
 
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Unpooling2D")
 def _convert_unpooling2d(converter: ChainerConverter, c_op: "chainer.functions.Unpooling2D"):
     x = converter.get_variable(c_op.inputs[0])
     x.order.unify(OrderNCHW)
+    if not Placeholder.check_resolved(x.shape[2]) or not Placeholder.check_resolved(x.shape[3]):
+        raise NotImplementedError("[ChainerConverter] \"Unpooling2D\" with dynamic spatial size is not supported ")
+
     pool_opr = Unpooling2D(None,
                            ksize=(c_op.kh, c_op.kw),
                            stride=(c_op.sy, c_op.sx),

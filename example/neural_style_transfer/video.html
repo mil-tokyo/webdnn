@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Neural Style Transfer / WebDNN</title>
+    <meta charset="utf-8">
+    <script src="../../dist/webdnn.js"></script>
+    <script src="./webcam.js"></script>
+</head>
+
+<body>
+<h1>Neural Style Transfer for WebCam Video</h1>
+
+<button onclick="app.toggle()" id="runButton" disabled>START / STOP</button>
+
+<div style="display: flex; flex-direction: row;">
+    <div style="margin: 8px;">
+        <h2>Input</h2>
+        <video id="input" style="border: 1px solid #000"></video>
+    </div>
+
+    <div style="margin: 8px;">
+        <h2>Output</h2>
+        <canvas id="output" style="border: 1px solid #000"></canvas>
+    </div>
+</div>
+
+
+<script>
+    'use strict';
+
+    class StyleTransferApplication {
+        constructor(height, width) {
+            // descriptor runner
+            this.runner = null;
+
+            // output resolution (=input resolution)
+            this.height = height;
+            this.width = width;
+            this.initAsync().then(() => {
+                document.getElementById('runButton').disabled = false
+            });
+        }
+
+        async initAsync() {
+            // Load converted model
+            this.runner = await WebDNN.load("./output");
+
+            this.inputView = this.runner.getInputViews()[0].toActual();
+            this.outputView = this.runner.getOutputViews()[0].toActual();
+
+            // initialize web camera
+            this.webcam = new WebCam();
+
+            this.$inputVideo = document.getElementById('input');
+            this.$inputVideo.width = this.width;
+            this.$inputVideo.height = this.height;
+            this.$inputVideo.srcObject = await this.webcam.getNextDeviceStream();
+            this.$inputVideo.play();
+
+            this.$outputCanvas = document.getElementById('output');
+            this.$outputCanvas.width = this.width;
+            this.$outputCanvas.height = this.height;
+        }
+
+        /**
+         * style transfer main routine
+         */
+        async transfer() {
+            if (!this.flagRunning) return;
+
+            // 1. Load image data from video element into input view
+            this.inputView.set(await WebDNN.Image.getImageArray(this.$inputVideo, {
+                dstH: this.height, dstW: this.width,
+                color: WebDNN.Image.Color.RGB,
+                order: WebDNN.Image.Order.CHW
+            }));
+
+            // 2. Run DNN model
+            await this.runner.run();
+
+            // 3. Set result into output canvas
+            WebDNN.Image.setImageArrayToCanvas(this.outputView, this.width, this.height, this.$outputCanvas, {
+                color: WebDNN.Image.Color.RGB,
+                order: WebDNN.Image.Order.CHW
+            });
+
+            if (this.flagRunning) requestAnimationFrame(() => this.transfer());
+        }
+
+        toggle() {
+            this.flagRunning = !this.flagRunning;
+            if (this.flagRunning) this.transfer();
+        }
+    }
+
+    window.onload = () => {
+        window.app = new StyleTransferApplication(144, 192);
+    };
+</script>
+</body>
+</html>

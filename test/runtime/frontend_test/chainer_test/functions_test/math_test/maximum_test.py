@@ -2,7 +2,9 @@ import chainer
 import numpy as np
 
 from test.util import generate_kernel_test_case, wrap_template
+from webdnn import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 
 
 @wrap_template
@@ -27,3 +29,29 @@ def template(description: str = ""):
 
 def test():
     template()
+
+
+def test_with_placeholder():
+    vx0 = chainer.Variable(np.random.rand(10, 11, 12).astype(np.float32))
+    vx1 = chainer.Variable(np.random.rand(10, 11, 12).astype(np.float32))
+    vy = chainer.functions.maximum(vx0, vx1)
+
+    A = Placeholder(label="A")
+    B = Placeholder(label="B")
+    C = Placeholder(label="C")
+    px0 = PlaceholderVariable([A, B, C])
+    px1 = PlaceholderVariable([A, B, C])
+    py = chainer.functions.maximum(px0, px1)
+
+    graph = ChainerConverter().convert([px0, px1], [py])
+
+    A.value = 10
+    B.value = 11
+    C.value = 12
+    generate_kernel_test_case(
+        description=f"[chainer] F.maximum with placeholder",
+        graph=graph,
+        backend=["webgpu", "webassembly"],
+        inputs={graph.inputs[0]: vx0.data, graph.inputs[1]: vx1.data},
+        expected={graph.outputs[0]: vy.data}
+    )
