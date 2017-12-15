@@ -176,7 +176,6 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variables.constant_variable</span> <span class="k">import</span> <span class="n">ConstantVariable</span>
-<span class="kn">from</span> <span class="nn">webdnn.util.assertion</span> <span class="k">import</span> <span class="n">assert_sequence_type</span>
 <span class="kn">from</span> <span class="nn">webdnn.util.misc</span> <span class="k">import</span> <span class="n">mul</span>
 
 
@@ -214,8 +213,12 @@
 
         <span class="k">assert</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">,</span> <span class="s2">&quot;-1 (wildcard) in reshape output shape is currently not supported&quot;</span>
 
-        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">assert_sequence_type</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">correct_type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">[Reshape] Parameter &quot;out_shape&quot; must be sequence of integer&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out_shape</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="n">Placeholder</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Reshape] Parameter &quot;out_shape&quot; must be sequence of integer</span>
+<span class="s2">    (value) = </span><span class="si">{v}</span><span class="s2"></span>
+<span class="s2">    (type of value[</span><span class="si">{i}</span><span class="s2">]) = {type(v)}&quot;&quot;&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;in_order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_order</span>

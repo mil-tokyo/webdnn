@@ -178,6 +178,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">from</span> <span class="nn">webdnn.frontend.chainer.placeholder_variable</span> <span class="k">import</span> <span class="n">PlaceholderVariable</span>
 <span class="kn">from</span> <span class="nn">webdnn.frontend.converter</span> <span class="k">import</span> <span class="n">Converter</span><span class="p">,</span> <span class="n">CyclicGraphError</span>
 <span class="kn">from</span> <span class="nn">webdnn.frontend.util</span> <span class="k">import</span> <span class="n">semver</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
@@ -369,13 +370,19 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">PlaceholderVariable</span><span class="p">):</span>
+                <span class="n">n_var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">actual_shape</span><span class="p">,</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">n_var</span><span class="p">)</span>
+
         <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_variable_node</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
 
         <span class="c1"># Convert parameters into constant variable</span>
         <span class="n">input_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">chainer</span><span class="o">.</span><span class="n">computational_graph</span><span class="o">.</span><span class="n">build_computational_graph</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">T_VARIABLE</span><span class="p">)</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">T_VARIABLE</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># If &quot;c_var.creator&quot; is None, it&#39;s input variable or parameters.</span>
 
                 <span class="c1"># NOTE(Kiikurage):</span>
