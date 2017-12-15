@@ -2,6 +2,8 @@ from itertools import combinations
 
 import chainer
 import numpy as np
+
+from webdnn.graph.placeholder import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.broadcast import Broadcast
@@ -27,6 +29,9 @@ def _convert_broadcast(converter: ChainerConverter, c_op: "chainer.functions.Bro
 @ChainerConverter.register_handler("BroadcastTo")
 def _convert_broadcast_to(converter: ChainerConverter, c_op: "chainer.functions.BroadcastTo"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"BroadcastTo\" for dynamic shape variable is not supported ")
+
     # noinspection PyProtectedMember
     y, = Broadcast(None, out_shape=c_op._shape, out_order=x.order)(x)
     converter.set_variable(c_op.outputs[0](), y)
@@ -90,18 +95,27 @@ def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatt
 @ChainerConverter.register_handler("FlipLR")
 def _convert_flip_lr(converter: ChainerConverter, c_op: "chainer.functions.FlipLR"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"FlipLR\" for dynamic shape variable is not supported ")
+
     converter.set_variable(c_op.outputs[0](), x[:, ::-1])
 
 
 @ChainerConverter.register_handler("FlipUD")
 def _convert_flip_ud(converter: ChainerConverter, c_op: "chainer.functions.FlipUD"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"FlipUD\" for dynamic shape variable is not supported ")
+
     converter.set_variable(c_op.outputs[0](), x[::-1, :])
 
 
 @ChainerConverter.register_handler("GetItem")
 def _convert_get_item(converter: ChainerConverter, c_op: "chainer.functions.GetItem"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"GetItem\" for dynamic shape variable is not supported ")
+
     y = x[c_op.slices]
     converter.set_variable(c_op.outputs[0](), y)
 
@@ -116,6 +130,9 @@ def _convert_hstack(converter: ChainerConverter, c_op: "chainer.functions.array.
 @ChainerConverter.register_handler("Im2Col")
 def _convert_im2col(converter: ChainerConverter, c_op: "chainer.functions.Im2Col"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"GetItem\" for dynamic shape variable is not supported ")
+
     x.order.unify(OrderNCHW)
     if c_op.cover_all:
         raise NotImplementedError("[ChainerConverter] \"Im2Col\" function with \"cover_all=True\" is not supported")
@@ -154,6 +171,8 @@ def _convert_permutate(converter: ChainerConverter, c_op: "chainer.functions.Per
 @ChainerConverter.register_handler("Reshape")
 def _convert_reshape(converter: ChainerConverter, c_op: "chainer.functions.Reshape"):
     x = converter.get_variable(c_op.inputs[0])
+    if any(not Placeholder.check_resolved(v) for v in x.shape):
+        raise NotImplementedError("[ChainerConverter] \"Reshape\" for dynamic shape variable is not supported ")
 
     out_shape = list(c_op.shape)
     out_order = Order([None] * len(out_shape))

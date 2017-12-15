@@ -3,6 +3,7 @@ from webdnn.graph import traverse
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.util import config
 
@@ -27,6 +28,9 @@ class CheckTextureSize(OptimizeRule):
         flag_changed = False
 
         for v in traverse.listup_variables(graph):
+            if not Placeholder.check_resolved(v.size):
+                continue
+
             height, width = TextureShape.get(v)
             if height <= MAX_TEXTURE_SIZE and width <= MAX_TEXTURE_SIZE:
                 continue

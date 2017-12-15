@@ -1,8 +1,10 @@
 import chainer
 import numpy as np
-from webdnn.frontend.chainer.converter import ChainerConverter
 
 from test.util import generate_kernel_test_case, wrap_template
+from webdnn import Placeholder
+from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 
 
 @wrap_template
@@ -58,4 +60,30 @@ def test_itself():
         graph=graph,
         inputs={x: vx.data},
         expected={y: vy.data},
+    )
+
+
+def test_with_placeholder():
+    vx1 = chainer.Variable(np.random.rand(10, 12).astype(np.float32) * 2 - 1)
+    vx2 = chainer.Variable(np.random.rand(12, 14).astype(np.float32) * 2 - 1)
+    vy = chainer.functions.matmul(vx1, vx2, False, False)
+
+    M = Placeholder(label="M")
+    K = Placeholder(label="K")
+    N = Placeholder(label="N")
+    px1 = PlaceholderVariable([M, K])
+    px2 = PlaceholderVariable([K, N])
+    py = chainer.functions.matmul(px1, px2, False, False)
+
+    graph = ChainerConverter().convert([px1, px2], [py])
+
+    M.value = 10
+    K.value = 12
+    N.value = 14
+    generate_kernel_test_case(
+        description=f"[chainer] F.matmul with placeholder",
+        graph=graph,
+        backend=["webgpu", "webassembly"],
+        inputs={graph.inputs[0]: vx1.data, graph.inputs[1]: vx2.data},
+        expected={graph.outputs[0]: vy.data}
     )

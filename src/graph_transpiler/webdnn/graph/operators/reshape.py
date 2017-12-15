@@ -8,7 +8,6 @@ from webdnn.graph.order import Order
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
-from webdnn.util.assertion import assert_sequence_type
 from webdnn.util.misc import mul
 
 
@@ -46,8 +45,12 @@ class Reshape(Operator):
 
         assert -1 not in out_shape, "-1 (wildcard) in reshape output shape is currently not supported"
 
-        out_shape = assert_sequence_type(value=out_shape, correct_type=int, message=f"""
-[Reshape] Parameter "out_shape" must be sequence of integer""")
+        for i, v in enumerate(out_shape):
+            if not isinstance(v, (Placeholder, int)):
+                raise TypeError(f"""
+[Reshape] Parameter "out_shape" must be sequence of integer
+    (value) = {v}
+    (type of value[{i}]) = {type(v)}""")
 
         self.parameters["in_order"] = in_order
         self.parameters["out_order"] = out_order

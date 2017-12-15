@@ -29,9 +29,6 @@ def _align(offset: int, unit: int = 1):
     return ((offset + unit - 1) // unit) * unit
 
 
-_check_resolved = Placeholder.check_resolved
-
-
 class WebGLAllocation(Allocation):
     def __init__(self, width: IntLike, height: IntLike, channel_mode: ChannelModeEnum, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN,
                  name: str = None):
@@ -81,17 +78,17 @@ class WebGLMemoryLayout(MemoryLayout):
     @property
     def total_size(self) -> IntLike:
         # WebGLMemoryLayout does not support total length
-        return -1
+        raise NotImplementedError
 
     @property
     def static_size(self) -> int:
         # WebGLMemoryLayout does not support total length
-        return -1
+        raise NotImplementedError
 
     @property
     def dynamic_size(self) -> IntLike:
         # WebGLMemoryLayout does not support total length
-        return -1
+        raise NotImplementedError
 
 
 def allocate(graph: Graph) -> WebGLMemoryLayout:
@@ -112,12 +109,7 @@ def allocate(graph: Graph) -> WebGLMemoryLayout:
     variable_allocations = {v: allocations[v] for v in variables if not isinstance(v, ConstantVariable)}
     constant_allocations = {v: allocations[v] for v in variables if isinstance(v, ConstantVariable)}
 
-    _update_offset(variable_allocations)
-
     data = _update_constant_offset(constant_allocations)
-
-    for allocation in set(variable_allocations.values()):
-        allocation.offset += data.size
 
     allocations = variable_allocations
     allocations.update(constant_allocations)
@@ -202,6 +194,9 @@ def _optimize_buffer_reuse(allocations_dict: WebGLAllocationDict):
         return f"{a.height}x{a.width}"
 
     for a in allocations_dict.values():
+        if a.buffer_type == BufferType.Dynamic:
+            continue
+
         if texture_key(a) not in texture_table:
             texture_table[texture_key(a)] = []
         texture_table[texture_key(a)].append(a)
@@ -210,7 +205,13 @@ def _optimize_buffer_reuse(allocations_dict: WebGLAllocationDict):
         allocations = sorted(texture_table[key], key=lambda a: a.end)
 
         for a1 in allocations:
+            if a1.buffer_type == BufferType.Dynamic:
+                continue
+
             for a2 in allocations:
+                if a2.buffer_type == BufferType.Dynamic:
+                    continue
+
                 if a1 is a2:
                     continue
 
@@ -225,20 +226,6 @@ def _optimize_buffer_reuse(allocations_dict: WebGLAllocationDict):
 
                 a1.begin = min(a1.begin, a2.begin)
                 a1.end = max(a1.end, a2.end)
-
-
-def _update_offset(allocations: WebGLAllocationDict):
-    static_offset = 0
-    dynamic_offset = 0
-
-    for allocation in allocations.values():
-        if allocation.buffer_type == BufferType.Static:
-            allocation.offset = static_offset
-            static_offset = _align(static_offset + allocation.size)
-
-        else:
-            allocation.offset = dynamic_offset
-            dynamic_offset += _align(dynamic_offset + allocation.size)
 
 
 def _update_constant_offset(allocations: WebGLAllocationDict):

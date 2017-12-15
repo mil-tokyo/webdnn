@@ -40,12 +40,11 @@ if not path.exists(model_path):
 chainer.serializers.load_npz(model_path, model)
 
 # Execute forward propagation to construct computation graph
+x = chainer.Variable(np.zeros([1, 3, 144, 192], dtype=np.float32))  # pseudo input
 if chainer.__version__ >= "2.":
     with chainer.using_config("train", False):  # fixes batch normalization
-        x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
         y = model(x)
 else:
-    x = chainer.Variable(np.zeros((1, 3, 144, 192), dtype=np.float32))
     y = model(x, test=False)
 
 # Convert chainer computation graph into IR

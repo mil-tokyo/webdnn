@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union, Set
 
 import numpy as np
 
@@ -11,7 +11,7 @@ class GPUSize(json.SerializableMixin):
     height: int
     depth: int
 
-    def __init__(self, width: int = 1, height: int = 1, depth: int = 1):
+    def __init__(self, width: Union[int, Placeholder] = 1, height: Union[int, Placeholder] = 1, depth: Union[int, Placeholder] = 1):
         self.width = width
         self.height = height
         self.depth = depth
@@ -19,18 +19,17 @@ class GPUSize(json.SerializableMixin):
     def _to_serializable_(self):
         return {"width": self.width, "height": self.height, "depth": self.depth}
 
-    @property
-    def unresolved_placeholders(self):
-        result = []
+    def get_depend_placeholders(self) -> Set[Placeholder]:
+        result = set()
 
         if not Placeholder.check_resolved(self.width):
-            result += [self.width]
+            result.update(self.width.get_depend_placeholders())
 
         if not Placeholder.check_resolved(self.height):
-            result += [self.height]
+            result.update(self.height.get_depend_placeholders())
 
         if not Placeholder.check_resolved(self.depth):
-            result += [self.depth]
+            result.update(self.depth.get_depend_placeholders())
 
         return result
 

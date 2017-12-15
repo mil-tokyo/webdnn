@@ -1,12 +1,13 @@
-from typing import List, Dict, Tuple, Set, Sequence
+from typing import List, Dict, Tuple, Set, Sequence, Union
 
 import numpy as np
 
 from webdnn.backend.webgl.attributes.channel_mode import ChannelMode, ChannelModeEnum
 from webdnn.backend.webgl.attributes.texture_shape import TextureShape
-from webdnn.backend.webgl.kernel_code import Type, ExpressionNode, Expression
+from webdnn.backend.webgl.kernel_code import Type, ExpressionNode, Expression, IntExpressionNode, FloatExpressionNode
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.order import Order
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
 from webdnn.util.misc import mul
 
@@ -44,7 +45,7 @@ def get_output_position(output_variable: Variable):
 def convert_position(expression: Expression,
                      in_shape: Sequence[int], in_stride: Sequence[int],
                      out_shape: Sequence[int], out_stride: Sequence[int], index_offset: int = 0):
-    if mul(in_shape) < 1 << 20:
+    if Placeholder.check_resolved(mul(in_shape)) and mul(in_shape) < 1 << 20:
         return ExpressionNode([
             "convert_position_fast(",
             expression, ",",
@@ -68,13 +69,21 @@ def convert_position(expression: Expression,
 def convert_coord(expression: Expression,
                   in_shape: Sequence[int], in_stride: Sequence[int],
                   out_shape: Sequence[int], out_stride: Sequence[int], index_offset: int = 0):
-    # noinspection PyUnresolvedReferences
-    inv_out_shape = [np.double(1.0) / np.double(v) for v in out_shape]
+    if all(Placeholder.check_resolved(v) for v in out_shape):
+        inv_out_shape = [np.double(1.0) / np.double(v) for v in out_shape]
 
-    return ExpressionNode([
-        f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride, index_offset), ")",
-        " + 0.5) * ", vec(inv_out_shape)
-    ])
+        return ExpressionNode([
+            f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride, index_offset),
+            ")",
+            " + 0.5) * ", vec(inv_out_shape)
+        ])
+
+    else:
+        return ExpressionNode([
+            f"({Type.Vec.get_name(out_shape)}(", convert_position(expression, in_shape, in_stride, out_shape, out_stride, index_offset),
+            ")",
+            " + 0.5) / ", vec(out_shape)
+        ])
 
 
 def texel_fetch(variable: Variable, expression: Expression):
@@ -87,9 +96,9 @@ def texel_fetch(variable: Variable, expression: Expression):
     ])
 
 
-def ivec(sequence: Sequence[int]):
+def ivec(sequence: Sequence[Union[int, Placeholder]]):
     assert 2 <= len(sequence) <= 4
-    return [int(v) for v in sequence]
+    return [IntExpressionNode(v) for v in sequence]
 
 
 def ivec2(sequence: Sequence[int]):
@@ -109,7 +118,7 @@ def ivec4(sequence: Sequence[int]):
 
 def vec(sequence: Sequence[float]):
     assert 2 <= len(sequence) <= 4
-    return [float(v) for v in sequence]
+    return [FloatExpressionNode(v) for v in sequence]
 
 
 def vec2(sequence: Sequence[float]):

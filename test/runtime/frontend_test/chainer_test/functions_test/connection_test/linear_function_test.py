@@ -2,7 +2,9 @@ import chainer
 import numpy as np
 
 from test.util import generate_kernel_test_case, wrap_template
+from webdnn import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
+from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 
 
 @wrap_template
@@ -31,3 +33,24 @@ def test():
 
 def test_nobias():
     template(nobias=True)
+
+
+def test_with_placeholder():
+    link = chainer.links.Linear(16, 32)
+    vx = chainer.Variable(np.random.rand(2, 16).astype(np.float32))
+    vy = link(vx)
+
+    N = Placeholder(label="N")
+    px = PlaceholderVariable([N, 16])
+    py = link(px)
+
+    graph = ChainerConverter().convert([px], [py])
+
+    N.value = 2
+    generate_kernel_test_case(
+        description=f"[chainer] L.Linear with placeholder",
+        graph=graph,
+        backend=["webgpu", "webassembly"],
+        inputs={graph.inputs[0]: vx.data},
+        expected={graph.outputs[0]: vy.data},
+    )

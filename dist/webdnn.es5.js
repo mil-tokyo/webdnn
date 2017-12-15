@@ -7511,7 +7511,9 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
             var res;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, webdnnFetch(directory + "/graph_" + this.backendName + ".json")];
+                    case 0:
+                        this.directory = directory;
+                        return [4 /*yield*/, webdnnFetch(directory + "/graph_" + this.backendName + ".json")];
                     case 1:
                         res = _a.sent();
                         return [2 /*return*/, res.json()];
@@ -7595,14 +7597,34 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
     };
     DescriptorRunnerFallback.prototype.compile = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var dnn_fallback_kernel;
+            var _this = this;
             return __generator(this, function (_a) {
-                if (!this.descriptor)
-                    throw new Error('Descriptor is not loaded');
-                dnn_fallback_kernel = null;
-                eval(this.descriptor.kernel_source);
-                this.kernelObj = dnn_fallback_kernel;
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        if (!this.descriptor)
+                            throw new Error('Descriptor is not loaded');
+                        return [4 /*yield*/, new Promise(function (resolve) {
+                                var script = document.createElement("script");
+                                script.type = "text/javascript";
+                                if (script.readyState) {
+                                    script.onreadystatechange = function () {
+                                        if (script.readyState == "loaded" || script.readyState == "complete") {
+                                            script.onreadystatechange = null;
+                                            resolve();
+                                        }
+                                    };
+                                }
+                                else {
+                                    script.onload = resolve;
+                                }
+                                script.src = transformUrl(_this.directory + "/kernels_fallback.js");
+                                document.getElementsByTagName("head")[0].appendChild(script);
+                            })];
+                    case 1:
+                        _a.sent();
+                        this.kernelObj = window.dnn_fallback_kernel; // "window.dnn_fallback_kernel" is defined in "kernels_fallback.js"
+                        return [2 /*return*/];
+                }
             });
         });
     };

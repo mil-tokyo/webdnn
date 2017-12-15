@@ -1,18 +1,159 @@
+import itertools
 from enum import auto, Enum
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Sequence, Set, Tuple, Generic, TypeVar
 
 import numpy as np
 
 from webdnn.util.json import json
+from webdnn.util.misc import mul
 
 
 class PlaceholderOperator(Enum):
     Add = auto()  # v1 + v2
-    Sub = auto()  # v1 - v2
     Mul = auto()  # v1 * v2
     Mod = auto()  # v1 % v2
     EQ = auto()  # v1
     FloorDiv = auto()  # v1 // v2
+
+
+T = TypeVar("T")
+U = TypeVar("U")
+
+
+class MutableCombinator(Generic[T]):
+    """
+    Iterator for combination. This iterator is mutable (items can be removed/appended anytime)
+
+    Examples::
+
+        a = [1, 2, 3, 4]
+        comb = MutableCombinator(a, 2)
+
+        for i, j in comb:
+            print(i, j)
+            if i == 2:
+                comb.remove(i)
+
+        >>> (1, 2),
+            (1, 3),
+            (1, 4),
+            (2, 3), # Here, item "2" is removed and so combination "(2, 4)" does not appeared.
+            (3, 4)
+
+        print(comb.sequence)
+        >>> (1, 3, 4)
+
+    Arguments::
+        sequence (Sequence) : item sequence
+        r (int, optional) : length of each combination. Default is 2.
+    """
+
+    def __init__(self, sequence: Sequence[T], r: int = 2):
+        self._sequence = list(sequence)  # type: List[T]
+        self._combination = list(itertools.combinations(range(len(sequence)), r))  # type: List[Tuple[int, ...]]
+        self._removed_indices = set()  # type: Set[int]
+        self._r = r  # type: int
+
+    def __iter__(self):
+        return self
+
+    def __next__(self, *args, **kwargs):
+        while True:
+            if len(self._combination) == 0:
+                raise StopIteration
+
+            ret = self._combination.pop(0)
+            if all(i not in self._removed_indices for i in ret):
+                break
+
+        return tuple(self._sequence[i] for i in ret)
+
+    def remove(self, x):
+        i = -1
+        while True:
+            i = self._sequence.index(x, i + 1)
+            if i not in self._removed_indices:
+                break
+
+        self._removed_indices.add(i)
+
+    def append(self, x):
+        i = len(self._sequence)
+        self._sequence.append(x)
+        self._combination += [(i,) + others for others in itertools.combinations(range(i), self._r - 1)]
+
+    @property
+    def sequence(self) -> Tuple[T, ...]:
+        return tuple(v for i, v in enumerate(self._sequence) if i not in self._removed_indices)
+
+
+class MutableProduct(Generic[T, U]):
+    """
+    Iterator for product of 2 sequences. This iterator is mutable (items can be removed/appended anytime)
+
+    Examples::
+
+        a = [1, 2, 3, 4]
+        b = [5, 6, 7]
+        prod = MutableProduct(a, b)
+
+        for i, j in prod:
+            print(i, j)
+            prod.remove(0, i)
+
+        >>> (1, 5), # Here, item "1" is removed and so pair "(1, 6)" and "(1, 7) do not appeared.
+            (2, 5),
+            (3, 5),
+            (4, 5)
+
+        print(prod.sequences)
+        >>> ((), (5, 6, 7))
+
+    Arguments::
+        sequence1 (Sequence) : first sequence
+        sequence2 (Sequence) : second sequence
+    """
+
+    def __init__(self, sequence1: Sequence[T], sequence2: Sequence[U]):
+        self._sequences = (list(sequence1), list(sequence2))  # type: Tuple[List[T], List[U]]
+        self._prod = list(itertools.product(range(len(sequence1)), range(len(sequence2))))  # type: List[Tuple[int, int]]
+        self._removed_indices = (set(), set())  # type: Tuple[Set[int],Set[int]]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> Tuple[T, U]:
+        while True:
+            if len(self._prod) == 0:
+                raise StopIteration
+
+            ret = self._prod.pop(0)
+            if ret[0] not in self._removed_indices[0] and ret[1] not in self._removed_indices[1]:
+                break
+
+        return self._sequences[0][ret[0]], self._sequences[1][ret[1]]
+
+    def remove(self, seq_index, x):
+        i = -1
+        while True:
+            i = self._sequences[seq_index].index(x, i + 1)
+            if i not in self._removed_indices[seq_index]:
+                break
+
+        self._removed_indices[seq_index].add(i)
+
+    def append(self, seq_index, x):
+        i = len(self._sequences[seq_index])
+        self._sequences[seq_index].append(x)
+        if seq_index == 0:
+            self._prod += [(i, j) for j in range(len(self._sequences[1]))]
+        else:
+            self._prod += [(j, i) for j in range(len(self._sequences[0]))]
+
+    @property
+    def sequences(self) -> Tuple[Tuple[T, ...], Tuple[U, ...]]:
+        return tuple(v for i, v in enumerate(self._sequences[0]) if i not in self._removed_indices[0]), \
+               tuple(v for i, v in enumerate(self._sequences[1]) if i not in self._removed_indices[1])
 
 
 class Dependency:
@@ -30,83 +171,18 @@ class Dependency:
             if len(operands1) != len(operands2):
                 return False
 
-            return all([Placeholder._check_deep_equal(p1, p2) for p1, p2 in zip(operands1, operands2)])
+            return all([Placeholder.check_deep_equal(p1, p2) for p1, p2 in zip(operands1, operands2)])
 
         elif d1.operator == PlaceholderOperator.Mod or d1.operator == PlaceholderOperator.FloorDiv:
-            is_d1_same = Placeholder._check_deep_equal(d1.operands[0], d2.operands[0])
-            is_d2_same = Placeholder._check_deep_equal(d1.operands[1], d2.operands[1])
+            is_d1_same = Placeholder.check_deep_equal(d1.operands[0], d2.operands[0])
+            is_d2_same = Placeholder.check_deep_equal(d1.operands[1], d2.operands[1])
             return is_d1_same and is_d2_same
 
-    def __init__(self, operator: PlaceholderOperator, operands: List[Union[int, "Placeholder"]]):
+    def __init__(self, operator: PlaceholderOperator, operands: Sequence[Union[int, "Placeholder"]]):
+        if operator == PlaceholderOperator.Mul or operator == PlaceholderOperator.Add:
+            operands = list(sorted(operands, key=lambda op: str(op)))
+
         self.operator = operator
-        operands = list(operands)
-
-        if operator == PlaceholderOperator.Add:
-            i = 0
-            while i < len(operands):
-                v1 = operands[i]
-                if v1 == 0:
-                    operands.pop(i)
-                    continue
-
-                j = i + 1
-                while j < len(operands):
-                    v2 = operands[j]
-                    if v2 == 0:
-                        operands.pop(j)
-                        continue
-
-                    # v = ... + v1 + v2 + ...
-                    # v1 = common_term * other_term1
-                    # v2 = common_term * other_term2
-                    #
-                    #
-                    # >> When other_term1 and other_term2 are resolved,
-                    #
-                    # v = (... + (other_term1 + other_term2) * common_term + ...)
-                    other_term1 = list(v1.dependency.operands) if v1.dependency else {v1}
-                    other_term2 = list(v2.dependency.operands) if v2.dependency else {v2}
-                    common_term = list()
-
-                    for vv in list(other_term1):
-                        if vv in other_term2:
-                            other_term1.remove(vv)
-                            other_term2.remove(vv)
-                            common_term.append(vv)
-
-                    for vv in list(other_term2):
-                        if vv in other_term1:
-                            other_term1.remove(vv)
-                            other_term2.remove(vv)
-                            common_term.append(vv)
-
-                    if all(p.is_resolved for p in other_term1) and all(p.is_resolved for p in other_term2):
-                        other_term1 = Placeholder(Dependency(PlaceholderOperator.Mul, list(other_term1)))
-                        other_term2 = Placeholder(Dependency(PlaceholderOperator.Mul, list(other_term2)))
-                        common_term = Placeholder(Dependency(PlaceholderOperator.Mul, list(common_term)))
-                        operands.pop(j)
-                        operands.pop(i)
-                        j -= 1
-                        i -= 1
-                        operands.append(Placeholder(value=(other_term1 + other_term2) * common_term))
-
-                    j += 1
-                i += 1
-
-        elif operator == PlaceholderOperator.Mul:
-            s = 1
-            i = 0
-            while i < len(operands):
-                v1 = operands[i]
-                if v1.is_resolved:
-                    s *= v1
-                    operands.pop(i)
-                    i -= 1
-                i += 1
-
-            if s != 1:
-                operands.append(Placeholder(value=s))
-
         self.operands = operands
 
     @property
@@ -114,37 +190,33 @@ class Dependency:
         """
         If true, all dependent placeholders are resolved
         """
-        for operand in self.operands:
-            if isinstance(operand, Placeholder) and not operand.is_resolved:
-                return False
+        if any((isinstance(operand, Placeholder) and not Placeholder.check_resolved(operand)) for operand in self.operands):
+            return False
 
         return True
 
     @property
     def value(self) -> Union[int, "Placeholder"]:
         if not self.is_resolved:
-            return Placeholder(self)
+            raise ValueError("Dependency is not resolved")
 
         if self.operator == PlaceholderOperator.Add:
             r = 0
             for v in self.operands:
-                r += v.value
+                r += Placeholder.force_int(v)
             return r
-
-        elif self.operator == PlaceholderOperator.Sub:
-            raise NotImplementedError
 
         elif self.operator == PlaceholderOperator.Mul:
             r = 1
             for v in self.operands:
-                r *= v.value
+                r *= Placeholder.force_int(v)
             return r
 
         elif self.operator == PlaceholderOperator.Mod:
-            return self.operands[0].value % self.operands[1].value
+            return Placeholder.force_int(self.operands[0]) % Placeholder.force_int(self.operands[1])
 
         elif self.operator == PlaceholderOperator.FloorDiv:
-            return self.operands[0].value // self.operands[1].value
+            return Placeholder.force_int(self.operands[0]) // Placeholder.force_int(self.operands[1])
 
         else:
             raise NotImplementedError(f"Unsupported placeholder operation: {self.operator}")
@@ -153,13 +225,14 @@ class Dependency:
         if self.operator == PlaceholderOperator.Add:
             return " + ".join(map(lambda x: x.__repr__(), self.operands))
 
-        elif self.operator == PlaceholderOperator.Sub:
-            return " - ".join(map(lambda x: x.__repr__(), self.operands))
-
         s = []
         for v in self.operands:
-            if v.dependency and len(v.dependency.operands) > 1:
+            if Placeholder.check_resolved(v):
+                s.append(str(v))
+
+            elif v.dependency and len(v.dependency.operands) > 1:
                 s.append("(" + v.__repr__() + ")")
+
             else:
                 s.append(v.__repr__())
 
@@ -178,9 +251,6 @@ class Dependency:
         if self.operator == PlaceholderOperator.Add:
             return "(" + self.operands[0].dump() + " + " + self.operands[1].dump() + ")"
 
-        elif self.operator == PlaceholderOperator.Sub:
-            return "(" + self.operands[0].dump() + " - " + self.operands[1].dump() + ")"
-
         elif self.operator == PlaceholderOperator.Mul:
             return self.operands[0].dump() + " * " + self.operands[1].dump()
 
@@ -197,15 +267,16 @@ class Dependency:
         if self.operator == PlaceholderOperator.Add:
             return " + ".join(map(lambda x: x.generate_js_function(flag_semicolon=False), self.operands))
 
-        elif self.operator == PlaceholderOperator.Sub:
-            return " - ".join(map(lambda x: x.generate_js_function(flag_semicolon=False), self.operands))
-
         s = []
         for v in self.operands:
-            if v.dependency and len(v.dependency.operands) > 1:
-                s.append("(" + v.generate_js_function(flag_semicolon=False) + ")")
+            if Placeholder.check_resolved(v):
+                s.append(str(v))
+
             else:
-                s.append(v.generate_js_function(flag_semicolon=False))
+                if v.dependency and len(v.dependency.operands) > 1:
+                    s.append("(" + v.generate_js_function(flag_semicolon=False) + ")")
+                else:
+                    s.append(v.generate_js_function(flag_semicolon=False))
 
         if self.operator == PlaceholderOperator.Mul:
             return " * ".join(s)
@@ -310,7 +381,6 @@ class Placeholder(json.SerializableMixin):
         label (str): the label.
     """
     _value = None  # type: Optional[int]
-    _cache_value = None  # type: Optional[int]
     label = None  # type: Optional[str]
     dependency = None  # type: Optional[Dependency]
 
@@ -325,11 +395,7 @@ class Placeholder(json.SerializableMixin):
         Returns:
             (int or Placeholder): If `x` is resolved, an integer is returned. Otherwise, `x` itself is returned.
         """
-        if isinstance(x, Placeholder):
-            return x.value if x.is_resolved else x
-
-        else:
-            return int(x)
+        return int(x) if not isinstance(x, Placeholder) else int(x.value) if Placeholder.check_resolved(x) else x
 
     @staticmethod
     def force_int(x: Union[int, "Placeholder"]):
@@ -342,13 +408,13 @@ class Placeholder(json.SerializableMixin):
         Returns:
             (int): an integer
         """
-        if isinstance(x, Placeholder):
-            if x.is_resolved:
-                return x.value
-
-            raise ValueError(f"{x} is not resolved.")
-        else:
+        if not isinstance(x, Placeholder):
             return int(x)
+
+        elif Placeholder.check_resolved(x):
+            return x.value
+
+        raise ValueError(f"{x} is not resolved.")
 
     @staticmethod
     def check_resolved(x: Union[int, "Placeholder"]):
@@ -361,15 +427,23 @@ class Placeholder(json.SerializableMixin):
         Returns:
             (bool): If `True`, the placeholder is resolved. Otherwise, it's not resolved.
         """
-        if isinstance(x, Placeholder):
-            return x.is_resolved
-
-        else:
+        if not isinstance(x, Placeholder):
             return True
 
+        if x._value is not None:
+            return True
+
+        if x.dependency:
+            return x.dependency.is_resolved
+
+        return False
+
     @staticmethod
-    def _check_deep_equal(p1: Union[int, "Placeholder"], p2: Union[int, "Placeholder"]) -> bool:
-        if Placeholder.check_resolved(p1) and Placeholder.check_resolved(p2):
+    def check_deep_equal(p1: Union[int, "Placeholder"], p2: Union[int, "Placeholder"]) -> bool:
+        if str(p1) == str(p2):
+            return True
+
+        elif Placeholder.check_resolved(p1) and Placeholder.check_resolved(p2):
             return Placeholder.force_int(p1) == Placeholder.force_int(p2)
 
         elif Placeholder.check_resolved(p1) or Placeholder.check_resolved(p2):
@@ -379,17 +453,15 @@ class Placeholder(json.SerializableMixin):
             return Dependency.check_deep_equal(p1.dependency, p2.dependency)
 
         else:
-            return p1.label == p2.label
+            return False
 
-    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None,
-                label: str = None):
+    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: str = None):
         if isinstance(value, Placeholder):
             return value
 
         return super().__new__(cls)
 
-    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None,
-                 label: Optional[str] = None):
+    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: Optional[str] = None):
         global _id
 
         if self is value:
@@ -413,25 +485,19 @@ class Placeholder(json.SerializableMixin):
 
         If the placeholder is already resolved, new value cannot be set, and it causes an error.
         """
-        if self.is_resolved:
+        if Placeholder.check_resolved(self):
             if self.dependency:
-                if self._cache_value is None:
-                    value = self.dependency.value
-                    self._cache_value = value
-                    return value
+                if self._value is None:
+                    self._value = self.dependency.value
 
-                else:
-                    return self._cache_value
-
-            else:
-                return self._value
+            return self._value
 
         else:
             return self
 
     @value.setter
     def value(self, new_v: int):
-        if self.is_resolved:
+        if Placeholder.check_resolved(self):
             raise ValueError(f"{self} is already resolved")
 
         elif isinstance(new_v, int) or isinstance(new_v, np.int32) or isinstance(new_v, np.int64):
@@ -441,122 +507,270 @@ class Placeholder(json.SerializableMixin):
         else:
             raise TypeError(f"Placeholder#value must be a int, not '{type(new_v)}'")
 
-    @property
-    def is_resolved(self) -> bool:
-        """
-        Return `True` if the placeholder is resolved. Otherwise `False` is returned.
-        """
-        if self._value is not None or self._cache_value is not None:
-            return True
-
-        elif self.dependency:
-            return self.dependency.is_resolved
-
-        else:
-            return False
-
     def unify(self, other: Union[int, "Placeholder"]):
-        if self.is_resolved and Placeholder.check_resolved(other):
+        if Placeholder.check_resolved(self) and Placeholder.check_resolved(other):
             assert self == other, f"""
 Unification failed: self != other
   (self) = {self}
   (other) = {other}"""
 
-        elif self.is_resolved and not Placeholder.check_resolved(other):
+        elif Placeholder.check_resolved(self) and not Placeholder.check_resolved(other):
             other.value = self.value
 
-        elif not self.is_resolved and Placeholder.check_resolved(self):
+        elif not Placeholder.check_resolved(self) and Placeholder.check_resolved(self):
             self.value = other.value
 
         else:
             #  FIXME
             pass
 
+    @property
+    def _operator(self):
+        if Placeholder.check_resolved(self):
+            return None
+
+        elif self.dependency is None:
+            return None
+
+        else:
+            return self.dependency.operator
+
+    @property
+    def _operands(self):
+        if Placeholder.check_resolved(self):
+            return [self.value]
+
+        elif self.dependency is None:
+            return [self]
+
+        else:
+            return list(self.dependency.operands)
+
     def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
+        v1, v2 = self, Placeholder(value=other)
 
-        if self.is_resolved and other.is_resolved:
-            return self.value + other.value
+        if v2 == 0:
+            return v1
 
-        if self.dependency:
-            if self.dependency.operator == PlaceholderOperator.Add:
-                return Placeholder(Dependency(PlaceholderOperator.Add, self.dependency.operands + [other]))
+        if v1 == 0:
+            return v2
 
-        return Placeholder(Dependency(PlaceholderOperator.Add, [self, other]))
+        if Placeholder.check_resolved(v1) and Placeholder.check_resolved(v2):
+            return v1.value + v2.value
+
+        # flatten: (v1_0 + v1_1) + (v2_0 + v2_1) -> (v1_0 + v1_1 + v1_2 + v1_3)
+        terms = []  # type: List[Union[Placeholder, int]]
+        terms += list(v1._operands) if v1._operator == PlaceholderOperator.Add else [v1]
+        terms += list(v2._operands) if v2._operator == PlaceholderOperator.Add else [v2]
+        len_terms = len(terms)
+
+        # sum resolved values
+        resolved_value = 0
+        for vv in list(terms):
+            if Placeholder.check_resolved(vv):
+                terms.remove(vv)
+                resolved_value += vv
+
+        if resolved_value != 0:
+            terms.append(resolved_value)
+
+        # factorize: (v1 * v3) + (v2 * v3) -> (v1+v2) * v3
+        comb = MutableCombinator(terms)
+        for vv1, vv2 in comb:
+            if not isinstance(vv1, Placeholder) or not isinstance(vv2, Placeholder):
+                continue
+
+            if (vv1._operator is None or vv1._operator == PlaceholderOperator.Mul) and \
+                (vv2._operator is None or vv2._operator == PlaceholderOperator.Mul):
+                operands_vv1 = list(vv1._operands)
+                operands_vv2 = list(vv2._operands)
+                common_term = list()
+
+                for vvv in list(operands_vv1):
+                    if vvv in operands_vv2:
+                        operands_vv1.remove(vvv)
+                        operands_vv2.remove(vvv)
+                        common_term.append(vvv)
+
+                if len(common_term) >= 1:
+                    # If either vv1 or vv2 is not resolved, this rule conflicts with expanding in __mul__
+                    if Placeholder.check_resolved(mul(operands_vv1)) and Placeholder.check_resolved(mul(operands_vv2)):
+                        comb.remove(vv1)
+                        comb.remove(vv2)
+                        comb.append(mul(common_term) * (mul(operands_vv1) + mul(operands_vv2)))
+
+        terms = comb.sequence
+        if len(terms) < len_terms:
+            return sum(terms)
+
+        return Placeholder(Dependency(PlaceholderOperator.Add, terms))
 
     def __radd__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        # Commutative property
-        return self.__add__(other)
+        return Placeholder(value=other) + self
 
     def __sub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+        if other == 0:
+            return self
+
         return self + (-1 * other)
 
     def __rsub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        return (-1 * self) + other
+        return Placeholder(value=other) - self
 
     def __mul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
+        v1, v2 = self, Placeholder(value=other)
 
-        if self.is_resolved and other.is_resolved:
-            return self.value * other.value
+        if v1 == 0 or v2 == 0:
+            return 0
 
-        if self.dependency:
-            if self.dependency.operator == PlaceholderOperator.Add or self.dependency.operator == PlaceholderOperator.Sub:
-                # (v0+v1)*o = v0*o + v1*o
-                return Placeholder(Dependency(self.dependency.operator,
-                                              [Placeholder(value=v * other) for v in self.dependency.operands]))
+        if v1 == 1:
+            return v2
 
-            elif self.dependency.operator == PlaceholderOperator.Mul:
-                return Placeholder(Dependency(PlaceholderOperator.Mul, self.dependency.operands + [other]))
+        if v2 == 1:
+            return v1
 
-        return Placeholder(Dependency(PlaceholderOperator.Mul, [self, other]))
+        if Placeholder.check_resolved(v1) and Placeholder.check_resolved(v2):
+            return v1.value * v2.value
+
+        # flatten: (v1_0 * v1_1) * (v2_0 * v2_1) -> (v1_0 * v1_1 * v1_2 * v1_3)
+        terms = []
+        terms += list(v1._operands) if v1._operator == PlaceholderOperator.Mul else [v1]
+        terms += list(v2._operands) if v2._operator == PlaceholderOperator.Mul else [v2]
+
+        # sum resolved values
+        resolved_value = 1
+        for vv in list(terms):
+            if Placeholder.check_resolved(vv):
+                terms.remove(vv)
+                resolved_value *= vv
+
+        if resolved_value != 1:
+            terms.append(resolved_value)
+
+        for vv in terms:
+            if isinstance(vv, Placeholder) and vv._operator == PlaceholderOperator.Add:
+                # expanding: (v1_0 + v1_1 + ...) * v2 = (v1_0 * v2) + (v1_1 * v2) + ...
+                terms.remove(vv)
+                return sum(mul(terms) * v for v in vv._operands)
+
+        return Placeholder(Dependency(PlaceholderOperator.Mul, terms))
 
     def __rmul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        return self.__mul__(other)
+        return Placeholder(value=other) * self
 
     def __floordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
+        v1, v2 = self, Placeholder(value=other)
 
-        if self.is_resolved and other.is_resolved:
-            return self.value // other.value
+        if v2 == 1:
+            return v1
 
-        return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [self, other]))
+        if v1 == 0:
+            return 0
+
+        if v1 == v2:
+            return 1
+
+        if Placeholder.check_resolved(v1) and Placeholder.check_resolved(v2):
+            return v1.value // v2.value
+
+        if v1._operator == PlaceholderOperator.Add:
+            operands_v1 = list(v1._operands)
+            divided = []
+            for vv1 in list(operands_v1):
+                if vv1 % v2 != 0:
+                    continue
+
+                operands_v1.remove(vv1)
+                divided.append(vv1 // v2)
+
+            if len(divided) > 0:
+                return sum(divided + [sum(operands_v1) // v2])
+
+        if v1._operator == PlaceholderOperator.FloorDiv:
+            v1_1, v1_2 = v1._operands
+            if Placeholder.check_resolved(v1_2) and Placeholder.check_resolved(v2):
+                return v1_1 // (v1_2 * v2)
+
+        if (v1._operator is None or v1._operator == PlaceholderOperator.Mul) and \
+            (v2._operator is None or v2._operator == PlaceholderOperator.Mul):
+            operands_v1 = list(v1._operands)
+            operands_v2 = list(v2._operands)
+
+            prod = MutableProduct(operands_v1, operands_v2)
+            for vv1, vv2 in prod:
+                if vv1 % vv2 != 0:
+                    continue
+
+                prod.remove(0, vv1)
+                prod.remove(1, vv2)
+                prod.append(0, vv1 // vv2)
+
+            new_operands_v1, new_operands_v2 = prod.sequences
+            if len(new_operands_v2) == 0:
+                return mul(new_operands_v1)
+
+            else:
+                if len(new_operands_v1) == 0:
+                    # 1 // v2 == 0
+                    return 0
+
+                else:
+                    v1 = mul(new_operands_v1)
+                    v2 = mul(new_operands_v2)
+                    return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [v1, v2]))
+
+        return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [v1, v2]))
 
     def __rfloordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
-
-        if self.is_resolved and other.is_resolved:
-            return other.value // self.value
-
-        return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [other, self]))
+        return Placeholder(value=other) // self
 
     def __mod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
+        v1, v2 = self, Placeholder(value=other)
 
-        if self.is_resolved and other.is_resolved:
-            return self.value % other.value
+        if v1 == v2:
+            return 0
 
-        return Placeholder(Dependency(PlaceholderOperator.Mod, [self, other]))
+        if v2 == 1:
+            return 0
+
+        if Placeholder.check_resolved(v1) and Placeholder.check_resolved(v2):
+            return v1.value % v2.value
+
+        if (v1._operator is None or v1._operator == PlaceholderOperator.Mul) and (
+            v2._operator is None or v2._operator == PlaceholderOperator.Mul):
+            # v = ... + (common_term * other_term1) % (common_term * other_term2) + ...
+            #   = ... + (other_term1 % other_term2) * common_term + ...
+            prod = MutableProduct(v1._operands, v2._operands)
+            common_term = []
+            flag_updated = False
+            for vv1, vv2 in prod:
+                if (Placeholder.check_resolved(vv1) and Placeholder.check_resolved(vv2) and vv1 % vv2 == 0) or vv1 == vv2:
+                    flag_updated = True
+                    prod.remove(0, vv1)
+                    prod.remove(1, vv2)
+                    prod.append(0, vv1 // vv2)
+                    common_term.append(vv2)
+
+            if flag_updated:
+                new_operands_v1, new_operands_v2 = prod.sequences
+                return (mul(new_operands_v1) % mul(new_operands_v2)) * mul(common_term)
+
+        return Placeholder(Dependency(PlaceholderOperator.Mod, [v1, v2]))
 
     def __rmod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
-        other = Placeholder(value=other)
-
-        if self.is_resolved and other.is_resolved:
-            return other.value % self.value
-
-        return Placeholder(Dependency(PlaceholderOperator.Mod, [other, self]))
+        return Placeholder(value=other) % self
 
     def __int__(self):
         return Placeholder.force_int(self)
 
     def __eq__(self, other: Union[int, "Placeholder"]) -> bool:
-        return Placeholder._check_deep_equal(self, other)
+        return Placeholder.check_deep_equal(self, other)
 
     def __ne__(self, other: Union[int, "Placeholder"]) -> bool:
-        return not Placeholder._check_deep_equal(self, other)
+        return not Placeholder.check_deep_equal(self, other)
 
     def __gt__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved:
+        if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
         if not Placeholder.check_resolved(other):
@@ -565,7 +779,7 @@ Unification failed: self != other
         return self.value > Placeholder.force_int(other)
 
     def __lt__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved:
+        if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
         if not Placeholder.check_resolved(other):
@@ -574,7 +788,7 @@ Unification failed: self != other
         return self.value < Placeholder.force_int(other.value)
 
     def __ge__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved:
+        if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
         if not Placeholder.check_resolved(other):
@@ -583,7 +797,7 @@ Unification failed: self != other
         return self.value >= Placeholder.force_int(other)
 
     def __le__(self, other: Union[int, "Placeholder"]) -> bool:
-        if not self.is_resolved:
+        if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
         if not Placeholder.check_resolved(other):
@@ -592,7 +806,7 @@ Unification failed: self != other
         return self.value <= Placeholder.force_int(other)
 
     def __repr__(self):
-        if self.is_resolved:
+        if Placeholder.check_resolved(self):
             return str(self.value)
 
         else:
@@ -616,7 +830,7 @@ Unification failed: self != other
             return f"<{self.label}>" if self.label else f"<{self.__class__.__name__} at {hex(id(self))}>"
 
     def _to_serializable_(self):
-        if self.is_resolved:
+        if Placeholder.check_resolved(self):
             return self.value
 
         else:
@@ -638,7 +852,9 @@ Unification failed: self != other
         if self.dependency:
             res = set()
             for v in self.dependency.operands:
-                res.update(v.get_depend_placeholders())
+                if not Placeholder.check_resolved(v):
+                    res.update(v.get_depend_placeholders())
+
             return res
 
         else:
@@ -655,7 +871,7 @@ Unification failed: self != other
         Returns:
             (str): generated code
         """
-        if self.is_resolved:
+        if Placeholder.check_resolved(self):
             return f"{self.value}" + (";" if flag_semicolon else "")
 
         else:
