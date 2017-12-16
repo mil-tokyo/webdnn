@@ -20,6 +20,7 @@ class Pooling2D(Operator):
         ksize (int or tuple of int): Kernel size.
         stride (int or tuple of int): Stride size.
         padding (int or tuple of int): Padding size.
+        cover_all (bool, optional): If `True`, all input pixels are pooled into some output pixels.
 
     Signature
 
@@ -31,7 +32,7 @@ class Pooling2D(Operator):
         - **y** - Output value. Its order is same as :code:`x`.
     """
 
-    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple):
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple, cover_all: bool = True):
         super().__init__(name)
         self.parameters["ksize"] = assert_sequence_type(to_tuple(ksize), int, message=f"""
 [Pooling2D] Parameter "ksize" must be integer or tuple of integer""")
@@ -39,6 +40,7 @@ class Pooling2D(Operator):
 [Pooling2D] Parameter "stride" must be integer or tuple of integer""")
         self.parameters["padding"] = assert_sequence_type(to_tuple(padding), int, message=f"""
 [Pooling2D] Parameter "padding" must be integer or tuple of integer""")
+        self.parameters["cover_all"] = cover_all
 
     def __call__(self, x: Variable):
         self.append_input("x", x)
@@ -48,18 +50,18 @@ class Pooling2D(Operator):
         x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
-        H2 = (x_shape_dict[Axis.H] + 2 * self.PH + self.SH - self.KH - 1) // self.SH + 1
-        W2 = (x_shape_dict[Axis.W] + 2 * self.PW + self.SW - self.KW - 1) // self.SW + 1
+        H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH + (self.SH - 1 if self.cover_all else 0)) // self.SH + 1
+        W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW + (self.SW - 1 if self.cover_all else 0)) // self.SW + 1
         C2 = x_shape_dict[Axis.C]
 
-        odd_padding_height = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0
-        odd_padding_width = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0
-        if odd_padding_height or odd_padding_width:
-            # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
-            console.warning(
-                "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +
-                "Which edge (left / right) is ignored is different on frameworks," +
-                " so slightly different result will be generated.")
+        # odd_padding_height = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0
+        # odd_padding_width = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0
+        # if odd_padding_height or odd_padding_width:
+        #     # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
+        #     console.warning(
+        #         "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +
+        #         "Which edge (left / right) is ignored is different on frameworks," +
+        #         " so slightly different result will be generated.")
 
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
@@ -109,3 +111,7 @@ class Pooling2D(Operator):
     @property
     def PW(self) -> int:
         return self.padding[1]
+
+    @property
+    def cover_all(self) -> bool:
+        return self.parameters["cover_all"]

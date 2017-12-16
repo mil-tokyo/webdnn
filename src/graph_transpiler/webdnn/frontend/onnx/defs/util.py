@@ -13,7 +13,8 @@ def check_broadcast_constraints(a: Variable, b: Variable, axis: Optional[int] = 
         - shape must be valid for broadcasting.
 
     Args:
-        a, b: Variable
+        a: Variable
+        b: Variable
         axis: broadcast start position
 
             a.shape=(2, 3, 4, 5) b.shape=(5),     --> If axis=3 (or None), broadcasting is possible.

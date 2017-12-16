@@ -1,4 +1,5 @@
 import chainer
+
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.frontend.chainer.util import unary_op_handler, elementwise_binary_op_handler
 from webdnn.frontend.util import check_broadcast_constraints

@@ -1,3 +1,5 @@
+from unittest import SkipTest
+
 import chainer
 import numpy as np
 
@@ -8,7 +10,10 @@ from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 
 
 @wrap_template
-def template(ksize=2, stride=None, pad=0, shape=(2, 4, 6, 8), description=""):
+def template(ksize=2, stride=None, pad=0, shape=(2, 4, 6, 8), cover_all=False, description=""):
+    if cover_all:
+        SkipTest("AveragePooling2D function in Chainer does not support cover_all=True mode.")
+
     vx = chainer.Variable(np.random.rand(*shape).astype(np.float32))
     vy = chainer.functions.average_pooling_2d(vx, ksize=ksize, stride=stride, pad=pad)
 
@@ -16,6 +21,7 @@ def template(ksize=2, stride=None, pad=0, shape=(2, 4, 6, 8), description=""):
 
     x = graph.inputs[0]
     y = graph.outputs[0]
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
 
     generate_kernel_test_case(
         description=f"[chainer] F.average_pooling_2d {description}",
@@ -34,8 +40,12 @@ def test_padding_not_zero():
 
 
 # TODO: chainer's average pooling does not support cover_all=True mode
-# def test_odd_size_and_cover_all():
-#     template(shape=(2, 4, 5, 7), stride=2)
+# def test_cover_all():
+#     template(shape=(2, 4, 8, 8), ksize=3, pad=0, stride=3, cover_all=True)
+
+
+def test_no_cover_all():
+    template(shape=(2, 4, 8, 8), ksize=3, pad=0, stride=3, cover_all=False)
 
 
 def test_stride_is_none():

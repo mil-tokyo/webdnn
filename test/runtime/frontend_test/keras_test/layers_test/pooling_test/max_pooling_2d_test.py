@@ -14,6 +14,7 @@ def template(pool_size=(3, 3), strides=2, padding="valid", data_format=None, des
     vy = model.predict(vx, batch_size=2)
 
     graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
 
     generate_kernel_test_case(
         description=f"[keras] MaxPooling2D {description}",
@@ -31,9 +32,17 @@ def test_irregular_size():
     template(pool_size=(3, 4), strides=(2, 1))
 
 
+def test_channels_first():
+    template(data_format="channels_first")
+
+
 def test_padding_valid():
     template(padding="valid")
 
 
 def test_padding_same():
     template(padding="same")
+
+
+def test_different_padding_size():
+    template(padding="same", pool_size=(4, 4))  # padding = ((1, 2), (1, 2))
