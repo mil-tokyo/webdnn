@@ -467,7 +467,7 @@ this section may be helpful.</p>
 <h2>AveragePooling2D<a class="headerlink" href="#averagepooling2d" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="webdnn.graph.operators.average_pooling_2d.AveragePooling2D">
-<em class="property">class </em><code class="descclassname">webdnn.graph.operators.average_pooling_2d.</code><code class="descname">AveragePooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/average_pooling_2d.html#AveragePooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.average_pooling_2d.AveragePooling2D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.average_pooling_2d.</code><code class="descname">AveragePooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em>, <em>cover_all=True</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/average_pooling_2d.html#AveragePooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.average_pooling_2d.AveragePooling2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Spatial average pooling operator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -478,6 +478,7 @@ this section may be helpful.</p>
 <li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
 <li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
 <li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+<li><strong>cover_all</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) &#8211; If <cite>True</cite>, all input pixels are pooled into some output pixels.</li>
 </ul>
 </td>
 </tr>
@@ -1437,7 +1438,7 @@ final_c (<code class="xref py py-class docutils literal"><span class="pre">Varia
 <h2>MaxPooling2D<a class="headerlink" href="#maxpooling2d" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="webdnn.graph.operators.max_pooling_2d.MaxPooling2D">
-<em class="property">class </em><code class="descclassname">webdnn.graph.operators.max_pooling_2d.</code><code class="descname">MaxPooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/max_pooling_2d.html#MaxPooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.max_pooling_2d.MaxPooling2D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">webdnn.graph.operators.max_pooling_2d.</code><code class="descname">MaxPooling2D</code><span class="sig-paren">(</span><em>name</em>, <em>ksize</em>, <em>stride</em>, <em>padding</em>, <em>cover_all=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operators/max_pooling_2d.html#MaxPooling2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operators.max_pooling_2d.MaxPooling2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Spatial max pooling operator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1448,6 +1449,7 @@ final_c (<code class="xref py py-class docutils literal"><span class="pre">Varia
 <li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
 <li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
 <li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+<li><strong>cover_all</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) &#8211; If <cite>True</cite>, all input pixels are pooled into some output pixels.</li>
 </ul>
 </td>
 </tr>
@@ -1481,6 +1483,7 @@ final_c (<code class="xref py py-class docutils literal"><span class="pre">Varia
 <li><strong>ksize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Kernel size.</li>
 <li><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Stride size.</li>
 <li><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><em>tuple of int</em>) &#8211; Padding size.</li>
+<li><strong>cover_all</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) &#8211; If <cite>True</cite>, all input pixels are pooled into some output pixels.</li>
 </ul>
 </td>
 </tr>
