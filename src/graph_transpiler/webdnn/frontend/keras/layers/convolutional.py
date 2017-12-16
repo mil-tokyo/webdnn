@@ -3,8 +3,9 @@ try:
 except ImportError as e:
     pass
 
+from webdnn.frontend.tensorflow.util import check_data_format, convolution_handler_preprocess, parse_padding
 from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.frontend.keras.layers.util import do_activation, check_data_format, parse_padding
+from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D
@@ -30,12 +31,9 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
 
     w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.C, Axis.N]))
 
-    ksize = tuple(k_op.kernel_size)
-    stride = tuple(k_op.strides)
-    dilation_rate = tuple(k_op.dilation_rate)
-    padding = (parse_padding(k_op.padding, ksize[0], dilation_rate[0]), parse_padding(k_op.padding, ksize[1], dilation_rate[1]))
-
-    y, = Convolution2D(None, ksize=ksize, stride=stride, padding=padding, dilation_rate=dilation_rate)(x, w)
+    x, padding = convolution_handler_preprocess(x, ksize=k_op.kernel_size, padding=k_op.padding, dilation_rate=k_op.dilation_rate,
+                                                data_format=k_op.data_format)
+    y, = Convolution2D(None, ksize=k_op.kernel_size, stride=k_op.strides, padding=padding, dilation_rate=k_op.dilation_rate)(x, w)
 
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)
@@ -59,6 +57,9 @@ def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Con
         raise NotImplementedError("[KerasConverter] keras.layers.Convolution2DTranspose with large dilation_rate is not supported")
 
     padding = (parse_padding(k_op.padding, ksize[0], dilation_rate[0]), parse_padding(k_op.padding, ksize[1], dilation_rate[1]))
+    if any(p[0] != p[1] for p in padding):
+        raise NotImplementedError("[KerasConverter] \"Different size padding\" is not supported yet")
+    padding = tuple(p[0] for p in padding)
 
     y, = Deconvolution2D(None, ksize=ksize, stride=stride, padding=padding)(x, w)
     if k_op.use_bias:
@@ -115,6 +116,9 @@ def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.Sep
     stride = tuple(k_op.strides)
     dilation_rate = tuple(k_op.dilation_rate)
     padding = (parse_padding(k_op.padding, ksize[0], dilation_rate[0]), parse_padding(k_op.padding, ksize[1], dilation_rate[1]))
+    if any(p[0] != p[1] for p in padding):
+        raise NotImplementedError("[KerasConverter] \"Different size padding\" is not supported yet")
+    padding = tuple(p[0] for p in padding)
 
     h, = Im2Col(None, ksize=ksize, stride=stride, padding=padding, dilation_rate=dilation_rate)(x)
 
@@ -166,7 +170,7 @@ def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.Sep
         y = y.transpose(OrderNCHW)
 
     else:
-        raise NotImplementedError(f"[KerasConverter] Unknown data format: {data_format}")
+        raise NotImplementedError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
 
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)

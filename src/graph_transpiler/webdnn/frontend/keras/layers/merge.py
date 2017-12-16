@@ -7,7 +7,6 @@ from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.elementwise_add import ElementwiseAdd
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
-from webdnn.graph.operators.greater import Greater
 from webdnn.graph.operators.select import Select
 
 

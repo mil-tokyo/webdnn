@@ -5,7 +5,7 @@ from test.util import generate_kernel_test_case, wrap_template
 
 
 @wrap_template
-def template(pool_size=(3, 3), strides=2, padding="valid", data_format=None, description: str = ""):
+def template(pool_size=(3, 3), strides=(2, 2), padding="valid", data_format=None, description: str = ""):
     x = keras.layers.Input((15, 17, 16))  # (height + pad * 2 - pool_size) % stride == 0 to avoid edge difference
     y = keras.layers.AveragePooling2D(pool_size=pool_size, strides=strides, padding=padding, data_format=data_format)(x)
     model = keras.models.Model([x], [y])
@@ -14,6 +14,7 @@ def template(pool_size=(3, 3), strides=2, padding="valid", data_format=None, des
     vy = model.predict(vx, batch_size=2)
 
     graph = KerasConverter(batch_size=2, use_tensorflow_converter=False).convert(model)
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
 
     generate_kernel_test_case(
         description=f"[keras] AveragePooling2D {description}",
@@ -31,10 +32,13 @@ def test_irregular_size():
     template(pool_size=(3, 4), strides=(2, 1))
 
 
+def test_channels_first():
+    template(data_format="channels_first")
+
+
 def test_padding_valid():
     template(padding="valid")
 
-
-# FIXME: Not supported ye
+# FIXME: Not supported yet
 # def test_padding_same():
 #     template(padding="same")

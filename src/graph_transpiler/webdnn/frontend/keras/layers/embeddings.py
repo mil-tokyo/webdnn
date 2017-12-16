@@ -5,7 +5,7 @@ except ImportError as e:
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.embedding import Embedding
-from webdnn.graph.order import OrderNC, OrderCN, OrderNT
+from webdnn.graph.order import OrderCN, OrderNT
 
 
 @KerasConverter.register_handler("Embedding")

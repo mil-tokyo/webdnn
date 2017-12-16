@@ -8,6 +8,7 @@ from webdnn import Placeholder
 DEFAULT_SIZE = 128
 
 
+# noinspection PyAbstractClass
 class PlaceholderVariable(chainer.Variable):
     def __init__(self, shape: Sequence[Union[int, Placeholder]], dummy_shape: Sequence[int] = None):
         for v in shape:

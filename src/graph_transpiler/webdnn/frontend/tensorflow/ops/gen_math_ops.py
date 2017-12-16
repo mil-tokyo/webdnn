@@ -19,8 +19,6 @@ from webdnn.graph.operators.elementwise_div import ElementwiseDiv
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
 from webdnn.graph.operators.elementwise_pow import ElementwisePow
 from webdnn.graph.operators.exp import Exp
-from webdnn.graph.operators.greater import Greater
-from webdnn.graph.operators.greater_equal import GreaterEqual
 from webdnn.graph.operators.log import Log
 from webdnn.graph.operators.max import Max
 from webdnn.graph.operators.min import Min
