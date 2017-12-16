@@ -170,7 +170,7 @@
 
 
 <div class="viewcode-block" id="MaxPooling2D"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.max_pooling_2d.MaxPooling2D">[docs]</a><span class="k">class</span> <span class="nc">MaxPooling2D</span><span class="p">(</span><span class="n">Pooling2D</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;MaxPooling2D(name, ksize, stride, padding)</span>
+    <span class="sd">&quot;&quot;&quot;MaxPooling2D(name, ksize, stride, padding, cover_all=False)</span>
 
 <span class="sd">    Spatial max pooling operator.</span>
 
@@ -179,6 +179,7 @@
 <span class="sd">        ksize (int or tuple of int): Kernel size.</span>
 <span class="sd">        stride (int or tuple of int): Stride size.</span>
 <span class="sd">        padding (int or tuple of int): Padding size.</span>
+<span class="sd">        cover_all (bool, optional): If `True`, all input pixels are pooled into some output pixels.</span>
 
 <span class="sd">    Signature</span>
 
