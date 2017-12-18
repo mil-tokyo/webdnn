@@ -48,7 +48,7 @@ def avg_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x, padding = convolution_handler_preprocess(x, ksize=ksize, padding=tf_op.get_attr("padding"), dilation_rate=(1, 1),
                                                 data_format=data_format)
 
-    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
+    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding, cover_all=False)(x)
     converter.set_variable(tf_op.outputs[0], y)
 
 
@@ -336,7 +336,7 @@ def max_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x, padding = convolution_handler_preprocess(x, ksize=ksize, padding=tf_op.get_attr("padding"), dilation_rate=(1, 1),
                                                 data_format=data_format)
 
-    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding)(x)
+    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=padding, cover_all=False)(x)
     converter.set_variable(tf_op.outputs[0], y)
 
 

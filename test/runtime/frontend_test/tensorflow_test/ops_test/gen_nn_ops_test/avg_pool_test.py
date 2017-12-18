@@ -31,7 +31,6 @@ def test():
 # def test_pad_same():
 #     template(padding="SAME")
 
-
 def test_projection():
     template(ksize=[1, 1, 1, 1])
 
@@ -42,3 +41,7 @@ def test_global_pooling():
 
 def test_large_stride():
     template(x_shape=[2, 5, 5, 5], strides=[1, 2, 2, 1])
+
+
+def test_no_cover_all():
+    template(ksize=[1, 2, 2, 1], x_shape=[1, 2, 2, 5], strides=[1, 2, 2, 1], padding="SAME")

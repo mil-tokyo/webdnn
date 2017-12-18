@@ -58,3 +58,7 @@ def test_activation():
 
 def test_nobias():
     template(use_bias=False)
+
+
+def test_no_cover_all():
+    template(kernel_size=2, shape=(2, 2, 5), strides=2, padding="SAME")
