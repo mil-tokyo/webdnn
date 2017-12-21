@@ -26,6 +26,7 @@ def _convert_local_response_normalization(converter: ChainerConverter,
     converter.set_variable(c_op.outputs[0](), y)
 
 
+@ChainerConverter.register_handler("BatchNormalization")
 @ChainerConverter.register_handler("BatchNormalizationFunction")
 def _convert_batch_normalization_function(converter: ChainerConverter,
                                           c_op: "chainer.functions.normalization.batch_normalization.BatchNormalizationFunction"):
