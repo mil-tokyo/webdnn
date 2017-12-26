@@ -395,7 +395,19 @@ def maximum_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
 @TensorFlowConverter.register_handler("Mean")
 def mean_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
-    raise NotImplementedError(f"[TensorFlowConverter] {tf_op.type} is not supported yet.")
+    x = converter.get_variable(tf_op.inputs[0])
+    axis = converter.get_variable(tf_op.inputs[1])
+    assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Operation 'Sum' with dynamic axis  is not supported yet."
+
+    size = 1
+    for axis in [x.order.axes[i] for i in axis.data.astype(int).flatten().tolist()]:
+        x, = Sum(None, axis=axis)(x)
+        size *= x.shape_dict[axis]
+
+        if not tf_op.get_attr("keep_dims") and x.ndim > 1:
+            x = x.squeeze(axis)
+
+    converter.set_variable(tf_op.outputs[0], x / size)
 
 
 @TensorFlowConverter.register_handler("Min")

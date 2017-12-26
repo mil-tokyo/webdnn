@@ -559,7 +559,7 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
 
     elif v == y:
         """
-        Same algorithm in case `v == y` (above).
+        Same algorithm in case `v == x` (above).
 
         before)
 
@@ -579,7 +579,20 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
             d2x *= x.shape_dict[axis_x]
 
             if d2x == d2y:
-                x_0, x_1 = SplitAxis(None, axis=axis_x, sections=[x.shape_dict[axis_x] * s1 // (s1 + s2)])(x)
+                d2x1 = x.shape_dict[axis_x]
+                d2x2 = x.shape_dict[axis_x]
+                i = x.order.axes.index(axis_x)
+                while not d2x2 % 2 == 0:
+                    i += 1
+                    axis_x = x.order.axes[i]
+                    if axis_x == axis:
+                        raise NotImplementedError
+                    d2x2 *= x.shape_dict[axis_x]
+
+                if d2x1 != d2x2:
+                    x = x.reshape(shape=[x.size // d2y, d2x2, d2y // d2x2], order=Order([Axis(), axis_x, Axis()]))
+
+                x_0, x_1 = SplitAxis(None, axis=axis_x, sections=[x.shape_dict[axis_x] // 2])(x)
 
                 OptimizeRule.replace_variable(graph, x_0.reshape_like(y_0), y_0)
                 OptimizeRule.replace_variable(graph, x_1.reshape_like(y_1), y_1)

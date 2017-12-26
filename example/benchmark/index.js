@@ -9,10 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const InputSize = {
-    'squeeze_net': 227,
     'resnet50': 224,
     'vgg16': 224,
-    'inception_v3': 299,
+    'mobile_net': 224,
 };
 class Logger {
     constructor($dom) {

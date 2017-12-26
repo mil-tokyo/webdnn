@@ -1,7 +1,7 @@
 import os
 from typing import Type
 
-from keras.applications import ResNet50, VGG16, InceptionV3
+from keras.applications import ResNet50, VGG16, MobileNet
 from keras.engine import Model
 
 
@@ -22,6 +22,6 @@ def generate(NetworkModel: Type[Model], name: str, root_path: str, ):
             f.write(model.to_json())
 
 
-generate(ResNet50, 'ResNet50', './output/kerasjs/resnet50')
+generate(, 'ResNet50', './output/kerasjs/resnet50')
 generate(VGG16, 'VGG16', './output/kerasjs/vgg16')
-generate(InceptionV3, 'InceptionV3', './output/kerasjs/inception_v3')
+generate(MobileNet, 'MobileNet', './output/kerasjs/mobile_net')

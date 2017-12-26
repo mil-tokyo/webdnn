@@ -59,8 +59,8 @@ class ConstantEncoderEightbit(ConstantEncoder):
 
     def encode(self, memory_layout: MemoryLayout) -> bytes:
         all_code = b""
-        for alloc in memory_layout.allocations.values():
-            if alloc.offset >= memory_layout.data.size:
+        for v, alloc in memory_layout.allocations.items():
+            if not isinstance(v, ConstantVariable):
                 continue
 
             single_data = memory_layout.data[alloc.offset:alloc.offset + alloc.size]

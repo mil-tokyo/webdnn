@@ -12,6 +12,7 @@ from webdnn.graph.operators.deconvolution2d import Deconvolution2D
 from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.slice import Slice
 from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.zero_padding_1d import ZeroPadding1D
 from webdnn.graph.operators.zero_padding_2d import ZeroPadding2D
 from webdnn.graph.order import OrderC, OrderNTC, Order, OrderNHWC, OrderNCHW
@@ -168,6 +169,64 @@ def _convert_separable_conv2d(converter: KerasConverter, k_op: "keras.layers.Sep
 
     elif k_op.data_format == "channels_first":
         y = y.transpose(OrderNCHW)
+
+    else:
+        raise NotImplementedError(f"[KerasConverter] Unknown data format: {k_op.data_format}")
+
+    if k_op.use_bias:
+        b = converter.convert_to_constant_variable(k_op.bias, OrderC)
+        y = y + b
+
+    y = do_activation(k_op.activation, y)
+    converter.set_variable(converter.get_output_tensor(k_op)[0], y)
+
+
+@KerasConverter.register_handler("DepthwiseConv2D")
+def _convert_depthwise_conv2d(converter: KerasConverter, k_op: "keras.layers.SeparableConv2D"):
+    x = converter.get_variable(converter.get_input_tensor(k_op)[0])
+    check_data_format(x, k_op.data_format)
+    axis_c_in = Axis.C
+    axis_c_out = Axis()
+    axis_depth_multiplier = Axis()
+
+    w_depthwise = converter.convert_to_constant_variable(k_op.depthwise_kernel, Order([Axis.KH, Axis.KW, axis_c_in, axis_depth_multiplier]))
+
+    ksize = tuple(k_op.kernel_size)
+    stride = tuple(k_op.strides)
+    dilation_rate = tuple(k_op.dilation_rate)
+    padding = (parse_padding(k_op.padding, ksize[0], dilation_rate[0]), parse_padding(k_op.padding, ksize[1], dilation_rate[1]))
+    if any(p[0] != p[1] for p in padding):
+        raise NotImplementedError("[KerasConverter] \"Different size padding\" is not supported yet")
+    padding = tuple(p[0] for p in padding)
+
+    h, = Im2Col(None, ksize=ksize, stride=stride, padding=padding, dilation_rate=dilation_rate)(x)
+
+    # TODO: Support depth-wise convolution natively
+    # Currently, depth-wise convolution is not supported natively, and emulated by composition of small convolution operations.
+    ys = []
+    for i in range(h.shape_dict[axis_c_in]):
+        # 1. Depthwise convolution
+        #
+        # Ideal                             | Current implementation
+        # ----------------------------------+----------------------------------------------------
+        # h.axes=[N, H, W, KH, KW, C_in]    | g_sub.axes=[N, H, W, KH, KW]
+        # w.axes=[KH, KW, C_in, DM]         | w_sub.axes=[KH, KW, DM]
+        # g.axes=[N, H, W, C_in, DM]        | g_sub.axes=[N, H, W, DM]
+
+        h_sub, = Slice(None, indices=AxisKeyDict(h.order.axes, [i if a == axis_c_in else slice(None) for a in h.order.axes]))(h)
+        w_depthwise_sub = w_depthwise[:, :, i, :]
+        y_sub, = Tensordot(None, axes=((Axis.KH, Axis.KW), (Axis.KH, Axis.KW)))(h_sub, w_depthwise_sub)
+        ys.append(y_sub)
+
+    y, = Concat(None, axis=axis_depth_multiplier)(*ys)
+
+    if k_op.data_format == "channels_last":
+        y = y.transpose(Order([Axis.N, Axis.H, Axis.W, axis_depth_multiplier]))
+        y = y.reinterpret_axes(order=OrderNHWC)
+
+    elif k_op.data_format == "channels_first":
+        y = y.transpose(Order([Axis.N, axis_depth_multiplier, Axis.H, Axis.W]))
+        y = y.reinterpret_axes(order=OrderNCHW)
 
     else:
         raise NotImplementedError(f"[KerasConverter] Unknown data format: {k_op.data_format}")

@@ -256,33 +256,27 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
           var |size| Lifetime (t=0 -> ...)
           ----+----+---------------
-            a |  5 | [0, 2)
-            b |  4 | [2, 4)
-            c |  2 | [3, 5)
-            d |  1 | [6, 8)
-            e |  3 | [0, 5)
+            a |  2 | [0, 1)
+            b |  2 | [2, 3)
+            c |  1 | [0, 2)
+            d |  1 | [1, 3)
           ----+----+---------------
 
     In this case, we want to get follow optimized allocation:
 
          ---------> address
     time
-     |    aaaaa_e
-     |    aaaaa_e
-     |    bbbb__e
-     |    bbbbcce
-     |    ____cce
-     V    d______
-          d______
+     |    aac
+     |    d_c
+     V    dbb
 
     First, construct "Merge Offset Table".
 
         table = {                           reduced_size = {
-            a: {},                              a: {},
-            b: { a: 0 },                        b: { a: 4 },
-            c: { a: 0, b: 4 },                  c: { a: 2, b: 0 }
-            d: { a: 0, b: 0, c: 0, e: 0 },      d: { a: 1, b: 1, c: 1, e: 1 },
-            e: { a: 5, b: 4, c: 2, d: 0 }       e: { a: 0, b: 0, c: 0, d: 1 }
+            a: { b: 0 },                        a: { b: 2},
+            b: { a: 0 },                        b: { a: 2 },
+            c: { a: 2, b: 0, d: 1 },            c: { a: 0, b: 1, d: 0 }
+            d: { a: 0, b: 2, c: 1 },            d: { a: 1, b: 0, c: 0 },
         }                                   }
 
     `table[x][y]` means offset value in case that variable `x` is merged into variable `y`. For example, when `b` is merged into
@@ -296,14 +290,14 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
         table = {                           reduced_size = {
             ab: {},                             ab: {},
-            c: { ab: 4 },                       c: { ab: 1 }
-            d: { ab: 0, c: 0, e: 0 },           d: { ab: 1, c: 1, e: 1 },
-            e: { ab: 5, c: 2, d: 0 }            e: { ab: 0, c: 0, d: 1 }
+            c: { ab: 0 },                       c: { ab: 3 }
+            d: { ab: 3, c: 0, e: 2 },           d: { ab: 2, c: 2, e: 0 },
+            e: { ab: 0, c: 3, d: 2 }            e: { ab: 2, c: 0, d: 0 }
         }                                   }
 
     Iterate this procedure until all variables are merged into single allocation.
 
-    Merge `d` into `ab` with offset `0`:
+    Merge `c` into `ab` with offset `0`:
 
         table = {                           reduced_size = {
             abd: {},                            abd: {},
@@ -315,10 +309,10 @@ def _optimize_buffer_reuse(allocations_dict: AllocationDict):
 
         table = {                           reduced_size = {
             abcd: {},                           abcd: {},
-            e: { abcd: 5 }                      e: { abcd: 0 }
+            e: { abcd: 6 }                      e: { abcd: 0 }
         }                                   }
 
-    Merge `e` into `abcd` with offset `5`:
+    Merge `e` into `abcd` with offset `6`:
 
         table = {                           reduced_size = {
             abcde: {}                           abcde: {}

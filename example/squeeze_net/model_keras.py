@@ -37,9 +37,9 @@ WEIGHTS_PATH = 'https://github.com/wohlert/keras-squeezenet/releases/download/v0
 
 def _fire(x, filters, name="fire"):
     sq_filters, ex1_filters, ex2_filters = filters
-    squeeze = Convolution2D(sq_filters, (1, 1), activation='relu', padding='same', name=name + "/squeeze1x1")(x)
-    expand1 = Convolution2D(ex1_filters, (1, 1), activation='relu', padding='same', name=name + "/expand1x1")(squeeze)
-    expand2 = Convolution2D(ex2_filters, (3, 3), activation='relu', padding='same', name=name + "/expand3x3")(squeeze)
+    squeeze = Convolution2D(sq_filters, (1, 1), activation='relu', padding='same', name=name + "_squeeze1x1")(x)
+    expand1 = Convolution2D(ex1_filters, (1, 1), activation='relu', padding='same', name=name + "_expand1x1")(squeeze)
+    expand2 = Convolution2D(ex2_filters, (3, 3), activation='relu', padding='same', name=name + "_expand3x3")(squeeze)
     y = Concatenate(axis=-1, name=name)([expand1, expand2])
     return y
 

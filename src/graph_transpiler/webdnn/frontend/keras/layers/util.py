@@ -1,3 +1,5 @@
+from webdnn.graph.operators.clipped_relu import ClippedRelu
+
 try:
     import keras
 except ImportError as e:
@@ -41,6 +43,9 @@ def do_activation(activation: any, x: Variable) -> Variable:
 
     elif activation is keras.activations.linear:
         return x
+
+    elif activation is keras.applications.mobilenet.relu6:
+        return ClippedRelu(None, cap=6)(x)[0]
 
     else:
         raise NotImplementedError(f"[KerasConverter] Unknown activation: {activation}")

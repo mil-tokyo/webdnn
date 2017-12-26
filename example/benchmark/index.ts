@@ -4,14 +4,13 @@
 declare const WebGPUComputeCommandEncoder;
 declare const WebAssembly;
 
-type ModelName = 'squeeze_net' | 'resnet50' | 'vgg16' | 'inception_v3';
+type ModelName = 'mobile_net' | 'resnet50' | 'vgg16';
 type FrameworkName = 'WebDNN' | 'keras.js' | 'deeplearn.js';
 
 const InputSize: { [key in ModelName]: number} = {
-    'squeeze_net': 227,
     'resnet50': 224,
     'vgg16': 224,
-    'inception_v3': 299,
+    'mobile_net': 224,
 };
 
 class Logger {

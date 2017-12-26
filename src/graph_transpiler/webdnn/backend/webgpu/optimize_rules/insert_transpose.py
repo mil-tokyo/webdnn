@@ -24,6 +24,7 @@ from webdnn.graph.operators.unpooling_2d import Unpooling2D
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.order import OrderNHWC, Order, OrderNT, OrderCN, OrderNTC, OrderNC
 from webdnn.graph.variable import Variable
+from webdnn.util import flags
 
 
 def _replace_input(graph: Graph, op: Operator, var_name: str, target_orders: Union[Order, List[Order]]):
@@ -193,10 +194,11 @@ class InsertTranspose(OptimizeRule):
 
             else:
                 # "op" accepts any order. Remove redundant transpose operations if exist.
-                for key in op.inputs:
-                    flag_changed |= _optimize_redundant_transposed_input(graph, op, key, None)
-                for key in op.outputs:
-                    flag_changed |= _optimize_redundant_transposed_output(graph, op, key, None)
-                continue
+                if flags.optimize.OPTIMIZE_ORDER:
+                    for key in op.inputs:
+                        flag_changed |= _optimize_redundant_transposed_input(graph, op, key, None)
+                    for key in op.outputs:
+                        flag_changed |= _optimize_redundant_transposed_output(graph, op, key, None)
+                    continue
 
         return graph, flag_changed

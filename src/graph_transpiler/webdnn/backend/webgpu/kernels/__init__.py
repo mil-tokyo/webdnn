@@ -43,6 +43,7 @@ from webdnn.backend.webgpu.kernels import scalar_add
 from webdnn.backend.webgpu.kernels import scalar_mul
 from webdnn.backend.webgpu.kernels import scalar_pow
 from webdnn.backend.webgpu.kernels import select
+from webdnn.backend.webgpu.kernels import sgemm
 from webdnn.backend.webgpu.kernels import sigmoid
 from webdnn.backend.webgpu.kernels import sin
 from webdnn.backend.webgpu.kernels import sinh
