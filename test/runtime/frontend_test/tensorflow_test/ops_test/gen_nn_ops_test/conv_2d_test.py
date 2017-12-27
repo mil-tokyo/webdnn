@@ -20,6 +20,7 @@ def template(N=2, H=5, W=5, Cin=7, Cout=9, KH=3, KW=3, strides=[1, 1, 1, 1], pad
         vy, = sess.run([y], {x: vx, w: vw})
         graph = TensorFlowConverter(sess, batch_size=2).convert([x, w], [y])
 
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
     generate_kernel_test_case(
         description=f"[TensorFlow] Conv2D {description}",
         graph=graph,
@@ -35,16 +36,22 @@ def test():
     template()
 
 
-def test_pad_same():
-    template(padding="SAME")
+def test_padding_valid():
+    template(padding="VALID")
+
+
+def test_padding_same_even_size():
+    # pad: ((1,1), (1,1))
+    template(padding="SAME", H=5, W=5, KH=3, KW=3, strides=[1, 1, 1, 1])
+
+
+def test_padding_same_odd_size():
+    # pad: ((1,0), (1,0))
+    template(padding="SAME", H=4, W=4, KH=2, KW=2, strides=[1, 1, 1, 1])
 
 
 def test_projection():
     template(KH=1, KW=1)
-
-
-def test_global_pooling():
-    template(KH=5, KW=5)
 
 
 def test_large_stride():

@@ -32,16 +32,26 @@ def test():
     template()
 
 
+def test_padding_valid():
+    template(padding="valid")
+
+
+def test_padding_same_even_size():
+    # pad: ((1,1), (1,1))
+    template(padding="SAME", shape=(5, 5, 3), kernel_size=3, strides=1)
+
+
+def test_padding_same_odd_size():
+    # pad: ((1,0), (1,0))
+    template(padding="SAME", shape=(4, 4, 3), kernel_size=2, strides=1)
+
+
 def test_kernel_size():
     template(kernel_size=2)
 
 
 def test_strides():
     template(strides=(2, 2))
-
-
-def test_padding():
-    template(padding="same")
 
 
 def test_data_format():

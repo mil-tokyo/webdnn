@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Sequence
 
 import numpy as np
 import tensorflow as tf
@@ -76,27 +76,24 @@ def parse_padding(padding_type: str, ksize: int, dilation_rate: int) -> Tuple[in
         raise ValueError(f"Unknown padding: {padding_type}")
 
 
-def convolution_handler_preprocess(x: Variable, ksize: Tuple[int, int], padding: str, dilation_rate: Tuple[int, int],
-                                   data_format: Union[str, bytes]):
-    check_data_format(x, data_format)
-
-    padding = (parse_padding(padding, ksize[0], dilation_rate[0]), parse_padding(padding, ksize[1], dilation_rate[1]))
-
+def convert_odd_padding_to_concat(x: Variable, paddings: Sequence[Tuple[int, int]], value: float = 0.0):
     # Currently WebDNN does not support different-size-padding.
-    for i, ((pad_begin, pad_end), axis) in enumerate(zip(padding, (Axis.H, Axis.W))):
+    for i, ((pad_begin, pad_end), axis) in enumerate(zip(paddings, (Axis.H, Axis.W))):
         if pad_begin != pad_end:
             xs = []
             if pad_begin > 0:
-                xs.append(ConstantVariable(np.zeros([pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes]), x.order))
+                data = np.full([pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes], value, dtype=np.float32)
+                xs.append(ConstantVariable(data, x.order))
 
             xs.append(x)
 
             if pad_end > 0:
-                xs.append(ConstantVariable(np.zeros([pad_end if a == axis else x.shape_dict[a] for a in x.order.axes]), x.order))
+                data = np.full([pad_end if a == axis else x.shape_dict[a] for a in x.order.axes], value, dtype=np.float32)
+                xs.append(ConstantVariable(data, x.order))
 
             if len(xs) > 1:
                 x, = Concat(None, axis=axis)(*xs)
 
-            padding = tuple((0, 0) if j == i else padding[j] for j in range(len(padding)))
+            paddings = tuple((0, 0) if j == i else paddings[j] for j in range(len(paddings)))
 
-    return x, tuple(p[0] for p in padding)
+    return x, tuple(p[0] for p in paddings)
