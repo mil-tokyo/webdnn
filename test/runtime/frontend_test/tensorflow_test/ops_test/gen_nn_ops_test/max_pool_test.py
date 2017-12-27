@@ -15,6 +15,7 @@ def template(x_shape=[2, 3, 4, 5], ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], pad
         vy, = sess.run([y], {x: vx})
         graph = TensorFlowConverter(sess, batch_size=2).convert([x], [y])
 
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
     generate_kernel_test_case(
         description=f"[TensorFlow] MaxPool {description}",
         graph=graph,
@@ -27,16 +28,18 @@ def test():
     template()
 
 
-def test_pad_valid():
+def test_padding_valid():
     template(padding="VALID")
 
 
-def test_projection():
-    template(ksize=[1, 1, 1, 1])
+def test_padding_same_even_size():
+    # pad: ((1,1), (1,1))
+    template(padding="SAME", x_shape=[2, 5, 5, 3], ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1])
 
 
-def test_global_pooling():
-    template(ksize=[1, 3, 4, 1])
+def test_padding_same_odd_size():
+    # pad: ((1,0), (1,0))
+    template(padding="SAME", x_shape=[2, 4, 4, 3], ksize=[1, 2, 2, 1], strides=[1, 1, 1, 1])
 
 
 def test_large_stride():

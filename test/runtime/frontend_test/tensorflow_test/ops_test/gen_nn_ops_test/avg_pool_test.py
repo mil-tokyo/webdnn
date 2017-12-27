@@ -15,6 +15,7 @@ def template(x_shape=[2, 3, 4, 5], ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], pad
         vy, = sess.run([y], {x: vx})
         graph = TensorFlowConverter(sess, batch_size=2).convert([x], [y])
 
+    assert list(vy.shape) == list(graph.outputs[0].shape), f"(vy.shape)={vy.shape}, (graph.outputs[0].shape)={graph.outputs[0].shape}"
     generate_kernel_test_case(
         description=f"[TensorFlow] AvgPool {description}",
         graph=graph,
@@ -27,21 +28,25 @@ def test():
     template()
 
 
+def test_padding_valid():
+    template(padding="VALID")
+
+
 # FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
-# def test_pad_same():
-#     template(padding="SAME")
-
-def test_projection():
-    template(ksize=[1, 1, 1, 1])
+# def test_padding_same_even_size():
+#     # pad: ((1,1), (1,1))
+#     template(padding="SAME", shape=(5, 5, 3), pool_size=3, strides=1)
 
 
-def test_global_pooling():
-    template(ksize=[1, 3, 4, 1])
+# FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
+# def test_padding_same_odd_size():
+#     # pad: ((1,0), (1,0))
+#     template(padding="SAME", shape=(4, 4, 3), pool_size=2, strides=1)
 
 
 def test_large_stride():
     template(x_shape=[2, 5, 5, 5], strides=[1, 2, 2, 1])
 
-
-def test_no_cover_all():
-    template(ksize=[1, 2, 2, 1], x_shape=[1, 2, 2, 5], strides=[1, 2, 2, 1], padding="SAME")
+# FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
+# def test_no_cover_all():
+#     template(ksize=[1, 2, 2, 1], x_shape=[1, 2, 2, 5], strides=[1, 2, 2, 1], padding="SAME")

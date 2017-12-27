@@ -3,7 +3,7 @@ try:
 except ImportError as e:
     pass
 
-from webdnn.frontend.tensorflow.util import check_data_format, convolution_handler_preprocess, parse_padding
+from webdnn.frontend.tensorflow.util import check_data_format, parse_padding, convert_odd_padding_to_concat
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
 from webdnn.graph.axis import Axis, AxisKeyDict
@@ -31,9 +31,12 @@ def _convert_conv2d(converter: KerasConverter, k_op: "keras.layers.Conv2D"):
 
     w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.C, Axis.N]))
 
-    x, padding = convolution_handler_preprocess(x, ksize=k_op.kernel_size, padding=k_op.padding, dilation_rate=k_op.dilation_rate,
-                                                data_format=k_op.data_format)
-    y, = Convolution2D(None, ksize=k_op.kernel_size, stride=k_op.strides, padding=padding, dilation_rate=k_op.dilation_rate)(x, w)
+    paddings = (
+        parse_padding(k_op.padding, k_op.kernel_size[0], k_op.dilation_rate[0]),
+        parse_padding(k_op.padding, k_op.kernel_size[1], k_op.dilation_rate[1])
+    )
+    x, paddings = convert_odd_padding_to_concat(x, paddings=paddings)
+    y, = Convolution2D(None, ksize=k_op.kernel_size, stride=k_op.strides, padding=paddings, dilation_rate=k_op.dilation_rate)(x, w)
 
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)
@@ -50,18 +53,31 @@ def _convert_conv2d_transpose(converter: KerasConverter, k_op: "keras.layers.Con
 
     w = converter.convert_to_constant_variable(k_op.kernel, Order([Axis.KH, Axis.KW, Axis.N, Axis.C]))
 
-    ksize = tuple(k_op.kernel_size)
-    stride = tuple(k_op.strides)
-    dilation_rate = tuple(k_op.dilation_rate)
-    if dilation_rate != (1, 1):
+    if tuple(k_op.dilation_rate) != (1, 1):
         raise NotImplementedError("[KerasConverter] keras.layers.Convolution2DTranspose with large dilation_rate is not supported")
 
-    padding = (parse_padding(k_op.padding, ksize[0], dilation_rate[0]), parse_padding(k_op.padding, ksize[1], dilation_rate[1]))
-    if any(p[0] != p[1] for p in padding):
-        raise NotImplementedError("[KerasConverter] \"Different size padding\" is not supported yet")
-    padding = tuple(p[0] for p in padding)
+    paddings = (
+        parse_padding(k_op.padding, k_op.kernel_size[0], k_op.dilation_rate[0]),
+        parse_padding(k_op.padding, k_op.kernel_size[1], k_op.dilation_rate[1])
+    )
 
-    y, = Deconvolution2D(None, ksize=ksize, stride=stride, padding=padding)(x, w)
+    if any(p[0] != p[1] for p in paddings):
+        pad_col2im = tuple(p[0] if p[0] == p[1] else 0 for p in paddings)
+        pad_extra = tuple((0, 0) if p[0] == p[1] else p for p in paddings)
+        y, = Deconvolution2D(None, ksize=k_op.kernel_size, stride=k_op.strides, padding=pad_col2im)(x, w)
+
+        if k_op.data_format == "channels_first":
+            y = y[:, :, pad_extra[0][0]:-pad_extra[0][1], pad_extra[1][0]:-pad_extra[1][1]]
+
+        elif k_op.data_format == "channels_last":
+            y = y[:, pad_extra[0][0]:-pad_extra[0][1], pad_extra[1][0]:-pad_extra[1][1], :]
+
+        else:
+            raise NotImplementedError(f"Unknown data format: {k_op.data_format}")
+
+    else:
+        y, = Deconvolution2D(None, ksize=k_op.kernel_size, stride=k_op.strides, padding=tuple(p[0] for p in paddings))(x, w)
+
     if k_op.use_bias:
         b = converter.convert_to_constant_variable(k_op.bias, OrderC)
         y = y + b

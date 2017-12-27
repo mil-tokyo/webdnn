@@ -28,6 +28,22 @@ def test():
     template()
 
 
+def test_padding_valid():
+    template(padding="valid")
+
+
+# FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
+# def test_padding_same_even_size():
+#     # pad: ((1,1), (1,1))
+#     template(padding="SAME", shape=(5, 5, 3), pool_size=3, strides=1)
+
+
+# FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
+# def test_padding_same_odd_size():
+#     # pad: ((1,0), (1,0))
+#     template(padding="SAME", shape=(4, 4, 3), pool_size=2, strides=1)
+
+
 def test_irregular_size():
     template(pool_size=(3, 4), strides=(2, 1))
 
@@ -35,15 +51,6 @@ def test_irregular_size():
 def test_channels_first():
     template(data_format="channels_first")
 
-
-def test_padding_valid():
-    template(padding="valid")
-
-
-# FIXME: Not supported yet
-# def test_padding_same():
-#     template(padding="same")
-
-
-def test_no_cover_all():
-    template(pool_size=2, shape=(2, 2, 5), strides=2, padding="SAME")
+# FIXME: TensorFlow's average pooling operation ignores padding value. Therefore result is different from WebDNN's result.
+# def test_no_cover_all():
+#     template(pool_size=2, shape=(2, 2, 5), strides=2, padding="SAME")

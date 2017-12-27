@@ -4,7 +4,7 @@ except ImportError as e:
     pass
 
 from webdnn.frontend.keras.converter import KerasConverter
-from webdnn.frontend.tensorflow.util import check_data_format, convolution_handler_preprocess, parse_padding
+from webdnn.frontend.tensorflow.util import check_data_format, parse_padding, convert_odd_padding_to_concat
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
@@ -17,7 +17,6 @@ from webdnn.util.misc import mul
 def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.AveragePooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
-    # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     ksize = (k_op.pool_size[0], 1)
     stride = (k_op.strides[0], 1)
@@ -32,15 +31,21 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
 @KerasConverter.register_handler("AveragePooling2D")
 def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.AveragePooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    x, padding = convolution_handler_preprocess(x, ksize=k_op.pool_size, padding=k_op.padding, dilation_rate=(1, 1),
-                                                data_format=k_op.data_format)
-    if any(p > 0 for p in padding):
+    check_data_format(x, k_op.data_format)
+
+    paddings = (
+        parse_padding(k_op.padding, k_op.pool_size[0], 1),
+        parse_padding(k_op.padding, k_op.pool_size[1], 1)
+    )
+    x, paddings = convert_odd_padding_to_concat(x, paddings=paddings)
+
+    if any(p > 0 for p in paddings):
         console.warning(
             "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
             "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
             "result will be generated on the edge.")
 
-    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False)(x)
+    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=paddings, cover_all=False)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
@@ -55,7 +60,6 @@ def _convert_average_pooling3d(converter: KerasConverter, k_op: "keras.layers.Av
 def _convert_global_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.GlobalMaxPooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
-    # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     y, = MaxPooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
@@ -80,7 +84,6 @@ def _convert_global_max_pooling2d(converter: KerasConverter, k_op: "keras.layers
 def _convert_global_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.GlobalAveragePooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
-    # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     y, = AveragePooling2D(None, ksize=(x.shape[1], 1), stride=(1, 1), padding=(0, 0))(y)
 
@@ -105,7 +108,6 @@ def convert_layer_global_average_pooling2d(converter: KerasConverter, k_op: "ker
 def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPooling1D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
 
-    # FIXME: More effective implementation
     y = x.reshape([x.shape[0], x.shape[1], 1, x.shape[2]], OrderNHWC)
     ksize = (k_op.pool_size[0], 1)
     stride = (k_op.strides[0], 1)
@@ -120,9 +122,15 @@ def _convert_max_pooling1d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
 @KerasConverter.register_handler("MaxPooling2D")
 def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPooling2D"):
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
-    x, padding = convolution_handler_preprocess(x, ksize=k_op.pool_size, padding=k_op.padding, dilation_rate=(1, 1),
-                                                data_format=k_op.data_format)
-    y, = MaxPooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False)(x)
+    check_data_format(x, k_op.data_format)
+
+    paddings = (
+        parse_padding(k_op.padding, k_op.pool_size[0], 1),
+        parse_padding(k_op.padding, k_op.pool_size[1], 1)
+    )
+    x, paddings = convert_odd_padding_to_concat(x, paddings=paddings, value=-1.0e10)
+
+    y, = MaxPooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=paddings, cover_all=False)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
