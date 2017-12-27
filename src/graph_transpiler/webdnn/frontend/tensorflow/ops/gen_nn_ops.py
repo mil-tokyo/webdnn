@@ -17,16 +17,6 @@ from webdnn.graph.order import Order
 from webdnn.util import console
 
 
-def padding_same(in_size: int, ksize: int, stride: int) -> int:
-    # https://www.tensorflow.org/api_guides/python/nn#Notes_on_SAME_Convolution_Padding
-    if in_size % stride == 0:
-        pad_total = max(ksize - stride, 0)
-    else:
-        pad_total = max(ksize - in_size % stride, 0)
-    pad_one_size = pad_total // 2 + pad_total % 2
-    return pad_one_size
-
-
 @TensorFlowConverter.register_handler("AvgPool")
 def avg_pool_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
