@@ -1,10 +1,10 @@
-from typing import Any, Type, List, Tuple
+from typing import Any, Type, Union, Sequence
 
 from webdnn.util import flags, console
 
 
 class UnexpectedAndPleaseReportError(NotImplementedError):
-    def __init__(self, message):
+    def __init__(self, message: str = ""):
         message = f"Unexpected error is occurred. Please report this error with stack trace to " \
                   f"https://github.com/mil-tokyo/webdnn/issues/new: \n" \
                   f"  (original message)={message}"
@@ -16,7 +16,7 @@ def assert_equal(a, b, message: str = ""):
         raise AssertionError(f"{message}{'' if message == '' else ': '}{a} != {b}")
 
 
-def assert_sequence_type(value: Any, correct_type: Type,
+def assert_sequence_type(value: Any, correct_type: Union[Type, Sequence[Type]],
                          auto_fix: bool = None, message: str = None, warning=True):
     """
     Assert type of each element in list.
@@ -32,9 +32,12 @@ def assert_sequence_type(value: Any, correct_type: Type,
     Returns:
 
     """
+    if not isinstance(correct_type, Sequence):
+        correct_type = (correct_type,)
+
     if message is None:
         message = f"""
-Assertion failed. Value must be an sequence of {correct_type.__name__}"""
+Assertion failed. Value must be an sequence of {correct_type[0].__name__}"""
 
     if auto_fix is None:
         auto_fix = not flags.FORCE_TYPE_CHECK
@@ -59,7 +62,7 @@ Assertion failed. Value must be an sequence of {correct_type.__name__}"""
     (value) = {value}
     (type of value[{i}]) = {type(v)}"""
         if auto_fix:
-            tmp[i] = correct_type(v)
+            tmp[i] = correct_type[0](v)
 
         else:
             raise TypeError(error_message)

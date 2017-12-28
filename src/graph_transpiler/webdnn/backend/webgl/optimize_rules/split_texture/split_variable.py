@@ -13,11 +13,13 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.im2col import Im2Col
+from webdnn.graph.operators.pooling_2d import Pooling2D
 from webdnn.graph.operators.reshape import Reshape
+from webdnn.graph.operators.slice import Slice
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.optimize_rule import OptimizeRule
-from webdnn.graph.order import Order
+from webdnn.graph.order import Order, OrderNHWC
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
@@ -100,6 +102,9 @@ def _split_axis(v: Variable, axis: Axis, graph):
 
         elif isinstance(op, Reshape):
             _split_reshape(graph, op, v, [v1, v2], axis)
+
+        elif isinstance(op, Pooling2D):
+            _split_pooling_2d(graph, op, v, [v1, v2], axis)
 
         else:
             raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
@@ -520,72 +525,128 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
     s1 = v_pair[0].shape_dict[axis]
     s2 = v_pair[1].shape_dict[axis]
     op.remove_all()
+    in_order = op.in_order
+    out_order = op.out_order
+    x_shape = [x.shape_dict[a] for a in in_order.axes]
+    y_shape = [y.shape_dict[a] for a in out_order.axes]
 
     if v == x:
         """
-        Regard x's order as `[D1, D2]`, shape as `[d1x, d2x]`, where the most outside axis in D2 is the split target axis.
-        If y's shape can be converted as `[d1x, d2x]` by merging some adjacent axes in y, split can be performed.
-
         before)
 
             x -{reshape}- y
 
+                x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_M-1]
+                y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k, ..., dy_N-1] (n <= k)
+
+                dx_prod = dx_m * dx_m+1 * ... * dx_M-1
+
+                dy_n * dy_n+1 * ... * dy_N-1 == dx_prod
+                dy_k % 2 == 0
+
         after)
 
-            x_0 -{reshape}- y_0 -+
-                                 +-{concat[axis]}- y
-            x_1 -{reshape}- y_1 -+
+            x_0 -{reshape}- t_0 -+
+                                 +-{concat[axis_k]}- t -{reshape}- y
+            x_1 -{reshape}- t_1 -+
+
+            shape and order is changed as follows:
+
+                x_0.shape = [dx_0, dx_1, ..., dx_m/2, ..., dx_M-1]              (in_order)
+                t_0.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k/2, ..., dy_N-1]   (out_order)
+                  t.shape = [dy_0, dy_1, ..., dy_n*2, ..., dy_k/2, ..., dy_N-1] (out_order)
+                  y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k, ..., dy_N-1]     (out_order)
         """
 
         x_0, x_1 = v_pair
-        d2x = mul(x.shape[x.order.axes_dict[axis]:])
-        d2y = 1
-        for axis_y in reversed(y.order.axes):
-            d2y *= y.shape_dict[axis_y]
+        dx_prod = mul(x_shape[in_order.axes_dict[axis]:])
+        dy_prod = 1
+        axis_k_candidate = []
+        for axis_n in reversed(out_order.axes):
+            dy_prod *= y.shape_dict[axis_n]
+            if y.shape_dict[axis_n] % 2 == 0:
+                axis_k_candidate.append(axis_n)
 
-            if d2y == d2x:
-                y_0_shape = [y.shape_dict[axis_y] * s1 // (s1 + s2) if a == axis_y else y.shape_dict[a] for a in y.order.axes]
-                y_1_shape = [y.shape_dict[axis_y] * s2 // (s1 + s2) if a == axis_y else y.shape_dict[a] for a in y.order.axes]
+            if dx_prod == dy_prod:
+                # Split most large axis
+                axis_k = (sorted(axis_k_candidate, key=lambda a: y.shape_dict[a], reverse=True))[0]
 
-                y_0 = x_0.reshape(y_0_shape, y.order)
-                y_1 = x_1.reshape(y_1_shape, y.order)
+                t_0_shape = [y.shape_dict[a] for a in out_order.axes]
+                t_0_shape[out_order.axes_dict[axis_k]] = t_0_shape[out_order.axes_dict[axis_k]] // 2  # TODO
+                t_0, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=t_0_shape)(x_0)
 
-                y_new, = Concat(None, axis=axis_y)(y_0, y_1)
-                OptimizeRule.replace_variable(graph, y_new, y)
+                t_1_shape = [y.shape_dict[a] for a in out_order.axes]
+                t_1_shape[out_order.axes_dict[axis_k]] = t_0_shape[out_order.axes_dict[axis_k]] // 2  # TODO
+                t_1, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=t_1_shape)(x_1)
+
+                t, = Concat(None, axis=axis_n)(t_0, t_1)
+                y_new, = Reshape(None, in_order=out_order, out_order=out_order, out_shape=y_shape)
+
+                OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
                 break
 
-            elif d2y > (s1 + s2) * d2x:
+            elif dy_prod > (s1 + s2) * dx_prod:
                 raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
     elif v == y:
         """
-        Same algorithm in case `v == y` (above).
+        algorithm is almost same as the case `v == x` (above).
 
         before)
 
             x -{reshape}- y
 
+                x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k, ..., dx_M-1]  (m <= k)
+                y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_N-1]
+
+                dy_prod = dy_n * dy_n+1 * ... * dy_N-1
+
+                dx_m * dx_m+1 * ... * dx_M-1 == dy_prod
+                dx_k % 2 == 0
+
         after)
 
-                       +- x_0 -{reshape}- y_0
-            x -{split}-+
-                       +- x_1 -{reshape}- y_1
+                                    +- t_0 -{reshape}- y_0
+            x -{reshape}- t-{split}-+
+                                    +- t_1 -{reshape}- y_1
+
+            shape and order is changed as follows:
+
+                  x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k, ..., dx_M-1]     (in_order)
+                  t.shape = [dx_0, dx_1, ..., 2*dx_m, ..., dx_k/2, ..., dx_M-1] (in_order)
+                t_0.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k/2, ..., dx_M-1]   (in_order)
+                y_0.shape = [dy_0, dy_1, ..., dy_n/2, ..., dy_N-1]              (out_order)
+
         """
 
         y_0, y_1 = v_pair
-        d2y = mul(y.shape[y.order.axes_dict[axis]:])
-        d2x = 1
-        for axis_x in reversed(x.order.axes):
-            d2x *= x.shape_dict[axis_x]
+        dx_prod = 1
+        dy_prod = mul(x_shape[out_order.axes_dict[axis]:])
+        axis_k_candidate = []
+        for axis_m in reversed(in_order.axes):
+            dx_prod *= x.shape_dict[axis_m]
+            if x.shape_dict[axis_m] % 2 == 0:
+                axis_k_candidate.append(axis_m)
 
-            if d2x == d2y:
-                x_0, x_1 = SplitAxis(None, axis=axis_x, sections=[x.shape_dict[axis_x] * s1 // (s1 + s2)])(x)
+            if dx_prod == dy_prod:
+                # Split most large axis
+                axis_k = (sorted(axis_k_candidate, key=lambda a: x.shape_dict[a], reverse=True))[0]
 
-                OptimizeRule.replace_variable(graph, x_0.reshape_like(y_0), y_0)
-                OptimizeRule.replace_variable(graph, x_1.reshape_like(y_1), y_1)
+                t_shape = [x.shape_dict[a] for a in in_order.axes]
+                t_shape[in_order.axes_dict[axis_m]] = 2 * t_shape[in_order.axes_dict[axis_m]]  # TODO
+                t_shape[in_order.axes_dict[axis_k]] = t_shape[in_order.axes_dict[axis_k]] // 2  # TODO
+                t, = Reshape(None, in_order=in_order, out_order=in_order, out_shape=t_shape)(x)
+
+                t_0, t_1 = SplitAxis(None, axis=axis_m, sections=[t_shape[in_order.axes_dict[axis_m]] // 2])(t)  # TODO
+
+                y_0_new, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=y_0.shape)(t_0)
+                y_1_new, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=y_0.shape)(t_1)
+
+                OptimizeRule.replace_variable(graph, y_0_new.reshape_like(y_0), y_0)
+                OptimizeRule.replace_variable(graph, y_1_new.reshape_like(y_1), y_1)
                 break
 
-            elif d2y > (s1 + s2) * d2x:
+            elif dx_prod > (s1 + s2) * dy_prod:
                 raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
     else:
@@ -766,6 +827,56 @@ def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[
         raise UnexpectedAndPleaseReportError
 
 
+def _split_pooling_2d(graph: Graph, op: Pooling2D, v: Variable, v_pair: Sequence[Variable], axis: Axis):
+    s1 = v_pair[0].shape_dict[axis]
+    x = op.inputs["x"]
+    y = op.outputs["y"]
+    op.remove_all()
+
+    if v == x:
+        x_0, x_1 = v_pair
+        s, k, p = (op.SH, op.KH, op.PH) if axis == Axis.H else (op.SW, op.KW, op.PW)
+
+        raise NotImplementedError
+
+    elif v == y:
+        y_0, y_1 = v_pair
+        s, k, p = (op.SH, op.KH, op.PH) if axis == Axis.H else (op.SW, op.KW, op.PW)
+
+        x_0_range = (0 * s - k // 2, (y_0.shape_dict[axis] - 1) * s + k)
+        x_1_range = (y_0.shape_dict[axis] * s - k // 2, (y.shape_dict[axis] - 1) * s + k)
+
+        indices = AxisKeyDict(OrderNHWC.axes, [slice(None) for _ in OrderNHWC.axes])
+
+        indices_0 = AxisKeyDict(indices)
+        indices_0[axis] = slice(max(x_0_range[0], 0), min(x_0_range[1], x.shape_dict[axis]))
+
+        indices_1 = AxisKeyDict(indices)
+        indices_1[axis] = slice(max(x_1_range[0], 0), min(x_1_range[1], x.shape_dict[axis]))
+
+        x_0, = Slice(None, indices=indices_0)(x)
+        x_1, = Slice(None, indices=indices_1)(x)
+
+        if p > 0:
+            data = ConstantVariable(np.zeros([p if a == axis else x.shape_dict[a] for a in x.order.axes]), x.order)
+            x_0, = Concat(None, axis=axis)(data, x_0)
+            x_1, = Concat(None, axis=axis)(x_1, data)
+
+        op_0, op_1 = op.copy(), op.copy()
+        new_padding = (0, op.PW) if axis == Axis.H else (op.PH, 0)
+        op_0.parameters["padding"] = new_padding
+        op_1.parameters["padding"] = new_padding
+
+        y_0_new, = op_0(x_0)
+        y_1_new, = op_1(x_1)
+
+        OptimizeRule.replace_variable(graph, y_0_new.transpose_like(y_0), y_0)
+        OptimizeRule.replace_variable(graph, y_1_new.transpose_like(y_1), y_1)
+
+    else:
+        raise UnexpectedAndPleaseReportError()
+
+
 def _split_tensorwise(graph: Graph, op: Operator, v: Variable, v_pair: Sequence[Variable], axis: Axis):
     s1 = v_pair[0].shape_dict[axis]
     xs = dict(op.inputs)
@@ -811,21 +922,27 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
     if isinstance(op, (Concat, SplitAxis)):
         return list(v.order.axes)
 
-    elif isinstance(op, Reshape):
+    if isinstance(op, Reshape):
         """
         For more detail of this condition check, please see the comment document of `_split_reshape`
         """
         splittable_axes = []  # type: List[Axis]
         v1 = v
         v2 = op.outputs["y"] if v == op.inputs["x"] else op.inputs["x"]
+        v1_order = op.in_order if v1 == op.inputs["x"] else op.out_order
+        v2_order = op.in_order if v2 == op.inputs["x"] else op.out_order
+        v1_shape = [v1.shape_dict[a] for a in v1_order.axes]
+        v2_shape = [v2.shape_dict[a] for a in v2_order.axes]
 
-        for a1 in v1.order.axes:
-            d1 = mul(v1.shape[v1.order.axes_dict[a1]:])
+        for a1 in v1_order.axes:
+            d1 = mul(v1_shape[v1_order.axes_dict[a1]:])
             d2 = 1
-            for a2 in reversed(v2.order.axes):
+            axes = []
+            for a2 in reversed(v2_order.axes):
                 d2 *= v2.shape_dict[a2]
+                axes.append(a2)
 
-                if d2 == d1:
+                if d2 == d1 and any(v2.shape_dict[a3] % 2 == 0 for a3 in axes):  # TODO
                     splittable_axes.append(a1)
                     continue
 
@@ -834,7 +951,7 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
 
         return splittable_axes
 
-    elif isinstance(op, Im2Col):
+    if isinstance(op, Im2Col):
         op = op  # type: Im2Col
         if v in op.outputs.values():
             return [Axis.N, Axis.H, Axis.W, Axis.C]
@@ -842,7 +959,7 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
         else:
             return []
 
-    elif isinstance(op, PartialIm2Col):
+    if isinstance(op, PartialIm2Col):
         op = op  # type: PartialIm2Col
         if v in op.outputs.values():
             axes = [Axis.N, Axis.C]
@@ -854,11 +971,13 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
         else:
             return []
 
-    elif isinstance(op, Tensordot):
+    if isinstance(op, Tensordot):
         return list(v.order.axes)
 
-    else:
-        return list(attr.axis for attr in op.get_attribute(Tensorwise))
+    if isinstance(op, Pooling2D):
+        return [Axis.H, Axis.W]
+
+    return []
 
 
 def _choose_split_axis(v: Variable) -> Axis:
@@ -878,7 +997,7 @@ def _choose_split_axis(v: Variable) -> Axis:
 
     splittable_axes = list(v.order.axes)
     for op in ops:
-        _op_splittable_axes = _listup_splittable_axis(v, op)
+        _op_splittable_axes = _listup_splittable_axis(v, op) + [attr.axis for attr in op.get_attribute(Tensorwise)]
         for a in list(splittable_axes):
             if a not in _op_splittable_axes:
                 splittable_axes.remove(a)
@@ -925,6 +1044,7 @@ def _choose_split_axis(v: Variable) -> Axis:
     console.debug(f"{v}")
     console.debug(f"  original order: {v.order}")
     console.debug(f"  original shape: {v.shape}")
+    console.debug(f"   texture shape: {TextureShape.get(v)}")
     console.debug(f"")
     console.debug(f"  splittable axis: {splittable_axes}")
     console.debug(f"  split axis: {target_axis}")
@@ -934,5 +1054,8 @@ def _choose_split_axis(v: Variable) -> Axis:
         console.debug(f"---------------------------------------------------------------------------")
         traverse.dump_op(related_op)
     console.debug(f"")
+
+    if axis_corresponding_texture_size[target_axis] <= 0:
+        raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
     return target_axis

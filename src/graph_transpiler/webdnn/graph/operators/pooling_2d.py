@@ -5,8 +5,8 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.tensorwise import Tensorwise
 from webdnn.graph.operators.util import IntOrTuple, to_tuple
 from webdnn.graph.order import OrderNHWC
+from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
-from webdnn.util import console
 from webdnn.util.assertion import assert_sequence_type
 
 
@@ -34,11 +34,11 @@ class Pooling2D(Operator):
 
     def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple, cover_all: bool = True):
         super().__init__(name)
-        self.parameters["ksize"] = assert_sequence_type(to_tuple(ksize), int, message=f"""
+        self.parameters["ksize"] = assert_sequence_type(to_tuple(ksize), (int, Placeholder), message=f"""
 [Pooling2D] Parameter "ksize" must be integer or tuple of integer""")
-        self.parameters["stride"] = assert_sequence_type(to_tuple(stride), int, message=f"""
+        self.parameters["stride"] = assert_sequence_type(to_tuple(stride), (int, Placeholder), message=f"""
 [Pooling2D] Parameter "stride" must be integer or tuple of integer""")
-        self.parameters["padding"] = assert_sequence_type(to_tuple(padding), int, message=f"""
+        self.parameters["padding"] = assert_sequence_type(to_tuple(padding), (int, Placeholder), message=f"""
 [Pooling2D] Parameter "padding" must be integer or tuple of integer""")
         self.parameters["cover_all"] = cover_all
 
