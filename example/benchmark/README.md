@@ -26,7 +26,7 @@ The benchmark for computing speed of DNN model on web browser
 | Framework    | Version                                    |
 |--------------|--------------------------------------------|
 | WebDNN       | Latest (use `/dist/webdnn.js`)             |
-| KerasJS      | `e0e6bd0ba9d74debcf4654697d5866169d3eb3e7` |
+| KerasJS      | `a43f7a5a348e45f7a525e19952e232b123d85af1` |
 | deeplearn.js | `0.3.0`                                    |
  
 
@@ -44,6 +44,8 @@ The benchmark for computing speed of DNN model on web browser
     - Save Keras pretrained models
     - Convert pretrained models into Keras.js format
     - Convert pretrained models into WebDNN format
+    
+    Note that ResNet50 model is defined in `index.ts` but this model does NOT load trained parameters.
 
 2. open `index.html` on your browser
 
