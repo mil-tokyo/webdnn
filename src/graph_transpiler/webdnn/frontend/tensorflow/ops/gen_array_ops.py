@@ -247,15 +247,15 @@ def matrix_set_diag_handler(converter: TensorFlowConverter, tf_op: "tf.Operation
 def mirror_pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
 
-    paddings = converter.get_variable(tf_op.inputs[1])
-    if not isinstance(paddings, ConstantVariable):
+    padding = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(padding, ConstantVariable):
         raise NotImplementedError('[TensorFlowConverter] PadV2 with dynamic padding size is not supported')
 
-    paddings = paddings.data.astype(np.int).tolist()
+    padding = padding.data.astype(np.int).tolist()
 
     mode = tf_op.get_attr("mode")  # type: byte
 
-    for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+    for axis, (pad_begin, pad_end) in zip(x.order.axes, padding):
         xs = []
 
         if pad_begin > 0:
@@ -314,24 +314,24 @@ def pack_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
 
-    paddings = converter.get_variable(tf_op.inputs[1])
-    if not isinstance(paddings, ConstantVariable):
+    padding = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(padding, ConstantVariable):
         raise NotImplementedError('[TensorFlowConverter] Pad with dynamic padding size is not supported')
 
-    paddings = paddings.data.astype(np.int).tolist()
+    padding = padding.data.astype(np.int).tolist()
 
     if x.order.check_same_axes(OrderNHWC) and all([
-        paddings[x.order.axes_dict[Axis.N]][0] == paddings[x.order.axes_dict[Axis.N]][1] == 0,
-        paddings[x.order.axes_dict[Axis.H]][0] == paddings[x.order.axes_dict[Axis.H]][1],
-        paddings[x.order.axes_dict[Axis.W]][0] == paddings[x.order.axes_dict[Axis.W]][1],
-        paddings[x.order.axes_dict[Axis.C]][0] == paddings[x.order.axes_dict[Axis.C]][1] == 0
+        padding[x.order.axes_dict[Axis.N]][0] == padding[x.order.axes_dict[Axis.N]][1] == 0,
+        padding[x.order.axes_dict[Axis.H]][0] == padding[x.order.axes_dict[Axis.H]][1],
+        padding[x.order.axes_dict[Axis.W]][0] == padding[x.order.axes_dict[Axis.W]][1],
+        padding[x.order.axes_dict[Axis.C]][0] == padding[x.order.axes_dict[Axis.C]][1] == 0
     ]):
         # Padding for only spatial axes: use ZeroPadding2D
-        y, = ZeroPadding2D(None, padding=tuple(paddings[x.order.axes_dict[Axis.H]][0], paddings[x.order.axes_dict[Axis.W]][0]))(x)
+        y, = ZeroPadding2D(None, padding=tuple(padding[x.order.axes_dict[Axis.H]][0], padding[x.order.axes_dict[Axis.W]][0]))(x)
 
     else:
         # General case: Use Concat
-        for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+        for axis, (pad_begin, pad_end) in zip(x.order.axes, padding):
             xs = []
 
             if pad_begin > 0:
@@ -354,15 +354,15 @@ def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 def pad_v2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     x = converter.get_variable(tf_op.inputs[0])
 
-    paddings = converter.get_variable(tf_op.inputs[1])
-    if not isinstance(paddings, ConstantVariable):
+    padding = converter.get_variable(tf_op.inputs[1])
+    if not isinstance(padding, ConstantVariable):
         raise NotImplementedError('[TensorFlowConverter] PadV2 with dynamic padding size is not supported')
 
-    paddings = paddings.data.astype(np.int).tolist()
+    padding = padding.data.astype(np.int).tolist()
 
     constant_values = converter.get_variable(tf_op.inputs[2]).change_order(x.order)
 
-    for axis, (pad_begin, pad_end) in zip(x.order.axes, paddings):
+    for axis, (pad_begin, pad_end) in zip(x.order.axes, padding):
         xs = []
 
         if pad_begin > 0:

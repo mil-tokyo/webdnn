@@ -33,19 +33,19 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     check_data_format(x, k_op.data_format)
 
-    paddings = (
+    padding = (
         parse_padding(k_op.padding, k_op.pool_size[0], 1),
         parse_padding(k_op.padding, k_op.pool_size[1], 1)
     )
-    x, paddings = convert_odd_padding_to_concat(x, paddings=paddings)
+    x, padding = convert_odd_padding_to_concat(x, padding=padding)
 
-    if any(p > 0 for p in paddings):
+    if any(p > 0 for p in padding):
         console.warning(
             "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
             "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
             "result will be generated on the edge.")
 
-    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=paddings, cover_all=False)(x)
+    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
@@ -124,13 +124,13 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.MaxPoo
     x = converter.get_variable(converter.get_input_tensor(k_op)[0])
     check_data_format(x, k_op.data_format)
 
-    paddings = (
+    padding = (
         parse_padding(k_op.padding, k_op.pool_size[0], 1),
         parse_padding(k_op.padding, k_op.pool_size[1], 1)
     )
-    x, paddings = convert_odd_padding_to_concat(x, paddings=paddings, value=-1.0e10)
+    x, padding = convert_odd_padding_to_concat(x, padding=padding, value=-1.0e10)
 
-    y, = MaxPooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=paddings, cover_all=False)(x)
+    y, = MaxPooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 
