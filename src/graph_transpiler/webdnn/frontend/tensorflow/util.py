@@ -76,9 +76,9 @@ def parse_padding(padding_type: str, ksize: int, dilation_rate: int) -> Tuple[in
         raise ValueError(f"Unknown padding: {padding_type}")
 
 
-def convert_odd_padding_to_concat(x: Variable, paddings: Sequence[Tuple[int, int]], value: float = 0.0):
+def convert_odd_padding_to_concat(x: Variable, padding: Sequence[Tuple[int, int]], value: float = 0.0):
     # Currently WebDNN does not support different-size-padding.
-    for i, ((pad_begin, pad_end), axis) in enumerate(zip(paddings, (Axis.H, Axis.W))):
+    for i, ((pad_begin, pad_end), axis) in enumerate(zip(padding, (Axis.H, Axis.W))):
         if pad_begin != pad_end:
             xs = []
             if pad_begin > 0:
@@ -94,6 +94,6 @@ def convert_odd_padding_to_concat(x: Variable, paddings: Sequence[Tuple[int, int
             if len(xs) > 1:
                 x, = Concat(None, axis=axis)(*xs)
 
-            paddings = tuple((0, 0) if j == i else paddings[j] for j in range(len(paddings)))
+            padding = tuple((0, 0) if j == i else padding[j] for j in range(len(padding)))
 
-    return x, tuple(p[0] for p in paddings)
+    return x, tuple(p[0] for p in padding)
