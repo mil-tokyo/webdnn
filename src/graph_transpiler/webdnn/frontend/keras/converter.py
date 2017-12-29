@@ -24,7 +24,7 @@ try:
     import tensorflow as tf
 
     VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(keras.__version__)
-    if not (VERSION_MAJOR == 2):
+    if not (VERSION_MAJOR == 2 and ((VERSION_MINOR == 1 and VERSION_MINOR >= 3) or VERSION_MINOR >= 2)):
         raise NotImplementedError(f"WebDNN supports Keras v2.*.*. Currently, keras {keras.__version__} is installed.")
 
     FLAG_KERAS_INSTALLED = True

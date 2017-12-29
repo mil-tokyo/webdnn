@@ -20,3 +20,4 @@ example/neural_style_transfer_keras/neural-style-keras
 .rpt2_cache
 .noseids
 .ipynb_checkpoints
+/coverage_report
