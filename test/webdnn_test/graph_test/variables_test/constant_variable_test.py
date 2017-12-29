@@ -1,8 +1,18 @@
 import numpy as np
-from nose.tools import raises
+from nose.tools import raises, assert_dict_equal
 
 from webdnn.graph.order import OrderNHWC, OrderHWNC, OrderNC, OrderCHWN, OrderCN
 from webdnn.graph.variables.constant_variable import ConstantVariable
+
+
+def test_copy():
+    v1 = ConstantVariable(np.arange(2 * 3 * 4 * 5).reshape((2, 3, 4, 5)), OrderNHWC)
+    v2 = v1.copy()
+
+    assert np.all(v2.data == v1.data)
+    assert v2.order == v1.order
+    assert v2.parameters == v1.parameters
+    assert all(v1.has_attribute(type(a)) for a in v2.attributes)
 
 
 def test_change_order():

@@ -95,6 +95,7 @@ class Variable(Node):
         return AxisKeyDict(self.order.axes, self.stride)
 
     def copy(self) -> "Variable":
+        """Copy the variable. Connection information won't be copied."""
         return Variable(self.shape, self.order)
 
     def change_order(self, order: Order) -> "Variable":

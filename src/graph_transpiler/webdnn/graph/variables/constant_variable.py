@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 
 from webdnn.graph.axis import AxisKeyDict
@@ -22,17 +24,19 @@ class ConstantVariable(Variable):
         self.attributes.add(Constant(self))
 
     def copy(self) -> "ConstantVariable":
-        return ConstantVariable(self.data.copy(), self.order)
+        """Copy the variable. Connection information won't be copied."""
+        new_instance = ConstantVariable(self.data.copy(), self.order)
+        new_instance.parameters = deepcopy(self.parameters)
+        new_instance.attributes = deepcopy(self.attributes)
+        return new_instance
 
     def change_order(self, order: Order) -> "ConstantVariable":
-        """change_order_statement(order)
+        """change_order(order)
 
         Change variable order.
 
         When number of dimension will be increased, axes whose size is one are created.
         Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
-
-        Not only order attribute, the data attribute is also modified.
 
         Args:
             order: new order
@@ -71,5 +75,4 @@ class ConstantVariable(Variable):
         data = data.reshape([new_shape_dict[axis] for axis in new_order.axes])
 
         self.data = data
-
         return self
