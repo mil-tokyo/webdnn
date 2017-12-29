@@ -4,7 +4,7 @@ from typing import Union, Optional, List, Sequence, Set, Tuple, Generic, TypeVar
 
 import numpy as np
 
-from webdnn.util.json import json
+from webdnn.util import json
 from webdnn.util.misc import mul
 
 

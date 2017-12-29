@@ -13,7 +13,7 @@ from webdnn.encoder.constant_encoder import ConstantEncoder
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.util import flags, console
-from webdnn.util.json import json
+from webdnn.util import json
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):

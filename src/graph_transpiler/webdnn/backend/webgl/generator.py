@@ -14,7 +14,7 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import config, flags
-from webdnn.util.json import json
+from webdnn.util import json
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):
