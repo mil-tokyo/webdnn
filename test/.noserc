@@ -4,3 +4,4 @@ cover-package=webdnn
 cover-tests=false
 cover-html=true
 cover-html-dir=./coverage_report
+cover-branches=true

@@ -11,8 +11,7 @@ from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.graph import Graph
 from webdnn.graph.order import OrderNC
 from webdnn.graph.variable import Variable
-from webdnn.util import flags
-from webdnn.util.json import json
+from webdnn.util import flags, json
 
 
 def assert_shape(v: Variable, expected: AxisKeyDict[int]):
