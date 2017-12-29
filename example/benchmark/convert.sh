@@ -3,6 +3,7 @@
 set -e
 
 echo "Generate Keras model"
+pip3 install -r ./requirements.txt
 python3 generate_keras_models.py
 
 echo ""
