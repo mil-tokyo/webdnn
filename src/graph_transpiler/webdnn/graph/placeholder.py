@@ -546,6 +546,9 @@ Unification failed: self != other
         else:
             return list(self.dependency.operands)
 
+    def __neg__(self) -> Union[int, "Placeholder"]:
+        return -1 * self
+
     def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         v1, v2 = self, Placeholder(value=other)
 

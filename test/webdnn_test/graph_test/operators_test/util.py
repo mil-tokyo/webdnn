@@ -3,8 +3,9 @@ from itertools import permutations
 from nose.tools import nottest
 
 from test.util import assert_shape
-from webdnn import Axis, Order, Variable
-from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.axis import AxisKeyDict, Axis
+from webdnn.graph.order import Order
+from webdnn.graph.variable import Variable
 
 
 @nottest
