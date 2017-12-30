@@ -23,7 +23,7 @@ class UpgradeOperatorType(OptimizeRule):
 
         # replace AxiswiseBias by ElementwiseAdd
         flag_warn = True
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), AxiswiseBias):  # type: AxiswiseBias
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), AxiswiseBias):
             flag_changed = True
             x = op.inputs["x0"]
             b = op.inputs["x1"]
@@ -37,7 +37,7 @@ class UpgradeOperatorType(OptimizeRule):
 
         # replace AxiswiseScale by ElementwiseMul
         flag_warn = True
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), AxiswiseScale):  # type: AxiswiseScale
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), AxiswiseScale):
             flag_changed = True
             x = op.inputs["x0"]
             s = op.inputs["x1"]

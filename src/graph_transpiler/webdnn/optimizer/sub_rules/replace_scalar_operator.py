@@ -27,7 +27,7 @@ class ReplaceScalarAffine(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAffine):  # type: ScalarAffine
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAffine):
             x = op.inputs["x0"]
             y = op.outputs["y"]
 
@@ -61,7 +61,7 @@ class ReplaceScalarAdd(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAdd):  # type: ScalarAdd
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarAdd):
             x = op.inputs["x0"]
             y = op.outputs["y"]
 
@@ -94,7 +94,7 @@ class ReplaceScalarMul(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarMul):  # type: ScalarMul
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarMul):
             x = op.inputs["x0"]
             y = op.outputs["y"]
 
@@ -127,7 +127,7 @@ class ReplaceScalarPow(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarPow):  # type: ScalarPow
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), ScalarPow):
             x = op.inputs["x0"]
             y = op.outputs["y"]
 

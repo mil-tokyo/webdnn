@@ -97,7 +97,7 @@ def _find_elementwise_sub_graph(graph: Graph) -> List[Graph]:
     Returns:
         (list of :class:`~webdnn.graph.graph.Graph`): list of sub graphs
     """
-    queue = traverse.filter_nodes(traverse.listup_operators(graph), Elementwise)  # type: List[Elementwise]
+    queue = list(traverse.filter_nodes(traverse.listup_operators(graph), Elementwise))
     sub_graphs = {op: Graph(list(op.inputs.values()), list(op.outputs.values())) for op in queue}
     result = []
 

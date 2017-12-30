@@ -35,7 +35,7 @@ class ConcatWorkspaceAttached(Attribute[Concat]):
 class AttachConcatWorkspace(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for concat in traverse.filter_nodes(traverse.listup_operators(graph), Concat):  # type: Concat
+        for concat in traverse.filter_nodes(traverse.listup_operators(graph), Concat):
             if concat.has_attribute(ConcatWorkspaceAttached):
                 attr = concat.get_attribute(ConcatWorkspaceAttached)[0]
 

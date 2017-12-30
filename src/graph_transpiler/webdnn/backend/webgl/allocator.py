@@ -1,4 +1,4 @@
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Set, Union, Sequence
 
 import numpy as np
 
@@ -93,8 +93,8 @@ class WebGLMemoryLayout(MemoryLayout):
 
 def allocate(graph: Graph) -> WebGLMemoryLayout:
     nodes = traverse.listup_nodes(graph)
-    operators = traverse.filter_nodes(nodes, Operator)  # type: List[Operator]
-    variables = traverse.filter_nodes(nodes, Variable)  # type: List[Variable]
+    operators = traverse.filter_nodes(nodes, Operator)
+    variables = traverse.filter_nodes(nodes, Variable)
 
     for i, v in enumerate(variables):
         if v.name is None:
@@ -118,14 +118,14 @@ def allocate(graph: Graph) -> WebGLMemoryLayout:
     return layout
 
 
-def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Variable]) -> WebGLAllocationDict:
+def _get_allocations(graph: Graph, operators: Sequence[Operator], variables: Sequence[Variable]) -> WebGLAllocationDict:
     T_LAST = len(operators)
 
     allocations = {}  # type: WebGLAllocationDict
     retain_count = {v: 0 for v in variables}  # type: Dict[Variable, int]
     allocated = set()  # type: Set[Variable]
 
-    for v in traverse.filter_nodes(variables, ConstantVariable):  # type: ConstantVariable
+    for v in traverse.filter_nodes(variables, ConstantVariable):
         # Constant variable cannot be released
         height, width = TextureShape.get(v)
         width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)

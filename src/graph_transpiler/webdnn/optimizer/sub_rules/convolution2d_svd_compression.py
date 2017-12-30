@@ -98,7 +98,7 @@ class Convolution2DSvdCompression(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for conv in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for conv in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             x = conv.inputs["x"]
             w = conv.inputs["w"]
             y = conv.outputs["y"]

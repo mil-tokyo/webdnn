@@ -12,7 +12,7 @@ from webdnn.util.misc import mul
 class FixTensordotTextureShape(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), Tensordot):  # type: Tensordot
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Tensordot):
             A = op.inputs["A"]
             B = op.inputs["B"]
             axes = op.axes
