@@ -28,4 +28,6 @@ class Sinh(Elementwise):
         y = self.outputs["y"]
         self.remove_all()
 
-        OptimizeRule.replace_variable(graph, y, ConstantVariable(np.sinh(x0.copy().change_order(y.order).data), y.order))
+        y_new = ConstantVariable(x0.data, x0.order).change_order(y.order)
+        y_new.data = np.sinh(y_new.data)
+        OptimizeRule.replace_variable(graph, y, y_new)

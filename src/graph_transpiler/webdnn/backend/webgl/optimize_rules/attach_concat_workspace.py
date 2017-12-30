@@ -6,12 +6,13 @@ from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.optimize_rule import OptimizeRule
+from webdnn.graph.variable import Variable
 
 
 class ConcatWorkspaceAttached(Attribute[Concat]):
     def __init__(self, base: Concat):
         super(ConcatWorkspaceAttached, self).__init__(base)
-        workspace = base.outputs["y"].copy()
+        workspace = Variable(base.outputs["y"].shape, base.outputs["y"].order)
         base.append_input("workspace", workspace)
 
     def update(self) -> bool:

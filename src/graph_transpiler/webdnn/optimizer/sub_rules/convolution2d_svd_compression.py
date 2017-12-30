@@ -117,7 +117,7 @@ class Convolution2DSvdCompression(OptimizeRule):
                 # TODO: Is this constraint required?
                 continue
 
-            w_copy = w.copy()
+            w_copy = ConstantVariable(w.data, w.order)
             w_copy.change_order(OrderNHWC)
             d = w_copy.data.reshape((C2 * KH * KW, C1))
 

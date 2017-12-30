@@ -7,6 +7,7 @@ from webdnn.backend.webgl.kernels.util import change_order, convert_position, si
     texture_shape, texture_stride, convert_coord
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import Order
+from webdnn.graph.variable import Variable
 from webdnn.util.misc import mul
 
 
@@ -34,13 +35,13 @@ def reshape(op: Reshape) -> List[Kernel]:
 
     out_order = op.parameters["out_order"]
 
-    dummy_y = y.copy().change_order(out_order)
+    dummy_y = Variable(y.shape, y.order).change_order(out_order)
     orders_y_dy, shapes_y_dy = simplify_orders([y, dummy_y])
     if orders_y_dy[y] == orders_y_dy[dummy_y]:
         order = Order([None] * 4)
         shape = factorize(y.size)
         stride = [mul(shape[i + 1:]) for i in range(4)]
-        dummy_y = y.copy()
+        dummy_y = Variable(y.shape, y.order)
         shapes_y_dy = {y: shape, dummy_y: shape}
         strides_y_dy = {y: stride, dummy_y: stride}
         orders_y_dy = {y: order, dummy_y: order}
@@ -49,13 +50,13 @@ def reshape(op: Reshape) -> List[Kernel]:
         shapes_y_dy = {v: [shapes_y_dy[v][a] for a in orders_y_dy[v].axes] for v in [y, dummy_y]}
         strides_y_dy = {v: [mul(shapes_y_dy[v][i + 1:]) for i in range(orders_y_dy[v].ndim)] for v in [y, dummy_y]}
 
-    dummy_x = x.copy().change_order(in_order)
+    dummy_x = Variable(x.shape, x.order).change_order(in_order)
     orders_x_dx, shapes_x_dx = simplify_orders([x, dummy_x])
     if orders_x_dx[x] == orders_x_dx[dummy_x]:
         order = Order([None] * 4)
         shape = factorize(x.size)
         stride = [mul(shape[i + 1:]) for i in range(4)]
-        dummy_x = x.copy()
+        dummy_x = Variable(x.shape, x.order)
         shapes_x_dx = {x: shape, dummy_x: shape}
         strides_x_dx = {x: stride, dummy_x: stride}
         orders_x_dx = {x: order, dummy_x: order}

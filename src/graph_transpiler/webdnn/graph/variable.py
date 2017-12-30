@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import Union, List, Set, Tuple, Sequence
 
 import numpy as np
@@ -94,13 +93,6 @@ class Variable(Node):
     def stride_dict(self) -> AxisKeyDict[Union[int, Placeholder]]:
         """dictionary of axis and stride size pairs"""
         return AxisKeyDict(self.order.axes, self.stride)
-
-    def copy(self) -> "Variable":
-        """Copy the variable. Connection information won't be copied."""
-        new_instance = Variable(self.shape, self.order)
-        new_instance.parameters = deepcopy(self.parameters)
-        new_instance.attributes = deepcopy(self.attributes)
-        return new_instance
 
     def change_order(self, order: Order) -> "Variable":
         """change_order_statement(order)
