@@ -101,6 +101,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     def generate_kernel_metabuffer_initializer_line(self, kernel: Kernel, serial: int):
         line = "int meta_buf_" + str(serial) + "[] = {"
         # see as int32 and convert to 12345,67890
+        # noinspection PyTypeChecker
         line += ",".join(map(str, np.fromstring(kernel.exec_info.meta_buffer, dtype=np.int32).tolist()))
         line += "};\n"
         return line

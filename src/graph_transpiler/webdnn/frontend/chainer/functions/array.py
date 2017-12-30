@@ -1,9 +1,7 @@
 from itertools import combinations
 
 import chainer
-import numpy as np
 
-from webdnn.graph.placeholder import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.broadcast import Broadcast
@@ -15,6 +13,7 @@ from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tile import Tile
 from webdnn.graph.order import Order
 from webdnn.graph.order import OrderNCHW
+from webdnn.graph.placeholder import Placeholder
 from webdnn.util.misc import mul
 
 
@@ -85,6 +84,7 @@ def _convert_expand_dims(converter: ChainerConverter, c_op: "chainer.functions.E
     converter.set_variable(c_op.outputs[0](), y)
 
 
+# noinspection PyUnresolvedReferences
 @ChainerConverter.register_handler("Flatten")
 def _convert_flatten(converter: ChainerConverter, c_op: "chainer.functions.Flatten"):
     x = converter.get_variable(c_op.inputs[0])

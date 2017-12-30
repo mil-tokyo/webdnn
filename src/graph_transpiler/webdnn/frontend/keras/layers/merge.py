@@ -1,7 +1,4 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.concat import Concat

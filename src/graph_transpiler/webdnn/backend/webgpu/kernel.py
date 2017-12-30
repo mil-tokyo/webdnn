@@ -7,9 +7,9 @@ from webdnn.util import json
 
 
 class GPUSize(json.SerializableMixin):
-    width: int
-    height: int
-    depth: int
+    width: Union[int, Placeholder]
+    height: Union[int, Placeholder]
+    depth: Union[int, Placeholder]
 
     def __init__(self, width: Union[int, Placeholder] = 1, height: Union[int, Placeholder] = 1, depth: Union[int, Placeholder] = 1):
         self.width = width

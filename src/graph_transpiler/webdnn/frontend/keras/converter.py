@@ -147,10 +147,10 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         self._output_tensor_cache = None
 
         for v in graph.inputs:
-            v.attributes.add(Input(v))
+            v.attributes.add(Input())
 
         for v in graph.outputs:
-            v.attributes.add(Output(v))
+            v.attributes.add(Output())
 
         return graph
 

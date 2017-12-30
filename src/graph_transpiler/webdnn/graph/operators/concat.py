@@ -54,7 +54,7 @@ class Concat(Operator):
             if a == axis:
                 continue
 
-            self.attributes.add(Tensorwise(self, a))
+            self.attributes.add(Tensorwise(a))
 
         for i, x in enumerate(xs):
             assert x.order.check_same_axes(xs[0].order), f"""

@@ -1,4 +1,4 @@
-from typing import Optional, Union, Sequence
+from typing import Optional, Union, Sequence, Tuple
 
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
@@ -65,33 +65,25 @@ class Reshape(Operator):
     def exec(self):
         x = self.inputs["x"]
 
-        in_shape = x.shape
-        in_order = self.parameters["in_order"]
-        out_shape = self.parameters["out_shape"]
-        out_order = self.parameters["out_order"]
-        assert x.size == mul(out_shape), f"""
+        assert x.size == mul(self.out_shape), f"""
 [Reshape] Variable size must not be changed:
-    (input shape)={in_shape}
-    (input size)={mul(in_shape)}
-    (output shape)={out_shape}
-    (output size)={mul(out_shape)}"""
+    (input shape)={x.shape}
+    (input size)={x.size}
+    (output shape)={self.out_shape}
+    (output size)={mul(self.out_shape)}"""
 
-        y = Variable(out_shape, out_order)
+        y = Variable(self.out_shape, self.out_order)
         self.append_output("y", y)
 
         return y,
 
     def fold_constance(self, graph: Graph):
-        in_order = self.parameters["in_order"]
-        out_shape = self.parameters["out_shape"]
-        out_order = self.parameters["out_order"]
-
         x = self.inputs["x"]  # type: ConstantVariable
         y = self.outputs["y"]
         self.remove_all()
 
-        y_new = ConstantVariable(x.data, x.order).change_order(in_order)
-        y_new = ConstantVariable(y_new.data.reshape(out_shape), in_order).change_order(out_order)
+        y_new = ConstantVariable(x.data, x.order).change_order(self.in_order)
+        y_new = ConstantVariable(y_new.data.reshape(self.out_shape), self.in_order).change_order(self.out_order)
         OptimizeRule.replace_variable(graph, y, y_new)
 
     @property
@@ -101,3 +93,7 @@ class Reshape(Operator):
     @property
     def out_order(self) -> Order:
         return self.parameters["out_order"]
+
+    @property
+    def out_shape(self) -> Tuple[Union[int, Placeholder]]:
+        return tuple(self.parameters["out_shape"])

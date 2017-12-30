@@ -46,7 +46,7 @@ class Reduce(Operator, metaclass=ABCMeta):
         # Add tensorwise attributes
         for axis in x.order.axes:
             if axis != reduced_axis:
-                self.attributes.add(Tensorwise(self, axis))
+                self.attributes.add(Tensorwise(axis))
 
         y = variable.Variable(y_shape, y_order)
         self.append_output("y", y)

@@ -1,9 +1,8 @@
 from webdnn.graph.attribute import Attribute
-from webdnn.graph.variable import Variable
 
 
-class Output(Attribute[Variable]):
-    """
+class Output(Attribute):
+    """Output
     Attribute for output variable of graph
     """
     pass

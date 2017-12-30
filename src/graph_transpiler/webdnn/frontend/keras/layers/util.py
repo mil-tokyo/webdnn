@@ -1,7 +1,4 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.graph.operators.elu import Elu
 from webdnn.graph.operators.hard_sigmoid import HardSigmoid

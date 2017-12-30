@@ -1,6 +1,8 @@
+from typing import List
+
 from webdnn.backend.webassembly.optimize_rules.insert_transpose import InsertTranspose
 from webdnn.backend.webassembly.optimize_rules.use_eigen import UseEigen
-from webdnn.graph.optimize_rule import OptimizeRuleGroup
+from webdnn.graph.optimize_rule import OptimizeRuleGroup, OptimizeRule
 from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
 from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
@@ -26,7 +28,7 @@ class WebassemblyOptimizeRule(OptimizeRuleGroup):
                 UpdateInplaceAttribute()
             ]),
             ElementwiseKernelFusion()
-        ]
+        ]  # type: List[OptimizeRule]
 
         if flags.DEBUG:
             sub_rules.append(DumpGraph("cg{count}.dot"))

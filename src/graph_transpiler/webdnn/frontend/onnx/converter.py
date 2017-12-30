@@ -75,33 +75,33 @@ Module "onnx" cannot be imported. Please check that follow command works correct
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
-        graph = model.graph  # type: IGraphProto
+        onnx_graph = model.graph  # type: IGraphProto
 
         # Convert constant parameters
-        for proto in graph.initializer:
+        for proto in onnx_graph.initializer:
             self.set_variable(proto.name, _convert_tensor_proto(proto))
 
         # Convert input variables
         # In ONNX, both input variable and parameters are included in `graph.input`.
         inputs = []
-        for proto in filter(lambda proto: not self.has_variable(proto.name), graph.input):
+        for proto in filter(lambda proto: not self.has_variable(proto.name), onnx_graph.input):
             v = _convert_value_info_proto(proto)
             self.set_variable(proto.name, v)
             inputs.append(v)
 
         # Convert operators
-        for onnx_op in _listup_functions(graph):
+        for onnx_op in _listup_functions(onnx_graph):
             self._convert_operator(onnx_op)
 
-        graph = Graph(inputs, [self.get_variable(proto.name) for proto in graph.output])
+        webdnn_graph = Graph(inputs, [self.get_variable(proto.name) for proto in onnx_graph.output])
 
-        for v in graph.inputs:
-            v.attributes.add(Input(v))
+        for v in webdnn_graph.inputs:
+            v.attributes.add(Input())
 
-        for v in graph.outputs:
-            v.attributes.add(Output(v))
+        for v in webdnn_graph.outputs:
+            v.attributes.add(Output())
 
-        return graph
+        return webdnn_graph
 
     def _convert_operator(self, proto: INodeProto):
         console.debug(f"-----------------------------------------------------------")

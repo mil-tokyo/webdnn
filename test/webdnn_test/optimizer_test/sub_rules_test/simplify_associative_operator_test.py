@@ -66,7 +66,7 @@ def test_left_hand_with_folding():
     c2 -[x1]-+
     """
     c1 = ConstantVariable(np.random.rand(2, 3, 4, 5), OrderNCHW)
-    c2 = c1.copy()
+    c2 = ConstantVariable(np.random.rand(2, 3, 4, 5), OrderNCHW)
     v = Variable(c1.shape, c1.order)
 
     h = v + c1

@@ -16,8 +16,8 @@ class Im2Col(Operator):
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
         self.parameters["dilation_rate"] = to_tuple(dilation_rate)
-        self.attributes.add(Tensorwise(self, Axis.N))
-        self.attributes.add(Tensorwise(self, Axis.C))
+        self.attributes.add(Tensorwise(Axis.N))
+        self.attributes.add(Tensorwise(Axis.C))
 
     def __call__(self, im: Variable):
         self.append_input("im", im)

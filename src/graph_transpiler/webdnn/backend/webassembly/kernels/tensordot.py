@@ -14,13 +14,13 @@ def generate_template(transpose_A, transpose_B):
     return """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *A = %%LOAD_BUFFER(sgemm_A)%%;
-    float *B = %%LOAD_BUFFER(sgemm_B)%%;
-    float *C = %%LOAD_BUFFER(sgemm_C)%%;
+    float *A = %%LOAD_BUFFER(A)%%;
+    float *B = %%LOAD_BUFFER(B)%%;
+    float *C = %%LOAD_BUFFER(C)%%;
 
-    const int M = %%LOAD_BUFFER(sgemm_M)%%;
-    const int N = %%LOAD_BUFFER(sgemm_N)%%;
-    const int K = %%LOAD_BUFFER(sgemm_K)%%;
+    const int M = %%LOAD_BUFFER(M)%%;
+    const int N = %%LOAD_BUFFER(N)%%;
+    const int K = %%LOAD_BUFFER(K)%%;
 
     const int a_stride_k = %%A_STRIDE_K%%;
     const int a_stride_mn = %%A_STRIDE_MN%%;
@@ -55,13 +55,13 @@ def generate_template_eigen(transpose_A, transpose_B):
 
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)
 {
-    float *A = %%LOAD_BUFFER(sgemm_A)%%;
-    float *B = %%LOAD_BUFFER(sgemm_B)%%;
-    float *C = %%LOAD_BUFFER(sgemm_C)%%;
+    float *A = %%LOAD_BUFFER(A)%%;
+    float *B = %%LOAD_BUFFER(B)%%;
+    float *C = %%LOAD_BUFFER(C)%%;
 
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_K)%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%LOAD_BUFFER(sgemm_K)%%, %%LOAD_BUFFER(sgemm_N)%%);
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%LOAD_BUFFER(sgemm_M)%%, %%LOAD_BUFFER(sgemm_N)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%A_MAJOR%%> > a_mat(A, %%LOAD_BUFFER(M)%%, %%LOAD_BUFFER(K)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::%%B_MAJOR%%> > b_mat(B, %%LOAD_BUFFER(K)%%, %%LOAD_BUFFER(N)%%);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > c_mat(C, %%LOAD_BUFFER(M)%%, %%LOAD_BUFFER(N)%%);
 
     c_mat.noalias() = a_mat * b_mat;
 }
@@ -92,31 +92,31 @@ def tensordot(op: Tensordot, memory_layout: MemoryLayout) -> List[Kernel]:
 
     buffer_injector = BufferInjector()
     buffer_injector.register({
-        "sgemm_A": memory_layout[A],
-        "sgemm_B": memory_layout[B],
-        "sgemm_C": memory_layout[C],
-        "sgemm_M": M,
-        "sgemm_N": N,
-        "sgemm_K": K
+        "A": memory_layout[A],
+        "B": memory_layout[B],
+        "C": memory_layout[C],
+        "M": M,
+        "N": N,
+        "K": K
     })
 
     if op.has_attribute(UseEigenAttribute):
         source = generate_template_eigen(True, False)
         buffer_injector.register({
-            "sgemm_A": memory_layout[A],
-            "sgemm_B": memory_layout[B],
-            "sgemm_C": memory_layout[C]
+            "A": memory_layout[A],
+            "B": memory_layout[B],
+            "C": memory_layout[C]
         })
 
     else:
         source = generate_template(True, False)
         buffer_injector.register({
-            "sgemm_A": memory_layout[A],
-            "sgemm_B": memory_layout[B],
-            "sgemm_C": memory_layout[C],
-            "sgemm_M": op.M,
-            "sgemm_N": op.N,
-            "sgemm_K": op.K
+            "A": memory_layout[A],
+            "B": memory_layout[B],
+            "C": memory_layout[C],
+            "M": M,
+            "N": N,
+            "K": K
         })
 
     name_injector = KernelNameInjector(op)

@@ -62,7 +62,7 @@ class SplitAxis(Operator):
             if a == axis:
                 continue
 
-            self.attributes.add(Tensorwise(self, a))
+            self.attributes.add(Tensorwise(a))
 
         return outputs
 

@@ -96,8 +96,8 @@ def setup_graph_residual():
 def test_check_attribute_match():
     global op1, op2
 
-    op1.attributes.add(TestAttribute1(op2))
-    op2.attributes.add(TestAttribute2(op2))
+    op1.attributes.add(TestAttribute1())
+    op2.attributes.add(TestAttribute2())
 
     assert check_attribute_match(op1, TestAttribute1)
     assert not check_attribute_match(op2, TestAttribute1)
@@ -135,8 +135,8 @@ def test_search_sub_structure_full():
 def test_filter_nodes():
     global graph, op1
 
-    op1.attributes.add(TestAttribute1(op1))
-    op2.attributes.add(TestAttribute1(op2))
+    op1.attributes.add(TestAttribute1())
+    op2.attributes.add(TestAttribute1())
 
     ops = filter_nodes([op1, op2, op3], TestAttribute1)
     assert tuple(ops) == (op1, op2)

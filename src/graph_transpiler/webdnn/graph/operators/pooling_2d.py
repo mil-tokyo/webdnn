@@ -72,7 +72,7 @@ class Pooling2D(Operator):
             if axis == Axis.H or axis == Axis.W:
                 continue
 
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(axis))
 
         return y,
 

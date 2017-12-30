@@ -9,7 +9,7 @@ from webdnn.util import console
 class OptimizeRule:
     """OptimizeRule()
 
-    :code:`OptimizeRule` transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.
+    `OptimizeRule` transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.
     """
 
     @staticmethod

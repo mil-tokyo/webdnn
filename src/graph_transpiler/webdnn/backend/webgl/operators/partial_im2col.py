@@ -35,9 +35,9 @@ class PartialIm2Col(Operator):
         self.parameters["sections"] = list(sections)
         self.parameters["axis"] = axis
         if axis != Axis.N:
-            self.attributes.add(Tensorwise(self, Axis.N))
+            self.attributes.add(Tensorwise(Axis.N))
         if axis != Axis.C:
-            self.attributes.add(Tensorwise(self, Axis.C))
+            self.attributes.add(Tensorwise(Axis.C))
 
     def __call__(self, im: Variable):
         self.append_input(f"im", im)

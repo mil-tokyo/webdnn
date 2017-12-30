@@ -230,10 +230,10 @@ class ChainerConverter(Converter["T_FUNCTION"]):
         graph = Graph([self.get_variable(c_var) for c_var in inputs], [self.get_variable(c_var) for c_var in outputs])
 
         for v in graph.inputs:
-            v.attributes.add(Input(v))
+            v.attributes.add(Input())
 
         for v in graph.outputs:
-            v.attributes.add(Output(v))
+            v.attributes.add(Output())
 
         return graph
 

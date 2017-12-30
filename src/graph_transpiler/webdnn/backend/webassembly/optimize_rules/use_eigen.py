@@ -9,7 +9,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 EIGEN_LICENSE = "(C) Eigen authors, MPL 2.0 License"
 
 
-class UseEigenAttribute(Attribute[Tensordot]):
+class UseEigenAttribute(Attribute):
     pass
 
 
@@ -18,7 +18,7 @@ class UseEigen(OptimizeRule):
         flag_changed = False
         for op in traverse.filter_nodes(traverse.listup_operators(graph), Tensordot):
             if not op.has_attribute(UseEigenAttribute):
-                op.attributes.add(UseEigenAttribute(op))
+                op.attributes.add(UseEigenAttribute())
                 flag_changed = True
                 graph.licenses["eigen"] = EIGEN_LICENSE
 

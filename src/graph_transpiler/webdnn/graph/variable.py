@@ -48,11 +48,13 @@ class Variable(Node):
     @property
     def input_to(self) -> Set["operator.Operator"]:
         """operators which this variable is input to"""
+        # noinspection PyTypeChecker
         return set(self.nexts)
 
     @property
     def output_from(self) -> "operator.Operator":
         """operator which this variable is output from"""
+        # noinspection PyTypeChecker
         return None if len(self.prevs) == 0 else list(self.prevs)[0]
 
     @property

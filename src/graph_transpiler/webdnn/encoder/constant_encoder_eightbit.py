@@ -7,7 +7,6 @@ import numpy as np
 
 from webdnn.backend.code_generator.allocator import Allocation, MemoryLayout
 from webdnn.encoder.constant_encoder import ConstantEncoder
-from webdnn.graph.variables.constant_variable import ConstantVariable
 
 tbl_floats = [2.750000021e-06, 7.249999726e-06, 1.875000089e-05, 3.624999954e-05, 5.874999624e-05, 8.624999464e-05,
               1.437500032e-04, 2.312500001e-04, 3.187500115e-04, 4.062500084e-04, 5.187499919e-04, 6.562499912e-04,

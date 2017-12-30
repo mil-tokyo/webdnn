@@ -4,8 +4,9 @@ from webdnn.graph.attribute import Attribute
 from webdnn.graph.operator import Operator
 
 
-class Commutative(Attribute[Operator]):
+class Commutative(Attribute):
     """Commutative(op, var_keys)
+
     Commutative property
 
     The operator with this attribute satisfies follow conditions.
@@ -15,16 +16,17 @@ class Commutative(Attribute[Operator]):
         - When the order of these input variables is changed, the result is not changed.
 
     Attributes:
+        op (:class:`~webdnn.graph.operator.Operator`) : base operator
         var_keys (tuple of str): input names which can be swapped.
     """
 
     def __init__(self, op: Operator, var_keys: Tuple[str, str]):
-        super(Commutative, self).__init__(op)
+        self.op = op
         self.var_keys = var_keys
 
     @property
     def vars(self):
-        return tuple(self.base.inputs[key] for key in self.var_keys)
+        return tuple(self.op.inputs[key] for key in self.var_keys)
 
     def swap(self):
         """
@@ -32,7 +34,7 @@ class Commutative(Attribute[Operator]):
         """
         var1_key, var2_key = self.var_keys
         var1, var2 = self.vars
-        op = self.base
+        op = self.op
 
         op.remove_input(var1)
         op.remove_input(var2)

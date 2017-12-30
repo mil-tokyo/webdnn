@@ -1,6 +1,5 @@
 from typing import Generic, TypeVar, Iterable, Dict, Tuple, List
 
-from webdnn.graph.graph import Graph
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.graph.placeholder import Placeholder
 
@@ -18,6 +17,7 @@ class IGraphExecutionData(Generic[T_KERNEL]):
     """
     Container class for graph descriptor and related datum.
     """
+
     def save(self, dirname: str):
         """save(dirname)
 

@@ -1,9 +1,5 @@
-try:
-    import keras
-    import keras.backend as K
-except ImportError as e:
-    pass
-
+import keras
+import keras.backend as K
 import numpy as np
 
 from webdnn.frontend.keras.converter import KerasConverter

@@ -1,7 +1,4 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation

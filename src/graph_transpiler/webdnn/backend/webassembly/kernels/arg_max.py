@@ -6,7 +6,6 @@ from webdnn.backend.code_generator.injectors.kernel_name_injector import KernelN
 from webdnn.backend.webassembly.generator import WebassemblyDescriptorGenerator
 from webdnn.backend.webassembly.kernel import Kernel
 from webdnn.graph.operators.arg_max import ArgMax
-from webdnn.graph.operators.max import Max
 
 template = """
 void %%FUNC_NAME%%(const int * %%META_BUFFER%%)

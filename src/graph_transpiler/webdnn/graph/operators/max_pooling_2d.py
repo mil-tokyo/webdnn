@@ -1,4 +1,7 @@
+from typing import Optional
+
 from webdnn.graph.operators.pooling_2d import Pooling2D
+from webdnn.graph.operators.util import IntOrTuple
 
 
 class MaxPooling2D(Pooling2D):
@@ -22,3 +25,6 @@ class MaxPooling2D(Pooling2D):
         - **x** - Input variable.
         - **y** - Output value. Its order is same as :code:`x`.
     """
+
+    def __init__(self, name: Optional[str], ksize: IntOrTuple, stride: IntOrTuple, padding: IntOrTuple, cover_all: bool = True):
+        super(MaxPooling2D, self).__init__(name, ksize, stride, padding, cover_all)

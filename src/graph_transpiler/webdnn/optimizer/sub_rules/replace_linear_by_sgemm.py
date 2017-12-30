@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from webdnn.graph import traverse
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.linear import Linear
 from webdnn.graph.operators.sgemm import Sgemm
@@ -24,7 +25,7 @@ class ReplaceLinearBySgemm(OptimizeRule):
             flag_changed = True
             op.remove_all()
 
-            a_k = op.feature_axis
+            a_k = Axis.C
             a_n = w.order.axes[0] if w.order.axes[1] == a_k else w.order.axes[1]
             axes_m = [a for a in x.order.axes if a != a_k]
 
