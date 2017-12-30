@@ -1,5 +1,5 @@
 from enum import auto, Enum
-from typing import Dict, List, Set, Union, Tuple
+from typing import Dict, List, Set, Union, Tuple, Sequence
 
 import numpy as np
 
@@ -105,8 +105,8 @@ class MemoryLayout(json.SerializableMixin):
 
 def allocate(graph: Graph) -> MemoryLayout:
     nodes = traverse.listup_nodes(graph)
-    operators = traverse.filter_nodes(nodes, Operator)  # type: List[Operator]
-    variables = traverse.filter_nodes(nodes, Variable)  # type: List[Variable]
+    operators = traverse.filter_nodes(nodes, Operator)
+    variables = traverse.filter_nodes(nodes, Variable)
 
     for i, v in enumerate(variables):
         if v.name is None:
@@ -141,14 +141,14 @@ def allocate(graph: Graph) -> MemoryLayout:
     return layout
 
 
-def _get_allocations(graph: Graph, operators: List[Operator], variables: List[Variable]) -> AllocationDict:
+def _get_allocations(graph: Graph, operators: Sequence[Operator], variables: Sequence[Variable]) -> AllocationDict:
     T_LAST = len(operators)
 
     allocations = {}  # type: AllocationDict
     retain_count = {v: 0 for v in variables}  # type: Dict[Variable, int]
     allocated = set()  # type: Set[Variable]
 
-    for v in traverse.filter_nodes(variables, ConstantVariable):  # type: ConstantVariable
+    for v in traverse.filter_nodes(variables, ConstantVariable):
         # Constant variable cannot be released
         allocations[v] = Allocation(size=v.size, begin=0, end=T_LAST)
         allocated.add(v)
@@ -229,7 +229,7 @@ def _update_constant_offset(allocations: AllocationDict):
     return np.concatenate(data) if len(data) > 0 else np.empty((0,))
 
 
-def _optimize_inplace(operators: List[Operator], allocations_dict: AllocationDict):
+def _optimize_inplace(operators: Sequence[Operator], allocations_dict: AllocationDict):
     if not (flags.optimize.OPTIMIZE and flags.optimize.OPTIMIZE_MEMORY_ALLOCATION and flags.optimize.OPTIMIZE_INPLACE_OPERATION):
         console.debug('_optimize_inplace is skipped')
         return
@@ -493,7 +493,7 @@ def _merge_allocation(allocations: AllocationDict, a1: Allocation, a2: Allocatio
             allocations[v] = a_new
 
 
-def _visualize_allocation(operators: List[Operator], variables: List[Variable], layout: MemoryLayout):
+def _visualize_allocation(operators: Sequence[Operator], variables: Sequence[Variable], layout: MemoryLayout):
     UNIT_HEIGHT = 14
     total_size = layout.total_size - layout.data.size
     rendering_dict = {}  # type: Dict[Variable, RenderingInfo]

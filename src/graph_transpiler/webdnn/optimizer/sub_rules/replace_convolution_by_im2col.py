@@ -18,7 +18,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]

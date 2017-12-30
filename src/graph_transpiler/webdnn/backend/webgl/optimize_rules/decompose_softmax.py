@@ -12,7 +12,7 @@ from webdnn.graph.optimize_rule import OptimizeRule
 class DecomposeSoftmax(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for softmax in traverse.filter_nodes(traverse.listup_operators(graph), Softmax):  # type: Softmax
+        for softmax in traverse.filter_nodes(traverse.listup_operators(graph), Softmax):
             x = softmax.inputs["x"]
             y = softmax.outputs["y"]
             axis = softmax.parameters["axis"]

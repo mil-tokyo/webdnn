@@ -8999,7 +8999,6 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         // resolve placeholders in execution info
-                        // TODO:
                         if (Object.keys(this.descriptor.placeholders).length > 0)
                             throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
                         return [2 /*return*/];

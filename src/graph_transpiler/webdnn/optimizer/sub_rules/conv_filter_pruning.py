@@ -97,7 +97,7 @@ class ConvFilterPruning(OptimizeRule):
 
         flag_changed = False
 
-        for conv1 in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for conv1 in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             parameters = _find_conv2(conv1)
             if parameters is None:
                 continue

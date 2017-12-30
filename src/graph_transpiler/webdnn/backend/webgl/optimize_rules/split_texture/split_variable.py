@@ -37,7 +37,7 @@ class SplitVariable(OptimizeRule):
     def optimize(self, graph: Graph):
         flag_changed = False
 
-        for v in traverse.filter_nodes(traverse.listup_nodes(graph), SplitTarget):  # type: Variable
+        for v in traverse.filter_nodes(traverse.listup_variables(graph), SplitTarget):
             axis = _choose_split_axis(v)
             _split_axis(v, axis, graph)
             flag_changed = True

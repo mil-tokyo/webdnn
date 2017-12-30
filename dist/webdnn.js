@@ -8446,7 +8446,6 @@ class DescriptorRunnerWebGL extends DescriptorRunner {
             throw new Error('Descriptor is not loaded');
         await this.initializeDynamicBuffer();
         // resolve placeholders in execution info
-        // TODO:
         if (Object.keys(this.descriptor.placeholders).length > 0)
             throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
     }

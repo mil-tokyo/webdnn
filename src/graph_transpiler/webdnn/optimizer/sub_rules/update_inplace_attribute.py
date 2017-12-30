@@ -2,7 +2,6 @@ from typing import Tuple
 
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.inplace import InplaceOperator
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variables.attributes.input import Input
@@ -24,7 +23,7 @@ class UpdateInplaceAttribute(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
 
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), InplaceOperator):  # type: Operator
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), InplaceOperator):
             attr = op.get_attribute(InplaceOperator)[0]
             v_in = attr.get_input()
             v_out = attr.get_output()

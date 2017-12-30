@@ -49,7 +49,7 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             memory_layout = allocate(graph)
 
             constants_map = {}
-            for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
+            for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):
                 constants_map[constant.name] = {
                     "byte_offset": memory_layout[constant].offset * 4,
                     "size": constant.size
