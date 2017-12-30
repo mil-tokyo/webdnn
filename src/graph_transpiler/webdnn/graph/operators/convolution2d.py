@@ -48,7 +48,7 @@ class Convolution2D(Operator):
 [Convolution2D] Parameter "padding" must be integer or tuple of integer""")
         self.parameters["dilation_rate"] = assert_sequence_type(to_tuple(dilation_rate), (int, Placeholder), message=f"""
 [Convolution2D] Parameter "dilation_rate" must be integer or tuple of integer""")
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
         self.append_input("x", x)

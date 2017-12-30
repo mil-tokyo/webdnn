@@ -1,5 +1,8 @@
+from typing import Optional
+
 import numpy as np
 
+from webdnn.graph.axis import Axis
 from webdnn.graph.graph import Graph
 from webdnn.graph.operators.reduce import Reduce
 from webdnn.graph.optimize_rule import OptimizeRule
@@ -13,8 +16,8 @@ class Sum(Reduce):
     return sum of the input tensor along to specified axis
 
     Args:
-        name (str): Operator name.
-        axis (:obj:`~webdnn.Axis`) axis which will be reduced.
+        name (str) : Operator name.
+        axis (:obj:`~webdnn.graph.axis.Axis`) : axis which will be reduced.
 
     Signature
         .. code::
@@ -24,6 +27,9 @@ class Sum(Reduce):
         - **x** - Input variables.
         - **y** - Output variable.
     """
+
+    def __init__(self, name: Optional[str], axis: Axis):
+        super().__init__(name, axis=axis)
 
     def fold_constance(self, graph: Graph):
         x = self.inputs["x"]  # type: ConstantVariable

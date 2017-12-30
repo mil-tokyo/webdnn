@@ -2,7 +2,7 @@
 Utility functions for traversing computation graph
 """
 
-from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar, Sequence, overload
+from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar, Sequence
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
@@ -115,15 +115,7 @@ T = TypeVar("T", bound=Node)
 U = TypeVar("U", bound=T)
 
 
-@overload
-def filter_nodes(nodes: Iterable[T], query: Type[U], mode_not: bool = False) -> List[U]: ...
-
-
-@overload
-def filter_nodes(nodes: Iterable[T], query: Type[Attribute], mode_not: bool = False) -> List[T]: ...
-
-
-def filter_nodes(nodes: Iterable[T], query: Query, mode_not: bool = False) -> List[T]:
+def filter_nodes(nodes, query, mode_not=False):
     """filter_nodes(nodes, query, mode_not=False)
 
     Filter nodes by specified query

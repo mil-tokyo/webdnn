@@ -4,11 +4,10 @@ from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.placeholder import Placeholder
-from webdnn.graph.variable import Variable
 from webdnn.util import config
 
 
-class SplitTarget(Attribute[Variable]):
+class SplitTarget(Attribute):
     pass
 
 
@@ -37,6 +36,6 @@ class CheckTextureSize(OptimizeRule):
 
             if not v.has_attribute(SplitTarget):
                 flag_changed = True
-                v.attributes.add(SplitTarget(v))
+                v.attributes.add(SplitTarget())
 
         return graph, flag_changed

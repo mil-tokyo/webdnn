@@ -3,7 +3,6 @@ from typing import Optional
 
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.elementwise_mul import ElementwiseMul
-from webdnn.graph.variable import Variable
 
 
 class AxiswiseScale(ElementwiseMul):

@@ -1,12 +1,12 @@
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.axis import Axis
-from webdnn.graph.operator import Operator
 from webdnn.graph.operators.lstm import LSTM
 
 
-class LSTMOptimized(Attribute[Operator]):
+class LSTMOptimized(Attribute):
     def __init__(self, base: LSTM):
-        super(LSTMOptimized, self).__init__(base)
+        self.base = base
+
         if "w_input" not in base.inputs:
             raise KeyError("[LSTMOptimized] 'w_input' is not found in inputs of LSTM operator."
                            "LSTMOptimized attribute must be attached before 'w_input' is removed")

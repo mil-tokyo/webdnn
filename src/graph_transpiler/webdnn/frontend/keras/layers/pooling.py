@@ -1,7 +1,4 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.tensorflow.util import check_data_format, parse_padding, convert_odd_padding_to_concat

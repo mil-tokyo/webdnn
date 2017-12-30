@@ -7,6 +7,7 @@ from os import path
 from webdnn.frontend.converter import Converter
 from webdnn.frontend.onnx import ONNXConverter
 from webdnn.frontend.util import semver
+from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.util import console
 

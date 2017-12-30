@@ -160,15 +160,15 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                                         dummy2real: Dict[Variable, Variable] = None):
     _reset_unique_counter()
 
-    xs = set()
-    ys = set()
+    xs = set()  # type: Set[Variable]
+    ys = set()  # type: Set[Variable]
     for op in ops:
         xs.update(op.inputs.values())
         ys.update(op.outputs.values())
 
     hidden_counter = xs.intersection(ys)
-    xs = list(xs.difference(hidden_counter))
-    ys = list(ys.difference(hidden_counter))
+    xs = list(xs.difference(hidden_counter))  # type: List[Variable]
+    ys = list(ys.difference(hidden_counter))  # type: List[Variable]
 
     assert len(ys) == 1, f"multi output: ys={ys}"
     y = ys[0]

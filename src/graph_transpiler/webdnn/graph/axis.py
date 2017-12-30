@@ -1,5 +1,5 @@
 import itertools
-from typing import Generic, Iterable, Tuple, TypeVar, List, Dict, overload, Sequence
+from typing import TypeVar, List, Dict, Generic, Sequence, Iterable, Tuple
 
 _internal2global = {}  # type: Dict[int, int]
 _global2internal = {}  # type: Dict[int, List[int]]
@@ -12,10 +12,6 @@ def _uuid():
     global _uuid_counter
     _uuid_counter += 1
     return _uuid_counter
-
-
-class UnificationFailedError(Exception):
-    pass
 
 
 class Axis:
@@ -40,6 +36,9 @@ class Axis:
 
             v2 = Variable([3, 5], Order([a1, a2))
             >>> ValueError: "Axes are duplicated: [?1, ?1]"
+
+    Args:
+        name (str, optional) : axis name
     """
 
     def __init__(self, name=None):
@@ -48,11 +47,11 @@ class Axis:
         would be changed and not unique over axes. Global id is used to identify two axes as same.
         """
         self._internal_id = _uuid()
-        self._global_id = self._internal_id
+        global_id = self._internal_id
 
-        _internal2global[self._internal_id] = self._global_id
-        _global2internal[self._global_id] = [self._internal_id]
-        _axis_name_dict[self._global_id] = name
+        _internal2global[self._internal_id] = global_id
+        _global2internal[global_id] = [self._internal_id]
+        _axis_name_dict[global_id] = name
 
     def __str__(self):  # pragma: no cover
         return f"<Axis {self.name}>"
@@ -84,7 +83,7 @@ class Axis:
 
         # If both two axes have name, they must be same
         if (_axis_name_dict[self.id] is not None) and (_axis_name_dict[other.id] is not None) and (self.name != other.name):
-            raise UnificationFailedError(f"""
+            raise TypeError(f"""
 Unification failed: "self" and "other" must have same name.
     (self.name) = {self.name}
     (other.name) = {other.name}""")
@@ -112,13 +111,13 @@ Unification failed: "self" and "other" must have same name.
     __hash__ = None  # "Axis" is mutable container and hash value would be changed
 
     # Pre-declared axes
-    N = None  # type: "Axis"
-    C = None  # type: "Axis"
-    H = None  # type: "Axis"
-    W = None  # type: "Axis"
-    T = None  # type: "Axis"
-    KH = None  # type: "Axis"
-    KW = None  # type: "Axis"
+    N = None  # type: Axis
+    C = None  # type: Axis
+    H = None  # type: Axis
+    W = None  # type: Axis
+    T = None  # type: Axis
+    KH = None  # type: Axis
+    KW = None  # type: Axis
 
 
 Axis.N = Axis("N")  # Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
@@ -133,7 +132,7 @@ T = TypeVar('T')
 
 
 class AxisKeyDict(Generic[T]):
-    """AxisKeyDict(keys=None, vals=None)
+    """AxisKeyDict(*args)
 
     Dictionary-like object. Since :class:`~webdnn.graph.axis.Axis` is not hashable, dictionary cannot use axis object as key. AxisKeyDict
     allows using axis as key.
@@ -145,69 +144,50 @@ class AxisKeyDict(Generic[T]):
     - If two sequences of same length are given, dictionary with specified key-value pairs is created
     - If nothing is given, empty dictionary is created.
     - Otherwise `ValueError` is raised.
-
-    Args:
-        args (any) : Initialization parameters see above description.
     """
 
-    @overload
-    def __init__(self, other: "AxisKeyDict"):  # pragma: no coverage
-        ...
-
-    @overload
-    def __init__(self, keys: Iterable[Axis], values: Iterable[T]):  # pragma: no coverage
-        ...
-
-    @overload
-    def __init__(self, pairs: Iterable[Tuple[Axis, T]]):  # pragma: no coverage
-        ...
-
-    @overload
-    def __init__(self):  # pragma: no coverage
-        ...
-
     def __init__(self, *args):
-        # nothing is given
         if len(args) == 0:
-            self._keys = []  # type: List[Axis]
-            self._values = []  # type: List[T]
-            return
+            # nothing is given
+            keys = []
+            values = []
 
-        # other
-        if len(args) == 1 and isinstance(args[0], AxisKeyDict):
-            self._keys = list(args[0].keys())  # type: List[Axis]
-            self._values = list(args[0].values())  # type: List[T]
-            return
+        elif len(args) == 1 and isinstance(args[0], AxisKeyDict):
+            # other
+            keys = list(args[0].keys())
+            values = list(args[0].values())
 
-        # keyvals
-        if len(args) == 1 and isinstance(args[0], Sequence):
-            self._keys = [k for k, v in args[0]]  # type: List[Axis]
-            self._values = [v for k, v in args[0]]  # type: List[T]
-            return
+        elif len(args) == 1 and isinstance(args[0], Sequence):
+            # keyvals
+            keys = [k for k, v in args[0]]
+            values = [v for k, v in args[0]]
 
-        # keys and values
-        if len(args) == 2 and isinstance(args[0], Sequence) and isinstance(args[1], Sequence):
-            self._keys = list(args[0])  # type: List[Axis]
-            self._values = list(args[1])  # type: List[T]
-            if len(self._keys) != len(self._values):
+        elif len(args) == 2 and isinstance(args[0], Sequence) and isinstance(args[1], Sequence):
+            # keys and values
+            keys = list(args[0])
+            values = list(args[1])
+            if len(keys) != len(values):
                 raise ValueError(f"""
 [AxisKeyDict] Parameter "keys" and "values" must be same length:
-    (keys) = {self._keys}
-    (values) = {self._values}
-    (len(keys)) = {len(self._keys)}
-    (len(values)) = {len(self._values)}""")
+    (keys) = {keys}
+    (values) = {values}
+    (len(keys)) = {len(keys)}
+    (len(values)) = {len(values)}""")
 
-            for a1, a2 in itertools.combinations(self._keys, 2):
+            for a1, a2 in itertools.combinations(keys, 2):
                 if a1 == a2:
                     raise ValueError(f"""
 [AxisKeyDict] Axes are duplicated in parameter "keys":
-    (keys) = {self._keys}
+    (keys) = {keys}
     (duplicated axis) = {a1}""")
-            return
 
-        raise ValueError(f"""
+        else:
+            raise ValueError(f"""
 [AxisKeyDict] Invalid parameters are given
     (args) = {args}""")
+
+        self._keys = keys
+        self._values = values
 
     def __contains__(self, item: Axis) -> bool:
         return item in self._keys

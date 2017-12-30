@@ -9,14 +9,14 @@ from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 
 
-class ConcatWorkspaceAttached(Attribute[Concat]):
+class ConcatWorkspaceAttached(Attribute):
     def __init__(self, base: Concat):
-        super(ConcatWorkspaceAttached, self).__init__(base)
+        self.base = base
         workspace = Variable(base.outputs["y"].shape, base.outputs["y"].order)
         base.append_input("workspace", workspace)
 
     def update(self) -> bool:
-        base = self.base  # type: Concat
+        base = self.base
         y = base.outputs["y"]
         workspace = base.inputs["workspace"]
         flag_changed = False

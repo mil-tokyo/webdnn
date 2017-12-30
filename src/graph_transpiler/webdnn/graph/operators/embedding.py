@@ -29,8 +29,8 @@ class Embedding(Operator):
 
     def __init__(self, name: Optional[str]):
         super().__init__(name)
-        self.attributes.add(Tensorwise(self, Axis.N))
-        self.attributes.add(Tensorwise(self, Axis.T))
+        self.attributes.add(Tensorwise(Axis.N))
+        self.attributes.add(Tensorwise(Axis.T))
 
     def __call__(self, x: Variable, w: Variable):
         self.append_input("x", x)

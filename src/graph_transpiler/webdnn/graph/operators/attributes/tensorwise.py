@@ -3,8 +3,8 @@ from webdnn.graph.axis import Axis
 from webdnn.graph.operator import Operator
 
 
-class Tensorwise(Attribute[Operator]):
-    """Tensorwise(base, axis)
+class Tensorwise(Attribute):
+    """Tensorwise(axis)
 
     Tensorwise `Tensorwise[axis]` means that attached operator satisfied follow conditions.
 
@@ -35,10 +35,11 @@ class Tensorwise(Attribute[Operator]):
     - `Pooling2D` operation has `Tensorwise[Axis.N]` and `Tensorwise[Axis.C]`, NOT has `Tensorwise[Axis.H]` and `Tensorwise[Axis.W]`.
     - `Sgemm` operation doesn't has any Tensorwise attribute.
 
+    Attributes:
+        axis (:class:`~webdnn.graph.axis.Axis`): the axis
     """
 
-    def __init__(self, base: Operator, axis: Axis):
-        super(Tensorwise, self).__init__(base)
+    def __init__(self, axis: Axis):
         self.axis = axis
 
     def __str__(self):
@@ -46,4 +47,5 @@ class Tensorwise(Attribute[Operator]):
 
     @staticmethod
     def check_splittable(op: Operator, axis: Axis):
+        """Check whether op can be split in specified axis"""
         return any(attr.axis == axis for attr in op.get_attribute(Tensorwise))

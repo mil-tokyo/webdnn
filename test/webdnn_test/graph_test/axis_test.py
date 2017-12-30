@@ -1,6 +1,6 @@
 from nose.tools import raises
 
-from webdnn.graph.axis import Axis, UnificationFailedError, AxisKeyDict
+from webdnn.graph.axis import Axis, AxisKeyDict
 
 
 def test_equal():
@@ -66,14 +66,14 @@ def test_unify_same_name_axes():
     assert a1 == a2
 
 
-@raises(UnificationFailedError)
+@raises(TypeError)
 def test_unify_different_name_axes():
     a1 = Axis(name="A")
     a2 = Axis(name="B")
     a1.unify(a2)
 
 
-@raises(UnificationFailedError)
+@raises(TypeError)
 def test_unify_deep_chain_different_name_axes():
     a1 = Axis(name="A")
     a2 = Axis()

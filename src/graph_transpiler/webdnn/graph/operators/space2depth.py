@@ -28,7 +28,7 @@ class Space2Depth(Operator):
     def __init__(self, name: Optional[str], r: int):
         super().__init__(name)
         self.parameters["r"] = int(r)
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable):
         self.append_input("x", x)

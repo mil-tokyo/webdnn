@@ -1,3 +1,5 @@
+from typing import List
+
 from webdnn.backend.webgl.optimize_rules.attach_concat_workspace import AttachConcatWorkspace
 from webdnn.backend.webgl.optimize_rules.decompose_softmax import DecomposeSoftmax
 from webdnn.backend.webgl.optimize_rules.fix_tensordot_texture_shape import FixTensordotTextureShape
@@ -6,7 +8,7 @@ from webdnn.backend.webgl.optimize_rules.insert_transpose import InsertTranspose
 from webdnn.backend.webgl.optimize_rules.simplify_channel_mode_conversion.simplify_channel_mode_conversion import \
     SimplifyChannelModeConversion
 from webdnn.backend.webgl.optimize_rules.split_texture.split_texture import SplitTexture
-from webdnn.graph.optimize_rule import OptimizeRuleGroup
+from webdnn.graph.optimize_rule import OptimizeRuleGroup, OptimizeRule
 from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
 from webdnn.optimizer.sub_rules.merge_tensordot_and_elementwise_mul import MergeTensordotAndElementwiseMul
@@ -37,7 +39,7 @@ class WebGLOptimizeRule(OptimizeRuleGroup):
                 SplitTexture(),
             ]),
             AttachConcatWorkspace(),
-        ]
+        ]  # type: List[OptimizeRule]
 
         if flags.DEBUG:
             sub_rules.append(DumpGraph(f"cg_{config.WEBGL_MAX_TEXTURE_SIZE}_{{count}}.dot"))

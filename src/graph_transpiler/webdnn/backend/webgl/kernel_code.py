@@ -55,11 +55,11 @@ class Type(Enum):
 
 
 class Node(metaclass=ABCMeta):
-    def __call__(self) -> Union[str, "Node", Sequence[Union[str, "Node"]]]:
+    def __call__(self) -> Union[int, float, str, Placeholder, "Node", Sequence[Union[int, float, str, Placeholder, "Node"]]]:
         raise NotImplementedError
 
 
-Expression = Union[str, Node, Sequence[Union[str, Node]]]
+Expression = Union[int, float, str, Placeholder, Node, Sequence[Union[int, float, str, Placeholder, Node]]]
 
 
 class StatementNode(Node):

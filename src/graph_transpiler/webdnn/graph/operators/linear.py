@@ -59,13 +59,13 @@ class Linear(Operator):
 
         if x.ndim == 4:
             if Placeholder.check_resolved(x.shape_dict[Axis.H]) and Placeholder.check_resolved(w.shape_dict[Axis.H]):
-                assert x.shape_dict[Axis.C] == w.shape_dict[Axis.C], "Input and Weight variable of Linear operator must have same shape " \
+                assert x.shape_dict[Axis.H] == w.shape_dict[Axis.H], "Input and Weight variable of Linear operator must have same shape " \
                                                                      "except Axis.N " \
                                                                      f"size: x.shape_dict[Axis.H]={x.shape_dict[Axis.H]}, " \
                                                                      f"size: w.shape_dict[Axis.H]={w.shape_dict[Axis.H]}"
 
             if Placeholder.check_resolved(x.shape_dict[Axis.W]) and Placeholder.check_resolved(w.shape_dict[Axis.W]):
-                assert x.shape_dict[Axis.C] == w.shape_dict[Axis.C], "Input and Weight variable of Linear operator must have same shape " \
+                assert x.shape_dict[Axis.W] == w.shape_dict[Axis.W], "Input and Weight variable of Linear operator must have same shape " \
                                                                      "except Axis.N " \
                                                                      f"size: x.shape_dict[Axis.W]={x.shape_dict[Axis.W]}, " \
                                                                      f"size: w.shape_dict[Axis.W]={w.shape_dict[Axis.W]}"

@@ -27,7 +27,7 @@ var pos2index = function(pos, stride) {
 var c_index, c_pos;
 var a_base_index, a_offset;
 var b_base_index, b_offset;
-var reduction_index;
+var i;
 var sum = 0;
 for (c_index = 0; c_index < C.length; c_index++) {
     c_pos = index2pos(c_index, option.stride_C, option.shape_C);
@@ -35,9 +35,9 @@ for (c_index = 0; c_index < C.length; c_index++) {
     b_base_index = pos2index(c_pos, option.stride_B_for_C_axes);
 
     sum = 0;
-    for (reduction_index = 0; reduction_index < option.reduction_size; reduction_index++) {
-        a_offset = pos2index(index2pos(reduction_index, option.stride_A_reduced_axes, option.shape_A_reduced_axes), option.stride_A_reduced_axes_for_whole);
-        b_offset = pos2index(index2pos(reduction_index, option.stride_B_reduced_axes, option.shape_B_reduced_axes), option.stride_B_reduced_axes_for_whole);
+    for (i = 0; i < option.reduction_size; i++) {
+        a_offset = pos2index(index2pos(i, option.stride_A_reduced_axes, option.shape_A_reduced_axes), option.stride_A_reduced_axes_whole);
+        b_offset = pos2index(index2pos(i, option.stride_B_reduced_axes, option.shape_B_reduced_axes), option.stride_B_reduced_axes_whole);
 
         sum += A[a_base_index + a_offset] * B[b_base_index + b_offset];
     }
@@ -72,10 +72,10 @@ def tensordot(op: Tensordot, memory_layout: MemoryLayout) -> List[Kernel]:
                      "stride_B_for_C_axes": [0 if a not in B.order.axes or a in op.axes[1] else B.stride_dict[a] for a in C.order.axes],
                      "shape_A_reduced_axes": shape_A_reduced_axes,
                      "stride_A_reduced_axes": [mul(shape_A_reduced_axes[i + 1:]) for i in range(len(shape_A_reduced_axes))],
-                     "stride_A_reduced_axes_for_whole": [A.stride_dict[a] for a in op.axes[0]],
+                     "stride_A_reduced_axes_whole": [A.stride_dict[a] for a in op.axes[0]],
                      "shape_B_reduced_axes": shape_B_reduced_axes,
                      "stride_B_reduced_axes": [mul(shape_B_reduced_axes[i + 1:]) for i in range(len(shape_B_reduced_axes))],
-                     "stride_B_reduced_axes_for_whole": [B.stride_dict[a] for a in op.axes[1]]}
+                     "stride_B_reduced_axes_whole": [B.stride_dict[a] for a in op.axes[1]]}
     )
 
     return [kernel]

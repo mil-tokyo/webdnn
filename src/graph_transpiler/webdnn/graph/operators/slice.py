@@ -12,8 +12,8 @@ from webdnn.graph.variables.constant_variable import ConstantVariable
 
 def normalize_slice(s: slice, size: int):
     step = 1 if s.step is None else s.step
-    start = (0 if step > 0 else size - 1) if s.start is None else (s.start if s.start >= 0 else s.start + size)
-    stop = (size if step > 0 else -1) if s.stop is None else (s.stop if s.stop >= 0 else s.stop + size)
+    start = (s.start if s.start >= 0 else s.start + size) if s.start is not None else (0 if step > 0 else size - 1)
+    stop = (s.stop if s.stop >= 0 else s.stop + size) if s.stop is not None else (size if step > 0 else -1)
 
     return slice(start, stop, step)
 
@@ -120,11 +120,11 @@ class Slice(Operator):
                 index = self.indices[axis]
                 if isinstance(index, slice) and index.start is None and index.stop is None and index.step is None:
                     # This axis is not sliced.
-                    self.attributes.add(Tensorwise(self, axis))
+                    self.attributes.add(Tensorwise(axis))
 
             else:
                 # This axis is not sliced.
-                self.attributes.add(Tensorwise(self, axis))
+                self.attributes.add(Tensorwise(axis))
 
         return self.exec()
 

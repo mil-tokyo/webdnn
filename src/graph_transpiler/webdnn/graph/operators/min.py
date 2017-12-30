@@ -1,14 +1,17 @@
+from typing import Optional
+
+from webdnn.graph.axis import Axis
 from webdnn.graph.operators.reduce import Reduce
 
 
 class Min(Reduce):
     """Min(name, axis)
 
-    return elements of maximum value along to specified axis
+    return elements of minimum value along to specified axis
 
     Args:
-        name (str): Operator name.
-        axis (:obj:`~webdnn.Axis`) axis which will be reduced.
+        name (str) : Operator name.
+        axis (:obj:`~webdnn.graph.axis.Axis`) : axis which will be reduced.
 
     Signature
         .. code::
@@ -18,4 +21,6 @@ class Min(Reduce):
         - **x** - Input variables.
         - **y** - Output variable.
     """
-    pass
+
+    def __init__(self, name: Optional[str], axis: Axis):
+        super().__init__(name, axis=axis)

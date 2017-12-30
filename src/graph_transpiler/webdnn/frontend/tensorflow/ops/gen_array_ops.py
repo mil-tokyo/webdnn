@@ -253,7 +253,7 @@ def mirror_pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
 
     padding = padding.data.astype(np.int).tolist()
 
-    mode = tf_op.get_attr("mode")  # type: byte
+    mode = tf_op.get_attr("mode")  # type: bytes
 
     for axis, (pad_begin, pad_end) in zip(x.order.axes, padding):
         xs = []
@@ -318,7 +318,7 @@ def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     if not isinstance(padding, ConstantVariable):
         raise NotImplementedError('[TensorFlowConverter] Pad with dynamic padding size is not supported')
 
-    padding = padding.data.astype(np.int).tolist()
+    padding = padding.data.astype(np.int).tolist()  # type: List[List[int]]
 
     if x.order.check_same_axes(OrderNHWC) and all([
         padding[x.order.axes_dict[Axis.N]][0] == padding[x.order.axes_dict[Axis.N]][1] == 0,
@@ -327,7 +327,7 @@ def pad_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
         padding[x.order.axes_dict[Axis.C]][0] == padding[x.order.axes_dict[Axis.C]][1] == 0
     ]):
         # Padding for only spatial axes: use ZeroPadding2D
-        y, = ZeroPadding2D(None, padding=tuple(padding[x.order.axes_dict[Axis.H]][0], padding[x.order.axes_dict[Axis.W]][0]))(x)
+        y, = ZeroPadding2D(None, padding=(padding[x.order.axes_dict[Axis.H]][0], padding[x.order.axes_dict[Axis.W]][0]))(x)
 
     else:
         # General case: Use Concat
@@ -613,9 +613,9 @@ def strided_slice_handler(converter: TensorFlowConverter, tf_op: "tf.Operation")
     new_axis_mask = tf_op.get_attr("new_axis_mask")
     shrink_axis_mask = tf_op.get_attr("shrink_axis_mask")
 
-    begin = begin.data.flatten().astype(np.int32).tolist()
-    end = end.data.flatten().astype(np.int32).tolist()
-    strides = strides.data.flatten().astype(np.int32).tolist()
+    begin = begin.data.flatten().astype(np.int32).tolist()  # type: List[int]
+    end = end.data.flatten().astype(np.int32).tolist()  # type: List[int]
+    strides = strides.data.flatten().astype(np.int32).tolist()  # type: List[int]
 
     for i in range(x.ndim):
         if begin_mask & (1 << i):

@@ -57,28 +57,29 @@ def validate_kernel_source(descriptor: GraphDescriptor):
         with open(source_path, "w+") as f:
             f.write(source)
 
-        with open(os.devnull, "w") as f:
-            try:
-                result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                if result.returncode == 0:
-                    if result.stderr == b"":
-                        console.debug("[WebGPUDescriptorGenerator] Generated kernel source is valid.")
+        try:
+            result = subprocess.run(["xcrun", "-sdk", "macosx", "metal", source_path, "-o", lib_path],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                    else:
-                        console.warning(
-                            "[WebGPUDescriptorGenerator] In validating kernel source, warnings are generated.")
-                        console.stderr(result.stderr.decode("utf-8"))
+            if result.returncode == 0:
+                if result.stderr == b"":
+                    console.debug("[WebGPUDescriptorGenerator] Generated kernel source is valid.")
 
                 else:
-                    console.error("[WebGPUDescriptorGenerator] Generated kernel source is invalid.")
+                    console.warning(
+                        "[WebGPUDescriptorGenerator] In validating kernel source, warnings are generated.")
                     console.stderr(result.stderr.decode("utf-8"))
-                    exit(result.returncode)
-            except FileNotFoundError:
-                console.warning(
-                    "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
-                    "skipped.")
-                return
+
+            else:
+                console.error("[WebGPUDescriptorGenerator] Generated kernel source is invalid.")
+                console.stderr(result.stderr.decode("utf-8"))
+                exit(result.returncode)
+
+        except FileNotFoundError:
+            console.warning(
+                "[WebGPUDescriptorGenerator] 'xcrun' command is not found. validation of generated source code in webgpu backend is "
+                "skipped.")
+            return
 
 
 class WebGPUDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):

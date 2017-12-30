@@ -43,7 +43,7 @@ class Deconvolution2D(Operator):
 [Deconvolution2D] Parameter "stride" must be integer or tuple of integer""")
         self.parameters["padding"] = assert_sequence_type(to_tuple(padding), (int, Placeholder), message=f"""
 [Deconvolution2D] Parameter "padding" must be integer or tuple of integer""")
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable, w: Variable):
         self.append_input("x", x)

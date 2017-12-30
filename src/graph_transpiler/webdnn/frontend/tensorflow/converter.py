@@ -127,10 +127,10 @@ class TensorFlowConverter(Converter["tf.Operation"]):
         graph, _ = TensorFlowFrontendOptimizeRule().optimize(graph)
 
         for v in graph.inputs:
-            v.attributes.add(Input(v))
+            v.attributes.add(Input())
 
         for v in graph.outputs:
-            v.attributes.add(Output(v))
+            v.attributes.add(Output())
 
         return graph
 

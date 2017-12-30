@@ -1,7 +1,7 @@
 import itertools
 from typing import Tuple, Sequence, Union
 
-from webdnn.graph.axis import Axis, AxisKeyDict, UnificationFailedError
+from webdnn.graph.axis import Axis, AxisKeyDict
 
 
 class Order:
@@ -91,7 +91,7 @@ class Order:
 
     def unify(self, other: "Order"):
         if self.ndim != other.ndim:
-            raise UnificationFailedError(f"""
+            raise ValueError(f"""
 Unification failed: Number of dimension mismatch
     (self.ndim) = {self.ndim}
     (other.ndim) = {other.ndim}""")
@@ -100,8 +100,8 @@ Unification failed: Number of dimension mismatch
             try:
                 axis1.unify(axis2)
 
-            except UnificationFailedError:
-                raise UnificationFailedError(f"""
+            except ValueError:
+                raise ValueError(f"""
 Unification failed: self.axes[{i}] != other.axes[{i}]
     (self) = {self}
     (other) = {other}""")

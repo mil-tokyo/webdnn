@@ -14,7 +14,7 @@ class Col2Im(Operator):
         self.parameters["ksize"] = to_tuple(ksize)
         self.parameters["stride"] = to_tuple(stride)
         self.parameters["padding"] = to_tuple(padding)
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, col: Variable):
         self.append_input("col", col)

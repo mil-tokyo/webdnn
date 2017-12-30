@@ -87,7 +87,7 @@ class Elementwise(Operator, metaclass=ABCMeta):
 
         # Add tensorwise attributes
         for axis in y_axes:
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(axis))
 
         y = variable.Variable([y_shape_dict[axis] for axis in y_axes], Order(y_axes))
         self.append_output("y", y)

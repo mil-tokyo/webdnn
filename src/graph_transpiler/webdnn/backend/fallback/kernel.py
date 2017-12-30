@@ -1,20 +1,15 @@
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Any
 
 from webdnn.graph.variable import Variable
 from webdnn.util import json
 
 
 class KernelExecutionInfo(json.SerializableMixin):
-    entry_func_name: str
-    inputs: Iterable[Variable]
-    outputs: Iterable[Variable]
-    call_option: Dict[str, object]
-
     def __init__(self,
                  entry_func_name: str,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
-                 call_option: Dict[str, object]):
+                 call_option: Dict[str, Any]):
         self.entry_func_name = entry_func_name
         self.inputs = inputs
         self.outputs = outputs
@@ -30,15 +25,12 @@ class KernelExecutionInfo(json.SerializableMixin):
 
 
 class Kernel:
-    func_sources: Dict[str, str]
-    exec_info: KernelExecutionInfo
-
     def __init__(self,
                  func_sources: Dict[str, str],
                  entry_func_name: str,
                  inputs: Iterable[Variable],
                  outputs: Iterable[Variable],
-                 call_option: Dict[str, object]):
+                 call_option: Dict[str, Any]):
         self.func_sources = func_sources
         self.exec_info = KernelExecutionInfo(
             entry_func_name=entry_func_name,

@@ -59,7 +59,7 @@ class ReinterpretAxis(Operator):
         self.append_output("y", y)
 
         for axis in x.order.axes:
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(axis))
 
         return y,
 

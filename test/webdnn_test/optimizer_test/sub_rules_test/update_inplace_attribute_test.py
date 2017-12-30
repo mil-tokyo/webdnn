@@ -127,7 +127,7 @@ def test_input():
 
     c = ConstantVariable(np.random.rand(2, 3, 4, 5), OrderNCHW)
     v = Variable(c.shape, c.order)
-    v.attributes.add(Input(v))
+    v.attributes.add(Input())
 
     y = v + c
     op = y.output_from
