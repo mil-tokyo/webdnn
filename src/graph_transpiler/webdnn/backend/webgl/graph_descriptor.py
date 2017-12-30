@@ -5,9 +5,8 @@ from typing import Iterable, Dict, Any
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webgl.allocator import WebGLMemoryLayout
 from webdnn.backend.webgl.kernel import Kernel
-from webdnn.graph import traverse
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.constant import Constant
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json
 
 
@@ -52,7 +51,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
 
         return {
             "converted_at": int(datetime.timestamp(datetime.now())),
-            "inputs": [v.parameters["name"] for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
+            "inputs": [v.parameters["name"] for v in self.inputs if not isinstance(v, ConstantVariable)],
             "outputs": [v.parameters["name"] for v in self.outputs],
             "memory_layout": self.memory_layout,
             "weight_encoding": self.constants_encoding,
