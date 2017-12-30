@@ -5,10 +5,9 @@ from typing import Iterable, Dict, List, Set, Tuple
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webgpu.kernel import Kernel
-from webdnn.graph import traverse
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.constant import Constant
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json, flags
 
 source_header = f"""
@@ -90,7 +89,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "weight_encoding": self.constants_encoding,
             "memory_layout": self.memory_layout,
             "placeholders": placeholders,
-            "inputs": [self.memory_layout[v].name for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
+            "inputs": [self.memory_layout[v].name for v in self.inputs if not isinstance(v, ConstantVariable)],
             "outputs": [self.memory_layout[v].name for v in self.outputs],
             "licenses": self.licenses
         }

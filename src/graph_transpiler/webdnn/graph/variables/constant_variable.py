@@ -1,11 +1,8 @@
-from copy import deepcopy
-
 import numpy as np
 
 from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.constant import Constant
 
 
 class ConstantVariable(Variable):
@@ -21,7 +18,6 @@ class ConstantVariable(Variable):
     def __init__(self, data: np.ndarray, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
         self.data = data.copy().astype(np.float32)  # type: np.ndarray
-        self.attributes.add(Constant(self))
 
     def change_order(self, order: Order) -> "ConstantVariable":
         """change_order(order)
