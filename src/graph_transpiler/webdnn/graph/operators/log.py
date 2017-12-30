@@ -28,5 +28,6 @@ class Log(Elementwise):
         y = self.outputs["y"]
         self.remove_all()
 
-        new_y = ConstantVariable(np.log(x0.copy().change_order(y.order).data), y.order)
-        OptimizeRule.replace_variable(graph, y, new_y)
+        y_new = ConstantVariable(x0.data, x0.order).change_order(y.order)
+        y_new.data = np.log(y_new.data)
+        OptimizeRule.replace_variable(graph, y, y_new)

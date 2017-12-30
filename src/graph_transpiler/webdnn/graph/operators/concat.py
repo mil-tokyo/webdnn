@@ -83,7 +83,7 @@ class Concat(Operator):
         xs = [self.inputs[f"x{i}"] for i in range(len(self.inputs))]  # type: List[ConstantVariable]
         y = self.outputs["y"]
 
-        data = np.concatenate([x.copy().change_order(y.order).data for x in xs], axis=y.order.axes_dict[self.axis])
+        data = np.concatenate([ConstantVariable(x.data, x.order).change_order(y.order).data for x in xs], axis=y.order.axes_dict[self.axis])
         new_y = ConstantVariable(data, y.order)
         OptimizeRule.replace_variable(graph, y, new_y)
         self.remove_all()

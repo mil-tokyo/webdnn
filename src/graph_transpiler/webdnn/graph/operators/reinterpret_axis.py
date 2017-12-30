@@ -68,8 +68,8 @@ class ReinterpretAxis(Operator):
         y = self.outputs["y"]
         self.remove_all()
 
-        new_y = ConstantVariable(x.data.copy(), y.order)
-        OptimizeRule.replace_variable(graph, y, new_y)
+        y_new = ConstantVariable(x.data, y.order)
+        OptimizeRule.replace_variable(graph, y, y_new)
 
     @property
     def in_order(self) -> Order:

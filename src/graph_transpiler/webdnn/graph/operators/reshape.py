@@ -90,8 +90,9 @@ class Reshape(Operator):
         y = self.outputs["y"]
         self.remove_all()
 
-        new_y = ConstantVariable(x.copy().change_order(in_order).data.reshape(out_shape), out_order)
-        OptimizeRule.replace_variable(graph, y, new_y)
+        y_new = ConstantVariable(x.data, x.order).change_order(in_order)
+        y_new = ConstantVariable(y_new.data.reshape(out_shape), in_order).change_order(out_order)
+        OptimizeRule.replace_variable(graph, y, y_new)
 
     @property
     def in_order(self) -> Order:

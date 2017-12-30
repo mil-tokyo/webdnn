@@ -20,15 +20,8 @@ class ConstantVariable(Variable):
 
     def __init__(self, data: np.ndarray, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
-        self.data = data.astype(np.float32)  # type: np.ndarray
+        self.data = data.copy().astype(np.float32)  # type: np.ndarray
         self.attributes.add(Constant(self))
-
-    def copy(self) -> "ConstantVariable":
-        """Copy the variable. Connection information won't be copied."""
-        new_instance = ConstantVariable(self.data.copy(), self.order)
-        new_instance.parameters = deepcopy(self.parameters)
-        new_instance.attributes = deepcopy(self.attributes)
-        return new_instance
 
     def change_order(self, order: Order) -> "ConstantVariable":
         """change_order(order)
@@ -42,12 +35,12 @@ class ConstantVariable(Variable):
             order: new order
         """
         old_order = self.order
-        old_shape_dict = AxisKeyDict(self.shape_dict.keys(), self.shape_dict.values())
+        old_shape_dict = AxisKeyDict(self.shape_dict)
 
         super().change_order(order)
 
         new_order = self.order
-        new_shape_dict = AxisKeyDict(self.shape_dict.keys(), self.shape_dict.values())
+        new_shape_dict = AxisKeyDict(self.shape_dict)
 
         #
         # `old_order_common` and `new_order_common` represent axis orders about axes included in both `old_order` and `new_order`

@@ -22,8 +22,8 @@ class Graph:
         self.outputs = list(outputs)
         self.licenses = {"webdnn": WEBDNN_LICENSE}
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no coverage
         return f"""<{self.__class__.__name__} inputs={self.inputs}, outputs={self.outputs}>"""
 
-    def __str__(self):
+    def __str__(self):  # pragma: no coverage
         return self.__repr__()

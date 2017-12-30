@@ -1,4 +1,5 @@
-from typing import Generic, Iterable, Tuple, Union, TypeVar, List, Dict
+import itertools
+from typing import Generic, Iterable, Tuple, TypeVar, List, Dict, overload, Sequence
 
 _internal2global = {}  # type: Dict[int, int]
 _global2internal = {}  # type: Dict[int, List[int]]
@@ -7,14 +8,110 @@ _axis_name_dict = {}  # type: Dict[int, str]
 _uuid_counter = 0
 
 
+def _uuid():
+    global _uuid_counter
+    _uuid_counter += 1
+    return _uuid_counter
+
+
 class UnificationFailedError(Exception):
     pass
 
 
 class Axis:
+    """Axis(name=None)
+
+    Class `Axis` represents the dimension of :class:`~webdnn.graph.variable.Variable`. Axis is container and the represented dimension
+    would be changed.
+
+    .. admonition:: example
+
+        .. code:: py
+
+            # a1 and a2 represent different dimensions
+            a1 = Axis()
+            a2 = Axis()
+
+            v1 = Variable([3, 5], Order([a1, a2))
+            >>> "<Variable shape=[3, 5] order=[?1, ?2]>"
+
+            # unify a1 and a2 (= let them represent the same dimension)
+            a1.unify(a2)
+
+            v2 = Variable([3, 5], Order([a1, a2))
+            >>> ValueError: "Axes are duplicated: [?1, ?1]"
     """
-    Enum class for representing semantics of each dimension of variables.
-    """
+
+    def __init__(self, name=None):
+        """
+        Each `Axis` object has an unique internal id, which is not changed forever. Also each axis has another id called "global id", which
+        would be changed and not unique over axes. Global id is used to identify two axes as same.
+        """
+        self._internal_id = _uuid()
+        self._global_id = self._internal_id
+
+        _internal2global[self._internal_id] = self._global_id
+        _global2internal[self._global_id] = [self._internal_id]
+        _axis_name_dict[self._global_id] = name
+
+    def __str__(self):  # pragma: no cover
+        return f"<Axis {self.name}>"
+
+    def __repr__(self):  # pragma: no cover
+        return self.__str__()
+
+    @property
+    def id(self) -> int:
+        """axis's id, which is used to identify the which dimension the axis represents to"""
+        return _internal2global[self._internal_id]
+
+    @property
+    def name(self) -> str:
+        """axis's name"""
+        name = _axis_name_dict[self.id]
+        return f"?{self.id}" if name is None else name
+
+    def unify(self, other: "Axis"):
+        """
+        Unify two axes object. It means that they represents to same dimension. To unify two axes, they must not have different names.
+
+        Args:
+            other (:class:`~webdnn.graph.axis.Axis`) : the axis object which will be unified with this axis object.
+        """
+        if self.id == other.id:
+            # Already two axes are unified
+            return
+
+        # If both two axes have name, they must be same
+        if (_axis_name_dict[self.id] is not None) and (_axis_name_dict[other.id] is not None) and (self.name != other.name):
+            raise UnificationFailedError(f"""
+Unification failed: "self" and "other" must have same name.
+    (self.name) = {self.name}
+    (other.name) = {other.name}""")
+
+        # Unification
+
+        # 1. Update "other"'s global id as same as "self"'s
+        other_id = other.id
+        _axis_name_dict[self.id] = self.name if (_axis_name_dict[self.id] is not None) else _axis_name_dict[other.id]
+
+        # 2. For all axes which has same global id as "other", update their global id as same as "self"'s
+        for internal_id in _global2internal[other_id]:
+            _internal2global[internal_id] = self.id
+            _global2internal[self.id].append(internal_id)
+
+        del _global2internal[other_id]
+        del _axis_name_dict[other_id]
+
+    def __eq__(self, other):
+        if not isinstance(other, Axis):
+            return False
+
+        return self.id == other.id
+
+    __hash__ = None  # "Axis" is mutable container and hash value would be changed
+
+    # Pre-declared axes
     N = None  # type: "Axis"
     C = None  # type: "Axis"
     H = None  # type: "Axis"
@@ -23,105 +120,115 @@ class Axis:
     KH = None  # type: "Axis"
     KW = None  # type: "Axis"
 
-    def __init__(self, name=None):
-        global _uuid_counter
-        internal_id = _uuid_counter
-        _uuid_counter += 1
-        global_id = internal_id
 
-        _internal2global[internal_id] = global_id
-        _global2internal[global_id] = [internal_id]
-        _axis_name_dict[global_id] = name
-
-        self._internal_id = internal_id
-
-    def __str__(self):
-        return f"<Axis {self.name}>"
-
-    def __repr__(self):
-        return self.__str__()
-
-    @property
-    def id(self) -> int:
-        return _internal2global[self._internal_id]
-
-    @property
-    def name(self) -> str:
-        name = _axis_name_dict[self.id]
-        return f"?{self.id}" if name is None else name
-
-    @property
-    def resolved(self) -> str:
-        return _axis_name_dict[self.id] is not None
-
-    def unify(self, other: "Axis"):
-        if self.id == other.id:
-            return
-
-        if self.resolved and other.resolved:
-            if self.name != other.name:
-                raise UnificationFailedError(f"""
-Unification failed: Both "self" and "other" have been resolved with different values.
-    (self.name) = {self.name}
-    (other.name) = {other.name}""")
-
-        other_id = other.id
-        _axis_name_dict[self.id] = self.name if self.resolved else _axis_name_dict[other.id]
-        p1s = _global2internal[self.id]
-        p2s = _global2internal[other_id]
-        del _global2internal[other_id]
-        del _axis_name_dict[other_id]
-
-        for p2 in p2s:
-            p1s.append(p2)
-            _internal2global[p2] = self.id
-
-    def __eq__(self, other):
-        if not isinstance(other, Axis):
-            return False
-
-        return self.id == other.id
-
-    __hash__ = None
-
+Axis.N = Axis("N")  # Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
+Axis.C = Axis("C")  # Number of features
+Axis.H = Axis("H")  # Height of image
+Axis.W = Axis("W")  # Width of image
+Axis.T = Axis("T")  # Length of series
+Axis.KH = Axis("KH")  # Height of filter kernel
+Axis.KW = Axis("KW")  # Width of filter kernel
 
 T = TypeVar('T')
 
 
 class AxisKeyDict(Generic[T]):
-    """
-    Axis is not hashable, dictionary cannot use axis object as key. AxisKeyDict allow using axis as key.
+    """AxisKeyDict(keys=None, vals=None)
+
+    Dictionary-like object. Since :class:`~webdnn.graph.axis.Axis` is not hashable, dictionary cannot use axis object as key. AxisKeyDict
+    allows using axis as key.
+
+    You can instantiate `AxisKeyDict` by various way
+
+    - If only `AxisKeyDict` instance is given, shallow-copied AxisKeyDict instance is created.
+    - If only tuple of pairs of `Axis` and value is given, dictionary with specified keys and values is created.
+    - If two sequences of same length are given, dictionary with specified key-value pairs is created
+    - If nothing is given, empty dictionary is created.
+    - Otherwise `ValueError` is raised.
+
+    Args:
+        args (any) : Initialization parameters see above description.
     """
 
-    def __init__(self, keys: Union[Iterable[Axis], "AxisKeyDict"] = None, vals: Iterable[T] = None):
-        if isinstance(keys, AxisKeyDict):
-            self._keys = list(keys.keys())
-            self._vals = list(keys.values())
+    @overload
+    def __init__(self, other: "AxisKeyDict"):  # pragma: no coverage
+        ...
 
-        else:
-            self._keys = list(keys if keys else [])  # type: List[Axis]
-            self._vals = list(vals if vals else [])  # type: List[T]
+    @overload
+    def __init__(self, keys: Iterable[Axis], values: Iterable[T]):  # pragma: no coverage
+        ...
+
+    @overload
+    def __init__(self, pairs: Iterable[Tuple[Axis, T]]):  # pragma: no coverage
+        ...
+
+    @overload
+    def __init__(self):  # pragma: no coverage
+        ...
+
+    def __init__(self, *args):
+        # nothing is given
+        if len(args) == 0:
+            self._keys = []  # type: List[Axis]
+            self._values = []  # type: List[T]
+            return
+
+        # other
+        if len(args) == 1 and isinstance(args[0], AxisKeyDict):
+            self._keys = list(args[0].keys())  # type: List[Axis]
+            self._values = list(args[0].values())  # type: List[T]
+            return
+
+        # keyvals
+        if len(args) == 1 and isinstance(args[0], Sequence):
+            self._keys = [k for k, v in args[0]]  # type: List[Axis]
+            self._values = [v for k, v in args[0]]  # type: List[T]
+            return
+
+        # keys and values
+        if len(args) == 2 and isinstance(args[0], Sequence) and isinstance(args[1], Sequence):
+            self._keys = list(args[0])  # type: List[Axis]
+            self._values = list(args[1])  # type: List[T]
+            if len(self._keys) != len(self._values):
+                raise ValueError(f"""
+[AxisKeyDict] Parameter "keys" and "values" must be same length:
+    (keys) = {self._keys}
+    (values) = {self._values}
+    (len(keys)) = {len(self._keys)}
+    (len(values)) = {len(self._values)}""")
+
+            for a1, a2 in itertools.combinations(self._keys, 2):
+                if a1 == a2:
+                    raise ValueError(f"""
+[AxisKeyDict] Axes are duplicated in parameter "keys":
+    (keys) = {self._keys}
+    (duplicated axis) = {a1}""")
+            return
+
+        raise ValueError(f"""
+[AxisKeyDict] Invalid parameters are given
+    (args) = {args}""")
 
     def __contains__(self, item: Axis) -> bool:
         return item in self._keys
 
     def __getitem__(self, item: Axis) -> T:
         index = self._keys.index(item)
-        return self._vals[index]
+        return self._values[index]
 
     def __setitem__(self, key: Axis, value: T):
         if key in self:
             index = self._keys.index(key)
-            self._vals[index] = value
+            self._values[index] = value
 
         else:
             self._keys.append(key)
-            self._vals.append(value)
+            self._values.append(value)
 
     def __delitem__(self, key: Axis):
         index = self._keys.index(key)
         self._keys.pop(index)
-        self._vals.pop(index)
+        self._values.pop(index)
 
     def __len__(self) -> int:
         return len(self._keys)
@@ -129,8 +236,11 @@ class AxisKeyDict(Generic[T]):
     def __iter__(self) -> Iterable[Axis]:
         return self.keys()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no coverage
         return "{" + ", ".join(a.name + ':' + str(v) for a, v in self.items()) + "}"
+
+    def __repr__(self) -> str:  # pragma: no coverage
+        return self.__str__()
 
     def get(self, k: Axis, default: T) -> T:
         return self[k] if k in self else default
@@ -139,16 +249,7 @@ class AxisKeyDict(Generic[T]):
         return self._keys.__iter__()
 
     def values(self) -> Iterable[T]:
-        return self._vals.__iter__()
+        return self._values.__iter__()
 
     def items(self) -> Iterable[Tuple[Axis, T]]:
         return zip(self.keys(), self.values())
-
-
-Axis.N = Axis("N")  #: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
-Axis.C = Axis("C")  #: Number of features
-Axis.H = Axis("H")  #: Height of image
-Axis.W = Axis("W")  #: Width of image
-Axis.T = Axis("T")  #: Length of series
-Axis.KH = Axis("KH")  #: Height of image
-Axis.KW = Axis("KW")  #: Width of image

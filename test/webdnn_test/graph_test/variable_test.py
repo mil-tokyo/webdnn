@@ -80,15 +80,6 @@ def test_change_order_with_invalid_compression():
     v.change_order(OrderCN)
 
 
-def test_copy():
-    v1 = Variable([3, 2, 2, 4], OrderNHWC)
-    v2 = v1.copy()
-
-    assert v2.order == v1.order
-    assert v2.parameters == v1.parameters
-    assert all(v1.has_attribute(type(a)) for a in v2.attributes)
-
-
 # unary operators
 
 def test_pos():

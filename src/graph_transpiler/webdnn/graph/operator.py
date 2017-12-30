@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Dict, Tuple, Optional
 
 from webdnn.graph import variable, graph
