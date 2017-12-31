@@ -1,5 +1,6 @@
 import itertools
-from typing import TypeVar, List, Dict, Generic, Sequence, Iterable, Tuple
+
+from typing import TypeVar, List, Dict, Generic, Sequence
 
 _internal2global = {}  # type: Dict[int, int]
 _global2internal = {}  # type: Dict[int, List[int]]
@@ -60,17 +61,17 @@ class Axis:
         return self.__str__()
 
     @property
-    def id(self) -> int:
+    def id(self):
         """axis's id, which is used to identify the which dimension the axis represents to"""
         return _internal2global[self._internal_id]
 
     @property
-    def name(self) -> str:
+    def name(self):
         """axis's name"""
         name = _axis_name_dict[self.id]
         return f"?{self.id}" if name is None else name
 
-    def unify(self, other: "Axis"):
+    def unify(self, other):
         """
         Unify two axes object. It means that they represents to same dimension. To unify two axes, they must not have different names.
 
@@ -111,13 +112,13 @@ Unification failed: "self" and "other" must have same name.
     __hash__ = None  # "Axis" is mutable container and hash value would be changed
 
     # Pre-declared axes
-    N = None  # type: Axis
-    C = None  # type: Axis
-    H = None  # type: Axis
-    W = None  # type: Axis
-    T = None  # type: Axis
-    KH = None  # type: Axis
-    KW = None  # type: Axis
+    N = None
+    C = None
+    H = None
+    W = None
+    T = None
+    KH = None
+    KW = None
 
 
 Axis.N = Axis("N")  # Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).
@@ -189,14 +190,14 @@ class AxisKeyDict(Generic[T]):
         self._keys = keys
         self._values = values
 
-    def __contains__(self, item: Axis) -> bool:
+    def __contains__(self, item):
         return item in self._keys
 
-    def __getitem__(self, item: Axis) -> T:
+    def __getitem__(self, item):
         index = self._keys.index(item)
         return self._values[index]
 
-    def __setitem__(self, key: Axis, value: T):
+    def __setitem__(self, key, value):
         if key in self:
             index = self._keys.index(key)
             self._values[index] = value
@@ -205,31 +206,31 @@ class AxisKeyDict(Generic[T]):
             self._keys.append(key)
             self._values.append(value)
 
-    def __delitem__(self, key: Axis):
+    def __delitem__(self, key):
         index = self._keys.index(key)
         self._keys.pop(index)
         self._values.pop(index)
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self._keys)
 
-    def __iter__(self) -> Iterable[Axis]:
+    def __iter__(self):
         return self.keys()
 
-    def __str__(self) -> str:  # pragma: no coverage
+    def __str__(self):  # pragma: no coverage
         return "{" + ", ".join(a.name + ':' + str(v) for a, v in self.items()) + "}"
 
-    def __repr__(self) -> str:  # pragma: no coverage
+    def __repr__(self):  # pragma: no coverage
         return self.__str__()
 
-    def get(self, k: Axis, default: T) -> T:
+    def get(self, k, default):
         return self[k] if k in self else default
 
-    def keys(self) -> Iterable[Axis]:
+    def keys(self):
         return self._keys.__iter__()
 
-    def values(self) -> Iterable[T]:
+    def values(self):
         return self._values.__iter__()
 
-    def items(self) -> Iterable[Tuple[Axis, T]]:
+    def items(self):
         return zip(self.keys(), self.values())

@@ -1,6 +1,3 @@
-from typing import Dict, Tuple, Optional
-
-from webdnn.graph import variable, graph
 from webdnn.graph.node import Node
 
 
@@ -13,10 +10,10 @@ class Operator(Node):
         name (str): the name. If :code:`None`, automatically generated name is used.
     """
 
-    def __init__(self, name: Optional[str] = None):
+    def __init__(self, name):
         super().__init__(name)
-        self._inputs = {}  # type: Dict[str, "variable.Variable"]
-        self._outputs = {}  # type: Dict[str, "variable.Variable"]
+        self._inputs = {}
+        self._outputs = {}
 
     def copy(self):
         """copy()
@@ -28,16 +25,16 @@ class Operator(Node):
         return self.__class__(None, **self.parameters)
 
     @property
-    def inputs(self) -> Dict[str, "variable.Variable"]:
+    def inputs(self):
         """input variables"""
         return dict(self._inputs)
 
     @property
-    def outputs(self) -> Dict[str, "variable.Variable"]:
+    def outputs(self):
         """output variables"""
         return dict(self._outputs)
 
-    def get_input_name(self, var: "variable.Variable"):
+    def get_input_name(self, var):
         for name, v in self.inputs.items():
             if v is var:
                 return name
@@ -45,7 +42,7 @@ class Operator(Node):
         else:
             raise KeyError(f"'{var}' is not input of {self}")
 
-    def get_output_name(self, var: "variable.Variable"):
+    def get_output_name(self, var):
         for name, v in self.outputs.items():
             if v is var:
                 return name
@@ -53,7 +50,7 @@ class Operator(Node):
         else:
             raise KeyError(f"'{var}' is not output of {self}")
 
-    def append_input(self, name: str, var: "variable.Variable"):
+    def append_input(self, name, var):
         """append_input(name, var)
 
         Append input variable
@@ -68,7 +65,7 @@ class Operator(Node):
         self.append_prev(var)
         self._inputs[name] = var
 
-    def remove_input(self, var: "variable.Variable"):
+    def remove_input(self, var):
         """remove_input(var)
 
         Remove input variable
@@ -84,7 +81,7 @@ class Operator(Node):
         self.remove_prev(var)
         self._inputs.pop(name)
 
-    def replace_input(self, v_old: "variable.Variable", v_new: "variable.Variable", with_assert: bool = True):
+    def replace_input(self, v_old, v_new, with_assert=True):
         """replace_input(v_old, v_new)
 
         Replace input variable with other variable
@@ -113,7 +110,7 @@ class Operator(Node):
         self.remove_input(v_old)
         self.append_input(name, v_new)
 
-    def append_output(self, name: str, var: "variable.Variable"):
+    def append_output(self, name, var):
         """append_output(name, var)
 
         Append output variable
@@ -130,7 +127,7 @@ class Operator(Node):
         self.append_next(var)
         self._outputs[name] = var
 
-    def remove_output(self, var: "variable.Variable"):
+    def remove_output(self, var):
         """remove_output(var)
 
         Remove output variable
@@ -145,7 +142,7 @@ class Operator(Node):
         self.remove_next(var)
         self._outputs.pop(name)
 
-    def replace_output(self, v_old: "variable.Variable", v_new: "variable.Variable", with_assert: bool = True):
+    def replace_output(self, v_old, v_new, with_assert=True):
         """replace_output(v_old, v_new)
 
         Replace output variable with other variable
@@ -185,7 +182,7 @@ class Operator(Node):
         for _, v in list(self.outputs.items()):
             self.remove_output(v)
 
-    def replace(self, op_new: "Operator"):
+    def replace(self, op_new):
         """replace(op_new)
 
         Replace this operator by new operator. all variables connected with this operator will be disconnected and
@@ -211,11 +208,11 @@ class Operator(Node):
     def __str__(self):
         return self.__repr__()
 
-    def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
+    def __call__(self, *args, **kwargs):
         raise NotImplementedError(f"Operator.__call__ must be override: (self.__class__)={self.__class__.__name__}")
 
-    def exec(self) -> Tuple["variable.Variable"]:
+    def exec(self):
         raise NotImplementedError(f"Operator.exec must be override: (self.__class__)={self.__class__.__name__}")
 
-    def fold_constance(self, graph: "graph.Graph"):
+    def fold_constance(self, graph):
         raise NotImplementedError(f"Operator.fold_constance must be override: (self.__class__)={self.__class__.__name__}")

@@ -1,15 +1,14 @@
 import ast
-from typing import Dict, Tuple, Union, List
+import re
 
 from webdnn.graph.placeholder import Placeholder
-import re
 
 _reg_quote = re.compile("['\"]")
 _reg_trail_space = re.compile("\s{2,}")
 _reg_placeholder = re.compile("[a-zA-Z_]+")
 
 
-def _normalize_text(text: str) -> str:
+def _normalize_text(text):
     text = _reg_quote.sub(lambda ma: " ", text)
     text = _reg_trail_space.sub(lambda ma: " ", text)
     text = _reg_placeholder.sub(lambda ma: f"'{ma[0]}'", text)
@@ -18,7 +17,7 @@ def _normalize_text(text: str) -> str:
 
 class Shape:
     @staticmethod
-    def parse(text: str) -> Tuple[List[Union[int, Placeholder]], Dict[str, Placeholder]]:
+    def parse(text):
         """
         Parse string and return shape
 

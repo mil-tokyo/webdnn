@@ -1,5 +1,4 @@
 import itertools
-from typing import Tuple, Sequence, Union
 
 from webdnn.graph.axis import Axis, AxisKeyDict
 
@@ -22,7 +21,7 @@ class Order:
         axes(list of :class:`~webdnn.Axis`): list of axis.
     """
 
-    def __init__(self, axes: Sequence[Union[Axis, None]]):
+    def __init__(self, axes):
         axes = tuple(Axis() if a is None else a for a in axes)
         for a1, a2 in itertools.permutations(axes, 2):
             assert a1 != a2, f"""
@@ -32,15 +31,15 @@ class Order:
         self._axes = axes
 
     @property
-    def axes(self) -> Tuple[Axis, ...]:
+    def axes(self):
         return self._axes
 
     @property
-    def ndim(self) -> int:
+    def ndim(self):
         return len(self.axes)
 
     @property
-    def axes_dict(self) -> AxisKeyDict[int]:
+    def axes_dict(self):
         return AxisKeyDict(self.axes, range(self.ndim))
 
     def __eq__(self, other):
@@ -56,7 +55,7 @@ class Order:
     def __str__(self):
         return f"[{', '.join([axis.name for axis in self.axes])}]"
 
-    def check_same_axes(self, other: "Order") -> bool:
+    def check_same_axes(self, other):
         """
         check_same_axes(order)
 
@@ -67,7 +66,7 @@ class Order:
         """
         return all(axis in other.axes for axis in self.axes) and all(axis in self.axes for axis in other.axes)
 
-    def get_common_axes(self, other: "Order") -> Sequence[Axis]:
+    def get_common_axes(self, other):
         """
         get_common_axes(order)
 
@@ -78,7 +77,7 @@ class Order:
         """
         return [axis for axis in self.axes if axis in other.axes]
 
-    def get_all_axes(self, other: "Order") -> Sequence[Axis]:
+    def get_all_axes(self, other):
         """
         get_all_axes(order)
 
@@ -89,7 +88,7 @@ class Order:
         """
         return list(self.axes) + [axis for axis in other.axes if axis not in self.axes]
 
-    def unify(self, other: "Order"):
+    def unify(self, other):
         if self.ndim != other.ndim:
             raise ValueError(f"""
 Unification failed: Number of dimension mismatch

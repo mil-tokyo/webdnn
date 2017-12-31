@@ -1,7 +1,3 @@
-from typing import Iterable
-
-from webdnn.graph.variable import Variable
-
 WEBDNN_LICENSE = "(C) Machine Intelligence Laboratory (The University of Tokyo), MIT License"
 
 
@@ -15,9 +11,7 @@ class Graph:
         outputs (list of :class:`~webdnn.Variable`): output variables
     """
 
-    def __init__(self,
-                 inputs: Iterable[Variable],
-                 outputs: Iterable[Variable]):
+    def __init__(self, inputs, outputs):
         self.inputs = list(inputs)
         self.outputs = list(outputs)
         self.licenses = {"webdnn": WEBDNN_LICENSE}

@@ -1,8 +1,3 @@
-from typing import List, Tuple
-
-from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
-from webdnn.graph.variable import Variable
 from webdnn.util import console
 
 
@@ -13,7 +8,7 @@ class OptimizeRule:
     """
 
     @staticmethod
-    def replace_input(graph: Graph, op: Operator, old_var: Variable, new_var: Variable, with_assert: bool = True):
+    def replace_input(graph, op, old_var, new_var, with_assert=True):
         op.replace_input(old_var, new_var, with_assert=with_assert)
 
         if old_var in graph.inputs:
@@ -22,7 +17,7 @@ class OptimizeRule:
             graph.inputs.insert(i, new_var)
 
     @staticmethod
-    def replace_output(graph: Graph, op: Operator, old_var: Variable, new_var: Variable, with_assert: bool = True):
+    def replace_output(graph, op, old_var, new_var, with_assert=True):
         op.replace_output(old_var, new_var, with_assert=with_assert)
 
         if old_var in graph.outputs:
@@ -31,7 +26,7 @@ class OptimizeRule:
             graph.outputs.insert(i, new_var)
 
     @staticmethod
-    def replace_variable(graph: Graph, old_var: Variable, new_var: Variable, with_assert: bool = True):
+    def replace_variable(graph, old_var, new_var, with_assert=True):
         old_var.replace(new_var, with_assert=with_assert)
 
         if old_var in graph.inputs:
@@ -53,7 +48,7 @@ class OptimizeRule:
         """
         return []
 
-    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
+    def optimize(self, graph):
         """optimize(graph)
 
         Optimize the given graph.
@@ -75,15 +70,15 @@ class OptimizeRuleGroup(OptimizeRule):
     When :func:`optimize(graph)<OptimizeRuleGroup.optimize>` is called, the transform rule is applied for given graph.
 
     Attributes:
-        repeat(bool): If `True`, sub rules are applied multiple times in the single `optimize()` call until the graph will be not changed.
+        repeat (bool, optional): If `True`, sub rules are applied multiple times in the single `optimize()` call until the graph will be not
+            changed. Default is `True`.
     """
 
-    def __init__(self, rules: List["OptimizeRule"], repeat: bool = True):
-        super(OptimizeRuleGroup, self).__init__()
+    def __init__(self, rules, repeat=True):
         self.repeat = repeat
-        self.sub_rules = rules  # type: List["OptimizeRule"]
+        self.sub_rules = rules
 
-    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
+    def optimize(self, graph):
         """optimize(graph)
 
         Optimize the given graph. In the single call, this rule is applied multiple times until the graph will be not changed.
@@ -120,7 +115,7 @@ class OptimizeRuleGroup(OptimizeRule):
 
         return graph, flag_totally_changed
 
-    def append_sub_rule(self, rule: "OptimizeRule"):
+    def append_sub_rule(self, rule):
         """append_sub_rule(rule)
 
         Register new sub rule. Registered sub rules are applied when this rule is applied.

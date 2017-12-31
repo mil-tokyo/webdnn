@@ -1,6 +1,6 @@
 import itertools
 from enum import auto, Enum
-from typing import Union, Optional, List, Sequence, Set, Tuple, Generic, TypeVar
+from typing import Union, List, Sequence, Set, Tuple, Generic, TypeVar
 
 import numpy as np
 
@@ -157,11 +157,8 @@ class MutableProduct(Generic[T, U]):
 
 
 class Dependency:
-    operator: PlaceholderOperator
-    operands: List[Union[int, "Placeholder"]]
-
     @staticmethod
-    def check_deep_equal(d1: "Dependency", d2: "Dependency") -> bool:
+    def check_deep_equal(d1, d2):
         if d1.operator != d2.operator:
             return False
 
@@ -178,7 +175,7 @@ class Dependency:
             is_d2_same = Placeholder.check_deep_equal(d1.operands[1], d2.operands[1])
             return is_d1_same and is_d2_same
 
-    def __init__(self, operator: PlaceholderOperator, operands: Sequence[Union[int, "Placeholder"]]):
+    def __init__(self, operator, operands):
         if operator == PlaceholderOperator.Mul or operator == PlaceholderOperator.Add:
             operands = list(sorted(operands, key=lambda op: str(op)))
 
@@ -186,7 +183,7 @@ class Dependency:
         self.operands = operands
 
     @property
-    def is_resolved(self) -> bool:
+    def is_resolved(self):
         """
         If true, all dependent placeholders are resolved
         """
@@ -196,7 +193,7 @@ class Dependency:
         return True
 
     @property
-    def value(self) -> Union[int, "Placeholder"]:
+    def value(self):
         if not self.is_resolved:
             raise ValueError("Dependency is not resolved")
 
@@ -380,12 +377,9 @@ class Placeholder(json.SerializableMixin):
     Attributes:
         label (str): the label.
     """
-    _value = None  # type: Optional[int]
-    label = None  # type: Optional[str]
-    dependency = None  # type: Optional[Dependency]
 
     @staticmethod
-    def to_int(x: Union[int, "Placeholder"]):
+    def to_int(x):
         """to_int(x)
 
         Convert the placeholder into concrete integer value.
@@ -398,7 +392,7 @@ class Placeholder(json.SerializableMixin):
         return int(x) if not isinstance(x, Placeholder) else int(x.value) if Placeholder.check_resolved(x) else x
 
     @staticmethod
-    def force_int(x: Union[int, "Placeholder"]):
+    def force_int(x):
         """force_int(x)
 
         Convert the placeholder into concrete integer value. If `x` is not resolved, an error is raised.
@@ -417,7 +411,7 @@ class Placeholder(json.SerializableMixin):
         raise ValueError(f"{x} is not resolved.")
 
     @staticmethod
-    def check_resolved(x: Union[int, "Placeholder"]):
+    def check_resolved(x):
         """check_resolved(x)
 
         Check whether specified placeholder is resolved or not.
@@ -439,7 +433,7 @@ class Placeholder(json.SerializableMixin):
         return False
 
     @staticmethod
-    def check_deep_equal(p1: Union[int, "Placeholder"], p2: Union[int, "Placeholder"]) -> bool:
+    def check_deep_equal(p1, p2):
         if str(p1) == str(p2):
             return True
 
@@ -455,19 +449,22 @@ class Placeholder(json.SerializableMixin):
         else:
             return False
 
-    def __new__(cls, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: str = None):
+    def __new__(cls, dependency=None, value=None, label=None):
         if isinstance(value, Placeholder):
             return value
 
         return super().__new__(cls)
 
-    def __init__(self, dependency: Optional[Dependency] = None, value: Union[int, "Placeholder"] = None, label: Optional[str] = None):
+    def __init__(self, dependency=None, value=None, label=None):
         global _id
 
         if self is value:
             return
 
         self.dependency = dependency
+        self.label = None
+        self._value = None
+
         if label is None:
             self.label = f"placeholder_[{_id}]"
             _id += 1
@@ -478,7 +475,7 @@ class Placeholder(json.SerializableMixin):
             self.value = value
 
     @property
-    def value(self) -> Union[int, "Placeholder"]:
+    def value(self):
         """value
 
         The placeholder's value. If it's not resolved, the placeholder itself is returned.
@@ -496,7 +493,7 @@ class Placeholder(json.SerializableMixin):
             return self
 
     @value.setter
-    def value(self, new_v: int):
+    def value(self, new_v):
         if Placeholder.check_resolved(self):
             raise ValueError(f"{self} is already resolved")
 
@@ -507,7 +504,7 @@ class Placeholder(json.SerializableMixin):
         else:
             raise TypeError(f"Placeholder#value must be a int, not '{type(new_v)}'")
 
-    def unify(self, other: Union[int, "Placeholder"]):
+    def unify(self, other):
         if Placeholder.check_resolved(self) and Placeholder.check_resolved(other):
             assert self == other, f"""
 Unification failed: self != other
@@ -546,10 +543,13 @@ Unification failed: self != other
         else:
             return list(self.dependency.operands)
 
-    def __neg__(self) -> Union[int, "Placeholder"]:
+    def __neg__(self):
         return -1 * self
 
-    def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __int__(self):
+        return Placeholder.force_int(self)
+
+    def __add__(self, other):
         v1, v2 = self, Placeholder(value=other)
 
         if v2 == 0:
@@ -608,19 +608,19 @@ Unification failed: self != other
 
         return Placeholder(Dependency(PlaceholderOperator.Add, terms))
 
-    def __radd__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __radd__(self, other):
         return Placeholder(value=other) + self
 
-    def __sub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __sub__(self, other):
         if other == 0:
             return self
 
         return self + (-1 * other)
 
-    def __rsub__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __rsub__(self, other):
         return Placeholder(value=other) - self
 
-    def __mul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __mul__(self, other):
         v1, v2 = self, Placeholder(value=other)
 
         if v1 == 0 or v2 == 0:
@@ -658,10 +658,10 @@ Unification failed: self != other
 
         return Placeholder(Dependency(PlaceholderOperator.Mul, terms))
 
-    def __rmul__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __rmul__(self, other):
         return Placeholder(value=other) * self
 
-    def __floordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __floordiv__(self, other):
         v1, v2 = self, Placeholder(value=other)
 
         if v2 == 1:
@@ -724,10 +724,10 @@ Unification failed: self != other
 
         return Placeholder(Dependency(PlaceholderOperator.FloorDiv, [v1, v2]))
 
-    def __rfloordiv__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __rfloordiv__(self, other):
         return Placeholder(value=other) // self
 
-    def __mod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __mod__(self, other):
         v1, v2 = self, Placeholder(value=other)
 
         if v1 == v2:
@@ -760,19 +760,16 @@ Unification failed: self != other
 
         return Placeholder(Dependency(PlaceholderOperator.Mod, [v1, v2]))
 
-    def __rmod__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
+    def __rmod__(self, other):
         return Placeholder(value=other) % self
 
-    def __int__(self):
-        return Placeholder.force_int(self)
-
-    def __eq__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __eq__(self, other):
         return Placeholder.check_deep_equal(self, other)
 
-    def __ne__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __ne__(self, other):
         return not Placeholder.check_deep_equal(self, other)
 
-    def __gt__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __gt__(self, other):
         if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
@@ -781,7 +778,7 @@ Unification failed: self != other
 
         return self.value > Placeholder.force_int(other)
 
-    def __lt__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __lt__(self, other):
         if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
@@ -790,7 +787,7 @@ Unification failed: self != other
 
         return self.value < Placeholder.force_int(other.value)
 
-    def __ge__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __ge__(self, other):
         if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 
@@ -799,7 +796,7 @@ Unification failed: self != other
 
         return self.value >= Placeholder.force_int(other)
 
-    def __le__(self, other: Union[int, "Placeholder"]) -> bool:
+    def __le__(self, other):
         if not Placeholder.check_resolved(self):
             raise ValueError("First operand is unresolved placeholder. It can't be compared.")
 

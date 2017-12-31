@@ -1,9 +1,8 @@
-from typing import Union, List, Set, Tuple, Sequence
+from typing import Sequence
 
 import numpy as np
 
 import webdnn.graph
-from webdnn.graph import operator
 from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.node import Node
 from webdnn.graph.order import Order
@@ -32,47 +31,47 @@ class Variable(Node):
         #   x2 -+
     """
 
-    def __init__(self, shape: Sequence[Union[int, Placeholder]], order: Order):
+    def __init__(self, shape, order):
         super().__init__()
 
         assert order.ndim == len(shape), f"[Variable] order and shape are mismatched: order={order}, shape={shape}"
 
-        self._shape = tuple(shape)  # type: Tuple[Union[int, Placeholder]]
-        self._order = order  # type: Order
+        self._shape = tuple(shape)
+        self._order = order
 
     @property
-    def shape(self) -> Tuple[Union[int, Placeholder], ...]:
+    def shape(self):
         """variable's shape"""
         return tuple(Placeholder.to_int(v) for v in self._shape)
 
     @property
-    def input_to(self) -> Set["operator.Operator"]:
+    def input_to(self):
         """operators which this variable is input to"""
         # noinspection PyTypeChecker
         return set(self.nexts)
 
     @property
-    def output_from(self) -> "operator.Operator":
+    def output_from(self):
         """operator which this variable is output from"""
         # noinspection PyTypeChecker
         return None if len(self.prevs) == 0 else list(self.prevs)[0]
 
     @property
-    def order(self) -> Order:
+    def order(self):
         """data order"""
         return self._order
 
     @property
-    def name(self) -> str:
+    def name(self):
         """name of this variable"""
         return self.parameters["name"] if "name" in self.parameters else ""
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name):
         self.parameters["name"] = name
 
     @property
-    def size(self) -> Union[int, Placeholder]:
+    def size(self):
         """number of elements"""
         return Placeholder.to_int(mul(self.shape))
 
@@ -82,21 +81,21 @@ class Variable(Node):
         return self.order.ndim
 
     @property
-    def shape_dict(self) -> AxisKeyDict[Union[int, Placeholder]]:
+    def shape_dict(self):
         """dictionary of axis and shape size pairs"""
         return AxisKeyDict(self.order.axes, self.shape)
 
     @property
-    def stride(self) -> List[Union[int, Placeholder]]:
+    def stride(self):
         """stride size for each dimension"""
         return [mul(self.shape[i + 1:]) for i in range(self.ndim)]
 
     @property
-    def stride_dict(self) -> AxisKeyDict[Union[int, Placeholder]]:
+    def stride_dict(self):
         """dictionary of axis and stride size pairs"""
         return AxisKeyDict(self.order.axes, self.stride)
 
-    def change_order(self, order: Order) -> "Variable":
+    def change_order(self, order):
         """change_order_statement(order)
 
         Change variable order.
@@ -123,7 +122,7 @@ class Variable(Node):
 
         return self
 
-    def replace(self, new_variable: "Variable", with_assert: bool = True):
+    def replace(self, new_variable, with_assert=True):
         """replace(new_variable)
 
         Replace this variable in graph by specified new variable.
@@ -148,18 +147,18 @@ class Variable(Node):
 
     # Unary operators
 
-    def __pos__(self) -> "Variable":
+    def __pos__(self):
         return webdnn.graph.operators.scalar_mul.ScalarMul(None, value=+1)(self)[0]
 
-    def __neg__(self) -> "Variable":
+    def __neg__(self):
         return webdnn.graph.operators.scalar_mul.ScalarMul(None, value=-1)(self)[0]
 
-    def __abs__(self) -> "Variable":
+    def __abs__(self):
         return webdnn.graph.operators.abs.Abs(None)(self)[0]
 
     # Binary operators
 
-    def __add__(self, other) -> "Variable":
+    def __add__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
 
@@ -169,14 +168,14 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __radd__(self, other) -> "Variable":
+    def __radd__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(other).__name__}' and '{type(self).__name__}'")
 
-    def __sub__(self, other) -> "Variable":
+    def __sub__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, -other)(self)[0]
 
@@ -186,14 +185,14 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for -: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __rsub__(self, other) -> "Variable":
+    def __rsub__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(-self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for -: '{type(other).__name__}' and '{type(self).__name__}'")
 
-    def __mul__(self, other) -> "Variable":
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
 
@@ -203,14 +202,14 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for *: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __rmul__(self, other) -> "Variable":
+    def __rmul__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
 
-    def __truediv__(self, other) -> "Variable":
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, 1 / other)(self)[0]
 
@@ -220,14 +219,14 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for /: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __rtruediv__(self, other) -> "Variable":
+    def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self ** -1)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
 
-    def __pow__(self, power, modulo=None) -> "Variable":
+    def __pow__(self, power, modulo=None):
         if modulo is not None:
             raise NotImplementedError("Variable.__pow__ is not supported modulo argument")
 
@@ -240,7 +239,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(self).__name__}' and '{type(power).__name__}'")
 
-    def __rpow__(self, other) -> "Variable":
+    def __rpow__(self, other):
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
@@ -248,7 +247,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
 
-    def __gt__(self, other) -> "Variable":
+    def __gt__(self, other):
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater.Greater(None)(self, other)[0]
@@ -259,7 +258,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for >: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __ge__(self, other) -> "Variable":
+    def __ge__(self, other):
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater_equal.GreaterEqual(None)(self, other)[0]
@@ -270,7 +269,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for >=: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __lt__(self, other) -> "Variable":
+    def __lt__(self, other):
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater.Greater(None)(other, self)[0]
@@ -281,7 +280,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for <: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __le__(self, other) -> "Variable":
+    def __le__(self, other):
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater_equal.GreaterEqual(None)(other, self)[0]
@@ -292,7 +291,7 @@ class Variable(Node):
         else:
             raise TypeError(f"unsupported operand type(s) for <=: '{type(self).__name__}' and '{type(other).__name__}'")
 
-    def __getitem__(self, slices) -> "Variable":
+    def __getitem__(self, slices):
         slices = list(slices) if isinstance(slices, Sequence) else [slices]
 
         if Ellipsis in slices:
@@ -322,7 +321,7 @@ class Variable(Node):
 
     # Utility functions
 
-    def reshape(self, shape: Sequence[Union[int, Placeholder]], order: Order) -> "Variable":
+    def reshape(self, shape, order):
         """reshape(shape, order)
         Reshape into specified order and shape. This is alias of follow codes.
 
@@ -342,7 +341,7 @@ class Variable(Node):
         ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=order, out_shape=shape)(self)
         return ret
 
-    def reshape_like(self, other: "Variable") -> "Variable":
+    def reshape_like(self, other):
         """reshape(shape, order)
         Reshape into same order and shape as :code:`other`. This is alias of follow codes.
 
@@ -361,7 +360,7 @@ class Variable(Node):
         ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=other.order, out_shape=other.shape)(self)
         return ret
 
-    def expand_dims(self, axis: Axis, index: int = -1) -> "Variable":
+    def expand_dims(self, axis, index=-1):
         """expand_dims(shape, axis, index)
         Insert new axis whose size is 1. This is alias of follow codes.
 
@@ -386,7 +385,7 @@ class Variable(Node):
         new_axes.insert(index, axis)
         return self.reshape(shape=[1 if a == axis else self.shape_dict[a] for a in new_axes], order=Order(new_axes))
 
-    def squeeze(self, axis: Union[Axis, Sequence[Axis]] = None) -> "Variable":
+    def squeeze(self, axis=None):
         """expand_dims(shape, axis, index)
         Remove axis whose size is 1. This is alias of follow codes.
 
@@ -419,7 +418,7 @@ class Variable(Node):
 
         return self.reshape(shape=[self.shape_dict[a] for a in new_axes], order=Order(new_axes))
 
-    def combine_axes(self, axes: Sequence[Axis], axis: Axis) -> "Variable":
+    def combine_axes(self, axes, axis):
         """combine_axes(shape, axes, axis)
         Combine some axes into one axis. Combined axes must be adjacent
 
@@ -477,7 +476,7 @@ All combined axes must be adjacent:
                                                       out_order=out_order,
                                                       out_shape=[out_shape_dict[a] for a in out_axes])(self)[0]
 
-    def transpose(self, order: Order) -> "Variable":
+    def transpose(self, order):
         """transpose(shape, order)
         Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order_statement(order)`
 
@@ -491,7 +490,7 @@ All combined axes must be adjacent:
         ret.change_order(order)
         return ret
 
-    def transpose_like(self, other: "Variable") -> "Variable":
+    def transpose_like(self, other):
         """reshape(shape, order)
         Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order_statement(other.order)`
 
@@ -505,7 +504,7 @@ All combined axes must be adjacent:
         ret.change_order(other.order)
         return ret
 
-    def reinterpret_axes(self, order: Order) -> "Variable":
+    def reinterpret_axes(self, order):
         """reshape(shape, order)
         Reinterpret axes. This is alias of `ReinterpretAxes(None, v.order, order)(v)[0]`.
 

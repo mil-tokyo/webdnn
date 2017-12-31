@@ -2,21 +2,17 @@
 Utility functions for traversing computation graph
 """
 
-from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar, Sequence
+from typing import List, Set, Tuple
 
 from webdnn.graph.attribute import Attribute
-from webdnn.graph.graph import Graph
 from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
-# Query of traversing
-Query = Union[Type[Attribute], Type[Node]]
 
-
-def _check_match(node: Node, query: Query) -> bool:
+def _check_match(node, query):
     """_check_match(node, query)
 
     Check if the node matches the query
@@ -41,7 +37,7 @@ Query must be subclass of "Node" or "Attribute" :
 """)
 
 
-def check_attribute_match(node: Node, attribute: Type[Attribute]) -> bool:
+def check_attribute_match(node, attribute):
     """check_attribute_match(node, attribute)
 
     Check if the node matches the attribute
@@ -61,7 +57,7 @@ def check_attribute_match(node: Node, attribute: Type[Attribute]) -> bool:
         return False
 
 
-def check_node_type_match(node: Node, query: Type[Node]) -> bool:
+def check_node_type_match(node, query):
     """_check_match(node, query)
 
     Check if the node is the instance of specified node class
@@ -76,7 +72,7 @@ def check_node_type_match(node: Node, query: Type[Node]) -> bool:
     return isinstance(node, query)
 
 
-def search_sub_structure(graph: Graph, queries: Sequence[Query]) -> List[Tuple[Node, ...]]:
+def search_sub_structure(graph, queries):
     """search_sub_structure(graph, query)
 
     List up sub structures of computation graph which match the query
@@ -111,10 +107,6 @@ def search_sub_structure(graph: Graph, queries: Sequence[Query]) -> List[Tuple[N
     return matches
 
 
-T = TypeVar("T", bound=Node)
-U = TypeVar("U", bound=T)
-
-
 def filter_nodes(nodes, query, mode_not=False):
     """filter_nodes(nodes, query, mode_not=False)
 
@@ -131,7 +123,7 @@ def filter_nodes(nodes, query, mode_not=False):
     return [node for node in nodes if not mode_not == _check_match(node, query)]
 
 
-def sort_nodes(nodes: Iterable[Node]) -> Iterable[Node]:
+def sort_nodes(nodes):
     """sort_nodes(nodes)
 
     Sort nodes by deterministic order depend on their name.
@@ -145,7 +137,7 @@ def sort_nodes(nodes: Iterable[Node]) -> Iterable[Node]:
     return sorted(nodes, key=lambda x: x.name)
 
 
-def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_internal_output_bound=True) -> List[Node]:
+def listup_nodes(graph, ignore_internal_input_bound=False, ignore_internal_output_bound=True):
     """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
     List up all nodes in graph in order of forward computation.
 
@@ -253,7 +245,7 @@ def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_interna
     return result
 
 
-def listup_operators(graph: Graph) -> List[Operator]:
+def listup_operators(graph):
     """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
     List up all operators in graph in order of forward computation.
 
@@ -266,7 +258,7 @@ def listup_operators(graph: Graph) -> List[Operator]:
     return filter_nodes(listup_nodes(graph), Operator)
 
 
-def listup_variables(graph: Graph) -> List[Variable]:
+def listup_variables(graph):
     """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
     List up all variables in graph in order of forward computation.
 
@@ -279,13 +271,13 @@ def listup_variables(graph: Graph) -> List[Variable]:
     return filter_nodes(listup_nodes(graph), Variable)
 
 
-def dump(graph: Graph):  # pragma: no cover
+def dump(graph):  # pragma: no cover
     for op in listup_operators(graph):
         console.debug(f"---------------------------------------------------------------------------")
         dump_op(op)
 
 
-def dump_op(op: Operator):  # pragma: no cover
+def dump_op(op):  # pragma: no cover
     parameters_sorted = [repr(key) + ': ' + str(op.parameters[key]) for key in sorted(op.parameters.keys())]
     console.debug(f"{op.__class__.__name__} : {op.name}")
     console.debug(f"    In  : {op.inputs}")
@@ -294,7 +286,7 @@ def dump_op(op: Operator):  # pragma: no cover
     console.debug(f"    Parameters: {{{', '.join(parameters_sorted)}}}")
 
 
-def dump_dot(graph: Graph, name: Optional[str] = None) -> str:  # pragma: no cover
+def dump_dot(graph, name=None):  # pragma: no cover
     """
     Dumps graph into dot language for visualization.
 

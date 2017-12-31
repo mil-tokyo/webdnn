@@ -2,10 +2,13 @@ from typing import Generic, Iterable, Tuple, TypeVar, overload, List
 
 
 class Axis:
-    id: int
-    name: str
-
     def __init__(self, name: str = None): ...
+
+    @property
+    def id(self) -> int: pass
+
+    @property
+    def name(self) -> str: pass
 
     def unify(self, other: Axis): ...
 
@@ -30,9 +33,6 @@ T = TypeVar('T')
 
 
 class AxisKeyDict(Generic[T]):
-    _keys: List[Axis]
-    _values: List[T]
-    
     @overload
     def __init__(self, other: AxisKeyDict): ...
 
@@ -44,6 +44,9 @@ class AxisKeyDict(Generic[T]):
 
     @overload
     def __init__(self): ...
+
+    _keys: List[Axis]
+    _values: List[T]
 
     def __contains__(self, item: Axis) -> bool: ...
 

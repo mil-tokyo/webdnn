@@ -15,11 +15,11 @@ class ConstantVariable(Variable):
         order (:class:`~webdnn.Order`): the data order.
     """
 
-    def __init__(self, data: np.ndarray, order: Order):
+    def __init__(self, data, order):
         super(ConstantVariable, self).__init__(data.shape, order)
-        self.data = data.copy().astype(np.float32)  # type: np.ndarray
+        self.data = data.copy().astype(np.float32)
 
-    def change_order(self, order: Order) -> "ConstantVariable":
+    def change_order(self, order):
         """change_order(order)
 
         Change variable order.

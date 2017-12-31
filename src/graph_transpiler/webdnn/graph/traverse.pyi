@@ -7,7 +7,6 @@ from webdnn.graph.node import Node
 from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
 
-# Query of traversing
 Query = Union[Type[Attribute], Type[Node]]
 
 
