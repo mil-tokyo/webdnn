@@ -40,14 +40,6 @@ class Linear(Operator):
         super().__init__(name)
 
     def __call__(self, x: Variable, w: Variable):
-        self.append_input("x", x)
-        self.append_input("w", w)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-        w = self.inputs["w"]
-
         if Placeholder.check_resolved(x.shape_dict[Axis.C]) and Placeholder.check_resolved(w.shape_dict[Axis.C]):
             assert x.shape_dict[Axis.C] == w.shape_dict[Axis.C], "Input and Weight variable of Linear operator must have same shape " \
                                                                  "except Axis.N " \
@@ -71,5 +63,8 @@ class Linear(Operator):
                                                                      f"size: w.shape_dict[Axis.W]={w.shape_dict[Axis.W]}"
 
         y = Variable([x.shape_dict[Axis.N], w.shape_dict[Axis.N]], OrderNC)
+
+        self.append_input("x", x)
+        self.append_input("w", w)
         self.append_output("y", y)
         return y,

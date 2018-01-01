@@ -59,11 +59,12 @@ class Reshape(Operator):
         self.attributes.add(InplaceOperator(self, "x", "y"))
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
+        if not self.in_order.check_same_axes(x.order):
+            raise TypeError(f"""
+[Reshape] Input variable order is not compatible with "in_order"
+    (input variable) = {x}
+    (input variable order) = {x.order}
+    (parameter "in_order") = {self.in_order}""")
 
         assert x.size == mul(self.out_shape), f"""
 [Reshape] Variable size must not be changed:
@@ -73,8 +74,9 @@ class Reshape(Operator):
     (output size)={mul(self.out_shape)}"""
 
         y = Variable(self.out_shape, self.out_order)
-        self.append_output("y", y)
 
+        self.append_input("x", x)
+        self.append_output("y", y)
         return y,
 
     def fold_constance(self, graph: Graph):
@@ -83,7 +85,7 @@ class Reshape(Operator):
         self.remove_all()
 
         y_new = ConstantVariable(x.data, x.order).change_order(self.in_order)
-        y_new = ConstantVariable(y_new.data.reshape(self.out_shape), self.in_order).change_order(self.out_order)
+        y_new = ConstantVariable(y_new.data.reshape(self.out_shape), self.out_order).change_order(y.order)
         OptimizeRule.replace_variable(graph, y, y_new)
 
     @property

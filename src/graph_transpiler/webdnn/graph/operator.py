@@ -21,10 +21,9 @@ class Operator(Node):
     def copy(self):
         """copy()
 
-        Copy this operator. Follow fields are copied.
-
-        - parameters
+        Create new operator instance, which is initialized with parameters same as this operator.
         """
+        # TODO: Is this correct?
         return self.__class__(None, **self.parameters)
 
     @property
@@ -213,9 +212,6 @@ class Operator(Node):
 
     def __call__(self, *args, **kwargs) -> Tuple["variable.Variable"]:
         raise NotImplementedError(f"Operator.__call__ must be override: (self.__class__)={self.__class__.__name__}")
-
-    def exec(self) -> Tuple["variable.Variable"]:
-        raise NotImplementedError(f"Operator.exec must be override: (self.__class__)={self.__class__.__name__}")
 
     def fold_constance(self, graph: "graph.Graph"):
         raise NotImplementedError(f"Operator.fold_constance must be override: (self.__class__)={self.__class__.__name__}")

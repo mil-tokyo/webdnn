@@ -113,7 +113,6 @@ def _split_axis(v: Variable, axis: Axis, graph):
 def _split_concat(graph: Graph, op: Concat, v: Variable, v_pair: Sequence[Variable], axis: Axis):
     s1 = v_pair[0].shape_dict[axis]
     xs = [op.inputs[key] for key in sorted([key for key in op.inputs.keys() if key.startswith("x")])]
-    workspace = op.inputs["workspace"] if "workspace" in op.inputs else None
     y = op.outputs["y"]
     op.remove_all()
 
@@ -173,10 +172,6 @@ def _split_concat(graph: Graph, op: Concat, v: Variable, v_pair: Sequence[Variab
             y_1, = Concat(None, axis=op.axis)(*xs_1)
             y_new, = Concat(None, axis=axis)(y_0, y_1)
             OptimizeRule.replace_variable(graph, y_new, y)
-
-    elif v == workspace:
-        # ignored
-        pass
 
     elif v == y:
         y_0, y_1 = v_pair
@@ -307,13 +302,13 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
                                       +-y3
 
             after)
-                                        +- h1 ------------------------ y1
+                                        +- y1
                 x_0 -{split[axis=axis]}-+
-                                        +- h2_0 -+
+                                        +- y2_0 -+
                                                  +-{concat[axis=axis]}- y2
-                                        +- h2_1 -+
+                                        +- y2_1 -+
                 x_1 -{split[axis=axis]}-+
-                                        +- h3 ------------------------- y3
+                                        +- y3
             """
             # find output variable which should be split ("y2" in above figure)
 
@@ -322,42 +317,42 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
             ys_1 = list(ys)  # type: List[Variable]
             for y in ys:
                 ys_1.remove(y)
-                ys_0.append(y)
-                total_size += y.shape_dict[axis]
 
-                if total_size == s1:
+                if total_size + y.shape_dict[axis] == s1:
                     # splitting is not needed
                     #
                     #       x_0        |       x_1
                     # <--------------> | <--------------->
-                    # h0, h1, ..., hn, | hn+1, ..., hs[-1]
                     # y0, y1, ..., yn, | yn+1, ..., ys[-1]
+                    ys_0.append(y)
                     break
 
-                elif total_size > s1:
+                elif total_size + y.shape_dict[axis] > s1:
                     # this `y` must be split
                     #
-                    #         x_0           |         x_1
-                    # <-------------------> | <----------------->
-                    #  h0, h1, ..., | hn_0, | hn_1, | ..., hs[-1]
-                    #               | <-----------> |
-                    #  y0, y1, ..., |     yn      , | ..., ys[-1]
+                    #         x_0         |         x_1
+                    # <-----------------> | <----------------->
+                    #  y0, y1, ..., yn_0, | yn_1, ..., ys[-1]
+                    #               <----------->
+                    #                     yn
 
-                    hn_0 = Variable([x_0.shape_dict[axis] - (total_size - s1) if a == axis else y.shape_dict[a] for a in y.order.axes],
+                    yn_0 = Variable([s1 - total_size if a == axis else y.shape_dict[a] for a in y.order.axes],
                                     y.order)
-                    hn_1 = Variable([total_size - s1 if a == axis else y.shape_dict[a] for a in y.order.axes], y.order)
-                    yn_new, = Concat(None, axis=axis)(hn_0, hn_1)
-                    yn_new.change_order(y.order)
-                    OptimizeRule.replace_variable(graph, yn_new, y)
-                    ys_0.remove(y)
-                    ys_0.append(hn_0)
-                    ys_1.insert(0, hn_1)
+                    yn_1 = Variable([y.shape_dict[axis] - (s1 - total_size) if a == axis else y.shape_dict[a] for a in y.order.axes],
+                                    y.order)
+                    OptimizeRule.replace_variable(graph, Concat(None, axis=axis)(yn_0, yn_1)[0].change_order(y.order), y)
+                    ys_0.append(yn_0)
+                    ys_1.insert(0, yn_1)
                     break
+
+                else:
+                    ys_0.append(y)
+                    total_size += y.shape_dict[axis]
 
             if len(ys_0) > 1:
                 sections_0 = [0]
-                for h in ys_0:
-                    sections_0.append(sections_0[-1] + h.shape_dict[axis])
+                for y in ys_0:
+                    sections_0.append(sections_0[-1] + y.shape_dict[axis])
                 sections_0.pop(0)
                 sections_0.pop()
 
@@ -373,8 +368,8 @@ def _split_splitaxis(graph: Graph, op: SplitAxis, v: Variable, v_pair: Sequence[
 
             if len(ys_1) > 1:
                 sections_1 = [0]
-                for h in ys_1:
-                    sections_1.append(sections_1[-1] + h.shape_dict[axis])
+                for y in ys_1:
+                    sections_1.append(sections_1[-1] + y.shape_dict[axis])
                 sections_1.pop(0)
                 sections_1.pop()
 
@@ -536,26 +531,28 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
 
             x -{reshape}- y
 
-                x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_M-1]
-                y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k, ..., dy_N-1] (n <= k)
-
-                dx_prod = dx_m * dx_m+1 * ... * dx_M-1
-
-                dy_n * dy_n+1 * ... * dy_N-1 == dx_prod
-                dy_k % 2 == 0
-
         after)
 
             x_0 -{reshape}- t_0 -+
                                  +-{concat[axis_k]}- t -{reshape}- y
             x_1 -{reshape}- t_1 -+
 
-            shape and order is changed as follows:
+        shape and order is changed as follows:
 
-                x_0.shape = [dx_0, dx_1, ..., dx_m/2, ..., dx_M-1]              (in_order)
-                t_0.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k/2, ..., dy_N-1]   (out_order)
-                  t.shape = [dy_0, dy_1, ..., dy_n*2, ..., dy_k/2, ..., dy_N-1] (out_order)
-                  y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_k, ..., dy_N-1]     (out_order)
+                  x.shape = [dx_0, dx_1, ..., dx_m,   ..., dx_M-1]
+                x_0.shape = [dx_0, dx_1, ..., dx_m/2, ..., dx_M-1]
+            ---------------------------------------------------------------------------------
+                t_0.shape = [dy_0, dy_1, ..., dy_n,   ..., dy_k/2, ..., dy_N-1]
+                  t.shape = [dy_0, dy_1, ..., dy_n*2, ..., dy_k/2, ..., dy_N-1]
+                  y.shape = [dy_0, dy_1, ..., dy_n,   ..., dy_k,   ..., dy_N-1]
+
+            m: split target axis
+
+            find axis_k and axis_n, which satisfies follow conditions
+
+                dy_n * dy_n+1 * ... * dy_N-1 == dx_m * dx_m+1 * ... * dx_M-1
+                dy_k % 2 == 0
+                n <= k
         """
 
         x_0, x_1 = v_pair
@@ -576,11 +573,11 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
                 t_0, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=t_0_shape)(x_0)
 
                 t_1_shape = [y.shape_dict[a] for a in out_order.axes]
-                t_1_shape[out_order.axes_dict[axis_k]] = t_0_shape[out_order.axes_dict[axis_k]] // 2  # TODO
+                t_1_shape[out_order.axes_dict[axis_k]] = t_1_shape[out_order.axes_dict[axis_k]] // 2  # TODO
                 t_1, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=t_1_shape)(x_1)
 
                 t, = Concat(None, axis=axis_n)(t_0, t_1)
-                y_new, = Reshape(None, in_order=out_order, out_order=out_order, out_shape=y_shape)
+                y_new, = Reshape(None, in_order=out_order, out_order=out_order, out_shape=y_shape)(t)
 
                 OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
                 break
@@ -596,27 +593,28 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
 
             x -{reshape}- y
 
-                x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k, ..., dx_M-1]  (m <= k)
-                y.shape = [dy_0, dy_1, ..., dy_n, ..., dy_N-1]
-
-                dy_prod = dy_n * dy_n+1 * ... * dy_N-1
-
-                dx_m * dx_m+1 * ... * dx_M-1 == dy_prod
-                dx_k % 2 == 0
-
         after)
 
                                     +- t_0 -{reshape}- y_0
             x -{reshape}- t-{split}-+
                                     +- t_1 -{reshape}- y_1
 
-            shape and order is changed as follows:
+        shape and order is changed as follows:
 
-                  x.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k, ..., dx_M-1]     (in_order)
-                  t.shape = [dx_0, dx_1, ..., 2*dx_m, ..., dx_k/2, ..., dx_M-1] (in_order)
-                t_0.shape = [dx_0, dx_1, ..., dx_m, ..., dx_k/2, ..., dx_M-1]   (in_order)
-                y_0.shape = [dy_0, dy_1, ..., dy_n/2, ..., dy_N-1]              (out_order)
+                  x.shape = [dx_0, dx_1, ..., dx_m,   ..., dx_k,   ..., dx_M-1]
+                  t.shape = [dx_0, dx_1, ..., dx_m*2, ..., dx_k/2, ..., dx_M-1]
+                t_0.shape = [dx_0, dx_1, ..., dx_m,   ..., dx_k/2, ..., dx_M-1]
+            ---------------------------------------------------------------------------------
+                y_0.shape = [dy_0, dy_1, ..., dy_n/2, ..., dy_N-1]
+                  y.shape = [dy_0, dy_1, ..., dy_n,   ..., dy_N-1]
 
+            m: split target axis
+
+            find axis_k and axis_m, which satisfies follow conditions
+
+                dx_m * dx_m+1 * ... * dx_M-1 == dy_n * dy_n+1 * ... * dy_N-1
+                dx_k % 2 == 0
+                m <= k
         """
 
         y_0, y_1 = v_pair
@@ -637,16 +635,16 @@ def _split_reshape(graph: Graph, op: Reshape, v: Variable, v_pair: Sequence[Vari
                 t_shape[in_order.axes_dict[axis_k]] = t_shape[in_order.axes_dict[axis_k]] // 2  # TODO
                 t, = Reshape(None, in_order=in_order, out_order=in_order, out_shape=t_shape)(x)
 
-                t_0, t_1 = SplitAxis(None, axis=axis_m, sections=[t_shape[in_order.axes_dict[axis_m]] // 2])(t)  # TODO
+                t_0, t_1 = SplitAxis(None, axis=axis_m, sections=[t.shape_dict[axis_m] // 2])(t)  # TODO
 
                 y_0_new, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=y_0.shape)(t_0)
-                y_1_new, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=y_0.shape)(t_1)
+                y_1_new, = Reshape(None, in_order=in_order, out_order=out_order, out_shape=y_1.shape)(t_1)
 
                 OptimizeRule.replace_variable(graph, y_0_new.reshape_like(y_0), y_0)
                 OptimizeRule.replace_variable(graph, y_1_new.reshape_like(y_1), y_1)
                 break
 
-            elif dx_prod > (s1 + s2) * dy_prod:
+            elif dx_prod > dy_prod:
                 raise NotImplementedError(f"Variable is too large to handle in WebGL backend: {v}")
 
     else:
@@ -741,6 +739,7 @@ def _split_partial_im2col(graph: Graph, op: PartialIm2Col, v: Variable, v_pair: 
 
 def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[Variable], axis: Axis):
     s1 = v_pair[0].shape_dict[axis]
+    s2 = v_pair[1].shape_dict[axis]
     A = op.inputs["A"]
     B = op.inputs["B"]
     C = op.outputs["C"]
@@ -762,14 +761,22 @@ def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[
         A1, A2 = v_pair
 
         if axis in axes_K_A:
-            # Factorize B's axes included in K into A's corresponding axes
-            B = B.transpose(Order(axes_N + axes_K_B))
-            B = B.reshape(order=Order((Axis(),) + axes_K_A), shape=[N] + [A.shape_dict[a] for a in axes_K_A])
+            split_axis_A = axis
 
-            B1, B2 = SplitAxis(None, axis=axis, sections=[s1])(B)
+            if (B.shape_dict[axes_K_B[0]] * s1) % (s1 + s2) == 0:
+                split_axis_B = axes_K_B[0]
 
-            C1, = Tensordot(None, [axes_K_A, axes_K_A])(A1, B1)
-            C2, = Tensordot(None, [axes_K_A, axes_K_A])(A2, B2)
+            else:
+                # Factorize B's axes consisting to K into A's corresponding axes
+                B = B.transpose(Order(axes_N + axes_K_B))
+                B = B.reshape(order=Order((Axis(),) + axes_K_A), shape=[N] + [A.shape_dict[a] for a in axes_K_A])
+                split_axis_B = split_axis_A
+                axes_K_B = axes_K_A
+
+            B1, B2 = SplitAxis(None, axis=split_axis_B, sections=[(B.shape_dict[split_axis_B] * s1) // (s1 + s2)])(B)
+
+            C1, = Tensordot(None, [axes_K_A, axes_K_B])(A1, B1)
+            C2, = Tensordot(None, [axes_K_A, axes_K_B])(A2, B2)
             OptimizeRule.replace_variable(graph, (C1 + C2).reshape(shape_M + shape_N, Order(axes_M + axes_N)).transpose_like(C), C)
 
         else:
@@ -788,14 +795,22 @@ def _split_tensordot(graph: Graph, op: Tensordot, v: Variable, v_pair: Sequence[
         B1, B2 = v_pair
 
         if axis in axes_K_B:
-            # Factorize A's axes included in K into B's corresponding axes
-            A = A.transpose(Order(axes_M + axes_K_A))
-            A = A.reshape(order=Order((Axis(),) + axes_K_B), shape=[M] + [B.shape_dict[a] for a in axes_K_B])
+            split_axis_B = axis
 
-            A1, A2 = SplitAxis(None, axis=axis, sections=[s1])(A)
+            if (A.shape_dict[axes_K_A[0]] * (s1 + s2)) % s1 == 0:
+                split_axis_A = axes_K_A[0]
 
-            C1, = Tensordot(None, [axes_K_B, axes_K_B])(A1, B1)
-            C2, = Tensordot(None, [axes_K_B, axes_K_B])(A2, B2)
+            else:
+                # Factorize A's axes consisting to K into B's corresponding axes
+                A = A.transpose(Order(axes_M + axes_K_A))
+                A = A.reshape(order=Order((Axis(),) + axes_K_B), shape=[M] + [B.shape_dict[a] for a in axes_K_B])
+                split_axis_A = split_axis_B
+                axes_K_A = axes_K_B
+
+            A1, A2 = SplitAxis(None, axis=split_axis_A, sections=[(A.shape_dict[split_axis_A] * s1) // (s1 + s2)])(A)
+
+            C1, = Tensordot(None, [axes_K_A, axes_K_B])(A1, B1)
+            C2, = Tensordot(None, [axes_K_A, axes_K_B])(A2, B2)
             OptimizeRule.replace_variable(graph, (C1 + C2).reshape(shape_M + shape_N, Order(axes_M + axes_N)).transpose_like(C), C)
 
         else:
@@ -879,6 +894,7 @@ def _split_pooling_2d(graph: Graph, op: Pooling2D, v: Variable, v_pair: Sequence
 
 def _split_tensorwise(graph: Graph, op: Operator, v: Variable, v_pair: Sequence[Variable], axis: Axis):
     s1 = v_pair[0].shape_dict[axis]
+    s2 = v_pair[1].shape_dict[axis]
     xs = dict(op.inputs)
     ys = dict(op.outputs)
     op.remove_all()
@@ -886,36 +902,39 @@ def _split_tensorwise(graph: Graph, op: Operator, v: Variable, v_pair: Sequence[
     op_0 = op.copy()
     op_1 = op.copy()
 
-    for key in xs.keys():
-        x = xs[key]
+    for key, x in xs.items():
         if x == v:
             x_0, x_1 = v_pair
 
         else:
-            if axis not in x.order.axes or x.shape_dict[axis] == 1:
-                # broadcasting
-                x_0 = x_1 = x
+            if axis in x.order.axes:
+                x_0, x_1 = SplitAxis(None, axis=axis, sections=[s1])(x)
 
             else:
-                x_0, x_1 = SplitAxis(None, axis=axis, sections=[s1])(x)
+                # splitting is not occurred
+                x_0 = x_1 = x
 
         op_0.append_input(key, x_0)
         op_1.append_input(key, x_1)
 
-    op_0.exec()
-    op_1.exec()
-
-    for key in ys.keys():
-        y = ys[key]
+    for key, y in ys.items():
         if y == v:
-            OptimizeRule.replace_variable(graph, op_0.outputs[key].transpose_like(v_pair[0]), v_pair[0])
-            OptimizeRule.replace_variable(graph, op_1.outputs[key].transpose_like(v_pair[1]), v_pair[1])
+            y_0, y_1 = v_pair
 
         else:
-            y_0 = op_0.outputs[key]
-            y_1 = op_1.outputs[key]
-            y_new, = Concat(None, axis=axis)(y_0, y_1)
-            OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
+            if axis in y.order.axes:
+                # TODO (Kiikurage)
+                # Attribute attached to "y" is not copied to neither "y_0" or "y_1"
+                y_0 = Variable([s1 if a == axis else y.shape_dict[a] for a in y.order.axes], y.order)
+                y_1 = Variable([s2 if a == axis else y.shape_dict[a] for a in y.order.axes], y.order)
+                y_new, = Concat(None, axis=axis)(y_0, y_1)
+                OptimizeRule.replace_variable(graph, y, y_new)
+
+            else:
+                raise UnexpectedAndPleaseReportError
+
+        op_0.append_output(key, y_0)
+        op_1.append_output(key, y_1)
 
 
 def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:

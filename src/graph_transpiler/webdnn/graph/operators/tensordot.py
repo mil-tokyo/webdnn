@@ -118,13 +118,6 @@ class Tensordot(Operator):
     (reduction size of B) = {reduction_size_b}
 """
 
-        self.append_input("A", A)
-        self.append_input("B", B)
-        return self.exec()
-
-    def exec(self):
-        A = self.inputs["A"]
-        B = self.inputs["B"]
         c_shape_dict = AxisKeyDict()
 
         for axis in A.order.axes:
@@ -136,9 +129,13 @@ class Tensordot(Operator):
                 c_shape_dict[axis] = B.shape_dict[axis]
 
         C = Variable(list(c_shape_dict.values()), Order(list(c_shape_dict.keys())))
-        self.append_output("C", C)
+
         for axis in C.order.axes:
             self.attributes.add(Tensorwise(axis))
+
+        self.append_input("A", A)
+        self.append_input("B", B)
+        self.append_output("C", C)
         return C,
 
     @property

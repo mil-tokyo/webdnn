@@ -46,29 +46,6 @@ class LSTM(Operator):
             y (:class:`~webdnn.graph.variable.Variable`): Output (OrderNC)
             final_c (:class:`~webdnn.graph.variable.Variable`): Last cell state (OrderNC)
         """
-        self.append_input("x", x)
-        self.append_input("w_input", w_input)
-        self.append_input("w_hidden", w_hidden)
-
-        if b is not None:
-            self.append_input("b", b)
-
-        if initial_c is not None:
-            self.append_input("initial_c", initial_c)
-
-        if initial_h is not None:
-            self.append_input("initial_h", initial_h)
-
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-        w_input = self.inputs["w_input"]
-        w_hidden = self.inputs["w_hidden"]
-        b = self.inputs["b"] if "b" in self.inputs else None
-        initial_c = self.inputs["initial_c"] if "initial_c" in self.inputs else None
-        initial_h = self.inputs["initial_h"] if "initial_h" in self.inputs else None
-
         assert self.parameters["use_bias"] == (b is not None)
         assert self.parameters["use_initial_c"] == (initial_c is not None)
         assert self.parameters["use_initial_h"] == (initial_h is not None)
@@ -113,7 +90,19 @@ class LSTM(Operator):
 
         final_c = Variable([batch_size, hidden_dim], OrderNC)
 
+        self.append_input("x", x)
+        self.append_input("w_input", w_input)
+        self.append_input("w_hidden", w_hidden)
+
+        if b is not None:
+            self.append_input("b", b)
+
+        if initial_c is not None:
+            self.append_input("initial_c", initial_c)
+
+        if initial_h is not None:
+            self.append_input("initial_h", initial_h)
+
         self.append_output("y", y)
         self.append_output("final_c", final_c)
-
         return y, final_c

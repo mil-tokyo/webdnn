@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
@@ -35,26 +35,13 @@ class Concat(Operator):
         self.parameters["axis"] = axis
 
     def __call__(self, *xs: Variable):
-        for i, x in enumerate(xs):
-            self.append_input(f"x{i}", x)
-
-        return self.exec()
-
-    def exec(self):
-        xs = [self.inputs[f"x{i}"] for i in range(len(self.inputs))]
         axis = self.axis
         axis_index = xs[0].order.axes_dict[axis]
         axes = xs[0].order.axes
 
-        y_shape = list(xs[0].shape)  # type: List[Placeholder]
+        y_shape = list(xs[0].shape)  # type: List[Union[int, Placeholder]]
         y_shape[axis_index] = 0
         y_order = xs[0].order
-
-        for a in y_order.axes:
-            if a == axis:
-                continue
-
-            self.attributes.add(Tensorwise(a))
 
         for i, x in enumerate(xs):
             assert x.order.check_same_axes(xs[0].order), f"""
@@ -71,7 +58,16 @@ class Concat(Operator):
 
             y_shape[axis_index] += x.shape_dict[axis]
 
+        for a in y_order.axes:
+            if a == axis:
+                continue
+
+            self.attributes.add(Tensorwise(a))
+
         y = Variable(y_shape, y_order)
+
+        for i, x in enumerate(xs):
+            self.append_input(f"x{i}", x)
         self.append_output("y", y)
         return y,
 

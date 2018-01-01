@@ -46,14 +46,6 @@ class Deconvolution2D(Operator):
         self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable, w: Variable):
-        self.append_input("x", x)
-        self.append_input("w", w)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-        w = self.inputs["w"]
-
         assert x.order.check_same_axes(OrderNCHW), f"""
 [Deconvolution2D] Input variable of Deconvolution2D must have N, C, H, and W axes:
     (x.order.axes) = {x.order.axes}"""
@@ -83,6 +75,8 @@ class Deconvolution2D(Operator):
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
+        self.append_input("x", x)
+        self.append_input("w", w)
         self.append_output("y", y)
         return y,
 

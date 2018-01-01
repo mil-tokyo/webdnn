@@ -32,18 +32,11 @@ class ConvertRtoRGBA(Operator):
         super().__init__(name)
 
     def __call__(self, *xs: "variable.Variable"):
-        for i, x in enumerate(xs):
-            self.append_input(f"x{i}", x)
-
-        return self.exec()
-
-    def exec(self):
         y_axes = []
         y_shape_dict = AxisKeyDict()
 
         # Check variable in descent order of the number of dimensions.
         # Without this procedure, in case that x0.order=C and x1.order=NC, the output order is CN. Expected result is NC.
-        xs = [self.inputs[f"x{i}"] for i in range(len(self.inputs))]
         xs_order = [(i, x) for i, x in enumerate(xs)]
         xs_order.sort(key=lambda d: d[1].ndim, reverse=True)
 
@@ -68,6 +61,9 @@ class ConvertRtoRGBA(Operator):
 
         y = variable.Variable([y_shape_dict[axis] for axis in y_axes], Order(y_axes))
         ChannelMode.set(y, ChannelModeEnum.RGBA)
+
+        for i, x in enumerate(xs):
+            self.append_input(f"x{i}", x)
         self.append_output("y", y)
         return y,
 

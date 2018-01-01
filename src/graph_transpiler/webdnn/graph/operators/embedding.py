@@ -33,14 +33,6 @@ class Embedding(Operator):
         self.attributes.add(Tensorwise(Axis.T))
 
     def __call__(self, x: Variable, w: Variable):
-        self.append_input("x", x)
-        self.append_input("w", w)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-        w = self.inputs["w"]
-
         x_shape_dict = x.shape_dict
         w_shape_dict = w.shape_dict
 
@@ -58,5 +50,7 @@ class Embedding(Operator):
 
         y = Variable([batch_size, sequence_len, embedding_dim], OrderNTC)
 
+        self.append_input("x", x)
+        self.append_input("w", w)
         self.append_output("y", y)
         return y,

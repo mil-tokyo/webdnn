@@ -35,11 +35,6 @@ class ZeroPadding1D(Operator):
         self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         T2 = x_shape_dict[Axis.T] + self.parameters["padding"][0] + self.parameters["padding"][1]
@@ -48,5 +43,6 @@ class ZeroPadding1D(Operator):
         y = Variable([N, T2, C2], OrderNTC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,

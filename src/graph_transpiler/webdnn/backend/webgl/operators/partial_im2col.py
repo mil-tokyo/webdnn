@@ -40,21 +40,14 @@ class PartialIm2Col(Operator):
             self.attributes.add(Tensorwise(Axis.C))
 
     def __call__(self, im: Variable):
-        self.append_input(f"im", im)
-        return self.exec()
-
-    def exec(self):
-        im = self.inputs["im"]
-        axis = self.parameters["axis"]
-
         N = im.shape_dict[Axis.N]
         H2 = (im.shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1
         W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
         C1 = im.shape_dict[Axis.C]
         col = Variable([N, H2, W2, self.KH, self.KW, C1], Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]))
 
-        sections = [0] + self.parameters["sections"] + [col.shape_dict[axis]]
-        cols = []
+        sections = [0] + self.parameters["sections"] + [col.shape_dict[self.axis]]
+        cols = []  # type: List[Tuple[str, Variable]]
 
         for i, i_from in enumerate(sections[:-1]):
             i_to = sections[i + 1]
@@ -62,13 +55,15 @@ class PartialIm2Col(Operator):
                                   f"sections[{i+1}]={i_to}"
 
             partial_col_shape = list(col.shape)
-            partial_col_shape[col.order.axes_dict[axis]] = i_to - i_from
+            partial_col_shape[col.order.axes_dict[self.axis]] = i_to - i_from
             partial_col = Variable(partial_col_shape, col.order)
 
-            cols.append(partial_col)
-            self.append_output(f"col{i}", partial_col)
+            cols.append((f"col{i}", partial_col))
 
-        return cols
+        self.append_input(f"im", im)
+        for key, col in cols:
+            self.append_output(key, col)
+        return tuple(col for _, col in cols)
 
     @property
     def axis(self) -> Axis:

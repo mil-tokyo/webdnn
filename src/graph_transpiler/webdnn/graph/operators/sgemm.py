@@ -28,24 +28,16 @@ class Sgemm(Operator):
         self.attributes.add(Associative(self, ('A', 'B')))
 
     def __call__(self, A: Variable, B: Variable):
-        self.append_input("A", A)
-        self.append_input("B", B)
-        return self.exec()
-
-    def exec(self):
-        A = self.inputs["A"]
-        B = self.inputs["B"]
         if Placeholder.check_resolved(A.size) and Placeholder.check_resolved(self.M * self.K):
             assert A.size == self.M * self.K
         if Placeholder.check_resolved(B.size) and Placeholder.check_resolved(self.N * self.K):
             assert B.size == self.N * self.K
 
-        C = Variable(
-            self.parameters["out_shape"],
-            self.parameters["out_order"]
-        )
-        self.append_output("C", C)
+        C = Variable(self.parameters["out_shape"], self.parameters["out_order"])
 
+        self.append_input("A", A)
+        self.append_input("B", B)
+        self.append_output("C", C)
         return C,
 
     @property

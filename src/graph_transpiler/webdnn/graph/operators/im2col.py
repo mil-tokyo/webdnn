@@ -20,12 +20,6 @@ class Im2Col(Operator):
         self.attributes.add(Tensorwise(Axis.C))
 
     def __call__(self, im: Variable):
-        self.append_input("im", im)
-        return self.exec()
-
-    def exec(self):
-        im = self.inputs["im"]
-
         N = im.shape_dict[Axis.N]
         H2 = (im.shape_dict[Axis.H] + 2 * self.PH - self.WH) // self.SH + 1
         W2 = (im.shape_dict[Axis.W] + 2 * self.PW - self.WW) // self.SW + 1
@@ -33,8 +27,8 @@ class Im2Col(Operator):
 
         col = Variable([N, H2, W2, self.KH, self.KW, C1], Order([Axis.N, Axis.H, Axis.W, Axis.KH, Axis.KW, Axis.C]))
 
+        self.append_input("im", im)
         self.append_output("col", col)
-
         return col,
 
     @property

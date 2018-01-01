@@ -112,25 +112,6 @@ class Slice(Operator):
     (indices) = {self.indices}
 """)
 
-        self.append_input("x", x)
-
-        # add attribute
-        for axis in x.order.axes:
-            if axis in self.indices:
-                index = self.indices[axis]
-                if isinstance(index, slice) and index.start is None and index.stop is None and index.step is None:
-                    # This axis is not sliced.
-                    self.attributes.add(Tensorwise(axis))
-
-            else:
-                # This axis is not sliced.
-                self.attributes.add(Tensorwise(axis))
-
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-
         y_shape_dict = AxisKeyDict()
         for axis, index in self.indices.items():
             if isinstance(index, slice):
@@ -144,6 +125,19 @@ class Slice(Operator):
                 y_shape_dict[axis] = 1  # Insert axis
 
         y = Variable(list(y_shape_dict.values()), Order(list(y_shape_dict.keys())))
+
+        for axis in x.order.axes:
+            if axis in self.indices:
+                index = self.indices[axis]
+                if isinstance(index, slice) and index.start is None and index.stop is None and index.step is None:
+                    # This axis is not sliced.
+                    self.attributes.add(Tensorwise(axis))
+
+            else:
+                # This axis is not sliced.
+                self.attributes.add(Tensorwise(axis))
+
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,
 

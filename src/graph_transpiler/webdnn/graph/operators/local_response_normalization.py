@@ -41,11 +41,8 @@ class LocalResponseNormalization(Operator):
         self.attributes.add(Tensorwise(Axis.W))
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         y = Variable(x.shape, x.order)
+
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,

@@ -17,10 +17,11 @@ def _set_texture_size(max_texture_size: int = 4096):
 
 
 def generate_array(*shape):
-    return np.arange(np.product(shape)).reshape(shape).astype(np.float32)
+    # return np.arange(np.product(shape)).reshape(shape).astype(np.float32)
+    return np.random.rand(*shape).astype(np.float32)
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
 def test_sgemm_largeN():
     M = 64
     K = 512
@@ -41,7 +42,7 @@ def test_sgemm_largeN():
     )
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
 def test_sgemm_largeK():
     M = config.WEBGL_MAX_TEXTURE_SIZE
     K1 = config.WEBGL_MAX_TEXTURE_SIZE
@@ -64,7 +65,7 @@ def test_sgemm_largeK():
     )
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
 def test_sgemm_largeM():
     M1 = config.WEBGL_MAX_TEXTURE_SIZE
     M2 = config.WEBGL_MAX_TEXTURE_SIZE
@@ -87,11 +88,13 @@ def test_sgemm_largeM():
     )
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
-def test_convolution2d_large_C_1():
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+def test_convolution2d_large_C1_1():
+    # case that C1 < MAX_TEXTURE_SIZE < C1*KH*KW
+
     H1 = 8
     W1 = 8
-    C1 = 512
+    C1 = config.WEBGL_MAX_TEXTURE_SIZE // 8
     C2 = 3
 
     link = chainer.links.Convolution2D(C1, C2, ksize=3, stride=1, pad=1, nobias=True)
@@ -105,7 +108,7 @@ def test_convolution2d_large_C_1():
     y = graph.outputs[0]
 
     generate_kernel_test_case(
-        description=f"test_convolution2d_large_C_1",
+        description=f"test_convolution2d_large_C1_1",
         graph=graph,
         backend=["webgl"],
         inputs={x: vx.data},
@@ -113,8 +116,9 @@ def test_convolution2d_large_C_1():
     )
 
 
-@with_setup(_set_texture_size(512), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
-def test_convolution2d_large_C_2():
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+def test_convolution2d_large_C1_2():
+    # case that MAX_TEXTURE_SIZE < C1
     H1 = 8
     W1 = 8
     C1 = config.WEBGL_MAX_TEXTURE_SIZE
@@ -122,7 +126,7 @@ def test_convolution2d_large_C_2():
 
     link = chainer.links.Convolution2D(C1, C2, ksize=3, stride=1, pad=1, nobias=True)
     link.W.data = generate_array(*link.W.shape)
-    vx = chainer.Variable(generate_array(1, C1, H1, W1))
+    vx = chainer.Variable(generate_array(1, C1, H1, W1).astype(np.float32))
     vy = link(vx)
 
     graph = ChainerConverter().convert([vx], [vy])
@@ -131,7 +135,7 @@ def test_convolution2d_large_C_2():
     y = graph.outputs[0]
 
     generate_kernel_test_case(
-        description=f"test_convolution2d_large_C_2",
+        description=f"test_convolution2d_large_C1_2",
         graph=graph,
         backend=["webgl"],
         inputs={x: vx.data},
@@ -139,12 +143,12 @@ def test_convolution2d_large_C_2():
     )
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
 def test_convolution2d_large_HW():
-    H1 = 64
-    W1 = 64
-    C1 = 3
-    C2 = 64
+    H1 = 128
+    W1 = 128
+    C1 = 2
+    C2 = 2
 
     link = chainer.links.Convolution2D(C1, C2, ksize=3, stride=1, pad=1, nobias=True)
     link.W.data = generate_array(*link.W.shape)
@@ -165,14 +169,14 @@ def test_convolution2d_large_HW():
     )
 
 
-@with_setup(_set_texture_size(1024), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
+@with_setup(_set_texture_size(4096), _set_texture_size(config.WEBGL_MAX_TEXTURE_SIZE))
 def test_tensorwise():
-    x1 = chainer.Variable(generate_array(32 * 16, 32, 32, 32))
-    x2 = chainer.Variable(generate_array(32 * 16, 32, 32, 32))
+    x1 = chainer.Variable(generate_array(1, 4096))
+    x2 = chainer.Variable(generate_array(1, 4096))
     h = chainer.functions.concat([x1, x2], axis=1)
     h = h + 1
-    link = chainer.links.Linear(64 * 32 * 32, 1)
-    generate_array(*link.W.shape)
+    link = chainer.links.Linear(8192, 1)
+    link.W.data = generate_array(*link.W.shape)
     y = link(h)
 
     graph = ChainerConverter().convert([x1], [y])

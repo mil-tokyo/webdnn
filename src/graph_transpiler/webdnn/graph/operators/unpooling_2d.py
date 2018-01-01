@@ -41,11 +41,6 @@ class Unpooling2D(Operator):
         self.parameters["outsize"] = to_tuple(outsize)
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         H2 = self.outsize[0]
@@ -54,14 +49,14 @@ class Unpooling2D(Operator):
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
-        self.append_output("y", y)
-
         for axis in x.order.axes:
             if axis == Axis.H or axis == Axis.W:
                 continue
 
             self.attributes.add(Tensorwise(axis))
 
+        self.append_input("x", x)
+        self.append_output("y", y)
         return y,
 
     @property
