@@ -72,22 +72,24 @@ python ./bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out ou
 Then, generated files (called as `Descriptor`) can be loaded and executed by JavaScript as follows,
 
 ```js
-let runner;
+let runner, image, probabilities;
 
 async function init() {
     // Initialize descriptor runner
     runner = await WebDNN.load('./output');
+    image = runner.inputs[0]; 
+    probabilities = runner.outputs[0];
 }
 
 async function run() {
     // Set the value into input variable.
-    runner.getInputViews()[0].set(await WebDNN.Image.getImageArray('./input_image.png'));
+    image.set(await WebDNN.Image.getImageArray('./input_image.png'));
     
     // Run
     await runner.run(); 
 
     // Show the result
-    console.log('Output', WebDNN.Math.argmax(runner.getOutputViews()[0].toActual()));
+    console.log('Output', WebDNN.Math.argmax(probabilities));
 }
 ```
 

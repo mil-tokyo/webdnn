@@ -247,6 +247,9 @@ export default class WebGLHandler {
  */
 let availability: boolean | null = null;
 
+/**
+ * @private
+ */
 function checkNull<T>(obj: T | null) {
     if (obj === null) throw Error('Null is detected');
     return obj as T;

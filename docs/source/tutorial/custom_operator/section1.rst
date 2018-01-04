@@ -231,8 +231,8 @@ Let's test the implementation.
     <script type="application/javascript">
         async function main() {
             let runner = await WebDNN.load("./output");
-            let x = runner.getInputViews()[0];
-            let y = runner.getOutputViews()[0];
+            let x = runner.inputs[0];
+            let y = runner.outputs[0];
 
             x.set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 

@@ -35,8 +35,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
 
     private kernelObj: any;
     private variableMap: Map<string, Float32Array> | null;
-    private inputViews: SymbolicFloat32Array[] | null;
-    private outputViews: SymbolicFloat32Array[] | null;
     private staticBuffer: Float32Array | null;
     private dynamicBuffer: Float32Array | null;
     private directory: string;
@@ -104,8 +102,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
         this.placeholderContext.update(descriptor.placeholders);
         this.kernelObj = null;
         this.variableMap = null;
-        this.outputViews = null;
-        this.inputViews = null;
         this.staticBuffer = null;
         this.dynamicBuffer = null;
     }
@@ -162,11 +158,15 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+            .forEach(view => {
+                view.buffer = staticBuffer.buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(staticBuffer.buffer));
+            .forEach(view => {
+                view.buffer = staticBuffer.buffer;
+            });
     }
 
     private async initializeDynamicBuffer() {
@@ -195,11 +195,15 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
 
         (await this.getInputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+            .forEach(view => {
+                view.buffer = dynamicBuffer.buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(dynamicBuffer.buffer));
+            .forEach(view => {
+                view.buffer = dynamicBuffer.buffer;
+            });
     }
 
     async setPlaceholderValue(values: { [key: string]: number; }) {
@@ -218,7 +222,6 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
         if (!this.variableMap) throw new Error('Variable map is not initialized');
         if (!this.staticBuffer) throw new Error('StaticBuffer map is not initialized');
         if (!this.dynamicBuffer) throw new Error('DynamicBuffer map is not initialized');
-        if (!this.inputViews || !this.outputViews) throw new Error('getInputViews() and getOutputViews() must be called prior to run');
 
         let variableMap = this.variableMap;
         let placeholderContext = this.placeholderContext;
@@ -246,38 +249,48 @@ export default class DescriptorRunnerFallback extends DescriptorRunner<GraphDesc
     }
 
     getInputViews() {
-        if (this.inputViews) return this.inputViews;
+        if (this.inputs) return this.inputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.inputViews = descriptor.inputs.map(name => {
+        this.inputs = descriptor.inputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext);
+            let view = new SymbolicFloat32Array(
+                null,
+                allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.inputViews;
+        return this.inputs;
     }
 
     getOutputViews() {
-        if (this.outputViews) return this.outputViews;
+        if (this.outputs) return this.outputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.outputViews = descriptor.outputs.map(name => {
+        this.outputs = descriptor.outputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext);
+            let view = new SymbolicFloat32Array(
+                null,
+                allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.outputViews;
+        return this.outputs;
     }
 }

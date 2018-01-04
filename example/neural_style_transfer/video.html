@@ -46,8 +46,8 @@
             // Load converted model
             this.runner = await WebDNN.load("./output");
 
-            this.inputView = this.runner.getInputViews()[0].toActual();
-            this.outputView = this.runner.getOutputViews()[0].toActual();
+            this.inputView = this.runner.inputs[0].toActual();
+            this.outputView = this.runner.outputs[0].toActual();
 
             // initialize web camera
             this.webcam = new WebCam();

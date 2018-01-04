@@ -42,17 +42,16 @@ async function run() {
 
     for (let i = 0; i < samples.length; i++) {
         let sample = samples[i];
-        runner.getInputViews()[0].set(sample.x);
+        runner.inputs[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
 
         let start = performance.now();
         await runner.run();
         totalElapsedTime += performance.now() - start;
 
-        let outputVector = runner.getOutputViews()[0].toActual();
-        console.log(outputVector);
+        console.log(runner.outputs[0]);
 
-        let predictedLabel = WebDNN.Math.argmax(outputVector)[0];
+        let predictedLabel = WebDNN.Math.argmax(runner.outputs[0])[0];
         console.log(`predicted: ${predictedLabel}`);
 
         displayPrediction(sample.x, predictedLabel, sample.y);

@@ -32,7 +32,6 @@ const IS_IOS = navigator.userAgent.includes('iPhone') || navigator.userAgent.inc
 export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
     /**
      * backend name
-     * @type {string}
      */
     readonly backendName: BackendName = 'webgpu';
 
@@ -55,16 +54,6 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
      * Buffers which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
      */
     private metaBuffers: BufferWebGPU[] | null;
-
-    /**
-     * Input views
-     */
-    private inputViews: SymbolicFloat32Array[] | null;
-
-    /**
-     * Output views
-     */
-    private outputViews: SymbolicFloat32Array[] | null;
 
     /**
      * Execution information such as each kernel size, input and output buffers, etc.
@@ -238,11 +227,15 @@ using namespace metal;
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
+            .forEach(view => {
+                view.buffer = staticBuffer.bufferView.buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(staticBuffer.bufferView.buffer));
+            .forEach(view => {
+                view.buffer = staticBuffer.bufferView.buffer;
+            });
     }
 
     /**
@@ -281,11 +274,15 @@ using namespace metal;
 
         (await this.getInputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
+            .forEach(view => {
+                view.buffer = dynamicBuffer.bufferView.buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(dynamicBuffer.bufferView.buffer));
+            .forEach(view => {
+                view.buffer = dynamicBuffer.bufferView.buffer;
+            });
     }
 
     /**
@@ -329,9 +326,10 @@ using namespace metal;
      * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
      * @returns array of input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated Use [[webdnn.DescriptorRunner.inputs|`inputs`]] instead
      */
     getInputViews() {
-        if (this.inputViews) return this.inputViews;
+        if (this.inputs) return this.inputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -339,23 +337,29 @@ using namespace metal;
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.inputViews = descriptor.inputs.map(name => {
+        this.inputs = descriptor.inputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext);
+            let view = new SymbolicFloat32Array(
+                null,
+                allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.inputViews;
+        return this.inputs;
     }
 
     /**
      * Get output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
      * @returns array of output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated Use [[webdnn.DescriptorRunner.outputs|`outputs`]] instead
      */
     getOutputViews() {
-        if (this.outputViews) return this.outputViews;
+        if (this.outputs) return this.outputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -363,14 +367,19 @@ using namespace metal;
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.outputViews = descriptor.outputs.map(name => {
+        this.outputs = descriptor.outputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext);
+            let view = new SymbolicFloat32Array(
+                null,
+                allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.outputViews;
+        return this.outputs;
     }
 
     /**
@@ -379,7 +388,6 @@ using namespace metal;
      */
     async run(): Promise<void> {
         if (!this.executionInfos) throw new Error('ExecutionInfos is not loaded');
-        if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.staticBuffer) throw new Error('StaticBuffer is not initialized');
         if (!this.dynamicBuffer) throw new Error('DynamicBuffer is not initialized');
         if (!this.metaBuffers) throw new Error('MetaBuffer is not initialized');

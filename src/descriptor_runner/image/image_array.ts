@@ -322,7 +322,7 @@ export async function getImageArray(image: ImageSource,
  *
  *   ```ts
  *   let runner = await WebDNN.load('./model');
- *   let output = runner.getOutputViews()[0];
+ *   let output = runner.outputs[0];
  *
  *   await runner.run();
  *
