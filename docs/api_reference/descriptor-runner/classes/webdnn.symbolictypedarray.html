@@ -35,12 +35,9 @@
 	</header>
 	<div class="reflection-container">
 		<div class="reflection-main">
-			<section class="members-group members-group-comment tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter tsd-is-external">
+			<section class="members-group members-group-comment tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter tsd-is-protected tsd-is-external">
 				<div class="members-group-body">
 					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>SymbolicTypedArray is wrapper class of buffers used in DNN model.</p>
-						</div>
 					</div>
 				</div>
 			</section>
@@ -62,8 +59,181 @@
 				</section>
 			</div>
 			<section class="members-group tsd-is-external">
+				<header class="members-group-header">Properties</header>
+				<div class="members-group-body">
+					<section class="member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+						<a name="bytes_per_element" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="bytes_per_element" class="anchor"></a>
+								<a href="#bytes_per_element" class="anchor-link">#</a>
+								<code>
+BYTES_<wbr>PER_<wbr>ELEMENT:                    <code><span class="signature-type">number</span>                    </code>        </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L40">[symbolic_typed_array/symbolic_typed_array.ts:40]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>The size in bytes of each element in the array.</p>
+									</div>
+								</div>
+							</div>
+						</section>
+					</section>
+				</div>
+			</section>
+			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Accessors</header>
 				<div class="members-group-body">
+					<section class="member tsd-kind-accessor tsd-parent-kind-class tsd-is-external">
+						<a name="buffer" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="buffer" class="anchor"></a>
+								<a href="#buffer" class="anchor-link">#</a>
+								<code>
+<span>get</span> buffer<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayBufferLike</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L87">[symbolic_typed_array/symbolic_typed_array.ts:87]</a>
+								</span>
+								<code>
+<span>set</span> buffer<span class="tsd-signature-symbol">(</span>buffer<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayBufferLike</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L95">[symbolic_typed_array/symbolic_typed_array.ts:95]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-accessor tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The ArrayBuffer instance referenced by the array.</p>
+										</div>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">ArrayBufferLike</span>                    </code>
+									</div>
+								</section>
+								<section class="signature-body-section signature-body-comment">
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The ArrayBuffer instance referenced by the array.</p>
+										</div>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Parameters</header>
+									<div class="signature-body-section-body">
+										<table class="signature-body-table">
+											<thead>
+												<tr>
+													<th>Name</th>
+													<th>Type</th>
+													<th>Default</th>
+													<th>Description</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>
+														<code>buffer</code>
+													</td>
+													<td>
+														<code>
+<span class="signature-type">ArrayBufferLike</span>                    </code>
+													</td>
+													<td>
+													</td>
+													<td>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">void</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+						<a name="bytelength" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="bytelength" class="anchor"></a>
+								<a href="#bytelength" class="anchor-link">#</a>
+								<code>
+<span>get</span> byteLength<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L102">[symbolic_typed_array/symbolic_typed_array.ts:102]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The length in bytes of the array.</p>
+										</div>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">number</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
+					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+						<a name="byteoffset" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="byteoffset" class="anchor"></a>
+								<a href="#byteoffset" class="anchor-link">#</a>
+								<code>
+<span>get</span> byteOffset<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">any</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L135">[symbolic_typed_array/symbolic_typed_array.ts:135]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The offset in bytes of the array.</p>
+										</div>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">any</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
 					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
 						<a name="length" class="anchor"></a>
 						<div class="signatures">
@@ -73,7 +243,7 @@
 								<code>
 <span>get</span> length<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                </code>
 								<span class="signatures-source">
-									<a href="https://github.com/mil-tokyo/webdnn/blob/d32b0fe/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L101">[symbolic_typed_array/symbolic_typed_array.ts:101]</a>
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L123">[symbolic_typed_array/symbolic_typed_array.ts:123]</a>
 								</span>
 							</header>
 						</div>
@@ -96,11 +266,667 @@
 							</div>
 						</section>
 					</section>
+					<section class="member tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+						<a name="offset" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="offset" class="anchor"></a>
+								<a href="#offset" class="anchor-link">#</a>
+								<code>
+<span>get</span> offset<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                </code>
+								<span class="signatures-source">
+									<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L109">[symbolic_typed_array/symbolic_typed_array.ts:109]</a>
+								</span>
+							</header>
+						</div>
+						<section class="members-group members-group-comment tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<div class="members-group-body">
+								<section class="signature-body-section signature-body-comment">
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The number in this buffer. Actual offset size is <code>(offset * SIZE_OF_FLOAT)</code>.</p>
+										</div>
+									</div>
+								</section>
+								<section class="signature-body-section">
+									<header class="signature-body-section-header">Returns</header>
+									<div class="signature-body-section-body signature-body-section-returns">
+										<code>
+<span class="signature-type">number</span>                    </code>
+									</div>
+								</section>
+							</div>
+						</section>
+					</section>
 				</div>
 			</section>
 			<section class="members-group tsd-is-external">
 				<header class="members-group-header">Methods</header>
 				<div class="members-group-body">
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="copywithin" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="copywithin" class="anchor"></a>
+								<a href="#copywithin" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										copy<wbr>Within
+									</h3>
+									<div>
+										<code>
+copy<wbr>Within<span class="tsd-signature-symbol">(</span>target<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, start<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, end<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">this</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L153">[symbolic_typed_array/symbolic_typed_array.ts:153]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns the this object after copying a section of the array identified by start and end
+												to the same array starting at position target</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>target</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>If target is negative, it is treated as length+target where length is the
+																length of the array.</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>start</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>If start is negative, it is treated as length+start. If end is negative, it
+																is treated as length+end.</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>end</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>If not specified, length of the this object is used as its default value.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">this</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="entries" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="entries" class="anchor"></a>
+								<a href="#entries" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										entries
+									</h3>
+									<div>
+										<code>
+entries<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-symbol">[</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">, </span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">]</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L245">[symbolic_typed_array/symbolic_typed_array.ts:245]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns an iterable of key, value pairs for every entry in the array</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-symbol">[</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">, </span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">]</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="fill" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="fill" class="anchor"></a>
+								<a href="#fill" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										fill
+									</h3>
+									<div>
+										<code>
+fill<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, start<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code>, end<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">this</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L166">[symbolic_typed_array/symbolic_typed_array.ts:166]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns the this object after filling the section identified by start and end with value</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>value</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>value to fill array section with</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>start</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>index to start filling the array at. If start is negative, it is treated as
+																length+start where length is the length of the array.</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>end</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>index to stop filling the array at. If end is negative, it is treated as
+																length+end.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">this</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="includes" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="includes" class="anchor"></a>
+								<a href="#includes" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										includes
+									</h3>
+									<div>
+										<code>
+includes<span class="tsd-signature-symbol">(</span>searchElement<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, fromIndex<span class="tsd-signature-symbol">?: </span><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">undefined</span>                    </code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">boolean</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L210">[symbolic_typed_array/symbolic_typed_array.ts:210]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>searchElement</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>fromIndex</code>
+														</td>
+														<td>
+															<code>
+                    <code>
+<span class="signature-type">number</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">undefined</span>                    </code>
+															</code>
+														</td>
+														<td>
+														</td>
+														<td>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">boolean</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="indexof" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="indexof" class="anchor"></a>
+								<a href="#indexof" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										index<wbr>Of
+									</h3>
+									<div>
+										<code>
+index<wbr>Of<span class="tsd-signature-symbol">(</span>searchElement<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, fromIndex<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L177">[symbolic_typed_array/symbolic_typed_array.ts:177]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns the index of the first occurrence of a value in an array.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>searchElement</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>The value to locate in the array.</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>fromIndex</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>The array index at which to begin the search. If fromIndex is omitted, the
+																search starts at index 0.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">number</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="join" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="join" class="anchor"></a>
+								<a href="#join" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										join
+									</h3>
+									<div>
+										<code>
+join<span class="tsd-signature-symbol">(</span>separator<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">string</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L186">[symbolic_typed_array/symbolic_typed_array.ts:186]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Adds all the elements of an array separated by the specified separator string.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>separator</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">string</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>A string used to separate one element of an array from the next in the
+																resulting String. If omitted, the array elements are separated with a comma.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">string</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="keys" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="keys" class="anchor"></a>
+								<a href="#keys" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										keys
+									</h3>
+									<div>
+										<code>
+keys<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L252">[symbolic_typed_array/symbolic_typed_array.ts:252]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns an iterable of keys in the array</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="lastindexof" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="lastindexof" class="anchor"></a>
+								<a href="#lastindexof" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										last<wbr>Index<wbr>Of
+									</h3>
+									<div>
+										<code>
+last<wbr>Index<wbr>Of<span class="tsd-signature-symbol">(</span>searchElement<span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>, fromIndex<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">number</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L196">[symbolic_typed_array/symbolic_typed_array.ts:196]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns the index of the last occurrence of a value in an array.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>searchElement</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>The value to locate in the array.</p>
+															</div>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<code>fromIndex</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">number</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>The array index at which to begin the search. If fromIndex is omitted, the
+																search starts at index 0.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">number</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
 					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
 						<a name="set" class="anchor"></a>
 						<div class="signatures">
@@ -113,9 +939,9 @@
 									</h3>
 									<div>
 										<code>
-set<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayLike</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>, offset<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">number</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
+set<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><code><span class="signature-type">ArrayLike</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>, offset<span class="tsd-signature-symbol">?: </span><code><code><span class="signature-type">number</span>                    </code><span class="signature-symbol"> | </span><code><span class="signature-type">undefined</span>                    </code></code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">void</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/d32b0fe/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L116">[symbolic_typed_array/symbolic_typed_array.ts:116]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L219">[symbolic_typed_array/symbolic_typed_array.ts:219]</a>
 										</span>
 									</div>
 								</div>
@@ -164,13 +990,18 @@ set<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-sy
 														</td>
 														<td>
 															<code>
+                    <code>
 <span class="signature-type">number</span>                    </code>
+															<span class="signature-symbol"> | </span>
+															<code>
+<span class="signature-type">undefined</span>                    </code>
+															</code>
 														</td>
 														<td>
 														</td>
 														<td>
 															<div class="tsd-comment tsd-typography">
-																<p>The index at which the values will be written.</p>
+																<p>The index in the current array at which the values are to be written.</p>
 															</div>
 														</td>
 													</tr>
@@ -183,6 +1014,79 @@ set<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-sy
 										<div class="signature-body-section-body signature-body-section-returns">
 											<code>
 <span class="signature-type">void</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="sort" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="sort" class="anchor"></a>
+								<a href="#sort" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										sort
+									</h3>
+									<div>
+										<code>
+sort<span class="tsd-signature-symbol">(</span>compareFn<span class="tsd-signature-symbol">?: </span><code><span class="signature-type">function</span>                    </code><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">this</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L205">[symbolic_typed_array/symbolic_typed_array.ts:205]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Sorts an array.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Parameters</header>
+										<div class="signature-body-section-body">
+											<table class="signature-body-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Type</th>
+														<th>Default</th>
+														<th>Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>
+															<code>compareFn</code>
+														</td>
+														<td>
+															<code>
+<span class="signature-type">function</span>                    </code>
+														</td>
+														<td>
+														</td>
+														<td>
+															<div class="tsd-comment tsd-typography">
+																<p>The name of the function used to determine the order of the elements. If
+																omitted, the elements are sorted in ascending, ASCII character order.</p>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">this</span>                    </code>
 										</div>
 									</section>
 								</div>
@@ -203,7 +1107,7 @@ set<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-sy
 										<code>
 to<wbr>Actual<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">T</span>                    </code>                    </code>
 										<span class="signatures-source">
-											<a href="https://github.com/mil-tokyo/webdnn/blob/d32b0fe/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L37">[symbolic_typed_array/symbolic_typed_array.ts:37]</a>
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L82">[symbolic_typed_array/symbolic_typed_array.ts:82]</a>
 										</span>
 									</div>
 								</div>
@@ -213,7 +1117,7 @@ to<wbr>Actual<span class="tsd-signature-symbol">(</span><span class="tsd-signatu
 									<section class="signature-body-section signature-body-comment">
 										<div class="tsd-comment tsd-typography">
 											<div class="lead">
-												<p>Convert symbolic buffer view into actual buffer view.</p>
+												<p>Convert SymbolicTypedArray instance into actual TypedArray instance.</p>
 											</div>
 										</div>
 									</section>
@@ -231,17 +1135,164 @@ to<wbr>Actual<span class="tsd-signature-symbol">(</span><span class="tsd-signatu
 							</div>
 						</div>
 					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="tolocalestring" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="tolocalestring" class="anchor"></a>
+								<a href="#tolocalestring" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										to<wbr>Locale<wbr>String
+									</h3>
+									<div>
+										<code>
+to<wbr>Locale<wbr>String<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L226">[symbolic_typed_array/symbolic_typed_array.ts:226]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Converts a number to a string by using the current locale.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">string</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="tostring" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="tostring" class="anchor"></a>
+								<a href="#tostring" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										to<wbr>String
+									</h3>
+									<div>
+										<code>
+to<wbr>String<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">string</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L233">[symbolic_typed_array/symbolic_typed_array.ts:233]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns a string representation of an array.</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">string</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
+					<section class="member tsd-kind-method tsd-parent-kind-class tsd-is-external">
+						<a name="values" class="anchor"></a>
+						<div class="signatures">
+							<header class="signatures-header">
+								<a id="values" class="anchor"></a>
+								<a href="#values" class="anchor-link anchor-link-large">#</a>
+								<div class="signature-header-titles">
+									<h3 class="signatures-header-title">
+										values
+									</h3>
+									<div>
+										<code>
+values<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><code><span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>                    </code>
+										<span class="signatures-source">
+											<a href="https://github.com/mil-tokyo/webdnn/blob/5fbe0f1/src/descriptor_runner/symbolic_typed_array/symbolic_typed_array.ts#L259">[symbolic_typed_array/symbolic_typed_array.ts:259]</a>
+										</span>
+									</div>
+								</div>
+							</header>
+							<div class="signatures-body">
+								<div>
+									<section class="signature-body-section signature-body-comment">
+										<div class="tsd-comment tsd-typography">
+											<div class="lead">
+												<p>Returns an iterable of values in the array</p>
+											</div>
+										</div>
+									</section>
+									<section class="signature-body-section">
+										<header class="signature-body-section-header">Returns</header>
+										<div class="signature-body-section-body signature-body-section-returns">
+											<code>
+<span class="signature-type">IterableIterator</span><span class="signature-symbol">&lt;</span><code><span class="signature-type">number</span>                    </code><span class="signature-symbol">&gt;</span>                    </code>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</section>
 				</div>
 			</section>
 		</div>
 		<div class="reflection-rightnav">
 			<ul class="toc">
 				<li>
+					<header class="toc-header">Properties</header>
+					<ul class="toc-list">
+						<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#bytes_per_element" class="tsd-kind-icon">
+								BYTES_<wbr>PER_<wbr>ELEMENT
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
 					<header class="toc-header">Accessors</header>
 					<ul class="toc-list">
+						<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#buffer" class="tsd-kind-icon">
+								buffer
+							</a>
+						</li>
+						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#bytelength" class="tsd-kind-icon">
+								byte<wbr>Length
+							</a>
+						</li>
+						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#byteoffset" class="tsd-kind-icon">
+								byte<wbr>Offset
+							</a>
+						</li>
 						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
 							<a href="webdnn.symbolictypedarray.html#length" class="tsd-kind-icon">
 								length
+							</a>
+						</li>
+						<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#offset" class="tsd-kind-icon">
+								offset
 							</a>
 						</li>
 					</ul>
@@ -250,13 +1301,73 @@ to<wbr>Actual<span class="tsd-signature-symbol">(</span><span class="tsd-signatu
 					<header class="toc-header">Methods</header>
 					<ul class="toc-list">
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#copywithin" class="tsd-kind-icon">
+								copy<wbr>Within
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#entries" class="tsd-kind-icon">
+								entries
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#fill" class="tsd-kind-icon">
+								fill
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#includes" class="tsd-kind-icon">
+								includes
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#indexof" class="tsd-kind-icon">
+								index<wbr>Of
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#join" class="tsd-kind-icon">
+								join
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#keys" class="tsd-kind-icon">
+								keys
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#lastindexof" class="tsd-kind-icon">
+								last<wbr>Index<wbr>Of
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
 							<a href="webdnn.symbolictypedarray.html#set" class="tsd-kind-icon">
 								set
 							</a>
 						</li>
 						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#sort" class="tsd-kind-icon">
+								sort
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
 							<a href="webdnn.symbolictypedarray.html#toactual" class="tsd-kind-icon">
 								to<wbr>Actual
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#tolocalestring" class="tsd-kind-icon">
+								to<wbr>Locale<wbr>String
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#tostring" class="tsd-kind-icon">
+								to<wbr>String
+							</a>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external">
+							<a href="webdnn.symbolictypedarray.html#values" class="tsd-kind-icon">
+								values
 							</a>
 						</li>
 					</ul>

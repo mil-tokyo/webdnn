@@ -73,8 +73,8 @@ Then you can get input and output variable references (`SymbolicFloat32Array` ty
 
 .. code-block:: js
 
-    let x = runner.getInputViews()[0];
-    let y = runner.getOutputViews()[0];
+    let x = runner.inputs[0];
+    let y = runner.outputs[0];
 
 That's all for initialization. You only have to do this at once in the application.
 
@@ -114,7 +114,7 @@ Show computed vector and predicted label.
 
 .. code-block:: js
 
-    let y_typed_array = y.toActual();
+    let y_typed_array = y.toActual();  // convert SymbolicFloat32Array into Float32Array
     console.log('Computed vector', y_typed_array);
     console.log('Predicted Label', WebDNN.Math.argmax(y_typed_array));
 

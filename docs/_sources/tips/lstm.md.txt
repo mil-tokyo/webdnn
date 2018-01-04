@@ -28,9 +28,9 @@ model.add(Dense(1, activation='sigmoid'))
 Usage of this model in descriptor runner is the same as image classification CNN model.
 
 ```javascript
-runner.getInputViews()[0].set(input_sequence);
+runner.inputs[0].set(input_sequence);
 await runner.run();
-let prediction_vector = runner.getOutputViews()[0].toActual();
+let prediction_vector = runner.outputs[0].toActual();
 ```
 
 ## Iterative sequence generation
@@ -54,11 +54,11 @@ let sentence = sentence_seed;
 
 for (let i = 0; i < 100; i++) {
     // input current sentence to the model
-    runner.getInputViews()[0].set(sentence_to_array(sentence));
+    runner.inputs[0].set(sentence_to_array(sentence));
 
     // predict next character's probability
     await runner.run();
-    let out_vec = runner.getOutputViews()[0].toActual();
+    let out_vec = runner.outputs[0].toActual();
     // sample next character
     let next_char = sample_next_char(out_vec, 1.0);
     sentence += next_char;

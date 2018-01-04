@@ -205,9 +205,9 @@
 </pre></div>
 </div>
 <p>Usage of this model in descriptor runner is the same as image classification CNN model.</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="nx">runner</span><span class="p">.</span><span class="nx">getInputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">input_sequence</span><span class="p">);</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="nx">runner</span><span class="p">.</span><span class="nx">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">input_sequence</span><span class="p">);</span>
 <span class="nx">await</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">run</span><span class="p">();</span>
-<span class="kd">let</span> <span class="nx">prediction_vector</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">getOutputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">].</span><span class="nx">toActual</span><span class="p">();</span>
+<span class="kd">let</span> <span class="nx">prediction_vector</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">toActual</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -227,11 +227,11 @@
 
 <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// input current sentence to the model</span>
-    <span class="nx">runner</span><span class="p">.</span><span class="nx">getInputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">sentence_to_array</span><span class="p">(</span><span class="nx">sentence</span><span class="p">));</span>
+    <span class="nx">runner</span><span class="p">.</span><span class="nx">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">sentence_to_array</span><span class="p">(</span><span class="nx">sentence</span><span class="p">));</span>
 
     <span class="c1">// predict next character&#39;s probability</span>
     <span class="nx">await</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">run</span><span class="p">();</span>
-    <span class="kd">let</span> <span class="nx">out_vec</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">getOutputViews</span><span class="p">()[</span><span class="mi">0</span><span class="p">].</span><span class="nx">toActual</span><span class="p">();</span>
+    <span class="kd">let</span> <span class="nx">out_vec</span> <span class="o">=</span> <span class="nx">runner</span><span class="p">.</span><span class="nx">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">toActual</span><span class="p">();</span>
     <span class="c1">// sample next character</span>
     <span class="kd">let</span> <span class="nx">next_char</span> <span class="o">=</span> <span class="nx">sample_next_char</span><span class="p">(</span><span class="nx">out_vec</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
     <span class="nx">sentence</span> <span class="o">+=</span> <span class="nx">next_char</span><span class="p">;</span>
