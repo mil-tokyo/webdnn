@@ -74,14 +74,14 @@ WebDNN.load(<span class="hljs-string">'./model'</span>)
 					input buffer.</p>
 					<pre><code class="lang-ts"><span class="hljs-comment">// ES2016</span>
 <span class="hljs-keyword">let</span> imageArray = <span class="hljs-keyword">await</span> WebDNN.Image.getImageArray(); <span class="hljs-comment">// Load image RGB data as Float32Array</span>
-runner.getInputViews()[<span class="hljs-number">0</span>].set(imageArray); <span class="hljs-comment">// Write data</span>
+runner.inputs[<span class="hljs-number">0</span>].set(imageArray); <span class="hljs-comment">// Write data</span>
 </code></pre>
 					<pre><code class="lang-ts"><span class="hljs-comment">// ES2015</span>
 WebDNN.Image.getImageArray()
-    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">imageArray</span>) </span>{ runner.getInputViews()[<span class="hljs-number">0</span>].set(imageArray) });
+    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">imageArray</span>) </span>{ runner.inputs[<span class="hljs-number">0</span>].set(imageArray) });
 </code></pre>
 					<p>Also you can access the output buffer.</p>
-					<pre><code class="lang-ts"><span class="hljs-keyword">let</span> result = runner.getOutputViews()[<span class="hljs-number">0</span>];
+					<pre><code class="lang-ts"><span class="hljs-keyword">let</span> result = runner.outputs[<span class="hljs-number">0</span>];
 </code></pre>
 					<p>Finally, run inference!</p>
 					<pre><code class="lang-ts"><span class="hljs-comment">// ES2016</span>
@@ -91,7 +91,7 @@ WebDNN.Image.getImageArray()
 runner.run()
     .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-comment">/* do something */</span> });
 </code></pre>
-					<p>Because <a href="classes/webdnn.descriptorrunner.html#getoutputviews"><code>DescriptorRunner.getOutputViews()</code></a> returns
+					<p>Because <a href="classes/webdnn.descriptorrunner.html#outputs"><code>DescriptorRunner.outputs</code></a> returns
 						<a href="classes/webdnn.symbolictypedarray.html"><code>SymbolicTypedArray</code></a>, which is not actual typed array,
 					you need to convert it into actual typed array by using <a href="classes/webdnn.symbolictypedarray.html#toactual"><code>SymbolicTypedArray.toActual()</code></a>.</p>
 					<pre><code class="lang-ts"><span class="hljs-built_in">console</span>.log(result.toActual());
