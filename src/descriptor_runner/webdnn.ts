@@ -387,8 +387,6 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
                     throw Error(`"${cacheStrategy}" is not valid cache strategy name: "latest", "networkFirst", "networkOnly", "cacheFirst", "cacheOnly" is available.`)
             }
 
-            await runner.setDescriptorAndParameters(descriptor, parameters);
-
             if (saveCache) {
                 try {
                     await runner.saveCache(directory, descriptor, parameters);
@@ -396,6 +394,9 @@ export async function load(directory: string, initOption: InitOption = {}): Prom
                     /* do nothing */
                 }
             }
+
+            await runner.setDescriptorAndParameters(descriptor, parameters);
+
         } catch (ex) {
             console.warn(`Model loading failed for ${backendName} backend. Trying next backend: ${ex.message}`);
             continue;

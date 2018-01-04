@@ -51,19 +51,19 @@ input buffer.
 ```ts
 // ES2016
 let imageArray = await WebDNN.Image.getImageArray(); // Load image RGB data as Float32Array
-runner.getInputViews()[0].set(imageArray); // Write data
+runner.inputs[0].set(imageArray); // Write data
 ```
 
 ```ts
 // ES2015
 WebDNN.Image.getImageArray()
-    .then(function(imageArray) { runner.getInputViews()[0].set(imageArray) });
+    .then(function(imageArray) { runner.inputs[0].set(imageArray) });
 ```
 
 Also you can access the output buffer.
 
 ```ts
-let result = runner.getOutputViews()[0];
+let result = runner.outputs[0];
 ```
 
 Finally, run inference!
@@ -79,7 +79,7 @@ runner.run()
     .then(function() { /* do something */ });
 ```
 
-Because [[webdnn.DescriptorRunner.getOutputViews|`DescriptorRunner.getOutputViews()`]] returns 
+Because [[webdnn.DescriptorRunner.outputs|`DescriptorRunner.outputs`]] returns 
 [[webdnn.SymbolicTypedArray|`SymbolicTypedArray`]], which is not actual typed array, 
 you need to convert it into actual typed array by using [[webdnn.SymbolicTypedArray.toActual|`SymbolicTypedArray.toActual()`]].
 

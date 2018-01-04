@@ -1,6 +1,6 @@
 'use strict';
 
-var run = function () {
+var run = function() {
     var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
         var backend_name, framework_name, output_table, total_elapsed_time, i, sample, start, out_vec, pred_label;
         return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -15,7 +15,7 @@ var run = function () {
                         backend_name = document.querySelector('input[name=backend_name]:checked').value;
                         framework_name = document.querySelector('input[name=framework_name]:checked').value;
                         _context.next = 5;
-                        return WebDNN.load('./output_' + framework_name, { backendOrder: backend_name });
+                        return WebDNN.load('./output_' + framework_name, {backendOrder: backend_name});
 
                     case 5:
                         runner = _context.sent;
@@ -44,7 +44,7 @@ var run = function () {
 
                         sample = test_samples[i];
 
-                        runner.getInputViews()[0].set(sample.x);
+                        runner.inputs[0].set(sample.x);
                         console.log('ground truth: ' + sample.y);
 
                         start = performance.now();
@@ -54,7 +54,7 @@ var run = function () {
                     case 22:
                         total_elapsed_time += performance.now() - start;
 
-                        out_vec = runner.getOutputViews()[0].toActual();
+                        out_vec = runner.outputs[0];
                         pred_label = WebDNN.Math.argmax(out_vec)[0];
 
                         console.log('predicted: ' + pred_label);
@@ -82,7 +82,7 @@ var run = function () {
     };
 }();
 
-var fetchSamples = function () {
+var fetchSamples = function() {
     var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(path) {
         var response, json, samples, i;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -111,7 +111,7 @@ var fetchSamples = function () {
                         samples = [];
 
                         for (i = 0; i < json.length; i++) {
-                            samples.push({ 'x': new Float32Array(json[i]['x']), 'y': json[i]['y'] });
+                            samples.push({'x': new Float32Array(json[i]['x']), 'y': json[i]['y']});
                         }
 
                         return _context2.abrupt('return', samples);
@@ -129,7 +129,33 @@ var fetchSamples = function () {
     };
 }();
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+function _asyncToGenerator(fn) {
+    return function() {
+        var gen = fn.apply(this, arguments);
+        return new Promise(function(resolve, reject) {
+            function step(key, arg) {
+                try {
+                    var info = gen[key](arg);
+                    var value = info.value;
+                } catch (error) {
+                    reject(error);
+                    return;
+                }
+                if (info.done) {
+                    resolve(value);
+                } else {
+                    return Promise.resolve(value).then(function(value) {
+                        step("next", value);
+                    }, function(err) {
+                        step("throw", err);
+                    });
+                }
+            }
+
+            return step("next");
+        });
+    };
+}
 
 var runner = null;
 var test_samples = null;
@@ -139,9 +165,9 @@ function msg(s) {
 }
 
 function run_entry() {
-    run().then(function () {
+    run().then(function() {
         console.log('run finished');
-    }).catch(function (error) {
+    }).catch(function(error) {
         msg('run failed: ' + error);
         console.error('run failed ' + error);
     });

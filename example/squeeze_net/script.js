@@ -49,7 +49,7 @@ async function prepare_run() {
 async function run() {
     let runner = await prepare_run();
 
-    runner.getInputViews()[0].set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
+    runner.inputs[0].set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
         dstW: 223, dstH: 223,
         order: WebDNN.Image.Order.HWC,
         color: WebDNN.Image.Color.BGR,
@@ -60,7 +60,7 @@ async function run() {
     await runner.run();
     let elapsed_time = performance.now() - start;
 
-    let out_vec = runner.getOutputViews()[0].toActual();
+    let out_vec = runner.outputs[0].toActual();
     let top_labels = WebDNN.Math.argmax(out_vec, 5);
 
     let predicted_str = 'Predicted:';

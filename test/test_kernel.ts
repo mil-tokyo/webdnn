@@ -223,12 +223,12 @@ const TestRunner = new class {
 
                 let runner = await WebDNN.load(this.rootUrl + testCase.dirname, {
                     backendOrder: testCase.backend,
-                    ignoreCache: true
+                    cacheStrategy: "latest"
                 });
                 assert.equal(testCase.backend, runner.backendName, 'backend');
 
-                let inputs = runner.getInputViews();
-                outputs = runner.getOutputViews();
+                let inputs = runner.inputs;
+                outputs = runner.outputs;
 
                 testCase.inputs.forEach((data, i) => inputs[i].set(data));
                 let startTime = performance.now();

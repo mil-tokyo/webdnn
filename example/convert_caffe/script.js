@@ -8,8 +8,8 @@ async function init() {
     runner = await WebDNN.load('./output');
 
     // (1.2) Get input and output variables
-    x = runner.getInputViews()[0];
-    y = runner.getOutputViews()[0];
+    x = runner.inputs[0];
+    y = runner.outputs[0];
 }
 
 async function run() {
@@ -32,10 +32,3 @@ async function run() {
 
 const SIZE = 227;
 window.onload = () => init();
-
-function loadImage() {
-    let img = new Image();
-
-    img.onload = () => document.querySelector('canvas').getContext('2d').drawImage(img, 0, 0, SIZE, SIZE);
-    img.src = document.querySelector('input').value;
-}

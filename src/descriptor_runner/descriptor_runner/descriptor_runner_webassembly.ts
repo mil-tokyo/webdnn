@@ -28,8 +28,6 @@ declare let WebAssembly: any;
 export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly, ArrayBuffer> {
     readonly backendName: BackendName = 'webassembly';
 
-    private inputViews: SymbolicFloat32Array[] | null;
-    private outputViews: SymbolicFloat32Array[] | null;
     private worker: Worker | null;
     private worker_entry_js_path;
     private worker_promise_reject_func: any = null;
@@ -72,11 +70,15 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         //assign buffer to input/output buffer view
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+            .forEach(view => {
+                view.buffer = (new Float32Array(view.length)).buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer))
+            .forEach(view => {
+                view.buffer = (new Float32Array(view.length)).buffer;
+            });
     }
 
     /**
@@ -172,11 +174,15 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
 
         (await this.getInputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+            .forEach(view => {
+                view.buffer = (new Float32Array(view.length)).buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer((new Float32Array(view.length)).buffer));
+            .forEach(view => {
+                view.buffer = (new Float32Array(view.length)).buffer;
+            });
 
         let dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
 
@@ -259,7 +265,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
     }
 
     getInputViews() {
-        if (this.inputViews) return this.inputViews;
+        if (this.inputs) return this.inputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -267,18 +273,23 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.inputViews = descriptor.inputs.map(name => {
+        this.inputs = descriptor.inputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            let view = new SymbolicFloat32Array(
+                null,
+                0,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.inputViews;
+        return this.inputs;
     }
 
     getOutputViews() {
-        if (this.outputViews) return this.outputViews;
+        if (this.outputs) return this.outputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -286,27 +297,30 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         let descriptor = this.descriptor;
         let placeholderContext = this.placeholderContext;
 
-        this.outputViews = descriptor.outputs.map(name => {
+        this.outputs = descriptor.outputs.map(name => {
             let allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
-            let view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            let view = new SymbolicFloat32Array(
+                null,
+                0,
+                allocation.size,
+                placeholderContext
+            );
 
             return view;
         });
 
-        return this.outputViews;
+        return this.outputs;
     }
 
     async run(): Promise<void> {
         // if (this._running) throw new Error('Calling another run() while running.');
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
-        if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.worker) throw new Error('Worker is not initialized');
+        if (!this.placeholderContext!.isResolved) throw new Error('Not all placeholder is resolved');
 
+        let placeholderContext = this.placeholderContext!;
         let descriptor = this.descriptor;
         let worker = this.worker;
-        let inputViews = this.inputViews;
-        let outputViews = this.outputViews;
 
         let promise = new Promise<void>((resolve, reject) => {
             // TODO: better way not to generate function on every run
@@ -314,7 +328,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
             worker.onmessage = (event) => {
                 if (Array.isArray(event.data)) {
                     for (let i = 0; i < event.data.length; i++) {
-                        outputViews[i].set(event.data[i]);
+                        this.outputs[i].set(event.data[i]);
                     }
                     resolve();
                 } else {
@@ -330,10 +344,10 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
                 for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
                     let var_alloc = allocations[allocation_space][descriptor.inputs[i]];
                     if (var_alloc) {
-                        let symAb = inputViews[i];
+                        let symAb = this.inputs[i];
                         inputs.push({
                             space: allocation_space,
-                            offset: symAb.offset,
+                            offset: placeholderContext.resolve(var_alloc.offset),
                             size: symAb.length,
                             data: symAb.toActual()
                         });
@@ -347,8 +361,12 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
                 for (let allocation_space = 0; allocation_space < 2; allocation_space++) {
                     let var_alloc = allocations[allocation_space][descriptor.outputs[i]];
                     if (var_alloc) {
-                        let symAb = outputViews[i];
-                        outputs.push({space: allocation_space, offset: symAb.offset, size: symAb.length});
+                        let symAb = this.outputs[i];
+                        outputs.push({
+                            space: allocation_space,
+                            offset: placeholderContext.resolve(var_alloc.offset),
+                            size: symAb.length
+                        });
                         break;
                     }
                 }

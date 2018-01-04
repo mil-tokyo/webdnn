@@ -10,4 +10,4 @@ Start a HTTP server on the package root directory (where `setup.py` exists)
 python -m http.server
 ```
 
-You can run the demo on `http://localhost:8000/example/convert_caffe/descriptor_run_caffenet.html`
+You can run the demo on `http://localhost:8000/example/convert_caffe`

@@ -73,9 +73,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     private programs: Map<string, WebGLProgram>;
     private buffers: Map<string, BufferWebGL>;
 
-    private inputViews: SymbolicFloat32Array[] | null;
-    private outputViews: SymbolicFloat32Array[] | null;
-
     static checkAvailability() {
         return WebGLHandler.checkAvailability();
     }
@@ -158,11 +155,15 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         (await this.getInputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getWriteView(0, view.length, Float32Array).buffer));
+            .forEach(view => {
+                view.buffer = buffers.get(mapping[view.name])!.getWriteView(0, view.length, Float32Array).buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => !view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getReadView(0, view.length, Float32Array).buffer));
+            .forEach(view => {
+                view.buffer = buffers.get(mapping[view.name])!.getReadView(0, view.length, Float32Array).buffer;
+            });
     }
 
     private async initializeDynamicBuffer() {
@@ -182,11 +183,15 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
 
         (await this.getInputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+            .forEach(view => {
+                view.buffer = buffers.get(mapping[view.name])!.getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer;
+            });
 
         (await this.getOutputViews())
             .filter(view => view.isDynamic)
-            .forEach(view => view.setArrayBuffer(buffers.get(mapping[view.name])!.getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer));
+            .forEach(view => {
+                view.buffer = buffers.get(mapping[view.name])!.getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer;
+            });
 
         this.buildPipeline();
     }
@@ -236,7 +241,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     }
 
     getInputViews() {
-        if (this.inputViews) return this.inputViews;
+        if (this.inputs) return this.inputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -245,21 +250,23 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
         let mapping = this.descriptor.memory_layout.mapping;
 
-        this.inputViews = descriptor.inputs.map(name => {
-            let view = new SymbolicFloat32Array({
-                name: name,
-                size: this.buffers.get(mapping[name])!.length,
-                offset: 0
-            }, placeholderContext, true);
+        this.inputs = descriptor.inputs.map(name => {
+            let view = new SymbolicFloat32Array(
+                null,
+                0,
+                this.buffers.get(mapping[name])!.length,
+                placeholderContext
+            );
+            view.name = name;
 
             return view;
         });
 
-        return this.inputViews;
+        return this.inputs;
     }
 
     getOutputViews() {
-        if (this.outputViews) return this.outputViews;
+        if (this.outputs) return this.outputs;
 
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
@@ -268,17 +275,19 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         let placeholderContext = this.placeholderContext;
         let mapping = this.descriptor.memory_layout.mapping;
 
-        this.outputViews = descriptor.outputs.map(name => {
-            let view = new SymbolicFloat32Array({
-                name: name,
-                size: this.buffers.get(mapping[name])!.length,
-                offset: 0
-            }, placeholderContext, true);
+        this.outputs = descriptor.outputs.map(name => {
+            let view = new SymbolicFloat32Array(
+                null,
+                0,
+                this.buffers.get(mapping[name])!.length,
+                placeholderContext
+            );
+            view.name = name;
 
             return view;
         });
 
-        return this.outputViews;
+        return this.outputs;
     }
 
     private buildPipeline() {
@@ -413,7 +422,6 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     async run(): Promise<void> {
         // if (this._running) throw new Error('Calling another run() while running.');
         if (!this.descriptor) throw new Error('Descriptor is not loaded');
-        if (!this.inputViews || !this.outputViews) throw new Error('getInputViews and getOutputViews must be called prior to run');
         if (!this.placeholderContext) throw new Error('PlaceholderContext is not initialized');
         if (!this.placeholderContext.isResolved) throw new Error(`Not all placeholders are resolved: ${this.placeholderContext}`);
 

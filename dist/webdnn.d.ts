@@ -171,62 +171,143 @@ declare module 'webdnn/symbolic_typed_array/symbolic_typed_array' {
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import { Allocation } from 'webdnn/graph_descriptor/memory_layout';
-	import PlaceholderContext from 'webdnn/placeholder';
+	import PlaceholderContext, { Placeholder } from 'webdnn/placeholder';
 	/**
-	 * SymbolicTypedArray is wrapper class of buffers used in DNN model.
+	 * @protected
 	 */
 	export abstract class SymbolicTypedArray<T extends Float32Array | Int32Array> {
-	    protected ignoreOffsetOnActual: boolean;
-	    protected arrayBuffer?: ArrayBuffer;
-	    protected allocation: Allocation;
-	    protected placeholderContext?: PlaceholderContext;
+	    protected placeholderContext: PlaceholderContext | null;
 	    /**
-	     * Convert symbolic buffer view into actual buffer view.
+	     * @protected
+	     */
+	    readonly _length: number | Placeholder;
+	    /**
+	     * @protected
+	     */
+	    readonly _byteOffset: number | Placeholder;
+	    /**
+	     * The size in bytes of each element in the array.
+	     */
+	    readonly abstract BYTES_PER_ELEMENT: number;
+	    /**
+	     * @protected
+	     */
+	    protected _buffer: ArrayBufferLike | null;
+	    /**
+	     * @protected
+	     */
+	    name: string;
+	    /**
+	     * @protected
+	     */
+	    constructor(buffer?: ArrayBufferLike | null, byteOffset?: number | Placeholder, length?: number | Placeholder, placeholderContext?: PlaceholderContext | null);
+	    /**
+	     * Convert SymbolicTypedArray instance into actual TypedArray instance.
 	     *
 	     * @returns actual typed array
 	     */
 	    abstract toActual(): T;
 	    /**
-	     * toActual:
-	     *
-	     * If this buffer view is initialized based on placeholder offset or size and the placeholder is not resolved,
-	     * the error is thrown.
+	     * The ArrayBuffer instance referenced by the array.
 	     */
 	    /**
-	     * @param {Allocation} allocation
-	     * @param {PlaceholderContext} placeholderContext
-	     * @param {boolean} ignoreOffsetOnActual
-	     * @protected
+	     * The ArrayBuffer instance referenced by the array.
 	     */
-	    constructor(allocation: Allocation, placeholderContext?: PlaceholderContext, ignoreOffsetOnActual?: boolean);
+	    buffer: ArrayBufferLike;
 	    /**
-	     * @protected
+	     * The length in bytes of the array.
 	     */
-	    setArrayBuffer(arrayBuffer: any): void;
+	    readonly byteLength: number;
 	    /**
-	     * @protected
+	     * The number in this buffer. Actual offset size is `(offset * SIZE_OF_FLOAT)`.
 	     */
-	    readonly name: string;
+	    readonly offset: number;
 	    /**
 	     * @protected
 	     */
 	    readonly isDynamic: boolean;
 	    /**
-	     * @protected
-	     */
-	    readonly offset: any;
-	    /**
 	     * The number of elements in this buffer. Actual byte size is `(length * SIZE_OF_FLOAT)`.
 	     */
 	    readonly length: number;
 	    /**
-	     * Sets a value or an array of values.
-	     *
-	     * @param array A typed or untyped array of values to set.
-	     * @param offset The index at which the values will be written.
+	     * The offset in bytes of the array.
 	     */
-	    set(array: ArrayLike<number>, offset?: number): void;
+	    readonly byteOffset: any;
+	    /**
+	     * Returns the this object after copying a section of the array identified by start and end
+	     * to the same array starting at position target
+	     * @param target If target is negative, it is treated as length+target where length is the
+	     * length of the array.
+	     * @param start If start is negative, it is treated as length+start. If end is negative, it
+	     * is treated as length+end.
+	     * @param end If not specified, length of the this object is used as its default value.
+	     */
+	    copyWithin(target: number, start: number, end?: number): this;
+	    /**
+	     * Returns the this object after filling the section identified by start and end with value
+	     * @param value value to fill array section with
+	     * @param start index to start filling the array at. If start is negative, it is treated as
+	     * length+start where length is the length of the array.
+	     * @param end index to stop filling the array at. If end is negative, it is treated as
+	     * length+end.
+	     */
+	    fill(value: number, start?: number, end?: number): this;
+	    /**
+	     * Returns the index of the first occurrence of a value in an array.
+	     * @param searchElement The value to locate in the array.
+	     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
+	     *  search starts at index 0.
+	     */
+	    indexOf(searchElement: number, fromIndex?: number): number;
+	    /**
+	     * Adds all the elements of an array separated by the specified separator string.
+	     * @param separator A string used to separate one element of an array from the next in the
+	     * resulting String. If omitted, the array elements are separated with a comma.
+	     */
+	    join(separator?: string): string;
+	    /**
+	     * Returns the index of the last occurrence of a value in an array.
+	     * @param searchElement The value to locate in the array.
+	     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
+	     * search starts at index 0.
+	     */
+	    lastIndexOf(searchElement: number, fromIndex?: number): number;
+	    /**
+	     * Sorts an array.
+	     * @param compareFn The name of the function used to determine the order of the elements. If
+	     * omitted, the elements are sorted in ascending, ASCII character order.
+	     */
+	    sort(compareFn?: (a: number, b: number) => number): this;
+	    includes(searchElement: number, fromIndex?: number | undefined): boolean;
+	    /**
+	     * Sets a value or an array of values.
+	     * @param array A typed or untyped array of values to set.
+	     * @param offset The index in the current array at which the values are to be written.
+	     */
+	    set(array: ArrayLike<number>, offset?: number | undefined): void;
+	    /**
+	     * Converts a number to a string by using the current locale.
+	     */
+	    toLocaleString(): string;
+	    /**
+	     * Returns a string representation of an array.
+	     */
+	    toString(): string;
+	    /** @protected */
+	    [Symbol.iterator](): IterableIterator<number>;
+	    /**
+	     * Returns an iterable of key, value pairs for every entry in the array
+	     */
+	    entries(): IterableIterator<[number, number]>;
+	    /**
+	     * Returns an iterable of keys in the array
+	     */
+	    keys(): IterableIterator<number>;
+	    /**
+	     * Returns an iterable of values in the array
+	     */
+	    values(): IterableIterator<number>;
 	}
 
 }
@@ -237,10 +318,171 @@ declare module 'webdnn/symbolic_typed_array/symbolic_float32array' {
 	/** Don't Remove This comment block */
 	import { SymbolicTypedArray } from 'webdnn/symbolic_typed_array/symbolic_typed_array';
 	/**
-	 * @protected
+	 * Typed array used for input and output variables of [[webdnn.DescriptorRunner| `DescriptorRunner`]].
+	 * You can use `SymbolicFloat32Array` almost as same as `Float32Array`.
+	 *
+	 * To convert `SymbolicFloat32Array` into actual `Float32Array`, use [[webdnn.SymbolicFloat32Array.toActual| `toActual()`]]
+	 *
+	 * ```js
+	 *
+	 * let result = runner.outputs[0];  //runner.outputs is array of SymbolicFloat32Array
+	 *
+	 * // SymbolicFloat32Array does NOT support index access
+	 * console.log(result[0]);
+	 * >>> undefined
+	 *
+	 * // By conversion, you can access each element by index
+	 * console.log(result.toActual()[0]);
+	 * >>> 1.00  // Actual result
+	 * ```
 	 */
-	export default class SymbolicFloat32Array extends SymbolicTypedArray<Float32Array> {
+	export default class SymbolicFloat32Array extends SymbolicTypedArray<Float32Array> implements Float32Array {
+	    /** @protected */
+	    [Symbol.toStringTag]: "Float32Array";
+	    /** @protected */
+	    [index: number]: number;
+	    /**
+	     * The size in bytes of each element in SymbolicFloat32Array.
+	     */
+	    static readonly BYTES_PER_ELEMENT: number;
+	    /**
+	     * The size in bytes of each element in the array.
+	     */
+	    readonly BYTES_PER_ELEMENT: number;
+	    /**
+	     * Convert SymbolicTypedArray instance into actual TypedArray instance.
+	     *
+	     * @returns actual typed array
+	     */
 	    toActual(): Float32Array;
+	    /**
+	     * Determines whether all the members of an array satisfy the specified test.
+	     * @param callbackfn A function that accepts up to three arguments. The every method calls
+	     * the callbackfn function for each element in array1 until the callbackfn returns false,
+	     * or until the end of the array.
+	     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+	     * If thisArg is omitted, undefined is used as the this value.
+	     */
+	    every(callbackfn: (value: number, index: number, array: Float32Array) => boolean, thisArg?: any): boolean;
+	    /**
+	     * Returns the elements of an array that meet the condition specified in a callback function.
+	     * @param callbackfn A function that accepts up to three arguments. The filter method calls
+	     * the callbackfn function one time for each element in the array.
+	     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+	     * If thisArg is omitted, undefined is used as the this value.
+	     */
+	    filter(callbackfn: (value: number, index: number, array: Float32Array) => any, thisArg?: any): Float32Array;
+	    /**
+	     * Returns the value of the first element in the array where predicate is true, and undefined
+	     * otherwise.
+	     * @param predicate find calls predicate once for each element of the array, in ascending
+	     * order, until it finds one where predicate returns true. If such an element is found, find
+	     * immediately returns that element value. Otherwise, find returns undefined.
+	     * @param thisArg If provided, it will be used as the this value for each invocation of
+	     * predicate. If it is not provided, undefined is used instead.
+	     */
+	    find(predicate: (value: number, index: number, obj: Float32Array) => boolean, thisArg?: any): number | undefined;
+	    /**
+	     * Returns the index of the first element in the array where predicate is true, and -1
+	     * otherwise.
+	     * @param predicate find calls predicate once for each element of the array, in ascending
+	     * order, until it finds one where predicate returns true. If such an element is found,
+	     * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
+	     * @param thisArg If provided, it will be used as the this value for each invocation of
+	     * predicate. If it is not provided, undefined is used instead.
+	     */
+	    findIndex(predicate: (value: number, index: number, obj: Float32Array) => boolean, thisArg?: any): number;
+	    /**
+	     * Performs the specified action for each element in an array.
+	     * @param callbackfn  A function that accepts up to three arguments. forEach calls the
+	     * callbackfn function one time for each element in the array.
+	     * @param thisArg  An object to which the this keyword can refer in the callbackfn function.
+	     * If thisArg is omitted, undefined is used as the this value.
+	     */
+	    forEach(callbackfn: (value: number, index: number, array: Float32Array) => void, thisArg?: any): void;
+	    /**
+	     * Calls a defined callback function on each element of an array, and returns an array that
+	     * contains the results.
+	     * @param callbackfn A function that accepts up to three arguments. The map method calls the
+	     * callbackfn function one time for each element in the array.
+	     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+	     * If thisArg is omitted, undefined is used as the this value.
+	     */
+	    map(callbackfn: (value: number, index: number, array: Float32Array) => number, thisArg?: any): Float32Array;
+	    /**
+	     * Calls the specified callback function for all the elements in an array. The return value of
+	     * the callback function is the accumulated result, and is provided as an argument in the next
+	     * call to the callback function.
+	     * @param callbackfn A function that accepts up to four arguments. The reduce method calls the
+	     * callbackfn function one time for each element in the array.
+	     * @param initialValue If initialValue is specified, it is used as the initial value to start
+	     * the accumulation. The first call to the callbackfn function provides this value as an argument
+	     * instead of an array value.
+	     */
+	    reduce(callbackfn: (previousValue: number, currentValue: number, currentIndex: number, array: Float32Array) => number): number;
+	    reduce(callbackfn: (previousValue: number, currentValue: number, currentIndex: number, array: Float32Array) => number, initialValue: number): number;
+	    /**
+	     * Calls the specified callback function for all the elements in an array. The return value of
+	     * the callback function is the accumulated result, and is provided as an argument in the next
+	     * call to the callback function.
+	     * @param callbackfn A function that accepts up to four arguments. The reduce method calls the
+	     * callbackfn function one time for each element in the array.
+	     * @param initialValue If initialValue is specified, it is used as the initial value to start
+	     * the accumulation. The first call to the callbackfn function provides this value as an argument
+	     * instead of an array value.
+	     */
+	    reduce<U>(callbackfn: (previousValue: U, currentValue: number, currentIndex: number, array: Float32Array) => U, initialValue: U): U;
+	    /**
+	     * Calls the specified callback function for all the elements in an array, in descending order.
+	     * The return value of the callback function is the accumulated result, and is provided as an
+	     * argument in the next call to the callback function.
+	     * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls
+	     * the callbackfn function one time for each element in the array.
+	     * @param initialValue If initialValue is specified, it is used as the initial value to start
+	     * the accumulation. The first call to the callbackfn function provides this value as an
+	     * argument instead of an array value.
+	     */
+	    reduceRight(callbackfn: (previousValue: number, currentValue: number, currentIndex: number, array: Float32Array) => number): number;
+	    reduceRight(callbackfn: (previousValue: number, currentValue: number, currentIndex: number, array: Float32Array) => number, initialValue: number): number;
+	    /**
+	     * Calls the specified callback function for all the elements in an array, in descending order.
+	     * The return value of the callback function is the accumulated result, and is provided as an
+	     * argument in the next call to the callback function.
+	     * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls
+	     * the callbackfn function one time for each element in the array.
+	     * @param initialValue If initialValue is specified, it is used as the initial value to start
+	     * the accumulation. The first call to the callbackfn function provides this value as an argument
+	     * instead of an array value.
+	     */
+	    reduceRight<U>(callbackfn: (previousValue: U, currentValue: number, currentIndex: number, array: Float32Array) => U, initialValue: U): U;
+	    /**
+	     * Reverses the elements in an Array.
+	     */
+	    reverse(): Float32Array;
+	    /**
+	     * Returns a section of an array.
+	     * @param start The beginning of the specified portion of the array.
+	     * @param end The end of the specified portion of the array.
+	     */
+	    slice(start?: number, end?: number): Float32Array;
+	    /**
+	     * Determines whether the specified callback function returns true for any element of an array.
+	     * @param callbackfn A function that accepts up to three arguments. The some method calls the
+	     * callbackfn function for each element in array1 until the callbackfn returns true, or until
+	     * the end of the array.
+	     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+	     * If thisArg is omitted, undefined is used as the this value.
+	     */
+	    some(callbackfn: (value: number, index: number, array: Float32Array) => boolean, thisArg?: any): boolean;
+	    /**
+	     * Gets a new Float32Array view of the ArrayBuffer store for this array, referencing the elements
+	     * at begin, inclusive, up to end, exclusive.
+	     * @param begin The index of the beginning of the array.
+	     * @param end The index of the end of the array.
+	     */
+	    subarray(begin: number, end?: number): Float32Array;
+	    /** @protected */
+	    includes(searchElement: number, fromIndex?: number | undefined): boolean;
 	}
 
 }
@@ -294,19 +536,25 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	     * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
 	     */
 	    /**
-	     * backend name
-	     * @type {string}
+	     * The backend name
 	     */
 	    readonly backendName: BackendName;
 	    /**
-	     * descriptor
-	     * @type {null}
+	     * The descriptor
 	     */
 	    protected descriptor: D | null;
 	    /**
 	     * placeholder context which manages all placeholders and their values
 	     */
 	    protected placeholderContext: PlaceholderContext | null;
+	    /**
+	     * input arrays
+	     */
+	    inputs: SymbolicFloat32Array[];
+	    /**
+	     * outputs arrays
+	     */
+	    outputs: SymbolicFloat32Array[];
 	    /**
 	     * Return `true` if this backend is available in this environment.
 	     * @returns {boolean}
@@ -315,6 +563,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	    /**
 	     * Initialize descriptor runner asynchronously
 	     * @returns {Promise<void>} Promise object which is resolved when the initialization finished.
+	     * @protected
 	     */
 	    abstract init(): Promise<void>;
 	    /**
@@ -380,13 +629,17 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	    /**
 	     * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
 	     *
+	     * @protected
 	     * @returns array of input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+	     * @deprecated use [[webdnn.DescriptorRunner.inputs| `inputs`]] instead.
 	     */
 	    abstract getInputViews(): SymbolicFloat32Array[];
 	    /**
 	     * Get output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
 	     *
+	     * @protected
 	     * @returns array of output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+	     * @deprecated use [[webdnn.DescriptorRunner.outputs| `outputs`]] instead.
 	     */
 	    abstract getOutputViews(): SymbolicFloat32Array[];
 	    /**
@@ -551,8 +804,6 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	    readonly backendName: BackendName;
 	    private kernelObj;
 	    private variableMap;
-	    private inputViews;
-	    private outputViews;
 	    private staticBuffer;
 	    private dynamicBuffer;
 	    private directory;
@@ -616,8 +867,6 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	 */
 	export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphDescriptorWebassembly, ArrayBuffer> {
 	    readonly backendName: BackendName;
-	    private inputViews;
-	    private outputViews;
 	    private worker;
 	    private worker_entry_js_path;
 	    private worker_promise_reject_func;
@@ -1021,8 +1270,6 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	    private vertexShader;
 	    private programs;
 	    private buffers;
-	    private inputViews;
-	    private outputViews;
 	    static checkAvailability(): boolean;
 	    init(): Promise<void>;
 	    fetchDescriptor(directory: string): Promise<any>;
@@ -1155,7 +1402,6 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
 	    /**
 	     * backend name
-	     * @type {string}
 	     */
 	    readonly backendName: BackendName;
 	    /**
@@ -1174,14 +1420,6 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * Buffers which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
 	     */
 	    private metaBuffers;
-	    /**
-	     * Input views
-	     */
-	    private inputViews;
-	    /**
-	     * Output views
-	     */
-	    private outputViews;
 	    /**
 	     * Execution information such as each kernel size, input and output buffers, etc.
 	     */
@@ -1281,12 +1519,14 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
 	     *
 	     * @returns array of input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+	     * @deprecated Use [[webdnn.DescriptorRunner.inputs|`inputs`]] instead
 	     */
 	    getInputViews(): SymbolicFloat32Array[];
 	    /**
 	     * Get output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
 	     *
 	     * @returns array of output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+	     * @deprecated Use [[webdnn.DescriptorRunner.outputs|`outputs`]] instead
 	     */
 	    getOutputViews(): SymbolicFloat32Array[];
 	    /**
@@ -1539,7 +1779,7 @@ declare module 'webdnn/image/image_array' {
 	 *
 	 *   ```ts
 	 *   let runner = await WebDNN.load('./model');
-	 *   let output = runner.getOutputViews()[0];
+	 *   let output = runner.outputs[0];
 	 *
 	 *   await runner.run();
 	 *
@@ -1591,14 +1831,14 @@ declare module 'webdnn/math/argsort' {
 	 */
 	/** Don't Remove This comment block */
 	/**
-	* Return indices of the top-K largest elements.
-	* This implementation is not stable sort.
-	*
-	* @param {number[]|Float32Array|Int32Array} arr array
-	* @param {number} k number of indices
-	* @returns {number[]} indices of top-K largest samples
-	*/
-	export function argmax(arr: number[] | Float32Array | Int32Array, k?: number): number[];
+	 * Return indices of the top-K largest elements.
+	 * This implementation is not stable sort.
+	 *
+	 * @param {number[]|Float32Array} arr array
+	 * @param {number} k number of indices
+	 * @returns {number[]} indices of top-K largest samples
+	 */
+	export function argmax(arr: number[] | Float32Array, k?: number): number[];
 	/**
 	 * Return indices of the top-K smallest elements.
 	 * This implementation is not stable sort.

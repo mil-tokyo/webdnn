@@ -28,7 +28,7 @@ async function prepare_run() {
     let backend_key = backend_name;
     if (!(backend_key in runners)) {
         log('Initializing and loading model');
-        let runner = await WebDNN.load(`./output`, { backendOrder: backend_name });
+        let runner = await WebDNN.load(`./output`, {backendOrder: backend_name});
         log(`Loaded backend: ${runner.backendName}`);
 
         runners[backend_key] = runner;
@@ -84,11 +84,11 @@ async function run() {
 
     for (let i = 0; i < 100; i++) {
         // input current sentence to the model
-        runner.getInputViews()[0].set(sentence_to_array(sentence));
+        runner.inputs[0].set(sentence_to_array(sentence));
 
         // predict next character's probability
         await runner.run();
-        let out_vec = runner.getOutputViews()[0].toActual();
+        let out_vec = runner.outputs[0].toActual();
         // sample next character
         let next_char = sample_next_char(out_vec, 1.0);
         sentence += next_char;
@@ -98,7 +98,7 @@ async function run() {
     document.getElementById('result_generated').textContent = sentence.slice(sentence_seed.length);
 }
 
-document.addEventListener('DOMContentLoaded', async function (event) {
+document.addEventListener('DOMContentLoaded', async function(event) {
     try {
         let response = await fetch('output/model_setting.json');
         if (!response.ok) {

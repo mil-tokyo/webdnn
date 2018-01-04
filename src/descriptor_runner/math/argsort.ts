@@ -1,17 +1,18 @@
 /**
  * @module webdnn/math
  */
+
 /** Don't Remove This comment block */
 
- /**
+/**
  * Return indices of the top-K largest elements.
  * This implementation is not stable sort.
  *
- * @param {number[]|Float32Array|Int32Array} arr array
+ * @param {number[]|Float32Array} arr array
  * @param {number} k number of indices
  * @returns {number[]} indices of top-K largest samples
  */
-export function argmax(arr: number[] | Float32Array | Int32Array, k: number = 1) {
+export function argmax(arr: number[] | Float32Array, k: number = 1) {
     // Top-k Quicksort
 
     arr = arr.slice();

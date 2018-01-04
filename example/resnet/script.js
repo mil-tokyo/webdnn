@@ -48,8 +48,10 @@ async function prepare_run() {
 
 async function run() {
     let runner = await prepare_run();
+    let x = runner.inputs[0];
+    let y = runner.outputs[0];
 
-    runner.getInputViews()[0].set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
+    x.set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
         order: getFrameworkName() === 'chainer' ? WebDNN.Image.Order.CHW : WebDNN.Image.Order.HWC,
         color: WebDNN.Image.Color.BGR,
         bias: [123.68, 116.779, 103.939]
@@ -59,15 +61,13 @@ async function run() {
     await runner.run();
     let elapsed_time = performance.now() - start;
 
-    let out_vec = runner.getOutputViews()[0].toActual();
-    let top_labels = WebDNN.Math.argmax(out_vec, 5);
-
+    let top_labels = WebDNN.Math.argmax(y, 5);
     let predicted_str = 'Predicted:';
     for (let j = 0; j < top_labels.length; j++) {
         predicted_str += ` ${top_labels[j]}(${imagenet_labels[top_labels[j]]})`;
     }
     log(predicted_str);
 
-    console.log('output vector: ', out_vec);
+    console.log('output vector: ', y.toActual());
     log(`Total Elapsed Time[ms/image]: ${elapsed_time.toFixed(2)}`);
 }

@@ -52,14 +52,12 @@ export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
      */
 
     /**
-     * backend name
-     * @type {string}
+     * The backend name
      */
     readonly backendName: BackendName;
 
     /**
-     * descriptor
-     * @type {null}
+     * The descriptor
      */
     protected descriptor: D | null = null;
 
@@ -67,6 +65,16 @@ export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
      * placeholder context which manages all placeholders and their values
      */
     protected placeholderContext: PlaceholderContext | null;
+
+    /**
+     * input arrays
+     */
+    inputs: SymbolicFloat32Array[];
+
+    /**
+     * outputs arrays
+     */
+    outputs: SymbolicFloat32Array[];
 
     /**
      * Return `true` if this backend is available in this environment.
@@ -79,6 +87,7 @@ export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
     /**
      * Initialize descriptor runner asynchronously
      * @returns {Promise<void>} Promise object which is resolved when the initialization finished.
+     * @protected
      */
     abstract async init(): Promise<void>;
 
@@ -150,14 +159,18 @@ export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
     /**
      * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
+     * @protected
      * @returns array of input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated use [[webdnn.DescriptorRunner.inputs| `inputs`]] instead.
      */
     abstract getInputViews(): SymbolicFloat32Array[];
 
     /**
      * Get output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
+     * @protected
      * @returns array of output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated use [[webdnn.DescriptorRunner.outputs| `outputs`]] instead.
      */
     abstract getOutputViews(): SymbolicFloat32Array[];
 

@@ -7268,44 +7268,67 @@ function flatten(arr) {
     return result;
 }
 /**
- * SymbolicTypedArray is wrapper class of buffers used in DNN model.
+ * @protected
  */
 var SymbolicTypedArray = /** @class */ (function () {
     /**
-     * toActual:
-     *
-     * If this buffer view is initialized based on placeholder offset or size and the placeholder is not resolved,
-     * the error is thrown.
-     */
-    /**
-     * @param {Allocation} allocation
-     * @param {PlaceholderContext} placeholderContext
-     * @param {boolean} ignoreOffsetOnActual
      * @protected
      */
-    function SymbolicTypedArray(allocation, placeholderContext, ignoreOffsetOnActual) {
-        if (ignoreOffsetOnActual === void 0) { ignoreOffsetOnActual = false; }
-        this.ignoreOffsetOnActual = ignoreOffsetOnActual;
-        this.allocation = allocation;
+    function SymbolicTypedArray(buffer, byteOffset, length, placeholderContext) {
+        if (buffer === void 0) { buffer = null; }
+        if (byteOffset === void 0) { byteOffset = 0; }
+        if (placeholderContext === void 0) { placeholderContext = null; }
+        this.placeholderContext = placeholderContext;
+        this._byteOffset = byteOffset;
+        this._buffer = buffer;
+        if (buffer) {
+            this._length = length === undefined ? (buffer.byteLength / this.BYTES_PER_ELEMENT) : length;
+        }
+        else {
+            if (length === undefined)
+                throw Error('"butter" or "length" must be specified.');
+            this._length = length;
+        }
         if (this.isDynamic) {
             if (!placeholderContext) {
                 throw Error('PlaceholderContext must be required when SymbolicTypedArray is initialized as dynamic buffer view.');
             }
         }
-        this.placeholderContext = placeholderContext;
     }
-    /**
-     * @protected
-     */
-    SymbolicTypedArray.prototype.setArrayBuffer = function (arrayBuffer) {
-        this.arrayBuffer = arrayBuffer;
-    };
-    Object.defineProperty(SymbolicTypedArray.prototype, "name", {
+    Object.defineProperty(SymbolicTypedArray.prototype, "buffer", {
         /**
-         * @protected
+         * The ArrayBuffer instance referenced by the array.
          */
         get: function () {
-            return this.allocation.name;
+            if (!this._buffer)
+                this._buffer = new ArrayBuffer(this.byteOffset + this.byteLength);
+            return this._buffer;
+        },
+        /**
+         * The ArrayBuffer instance referenced by the array.
+         */
+        set: function (buffer) {
+            this._buffer = buffer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SymbolicTypedArray.prototype, "byteLength", {
+        /**
+         * The length in bytes of the array.
+         */
+        get: function () {
+            return this.length * this.BYTES_PER_ELEMENT;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SymbolicTypedArray.prototype, "offset", {
+        /**
+         * The number in this buffer. Actual offset size is `(offset * SIZE_OF_FLOAT)`.
+         */
+        get: function () {
+            return this.byteOffset / this.BYTES_PER_ELEMENT;
         },
         enumerable: true,
         configurable: true
@@ -7315,23 +7338,7 @@ var SymbolicTypedArray = /** @class */ (function () {
          * @protected
          */
         get: function () {
-            return (typeof this.allocation.offset !== 'number' || typeof this.allocation.size !== 'number');
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SymbolicTypedArray.prototype, "offset", {
-        /**
-         * @protected
-         */
-        get: function () {
-            //TODO
-            if (this.isDynamic) {
-                return this.placeholderContext.resolve(this.allocation.offset);
-            }
-            else {
-                return this.allocation.offset;
-            }
+            return (typeof this._byteOffset !== 'number' || typeof this._length !== 'number');
         },
         enumerable: true,
         configurable: true
@@ -7342,23 +7349,134 @@ var SymbolicTypedArray = /** @class */ (function () {
          */
         get: function () {
             if (this.isDynamic) {
-                return this.placeholderContext.resolve(this.allocation.size);
+                return this.placeholderContext.resolve(this._length);
             }
             else {
-                return this.allocation.size;
+                return this._length;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SymbolicTypedArray.prototype, "byteOffset", {
+        /**
+         * The offset in bytes of the array.
+         */
+        get: function () {
+            if (this.isDynamic) {
+                return this.placeholderContext.resolve(this._byteOffset);
+            }
+            else {
+                return this._byteOffset;
             }
         },
         enumerable: true,
         configurable: true
     });
     /**
+     * Returns the this object after copying a section of the array identified by start and end
+     * to the same array starting at position target
+     * @param target If target is negative, it is treated as length+target where length is the
+     * length of the array.
+     * @param start If start is negative, it is treated as length+start. If end is negative, it
+     * is treated as length+end.
+     * @param end If not specified, length of the this object is used as its default value.
+     */
+    SymbolicTypedArray.prototype.copyWithin = function (target, start, end) {
+        this.toActual().copyWithin(target, start, end);
+        return this;
+    };
+    /**
+     * Returns the this object after filling the section identified by start and end with value
+     * @param value value to fill array section with
+     * @param start index to start filling the array at. If start is negative, it is treated as
+     * length+start where length is the length of the array.
+     * @param end index to stop filling the array at. If end is negative, it is treated as
+     * length+end.
+     */
+    SymbolicTypedArray.prototype.fill = function (value, start, end) {
+        this.toActual().fill(value, start, end);
+        return this;
+    };
+    /**
+     * Returns the index of the first occurrence of a value in an array.
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
+     *  search starts at index 0.
+     */
+    SymbolicTypedArray.prototype.indexOf = function (searchElement, fromIndex) {
+        return this.toActual().indexOf(searchElement, fromIndex);
+    };
+    /**
+     * Adds all the elements of an array separated by the specified separator string.
+     * @param separator A string used to separate one element of an array from the next in the
+     * resulting String. If omitted, the array elements are separated with a comma.
+     */
+    SymbolicTypedArray.prototype.join = function (separator) {
+        return this.toActual().join(separator);
+    };
+    /**
+     * Returns the index of the last occurrence of a value in an array.
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
+     * search starts at index 0.
+     */
+    SymbolicTypedArray.prototype.lastIndexOf = function (searchElement, fromIndex) {
+        return this.toActual().lastIndexOf(searchElement, fromIndex);
+    };
+    /**
+     * Sorts an array.
+     * @param compareFn The name of the function used to determine the order of the elements. If
+     * omitted, the elements are sorted in ascending, ASCII character order.
+     */
+    SymbolicTypedArray.prototype.sort = function (compareFn) {
+        this.toActual().sort(compareFn);
+        return this;
+    };
+    SymbolicTypedArray.prototype.includes = function (searchElement, fromIndex) {
+        return this.toActual().includes(searchElement, fromIndex);
+    };
+    /**
      * Sets a value or an array of values.
-     *
      * @param array A typed or untyped array of values to set.
-     * @param offset The index at which the values will be written.
+     * @param offset The index in the current array at which the values are to be written.
      */
     SymbolicTypedArray.prototype.set = function (array, offset) {
         return this.toActual().set(flatten(array), offset);
+    };
+    /**
+     * Converts a number to a string by using the current locale.
+     */
+    SymbolicTypedArray.prototype.toLocaleString = function () {
+        return this.toActual().toLocaleString();
+    };
+    /**
+     * Returns a string representation of an array.
+     */
+    SymbolicTypedArray.prototype.toString = function () {
+        return this.toActual().toString();
+    };
+    /** @protected */
+    SymbolicTypedArray.prototype[Symbol.iterator] = function () {
+        return this.toActual()[Symbol.iterator]();
+    };
+    /**
+     * Returns an iterable of key, value pairs for every entry in the array
+     */
+    SymbolicTypedArray.prototype.entries = function () {
+        return this.toActual().entries();
+    };
+    /**
+     * Returns an iterable of keys in the array
+     */
+    SymbolicTypedArray.prototype.keys = function () {
+        return this.toActual().keys();
+    };
+    /**
+     * Returns an iterable of values in the array
+     */
+    SymbolicTypedArray.prototype.values = function () {
+        return this.toActual().values();
     };
     return SymbolicTypedArray;
 }());
@@ -7368,19 +7486,159 @@ var SymbolicTypedArray = /** @class */ (function () {
  */
 /** Don't Remove This comment block */
 /**
- * @protected
+ * Typed array used for input and output variables of [[webdnn.DescriptorRunner| `DescriptorRunner`]].
+ * You can use `SymbolicFloat32Array` almost as same as `Float32Array`.
+ *
+ * To convert `SymbolicFloat32Array` into actual `Float32Array`, use [[webdnn.SymbolicFloat32Array.toActual| `toActual()`]]
+ *
+ * ```js
+ *
+ * let result = runner.outputs[0];  //runner.outputs is array of SymbolicFloat32Array
+ *
+ * // SymbolicFloat32Array does NOT support index access
+ * console.log(result[0]);
+ * >>> undefined
+ *
+ * // By conversion, you can access each element by index
+ * console.log(result.toActual()[0]);
+ * >>> 1.00  // Actual result
+ * ```
  */
 var SymbolicFloat32Array = /** @class */ (function (_super) {
     __extends(SymbolicFloat32Array, _super);
     function SymbolicFloat32Array() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * The size in bytes of each element in the array.
+         */
+        _this.BYTES_PER_ELEMENT = 4;
+        return _this;
     }
+    /**
+     * Convert SymbolicTypedArray instance into actual TypedArray instance.
+     *
+     * @returns actual typed array
+     */
     SymbolicFloat32Array.prototype.toActual = function () {
-        if (!this.arrayBuffer) {
+        if (!this.buffer) {
             throw new Error('Internal buffer for this variable is not set. DescriptorRunner.setPlaceholderValue() have to be called before calling this function.');
         }
-        return new Float32Array(this.arrayBuffer, this.ignoreOffsetOnActual ? 0 : this.offset * Float32Array.BYTES_PER_ELEMENT, this.length);
+        return new Float32Array(this.buffer, this.byteOffset, this.length);
     };
+    /**
+     * Determines whether all the members of an array satisfy the specified test.
+     * @param callbackfn A function that accepts up to three arguments. The every method calls
+     * the callbackfn function for each element in array1 until the callbackfn returns false,
+     * or until the end of the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+     * If thisArg is omitted, undefined is used as the this value.
+     */
+    SymbolicFloat32Array.prototype.every = function (callbackfn, thisArg) {
+        return this.toActual().every(callbackfn, thisArg);
+    };
+    /**
+     * Returns the elements of an array that meet the condition specified in a callback function.
+     * @param callbackfn A function that accepts up to three arguments. The filter method calls
+     * the callbackfn function one time for each element in the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+     * If thisArg is omitted, undefined is used as the this value.
+     */
+    SymbolicFloat32Array.prototype.filter = function (callbackfn, thisArg) {
+        return this.toActual().filter(callbackfn, thisArg);
+    };
+    /**
+     * Returns the value of the first element in the array where predicate is true, and undefined
+     * otherwise.
+     * @param predicate find calls predicate once for each element of the array, in ascending
+     * order, until it finds one where predicate returns true. If such an element is found, find
+     * immediately returns that element value. Otherwise, find returns undefined.
+     * @param thisArg If provided, it will be used as the this value for each invocation of
+     * predicate. If it is not provided, undefined is used instead.
+     */
+    SymbolicFloat32Array.prototype.find = function (predicate, thisArg) {
+        return this.toActual().find(predicate, thisArg);
+    };
+    /**
+     * Returns the index of the first element in the array where predicate is true, and -1
+     * otherwise.
+     * @param predicate find calls predicate once for each element of the array, in ascending
+     * order, until it finds one where predicate returns true. If such an element is found,
+     * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
+     * @param thisArg If provided, it will be used as the this value for each invocation of
+     * predicate. If it is not provided, undefined is used instead.
+     */
+    SymbolicFloat32Array.prototype.findIndex = function (predicate, thisArg) {
+        return this.toActual().findIndex(predicate, thisArg);
+    };
+    /**
+     * Performs the specified action for each element in an array.
+     * @param callbackfn  A function that accepts up to three arguments. forEach calls the
+     * callbackfn function one time for each element in the array.
+     * @param thisArg  An object to which the this keyword can refer in the callbackfn function.
+     * If thisArg is omitted, undefined is used as the this value.
+     */
+    SymbolicFloat32Array.prototype.forEach = function (callbackfn, thisArg) {
+        return this.toActual().forEach(callbackfn, thisArg);
+    };
+    /**
+     * Calls a defined callback function on each element of an array, and returns an array that
+     * contains the results.
+     * @param callbackfn A function that accepts up to three arguments. The map method calls the
+     * callbackfn function one time for each element in the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+     * If thisArg is omitted, undefined is used as the this value.
+     */
+    SymbolicFloat32Array.prototype.map = function (callbackfn, thisArg) {
+        return this.toActual().map(callbackfn, thisArg);
+    };
+    SymbolicFloat32Array.prototype.reduce = function (callbackfn, initialValue) {
+        return this.toActual().reduce(callbackfn, initialValue);
+    };
+    SymbolicFloat32Array.prototype.reduceRight = function (callbackfn, initialValue) {
+        return this.toActual().reduceRight(callbackfn, initialValue);
+    };
+    /**
+     * Reverses the elements in an Array.
+     */
+    SymbolicFloat32Array.prototype.reverse = function () {
+        return this.toActual().reverse();
+    };
+    /**
+     * Returns a section of an array.
+     * @param start The beginning of the specified portion of the array.
+     * @param end The end of the specified portion of the array.
+     */
+    SymbolicFloat32Array.prototype.slice = function (start, end) {
+        return this.toActual().slice(start, end);
+    };
+    /**
+     * Determines whether the specified callback function returns true for any element of an array.
+     * @param callbackfn A function that accepts up to three arguments. The some method calls the
+     * callbackfn function for each element in array1 until the callbackfn returns true, or until
+     * the end of the array.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
+     * If thisArg is omitted, undefined is used as the this value.
+     */
+    SymbolicFloat32Array.prototype.some = function (callbackfn, thisArg) {
+        return this.toActual().some(callbackfn, thisArg);
+    };
+    /**
+     * Gets a new Float32Array view of the ArrayBuffer store for this array, referencing the elements
+     * at begin, inclusive, up to end, exclusive.
+     * @param begin The index of the beginning of the array.
+     * @param end The index of the end of the array.
+     */
+    SymbolicFloat32Array.prototype.subarray = function (begin, end) {
+        return this.toActual().subarray(begin, end);
+    };
+    /** @protected */
+    SymbolicFloat32Array.prototype.includes = function (searchElement, fromIndex) {
+        return this.toActual().includes(searchElement, fromIndex);
+    };
+    /**
+     * The size in bytes of each element in SymbolicFloat32Array.
+     */
+    SymbolicFloat32Array.BYTES_PER_ELEMENT = 4;
     return SymbolicFloat32Array;
 }(SymbolicTypedArray));
 
@@ -7433,8 +7691,7 @@ var DescriptorRunner = /** @class */ (function () {
          * to call `GraphDescriptor#load()` directly. In that method, all procedures in step 1 and 2 are performed.
          */
         /**
-         * descriptor
-         * @type {null}
+         * The descriptor
          */
         this.descriptor = null;
     }
@@ -7590,8 +7847,6 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
         this.placeholderContext.update(descriptor.placeholders);
         this.kernelObj = null;
         this.variableMap = null;
-        this.outputViews = null;
-        this.inputViews = null;
         this.staticBuffer = null;
         this.dynamicBuffer = null;
     };
@@ -7655,12 +7910,16 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
                     case 2:
                         (_c.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(staticBuffer.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = staticBuffer.buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 3:
                         (_c.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(staticBuffer.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = staticBuffer.buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -7691,12 +7950,16 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
                     case 1:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = dynamicBuffer.buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 2:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = dynamicBuffer.buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -7738,8 +8001,6 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
                             throw new Error('StaticBuffer map is not initialized');
                         if (!this.dynamicBuffer)
                             throw new Error('DynamicBuffer map is not initialized');
-                        if (!this.inputViews || !this.outputViews)
-                            throw new Error('getInputViews() and getOutputViews() must be called prior to run');
                         variableMap = this.variableMap;
                         placeholderContext = this.placeholderContext;
                         executionInfos = this.descriptor.exec_infos
@@ -7775,36 +8036,36 @@ var DescriptorRunnerFallback = /** @class */ (function (_super) {
         });
     };
     DescriptorRunnerFallback.prototype.getInputViews = function () {
-        if (this.inputViews)
-            return this.inputViews;
+        if (this.inputs)
+            return this.inputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.inputViews = descriptor.inputs.map(function (name) {
+        this.inputs = descriptor.inputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            var view = new SymbolicFloat32Array(allocation, placeholderContext);
+            var view = new SymbolicFloat32Array(null, allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT, allocation.size, placeholderContext);
             return view;
         });
-        return this.inputViews;
+        return this.inputs;
     };
     DescriptorRunnerFallback.prototype.getOutputViews = function () {
-        if (this.outputViews)
-            return this.outputViews;
+        if (this.outputs)
+            return this.outputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.outputViews = descriptor.outputs.map(function (name) {
+        this.outputs = descriptor.outputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            var view = new SymbolicFloat32Array(allocation, placeholderContext);
+            var view = new SymbolicFloat32Array(null, allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT, allocation.size, placeholderContext);
             return view;
         });
-        return this.outputViews;
+        return this.outputs;
     };
     return DescriptorRunnerFallback;
 }(DescriptorRunner));
@@ -7866,12 +8127,16 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
                         //assign buffer to input/output buffer view
                         (_a.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = (new Float32Array(view.length)).buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 4:
                         (_a.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = (new Float32Array(view.length)).buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -8017,12 +8282,16 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
                     case 1:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = (new Float32Array(view.length)).buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 2:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer((new Float32Array(view.length)).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = (new Float32Array(view.length)).buffer;
+                        });
                         dynamicBufferSize = this.placeholderContext.resolve(this.descriptor.memory_layout.dynamic.size);
                         return [4 /*yield*/, this.setPlaceholderValueWorker(dynamicBufferSize, new Int32Array(metaBufferFillList))];
                     case 3:
@@ -8118,61 +8387,59 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
         });
     };
     DescriptorRunnerWebassembly.prototype.getInputViews = function () {
-        if (this.inputViews)
-            return this.inputViews;
+        if (this.inputs)
+            return this.inputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.inputViews = descriptor.inputs.map(function (name) {
+        this.inputs = descriptor.inputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            var view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            var view = new SymbolicFloat32Array(null, 0, allocation.size, placeholderContext);
             return view;
         });
-        return this.inputViews;
+        return this.inputs;
     };
     DescriptorRunnerWebassembly.prototype.getOutputViews = function () {
-        if (this.outputViews)
-            return this.outputViews;
+        if (this.outputs)
+            return this.outputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.outputViews = descriptor.outputs.map(function (name) {
+        this.outputs = descriptor.outputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            // buffer for SymbolicFloat32Array is dedicated for IO, since computation is performed on separate memory space.
-            var view = new SymbolicFloat32Array(allocation, placeholderContext, true);
+            var view = new SymbolicFloat32Array(null, 0, allocation.size, placeholderContext);
             return view;
         });
-        return this.outputViews;
+        return this.outputs;
     };
     DescriptorRunnerWebassembly.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var descriptor, worker, inputViews, outputViews, promise;
+            var placeholderContext, descriptor, worker, promise;
             return __generator(this, function (_a) {
                 // if (this._running) throw new Error('Calling another run() while running.');
                 if (!this.descriptor)
                     throw new Error('Descriptor is not loaded');
-                if (!this.inputViews || !this.outputViews)
-                    throw new Error('getInputViews and getOutputViews must be called prior to run');
                 if (!this.worker)
                     throw new Error('Worker is not initialized');
+                if (!this.placeholderContext.isResolved)
+                    throw new Error('Not all placeholder is resolved');
+                placeholderContext = this.placeholderContext;
                 descriptor = this.descriptor;
                 worker = this.worker;
-                inputViews = this.inputViews;
-                outputViews = this.outputViews;
                 promise = new Promise(function (resolve, reject) {
                     // TODO: better way not to generate function on every run
                     _this.worker_promise_reject_func = reject;
                     worker.onmessage = function (event) {
                         if (Array.isArray(event.data)) {
                             for (var i = 0; i < event.data.length; i++) {
-                                outputViews[i].set(event.data[i]);
+                                _this.outputs[i].set(event.data[i]);
                             }
                             resolve();
                         }
@@ -8188,10 +8455,10 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
                         for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
                             var var_alloc = allocations[allocation_space][descriptor.inputs[i]];
                             if (var_alloc) {
-                                var symAb = inputViews[i];
+                                var symAb = _this.inputs[i];
                                 inputs.push({
                                     space: allocation_space,
-                                    offset: symAb.offset,
+                                    offset: placeholderContext.resolve(var_alloc.offset),
                                     size: symAb.length,
                                     data: symAb.toActual()
                                 });
@@ -8204,8 +8471,12 @@ var DescriptorRunnerWebassembly = /** @class */ (function (_super) {
                         for (var allocation_space = 0; allocation_space < 2; allocation_space++) {
                             var var_alloc = allocations[allocation_space][descriptor.outputs[i]];
                             if (var_alloc) {
-                                var symAb = outputViews[i];
-                                outputs.push({ space: allocation_space, offset: symAb.offset, size: symAb.length });
+                                var symAb = _this.outputs[i];
+                                outputs.push({
+                                    space: allocation_space,
+                                    offset: placeholderContext.resolve(var_alloc.offset),
+                                    size: symAb.length
+                                });
                                 break;
                             }
                         }
@@ -8448,6 +8719,9 @@ var WebGLHandler = /** @class */ (function () {
  * @private
  */
 var availability = null;
+/**
+ * @private
+ */
 function checkNull(obj) {
     if (obj === null)
         throw Error('Null is detected');
@@ -8905,12 +9179,16 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
                     case 2:
                         (_a.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, view.length, Float32Array).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = buffers.get(mapping[view.name]).getWriteView(0, view.length, Float32Array).buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 3:
                         (_a.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, view.length, Float32Array).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = buffers.get(mapping[view.name]).getReadView(0, view.length, Float32Array).buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -8939,12 +9217,16 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
                     case 1:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(mapping[view.name]).getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = buffers.get(mapping[view.name]).getWriteView(0, placeholderContext.resolve(view.length), Float32Array).buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 2:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(buffers.get(mapping[view.name]).getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer); });
+                            .forEach(function (view) {
+                            view.buffer = buffers.get(mapping[view.name]).getReadView(0, placeholderContext.resolve(view.length), Float32Array).buffer;
+                        });
                         this.buildPipeline();
                         return [2 /*return*/];
                 }
@@ -8999,7 +9281,6 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         // resolve placeholders in execution info
-                        // TODO:
                         if (Object.keys(this.descriptor.placeholders).length > 0)
                             throw Error('Currently, WebGL backend doesn\'t support Placeholder feature.');
                         return [2 /*return*/];
@@ -9009,8 +9290,8 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
     };
     DescriptorRunnerWebGL.prototype.getInputViews = function () {
         var _this = this;
-        if (this.inputViews)
-            return this.inputViews;
+        if (this.inputs)
+            return this.inputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
@@ -9018,20 +9299,17 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         var mapping = this.descriptor.memory_layout.mapping;
-        this.inputViews = descriptor.inputs.map(function (name) {
-            var view = new SymbolicFloat32Array({
-                name: name,
-                size: _this.buffers.get(mapping[name]).length,
-                offset: 0
-            }, placeholderContext, true);
+        this.inputs = descriptor.inputs.map(function (name) {
+            var view = new SymbolicFloat32Array(null, 0, _this.buffers.get(mapping[name]).length, placeholderContext);
+            view.name = name;
             return view;
         });
-        return this.inputViews;
+        return this.inputs;
     };
     DescriptorRunnerWebGL.prototype.getOutputViews = function () {
         var _this = this;
-        if (this.outputViews)
-            return this.outputViews;
+        if (this.outputs)
+            return this.outputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
@@ -9039,15 +9317,12 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
         var mapping = this.descriptor.memory_layout.mapping;
-        this.outputViews = descriptor.outputs.map(function (name) {
-            var view = new SymbolicFloat32Array({
-                name: name,
-                size: _this.buffers.get(mapping[name]).length,
-                offset: 0
-            }, placeholderContext, true);
+        this.outputs = descriptor.outputs.map(function (name) {
+            var view = new SymbolicFloat32Array(null, 0, _this.buffers.get(mapping[name]).length, placeholderContext);
+            view.name = name;
             return view;
         });
-        return this.outputViews;
+        return this.outputs;
     };
     DescriptorRunnerWebGL.prototype.buildPipeline = function () {
         var _this = this;
@@ -9175,8 +9450,6 @@ var DescriptorRunnerWebGL = /** @class */ (function (_super) {
                         // if (this._running) throw new Error('Calling another run() while running.');
                         if (!this.descriptor)
                             throw new Error('Descriptor is not loaded');
-                        if (!this.inputViews || !this.outputViews)
-                            throw new Error('getInputViews and getOutputViews must be called prior to run');
                         if (!this.placeholderContext)
                             throw new Error('PlaceholderContext is not initialized');
                         if (!this.placeholderContext.isResolved)
@@ -9585,7 +9858,6 @@ var DescriptorRunnerWebGPU = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /**
          * backend name
-         * @type {string}
          */
         _this.backendName = 'webgpu';
         return _this;
@@ -9815,12 +10087,16 @@ var DescriptorRunnerWebGPU = /** @class */ (function (_super) {
                     case 3:
                         (_c.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(staticBuffer.bufferView.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = staticBuffer.bufferView.buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 4:
                         (_c.sent())
                             .filter(function (view) { return !view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(staticBuffer.bufferView.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = staticBuffer.bufferView.buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -9886,12 +10162,16 @@ var DescriptorRunnerWebGPU = /** @class */ (function (_super) {
                     case 1:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.bufferView.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = dynamicBuffer.bufferView.buffer;
+                        });
                         return [4 /*yield*/, this.getOutputViews()];
                     case 2:
                         (_a.sent())
                             .filter(function (view) { return view.isDynamic; })
-                            .forEach(function (view) { return view.setArrayBuffer(dynamicBuffer.bufferView.buffer); });
+                            .forEach(function (view) {
+                            view.buffer = dynamicBuffer.bufferView.buffer;
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -9951,43 +10231,45 @@ var DescriptorRunnerWebGPU = /** @class */ (function (_super) {
      * Get input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
      * @returns array of input [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated Use [[webdnn.DescriptorRunner.inputs|`inputs`]] instead
      */
     DescriptorRunnerWebGPU.prototype.getInputViews = function () {
-        if (this.inputViews)
-            return this.inputViews;
+        if (this.inputs)
+            return this.inputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.inputViews = descriptor.inputs.map(function (name) {
+        this.inputs = descriptor.inputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            var view = new SymbolicFloat32Array(allocation, placeholderContext);
+            var view = new SymbolicFloat32Array(null, allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT, allocation.size, placeholderContext);
             return view;
         });
-        return this.inputViews;
+        return this.inputs;
     };
     /**
      * Get output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]] object
      *
      * @returns array of output [[webdnn.SymbolicFloat32Array|`SymbolicFloat32Array`]]
+     * @deprecated Use [[webdnn.DescriptorRunner.outputs|`outputs`]] instead
      */
     DescriptorRunnerWebGPU.prototype.getOutputViews = function () {
-        if (this.outputViews)
-            return this.outputViews;
+        if (this.outputs)
+            return this.outputs;
         if (!this.descriptor)
             throw new Error('Descriptor is not loaded');
         if (!this.placeholderContext)
             throw new Error('PlaceholderContext is not initialized');
         var descriptor = this.descriptor;
         var placeholderContext = this.placeholderContext;
-        this.outputViews = descriptor.outputs.map(function (name) {
+        this.outputs = descriptor.outputs.map(function (name) {
             var allocation = descriptor.memory_layout.static.allocations[name] || descriptor.memory_layout.dynamic.allocations[name];
-            var view = new SymbolicFloat32Array(allocation, placeholderContext);
+            var view = new SymbolicFloat32Array(null, allocation.offset * SymbolicFloat32Array.BYTES_PER_ELEMENT, allocation.size, placeholderContext);
             return view;
         });
-        return this.outputViews;
+        return this.outputs;
     };
     /**
      * Run descriptor. You must call [[webdnn.DescriptorRunner.getInputViews|`getInputViews`]] and
@@ -10001,8 +10283,6 @@ var DescriptorRunnerWebGPU = /** @class */ (function (_super) {
                     case 0:
                         if (!this.executionInfos)
                             throw new Error('ExecutionInfos is not loaded');
-                        if (!this.inputViews || !this.outputViews)
-                            throw new Error('getInputViews and getOutputViews must be called prior to run');
                         if (!this.staticBuffer)
                             throw new Error('StaticBuffer is not initialized');
                         if (!this.dynamicBuffer)
@@ -10554,7 +10834,7 @@ function getImageArray(image, options) {
  *
  *   ```ts
  *   let runner = await WebDNN.load('./model');
- *   let output = runner.getOutputViews()[0];
+ *   let output = runner.outputs[0];
  *
  *   await runner.run();
  *
@@ -10690,13 +10970,13 @@ var image = Object.freeze({
  */
 /** Don't Remove This comment block */
 /**
-* Return indices of the top-K largest elements.
-* This implementation is not stable sort.
-*
-* @param {number[]|Float32Array|Int32Array} arr array
-* @param {number} k number of indices
-* @returns {number[]} indices of top-K largest samples
-*/
+ * Return indices of the top-K largest elements.
+ * This implementation is not stable sort.
+ *
+ * @param {number[]|Float32Array} arr array
+ * @param {number} k number of indices
+ * @returns {number[]} indices of top-K largest samples
+ */
 function argmax(arr, k) {
     // Top-k Quicksort
     if (k === void 0) { k = 1; }
@@ -11046,21 +11326,22 @@ function load(directory, initOption) {
                     _f.label = 26;
                 case 26: throw Error('Network error is occurred and no cache is exist.');
                 case 27: throw Error("\"" + cacheStrategy + "\" is not valid cache strategy name: \"latest\", \"networkFirst\", \"networkOnly\", \"cacheFirst\", \"cacheOnly\" is available.");
-                case 28: return [4 /*yield*/, runner.setDescriptorAndParameters(descriptor, parameters)];
+                case 28:
+                    if (!saveCache) return [3 /*break*/, 32];
+                    _f.label = 29;
                 case 29:
-                    _f.sent();
-                    if (!saveCache) return [3 /*break*/, 33];
-                    _f.label = 30;
-                case 30:
-                    _f.trys.push([30, 32, , 33]);
+                    _f.trys.push([29, 31, , 32]);
                     return [4 /*yield*/, runner.saveCache(directory, descriptor, parameters)];
-                case 31:
+                case 30:
                     _f.sent();
-                    return [3 /*break*/, 33];
-                case 32:
+                    return [3 /*break*/, 32];
+                case 31:
                     e_1 = _f.sent();
-                    return [3 /*break*/, 33];
-                case 33: return [3 /*break*/, 35];
+                    return [3 /*break*/, 32];
+                case 32: return [4 /*yield*/, runner.setDescriptorAndParameters(descriptor, parameters)];
+                case 33:
+                    _f.sent();
+                    return [3 /*break*/, 35];
                 case 34:
                     ex_2 = _f.sent();
                     console.warn("Model loading failed for " + backendName + " backend. Trying next backend: " + ex_2.message);

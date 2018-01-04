@@ -26,7 +26,7 @@ async function run() {
     if (!runner) {
         let backend_name = document.querySelector('input[name=backend_name]:checked').value;
         let framework_name = document.querySelector('input[name=framework_name]:checked').value;
-        runner = await WebDNN.load(`./output_${framework_name}`, { backendOrder: backend_name });
+        runner = await WebDNN.load(`./output_${framework_name}`, {backendOrder: backend_name});
         msg(`Backend: ${runner.backendName}, model converted from ${framework_name}`);
         console.info(`Backend: ${runner.backendName}, model converted from ${framework_name}`);
         test_samples = await fetchSamples(`./output_${framework_name}/imdb_lstm_samples.json`);
@@ -38,7 +38,7 @@ async function run() {
     let total_elapsed_time = 0;
     for (let i = 0; i < test_samples.length; i++) {
         let sample = test_samples[i];
-        runner.getInputViews()[0].set(sample.x);
+        runner.inputs[0].set(sample.x);
         console.log(`ground truth: ${sample.y}`);
         console.log(`original model output: ${sample.orig_pred}`);
 
@@ -46,7 +46,7 @@ async function run() {
         await runner.run();
         total_elapsed_time += performance.now() - start;
 
-        let out_vec = runner.getOutputViews()[0].toActual();
+        let out_vec = runner.outputs[0].toActual();
         let pred_value = out_vec[0];
         console.log(`predicted: ${pred_value}`);
         console.log(out_vec);
@@ -63,7 +63,12 @@ async function fetchSamples(path) {
     let json = await response.json();
     let samples = [];
     for (let i = 0; i < json.length; i++) {
-        samples.push({ 'x': new Float32Array(json[i]['x']), 'y': json[i]['y'], 'orig_sentence': json[i]['orig_sentence'], 'orig_pred': json[i]['orig_pred'] });
+        samples.push({
+            'x': new Float32Array(json[i]['x']),
+            'y': json[i]['y'],
+            'orig_sentence': json[i]['orig_sentence'],
+            'orig_pred': json[i]['orig_pred']
+        });
     }
 
     return samples;
