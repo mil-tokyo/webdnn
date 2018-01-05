@@ -17,7 +17,13 @@ It is supported by most modern browsers.
 (Note: IE and Safari does not support WebAssembly, but asm.js code is automatically generated along with WebAssembly code, and gives similar performance.)
 
 ## Installing python package
-This framework requires python3.6+.
+This framework requires python3.6+. Some packages need to be installed as precondition.
+1.For Mac: need to install `numpy`;
+2.For Linux: need to install `setuptools`;
+
+```
+pip3 install numpy setuptools
+```
 
 ```
 cd webdnn
@@ -37,7 +43,7 @@ pip install chainer
 ## Installing Emscripten and Eigen
 If you want to enable WebAssembly backend, em++ command from [Emscripten](https://github.com/kripken/emscripten) is required. You can skip this section if you try WebGPU backend only.
 
-To setup Emscripten which supports WebAssembly,
+Before setting up Emscripten which supports WebAssembly, `brew/apt-get install cmake` need to be performed at first.
 
 ```
 git clone https://github.com/juj/emsdk.git
