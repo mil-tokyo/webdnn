@@ -18,9 +18,9 @@ if ! which em++; then
 echo "em++ command does not exist. Generating graph descriptor for webassembly will fail."
 fi
 
-if ! which python2; then
-echo "python2 command does not exist. Generating graph descriptor for webassembly will fail."
+if ! which python3; then
+echo "python3 command does not exist. Generating graph descriptor for webassembly will fail."
 fi
 
 echo "Start model conversion"
-python ../../bin/convert_caffe.py --input_name data --input_shape '(1,3,227,227)' --output_names fc8 --out output data/bvlc_reference_caffenet.caffemodel
+python3 ../../bin/convert_caffe.py --input_name data --input_shape '(1,3,227,227)' --output_names fc8 --out output data/bvlc_reference_caffenet.caffemodel
