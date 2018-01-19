@@ -124,8 +124,8 @@ class KerasConverter(Converter["keras.layers.Layer"]):
             if not Placeholder.check_resolved(v.shape[0]):
                 v.shape[0].value = self._batch_size
 
-        for depth in sorted(list(model.nodes_by_depth.keys()), reverse=True):
-            for node in model.nodes_by_depth[depth]:
+        for depth in sorted(list(model._nodes_by_depth.keys()), reverse=True):
+            for node in model._nodes_by_depth[depth]:
                 self._convert_operator(node.outbound_layer)
 
                 # Check that all output tensors from current layer are converted into WebDNN Variable
