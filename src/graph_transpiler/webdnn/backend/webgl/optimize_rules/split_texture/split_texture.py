@@ -4,7 +4,6 @@ from webdnn.backend.webgl.optimize_rules.split_texture.split_output_texture impo
 
 from webdnn.backend.webgl.optimize_rules.split_texture.split_variable import SplitVariable
 from webdnn.graph.optimize_rule import OptimizeRuleGroup
-from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
 from webdnn.util import flags
 
 

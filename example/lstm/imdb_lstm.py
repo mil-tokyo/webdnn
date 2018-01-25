@@ -1,4 +1,4 @@
-'''
+"""
 This example is based on Keras's example.
 
 Trains a LSTM on the IMDB sentiment classification task.
@@ -12,7 +12,7 @@ Some configurations won't converge.
 
 - LSTM loss decrease patterns during training can be quite different
 from what you see with CNNs/MLPs/etc.
-'''
+"""
 
 import argparse
 import json

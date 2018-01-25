@@ -951,7 +951,6 @@ def _listup_splittable_axis(v: Variable, op: Operator) -> List[Axis]:
         v1_order = op.in_order if v1 == op.inputs["x"] else op.out_order
         v2_order = op.in_order if v2 == op.inputs["x"] else op.out_order
         v1_shape = [v1.shape_dict[a] for a in v1_order.axes]
-        v2_shape = [v2.shape_dict[a] for a in v2_order.axes]
 
         for a1 in v1_order.axes:
             d1 = mul(v1_shape[v1_order.axes_dict[a1]:])
