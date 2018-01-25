@@ -5,27 +5,16 @@
     <title>WebDNN: CaffeNet Minimal Example</title>
     <meta charset="utf-8">
     <script src="../../dist/webdnn.js"></script>
+    <script src="../data/imagenet_labels.js"></script>
     <script src="script.js"></script>
 </head>
 
 <body>
-<h1>
-    WebDNN: CaffeNet Minimal Example
-</h1>
+<h1>WebDNN: CaffeNet Minimal Example</h1>
 
-<div>
-    <canvas width="227" height="227"></canvas>
+<img width="227" height="227" src="../data/school_bus.jpg">
 
-    <form>
-        <label>
-            <span>Image URL:</span>
-            <input type="text" value="../../resources/imagenet/ILSVRC2012_val_00000003.JPEG" size="100">
-        </label>
-
-        <button type="button" onclick="loadImage(); return false;">Load image</button>
-        <button type="button" onclick="run(); return false;">Run</button>
-    </form>
-</div>
+<button type="button" onclick="run(); return false;" disabled>Run</button>
 </body>
 
 </html>

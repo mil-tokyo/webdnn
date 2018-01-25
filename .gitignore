@@ -19,3 +19,4 @@ example/neural_style_transfer_keras/neural-style-keras
 /tmp
 .rpt2_cache
 .noseids
+.ipynb_checkpoints
