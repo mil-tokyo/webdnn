@@ -4,7 +4,9 @@ set -e
 
 echo "Generate Keras model"
 pip3 install -r ./requirements_kerasjs.txt
-python3 generate_keras_models.py
+python3 generate_keras_models.py resnet50
+python3 generate_keras_models.py vgg16
+python3 generate_keras_models.py inception_v3
 
 echo ""
 echo "Encode Keras model into Keras.js model:"
