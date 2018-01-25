@@ -1,4 +1,8 @@
-from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar
+"""
+Utility functions for traversing computation graph
+"""
+
+from typing import Type, List, Set, Iterable, Union, Tuple, Optional, TypeVar, Sequence
 
 from webdnn.graph.attribute import Attribute
 from webdnn.graph.graph import Graph
@@ -8,10 +12,22 @@ from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 
+# Query of traversing
 Query = Union[Type[Attribute], Type[Node]]
 
 
-def check_match(node: Node, query: Query):
+def _check_match(node: Node, query: Query) -> bool:
+    """_check_match(node, query)
+
+    Check if the node matches the query
+
+    Args:
+        node (:class:`~webdnn.graph.node.Node`) : the node
+        query (:obj:`~webdnn.graph.traverse.Query`) : the query
+
+    Returns:
+        (bool) True if node matches the query
+    """
     if issubclass(query, Attribute):
         return check_attribute_match(node, query)
 
@@ -19,50 +35,114 @@ def check_match(node: Node, query: Query):
         return check_node_type_match(node, query)
 
     else:
-        raise NotImplementedError
+        raise TypeError(f"""
+Query must be subclass of "Node" or "Attribute" :
+    (query) = {query}
+""")
 
 
-def check_attribute_match(node: Node, query: Type[Attribute]):
+def check_attribute_match(node: Node, attribute: Type[Attribute]) -> bool:
+    """check_attribute_match(node, attribute)
+
+    Check if the node matches the attribute
+
+    Args:
+        node (:class:`~webdnn.graph.node.Node`) : the node
+        attribute (type of :class:`~webdnn.graph.traverse.Query`) : the query
+
+    Returns:
+        (bool) True if node matches the query
+    """
     for attr in node.attributes:
-        if isinstance(attr, query):
+        if isinstance(attr, attribute):
             return True
 
     else:
         return False
 
 
-def check_node_type_match(node: Node, query: Type[Node]):
+def check_node_type_match(node: Node, query: Type[Node]) -> bool:
+    """_check_match(node, query)
+
+    Check if the node is the instance of specified node class
+
+    Args:
+        node (:class:`~webdnn.graph.node.Node`) : the node
+        query (type of :class:`~webdnn.graph.node.Node`) : the query
+
+    Returns:
+        (bool) True if node matches the query
+    """
     return isinstance(node, query)
 
 
-def search_sub_structure(graph: Graph, query: List[Query]) -> List[List[Operator]]:
-    matches: List[List[Operator]] = []
-    queue: List[Tuple(Node, int, List[Node])] = [(node, 0, []) for node in listup_nodes(graph)]
+def search_sub_structure(graph: Graph, queries: Sequence[Query]) -> List[Tuple[Node, ...]]:
+    """search_sub_structure(graph, query)
+
+    List up sub structures of computation graph which match the query
+
+    Args:
+        graph (:class:`~webdnn.graph.graph.Graph`) : the node
+        queries (sequence of :obj:`~webdnn.graph.traverse.Query`) : the sequence of queries
+
+    Returns:
+        (list of tuple of :class:`~webdnn.graph.node.Node`) : list of nodes in each sub structure
+    """
+    matches = []  # type: List[Tuple[Node, ...]]
+
+    # List of (next_target_node, query_index, matched_nodes)
+    queue = [(node, 0, []) for node in listup_nodes(graph)]  # type: List[Tuple[Node, int, List[Node]]]
 
     while len(queue) > 0:
         node, index, matched = queue.pop(0)
-        if check_match(node, query[index]):
-            matched.append(node)
+        if not _check_match(node, queries[index]):
+            continue
 
-            if index == len(query) - 1:
-                matches.append(matched)
+        matched.append(node)
 
-            else:
-                for next in node.nexts:
-                    queue.append((next, index + 1, list(matched)))
+        if index == len(queries) - 1:
+            # all queries are matched
+            matches.append(tuple(matched))
+            continue
+
+        for next in node.nexts:
+            queue.append((next, index + 1, list(matched)))
 
     return matches
 
 
 T = TypeVar("T", bound=Node)
+U = TypeVar("U", bound=T)
 
 
-def filter_nodes(nodes: Iterable[T], query: Query, mode_not: bool = False) -> List[T]:
-    return [node for node in nodes if not mode_not == check_match(node, query)]
+def filter_nodes(nodes, query, mode_not=False):
+    """filter_nodes(nodes, query, mode_not=False)
+
+    Filter nodes by specified query
+
+    Args:
+        nodes (iterable of :class:`~webdnn.graph.node.Node`) : sequence of nodes
+        query (:obj:`~webdnn.graph.traverse.Query`) : the query
+        mode_not (bool, optional) : If `True` unmatched nodes are returned. Default is `False`.
+
+    Returns:
+        (list of :class:`~webdnn.graph.node.Node`) : matched nodes. If `mode_not` is `True`, unmatched nodes are returned.
+    """
+    return [node for node in nodes if not mode_not == _check_match(node, query)]
 
 
-def sort_nodes(nodes: List[Node]) -> List[Node]:
-    return list(sorted(nodes, key=lambda x: x.name))
+def sort_nodes(nodes: Iterable[Node]) -> Iterable[Node]:
+    """sort_nodes(nodes)
+
+    Sort nodes by deterministic order depend on their name.
+
+    Args:
+        nodes (iterable of :class:`~webdnn.graph.node.Node`) : sequence of nodes
+
+    Returns:
+        (iterator of :class:`~webdnn.graph.node.Node`) : sorted sequence iterator
+    """
+    return sorted(nodes, key=lambda x: x.name)
 
 
 def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_internal_output_bound=True) -> List[Node]:
@@ -85,6 +165,14 @@ def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_interna
       # >>> ignore_internal_input_bound=False, ignore_internal_output_bound=True  : [1,    3, 4, 5, 6] (default)
       # >>> ignore_internal_input_bound=True,  ignore_internal_output_bound=False : [1, 2, 3, 4,    6]
       # >>> ignore_internal_input_bound=True,  ignore_internal_output_bound=True  : [1, 2, 3, 4, 5, 6]
+
+    Args:
+        graph (:class:`~webdnn.graph.graph.Graph`) : computation graph
+        ignore_internal_input_bound (bool, optional) : See above description. Default is `False`.
+        ignore_internal_output_bound (bool, optional) : See above description. Default is `False`.
+
+    Returns:
+        (tuple of :class:`~webdnn.graph.node.Node`) : nodes
     """
 
     input_bound = graph.inputs
@@ -146,8 +234,8 @@ def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_interna
         unresolved_prev = [d for d in node.prevs if (d is not None) and (d not in resolved)]
         unstacked_next = [d for d in node.nexts if (d is not None) and (d not in stacked)]
 
-        unresolved_prev = sort_nodes(unresolved_prev)
-        unstacked_next = sort_nodes(unstacked_next)
+        unresolved_prev = tuple(sort_nodes(unresolved_prev))
+        unstacked_next = tuple(sort_nodes(unstacked_next))
 
         if len(unstacked_next) != 0:
             stack += unstacked_next
@@ -166,22 +254,38 @@ def listup_nodes(graph: Graph, ignore_internal_input_bound=False, ignore_interna
 
 
 def listup_operators(graph: Graph) -> List[Operator]:
-    ops = filter_nodes(listup_nodes(graph), Operator)  # type: List[Operator]
-    return ops
+    """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
+    List up all operators in graph in order of forward computation.
+
+    Args:
+        graph (:class:`~webdnn.graph.graph.Graph`) : computation graph
+
+    Returns:
+        (list of :class:`~webdnn.graph.operator.Operator`) : operators
+    """
+    return filter_nodes(listup_nodes(graph), Operator)
 
 
 def listup_variables(graph: Graph) -> List[Variable]:
-    variables = filter_nodes(listup_nodes(graph), Variable)  # type: List[Variable]
-    return variables
+    """listup_nodes(graph, ignore_internal_input_bound, ignore_internal_output_bound)
+    List up all variables in graph in order of forward computation.
+
+    Args:
+        graph (:class:`~webdnn.graph.graph.Graph`) : computation graph
+
+    Returns:
+        (list of :class:`~webdnn.graph.variable.Variable`) : variables
+    """
+    return filter_nodes(listup_nodes(graph), Variable)
 
 
-def dump(graph: Graph):
+def dump(graph: Graph):  # pragma: no cover
     for op in listup_operators(graph):
         console.debug(f"---------------------------------------------------------------------------")
         dump_op(op)
 
 
-def dump_op(op: Operator):
+def dump_op(op: Operator):  # pragma: no cover
     parameters_sorted = [repr(key) + ': ' + str(op.parameters[key]) for key in sorted(op.parameters.keys())]
     console.debug(f"{op.__class__.__name__} : {op.name}")
     console.debug(f"    In  : {op.inputs}")
@@ -190,7 +294,7 @@ def dump_op(op: Operator):
     console.debug(f"    Parameters: {{{', '.join(parameters_sorted)}}}")
 
 
-def dump_dot(graph: Graph, name: Optional[str] = None) -> str:
+def dump_dot(graph: Graph, name: Optional[str] = None) -> str:  # pragma: no cover
     """
     Dumps graph into dot language for visualization.
 

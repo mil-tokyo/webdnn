@@ -97,13 +97,13 @@ class ConvFilterPruning(OptimizeRule):
 
         flag_changed = False
 
-        for conv1 in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for conv1 in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             parameters = _find_conv2(conv1)
             if parameters is None:
                 continue
 
             w1 = conv1.inputs["w"]  # type: ConstantVariable
-            filter_weights = np.abs(w1.copy().change_order(OrderNCHW).data).sum(axis=(2, 3)).sum(axis=1)
+            filter_weights = np.abs(ConstantVariable(w1.data, w1.order).change_order(OrderNCHW).data).sum(axis=(2, 3)).sum(axis=1)
 
             if ConvFilterPruned.has(conv1):
                 attr = ConvFilterPruned.get(conv1)

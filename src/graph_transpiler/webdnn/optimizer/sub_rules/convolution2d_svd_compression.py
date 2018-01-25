@@ -98,7 +98,7 @@ class Convolution2DSvdCompression(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for conv in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for conv in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             x = conv.inputs["x"]
             w = conv.inputs["w"]
             y = conv.outputs["y"]
@@ -117,7 +117,7 @@ class Convolution2DSvdCompression(OptimizeRule):
                 # TODO: Is this constraint required?
                 continue
 
-            w_copy = w.copy()
+            w_copy = ConstantVariable(w.data, w.order)
             w_copy.change_order(OrderNHWC)
             d = w_copy.data.reshape((C2 * KH * KW, C1))
 
@@ -150,8 +150,8 @@ class Convolution2DSvdCompression(OptimizeRule):
             h, = conv1(x, w_squeeze)
             y_new, = conv2(h, w_expand)
 
-            conv1.attributes.add(Convolution2DSvdCompressed(conv1))
-            conv2.attributes.add(Convolution2DSvdCompressed(conv2))
+            conv1.attributes.add(Convolution2DSvdCompressed())
+            conv2.attributes.add(Convolution2DSvdCompressed())
             OptimizeRule.replace_variable(graph, y_new.transpose_like(y), y)
 
             flag_changed = True

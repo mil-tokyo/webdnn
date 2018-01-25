@@ -7,10 +7,9 @@ import numpy as np
 from webdnn.backend.code_generator.allocator import MemoryLayout
 from webdnn.backend.interface.graph_descriptor import IGraphDescriptor
 from webdnn.backend.webassembly.kernel import Kernel
-from webdnn.graph import traverse
 from webdnn.graph.placeholder import Placeholder
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.constant import Constant
+from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import json
 
 source_header = """
@@ -102,6 +101,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
     def generate_kernel_metabuffer_initializer_line(self, kernel: Kernel, serial: int):
         line = "int meta_buf_" + str(serial) + "[] = {"
         # see as int32 and convert to 12345,67890
+        # noinspection PyTypeChecker
         line += ",".join(map(str, np.fromstring(kernel.exec_info.meta_buffer, dtype=np.int32).tolist()))
         line += "};\n"
         return line
@@ -165,7 +165,7 @@ class GraphDescriptor(json.SerializableMixin, IGraphDescriptor):
             "memory_layout": self.memory_layout,
             "placeholders": placeholders,
             "unresolved_value_lists": unresolved_value_lists,
-            "inputs": [self.memory_layout[v].name for v in self.inputs if not traverse.check_attribute_match(v, Constant)],
+            "inputs": [self.memory_layout[v].name for v in self.inputs if not isinstance(v, ConstantVariable)],
             "outputs": [self.memory_layout[v].name for v in self.outputs],
             "licenses": self.licenses
         }

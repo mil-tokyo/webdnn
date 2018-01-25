@@ -16,7 +16,7 @@ RegisteredItem = namedtuple('RegisteredItem', ['OperatorClass',
                                                'body_snippet',
                                                'post_reduction_snippet',
                                                'parameters'])
-_registered_items = {}  # type: Dict[Type[Elementwise], RegisteredItem]
+_registered_items = {}  # type: Dict[Type[Reduce], RegisteredItem]
 
 
 def _generate_template(op: Reduce, reduction_size: int, shapes: Dict[Variable, Sequence[int]], strides: Dict[Variable, Sequence[int]]):
@@ -78,7 +78,7 @@ def register_reduction_kernel(OperatorClass: Type[Reduce],
 
         register_reduction_kernel(
             Max,
-            pre_reduction_snippet="y = -1.0e10;",   // initialize "y" with very smalle value
+            pre_reduction_snippet="y = -1.0e10;",   // initialize "y" with very small value
             body_snippet="y = x > y ? x : y;",
         )
 

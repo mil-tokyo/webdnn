@@ -32,23 +32,19 @@ class Reduce(Operator, metaclass=ABCMeta):
         self.parameters["axis"] = axis
 
     def __call__(self, x: "variable.Variable"):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
         reduced_axis = self.axis
 
-        x = self.inputs["x"]
         y_axes = list(x.order.axes)
         y_shape = [1 if axis == reduced_axis else x.shape_dict[axis] for axis in y_axes]
         y_order = Order(y_axes)
 
-        # Add tensorwise attributes
+        y = variable.Variable(y_shape, y_order)
+
         for axis in x.order.axes:
             if axis != reduced_axis:
-                self.attributes.add(Tensorwise(self, axis))
+                self.attributes.add(Tensorwise(axis))
 
-        y = variable.Variable(y_shape, y_order)
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,
 

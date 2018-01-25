@@ -1,8 +1,8 @@
 from test.util import assert_shape
-from webdnn import Variable, Axis
-from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.operators.embedding import Embedding
 from webdnn.graph.order import OrderNC, OrderNT, OrderCN
+from webdnn.graph.variable import Variable
 
 
 def template(N=2, T=3, vocabulary_size=4, feature_size=5, order_x=OrderNT, order_w=OrderNC):

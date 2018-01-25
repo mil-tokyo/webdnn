@@ -71,5 +71,6 @@ class SplitTexture(OptimizeRuleGroup):
             CheckTextureSize(),
             SplitInputTexture(),
             SplitOutputTexture(),
-            SplitVariable()
+            SplitVariable(),
+            # DumpGraph(f"cg_split_{{count}}.dot")
         ])

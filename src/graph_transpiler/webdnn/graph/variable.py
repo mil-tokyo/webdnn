@@ -28,7 +28,7 @@ class Variable(Node):
         # variables are connected as follows:
         #
         #   x1 -+
-        #       +-[ElementwiseAdd]-> h -[ElementwiseAbs]-> y
+        #       +-[ElementwiseAdd]-> h -[Abs]-> y
         #   x2 -+
     """
 
@@ -48,11 +48,13 @@ class Variable(Node):
     @property
     def input_to(self) -> Set["operator.Operator"]:
         """operators which this variable is input to"""
+        # noinspection PyTypeChecker
         return set(self.nexts)
 
     @property
     def output_from(self) -> "operator.Operator":
         """operator which this variable is output from"""
+        # noinspection PyTypeChecker
         return None if len(self.prevs) == 0 else list(self.prevs)[0]
 
     @property
@@ -94,9 +96,6 @@ class Variable(Node):
         """dictionary of axis and stride size pairs"""
         return AxisKeyDict(self.order.axes, self.stride)
 
-    def copy(self) -> "Variable":
-        return Variable(self.shape, self.order)
-
     def change_order(self, order: Order) -> "Variable":
         """change_order_statement(order)
 
@@ -108,13 +107,17 @@ class Variable(Node):
         Args:
             order: new order
         """
-        current_shape_dict = self.shape_dict
-        new_shape = [current_shape_dict.get(axis, 1) for axis in order.axes]
-        for axis, size in current_shape_dict.items():
+        old_shape_dict = self.shape_dict
+        new_shape = [old_shape_dict.get(axis, 1) for axis in order.axes]
+        for axis, size in old_shape_dict.items():
             if axis not in order.axes:
                 if Placeholder.check_resolved(size):
-                    assert size == 1, "[Variable.change_order_statement()] The size of axes which will be removed must be one: " \
-                                      f"variable={self}, shape_dict[{axis}]={size}, new_order={order}."
+                    assert size == 1, f"""
+[Variable.change_order()] The size of axes which will be removed must be one:
+    (variable) = {self}
+    (shape[{axis}]) = {size}
+    (new order) = {order}
+"""
         self._order = order
         self._shape = new_shape
 
@@ -144,6 +147,7 @@ class Variable(Node):
         return self.__repr__()
 
     # Unary operators
+
     def __pos__(self) -> "Variable":
         return webdnn.graph.operators.scalar_mul.ScalarMul(None, value=+1)(self)[0]
 
@@ -154,8 +158,9 @@ class Variable(Node):
         return webdnn.graph.operators.abs.Abs(None)(self)[0]
 
     # Binary operators
+
     def __add__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -165,17 +170,14 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for +: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __radd__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(self)[0]
-
-        elif isinstance(other, Variable):
-            return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __sub__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, -other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -185,17 +187,14 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for -: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rsub__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_add.ScalarAdd(None, other)(-self)[0]
-
-        elif isinstance(other, Variable):
-            return webdnn.graph.operators.elementwise_add.ElementwiseAdd(None)(other, -self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for -: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __mul__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
 
         elif isinstance(other, Variable):
@@ -205,11 +204,8 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for *: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rmul__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self)[0]
-
-        elif isinstance(other, Variable):
-            return webdnn.graph.operators.elementwise_mul.ElementwiseMul(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
@@ -225,11 +221,8 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for /: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __rtruediv__(self, other) -> "Variable":
-        if isinstance(other, (int, float, Placeholder)):
+        if isinstance(other, (int, float)):
             return webdnn.graph.operators.scalar_mul.ScalarMul(None, other)(self ** -1)[0]
-
-        elif isinstance(other, Variable):
-            return webdnn.graph.operators.elementwise_div.ElementwiseDiv(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for *: '{type(other).__name__}' and '{type(self).__name__}'")
@@ -238,7 +231,7 @@ class Variable(Node):
         if modulo is not None:
             raise NotImplementedError("Variable.__pow__ is not supported modulo argument")
 
-        elif isinstance(power, (int, float, Placeholder)):
+        elif isinstance(power, (int, float)):
             return webdnn.graph.operators.scalar_pow.ScalarPow(None, power)(self)[0]
 
         elif isinstance(power, Variable):
@@ -248,29 +241,14 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(self).__name__}' and '{type(power).__name__}'")
 
     def __rpow__(self, other) -> "Variable":
-        if isinstance(other, Placeholder):
-            if not Placeholder.check_resolved(other):
-                raise TypeError(f"unsupported operand type(s) for ** or pow: 'Placeholder(unresolved)' and '{type(self).__name__}'")
-            else:
-                other = Placeholder.force_int(other)
-
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
-            return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
-
-        elif isinstance(other, Variable):
             return webdnn.graph.operators.elementwise_pow.ElementwisePow(None)(other, self)[0]
 
         else:
             raise TypeError(f"unsupported operand type(s) for ** or pow: '{type(other).__name__}' and '{type(self).__name__}'")
 
     def __gt__(self, other) -> "Variable":
-        if isinstance(other, Placeholder):
-            if not Placeholder.check_resolved(other):
-                raise TypeError(f"unsupported operand type(s) for >: '{type(self).__name__}' and 'Placeholder(unresolved)'")
-            else:
-                other = Placeholder.force_int(other)
-
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater.Greater(None)(self, other)[0]
@@ -282,12 +260,6 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for >: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __ge__(self, other) -> "Variable":
-        if isinstance(other, Placeholder):
-            if not Placeholder.check_resolved(other):
-                raise TypeError(f"unsupported operand type(s) for >=: '{type(self).__name__}' and 'Placeholder(unresolved)'")
-            else:
-                other = Placeholder.force_int(other)
-
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater_equal.GreaterEqual(None)(self, other)[0]
@@ -299,12 +271,6 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for >=: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __lt__(self, other) -> "Variable":
-        if isinstance(other, Placeholder):
-            if not Placeholder.check_resolved(other):
-                raise TypeError(f"unsupported operand type(s) for <: '{type(self).__name__}' and 'Placeholder(unresolved)'")
-            else:
-                other = Placeholder.force_int(other)
-
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater.Greater(None)(other, self)[0]
@@ -316,12 +282,6 @@ class Variable(Node):
             raise TypeError(f"unsupported operand type(s) for <: '{type(self).__name__}' and '{type(other).__name__}'")
 
     def __le__(self, other) -> "Variable":
-        if isinstance(other, Placeholder):
-            if not Placeholder.check_resolved(other):
-                raise TypeError(f"unsupported operand type(s) for <=: '{type(self).__name__}' and 'Placeholder(unresolved)'")
-            else:
-                other = Placeholder.force_int(other)
-
         if isinstance(other, (int, float)):
             other = webdnn.graph.variables.constant_variable.ConstantVariable(np.full(self.shape, other), self.order)
             return webdnn.graph.operators.greater_equal.GreaterEqual(None)(other, self)[0]
@@ -341,7 +301,8 @@ class Variable(Node):
         else:
             ellipsis_position = len(slices)
 
-        while len(slices) < self.ndim:
+        num_new_axis = slices.count(None)
+        while len(slices) - num_new_axis < self.ndim:
             slices.insert(ellipsis_position, slice(None))
 
         x_axis_index = 0
@@ -353,6 +314,9 @@ class Variable(Node):
 
             elif index is None:
                 indices[Axis()] = None
+
+            else:
+                raise TypeError("Variable indices must be sequence of integers, slices, ellipsis, or None")
 
         return webdnn.graph.operators.slice.Slice(None, indices=indices)(self)[0]
 
@@ -376,6 +340,25 @@ class Variable(Node):
             (:class:`~Variable`) new variable which has specified order and shape
         """
         ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=order, out_shape=shape)(self)
+        return ret
+
+    def reshape_like(self, other: "Variable") -> "Variable":
+        """reshape(shape, order)
+        Reshape into same order and shape as :code:`other`. This is alias of follow codes.
+
+        .. code::
+
+            Reshape(None, in_order=v.order,
+                          out_order=other.order,
+                          out_shape=other.shape)(v)[0]
+
+        Args:
+            other (:class:`~Variable`): variable
+
+        Returns:
+            (:class:`~Variable`) new variable which has same order and shape as :code:`other`
+        """
+        ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=other.order, out_shape=other.shape)(self)
         return ret
 
     def expand_dims(self, axis: Axis, index: int = -1) -> "Variable":
@@ -438,7 +421,7 @@ class Variable(Node):
 
     def combine_axes(self, axes: Sequence[Axis], axis: Axis) -> "Variable":
         """combine_axes(shape, axes, axis)
-        Combine some axes into one axis.
+        Combine some axes into one axis. Combined axes must be adjacent
 
         .. code::
 
@@ -458,11 +441,27 @@ class Variable(Node):
         Returns:
             (:class:`~Variable`) reshaped variable
         """
+        # check if all combined axes are adjacent
+        i_max = 0
+        i_min = self.ndim
+        for combined_axis in axes:
+            i = self.order.axes_dict[combined_axis]
+            i_max = max(i_max, i)
+            i_min = min(i_min, i)
+
+        assert i_max - i_min + 1 == len(axes), f"""
+All combined axes must be adjacent:
+    (order) = {self.order}
+    (combined axes) = {axes}"""
+
+        # construct in_order, out_order and out_shape
+        in_order = Order(self.order.axes[:i_min] + tuple(axes) + self.order.axes[i_max + 1:])
+
         out_axes = list(self.order.axes)
         out_shape_dict = AxisKeyDict(self.shape_dict)
         if axis not in out_shape_dict:
             out_shape_dict[axis] = 1
-            out_axes.append(axis)
+            out_axes.insert(i_min, axis)
 
         for combined_axis in axes:
             if combined_axis == axis:
@@ -471,37 +470,12 @@ class Variable(Node):
             out_shape_dict[axis] *= out_shape_dict[combined_axis]
             out_axes.remove(combined_axis)
 
-        in_axes = list(out_axes)
-        if axis in in_axes:
-            i = in_axes.index(axis)
-            in_axes = in_axes[:i] + list(axes) + in_axes[i + 1:]
-
-        else:
-            in_axes += list(axes)
+        out_order = Order(out_axes)
 
         return webdnn.graph.operators.reshape.Reshape(None,
-                                                      in_order=Order(in_axes),
-                                                      out_order=Order(out_axes),
+                                                      in_order=in_order,
+                                                      out_order=out_order,
                                                       out_shape=[out_shape_dict[a] for a in out_axes])(self)[0]
-
-    def reshape_like(self, other: "Variable") -> "Variable":
-        """reshape(shape, order)
-        Reshape into same order and shape as :code:`other`. This is alias of follow codes.
-
-        .. code::
-
-            Reshape(None, in_order=v.order,
-                          out_order=other.order,
-                          out_shape=other.shape)(v)[0]
-
-        Args:
-            other (:class:`~Variable`): variable
-
-        Returns:
-            (:class:`~Variable`) new variable which has same order and shape as :code:`other`
-        """
-        ret, = webdnn.graph.operators.reshape.Reshape(None, in_order=self.order, out_order=other.order, out_shape=other.shape)(self)
-        return ret
 
     def transpose(self, order: Order) -> "Variable":
         """transpose(shape, order)

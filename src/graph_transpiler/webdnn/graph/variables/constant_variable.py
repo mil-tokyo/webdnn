@@ -3,7 +3,6 @@ import numpy as np
 from webdnn.graph.axis import AxisKeyDict
 from webdnn.graph.order import Order
 from webdnn.graph.variable import Variable
-from webdnn.graph.variables.attributes.constant import Constant
 
 
 class ConstantVariable(Variable):
@@ -18,32 +17,26 @@ class ConstantVariable(Variable):
 
     def __init__(self, data: np.ndarray, order: Order):
         super(ConstantVariable, self).__init__(data.shape, order)
-        self.data = data.astype(np.float32)  # type: np.ndarray
-        self.attributes.add(Constant(self))
-
-    def copy(self) -> "ConstantVariable":
-        return ConstantVariable(self.data.copy(), self.order)
+        self.data = data.copy().astype(np.float32)  # type: np.ndarray
 
     def change_order(self, order: Order) -> "ConstantVariable":
-        """change_order_statement(order)
+        """change_order(order)
 
         Change variable order.
 
         When number of dimension will be increased, axes whose size is one are created.
         Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.
 
-        Not only order attribute, the data attribute is also modified.
-
         Args:
             order: new order
         """
         old_order = self.order
-        old_shape_dict = AxisKeyDict(self.shape_dict.keys(), self.shape_dict.values())
+        old_shape_dict = AxisKeyDict(self.shape_dict)
 
         super().change_order(order)
 
         new_order = self.order
-        new_shape_dict = AxisKeyDict(self.shape_dict.keys(), self.shape_dict.values())
+        new_shape_dict = AxisKeyDict(self.shape_dict)
 
         #
         # `old_order_common` and `new_order_common` represent axis orders about axes included in both `old_order` and `new_order`
@@ -71,5 +64,4 @@ class ConstantVariable(Variable):
         data = data.reshape([new_shape_dict[axis] for axis in new_order.axes])
 
         self.data = data
-
         return self

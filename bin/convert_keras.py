@@ -12,10 +12,11 @@ from os import path
 
 import keras
 
-from webdnn import Placeholder, Shape
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.keras import KerasConverter
 from webdnn.graph import traverse
+from webdnn.graph.placeholder import Placeholder
+from webdnn.graph.shape import Shape
 from webdnn.graph.traverse import dump_dot
 from webdnn.util import flags, console
 

@@ -48,17 +48,9 @@ class Convolution2D(Operator):
 [Convolution2D] Parameter "padding" must be integer or tuple of integer""")
         self.parameters["dilation_rate"] = assert_sequence_type(to_tuple(dilation_rate), (int, Placeholder), message=f"""
 [Convolution2D] Parameter "dilation_rate" must be integer or tuple of integer""")
-        self.attributes.add(Tensorwise(self, Axis.N))
+        self.attributes.add(Tensorwise(Axis.N))
 
     def __call__(self, x: Variable, w: Variable) -> Tuple[Variable]:
-        self.append_input("x", x)
-        self.append_input("w", w)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-        w = self.inputs["w"]
-
         assert x.order.check_same_axes(OrderNCHW), f"""
 [Convolution2D] Input variable of Convolution2D must have N, C, H, and W axes:
     (x.order.axes) = {x.order.axes}"""
@@ -88,6 +80,8 @@ class Convolution2D(Operator):
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
 
+        self.append_input("x", x)
+        self.append_input("w", w)
         self.append_output("y", y)
         return y,
 

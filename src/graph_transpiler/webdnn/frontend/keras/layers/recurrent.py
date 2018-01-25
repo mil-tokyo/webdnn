@@ -1,7 +1,4 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.graph.operators.lstm import LSTM
@@ -47,6 +44,7 @@ def _convert_lstm(converter: KerasConverter, k_op: "keras.layers.LSTM"):
     converter.set_variable(k_outputs[0], y)
 
     if k_op.return_state:
+        # noinspection PyTypeChecker
         converter.set_variable(k_outputs[1], None)
         converter.set_variable(k_outputs[2], c)
 

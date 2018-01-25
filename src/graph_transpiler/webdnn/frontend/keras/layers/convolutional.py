@@ -1,11 +1,8 @@
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
-from webdnn.frontend.tensorflow.util import check_data_format, parse_padding, convert_odd_padding_to_concat
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
+from webdnn.frontend.tensorflow.util import check_data_format, parse_padding, convert_odd_padding_to_concat
 from webdnn.graph.axis import Axis, AxisKeyDict
 from webdnn.graph.operators.convolution2d import Convolution2D
 from webdnn.graph.operators.deconvolution2d import Deconvolution2D

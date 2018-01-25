@@ -51,5 +51,6 @@ class ScalarAffine(Elementwise):
         y = self.outputs["y"]  # type: ConstantVariable
         self.remove_all()
 
-        new_y = ConstantVariable(x0.copy().change_order(y.order).data * self.scale + self.bias, y.order)
-        OptimizeRule.replace_variable(graph, y, new_y)
+        y_new = ConstantVariable(x0.data, x0.order).change_order(y.order)
+        y_new.data = y_new.data * self.scale + self.bias
+        OptimizeRule.replace_variable(graph, y, y_new)

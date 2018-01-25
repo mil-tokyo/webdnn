@@ -1,15 +1,10 @@
-from webdnn import Axis
-from webdnn.graph.axis import AxisKeyDict
-from webdnn.graph.operators.tile import Tile
-
-try:
-    import keras
-except ImportError as e:
-    pass
+import keras
 
 from webdnn.frontend.keras.converter import KerasConverter
 from webdnn.frontend.keras.layers.util import do_activation
+from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.operators.tile import Tile
 from webdnn.graph.order import OrderNC, Order
 from webdnn.util import console
 from webdnn.util.misc import mul

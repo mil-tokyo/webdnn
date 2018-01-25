@@ -49,18 +49,13 @@ class ReinterpretAxis(Operator):
     (op.in_order) = {self.in_order}
     (x.order) = {x.order}"""
 
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-
         y = Variable(x.shape, Order([self.out_order.axes[self.in_order.axes_dict[a]] for a in x.order.axes]))
-        self.append_output("y", y)
 
         for axis in x.order.axes:
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(axis))
 
+        self.append_input("x", x)
+        self.append_output("y", y)
         return y,
 
     def fold_constance(self, graph: "graph.Graph"):
@@ -68,8 +63,8 @@ class ReinterpretAxis(Operator):
         y = self.outputs["y"]
         self.remove_all()
 
-        new_y = ConstantVariable(x.data.copy(), y.order)
-        OptimizeRule.replace_variable(graph, y, new_y)
+        y_new = ConstantVariable(x.data, Order([self.out_order.axes[self.in_order.axes.index(a)] for a in x.order.axes]))
+        OptimizeRule.replace_variable(graph, y, y_new.change_order(y.order))
 
     @property
     def in_order(self) -> Order:

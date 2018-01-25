@@ -18,7 +18,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):  # type: Convolution2D
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Convolution2D):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]
@@ -37,8 +37,7 @@ class ReplaceConvolutionByIm2Col(OptimizeRule):
             elif op.WH == x.shape_dict[Axis.H] and op.WW == x.shape_dict[Axis.W] and op.padding == (0, 0):
                 # Global convolution
                 col, = ReinterpretAxis(None, in_order=OrderNHWC, out_order=Order([Axis.N, Axis.KH, Axis.KW, a_filter]))(x)
-                new_y, = Tensordot(None, [[Axis.KH, Axis.KW, a_filter], [Axis.KH, Axis.KW, a_filter]])(col,
-                                                                                                       w)
+                new_y, = Tensordot(None, [[Axis.KH, Axis.KW, a_filter], [Axis.KH, Axis.KW, a_filter]])(col, w)
 
             else:
                 # General convolution

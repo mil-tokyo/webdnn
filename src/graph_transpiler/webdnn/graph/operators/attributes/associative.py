@@ -5,8 +5,9 @@ from webdnn.graph.operator import Operator
 from webdnn.graph.variable import Variable
 
 
-class Associative(Attribute[Operator]):
+class Associative(Attribute):
     """Associative(op, var_keys)
+
     Associative property
 
     The operator with this attribute satisfies follow conditions.
@@ -20,16 +21,17 @@ class Associative(Attribute[Operator]):
                 \left( a \circ b \right) \circ c = a \circ \left( b  \circ c \right)
 
     Attributes:
+        op (:class:`~webdnn.graph.operator.Operator`) : base operator
         var_keys (tuple of str): input names which can be swapped.
     """
 
     def __init__(self, op: Operator, var_keys: Tuple[str, str]):
-        super(Associative, self).__init__(op)
+        self.op = op
         self.var_keys = var_keys
 
     @property
     def vars(self):
-        return tuple(self.base.inputs[key] for key in self.var_keys)
+        return tuple(self.op.inputs[key] for key in self.var_keys)
 
     def reorder(self, other_op: Operator):
         """
@@ -57,13 +59,13 @@ class Associative(Attribute[Operator]):
                        +-{op2}- h -[var2]-+
             x3 -[var2]-+
         """
-        if not isinstance(other_op, self.base.__class__):
+        if not isinstance(other_op, self.op.__class__):
             raise TypeError(f"""
 The parameter "other_op" must be the instance of the same class as base operator:
-    (self.base.__class__) = {self.base.__class__}
+    (self.op.__class__) = {self.op.__class__}
     (other_op.__class__) = {other_op.__class__}""")
 
-        op2 = self.base
+        op2 = self.op
         op1 = other_op
         op1_attr = op1.get_attribute(Associative)[0]
 

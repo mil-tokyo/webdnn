@@ -14,7 +14,7 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import config, flags
-from webdnn.util.json import json
+from webdnn.util import json
 
 
 class GraphExecutionData(IGraphExecutionData[Kernel]):
@@ -49,7 +49,7 @@ class WebGLDescriptorGenerator(DescriptorGenerator[Kernel, GraphExecutionData]):
             memory_layout = allocate(graph)
 
             constants_map = {}
-            for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):  # type: ConstantVariable
+            for constant in traverse.filter_nodes(traverse.listup_nodes(graph), ConstantVariable):
                 constants_map[constant.name] = {
                     "byte_offset": memory_layout[constant].offset * 4,
                     "size": constant.size

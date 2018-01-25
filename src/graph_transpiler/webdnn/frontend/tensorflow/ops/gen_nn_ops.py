@@ -152,8 +152,8 @@ def conv2_d_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
             apron_size[i] -= padding[i, 1]
             padding[i, 1] = 0
 
-    padding = padding.tolist()
-    x, padding = convert_odd_padding_to_concat(x, padding=padding)
+    padding_list = padding.tolist()  # type: List[Tuple[int, int]]
+    x, padding = convert_odd_padding_to_concat(x, padding=padding_list)
     y, = Convolution2D(None, ksize=ksize, stride=stride, padding=padding)(x, w)
     converter.set_variable(tf_op.outputs[0], y)
 
@@ -228,9 +228,9 @@ def conv2_d_backprop_input_handler(converter: TensorFlowConverter, tf_op: "tf.Op
         x, = Concat(None, axis=axis)(x, ConstantVariable(data, x.order))
 
     # crop without padding
-    padding = padding.tolist()  # type: List[List[int]]
-    slice_h = slice(None) if padding[0] == [0, 0] else slice(padding[0][0], -padding[0][1])
-    slice_w = slice(None) if padding[1] == [0, 0] else slice(padding[1][0], -padding[1][1])
+    padding_list = padding.tolist()  # type: List[List[int]]
+    slice_h = slice(None) if padding_list[0] == [0, 0] else slice(padding_list[0][0], -padding_list[0][1])
+    slice_w = slice(None) if padding_list[1] == [0, 0] else slice(padding_list[1][0], -padding_list[1][1])
     if data_format == b"NCHW":
         x = x[:, :, slice_h, slice_w]
 

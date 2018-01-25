@@ -1,10 +1,10 @@
 from nose.tools import raises
 
 from test.util import assert_shape
-from webdnn import Variable, Axis
-from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.order import OrderNC, OrderNHWC
+from webdnn.graph.variable import Variable
 
 
 def template(in_order, in_shape, out_order, out_shape):

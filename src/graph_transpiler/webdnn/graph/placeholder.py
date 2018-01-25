@@ -4,7 +4,7 @@ from typing import Union, Optional, List, Sequence, Set, Tuple, Generic, TypeVar
 
 import numpy as np
 
-from webdnn.util.json import json
+from webdnn.util import json
 from webdnn.util.misc import mul
 
 
@@ -545,6 +545,9 @@ Unification failed: self != other
 
         else:
             return list(self.dependency.operands)
+
+    def __neg__(self) -> Union[int, "Placeholder"]:
+        return -1 * self
 
     def __add__(self, other: Union[int, "Placeholder"]) -> Union[int, "Placeholder"]:
         v1, v2 = self, Placeholder(value=other)

@@ -36,16 +36,13 @@ class LocalResponseNormalization(Operator):
         self.parameters["k"] = k
         self.parameters["alpha"] = alpha
         self.parameters["beta"] = beta
-        self.attributes.add(Tensorwise(self, Axis.N))
-        self.attributes.add(Tensorwise(self, Axis.H))
-        self.attributes.add(Tensorwise(self, Axis.W))
+        self.attributes.add(Tensorwise(Axis.N))
+        self.attributes.add(Tensorwise(Axis.H))
+        self.attributes.add(Tensorwise(Axis.W))
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         y = Variable(x.shape, x.order)
+
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,

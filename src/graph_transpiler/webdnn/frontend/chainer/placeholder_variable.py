@@ -3,7 +3,7 @@ from typing import Sequence, Tuple, Union
 import chainer
 import numpy as np
 
-from webdnn import Placeholder
+from webdnn.graph.placeholder import Placeholder
 
 DEFAULT_SIZE = 128
 

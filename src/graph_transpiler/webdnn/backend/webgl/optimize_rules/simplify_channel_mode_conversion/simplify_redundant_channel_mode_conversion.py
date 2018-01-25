@@ -28,8 +28,7 @@ class SimplifyRedundantChannelModeConversion(OptimizeRule):
         v0[RGBA] -{ConvertRGBAtoR}- v2[Order=v0.order][R] -{Transpose}- v3[Order=v1.order][R]-{ConvertRtoRGBA}- v1[RGBA]
         """
         matches = traverse.search_sub_structure(graph, [Variable, ConvertRtoRGBA, Variable])
-        while len(matches) > 0:
-            v0, r2rgba, v1 = matches.pop()  # type: Variable, ConvertRtoRGBA, Variable
+        for v0, r2rgba, v1 in matches:  # type: Variable, ConvertRtoRGBA, Variable
             if not (ChannelMode.get(v0) == ChannelMode.get(v1) == ChannelModeEnum.RGBA):
                 continue
 
@@ -57,8 +56,7 @@ class SimplifyRedundantChannelModeConversion(OptimizeRule):
         v0[R] -{Transpose}- v1[R]
         """
         matches = traverse.search_sub_structure(graph, [Variable, ConvertRGBAtoR, Variable])
-        while len(matches) > 0:
-            v0, rgba2r, v1 = matches.pop()  # type: Variable, ConvertRGBAtoR, Variable
+        for v0, rgba2r, v1 in matches:  # type: Variable, ConvertRGBAtoR, Variable
             if not (ChannelMode.get(v0) == ChannelMode.get(v1) == ChannelModeEnum.R):
                 continue
 

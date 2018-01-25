@@ -59,7 +59,7 @@ def _simplify_orders(variables: List[Variable]) -> Tuple[Dict[Variable, Order], 
 
         if len(new_axes) == 0 and v.size == 1:
             orders[v] = Order([axis_scalar])
-            shape_dicts[v] = AxisKeyDict([axis_scalar], [1])
+            shape_dicts[v] = AxisKeyDict([(axis_scalar, 1)])
 
     # list up all axes and variables which have the axis
     var_dict = AxisKeyDict[Set[Variable]]()
@@ -126,7 +126,7 @@ def _optimize_loop_structure(variables: List[Variable]):
     """
     orders, shape_dicts = _simplify_orders(variables)
     shapes = {v: [shape_dicts[v][a] for a in orders[v].axes] for v in variables}
-    strides = {v: [mul(shapes[v][i + 1:]) for i in range(v.ndim)] for v in variables}
+    strides = {v: [mul(shapes[v][i + 1:]) for i in range(orders[v].ndim)] for v in variables}
     stride_dicts = {v: AxisKeyDict(orders[v].axes, strides[v]) for v in variables}
 
     # re-ordering
@@ -160,15 +160,15 @@ def generate_elementwise_command_buffer(ops: List[Elementwise],
                                         dummy2real: Dict[Variable, Variable] = None):
     _reset_unique_counter()
 
-    xs = set()
-    ys = set()
+    xs = set()  # type: Set[Variable]
+    ys = set()  # type: Set[Variable]
     for op in ops:
         xs.update(op.inputs.values())
         ys.update(op.outputs.values())
 
     hidden_counter = xs.intersection(ys)
-    xs = list(xs.difference(hidden_counter))
-    ys = list(ys.difference(hidden_counter))
+    xs = list(xs.difference(hidden_counter))  # type: List[Variable]
+    ys = list(ys.difference(hidden_counter))  # type: List[Variable]
 
     assert len(ys) == 1, f"multi output: ys={ys}"
     y = ys[0]

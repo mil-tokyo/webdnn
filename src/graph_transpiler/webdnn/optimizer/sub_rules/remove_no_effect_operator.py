@@ -66,7 +66,7 @@ class RemoveNoEffectOperatorBase(OptimizeRule):
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
 
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), self.pattern):  # type: Operator
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), self.pattern):
             flag_changed |= self.optimize_operator(graph, op)
 
         return graph, flag_changed

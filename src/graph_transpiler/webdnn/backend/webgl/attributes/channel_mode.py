@@ -10,7 +10,7 @@ class ChannelModeEnum(Enum):
     R = auto()
 
 
-class ChannelMode(Attribute[Variable]):
+class ChannelMode(Attribute):
     """
     This attribute represents the channel mode of WebGL texture buffers.
 
@@ -21,13 +21,12 @@ class ChannelMode(Attribute[Variable]):
         if base.has_attribute(ChannelMode):
             raise ValueError(f"\'ChannelMode\' attribute has been already registered to {base}.")
 
-        super(ChannelMode, self).__init__(base)
-        self.mode = mode  # type: ChannelModeEnum
+        self.base = base
+        self.mode = mode
 
     def __str__(self):
         return f"ChannelMode[{self.mode.name}]"
 
-    # noinspection PyMethodOverriding
     @staticmethod
     def set(base: Variable, mode: ChannelModeEnum):
         if base.has_attribute(ChannelMode):

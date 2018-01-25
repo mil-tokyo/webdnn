@@ -2,7 +2,7 @@ from typing import Dict, Set, Type, Optional, List, TypeVar
 
 from webdnn.graph import attribute
 
-_node_serial_counter_dict: Dict[Type["Node"], int] = {}
+_node_serial_counter_dict = {}  # type: Dict[Type[Node], int]
 
 
 def _generate_name(node: "Node"):
@@ -27,10 +27,10 @@ class Node:
         if name is None:
             name = _generate_name(self)
         self.parameters = {}  # type: Dict[str, any]
-        self.attributes = set()  # type: Set["attribute.Attribute"]
+        self.attributes = set()  # type: Set[attribute.Attribute]
         self.name = name
-        self._prevs = []  # type: List["Node"]
-        self._nexts = []  # type: List["Node"]
+        self._prevs = []  # type: List[Node]
+        self._nexts = []  # type: List[Node]
 
     @property
     def prevs(self) -> Set["Node"]:

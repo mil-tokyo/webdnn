@@ -18,7 +18,7 @@ class ReplaceDeconvolutionByCol2Im(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), Deconvolution2D):  # type: Deconvolution2D
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Deconvolution2D):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]

@@ -33,11 +33,6 @@ class Tile(Operator):
         self.parameters["multiplier"] = multiplier
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         assert x.ndim == len(self.multiplier), f"""
 [Tile] Number of multiplier must be same as # of dimension of x:
     (x.ndim)={x.ndim}
@@ -45,6 +40,8 @@ class Tile(Operator):
 
         y_shape = [self.multiplier[a] * x.shape_dict[a] for a in x.order.axes]
         y = Variable(y_shape, x.order)
+
+        self.append_input("x", x)
         self.append_output("y", y)
         return y,
 

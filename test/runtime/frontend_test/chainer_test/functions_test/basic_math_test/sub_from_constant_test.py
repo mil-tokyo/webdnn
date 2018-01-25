@@ -2,7 +2,7 @@ import chainer
 import numpy as np
 
 from test.util import generate_kernel_test_case
-from webdnn import Placeholder
+from webdnn.graph.placeholder import Placeholder
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.frontend.chainer.placeholder_variable import PlaceholderVariable
 

@@ -162,7 +162,7 @@ class BufferInjector(Injector):
                         console.warning(f"[BufferInjector] Requires only 2 arguments to inject a list of allocations: {tag.original}")
 
                     index = tag.args[1]
-                    return f"({self.meta_name}[{self.offset_map[key]}+{len(value)}+ ({index})] ? {self.static_name} : {self.dynamic_name})" + \
+                    return f"({self.meta_name}[{self.offset_map[key]}+{len(value)}+({index})]?{self.static_name}:{self.dynamic_name})" + \
                            f" + {self.meta_name}[{self.offset_map[key]} + ({index})]"
 
             if len(tag.args) > 2:

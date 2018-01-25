@@ -1,6 +1,8 @@
+from typing import List
+
 from webdnn.backend.webgpu.optimize_rules.concat_lstm_input_and_hidden import ConcatLSTMInputAndHidden
 from webdnn.backend.webgpu.optimize_rules.insert_transpose import InsertTranspose
-from webdnn.graph.optimize_rule import OptimizeRuleGroup
+from webdnn.graph.optimize_rule import OptimizeRuleGroup, OptimizeRule
 from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.optimizer.sub_rules.dump_graph import DumpGraph
 from webdnn.optimizer.sub_rules.elementwise_kernel_fusion import ElementwiseKernelFusion
@@ -30,7 +32,7 @@ class WebGPUOptimizeRule(OptimizeRuleGroup):
                 UpdateInplaceAttribute()
             ]),
             ElementwiseKernelFusion()
-        ]
+        ]  # type: List[OptimizeRule]
 
         if flags.DEBUG:
             sub_rules.append(DumpGraph("cg{count}.dot"))

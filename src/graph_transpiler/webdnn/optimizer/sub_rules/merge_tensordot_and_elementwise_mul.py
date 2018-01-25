@@ -46,21 +46,21 @@ class MergeTensordotAndElementwiseMul(OptimizeRule):
                 continue
 
             if isinstance(tensordot.inputs["A"], ConstantVariable):
-                w1 = tensordot.inputs["A"]
+                w1 = tensordot.inputs["A"]  # type: ConstantVariable
                 reduced_axes = tensordot.axes[0]
 
             elif isinstance(tensordot.inputs["B"], ConstantVariable):
-                w1 = tensordot.inputs["B"]
+                w1 = tensordot.inputs["B"]  # type: ConstantVariable
                 reduced_axes = tensordot.axes[1]
 
             else:
                 continue
 
             if isinstance(elementwise_mul.inputs["x0"], ConstantVariable) and elementwise_mul.inputs["x1"] == h:
-                w2 = elementwise_mul.inputs["x0"]
+                w2 = elementwise_mul.inputs["x0"]  # type: ConstantVariable
 
             elif isinstance(elementwise_mul.inputs["x1"], ConstantVariable) and elementwise_mul.inputs["x0"] == h:
-                w2 = elementwise_mul.inputs["x1"]
+                w2 = elementwise_mul.inputs["x1"]  # type: ConstantVariable
 
             else:
                 continue
@@ -73,7 +73,7 @@ class MergeTensordotAndElementwiseMul(OptimizeRule):
 
             flag_changed = True
             elementwise_mul.remove_all()
-            OptimizeRule.replace_variable(graph, w1, w1.copy() * w2, with_assert=False)
+            OptimizeRule.replace_variable(graph, w1, ConstantVariable(w1.data, w1.order) * w2, with_assert=False)
             OptimizeRule.replace_variable(graph, h, y, with_assert=False)
 
         return graph, flag_changed

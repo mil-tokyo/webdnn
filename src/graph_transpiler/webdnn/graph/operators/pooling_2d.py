@@ -43,37 +43,23 @@ class Pooling2D(Operator):
         self.parameters["cover_all"] = cover_all
 
     def __call__(self, x: Variable):
-        self.append_input("x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
         x_shape_dict = x.shape_dict
         N = x_shape_dict[Axis.N]
         H2 = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH + (self.SH - 1 if self.cover_all else 0)) // self.SH + 1
         W2 = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW + (self.SW - 1 if self.cover_all else 0)) // self.SW + 1
         C2 = x_shape_dict[Axis.C]
 
-        # odd_padding_height = (x_shape_dict[Axis.H] + 2 * self.PH - self.KH) % self.SH != 0
-        # odd_padding_width = (x_shape_dict[Axis.W] + 2 * self.PW - self.KW) % self.SW != 0
-        # if odd_padding_height or odd_padding_width:
-        #     # https://github.com/fchollet/keras/issues/5090#issuecomment-279495401
-        #     console.warning(
-        #         "[Pooling2D] Performing pooling with parameters which causes edge is ignored. " +
-        #         "Which edge (left / right) is ignored is different on frameworks," +
-        #         " so slightly different result will be generated.")
-
         y = Variable([N, H2, W2, C2], OrderNHWC)
         y.change_order(x.order)  # output same order as input to preserve following reshape semantics
-
-        self.append_output("y", y)
 
         for axis in x.order.axes:
             if axis == Axis.H or axis == Axis.W:
                 continue
 
-            self.attributes.add(Tensorwise(self, axis))
+            self.attributes.add(Tensorwise(axis))
 
+        self.append_input("x", x)
+        self.append_output("y", y)
         return y,
 
     @property

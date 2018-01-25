@@ -9850,7 +9850,7 @@ function getImageArrayFromDrawable(drawable, options = {}) {
  *
  * - If `image` is an instance of `string`, it will be regarded as image url, and this method fetches that url.
  *
- * - If `image` is an instance of `HTMLInputElement`, it will be regarded as file inpu,
+ * - If `image` is an instance of `HTMLInputElement`, it will be regarded as file input,
  *   and this method loads the selected image file.
  *
  * - Otherwise, `image` will be regarded as drawable object.

@@ -2,7 +2,6 @@ from typing import Tuple
 
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
-from webdnn.graph.operator import Operator
 from webdnn.graph.operators.attributes.associative import Associative
 from webdnn.graph.operators.attributes.commutative import Commutative
 from webdnn.graph.optimize_rule import OptimizeRule, OptimizeRuleGroup
@@ -29,7 +28,7 @@ class SimplifyAssociativeOperatorLeftHand(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op1 in traverse.filter_nodes(traverse.listup_operators(graph), Associative):  # type: Operator
+        for op1 in traverse.filter_nodes(traverse.listup_operators(graph), Associative):
             associative1 = op1.get_attribute(Associative)[0]
             var1, var2 = associative1.vars
             op2 = var1.output_from
@@ -171,7 +170,7 @@ class SimplifyAssociativeOperatorRightHand(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op1 in traverse.filter_nodes(traverse.listup_operators(graph), Associative):  # type: Operator
+        for op1 in traverse.filter_nodes(traverse.listup_operators(graph), Associative):
             associative1 = op1.get_attribute(Associative)[0]
             var1, var2 = associative1.vars
             op2 = var2.output_from

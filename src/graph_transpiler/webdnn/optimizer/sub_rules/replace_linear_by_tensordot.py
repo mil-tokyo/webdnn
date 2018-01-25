@@ -17,7 +17,7 @@ class ReplaceLinearByTensordot(OptimizeRule):
 
     def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
         flag_changed = False
-        for op in traverse.filter_nodes(traverse.listup_operators(graph), Linear):  # type: Linear
+        for op in traverse.filter_nodes(traverse.listup_operators(graph), Linear):
             x = op.inputs["x"]
             w = op.inputs["w"]
             y = op.outputs["y"]

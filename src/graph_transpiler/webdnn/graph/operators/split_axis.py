@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy as np
 
@@ -36,15 +36,9 @@ class SplitAxis(Operator):
         self.parameters["axis"] = axis
 
     def __call__(self, x: Variable):
-        self.append_input(f"x", x)
-        return self.exec()
-
-    def exec(self):
-        x = self.inputs["x"]
-
         axis = self.parameters["axis"]
         sections = [0] + self.parameters["sections"] + [x.shape_dict[axis]]
-        outputs = []
+        ys = []  # type: List[Tuple[str, Variable]]
 
         for i, i_from in enumerate(sections[:-1]):
             i_to = sections[i + 1]
@@ -55,16 +49,19 @@ class SplitAxis(Operator):
             out_shape[x.order.axes_dict[axis]] = i_to - i_from
             y = Variable(out_shape, x.order)
 
-            outputs.append(y)
-            self.append_output(f"y{i}", y)
+            ys.append((f"y{i}", y))
 
         for a in x.order.axes:
             if a == axis:
                 continue
 
-            self.attributes.add(Tensorwise(self, a))
+            self.attributes.add(Tensorwise(a))
 
-        return outputs
+        self.append_input(f"x", x)
+        for key, y in ys:
+            self.append_output(key, y)
+
+        return tuple(y for _, y in ys)
 
     @property
     def axis(self) -> Axis:
