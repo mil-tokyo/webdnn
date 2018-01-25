@@ -12,9 +12,10 @@ import chainer.computational_graph
 import chainer.links.caffe
 import numpy as np
 
-from webdnn import Graph, Shape
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.chainer import ChainerConverter
+from webdnn.graph.graph import Graph
+from webdnn.graph.shape import Shape
 from webdnn.util import console
 
 
