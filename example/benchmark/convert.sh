@@ -3,7 +3,7 @@
 set -e
 
 echo "Generate Keras model"
-pip3 install -r ./requirements.txt
+pip3 install -r ./requirements_kerasjs.txt
 python3 generate_keras_models.py
 
 echo ""
@@ -20,6 +20,7 @@ cd -
 
 echo ""
 echo "Encode Keras model into WebDNN model:"
+pip3 install -r ./requirements_webdnn.txt
 OPTIMIZE=0 python3 ../../bin/convert_keras.py output/kerasjs/resnet50/model.h5 \
     --input_shape '(1,224,224,3)' \
     --out output/webdnn/resnet50/non_optimized
