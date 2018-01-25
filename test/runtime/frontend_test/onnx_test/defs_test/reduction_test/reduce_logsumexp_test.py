@@ -11,7 +11,7 @@ def template(x_shape, axes, keepdims=None, description: str = ""):
     max_vx = np.max(vx, axis=tuple(axes), keepdims=True)
     vy = np.log(np.exp(vx - max_vx).sum(axis=tuple(axes), keepdims=True)) + max_vx
 
-    if keepdims == False:
+    if not keepdims:
         vy = vy.squeeze(tuple(axes))
 
     x = make_tensor_value_info("x", vx.shape)
