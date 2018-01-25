@@ -199,15 +199,10 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">padding</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_tuple</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
         <span class="n">x_shape_dict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape_dict</span>
 
         <span class="n">N</span> <span class="o">=</span> <span class="n">x_shape_dict</span><span class="p">[</span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">]</span>
@@ -218,6 +213,7 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">H2</span><span class="p">,</span> <span class="n">W2</span><span class="p">,</span> <span class="n">C2</span><span class="p">],</span> <span class="n">OrderNHWC</span><span class="p">)</span>
         <span class="n">y</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>  <span class="c1"># output same order as input to preserve following reshape semantics</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span></div>
 </pre></div>

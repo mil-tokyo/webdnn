@@ -166,7 +166,10 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.operators.max</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">webdnn.graph.operators.reduce</span> <span class="k">import</span> <span class="n">Reduce</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.reduce</span> <span class="k">import</span> <span class="n">Reduce</span>
 
 
 <div class="viewcode-block" id="Max"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.max.Max">[docs]</a><span class="k">class</span> <span class="nc">Max</span><span class="p">(</span><span class="n">Reduce</span><span class="p">):</span>
@@ -175,8 +178,8 @@
 <span class="sd">    return elements of maximum value along to specified axis</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name (str): Operator name.</span>
-<span class="sd">        axis (:obj:`~webdnn.Axis`) axis which will be reduced.</span>
+<span class="sd">        name (str) : Operator name.</span>
+<span class="sd">        axis (:obj:`~webdnn.graph.axis.Axis`) : axis which will be reduced.</span>
 
 <span class="sd">    Signature</span>
 <span class="sd">        .. code::</span>
@@ -186,7 +189,9 @@
 <span class="sd">        - **x** - Input variables.</span>
 <span class="sd">        - **y** - Output variable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

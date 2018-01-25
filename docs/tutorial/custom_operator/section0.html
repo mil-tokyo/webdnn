@@ -212,9 +212,9 @@ Descriptor Generator (<code class="xref py py-class docutils literal"><span clas
 <div class="section" id="webdnn-ir">
 <h2>WebDNN IR<a class="headerlink" href="#webdnn-ir" title="Permalink to this headline">¶</a></h2>
 <img alt="../../_images/ir.png" class="align-left" src="../../_images/ir.png" />
-<p>WebDNN IR consists two type of nodes: <a class="reference internal" href="../../api_reference/graph_transpiler/operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> and <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>. Operator represents each operation in DNN
-model such as convolution, activation, and so on. <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> represents each operator&#8217;s inputs and outputs.</p>
-<p>Each <a class="reference internal" href="../../api_reference/graph_transpiler/variable.html#webdnn.Variable" title="webdnn.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a> is referenced from operators with a name. For example, in left figure, two input variables are referenced as
+<p>WebDNN IR consists two type of nodes: <code class="xref py py-class docutils literal"><span class="pre">Operator</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>. Operator represents each operation in DNN
+model such as convolution, activation, and so on. <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code> represents each operator&#8217;s inputs and outputs.</p>
+<p>Each <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code> is referenced from operators with a name. For example, in left figure, two input variables are referenced as
 <strong>x</strong> and <strong>w</strong> respectively, and output variable is referenced as <strong>y</strong>.</p>
 <p>All WebDNN operators are stateless, and operator doesn&#8217;t have any reference to variables without input and output connections. All data
 required to calculate outputs is given as input variable.</p>

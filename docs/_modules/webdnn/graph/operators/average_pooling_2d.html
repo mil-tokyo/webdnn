@@ -166,7 +166,10 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.operators.average_pooling_2d</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">webdnn.graph.operators.pooling_2d</span> <span class="k">import</span> <span class="n">Pooling2D</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.pooling_2d</span> <span class="k">import</span> <span class="n">Pooling2D</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.operators.util</span> <span class="k">import</span> <span class="n">IntOrTuple</span>
 
 
 <div class="viewcode-block" id="AveragePooling2D"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.average_pooling_2d.AveragePooling2D">[docs]</a><span class="k">class</span> <span class="nc">AveragePooling2D</span><span class="p">(</span><span class="n">Pooling2D</span><span class="p">):</span>
@@ -188,7 +191,10 @@
 
 <span class="sd">        - **x** - Input variable.</span>
 <span class="sd">        - **y** - Output value. Its order is same as :code:`x`.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ksize</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">cover_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AveragePooling2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ksize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">cover_all</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

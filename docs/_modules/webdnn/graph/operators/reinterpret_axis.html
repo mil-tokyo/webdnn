@@ -217,18 +217,13 @@
 <span class="s2">    (op.in_order) = </span><span class="si">{self.in_order}</span><span class="s2"></span>
 <span class="s2">    (x.order) = </span><span class="si">{x.order}</span><span class="s2">&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-
         <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Order</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">out_order</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_order</span><span class="o">.</span><span class="n">axes_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Tensorwise</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span>
 
     <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="s2">&quot;graph.Graph&quot;</span><span class="p">):</span>
@@ -236,8 +231,8 @@
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
 
-        <span class="n">new_y</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
-        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">new_y</span><span class="p">)</span>
+        <span class="n">y_new</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Order</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">out_order</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_order</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]))</span>
+        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_new</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">in_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Order</span><span class="p">:</span>

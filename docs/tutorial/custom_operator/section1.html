@@ -219,7 +219,7 @@
 </div>
 <div class="section" id="define-custom-ir-operator">
 <h2>1.1. Define Custom IR Operator<a class="headerlink" href="#define-custom-ir-operator" title="Permalink to this headline">¶</a></h2>
-<p>First, we define new <a class="reference internal" href="../../api_reference/graph_transpiler/operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> class which represents <code class="code docutils literal"><span class="pre">SquareLayer</span></code> in WebDNN IR. In this case,
+<p>First, we define new <code class="xref py py-class docutils literal"><span class="pre">Operator</span></code> class which represents <code class="code docutils literal"><span class="pre">SquareLayer</span></code> in WebDNN IR. In this case,
 <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.elementwise.Elementwise" title="webdnn.graph.operators.elementwise.Elementwise"><code class="xref py py-class docutils literal"><span class="pre">Elementwise</span></code></a> operator base class is already defined. Therefore you can define
 <code class="code docutils literal"><span class="pre">SquareOperator</span></code> simply as follows:</p>
 <div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.graph.operators.elementwise</span> <span class="k">import</span> <span class="n">Elementwise</span>

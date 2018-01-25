@@ -243,33 +243,33 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">graph</span>  <span class="c1"># type: IGraphProto</span>
+        <span class="n">onnx_graph</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">graph</span>  <span class="c1"># type: IGraphProto</span>
 
         <span class="c1"># Convert constant parameters</span>
-        <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">initializer</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">onnx_graph</span><span class="o">.</span><span class="n">initializer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">_convert_tensor_proto</span><span class="p">(</span><span class="n">proto</span><span class="p">))</span>
 
         <span class="c1"># Convert input variables</span>
         <span class="c1"># In ONNX, both input variable and parameters are included in `graph.input`.</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">proto</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">graph</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">proto</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">onnx_graph</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">_convert_value_info_proto</span><span class="p">(</span><span class="n">proto</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
             <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
         <span class="c1"># Convert operators</span>
-        <span class="k">for</span> <span class="n">onnx_op</span> <span class="ow">in</span> <span class="n">_listup_functions</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">onnx_op</span> <span class="ow">in</span> <span class="n">_listup_functions</span><span class="p">(</span><span class="n">onnx_graph</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_convert_operator</span><span class="p">(</span><span class="n">onnx_op</span><span class="p">)</span>
 
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">output</span><span class="p">])</span>
+        <span class="n">webdnn_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">onnx_graph</span><span class="o">.</span><span class="n">output</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
-            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">webdnn_graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">())</span>
 
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
-            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">webdnn_graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">())</span>
 
-        <span class="k">return</span> <span class="n">graph</span></div>
+        <span class="k">return</span> <span class="n">webdnn_graph</span></div>
 
     <span class="k">def</span> <span class="nf">_convert_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">:</span> <span class="n">INodeProto</span><span class="p">):</span>
         <span class="n">console</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;-----------------------------------------------------------&quot;</span><span class="p">)</span>
