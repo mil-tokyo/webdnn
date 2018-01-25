@@ -192,11 +192,7 @@ class KerasJSBenchmark extends Benchmark<KerasJSConfiguration> {
 
         let prefix = `./output/kerasjs/${this.configuration.modelName}/model`;
         this.model = new KerasJS.Model({
-            filepaths: {
-                model: `${prefix}.json`,
-                weights: `${prefix}_weights.buf`,
-                metadata: `${prefix}_metadata.json`
-            },
+            filepath: `${prefix}.bin`,
             gpu: this.configuration.gpu
         });
 
