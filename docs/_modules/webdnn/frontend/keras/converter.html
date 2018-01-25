@@ -192,7 +192,7 @@
     <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
     <span class="n">VERSION_MAJOR</span><span class="p">,</span> <span class="n">VERSION_MINOR</span><span class="p">,</span> <span class="n">VERSION_PATCH</span> <span class="o">=</span> <span class="n">semver</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">VERSION_MAJOR</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">VERSION_MAJOR</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="p">((</span><span class="n">VERSION_MINOR</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">VERSION_MINOR</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">or</span> <span class="n">VERSION_MINOR</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Keras v2.*.*. Currently, keras </span><span class="si">{keras.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
 
     <span class="n">FLAG_KERAS_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
@@ -315,10 +315,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_tensor_cache</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
-            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Input</span><span class="p">())</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
-            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Output</span><span class="p">())</span>
 
         <span class="k">return</span> <span class="n">graph</span>
 

@@ -214,29 +214,6 @@
 <span class="sd">            y (:class:`~webdnn.graph.variable.Variable`): Output (OrderNC)</span>
 <span class="sd">            final_c (:class:`~webdnn.graph.variable.Variable`): Last cell state (OrderNC)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w_input&quot;</span><span class="p">,</span> <span class="n">w_input</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w_hidden&quot;</span><span class="p">,</span> <span class="n">w_hidden</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">initial_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;initial_c&quot;</span><span class="p">,</span> <span class="n">initial_c</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">initial_h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;initial_h&quot;</span><span class="p">,</span> <span class="n">initial_h</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span></div>
-
-    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-        <span class="n">w_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;w_input&quot;</span><span class="p">]</span>
-        <span class="n">w_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;w_hidden&quot;</span><span class="p">]</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;b&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">initial_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;initial_c&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;initial_c&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">initial_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;initial_h&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;initial_h&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="k">else</span> <span class="kc">None</span>
-
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;use_bias&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;use_initial_c&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">initial_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;use_initial_h&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">initial_h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
@@ -281,10 +258,22 @@
 
         <span class="n">final_c</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">],</span> <span class="n">OrderNC</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w_input&quot;</span><span class="p">,</span> <span class="n">w_input</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;w_hidden&quot;</span><span class="p">,</span> <span class="n">w_hidden</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">initial_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;initial_c&quot;</span><span class="p">,</span> <span class="n">initial_c</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">initial_h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;initial_h&quot;</span><span class="p">,</span> <span class="n">initial_h</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;final_c&quot;</span><span class="p">,</span> <span class="n">final_c</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">final_c</span></div>
+        <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">final_c</span></div></div>
 </pre></div>
 
            </div>

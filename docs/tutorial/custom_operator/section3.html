@@ -229,10 +229,10 @@
 </div>
 <div class="section" id="axis-and-order">
 <h2>Axis and Order<a class="headerlink" href="#axis-and-order" title="Permalink to this headline">¶</a></h2>
-<p>To define variables and operations&#8217; semantics, <a class="reference internal" href="../../api_reference/graph_transpiler/axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> and <a class="reference internal" href="../../api_reference/graph_transpiler/order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a> object is defined in WebDNN.</p>
+<p>To define variables and operations&#8217; semantics, <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Order</span></code> object is defined in WebDNN.</p>
 <div class="section" id="axis">
 <h3>Axis<a class="headerlink" href="#axis" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="../../api_reference/graph_transpiler/axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> object represents each dimension of tensors. Typical axes are pre-defined like follows:</p>
+<p><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> object represents each dimension of tensors. Typical axes are pre-defined like follows:</p>
 <div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span>  <span class="c1"># batch size</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">C</span>  <span class="c1"># number of features</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">H</span>  <span class="c1"># height of image</span>
@@ -242,12 +242,12 @@
 </div>
 <p>For example, a tensor of shape <code class="code docutils literal"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is 2D tensor. This tensor&#8217;s first dimension is represented as
 <code class="xref py py-obj docutils literal"><span class="pre">Axis.N</span></code>, and second dimension is represented as <code class="xref py py-obj docutils literal"><span class="pre">Axis.C</span></code> in WebDNN.</p>
-<p>Also, <a class="reference internal" href="../../api_reference/graph_transpiler/axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a> object is used to define operation. For example <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a>
+<p>Also, <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> object is used to define operation. For example <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a>
 operator is compute normalized exponential values. Generally, that values are normalized along to <code class="xref py py-obj docutils literal"><span class="pre">Axis.C</span></code>.</p>
 </div>
 <div class="section" id="order">
 <h3>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="../../api_reference/graph_transpiler/order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a> object represents the data order of variables. For example, the data order of a tensor of shape
+<p><code class="xref py py-class docutils literal"><span class="pre">Order</span></code> object represents the data order of variables. For example, the data order of a tensor of shape
 <code class="code docutils literal"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code>.</p>
 <p>WebDNN operators are designed to receive various data order. For example, generally
 <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a> operator is used to normalize <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code> variable

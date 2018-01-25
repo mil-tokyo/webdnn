@@ -166,7 +166,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.operators.reshape</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.operator</span> <span class="k">import</span> <span class="n">Operator</span>
@@ -227,39 +227,34 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">InplaceOperator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_order</span><span class="o">.</span><span class="n">check_same_axes</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Reshape] Input variable order is not compatible with &quot;in_order&quot;</span>
+<span class="s2">    (input variable) = </span><span class="si">{x}</span><span class="s2"></span>
+<span class="s2">    (input variable order) = </span><span class="si">{x.order}</span><span class="s2"></span>
+<span class="s2">    (parameter &quot;in_order&quot;) = </span><span class="si">{self.in_order}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-
-        <span class="n">in_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">in_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;in_order&quot;</span><span class="p">]</span>
-        <span class="n">out_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_shape&quot;</span><span class="p">]</span>
-        <span class="n">out_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">mul</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">mul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">[Reshape] Variable size must not be changed:</span>
-<span class="s2">    (input shape)=</span><span class="si">{in_shape}</span><span class="s2"></span>
-<span class="s2">    (input size)={mul(in_shape)}</span>
-<span class="s2">    (output shape)=</span><span class="si">{out_shape}</span><span class="s2"></span>
-<span class="s2">    (output size)={mul(out_shape)}&quot;&quot;&quot;</span>
+<span class="s2">    (input shape)=</span><span class="si">{x.shape}</span><span class="s2"></span>
+<span class="s2">    (input size)=</span><span class="si">{x.size}</span><span class="s2"></span>
+<span class="s2">    (output shape)=</span><span class="si">{self.out_shape}</span><span class="s2"></span>
+<span class="s2">    (output size)={mul(self.out_shape)}&quot;&quot;&quot;</span>
 
-        <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">out_order</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_order</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span>
 
     <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">):</span>
-        <span class="n">in_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;in_order&quot;</span><span class="p">]</span>
-        <span class="n">out_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_shape&quot;</span><span class="p">]</span>
-        <span class="n">out_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span>
-
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>  <span class="c1"># type: ConstantVariable</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
 
-        <span class="n">new_y</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">in_order</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">),</span> <span class="n">out_order</span><span class="p">)</span>
-        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">new_y</span><span class="p">)</span>
+        <span class="n">y_new</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_order</span><span class="p">)</span>
+        <span class="n">y_new</span> <span class="o">=</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="n">y_new</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_shape</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_order</span><span class="p">)</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">OptimizeRule</span><span class="o">.</span><span class="n">replace_variable</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_new</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">in_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Order</span><span class="p">:</span>
@@ -267,7 +262,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">out_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Order</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_order&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">out_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;out_shape&quot;</span><span class="p">])</span></div>
 </pre></div>
 
            </div>

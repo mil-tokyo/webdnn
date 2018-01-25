@@ -256,7 +256,7 @@
   <div class="section" id="operators">
 <h1>operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h1>
 <p>Module <code class="code docutils literal"><span class="pre">webdnn.graph.operators</span></code> contains WebDNN Operator IR classes.
-All classes inherit <a class="reference internal" href="operator.html#webdnn.Operator" title="webdnn.Operator"><code class="xref py py-class docutils literal"><span class="pre">Operator</span></code></a> base class.</p>
+All classes inherit <code class="xref py py-class docutils literal"><span class="pre">Operator</span></code> base class.</p>
 <p>All operator class instances are callable. When it is called, input and output variables are registered with corresponding names.
 In this document, the registered name of each operator is described in <strong>Signature</strong> section.</p>
 <p>For almost of all users, it is not need to understand this section. If you want to implement your custom converter/generator handler,
@@ -510,7 +510,7 @@ this section may be helpful.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; target axis</li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; target axis</li>
 </ul>
 </td>
 </tr>
@@ -546,7 +546,7 @@ this section may be helpful.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; target axis</li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; target axis</li>
 </ul>
 </td>
 </tr>
@@ -584,7 +584,7 @@ Each elementwise operator supports implicit broadcast feature. Therefore you don
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
 <li><strong>out_shape</strong> (<em>list of int</em>) &#8211; target shape</li>
-<li><strong>out_order</strong> (<a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-obj docutils literal"><span class="pre">Order</span></code></a>) &#8211; target order</li>
+<li><strong>out_order</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Order</span></code>) &#8211; target order</li>
 </ul>
 </td>
 </tr>
@@ -1414,7 +1414,7 @@ final_c (<code class="xref py py-class docutils literal"><span class="pre">Varia
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; </li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; axis which will be reduced.</li>
 </ul>
 </td>
 </tr>
@@ -1514,7 +1514,7 @@ final_c (<code class="xref py py-class docutils literal"><span class="pre">Varia
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; </li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; axis which will be reduced.</li>
 </ul>
 </td>
 </tr>
@@ -1547,7 +1547,7 @@ without reduction axis, both input and output variables have same size.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; </li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1581,8 +1581,8 @@ if <code class="xref py py-obj docutils literal"><span class="pre">OrderCN</span
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>in_order</strong> (<a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a>) &#8211; Input order</li>
-<li><strong>out_order</strong> (<a class="reference internal" href="order.html#webdnn.Order" title="webdnn.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a>) &#8211; Output order</li>
+<li><strong>in_order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; Input order</li>
+<li><strong>out_order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; Output order</li>
 </ul>
 </td>
 </tr>
@@ -1990,7 +1990,7 @@ If in_order and out_order match the actual input / output variable order, kernel
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Operator name.</li>
-<li><strong>axis</strong> (<a class="reference internal" href="axis.html#webdnn.Axis" title="webdnn.Axis"><code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code></a>) &#8211; </li>
+<li><strong>axis</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Axis</span></code>) &#8211; </li>
 </ul>
 </td>
 </tr>

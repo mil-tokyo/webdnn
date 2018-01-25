@@ -168,7 +168,6 @@
   <h1>Source code for webdnn.backend.interface.graph_descriptor</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.graph.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 <span class="kn">from</span> <span class="nn">webdnn.backend.code_generator.allocator</span> <span class="k">import</span> <span class="n">MemoryLayout</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.placeholder</span> <span class="k">import</span> <span class="n">Placeholder</span>
 
@@ -186,6 +185,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Container class for graph descriptor and related datum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="IGraphExecutionData.save"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/backend/index.html#webdnn.backend.interface.graph_descriptor.IGraphExecutionData.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;save(dirname)</span>
 
