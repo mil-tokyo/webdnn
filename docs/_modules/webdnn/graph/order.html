@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.order &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.order &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -169,10 +169,10 @@
 <span></span><span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">AxisKeyDict</span><span class="p">,</span> <span class="n">UnificationFailedError</span>
+<span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">AxisKeyDict</span>
 
 
-<div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">:</span>
+<div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.graph.order.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Order(axes)</span>
 
 <span class="sd">    Descriptor class for representing semantics of data order.</span>
@@ -224,7 +224,7 @@
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;[{&#39;, &#39;.join([axis.name for axis in self.axes])}]&quot;</span>
 
-<div class="viewcode-block" id="Order.check_same_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.Order.check_same_axes">[docs]</a>    <span class="k">def</span> <span class="nf">check_same_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="Order.check_same_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.graph.order.Order.check_same_axes">[docs]</a>    <span class="k">def</span> <span class="nf">check_same_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        check_same_axes(order)</span>
 
@@ -235,7 +235,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Order.get_common_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.Order.get_common_axes">[docs]</a>    <span class="k">def</span> <span class="nf">get_common_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
+<div class="viewcode-block" id="Order.get_common_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.graph.order.Order.get_common_axes">[docs]</a>    <span class="k">def</span> <span class="nf">get_common_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get_common_axes(order)</span>
 
@@ -246,7 +246,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Order.get_all_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.Order.get_all_axes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
+<div class="viewcode-block" id="Order.get_all_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/order.html#webdnn.graph.order.Order.get_all_axes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get_all_axes(order)</span>
 
@@ -259,7 +259,7 @@
 
     <span class="k">def</span> <span class="nf">unify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Order&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">UnificationFailedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">Unification failed: Number of dimension mismatch</span>
 <span class="s2">    (self.ndim) = </span><span class="si">{self.ndim}</span><span class="s2"></span>
 <span class="s2">    (other.ndim) = </span><span class="si">{other.ndim}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
@@ -268,8 +268,8 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">axis1</span><span class="o">.</span><span class="n">unify</span><span class="p">(</span><span class="n">axis2</span><span class="p">)</span>
 
-            <span class="k">except</span> <span class="n">UnificationFailedError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">UnificationFailedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">Unification failed: self.axes[</span><span class="si">{i}</span><span class="s2">] != other.axes[</span><span class="si">{i}</span><span class="s2">]</span>
 <span class="s2">    (self) = </span><span class="si">{self}</span><span class="s2"></span>
 <span class="s2">    (other) = </span><span class="si">{other}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span></div>
@@ -367,7 +367,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

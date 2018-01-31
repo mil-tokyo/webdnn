@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.axis &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.axis &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -166,7 +166,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for webdnn.graph.axis</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="n">_internal2global</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[int, int]</span>
 <span class="n">_global2internal</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[int, List[int]]</span>
@@ -175,74 +176,99 @@
 <span class="n">_uuid_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<span class="k">class</span> <span class="nc">UnificationFailedError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span>
+<span class="k">def</span> <span class="nf">_uuid</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_uuid_counter</span>
+    <span class="n">_uuid_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">_uuid_counter</span>
 
 
-<div class="viewcode-block" id="Axis"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/axis.html#webdnn.Axis">[docs]</a><span class="k">class</span> <span class="nc">Axis</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Enum class for representing semantics of each dimension of variables.</span>
+<div class="viewcode-block" id="Axis"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/axis.html#webdnn.graph.axis.Axis">[docs]</a><span class="k">class</span> <span class="nc">Axis</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Axis(name=None)</span>
+
+<span class="sd">    Class `Axis` represents the dimension of :class:`~webdnn.graph.variable.Variable`. Axis is container and the represented dimension</span>
+<span class="sd">    would be changed.</span>
+
+<span class="sd">    .. admonition:: example</span>
+
+<span class="sd">        .. code:: py</span>
+
+<span class="sd">            # a1 and a2 represent different dimensions</span>
+<span class="sd">            a1 = Axis()</span>
+<span class="sd">            a2 = Axis()</span>
+
+<span class="sd">            v1 = Variable([3, 5], Order([a1, a2))</span>
+<span class="sd">            &gt;&gt;&gt; &quot;&lt;Variable shape=[3, 5] order=[?1, ?2]&gt;&quot;</span>
+
+<span class="sd">            # unify a1 and a2 (= let them represent the same dimension)</span>
+<span class="sd">            a1.unify(a2)</span>
+
+<span class="sd">            v2 = Variable([3, 5], Order([a1, a2))</span>
+<span class="sd">            &gt;&gt;&gt; ValueError: &quot;Axes are duplicated: [?1, ?1]&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str, optional) : axis name</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">N</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">KH</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
-    <span class="n">KW</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: &quot;Axis&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">global</span> <span class="n">_uuid_counter</span>
-        <span class="n">internal_id</span> <span class="o">=</span> <span class="n">_uuid_counter</span>
-        <span class="n">_uuid_counter</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">global_id</span> <span class="o">=</span> <span class="n">internal_id</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Each `Axis` object has an unique internal id, which is not changed forever. Also each axis has another id called &quot;global id&quot;, which</span>
+<span class="sd">        would be changed and not unique over axes. Global id is used to identify two axes as same.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span> <span class="o">=</span> <span class="n">_uuid</span><span class="p">()</span>
+        <span class="n">global_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span>
 
-        <span class="n">_internal2global</span><span class="p">[</span><span class="n">internal_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_id</span>
-        <span class="n">_global2internal</span><span class="p">[</span><span class="n">global_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">internal_id</span><span class="p">]</span>
+        <span class="n">_internal2global</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_id</span>
+        <span class="n">_global2internal</span><span class="p">[</span><span class="n">global_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span><span class="p">]</span>
         <span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">global_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span> <span class="o">=</span> <span class="n">internal_id</span>
-
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&lt;Axis </span><span class="si">{self.name}</span><span class="s2">&gt;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;axis&#39;s id, which is used to identify the which dimension the axis represents to&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_internal2global</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_internal_id</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;axis&#39;s name&quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;?</span><span class="si">{self.id}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">name</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<div class="viewcode-block" id="Axis.unify"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/axis.html#webdnn.graph.axis.Axis.unify">[docs]</a>    <span class="k">def</span> <span class="nf">unify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Axis&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unify two axes object. It means that they represents to same dimension. To unify two axes, they must not have different names.</span>
 
-    <span class="k">def</span> <span class="nf">unify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Axis&quot;</span><span class="p">):</span>
+<span class="sd">        Args:</span>
+<span class="sd">            other (:class:`~webdnn.graph.axis.Axis`) : the axis object which will be unified with this axis object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="c1"># Already two axes are unified</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">UnificationFailedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">Unification failed: Both &quot;self&quot; and &quot;other&quot; have been resolved with different values.</span>
+        <span class="c1"># If both two axes have name, they must be same</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">other</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Unification failed: &quot;self&quot; and &quot;other&quot; must have same name.</span>
 <span class="s2">    (self.name) = </span><span class="si">{self.name}</span><span class="s2"></span>
 <span class="s2">    (other.name) = </span><span class="si">{other.name}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
-        <span class="n">other_id</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span>
-        <span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span> <span class="k">else</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">other</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
-        <span class="n">p1s</span> <span class="o">=</span> <span class="n">_global2internal</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
-        <span class="n">p2s</span> <span class="o">=</span> <span class="n">_global2internal</span><span class="p">[</span><span class="n">other_id</span><span class="p">]</span>
-        <span class="k">del</span> <span class="n">_global2internal</span><span class="p">[</span><span class="n">other_id</span><span class="p">]</span>
-        <span class="k">del</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">other_id</span><span class="p">]</span>
+        <span class="c1"># Unification</span>
 
-        <span class="k">for</span> <span class="n">p2</span> <span class="ow">in</span> <span class="n">p2s</span><span class="p">:</span>
-            <span class="n">p1s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
-            <span class="n">_internal2global</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="c1"># 1. Update &quot;other&quot;&#39;s global id as same as &quot;self&quot;&#39;s</span>
+        <span class="n">other_id</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="p">(</span><span class="n">_axis_name_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">other</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+
+        <span class="c1"># 2. For all axes which has same global id as &quot;other&quot;, update their global id as same as &quot;self&quot;&#39;s</span>
+        <span class="k">for</span> <span class="n">internal_id</span> <span class="ow">in</span> <span class="n">_global2internal</span><span class="p">[</span><span class="n">other_id</span><span class="p">]:</span>
+            <span class="n">_internal2global</span><span class="p">[</span><span class="n">internal_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">_global2internal</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">internal_id</span><span class="p">)</span>
+
+        <span class="k">del</span> <span class="n">_global2internal</span><span class="p">[</span><span class="n">other_id</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">_axis_name_dict</span><span class="p">[</span><span class="n">other_id</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Axis</span><span class="p">):</span>
@@ -250,46 +276,107 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span>
 
-    <span class="fm">__hash__</span> <span class="o">=</span> <span class="kc">None</span></div>
+    <span class="fm">__hash__</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># &quot;Axis&quot; is mutable container and hash value would be changed</span>
 
+    <span class="c1"># Pre-declared axes</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">KH</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span>
+    <span class="n">KW</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Axis</span></div>
+
+
+<span class="n">Axis</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">)</span>  <span class="c1"># Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>  <span class="c1"># Number of features</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">)</span>  <span class="c1"># Height of image</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">)</span>  <span class="c1"># Width of image</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>  <span class="c1"># Length of series</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">KH</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;KH&quot;</span><span class="p">)</span>  <span class="c1"># Height of filter kernel</span>
+<span class="n">Axis</span><span class="o">.</span><span class="n">KW</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;KW&quot;</span><span class="p">)</span>  <span class="c1"># Width of filter kernel</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">AxisKeyDict</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Axis is not hashable, dictionary cannot use axis object as key. AxisKeyDict allow using axis as key.</span>
+    <span class="sd">&quot;&quot;&quot;AxisKeyDict(*args)</span>
+
+<span class="sd">    Dictionary-like object. Since :class:`~webdnn.graph.axis.Axis` is not hashable, dictionary cannot use axis object as key. AxisKeyDict</span>
+<span class="sd">    allows using axis as key.</span>
+
+<span class="sd">    You can instantiate `AxisKeyDict` by various way</span>
+
+<span class="sd">    - If only `AxisKeyDict` instance is given, shallow-copied AxisKeyDict instance is created.</span>
+<span class="sd">    - If only tuple of pairs of `Axis` and value is given, dictionary with specified keys and values is created.</span>
+<span class="sd">    - If two sequences of same length are given, dictionary with specified key-value pairs is created</span>
+<span class="sd">    - If nothing is given, empty dictionary is created.</span>
+<span class="sd">    - Otherwise `ValueError` is raised.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Axis</span><span class="p">],</span> <span class="s2">&quot;AxisKeyDict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vals</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">AxisKeyDict</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># nothing is given</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">AxisKeyDict</span><span class="p">):</span>
+            <span class="c1"># other</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">):</span>
+            <span class="c1"># keyvals</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">):</span>
+            <span class="c1"># keys and values</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[AxisKeyDict] Parameter &quot;keys&quot; and &quot;values&quot; must be same length:</span>
+<span class="s2">    (keys) = </span><span class="si">{keys}</span><span class="s2"></span>
+<span class="s2">    (values) = </span><span class="si">{values}</span><span class="s2"></span>
+<span class="s2">    (len(keys)) = {len(keys)}</span>
+<span class="s2">    (len(values)) = {len(values)}&quot;&quot;&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">a1</span> <span class="o">==</span> <span class="n">a2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[AxisKeyDict] Axes are duplicated in parameter &quot;keys&quot;:</span>
+<span class="s2">    (keys) = </span><span class="si">{keys}</span><span class="s2"></span>
+<span class="s2">    (duplicated axis) = </span><span class="si">{a1}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">keys</span> <span class="k">if</span> <span class="n">keys</span> <span class="k">else</span> <span class="p">[])</span>  <span class="c1"># type: List[Axis]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">vals</span> <span class="k">if</span> <span class="n">vals</span> <span class="k">else</span> <span class="p">[])</span>  <span class="c1"># type: List[T]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[AxisKeyDict] Invalid parameters are given</span>
+<span class="s2">    (args) = </span><span class="si">{args}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
 
     <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Axis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Axis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Axis</span><span class="p">):</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">)</span>
@@ -297,8 +384,11 @@
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Axis</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no coverage</span>
         <span class="k">return</span> <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no coverage</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">else</span> <span class="n">default</span>
@@ -307,19 +397,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vals</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">T</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-
-
-<span class="n">Axis</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">)</span>  <span class="c1">#: Number of samples (batch size), number of output channels in linear connection and convolution (number of filters).</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>  <span class="c1">#: Number of features</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">)</span>  <span class="c1">#: Height of image</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">)</span>  <span class="c1">#: Width of image</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>  <span class="c1">#: Length of series</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">KH</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;KH&quot;</span><span class="p">)</span>  <span class="c1">#: Height of image</span>
-<span class="n">Axis</span><span class="o">.</span><span class="n">KW</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">(</span><span class="s2">&quot;KW&quot;</span><span class="p">)</span>  <span class="c1">#: Width of image</span>
 </pre></div>
 
            </div>
@@ -356,7 +437,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
