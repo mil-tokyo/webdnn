@@ -1,6 +1,6 @@
 {
     "name": "webdnn",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Deep Neural Network Execution Framework for Web Browsers",
     "main": "src/descriptor_runner/webdnn.js",
     "types": "dist/webdnn.d.ts",
@@ -59,5 +59,12 @@
         "typescript": "^2.6.2",
         "webpack": "^3.10.0",
         "webpack-sources": "^1.0.1"
-    }
+    },
+    "keywords": [
+        "deep-neural-networks",
+        "accelerate",
+        "optimization",
+        "javascript",
+        "webgpu"
+    ]
 }

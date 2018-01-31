@@ -2,6 +2,7 @@ __pycache__
 node_modules
 .idea
 build
+dist/*.egg
 resources
 output*
 !output.py
