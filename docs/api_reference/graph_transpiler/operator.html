@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Operator &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>Operator &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Python API" href="index.html"/>
         <link rel="next" title="Variable" href="variable.html"/>
         <link rel="prev" title="Graph" href="graph.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -189,6 +189,161 @@
 <h1>Operator<a class="headerlink" href="#operator" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<dl class="class">
+<dt id="webdnn.graph.operator.Operator">
+<em class="property">class </em><code class="descclassname">webdnn.graph.operator.</code><code class="descname">Operator</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator a.k.a layer or function in DNN computation graph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the name. If <code class="code docutils literal"><span class="pre">None</span></code>, automatically generated name is used.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_input">
+<code class="descname">append_input</code><span class="sig-paren">(</span><em>name</em>, <em>var</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append input variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the name of input variable</li>
+<li><strong>var</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.append_output">
+<code class="descname">append_output</code><span class="sig-paren">(</span><em>name</em>, <em>var</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.append_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.append_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append output variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the name of output variable</li>
+<li><strong>var</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new operator instance, which is initialized with parameters same as this operator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.operator.Operator.inputs">
+<code class="descname">inputs</code><a class="headerlink" href="#webdnn.graph.operator.Operator.inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>input variables</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.operator.Operator.outputs">
+<code class="descname">outputs</code><a class="headerlink" href="#webdnn.graph.operator.Operator.outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>output variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_all">
+<code class="descname">remove_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all input and output variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_input">
+<code class="descname">remove_input</code><span class="sig-paren">(</span><em>var</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove input variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.remove_output">
+<code class="descname">remove_output</code><span class="sig-paren">(</span><em>var</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.remove_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.remove_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove output variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace">
+<code class="descname">replace</code><span class="sig-paren">(</span><em>op_new</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace this operator by new operator. all variables connected with this operator will be disconnected and
+connected to the new operator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>op_new</strong> (<code class="xref py py-class docutils literal"><span class="pre">Operator</span></code>) &#8211; the new operator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_input">
+<code class="descname">replace_input</code><span class="sig-paren">(</span><em>v_old</em>, <em>v_new</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace input variable with other variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>v_old</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable which is removed</li>
+<li><strong>v_new</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable which is appended</li>
+<li><strong>with_assert</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If <code class="code docutils literal"><span class="pre">True</span></code>, it is checked whether shape and order is same as variable which will be removed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.operator.Operator.replace_output">
+<code class="descname">replace_output</code><span class="sig-paren">(</span><em>v_old</em>, <em>v_new</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/operator.html#Operator.replace_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.operator.Operator.replace_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace output variable with other variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>v_old</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable which is removed</li>
+<li><strong>v_new</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; the variable which is appended</li>
+<li><strong>with_assert</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If <code class="code docutils literal"><span class="pre">True</span></code>, it is checked whether shape and order is same as variable which will be removed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -235,7 +390,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

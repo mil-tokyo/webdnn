@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Variable &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>Variable &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Python API" href="index.html"/>
         <link rel="next" title="Axis" href="axis.html"/>
         <link rel="prev" title="Operator" href="operator.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -189,6 +189,303 @@
 <h1>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<dl class="class">
+<dt id="webdnn.graph.variable.Variable">
+<em class="property">class </em><code class="descclassname">webdnn.graph.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data container class which is input to and output from operators.</p>
+<p>Variable supports basic unary and binary operations.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">x1</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">OrderNC</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">OrderCN</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span>
+<span class="n">y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+<span class="c1"># variables are connected as follows:</span>
+<span class="c1">#</span>
+<span class="c1">#   x1 -+</span>
+<span class="c1">#       +-[ElementwiseAdd]-&gt; h -[Abs]-&gt; y</span>
+<span class="c1">#   x2 -+</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.change_order">
+<code class="descname">change_order</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.change_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.change_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>change_order_statement(order)</p>
+<p>Change variable order.</p>
+<p>When number of dimension will be increased, axes whose size is one are created.
+Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> &#8211; new order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.combine_axes">
+<code class="descname">combine_axes</code><span class="sig-paren">(</span><em>shape</em>, <em>axes</em>, <em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.combine_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.combine_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine some axes into one axis. Combined axes must be adjacent</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">OrderNHWC</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">combine_axes</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">],</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+<span class="c1"># # same as follow code. Note that in_order is OrderNWHC, not OrderNHWC, because &quot;axes&quot; parameter is [W, H].</span>
+<span class="c1"># y, = Reshape(None, in_order=OrderNWHC, out_order=OrderNWC, out_shape=[2, 12, 5])(x)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s2">&quot;[2, 12, 5]&quot;</span><span class="p">,</span> <span class="s2">&quot;[N, H, C]&quot;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>axes</strong> (sequence of <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; Axes which are combined. All axes must be contained in original variable.</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; Axis created from <cite>axes</cite>. If new axis is specified, which is inserted at last.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) reshaped variable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.expand_dims">
+<code class="descname">expand_dims</code><span class="sig-paren">(</span><em>shape</em>, <em>axis</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.expand_dims"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.expand_dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert new axis whose size is 1. This is alias of follow codes.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+<span class="n">new_axes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+<span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">),</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">axis</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">])(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; inserted axis</li>
+<li><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>optional</em>) &#8211; insert position, As default, inserted at last.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) expanded variable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.input_to">
+<code class="descname">input_to</code><a class="headerlink" href="#webdnn.graph.variable.Variable.input_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>operators which this variable is input to</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.name">
+<code class="descname">name</code><a class="headerlink" href="#webdnn.graph.variable.Variable.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of this variable</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.ndim">
+<code class="descname">ndim</code><a class="headerlink" href="#webdnn.graph.variable.Variable.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of dimension</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.order">
+<code class="descname">order</code><a class="headerlink" href="#webdnn.graph.variable.Variable.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>data order</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.output_from">
+<code class="descname">output_from</code><a class="headerlink" href="#webdnn.graph.variable.Variable.output_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>operator which this variable is output from</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.reinterpret_axes">
+<code class="descname">reinterpret_axes</code><span class="sig-paren">(</span><em>order: webdnn.graph.order.Order</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.reinterpret_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.reinterpret_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Reinterpret axes. This is alias of <cite>ReinterpretAxes(None, v.order, order)(v)[0]</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; new order</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same shape of original variable, but its order is <code class="code docutils literal"><span class="pre">order</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.replace">
+<code class="descname">replace</code><span class="sig-paren">(</span><em>new_variable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace this variable in graph by specified new variable.</p>
+<p>All operators connected with this variable are disconnected and re-connected to new variable with same name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>new_variable</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; new variable</li>
+<li><strong>with_assert</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If <code class="code docutils literal"><span class="pre">True</span></code>, it is checked whether shape and order is same as variable which will be removed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.reshape">
+<code class="descname">reshape</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.reshape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape into specified order and shape. This is alias of follow codes.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>shape</strong> (<em>tuple of int</em>) &#8211; shape</li>
+<li><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; order</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has specified order and shape</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.reshape_like">
+<code class="descname">reshape_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.reshape_like"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.reshape_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Reshape into same order and shape as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of follow codes.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">)(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same order and shape as <code class="code docutils literal"><span class="pre">other</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.shape">
+<code class="descname">shape</code><a class="headerlink" href="#webdnn.graph.variable.Variable.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable&#8217;s shape</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.shape_dict">
+<code class="descname">shape_dict</code><a class="headerlink" href="#webdnn.graph.variable.Variable.shape_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>dictionary of axis and shape size pairs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.size">
+<code class="descname">size</code><a class="headerlink" href="#webdnn.graph.variable.Variable.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of elements</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.squeeze">
+<code class="descname">squeeze</code><span class="sig-paren">(</span><em>axis: typing.Union[webdnn.graph.axis.Axis</em>, <em>typing.Sequence[webdnn.graph.axis.Axis]] = None</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.squeeze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.squeeze" title="Permalink to this definition">¶</a></dt>
+<dd><p>expand_dims(shape, axis, index)
+Remove axis whose size is 1. This is alias of follow codes.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">new_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+<span class="n">new_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+<span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+              <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">),</span>
+              <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">])(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> or sequence of Axis, optional) &#8211; removed axis.
+As default, all axes whose size are 1 is removed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) squeezed variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.stride">
+<code class="descname">stride</code><a class="headerlink" href="#webdnn.graph.variable.Variable.stride" title="Permalink to this definition">¶</a></dt>
+<dd><p>stride size for each dimension</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.variable.Variable.stride_dict">
+<code class="descname">stride_dict</code><a class="headerlink" href="#webdnn.graph.variable.Variable.stride_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>dictionary of axis and stride size pairs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.transpose">
+<code class="descname">transpose</code><span class="sig-paren">(</span><em>shape</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.transpose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transpose into specified order. This is alias of <cite>Transpose(None)(v)[0].change_order_statement(order)</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) &#8211; order</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has specified order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.variable.Variable.transpose_like">
+<code class="descname">transpose_like</code><span class="sig-paren">(</span><em>other: webdnn.graph.variable.Variable</em><span class="sig-paren">)</span> &#x2192; webdnn.graph.variable.Variable<a class="reference internal" href="../../_modules/webdnn/graph/variable.html#Variable.transpose_like"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.variable.Variable.transpose_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape(shape, order)
+Transpose into same order as <code class="code docutils literal"><span class="pre">other</span></code>. This is alias of <cite>Transpose(None)(v)[0].change_order_statement(other.order)</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) &#8211; variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>) new variable which has same order as <code class="code docutils literal"><span class="pre">other</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -235,7 +532,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

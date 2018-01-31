@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.variables.constant_variable &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.variables.constant_variable &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../../index.html"/>
         <link rel="up" title="Module code" href="../../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -171,10 +171,9 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.axis</span> <span class="k">import</span> <span class="n">AxisKeyDict</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.order</span> <span class="k">import</span> <span class="n">Order</span>
 <span class="kn">from</span> <span class="nn">webdnn.graph.variable</span> <span class="k">import</span> <span class="n">Variable</span>
-<span class="kn">from</span> <span class="nn">webdnn.graph.variables.attributes.constant</span> <span class="k">import</span> <span class="n">Constant</span>
 
 
-<div class="viewcode-block" id="ConstantVariable"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable">[docs]</a><span class="k">class</span> <span class="nc">ConstantVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantVariable"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/constant_variable.html#webdnn.graph.variables.constant_variable.ConstantVariable">[docs]</a><span class="k">class</span> <span class="nc">ConstantVariable</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;ConstantVariable(data, order)</span>
 
 <span class="sd">    Variable with constant data.</span>
@@ -186,32 +185,26 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ConstantVariable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>  <span class="c1"># type: np.ndarray</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>  <span class="c1"># type: np.ndarray</span>
 
-    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConstantVariable&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ConstantVariable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ConstantVariable.change_order"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/constant_variable.html#webdnn.ConstantVariable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConstantVariable&quot;</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;change_order_statement(order)</span>
+<div class="viewcode-block" id="ConstantVariable.change_order"><a class="viewcode-back" href="../../../../api_reference/graph_transpiler/constant_variable.html#webdnn.graph.variables.constant_variable.ConstantVariable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConstantVariable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;change_order(order)</span>
 
 <span class="sd">        Change variable order.</span>
 
 <span class="sd">        When number of dimension will be increased, axes whose size is one are created.</span>
 <span class="sd">        Conversely when number of dimension will be decreased, the size of axes which will be removed must be one.</span>
 
-<span class="sd">        Not only order attribute, the data attribute is also modified.</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            order: new order</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">old_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
-        <span class="n">old_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">old_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
 
         <span class="n">new_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
-        <span class="n">new_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">new_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">)</span>
 
         <span class="c1">#</span>
         <span class="c1"># `old_order_common` and `new_order_common` represent axis orders about axes included in both `old_order` and `new_order`</span>
@@ -239,7 +232,6 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">new_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">new_order</span><span class="o">.</span><span class="n">axes</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-
         <span class="k">return</span> <span class="bp">self</span></div></div>
 </pre></div>
 
@@ -277,7 +269,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
