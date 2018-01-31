@@ -1,0 +1,16 @@
+# Ignore everything that is not necessary for running JavaScript
+*.egg
+.editorconfig
+.gitignore
+.pycodestyle
+setup.py
+/.*
+/bin
+/docs
+/example
+/requirements
+/scripts
+/src/graph_transpiler
+/test
+*.ts
+!*.d.ts
