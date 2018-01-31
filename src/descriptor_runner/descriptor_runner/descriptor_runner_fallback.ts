@@ -3,21 +3,15 @@
  */
 /** Don't Remove This comment block */
 
+import * as localforage from "localforage";
 import get_weight_decoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively, transformUrl } from "../fetch"
 import { GraphDescriptorFallback } from "../graph_descriptor/graph_descriptor_fallback";
 import { Allocation, ResolvedAllocation } from "../graph_descriptor/memory_layout";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import * as localforage_ from "../third/localforage.nopromises.min";
 import { BackendName } from "../webdnn";
 import { DescriptorRunner } from "./descriptor_runner";
-
-/**
- * @private
- */
-const localforage = localforage_.default;
-
 
 /**
  * @private

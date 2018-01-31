@@ -9,13 +9,10 @@
         "test": "test"
     },
     "scripts": {
-        "test": "nosetests",
-        "test-kernel": "echo '\"npm run test-kernel\" is removed. please use \"npm run test-runtime\"'",
-        "test-runtime": "OPTIMIZE=0 nosetests -w ./test/runtime",
-        "build": "rollup -c ./src/descriptor_runner/rollup.config.js; rollup -c ./src/descriptor_runner/rollup.es5.config.js; dts-generator --name webdnn --project ./src/descriptor_runner --out ./dist/webdnn.d.ts --main 'webdnn/webdnn'",
-        "build-doc": "npm run build-doc-python; npm run build-doc-ts",
-        "build-doc-python": "cd docs; make html",
-        "build-doc-ts": "typedoc --disableOutputCheck --ignoreCompilerErrors --out ./docs/build/html/api_reference/descriptor-runner --mode modules --target es2017 --lib 'lib.es2017.d.ts,lib.dom.d.ts' --excludePrivate --readme ./src/descriptor_runner/index.md --theme ./docs/template/typedoc ./src/descriptor_runner/webdnn.ts"
+        "build": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build.sh\" instead.'; exit 1",
+        "build-doc": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc.sh\" instead.'; exit 1",
+        "build-doc-py": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc-py.sh\" instead.'; exit 1",
+        "build-doc-ts": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc-ts.sh\" instead.'; exit 1"
     },
     "repository": {
         "type": "git",
@@ -43,16 +40,22 @@
         "url": "https://github.com/mil-tokyo/webdnn/issues"
     },
     "homepage": "https://mil-tokyo.github.io/webdnn/",
+    "resolutions": {
+        "webpack-sources": "1.0.1"
+    },
     "dependencies": {
+        "@types/localforage": "^0.0.34",
+        "@types/pako": "^1.0.0",
+        "babel-minify-webpack-plugin": "^0.2.0",
         "dts-generator": "^2.1.0",
         "handlebars": "^4.0.10",
+        "localforage": "^1.5.6",
         "pako": "^1.0.6",
-        "rollup": "^0.47.4",
-        "rollup-plugin-commonjs": "^8.2.6",
-        "rollup-plugin-typescript2": "^0.5.0",
         "typedoc": "^0.8.0",
         "typedoc-default-themes": "^0.5.0",
         "typedoc-plugin-webdnn": "file:docs/template/typedoc/plugin",
-        "typescript": "^2.6.2"
+        "typescript": "^2.6.2",
+        "webpack": "^3.10.0",
+        "webpack-sources": "1.0.1"
     }
 }
