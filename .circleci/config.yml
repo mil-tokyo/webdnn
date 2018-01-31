@@ -101,20 +101,6 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             ./scripts/build-doc.sh
 
-      - run:
-          name: Update docs
-          command: |
-            mkdir -p ~/docs
-            cd ~/docs
-            git clone -b gh-pages "https://Kiikurage:${GITHUB_ACCESS_TOKEN}@github.com/mil-tokyo/webdnn" .
-            git checkout -b "docs-update"
-            git config user.name "CircleCI"
-            git config user.email "circleci@mi.t.u-tokyo.ac.jp"
-            cp -r ~/webdnn/docs/build/html/* ./docs/
-            git add .
-            git commit -m "update docs"
-            git push -u origin docs-update
-
   build-docs:
     working_directory: ~/webdnn
 
