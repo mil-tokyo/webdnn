@@ -4,5 +4,5 @@ Axis
 .. toctree::
     :maxdepth: 1
 
-.. autoclass:: webdnn.Axis
+.. autoclass:: webdnn.graph.axis.Axis
    :members:

@@ -3,21 +3,16 @@
  */
 /** Don't Remove This comment block */
 
+import * as localforage from "localforage";
 import BufferWebGPU from "../buffer/buffer_webgpu";
 import getWeightDecoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebGPU, GraphDescriptorWebGPUExecInfos } from "../graph_descriptor/graph_descriptor_webgpu";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
-import * as localforage_ from "../third/localforage.nopromises.min";
 import { BackendName, getConfiguration } from "../webdnn";
 import WebGPUHandler, { IS_WEBGPU_SUPPORTED } from "../webgpu_handler";
 import { DescriptorRunner } from "./descriptor_runner";
-
-/**
- * @private
- */
-const localforage = localforage_.default;
 
 /**
  * Check this device is iOS devices or not.

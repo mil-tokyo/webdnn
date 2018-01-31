@@ -3,5 +3,5 @@ Operator
 .. toctree::
     :maxdepth: 1
 
-.. autoclass:: webdnn.Operator
+.. autoclass:: webdnn.graph.operator.Operator
    :members:

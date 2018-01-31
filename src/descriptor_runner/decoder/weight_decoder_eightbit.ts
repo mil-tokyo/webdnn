@@ -3,13 +3,8 @@
  */
 /** Don't Remove This comment block */
 
-import * as pako_ from "pako";
+import * as pako from "pako";
 import WeightDecoder from "./weight_decoder";
-
-/**
- * @private
- */
-const pako = pako_.default;
 
 /**
  * @protected
