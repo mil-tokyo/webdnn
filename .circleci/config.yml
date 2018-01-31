@@ -99,7 +99,7 @@ jobs:
             . venv/bin/activate
             export NVM_DIR="/usr/local/nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            ./scirpts/build-doc.sh
+            ./scripts/build-doc.sh
 
       - run:
           name: Update docs
@@ -135,4 +135,6 @@ workflows:
       - build-docs:
           filters:
             branches:
-              only: master
+              ignore:
+                - webpage-src
+                - gh-pages
