@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.operator &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.operator &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -172,7 +172,7 @@
 <span class="kn">from</span> <span class="nn">webdnn.graph.node</span> <span class="k">import</span> <span class="n">Node</span>
 
 
-<div class="viewcode-block" id="Operator"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator">[docs]</a><span class="k">class</span> <span class="nc">Operator</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator">[docs]</a><span class="k">class</span> <span class="nc">Operator</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operator(name=None)</span>
 
 <span class="sd">    Operator a.k.a layer or function in DNN computation graph.</span>
@@ -186,13 +186,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, &quot;variable.Variable&quot;]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, &quot;variable.Variable&quot;]</span>
 
-<div class="viewcode-block" id="Operator.copy"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.copy"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;copy()</span>
 
-<span class="sd">        Copy this operator. Follow fields are copied.</span>
-
-<span class="sd">        - parameters</span>
+<span class="sd">        Create new operator instance, which is initialized with parameters same as this operator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Is this correct?</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
@@ -221,7 +220,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{var}</span><span class="s2">&#39; is not output of </span><span class="si">{self}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Operator.append_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.append_input">[docs]</a>    <span class="k">def</span> <span class="nf">append_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.append_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.append_input">[docs]</a>    <span class="k">def</span> <span class="nf">append_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;append_input(name, var)</span>
 
 <span class="sd">        Append input variable</span>
@@ -236,7 +235,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">append_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span></div>
 
-<div class="viewcode-block" id="Operator.remove_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.remove_input">[docs]</a>    <span class="k">def</span> <span class="nf">remove_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.remove_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.remove_input">[docs]</a>    <span class="k">def</span> <span class="nf">remove_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove_input(var)</span>
 
 <span class="sd">        Remove input variable</span>
@@ -252,7 +251,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_prev</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Operator.replace_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.replace_input">[docs]</a>    <span class="k">def</span> <span class="nf">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.replace_input"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.replace_input">[docs]</a>    <span class="k">def</span> <span class="nf">replace_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace_input(v_old, v_new)</span>
 
 <span class="sd">        Replace input variable with other variable</span>
@@ -281,7 +280,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_input</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_input</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v_new</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Operator.append_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.append_output">[docs]</a>    <span class="k">def</span> <span class="nf">append_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.append_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.append_output">[docs]</a>    <span class="k">def</span> <span class="nf">append_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;append_output(name, var)</span>
 
 <span class="sd">        Append output variable</span>
@@ -298,7 +297,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">append_next</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span></div>
 
-<div class="viewcode-block" id="Operator.remove_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.remove_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove_output(var)</span>
 
 <span class="sd">        Remove output variable</span>
@@ -313,7 +312,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_next</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Operator.replace_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.replace_output">[docs]</a>    <span class="k">def</span> <span class="nf">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.replace_output"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.replace_output">[docs]</a>    <span class="k">def</span> <span class="nf">replace_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_old</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">v_new</span><span class="p">:</span> <span class="s2">&quot;variable.Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace_output(v_old, v_new)</span>
 
 <span class="sd">        Replace output variable with other variable</span>
@@ -342,7 +341,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="n">v_old</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_output</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v_new</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Operator.remove_all"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.remove_all">[docs]</a>    <span class="k">def</span> <span class="nf">remove_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.remove_all"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.remove_all">[docs]</a>    <span class="k">def</span> <span class="nf">remove_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove_all()</span>
 
 <span class="sd">        Remove all input and output variables</span>
@@ -353,7 +352,7 @@
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Operator.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.Operator.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op_new</span><span class="p">:</span> <span class="s2">&quot;Operator&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/operator.html#webdnn.graph.operator.Operator.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op_new</span><span class="p">:</span> <span class="s2">&quot;Operator&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace(op_new)</span>
 
 <span class="sd">        Replace this operator by new operator. all variables connected with this operator will be disconnected and</span>
@@ -381,9 +380,6 @@
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.__call__ must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;variable.Variable&quot;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.exec must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">fold_constance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="s2">&quot;graph.Graph&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Operator.fold_constance must be override: (self.__class__)=</span><span class="si">{self.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -423,7 +419,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

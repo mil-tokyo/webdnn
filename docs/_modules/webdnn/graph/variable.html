@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.variable &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.variable &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -179,7 +179,7 @@
 <span class="kn">from</span> <span class="nn">webdnn.util.misc</span> <span class="k">import</span> <span class="n">mul</span>
 
 
-<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Variable(shape, order)</span>
 
 <span class="sd">    Data container class which is input to and output from operators.</span>
@@ -196,7 +196,7 @@
 <span class="sd">        # variables are connected as follows:</span>
 <span class="sd">        #</span>
 <span class="sd">        #   x1 -+</span>
-<span class="sd">        #       +-[ElementwiseAdd]-&gt; h -[ElementwiseAbs]-&gt; y</span>
+<span class="sd">        #       +-[ElementwiseAdd]-&gt; h -[Abs]-&gt; y</span>
 <span class="sd">        #   x2 -+</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -216,11 +216,13 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">input_to</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="s2">&quot;operator.Operator&quot;</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;operators which this variable is input to&quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nexts</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">output_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;operator.Operator&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;operator which this variable is output from&quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyTypeChecker</span>
         <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prevs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prevs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
@@ -262,10 +264,7 @@
         <span class="sd">&quot;&quot;&quot;dictionary of axis and stride size pairs&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
-
-<div class="viewcode-block" id="Variable.change_order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.change_order"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.change_order">[docs]</a>    <span class="k">def</span> <span class="nf">change_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;change_order_statement(order)</span>
 
 <span class="sd">        Change variable order.</span>
@@ -276,19 +275,23 @@
 <span class="sd">        Args:</span>
 <span class="sd">            order: new order</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">current_shape_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span>
-        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">current_shape_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">current_shape_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">old_shape_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">old_shape_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">old_shape_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
-                    <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;[Variable.change_order_statement()] The size of axes which will be removed must be one: &quot;</span> \
-                                      <span class="n">f</span><span class="s2">&quot;variable=</span><span class="si">{self}</span><span class="s2">, shape_dict[</span><span class="si">{axis}</span><span class="s2">]=</span><span class="si">{size}</span><span class="s2">, new_order=</span><span class="si">{order}</span><span class="s2">.&quot;</span>
+                    <span class="k">assert</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Variable.change_order()] The size of axes which will be removed must be one:</span>
+<span class="s2">    (variable) = </span><span class="si">{self}</span><span class="s2"></span>
+<span class="s2">    (shape[</span><span class="si">{axis}</span><span class="s2">]) = </span><span class="si">{size}</span><span class="s2"></span>
+<span class="s2">    (new order) = </span><span class="si">{order}</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">new_shape</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="Variable.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Variable.replace"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_variable</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">,</span> <span class="n">with_assert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;replace(new_variable)</span>
 
 <span class="sd">        Replace this variable in graph by specified new variable.</span>
@@ -312,6 +315,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
     <span class="c1"># Unary operators</span>
+
     <span class="k">def</span> <span class="nf">__pos__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=+</span><span class="mi">1</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -322,8 +326,9 @@
         <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">abs</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Binary operators</span>
+
     <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
@@ -333,17 +338,14 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
@@ -353,17 +355,14 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for -: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_add</span><span class="o">.</span><span class="n">ScalarAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="o">-</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_add</span><span class="o">.</span><span class="n">ElementwiseAdd</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for -: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
@@ -373,11 +372,8 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_mul</span><span class="o">.</span><span class="n">ElementwiseMul</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
@@ -393,11 +389,8 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for /: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_mul</span><span class="o">.</span><span class="n">ScalarMul</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">other</span><span class="p">)(</span><span class="bp">self</span> <span class="o">**</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_div</span><span class="o">.</span><span class="n">ElementwiseDiv</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for *: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
@@ -406,7 +399,7 @@
         <span class="k">if</span> <span class="n">modulo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Variable.__pow__ is not supported modulo argument&quot;</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">scalar_pow</span><span class="o">.</span><span class="n">ScalarPow</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">power</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
@@ -416,29 +409,14 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;{type(self).__name__}&#39; and &#39;{type(power).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;Placeholder(unresolved)&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">constant_variable</span><span class="o">.</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_pow</span><span class="o">.</span><span class="n">ElementwisePow</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">elementwise_pow</span><span class="o">.</span><span class="n">ElementwisePow</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for ** or pow: &#39;{type(other).__name__}&#39; and &#39;{type(self).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &gt;: &#39;{type(self).__name__}&#39; and &#39;Placeholder(unresolved)&#39;&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">constant_variable</span><span class="o">.</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">greater</span><span class="o">.</span><span class="n">Greater</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -450,12 +428,6 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &gt;: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &gt;=: &#39;{type(self).__name__}&#39; and &#39;Placeholder(unresolved)&#39;&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">constant_variable</span><span class="o">.</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">greater_equal</span><span class="o">.</span><span class="n">GreaterEqual</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -467,12 +439,6 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &gt;=: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &lt;: &#39;{type(self).__name__}&#39; and &#39;Placeholder(unresolved)&#39;&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">constant_variable</span><span class="o">.</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">greater</span><span class="o">.</span><span class="n">Greater</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -484,12 +450,6 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &lt;: &#39;{type(self).__name__}&#39; and &#39;{type(other).__name__}&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;unsupported operand type(s) for &lt;=: &#39;{type(self).__name__}&#39; and &#39;Placeholder(unresolved)&#39;&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">force_int</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">constant_variable</span><span class="o">.</span><span class="n">ConstantVariable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">other</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">greater_equal</span><span class="o">.</span><span class="n">GreaterEqual</span><span class="p">(</span><span class="kc">None</span><span class="p">)(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -509,7 +469,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ellipsis_position</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span>
 
-        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+        <span class="n">num_new_axis</span> <span class="o">=</span> <span class="n">slices</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span> <span class="o">-</span> <span class="n">num_new_axis</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
             <span class="n">slices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ellipsis_position</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
 
         <span class="n">x_axis_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -522,11 +483,14 @@
             <span class="k">elif</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">indices</span><span class="p">[</span><span class="n">Axis</span><span class="p">()]</span> <span class="o">=</span> <span class="kc">None</span>
 
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Variable indices must be sequence of integers, slices, ellipsis, or None&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Utility functions</span>
 
-<div class="viewcode-block" id="Variable.reshape"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.reshape">[docs]</a>    <span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]],</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.reshape"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.reshape">[docs]</a>    <span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">]],</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
 <span class="sd">        Reshape into specified order and shape. This is alias of follow codes.</span>
 
@@ -546,7 +510,26 @@
         <span class="n">ret</span><span class="p">,</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">out_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span></div>
 
-<div class="viewcode-block" id="Variable.expand_dims"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.expand_dims">[docs]</a>    <span class="k">def</span> <span class="nf">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.reshape_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.reshape_like">[docs]</a>    <span class="k">def</span> <span class="nf">reshape_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
+<span class="sd">        Reshape into same order and shape as :code:`other`. This is alias of follow codes.</span>
+
+<span class="sd">        .. code::</span>
+
+<span class="sd">            Reshape(None, in_order=v.order,</span>
+<span class="sd">                          out_order=other.order,</span>
+<span class="sd">                          out_shape=other.shape)(v)[0]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (:class:`~Variable`): variable</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (:class:`~Variable`) new variable which has same order and shape as :code:`other`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span><span class="p">,</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_order</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_shape</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Variable.expand_dims"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.expand_dims">[docs]</a>    <span class="k">def</span> <span class="nf">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
 <span class="sd">        Insert new axis whose size is 1. This is alias of follow codes.</span>
 
@@ -571,7 +554,7 @@
         <span class="n">new_axes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">axis</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Variable.squeeze"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.squeeze">[docs]</a>    <span class="k">def</span> <span class="nf">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.squeeze"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.squeeze">[docs]</a>    <span class="k">def</span> <span class="nf">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Axis</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;expand_dims(shape, axis, index)</span>
 <span class="sd">        Remove axis whose size is 1. This is alias of follow codes.</span>
 
@@ -604,9 +587,9 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">new_axes</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Variable.combine_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.combine_axes">[docs]</a>    <span class="k">def</span> <span class="nf">combine_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.combine_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.combine_axes">[docs]</a>    <span class="k">def</span> <span class="nf">combine_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axis</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Axis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;combine_axes(shape, axes, axis)</span>
-<span class="sd">        Combine some axes into one axis.</span>
+<span class="sd">        Combine some axes into one axis. Combined axes must be adjacent</span>
 
 <span class="sd">        .. code::</span>
 
@@ -626,11 +609,27 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (:class:`~Variable`) reshaped variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check if all combined axes are adjacent</span>
+        <span class="n">i_max</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">i_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">for</span> <span class="n">combined_axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes_dict</span><span class="p">[</span><span class="n">combined_axis</span><span class="p">]</span>
+            <span class="n">i_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">i_max</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">i_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i_min</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">i_max</span> <span class="o">-</span> <span class="n">i_min</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">All combined axes must be adjacent:</span>
+<span class="s2">    (order) = </span><span class="si">{self.order}</span><span class="s2"></span>
+<span class="s2">    (combined axes) = </span><span class="si">{axes}</span><span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="c1"># construct in_order, out_order and out_shape</span>
+        <span class="n">in_order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">[:</span><span class="n">i_min</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
+
         <span class="n">out_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
         <span class="n">out_shape_dict</span> <span class="o">=</span> <span class="n">AxisKeyDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape_dict</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out_shape_dict</span><span class="p">:</span>
             <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">out_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+            <span class="n">out_axes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i_min</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">combined_axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">combined_axis</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
@@ -639,39 +638,14 @@
             <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">*=</span> <span class="n">out_shape_dict</span><span class="p">[</span><span class="n">combined_axis</span><span class="p">]</span>
             <span class="n">out_axes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">combined_axis</span><span class="p">)</span>
 
-        <span class="n">in_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out_axes</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">in_axes</span><span class="p">:</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">in_axes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
-            <span class="n">in_axes</span> <span class="o">=</span> <span class="n">in_axes</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">+</span> <span class="n">in_axes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">in_axes</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">out_order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="n">out_axes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span>
-                                                      <span class="n">in_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">in_axes</span><span class="p">),</span>
-                                                      <span class="n">out_order</span><span class="o">=</span><span class="n">Order</span><span class="p">(</span><span class="n">out_axes</span><span class="p">),</span>
+                                                      <span class="n">in_order</span><span class="o">=</span><span class="n">in_order</span><span class="p">,</span>
+                                                      <span class="n">out_order</span><span class="o">=</span><span class="n">out_order</span><span class="p">,</span>
                                                       <span class="n">out_shape</span><span class="o">=</span><span class="p">[</span><span class="n">out_shape_dict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">out_axes</span><span class="p">])(</span><span class="bp">self</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Variable.reshape_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.reshape_like">[docs]</a>    <span class="k">def</span> <span class="nf">reshape_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
-<span class="sd">        Reshape into same order and shape as :code:`other`. This is alias of follow codes.</span>
-
-<span class="sd">        .. code::</span>
-
-<span class="sd">            Reshape(None, in_order=v.order,</span>
-<span class="sd">                          out_order=other.order,</span>
-<span class="sd">                          out_shape=other.shape)(v)[0]</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            other (:class:`~Variable`): variable</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            (:class:`~Variable`) new variable which has same order and shape as :code:`other`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ret</span><span class="p">,</span> <span class="o">=</span> <span class="n">webdnn</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">operators</span><span class="o">.</span><span class="n">reshape</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_order</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">out_shape</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ret</span></div>
-
-<div class="viewcode-block" id="Variable.transpose"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.transpose">[docs]</a>    <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.transpose"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.transpose">[docs]</a>    <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;transpose(shape, order)</span>
 <span class="sd">        Transpose into specified order. This is alias of `Transpose(None)(v)[0].change_order_statement(order)`</span>
 
@@ -685,7 +659,7 @@
         <span class="n">ret</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span></div>
 
-<div class="viewcode-block" id="Variable.transpose_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.transpose_like">[docs]</a>    <span class="k">def</span> <span class="nf">transpose_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.transpose_like"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.transpose_like">[docs]</a>    <span class="k">def</span> <span class="nf">transpose_like</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Variable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
 <span class="sd">        Transpose into same order as :code:`other`. This is alias of `Transpose(None)(v)[0].change_order_statement(other.order)`</span>
 
@@ -699,7 +673,7 @@
         <span class="n">ret</span><span class="o">.</span><span class="n">change_order</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span></div>
 
-<div class="viewcode-block" id="Variable.reinterpret_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.Variable.reinterpret_axes">[docs]</a>    <span class="k">def</span> <span class="nf">reinterpret_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Variable.reinterpret_axes"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/variable.html#webdnn.graph.variables.constant_variable.Variable.reinterpret_axes">[docs]</a>    <span class="k">def</span> <span class="nf">reinterpret_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">Order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;reshape(shape, order)</span>
 <span class="sd">        Reinterpret axes. This is alias of `ReinterpretAxes(None, v.order, order)(v)[0]`.</span>
 
@@ -747,7 +721,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

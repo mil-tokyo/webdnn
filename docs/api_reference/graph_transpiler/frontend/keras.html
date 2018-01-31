@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>KerasConverter &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>KerasConverter &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="frontend" href="index.html"/>
         <link rel="next" title="ONNXConverter" href="onnx.html"/>
         <link rel="prev" title="Converter" href="converter.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -250,7 +250,7 @@ If TensorFlowConverter failed to convert, then KerasConverter converts model by 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">WebDNN IR Graph</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">Graph</span></code>)</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="../graph.html#webdnn.graph.graph.Graph" title="webdnn.graph.graph.Graph"><code class="xref py py-class docutils literal"><span class="pre">Graph</span></code></a>)</td>
 </tr>
 </tbody>
 </table>
@@ -260,7 +260,7 @@ If TensorFlowConverter failed to convert, then KerasConverter converts model by 
 <dt id="webdnn.frontend.keras.KerasConverter.convert_to_constant_variable">
 <code class="descname">convert_to_constant_variable</code><span class="sig-paren">(</span><em>tf_var</em>, <em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/webdnn/frontend/keras/converter.html#KerasConverter.convert_to_constant_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.frontend.keras.KerasConverter.convert_to_constant_variable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert TensorFlow variable (parameter of kerasmodel) into
-<code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code>.</p>
+<a class="reference internal" href="../constant_variable.html#webdnn.graph.variables.constant_variable.ConstantVariable" title="webdnn.graph.variables.constant_variable.ConstantVariable"><code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code></a>.</p>
 <p>This method also registers the mapping information between TensorFlow variable and WebDNN constant variable.
 If specified TensorFlow variable is already registered into converter, converter checks that the shape and order
 is valid</p>
@@ -271,14 +271,14 @@ is valid</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>tf_var</strong> (<em>tensorflow.Variable</em>) &#8211; TensorFlow variable</li>
-<li><strong>order</strong> &#8211; (<code class="xref py py-class docutils literal"><span class="pre">Order</span></code>) data order</li>
+<li><strong>order</strong> &#8211; (<a class="reference internal" href="../order.html#webdnn.graph.order.Order" title="webdnn.graph.order.Order"><code class="xref py py-class docutils literal"><span class="pre">Order</span></code></a>) data order</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">converted variable.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">(<code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code>)</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="../constant_variable.html#webdnn.graph.variables.constant_variable.ConstantVariable" title="webdnn.graph.variables.constant_variable.ConstantVariable"><code class="xref py py-class docutils literal"><span class="pre">ConstantVariable</span></code></a>)</p>
 </td>
 </tr>
 </tbody>
@@ -371,7 +371,7 @@ is valid</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

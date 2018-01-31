@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Order &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>Order &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Python API" href="index.html"/>
         <link rel="next" title="ConstantVariable" href="constant_variable.html"/>
         <link rel="prev" title="Axis" href="axis.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -189,6 +189,68 @@
 <h1>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<dl class="class">
+<dt id="webdnn.graph.order.Order">
+<em class="property">class </em><code class="descclassname">webdnn.graph.order.</code><code class="descname">Order</code><span class="sig-paren">(</span><em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Descriptor class for representing semantics of data order.</p>
+<p>For example, <code class="xref py py-obj docutils literal"><span class="pre">OrderNHWC</span></code> means that the data is aligned as Channel-major (Batch-size-minor).
+Popular data order is already defined in <code class="xref py py-mod docutils literal"><span class="pre">webdnn.graph.order</span></code>. You should use pre-defined order instance.</p>
+<p>If you have to define new data order, you can simply as follows.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">OrderHCNW</span> <span class="o">=</span> <span class="n">Order</span><span class="p">([</span><span class="n">Axis</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">Axis</span><span class="o">.</span><span class="n">W</span><span class="p">])</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes</strong> (list of <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code>) &#8211; list of axis.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="webdnn.graph.order.Order.check_same_axes">
+<code class="descname">check_same_axes</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order.check_same_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order.check_same_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if 2 orders have same axes (the axis order is not considered)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; other order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.order.Order.get_all_axes">
+<code class="descname">get_all_axes</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order.get_all_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order.get_all_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>return axes which are included in either two order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; other order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.order.Order.get_common_axes">
+<code class="descname">get_common_axes</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/order.html#Order.get_common_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.order.Order.get_common_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>return axes which are included in both two order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; other order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -235,7 +297,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
