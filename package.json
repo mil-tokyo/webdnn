@@ -1,8 +1,9 @@
 {
-    "name": "WebDNN",
+    "name": "webdnn",
     "version": "1.1.0",
     "description": "Deep Neural Network Execution Framework for Web Browsers",
-    "main": "dist/webdnn.js",
+    "main": "src/descriptor_runner/webdnn.js",
+    "types": "dist/webdnn.d.ts",
     "directories": {
         "doc": "docs",
         "example": "example",
@@ -44,18 +45,19 @@
         "webpack-sources": "1.0.1"
     },
     "dependencies": {
-        "@types/localforage": "^0.0.34",
         "@types/pako": "^1.0.0",
+        "localforage": "^1.5.6",
+        "pako": "^1.0.6"
+    },
+    "devDependencies": {
         "babel-minify-webpack-plugin": "^0.2.0",
         "dts-generator": "^2.1.0",
-        "handlebars": "^4.0.10",
-        "localforage": "^1.5.6",
-        "pako": "^1.0.6",
+        "handlebars": "^4.0.11",
         "typedoc": "^0.8.0",
         "typedoc-default-themes": "^0.5.0",
         "typedoc-plugin-webdnn": "file:docs/template/typedoc/plugin",
         "typescript": "^2.6.2",
         "webpack": "^3.10.0",
-        "webpack-sources": "1.0.1"
+        "webpack-sources": "^1.0.1"
     }
 }
