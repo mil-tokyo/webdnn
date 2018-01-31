@@ -46,6 +46,61 @@ jobs:
           path: test-reports
           destination: test-reports
 
+  test-docs:
+    working_directory: ~/webdnn
+
+    docker:
+      - image: python:3.6.1
+      - image: node:latest
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements/dev.txt" }}
+            - v1-dependencies-
+
+      - run:
+          name: Setup node
+          command: |
+            apt-get update
+            apt-get install -y build-essential libssl-dev
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | NVM_DIR=/usr/local/nvm bash
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v8
+            nvm alias default v8
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements/dev.txt
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            npm install
+
+      - save_cache:
+          paths:
+            - "venv"
+          key: deps1-{{ .Branch }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          name: Install WebDNN
+          command: |
+            . venv/bin/activate
+            python3 setup.py install
+
+      - run:
+          name: Build docs
+          command: |
+            . venv/bin/activate
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            ./scripts/build-doc.sh
+
   build-docs:
     working_directory: ~/webdnn
 
@@ -99,7 +154,7 @@ jobs:
             . venv/bin/activate
             export NVM_DIR="/usr/local/nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            ./scirpts/build-doc.sh
+            ./scripts/build-doc.sh
 
       - run:
           name: Update docs
@@ -125,6 +180,14 @@ workflows:
   build_and_docs:
     jobs:
       - test:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - webpage-src
+                - docs-update
+
+      - test-docs:
           filters:
             branches:
               ignore:
