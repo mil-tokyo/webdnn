@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Axis &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>Axis &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Python API" href="index.html"/>
         <link rel="next" title="Order" href="order.html"/>
         <link rel="prev" title="Variable" href="variable.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -189,6 +189,64 @@
 <h1>Axis<a class="headerlink" href="#axis" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<dl class="class">
+<dt id="webdnn.graph.axis.Axis">
+<em class="property">class </em><code class="descclassname">webdnn.graph.axis.</code><code class="descname">Axis</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/axis.html#Axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.axis.Axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class <cite>Axis</cite> represents the dimension of <a class="reference internal" href="variable.html#webdnn.graph.variable.Variable" title="webdnn.graph.variable.Variable"><code class="xref py py-class docutils literal"><span class="pre">Variable</span></code></a>. Axis is container and the represented dimension
+would be changed.</p>
+<div class="admonition-example admonition">
+<p class="first admonition-title">example</p>
+<div class="code py last highlight-default"><div class="highlight"><pre><span></span><span class="c1"># a1 and a2 represent different dimensions</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">()</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">Axis</span><span class="p">()</span>
+
+<span class="n">v1</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">Order</span><span class="p">([</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s2">&quot;&lt;Variable shape=[3, 5] order=[?1, ?2]&gt;&quot;</span>
+
+<span class="c1"># unify a1 and a2 (= let them represent the same dimension)</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">unify</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span>
+
+<span class="n">v2</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">Order</span><span class="p">([</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="s2">&quot;Axes are duplicated: [?1, ?1]&quot;</span>
+</pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>optional</em>) &#8211; axis name</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="webdnn.graph.axis.Axis.id">
+<code class="descname">id</code><a class="headerlink" href="#webdnn.graph.axis.Axis.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>axis&#8217;s id, which is used to identify the which dimension the axis represents to</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="webdnn.graph.axis.Axis.name">
+<code class="descname">name</code><a class="headerlink" href="#webdnn.graph.axis.Axis.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>axis&#8217;s name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.axis.Axis.unify">
+<code class="descname">unify</code><span class="sig-paren">(</span><em>other: webdnn.graph.axis.Axis</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/axis.html#Axis.unify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.axis.Axis.unify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unify two axes object. It means that they represents to same dimension. To unify two axes, they must not have different names.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#webdnn.graph.axis.Axis" title="webdnn.graph.axis.Axis"><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code></a>) &#8211; the axis object which will be unified with this axis object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -235,7 +293,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

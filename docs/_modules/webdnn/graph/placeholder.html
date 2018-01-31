@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>webdnn.graph.placeholder &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>webdnn.graph.placeholder &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -172,7 +172,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">webdnn.util.json</span> <span class="k">import</span> <span class="n">json</span>
+<span class="kn">from</span> <span class="nn">webdnn.util</span> <span class="k">import</span> <span class="n">json</span>
 <span class="kn">from</span> <span class="nn">webdnn.util.misc</span> <span class="k">import</span> <span class="n">mul</span>
 
 
@@ -462,7 +462,7 @@
 <span class="n">_id</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<div class="viewcode-block" id="Placeholder"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder">[docs]</a><span class="k">class</span> <span class="nc">Placeholder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">SerializableMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="Placeholder"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder">[docs]</a><span class="k">class</span> <span class="nc">Placeholder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">SerializableMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Placeholder(value=None, label=None)</span>
 
 <span class="sd">    Placeholder represents values which are unknown at compile time and determined at runtime, like batch size, length of</span>
@@ -553,7 +553,7 @@
     <span class="n">dependency</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[Dependency]</span>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Placeholder.to_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.to_int">[docs]</a>    <span class="k">def</span> <span class="nf">to_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+<div class="viewcode-block" id="Placeholder.to_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder.to_int">[docs]</a>    <span class="k">def</span> <span class="nf">to_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;to_int(x)</span>
 
 <span class="sd">        Convert the placeholder into concrete integer value.</span>
@@ -566,7 +566,7 @@
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">Placeholder</span><span class="o">.</span><span class="n">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span></div>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Placeholder.force_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.force_int">[docs]</a>    <span class="k">def</span> <span class="nf">force_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+<div class="viewcode-block" id="Placeholder.force_int"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder.force_int">[docs]</a>    <span class="k">def</span> <span class="nf">force_int</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;force_int(x)</span>
 
 <span class="sd">        Convert the placeholder into concrete integer value. If `x` is not resolved, an error is raised.</span>
@@ -585,7 +585,7 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{x}</span><span class="s2"> is not resolved.&quot;</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Placeholder.check_resolved"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.check_resolved">[docs]</a>    <span class="k">def</span> <span class="nf">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
+<div class="viewcode-block" id="Placeholder.check_resolved"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder.check_resolved">[docs]</a>    <span class="k">def</span> <span class="nf">check_resolved</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;check_resolved(x)</span>
 
 <span class="sd">        Check whether specified placeholder is resolved or not.</span>
@@ -713,6 +713,9 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependency</span><span class="o">.</span><span class="n">operands</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">]:</span>
         <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Placeholder</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
@@ -1006,7 +1009,7 @@
                 <span class="s2">&quot;eval&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_js_function</span><span class="p">()</span>
             <span class="p">}</span>
 
-<div class="viewcode-block" id="Placeholder.get_depend_placeholders"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.get_depend_placeholders">[docs]</a>    <span class="k">def</span> <span class="nf">get_depend_placeholders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Placeholder.get_depend_placeholders"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder.get_depend_placeholders">[docs]</a>    <span class="k">def</span> <span class="nf">get_depend_placeholders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;get_depend_placeholders</span>
 
 <span class="sd">        List up all dependent placeholders</span>
@@ -1028,7 +1031,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="Placeholder.generate_js_function"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.Placeholder.generate_js_function">[docs]</a>    <span class="k">def</span> <span class="nf">generate_js_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Placeholder.generate_js_function"><a class="viewcode-back" href="../../../api_reference/graph_transpiler/placeholder.html#webdnn.graph.placeholder.Placeholder.generate_js_function">[docs]</a>    <span class="k">def</span> <span class="nf">generate_js_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag_semicolon</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;generate_js_function</span>
 
 <span class="sd">        Generate javascript code to resolve this placeholder&#39;s value at runtime.</span>
@@ -1084,7 +1087,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

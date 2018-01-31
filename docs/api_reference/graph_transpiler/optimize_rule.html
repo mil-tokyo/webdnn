@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>OptimizeRule &mdash; MIL WebDNN 1.1.0 documentation</title>
+  <title>OptimizeRule &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Python API" href="index.html"/>
         <link rel="next" title="Placeholder" href="placeholder.html"/>
         <link rel="prev" title="ConstantVariable" href="constant_variable.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -189,6 +189,39 @@
 <h1>OptimizeRule<a class="headerlink" href="#optimizerule" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<dl class="class">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule">
+<em class="property">class </em><code class="descclassname">webdnn.graph.optimize_rule.</code><code class="descname">OptimizeRule</code><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>OptimizeRule</cite> transforms IR graph. This class used not only for just optimization, but also analysis, fallback supports, and so on.</p>
+<dl class="method">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule.flags">
+<code class="descname">flags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>optimize(graph)</p>
+<p>Return list of boolean values. If False is contained more than zero, this optimize rule is not applied.
+:returns: boolean values
+:rtype: (tuple of bool)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="webdnn.graph.optimize_rule.OptimizeRule.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>graph</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/webdnn/graph/optimize_rule.html#OptimizeRule.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#webdnn.graph.optimize_rule.OptimizeRule.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the given graph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>graph</strong> (<code class="xref py py-class docutils literal"><span class="pre">Graph</span></code>) &#8211; Computational graph</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Optimized graph and flag whether the graph is changed or not.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(tuple of <code class="xref py py-class docutils literal"><span class="pre">Graph</span></code> and bool)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -235,7 +268,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

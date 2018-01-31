@@ -2,7 +2,7 @@ operators
 =========
 
 Module :code:`webdnn.graph.operators` contains WebDNN Operator IR classes.
-All classes inherit :class:`~webdnn.Operator` base class.
+All classes inherit :class:`~webdnn.graph.operator.Operator` base class.
 
 All operator class instances are callable. When it is called, input and output variables are registered with corresponding names.
 In this document, the registered name of each operator is described in **Signature** section.
