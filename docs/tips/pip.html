@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tips &mdash; MIL WebDNN 1.2.1 documentation</title>
+  <title>Installing python package with pip &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -36,8 +36,9 @@
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../index.html"/>
-        <link rel="next" title="Installing JavaScript package with npm" href="npm.html"/>
-        <link rel="prev" title="3. Layer with Weights" href="../tutorial/custom_operator/section3.html"/> 
+        <link rel="up" title="Tips" href="index.html"/>
+        <link rel="next" title="Enabling WebGPU on iOS 11" href="enable_webgpu_ios.html"/>
+        <link rel="prev" title="Installing JavaScript package with npm" href="npm.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -93,9 +94,12 @@
               <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="npm.html">Installing JavaScript package with npm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pip.html">Installing python package with pip</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Installing python package with pip</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="enable_webgpu_ios.html">Enabling WebGPU on iOS 11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="enable_webgpu_macos.html">Enabling WebGPU on macOS 10.13 High Sierra</a></li>
 <li class="toctree-l2"><a class="reference internal" href="build_js.html">Building webdnn.js</a></li>
@@ -157,13 +161,15 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Tips</li>
+          <li><a href="index.html">Tips</a> &raquo;</li>
+        
+      <li>Installing python package with pip</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tips/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tips/pip.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,18 +182,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="tips">
-<h1>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="npm.html">Installing JavaScript package with npm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pip.html">Installing python package with pip</a></li>
-<li class="toctree-l1"><a class="reference internal" href="enable_webgpu_ios.html">Enabling WebGPU on iOS 11</a></li>
-<li class="toctree-l1"><a class="reference internal" href="enable_webgpu_macos.html">Enabling WebGPU on macOS 10.13 High Sierra</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build_js.html">Building webdnn.js</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lstm.html">Using LSTM model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="es5.html">EcmaScript5 support</a></li>
-<li class="toctree-l1"><a class="reference internal" href="safari_webcam.html">Using web camera in Safari</a></li>
+  <div class="section" id="installing-python-package-with-pip">
+<h1>Installing python package with pip<a class="headerlink" href="#installing-python-package-with-pip" title="Permalink to this headline">¶</a></h1>
+<p>You can install python part of WebDNN with pip.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>pip install webdnn
+</pre></div>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>This package only contains python module. JavaScript part (for web browser) and examples are not included.<ul>
+<li>Useful for automated build system.</li>
+</ul>
+</li>
+<li>Separate <a class="reference external" href="../tutorial/setup.html#installing-emscripten-and-eigen">setup of Emscripten</a> is still needed.</li>
 </ul>
 </div>
 </div>
@@ -202,10 +210,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="npm.html" class="btn btn-neutral float-right" title="Installing JavaScript package with npm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="enable_webgpu_ios.html" class="btn btn-neutral float-right" title="Enabling WebGPU on iOS 11" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../tutorial/custom_operator/section3.html" class="btn btn-neutral" title="3. Layer with Weights" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="npm.html" class="btn btn-neutral" title="Installing JavaScript package with npm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

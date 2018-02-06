@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tips &mdash; MIL WebDNN 1.2.1 documentation</title>
+  <title>Installing JavaScript package with npm &mdash; MIL WebDNN 1.2.1 documentation</title>
   
 
   
@@ -36,8 +36,9 @@
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="MIL WebDNN 1.2.1 documentation" href="../index.html"/>
-        <link rel="next" title="Installing JavaScript package with npm" href="npm.html"/>
-        <link rel="prev" title="3. Layer with Weights" href="../tutorial/custom_operator/section3.html"/> 
+        <link rel="up" title="Tips" href="index.html"/>
+        <link rel="next" title="Installing python package with pip" href="pip.html"/>
+        <link rel="prev" title="Tips" href="index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -93,8 +94,11 @@
               <p class="caption"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="npm.html">Installing JavaScript package with npm</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tips</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Installing JavaScript package with npm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="pip.html">Installing python package with pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="enable_webgpu_ios.html">Enabling WebGPU on iOS 11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="enable_webgpu_macos.html">Enabling WebGPU on macOS 10.13 High Sierra</a></li>
@@ -157,13 +161,15 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Tips</li>
+          <li><a href="index.html">Tips</a> &raquo;</li>
+        
+      <li>Installing JavaScript package with npm</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/tips/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tips/npm.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,18 +182,33 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="tips">
-<h1>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="npm.html">Installing JavaScript package with npm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pip.html">Installing python package with pip</a></li>
-<li class="toctree-l1"><a class="reference internal" href="enable_webgpu_ios.html">Enabling WebGPU on iOS 11</a></li>
-<li class="toctree-l1"><a class="reference internal" href="enable_webgpu_macos.html">Enabling WebGPU on macOS 10.13 High Sierra</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build_js.html">Building webdnn.js</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lstm.html">Using LSTM model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="es5.html">EcmaScript5 support</a></li>
-<li class="toctree-l1"><a class="reference internal" href="safari_webcam.html">Using web camera in Safari</a></li>
+  <div class="section" id="installing-javascript-package-with-npm">
+<h1>Installing JavaScript package with npm<a class="headerlink" href="#installing-javascript-package-with-npm" title="Permalink to this headline">¶</a></h1>
+<p>If you are building your webpage with <a class="reference external" href="http://browserify.org/">broserify</a>
+or <a class="reference external" href="https://webpack.js.org/">webpack</a>, you can install JavaScript part of WebDNN with npm (node package manager).
+By using these build system, the code of WebDNN is automatically concatenated with your own code to improve page load performance.</p>
+<ol class="arabic simple">
+<li>Install webdnn package in your project</li>
+</ol>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>npm install webdnn --save
+</pre></div>
+</div>
+<p>It will install <code class="docutils literal"><span class="pre">webdnn</span></code> package in the <code class="docutils literal"><span class="pre">node_modules</span></code> directory.</p>
+<ol class="arabic simple" start="2">
+<li>Load the package from your JavaScript code</li>
+</ol>
+<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">webdnn</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;webdnn&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">webdnn</span><span class="p">.</span><span class="nx">load</span><span class="p">(</span><span class="s1">&#39;graph_descriptor&#39;</span><span class="p">);</span><span class="c1">//do some stuff</span>
+</pre></div>
+</div>
+<p>You can use the package by using <code class="docutils literal"><span class="pre">require('webdnn')</span></code>.</p>
+<p>Complete working example is here: <a class="reference external" href="https://github.com/milhidaka/webdnn-exercise/tree/master/webpack">https://github.com/milhidaka/webdnn-exercise/tree/master/webpack</a></p>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The npm package only contains code to run on web browsers. To convert your DNN model, you have to install python package separately.</li>
+<li>TypeScript type definition file is included (as it is implemented with TypeScript).</li>
 </ul>
 </div>
 </div>
@@ -202,10 +223,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="npm.html" class="btn btn-neutral float-right" title="Installing JavaScript package with npm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="pip.html" class="btn btn-neutral float-right" title="Installing python package with pip" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../tutorial/custom_operator/section3.html" class="btn btn-neutral" title="3. Layer with Weights" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Tips" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
