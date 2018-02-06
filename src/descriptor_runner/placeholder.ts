@@ -40,7 +40,7 @@ export default class PlaceholderContext {
         if (Object.keys(placeholder).length == 1 && 'eval' in placeholder) {
             if (!this.isResolved) throw Error(`Not all placeholders are resolved: ${this}`);
 
-            return ((placeholders) => eval(placeholder.eval))(this.values);
+            return eval('(function(placeholders){return ' + placeholder.eval + ';})')(this.values);
         }
 
         // Array => deep copy
