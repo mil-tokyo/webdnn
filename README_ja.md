@@ -95,6 +95,12 @@ async function run() {
 
 [ドキュメント](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.html)を参照してください。
 
+# WebDNNを用いたアプリケーション・デモ
+
+- [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
+- [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - 画像説明文生成デモ
+- [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - WebDNNの基本的な使い方の演習
+
 ---
 
 - <i id=1></i>[1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. 2015. Deep Residual

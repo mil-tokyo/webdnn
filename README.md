@@ -104,6 +104,7 @@ Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.ht
 # Applications / demos using WebDNN
 - [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
 - [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - Generating image caption demo
+- [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - Exercise of basic usage of WebDNN
 
 ---
 
