@@ -7,6 +7,8 @@ For Windows users, jump to [setup_windows](../setup_windows.html)
 git clone https://github.com/mil-tokyo/webdnn
 ```
 
+Once you learn how to use WebDNN and want to use it in your project, [npm](../../tips/npm.html) and [pip](../../tips/pip.html) packages may be useful (please note that they does not contain examples).
+
 ## Installing WebGPU environment
 WebDNN runs fastest on browsers which support WebGPU. Currently, only Safari Technology Preview on macOS supports it.
 
