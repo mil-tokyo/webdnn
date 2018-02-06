@@ -23,6 +23,8 @@ It will install ``webdnn`` package in the ``node_modules`` directory.
 
 You can use the package by using ``require('webdnn')``.
 
+Complete working example is here: `https://github.com/milhidaka/webdnn-exercise/tree/master/webpack <https://github.com/milhidaka/webdnn-exercise/tree/master/webpack>`_
+
 =====
 Notes
 =====
