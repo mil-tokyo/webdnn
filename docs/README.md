@@ -2,9 +2,11 @@
 
 ## build
 
+Run at project root directory.
+
 ```
 npm install
-npm run build-doc
+./scripts/build-doc.sh
 ```
 
 HTML Document are generated in `/docs/build/html`

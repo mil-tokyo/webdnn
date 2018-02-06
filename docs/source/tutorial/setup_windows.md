@@ -9,6 +9,8 @@ git clone https://github.com/mil-tokyo/webdnn
 
 If you do not have git, zip file is also available: [https://github.com/mil-tokyo/webdnn/archive/master.zip](https://github.com/mil-tokyo/webdnn/archive/master.zip)
 
+Once you learn how to use WebDNN and want to use it in your project, [npm](../../tips/npm.html) and [pip](../../tips/pip.html) packages may be useful (please note that they does not contain examples).
+
 ## Installing python environment
 If you do not have python environment, install python environment.
 

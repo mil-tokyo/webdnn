@@ -7,14 +7,14 @@ For Windows users, jump to [setup_windows](../setup_windows.html)
 git clone https://github.com/mil-tokyo/webdnn
 ```
 
+Once you learn how to use WebDNN and want to use it in your project, [npm](../../tips/npm.html) and [pip](../../tips/pip.html) packages may be useful (please note that they does not contain examples).
+
 ## Installing WebGPU environment
-WebDNN runs fastest on browsers which support WebGPU. Currently, only Safari Technology Preview on macOS supports it.
+WebDNN runs fastest on browsers which support WebGPU. Currently, only Safari 11 on macOS supports it ([config needed](../../tips/enable_webgpu_macos.html)).
 
-https://developer.apple.com/safari/technology-preview/
-
-If you don't have such environment, WebAssembly backend can be used.
+If you don't have such environment, WebGL and WebAssembly backend can be used.
 It is supported by most modern browsers.
-(Note: IE and Safari does not support WebAssembly, but asm.js code is automatically generated along with WebAssembly code, and gives similar performance.)
+(Note: IE does not support WebAssembly, but asm.js code is automatically generated along with WebAssembly code, and gives similar performance.)
 
 ## Installing python package
 This framework requires python3.6+. Some packages need to be installed as precondition.
