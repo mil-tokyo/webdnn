@@ -117,15 +117,15 @@ export function getImageArrayFromImageData(imageData: ImageData,
 
         case Color.BGR:
             array = new type(width * height * 3);
-            [biasB, biasG, biasR] = bias_n;
-            [scaleB, scaleG, scaleR] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
+            [scaleR, scaleG, scaleB] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = 0; h < height; h++) {
                         for (let w = 0; w < width; w++) {
-                            array[(h * width + w) * 3 + 0] = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
+                            array[(h * width + w) * 3 + 0] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
                             array[(h * width + w) * 3 + 1] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
-                            array[(h * width + w) * 3 + 2] = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
+                            array[(h * width + w) * 3 + 2] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
                         }
                     }
                     break;
@@ -133,9 +133,9 @@ export function getImageArrayFromImageData(imageData: ImageData,
                 case Order.CHW:
                     for (let h = 0; h < height; h++) {
                         for (let w = 0; w < width; w++) {
-                            array[(0 * height + h) * width + w] = (data[(h * width + w) * 4 + 2] - biasR) / scaleR;
+                            array[(0 * height + h) * width + w] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
                             array[(1 * height + h) * width + w] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
-                            array[(2 * height + h) * width + w] = (data[(h * width + w) * 4 + 0] - biasB) / scaleB;
+                            array[(2 * height + h) * width + w] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
                         }
                     }
                     break;
