@@ -40,6 +40,7 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
         const int n = gid / C / W2 / H2;
 
         float v = 0;
+        %%DIVIDER_INIT%%
         for (int kh = 0; kh < KH; kh++) {
             const int h1 = h2 * SH - PH + kh;
             if (h1 < 0 || h1 >= H1) continue;
@@ -49,14 +50,22 @@ kernel void %%FUNC_NAME%%(device float * %%STATIC_BUFFER%%[[buffer(0)]],
                 if (w1 < 0 || w1 >= W1) continue;
 
                 v += X[((n * H1 + h1) * W1 + w1) * C + c];
+                %%DIVIDER_ADD%%
             }
         }
-        v /= KH * KW;
+        v /= %%DIVIDER_GET%%;
 
         Y[gid] = v;
     }
 }
 """
+
+# using 1e-8 to avoid zero division in extreme case. 1.0+1e-8 == 1.0 (in float precision)
+statement_divide_without_padding = {
+    False: {"%%DIVIDER_INIT%%": "", "%%DIVIDER_ADD%%": "", "%%DIVIDER_GET%%": "KH * KW"},
+    True: {"%%DIVIDER_INIT%%": "float divider = 1e-8;",
+           "%%DIVIDER_ADD%%": "divider += 1.0;",
+           "%%DIVIDER_GET%%": "divider"}}
 
 
 @WebGPUDescriptorGenerator.register_handler(AveragePooling2D)
@@ -89,6 +98,8 @@ def average_pooling_2d(op: AveragePooling2D,
     name_injector = KernelNameInjector(op)
 
     source = template
+    for key, statement in statement_divide_without_padding[op.parameters["divide_without_padding"]].items():
+        source = source.replace(key, statement)
     source = buffer_injector.inject(source)
     source = name_injector.inject(source)
 

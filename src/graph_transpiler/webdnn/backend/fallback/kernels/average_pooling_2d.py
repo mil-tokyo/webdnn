@@ -22,7 +22,17 @@ var stride = option.stride;
 var ksize = option.ksize;
 var strides_x = option.strides_x;
 var strides_y = option.strides_y;
+var divide_without_padding = option.divide_without_padding;
 var window_area_inv = 1.0 / (ksize[0] * ksize[1]);
+
+var valid_element = function(n_, y_, x_, c_) {
+  y_ -= padding[0];
+  x_ -= padding[1];
+  if (y_ < 0 || y_ >= in_spatial[0] || x_ < 0 || x_ >= in_spatial[1]) {
+    return false;
+  }
+  return true;
+};
 
 var get_x = function(n_, y_, x_, c_) {
   y_ -= padding[0];
@@ -44,12 +54,21 @@ for (var batch = 0; batch < n; batch++) {
     for (var ox = 0; ox < out_spatial[1]; ox++) {
       for (var oc = 0; oc < out_size; oc++) {
         var sum = 0.0;
+        var area = 1e-8;
         for (var ky = 0; ky < ksize[0]; ky++) {
           for (var kx = 0; kx < ksize[1]; kx++) {
-            sum += get_x(batch, oy * stride[0] + ky, ox * stride[1] + kx, oc);
+            if (valid_element(batch, oy * stride[0] + ky, ox * stride[1] + kx, oc)) {
+              sum += get_x(batch, oy * stride[0] + ky, ox * stride[1] + kx, oc);
+              area += 1.0;
+            }
           }
         }
-        set_y(batch, oy, ox, oc, sum * window_area_inv);
+        if (divide_without_padding) {
+          sum /= area;
+        } else {
+          sum *= window_area_inv;
+        }
+        set_y(batch, oy, ox, oc, sum);
       }
     }
   }
@@ -83,7 +102,8 @@ def average_pooling_2d(op: AveragePooling2D, memory_layout: MemoryLayout) -> Lis
                      "strides_y": calculate_all_strides(y),
                      "padding": op.parameters["padding"],
                      "stride": op.parameters["stride"],
-                     "ksize": op.parameters["ksize"]}
+                     "ksize": op.parameters["ksize"],
+                     "divide_without_padding": op.parameters["divide_without_padding"]}
     )
 
     return [kernel]
