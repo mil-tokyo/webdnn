@@ -183,6 +183,8 @@
 <span class="sd">        stride (int or tuple of int): Stride size.</span>
 <span class="sd">        padding (int or tuple of int): Padding size.</span>
 <span class="sd">        cover_all (bool, optional): If `True`, all input pixels are pooled into some output pixels.</span>
+<span class="sd">        divide_without_padding: divides sum of input by the number of elements not of padding. Used in tensorflow.</span>
+<span class="sd">        See https://github.com/mil-tokyo/webdnn/issues/694</span>
 
 <span class="sd">    Signature</span>
 <span class="sd">        .. code::</span>
@@ -193,8 +195,10 @@
 <span class="sd">        - **y** - Output value. Its order is same as :code:`x`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ksize</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">cover_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AveragePooling2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ksize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">cover_all</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ksize</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">IntOrTuple</span><span class="p">,</span>
+                 <span class="n">cover_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">divide_without_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AveragePooling2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ksize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">cover_all</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;divide_without_padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">divide_without_padding</span></div>
 </pre></div>
 
            </div>
