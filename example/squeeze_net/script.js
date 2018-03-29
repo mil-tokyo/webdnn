@@ -53,7 +53,7 @@ async function run() {
         dstW: 223, dstH: 223,
         order: WebDNN.Image.Order.HWC,
         color: WebDNN.Image.Color.BGR,
-        bias: [104.006, 116.669, 122.679]
+        bias: [122.679, 116.669, 104.006] // RGB mean (not BGR)
     }));
 
     let start = performance.now();

@@ -263,6 +263,7 @@ export function getImageArrayFromDrawable(drawable: Drawable,
  *
  *   - `y = (x - bias) / scale`
  *   - `x = y * scale + bias`
+ *   - Note that color order is always RGB, not BGR.
  *
  * ### Examples
  *
@@ -396,8 +397,8 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
             break;
 
         case Color.BGR:
-            [biasB, biasG, biasR] = bias_n;
-            [scaleB, scaleG, scaleR] = scale_n;
+            [biasR, biasG, biasB] = bias_n;
+            [scaleR, scaleG, scaleB] = scale_n;
             switch (order) {
                 case Order.HWC:
                     for (let h = srcY; h < srcY + srcH; h++) {
