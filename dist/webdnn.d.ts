@@ -1741,6 +1741,7 @@ declare module 'webdnn/image/image_array' {
 	 *
 	 *   - `y = (x - bias) / scale`
 	 *   - `x = y * scale + bias`
+	 *   - Note that color order is always RGB, not BGR.
 	 *
 	 * ### Examples
 	 *
