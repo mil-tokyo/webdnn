@@ -18,8 +18,10 @@ def _convert_average_pooling1d(converter: KerasConverter, k_op: "keras.layers.Av
     ksize = (k_op.pool_size[0], 1)
     stride = (k_op.strides[0], 1)
     padding = (parse_padding(k_op.padding, ksize[0], 1)[0], 0)
+    divide_without_padding = padding > 0
 
-    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding)(y)
+    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=padding,
+                          divide_without_padding=divide_without_padding)(y)
     z = y.reshape([y.shape[0], y.shape[1], y.shape[3]], OrderNTC)
 
     converter.set_variable(converter.get_output_tensor(k_op)[0], z)
@@ -36,13 +38,11 @@ def _convert_max_pooling2d(converter: KerasConverter, k_op: "keras.layers.Averag
     )
     x, padding = convert_odd_padding_to_concat(x, padding=padding)
 
-    if any(p > 0 for p in padding):
-        console.warning(
-            "[KerasConverter] keras.layers.AveragePooling computes average by dividing number of valid elements in window "
-            "(without padding element), but WebDNN divides it by the number of elements including padding element, so different "
-            "result will be generated on the edge.")
+    divide_without_padding = any(p > 0 for p in padding)
+    # handling tensorflow style padding https://github.com/mil-tokyo/webdnn/issues/694
 
-    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False)(x)
+    y, = AveragePooling2D(None, ksize=k_op.pool_size, stride=k_op.strides, padding=padding, cover_all=False,
+                          divide_without_padding=divide_without_padding)(x)
     converter.set_variable(converter.get_output_tensor(k_op)[0], y)
 
 

@@ -21,6 +21,15 @@ def average_pooling_2d(op: AveragePooling2D) -> List[Kernel]:
     assert ChannelMode.get(x) == ChannelModeEnum.R
     assert ChannelMode.get(y) == ChannelModeEnum.R
 
+    if op.parameters["divide_without_padding"]:
+        divider_init = "float divider = 1e-8;"
+        divider_add = "divider += 1.0;"
+        divider_get = "divider"
+    else:
+        divider_init = ""
+        divider_add = ""
+        divider_get = str(float(op.ksize[0] * op.ksize[1]))
+
     code = KernelCode(["""
 void main() {
     ivec4 variable_position_y = """, change_order(get_output_position(y), y.order, OrderNHWC), f""";
@@ -30,6 +39,7 @@ void main() {
     int c = variable_position_y.w;
 
     float sum = 0.0;
+    {divider_init}
 
     for (int kh = 0; kh < {op.KH}; kh++) {{
         int h1 = h2 * {op.SH} - {op.PH} + kh;
@@ -39,12 +49,13 @@ void main() {
             int w1 = w2 * {op.SW} - {op.PW} + kw;
             if (w1 < 0 || w1 >= {x.shape_dict[Axis.W]}) continue;
 
-            sum += """, texel_fetch(x, change_order("vec4(n, h1, w1, c)", OrderNHWC, x.order)), """.r;
-        }
-    }
+            sum += """, texel_fetch(x, change_order("vec4(n, h1, w1, c)", OrderNHWC, x.order)), f""".r;
+            {divider_add}
+        }}
+    }}
 
-    gl_FragColor.r = sum / """, float(op.ksize[0] * op.ksize[1]), """;
-}
+    gl_FragColor.r = sum / {divider_get};
+}}
 """], name=op.__class__.__name__)
     source = code.generate()
 
