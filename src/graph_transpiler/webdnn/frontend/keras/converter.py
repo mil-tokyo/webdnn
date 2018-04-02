@@ -122,7 +122,10 @@ class KerasConverter(Converter["keras.layers.Layer"]):
         for tensor in model.inputs:
             v = self.get_variable(tensor)
             if not Placeholder.check_resolved(v.shape[0]):
-                v.shape[0].value = self._batch_size
+                if self._batch_size is not None:
+                    v.shape[0].value = self._batch_size
+                else:
+                    v.shape[0].label = "N"  # set label of placeholder for batch size
 
         for depth in sorted(list(model._nodes_by_depth.keys()), reverse=True):
             for node in model._nodes_by_depth[depth]:
