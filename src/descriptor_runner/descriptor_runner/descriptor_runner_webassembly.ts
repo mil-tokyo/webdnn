@@ -54,6 +54,11 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
 
         // for browsers which does not support wasm, try asm.js code
         let kernel_backend = typeof WebAssembly === 'object' ? 'webassembly' : 'asmjs';
+        if (window.navigator.userAgent.indexOf('iPhone OS 11_2') >= 0) {
+            // workaround for bug in webassembly
+            // https://bugs.webkit.org/show_bug.cgi?id=181781
+            kernel_backend = 'asmjs';
+        }
         let worker_entry_js_path = `${this.directory}/kernels_${kernel_backend}.js`;
         worker_entry_js_path = transformUrl(worker_entry_js_path);
         this.worker_entry_js_path = worker_entry_js_path;
