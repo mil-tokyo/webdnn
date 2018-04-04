@@ -213,10 +213,12 @@
 <div class="section" id="installing-emscripten-and-eigen">
 <span id="installing-emscripten-and-eigen"></span><h2>Installing Emscripten and Eigen<a class="headerlink" href="#installing-emscripten-and-eigen" title="Permalink to this headline">¶</a></h2>
 <p>If you want to enable WebAssembly backend, em++ command from <a class="reference external" href="https://github.com/kripken/emscripten">Emscripten</a> is required. You can skip this section if you try WebGPU backend only.</p>
-<p>To setup Emscripten which supports WebAssembly,</p>
-<p>Download &#8220;Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)&#8221; from <a class="reference external" href="http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html</a>.</p>
+<p>To setup Emscripten which supports WebAssembly, follow the official page <a class="reference external" href="http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html</a>.</p>
+<p>Please note that &#8220;Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)&#8221; is too old because WebDNN uses options only avaliable on newer versions.</p>
 <p>When installing, you should add PATH of <code class="docutils literal"><span class="pre">emcc</span></code> to PATH, but PATH of <code class="docutils literal"><span class="pre">python</span></code> should not be added (as it conflicts with Anaconda).</p>
+<p>Please note that <code class="docutils literal"><span class="pre">emsdk_env.bat</span></code> have to be run every time.</p>
 <p><a class="reference external" href="http://eigen.tuxfamily.org">Eigen</a> is needed as the library. Download latest source from <a class="reference external" href="http://eigen.tuxfamily.org/index.php?title=Main_Page">http://eigen.tuxfamily.org/index.php?title=Main_Page</a> and decompress.</p>
+<p>Move <code class="docutils literal"><span class="pre">Eigen</span></code> directory into <code class="docutils literal"><span class="pre">emsdk/emscripten/*/system/include</span></code>. * is version number of emscripten. The file <code class="docutils literal"><span class="pre">include/Eigen/Dense</span></code> have to exist.</p>
 </div>
 <div class="section" id="setting-for-using-proper-python">
 <span id="setting-for-using-proper-python"></span><h2>Setting for using proper python<a class="headerlink" href="#setting-for-using-proper-python" title="Permalink to this headline">¶</a></h2>
@@ -224,12 +226,6 @@
 <div class="highlight-bat"><div class="highlight"><pre><span></span><span class="s2">&quot;C:\ProgramData\Anaconda3\python.exe&quot;</span> <span class="nv">%*</span>
 </pre></div>
 </div>
-<p>python environment (2.7.x) of Anaconda have to be executed with <code class="docutils literal"><span class="pre">python</span></code> command. To accompilsh it, create a file named <code class="docutils literal"><span class="pre">python.bat</span></code> and fill with the following content.</p>
-<div class="highlight-bat"><div class="highlight"><pre><span></span><span class="k">set</span> <span class="nv">CPLUS_INCLUDE_PATH</span><span class="p">=</span>PATH\TO\EIGEN
-<span class="s2">&quot;C:\Program Files\Emscripten\python\2.7.5.3_64bit\python.exe&quot;</span> <span class="nv">%*</span>
-</pre></div>
-</div>
-<p>Concrete path depends on the version of Emscripten and installer configuration. <code class="docutils literal"><span class="pre">PATH\TO\EIGEN</span></code> have to be replaced by the directory where Eigen is downloaded. The file <code class="docutils literal"><span class="pre">PATH\TO\EIGEN\Eigen\Dense</span></code> should exists.</p>
 </div>
 <div class="section" id="verification-of-emscripten-and-eigen-installation">
 <span id="verification-of-emscripten-and-eigen-installation"></span><h2>Verification of Emscripten and Eigen installation<a class="headerlink" href="#verification-of-emscripten-and-eigen-installation" title="Permalink to this headline">¶</a></h2>
@@ -265,9 +261,8 @@
 <span class="n">python3</span> <span class="n">train_mnist_chainer</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal"><span class="pre">python3.bat</span></code>, <code class="docutils literal"><span class="pre">python.bat</span></code> have to exist on the current directory.</p>
+<p>Here, <code class="docutils literal"><span class="pre">python3.bat</span></code> have to exist on the current directory.</p>
 <p>Graph descriptor files for each backend are generated.</p>
-<p>In Emscripten 1.35, files <code class="docutils literal"><span class="pre">before.js</span></code>, <code class="docutils literal"><span class="pre">load-wasm-worker.js</span></code> seem to be generated on current directory (it seems that latest Emscripten for linux does not require them). You have to move them to the output directory.</p>
 </div>
 </div>
 

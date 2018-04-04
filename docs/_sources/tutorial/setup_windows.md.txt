@@ -27,13 +27,17 @@ If you want to convert models of Caffe or Chainer, install chainer package. Refe
 ## Installing Emscripten and Eigen
 If you want to enable WebAssembly backend, em++ command from [Emscripten](https://github.com/kripken/emscripten) is required. You can skip this section if you try WebGPU backend only.
 
-To setup Emscripten which supports WebAssembly,
+To setup Emscripten which supports WebAssembly, follow the official page [http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
-Download "Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)" from [http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
+Please note that "Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)" is too old because WebDNN uses options only avaliable on newer versions.
 
 When installing, you should add PATH of `emcc` to PATH, but PATH of `python` should not be added (as it conflicts with Anaconda).
 
+Please note that `emsdk_env.bat` have to be run every time.
+
 [Eigen](http://eigen.tuxfamily.org) is needed as the library. Download latest source from [http://eigen.tuxfamily.org/index.php?title=Main_Page](http://eigen.tuxfamily.org/index.php?title=Main_Page) and decompress.
+
+Move `Eigen` directory into `emsdk/emscripten/*/system/include`. * is version number of emscripten. The file `include/Eigen/Dense` have to exist.
 
 ## Setting for using proper python
 python environment (3.6.x) of Anaconda have to be executed with `python3` command. To accompilsh it, create a file named `python3.bat` and fill with the following content.
@@ -41,15 +45,6 @@ python environment (3.6.x) of Anaconda have to be executed with `python3` comman
 ```bat
 "C:\ProgramData\Anaconda3\python.exe" %*
 ```
-
-python environment (2.7.x) of Anaconda have to be executed with `python` command. To accompilsh it, create a file named `python.bat` and fill with the following content.
-
-```bat
-set CPLUS_INCLUDE_PATH=PATH\TO\EIGEN
-"C:\Program Files\Emscripten\python\2.7.5.3_64bit\python.exe" %*
-```
-
-Concrete path depends on the version of Emscripten and installer configuration. `PATH\TO\EIGEN` have to be replaced by the directory where Eigen is downloaded. The file `PATH\TO\EIGEN\Eigen\Dense` should exists.
 
 ## Verification of Emscripten and Eigen installation
 Create a file named `hello.cpp`:
@@ -92,8 +87,6 @@ cd example\mnist
 python3 train_mnist_chainer.py
 ```
 
-Here, `python3.bat`, `python.bat` have to exist on the current directory.
+Here, `python3.bat` have to exist on the current directory.
 
 Graph descriptor files for each backend are generated.
-
-In Emscripten 1.35, files `before.js`, `load-wasm-worker.js` seem to be generated on current directory (it seems that latest Emscripten for linux does not require them). You have to move them to the output directory.
