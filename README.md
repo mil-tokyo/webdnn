@@ -20,3 +20,13 @@ $ yarn run webpack
 $ cd ./build
 $ python3 -m http.server # or "python2 -m SimpleHTTPServer"
 ```
+
+Note that `webdnn.js` does not follow latest version. You have to put latest version of `webdnn.js` and `webdnn.js.map` into `src/static`.
+
+## Deploy
+assume current directory is root of `webpage-src` branch, and `../webdnn-gh-pages` is the root of `gh-pages` branch.
+
+```shell
+rsync -av --delete build/webdnn/ ../webdnn-gh-pages/ --exclude ".*" --exclude ".*/" --exclude docs
+```
+
