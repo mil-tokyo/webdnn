@@ -1561,6 +1561,10 @@ declare module 'webdnn/image/enums' {
 	    BGR = 1,
 	    /** grey scale */
 	    GREY = 2,
+	    /** RGBA format */
+	    RGBA = 3,
+	    /** BGRA format */
+	    BGRA = 4,
 	}
 
 }

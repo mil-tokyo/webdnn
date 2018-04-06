@@ -20,14 +20,16 @@ function flatten<T>(arr: ArrayLike<T>) {
  */
 function normalizeBiasTuple(arr: number[] | number): number[] {
     if (typeof(arr) == "number") {
-        return [arr, arr, arr];
+        return [arr, arr, arr, arr];
     } else {
-        if (arr.length == 3) {
-            return [arr[0], arr[1], arr[2]];
+        if (arr.length == 4) {
+            return [arr[0], arr[1], arr[2], arr[3]];
+        } else if (arr.length == 3) {
+            return [arr[0], arr[1], arr[2], arr[0]];
         } else if (arr.length == 1) {
-            return [arr[0], arr[0], arr[0]];
+            return [arr[0], arr[0], arr[0], arr[0]];
         } else {
-            throw new Error('bias and scale must be scalar number or array of length 1 or 3.');
+            throw new Error('bias and scale must be scalar number or array of length 1 or 3 or 4.');
         }
     }
 }
@@ -84,8 +86,8 @@ export function getImageArrayFromImageData(imageData: ImageData,
 
     let data = imageData.data;
     let array: Float32Array | Int32Array;
-    let biasR: number, biasG: number, biasB: number;
-    let scaleR: number, scaleG: number, scaleB: number;
+    let biasR: number, biasG: number, biasB: number, biasA: number;
+    let scaleR: number, scaleG: number, scaleB: number, scaleA: number;
 
     switch (color) {
         case Color.RGB:
@@ -136,6 +138,64 @@ export function getImageArrayFromImageData(imageData: ImageData,
                             array[(0 * height + h) * width + w] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
                             array[(1 * height + h) * width + w] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
                             array[(2 * height + h) * width + w] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
+                        }
+                    }
+                    break;
+            }
+            break;
+
+            case Color.RGBA:
+            array = new type(width * height * 4);
+            [scaleR, scaleG, scaleB, scaleA] = scale_n;
+            [biasR, biasG, biasB, biasA] = bias_n;
+            switch (order) {
+                case Order.HWC:
+                    for (let h = 0; h < height; h++) {
+                        for (let w = 0; w < width; w++) {
+                            array[(h * width + w) * 4 + 0] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
+                            array[(h * width + w) * 4 + 1] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                            array[(h * width + w) * 4 + 2] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
+                            array[(h * width + w) * 4 + 3] = (data[(h * width + w) * 4 + 3] - biasA) / scaleA;
+                        }
+                    }
+                    break;
+
+                case Order.CHW:
+                    for (let h = 0; h < height; h++) {
+                        for (let w = 0; w < width; w++) {
+                            array[(0 * height + h) * width + w] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
+                            array[(1 * height + h) * width + w] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                            array[(2 * height + h) * width + w] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
+                            array[(3 * height + h) * width + w] = (data[(h * width + w) * 4 + 3] - biasA) / scaleA;
+                        }
+                    }
+                    break;
+            }
+            break;
+
+        case Color.BGRA:
+            array = new type(width * height * 4);
+            [biasR, biasG, biasB, biasA] = bias_n;
+            [scaleR, scaleG, scaleB, scaleA] = scale_n;
+            switch (order) {
+                case Order.HWC:
+                    for (let h = 0; h < height; h++) {
+                        for (let w = 0; w < width; w++) {
+                            array[(h * width + w) * 4 + 0] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
+                            array[(h * width + w) * 4 + 1] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                            array[(h * width + w) * 4 + 2] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
+                            array[(h * width + w) * 4 + 3] = (data[(h * width + w) * 4 + 3] - biasA) / scaleA;
+                        }
+                    }
+                    break;
+
+                case Order.CHW:
+                    for (let h = 0; h < height; h++) {
+                        for (let w = 0; w < width; w++) {
+                            array[(0 * height + h) * width + w] = (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
+                            array[(1 * height + h) * width + w] = (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
+                            array[(2 * height + h) * width + w] = (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
+                            array[(3 * height + h) * width + w] = (data[(h * width + w) * 4 + 3] - biasA) / scaleA;
                         }
                     }
                     break;
@@ -364,8 +424,8 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
 
     array = flatten(array);
     let data = new Uint8ClampedArray(srcW * srcH * 4);
-    let biasR: number, biasG: number, biasB: number;
-    let scaleR: number, scaleG: number, scaleB: number;
+    let biasR: number, biasG: number, biasB: number, biasA: number;
+    let scaleR: number, scaleG: number, scaleB: number, scaleA: number;
 
     switch (color) {
         case Color.RGB:
@@ -418,6 +478,62 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
                             data[(h * imageW + w) * 4 + 1] = array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
                             data[(h * imageW + w) * 4 + 2] = array[(0 * imageH + h) * imageW + w] * scaleB + biasB;
                             data[(h * imageW + w) * 4 + 3] = 255;
+                        }
+                    }
+                    break;
+            }
+            break;
+
+            case Color.RGBA:
+            [biasR, biasG, biasB, biasA] = bias_n;
+            [scaleR, scaleG, scaleB, scaleA] = scale_n;
+            switch (order) {
+                case Order.HWC:
+                    for (let h = srcY; h < srcY + srcH; h++) {
+                        for (let w = srcX; w < srcX + srcW; w++) {
+                            data[(h * imageW + w) * 4 + 0] = array[(h * imageW + w) * 3 + 0] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 1] = array[(h * imageW + w) * 3 + 1] * scaleG + biasG;
+                            data[(h * imageW + w) * 4 + 2] = array[(h * imageW + w) * 3 + 2] * scaleB + biasB;
+                            data[(h * imageW + w) * 4 + 3] = array[(h * imageW + w) * 3 + 3] * scaleA + biasA;
+                        }
+                    }
+                    break;
+
+                case Order.CHW:
+                    for (let h = srcY; h < srcY + srcH; h++) {
+                        for (let w = srcX; w < srcX + srcW; w++) {
+                            data[(h * imageW + w) * 4 + 0] = array[(0 * imageH + h) * imageW + w] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 1] = array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                            data[(h * imageW + w) * 4 + 2] = array[(2 * imageH + h) * imageW + w] * scaleB + biasB;
+                            data[(h * imageW + w) * 4 + 3] = array[(3 * imageH + h) * imageW + w] * scaleA + biasA;
+                        }
+                    }
+                    break;
+            }
+            break;
+
+        case Color.BGRA:
+            [biasR, biasG, biasB, biasA] = bias_n;
+            [scaleR, scaleG, scaleB, scaleA] = scale_n;
+            switch (order) {
+                case Order.HWC:
+                    for (let h = srcY; h < srcY + srcH; h++) {
+                        for (let w = srcX; w < srcX + srcW; w++) {
+                            data[(h * imageW + w) * 4 + 0] = array[(h * imageW + w) * 4 + 2] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 1] = array[(h * imageW + w) * 4 + 1] * scaleG + biasG;
+                            data[(h * imageW + w) * 4 + 2] = array[(h * imageW + w) * 4 + 0] * scaleB + biasB;
+                            data[(h * imageW + w) * 4 + 3] = array[(h * imageW + w) * 4 + 3] * scaleA + biasA;
+                        }
+                    }
+                    break;
+
+                case Order.CHW:
+                    for (let h = srcY; h < srcY + srcH; h++) {
+                        for (let w = srcX; w < srcX + srcW; w++) {
+                            data[(h * imageW + w) * 4 + 0] = array[(2 * imageH + h) * imageW + w] * scaleR + biasR;
+                            data[(h * imageW + w) * 4 + 1] = array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                            data[(h * imageW + w) * 4 + 2] = array[(0 * imageH + h) * imageW + w] * scaleB + biasB;
+                            data[(h * imageW + w) * 4 + 3] = array[(3 * imageH + h) * imageW + w] * scaleA + biasA;
                         }
                     }
                     break;
