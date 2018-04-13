@@ -9,7 +9,7 @@ WebDNN Converter Frontend for [Open Neural Network Exchange (ONNX) format](http:
 If you use anaconda, it completes by just one command.
 
 ```bash
-conda install -c ezyang onnx
+conda install -c conda-forge onnx
 ```
 
 In other case, see [onnx's github repository(https://github.com/onnx/onnx)](https://github.com/onnx/onnx).
@@ -22,9 +22,7 @@ python -c "import onnx"
 
 ### PyTorch
 
-PyTorch supports onnx, but currently (11.09.2017), `torch.onnx` module is not included in release build of pytorch.
-You have to build torch from source. See [https://github.com/pytorch/pytorch#from-source](https://github.com/pytorch/pytorch#from-source).
-
+PyTorch supports onnx. Its model first converted to onnx, then converted with ONNX frontend.
 
 ## Example
 

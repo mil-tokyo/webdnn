@@ -367,7 +367,9 @@ def _convert_gemm(converter: ONNXConverter, onnx_op: INodeProto):
     beta = attrs["beta"].f
     broadcast = attrs.get("broadcast", 0)
 
-    y, = Tensordot(None, axes=(A.order.axes[0 if attrs["transA"].i else 1], B.order.axes[1 if attrs["transB"].i else 0]))(A, B)
+    transA = attrs["transA"].i if "transA" in attrs else 0
+    transB = attrs["transB"].i if "transB" in attrs else 0
+    y, = Tensordot(None, axes=(A.order.axes[0 if transA else 1], B.order.axes[1 if transB else 0]))(A, B)
 
     if broadcast:
         check_broadcast_constraints(y, C)
