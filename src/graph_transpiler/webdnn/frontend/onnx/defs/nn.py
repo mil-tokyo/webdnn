@@ -21,10 +21,6 @@ def _convert_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
     attrs = attribute_dict(onnx_op)
     ksize = list(attrs["kernel_shape"].ints)
-    dilations = list(attrs["dilations"].ints)
-    if any(d != 1 for d in dilations):
-        raise NotImplementedError("[ONNXConverter] AveragePool is supported only when dilations are 1.")
-
     stride = list(attrs["strides"].ints)
 
     pad = list(attrs["pads"].ints)
@@ -39,7 +35,7 @@ def _convert_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
             raise NotImplementedError("[ONNXConverter] odd-size padding is not supported.")
         pad = [pad[0], pad[2]]
 
-    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=pad)(x)
+    y, = AveragePooling2D(None, ksize=ksize, stride=stride, padding=pad, cover_all=False)(x)
     converter.set_variable(onnx_op.output[0], y)
 
 
@@ -50,10 +46,6 @@ def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
     attrs = attribute_dict(onnx_op)
     ksize = list(attrs["kernel_shape"].ints)
-    dilations = list(attrs["dilations"].ints)
-    if any(d != 1 for d in dilations):
-        raise NotImplementedError("[ONNXConverter] MaxPool is supported only when dilations are 1.")
-
     stride = list(attrs["strides"].ints)
 
     pad = list(attrs["pads"].ints)
@@ -68,7 +60,12 @@ def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
             raise NotImplementedError("[ONNXConverter] odd-size padding is not supported.")
         pad = [pad[0], pad[2]]
 
-    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=pad)(x)
+    # https://github.com/onnx/onnx/blob/master/docs/Operators.md
+    # output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - kernel_spatial_shape[i]) / strides_spatial_shape[i] + 1)
+    # In PyTorch, nn.MaxPool2d(2) with input size 11 produces output size 5,
+    # where kernel_shape=2, pads=0, strides=2 is set as onnx attributes.
+    # It corresponds to cover_all=False.
+    y, = MaxPooling2D(None, ksize=ksize, stride=stride, padding=pad, cover_all=False)(x)
     converter.set_variable(onnx_op.output[0], y)
 
 
