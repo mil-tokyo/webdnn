@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/mil-tokyo/webdnn.svg?style=svg)](https://circleci.com/gh/mil-tokyo/webdnn)
+[![CircleCI](https://circleci.com/gh/mil-tokyo/webdnn.svg?style=svg)](https://circleci.com/gh/mil-tokyo/webdnn) [![Slack](https://slack.bri.im/badge.svg)](https://slack.bri.im)
 
 # WebDNN: Fastest DNN Execution Framework on Web Browser
 
