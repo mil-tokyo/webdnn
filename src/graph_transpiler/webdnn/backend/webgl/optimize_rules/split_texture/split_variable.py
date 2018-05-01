@@ -42,10 +42,19 @@ class SplitVariable(OptimizeRule):
     def optimize(self, graph: Graph):
         flag_changed = False
 
+        c_before = traverse.filter_nodes(traverse.listup_variables(graph), ConstantVariable)
+        c_size_before = sum([c.size for c in c_before])
+
         for v in traverse.filter_nodes(traverse.listup_variables(graph), SplitTarget):
             axis = _choose_split_axis(v)
             _split_axis(v, axis, graph)
             flag_changed = True
+
+            c_after = traverse.filter_nodes(traverse.listup_variables(graph), ConstantVariable)
+            c_size_after = sum([c.size for c in c_after])
+
+            if c_size_before > c_size_after:
+                raise Exception
 
         return graph, flag_changed
 
@@ -71,10 +80,7 @@ def _split_axis(v: Variable, axis: Axis, graph):
         ops += [v.output_from]
 
     for op in ops:
-        if all(isinstance(v, ConstantVariable) for v in op.inputs.values()):
-            op.fold_constance(graph)
-
-        elif isinstance(op, Tensordot):
+        if isinstance(op, Tensordot):
             # NOTE:
             # "_split_tensordot" must be called before "_split_tensorwise".
             #
