@@ -30,10 +30,8 @@ def _align(offset: int, unit: int = 1):
 
 
 class WebGLAllocation(Allocation):
-    def __init__(self, width: IntLike, height: IntLike, channel_mode: ChannelModeEnum, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN,
-                 name: str = None):
-        super(WebGLAllocation, self).__init__(size=width * height * ChannelMode.elements_per_pixel(channel_mode),
-                                              offset=-1, begin=begin, end=end, name=name)
+    def __init__(self, size: IntLike, width: IntLike, height: IntLike, channel_mode: ChannelModeEnum, begin: int = _T_UNKNOWN, end: int = _T_UNKNOWN, name: str = None):
+        super(WebGLAllocation, self).__init__(size=size, offset=-1, begin=begin, end=end, name=name)
         self.width = width
         self.height = height
         self.channel_mode = channel_mode
@@ -129,22 +127,21 @@ def _get_allocations(graph: Graph, operators: Sequence[Operator], variables: Seq
         # Constant variable cannot be released
         height, width = TextureShape.get(v)
         width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
-        allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
+        allocations[v] = WebGLAllocation(size=v.size, width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
         allocated.add(v)
 
     for v in graph.inputs:
         # Input variable cannot be released
         height, width = TextureShape.get(v)
         width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
-        allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
+        allocations[v] = WebGLAllocation(size=v.size, width=width, height=height, channel_mode=ChannelMode.get(v), begin=0, end=T_LAST, name=v.name)
         allocated.add(v)
 
     for v in graph.outputs:
         # Output variable cannot be released, but it's not needed to be allocated from the begin
         height, width = TextureShape.get(v)
         width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
-        allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=_T_UNKNOWN, end=T_LAST,
-                                         name=v.name)
+        allocations[v] = WebGLAllocation(size=v.size, width=width, height=height, channel_mode=ChannelMode.get(v), begin=_T_UNKNOWN, end=T_LAST, name=v.name)
         allocated.add(v)
 
     for t, op in enumerate(operators):
@@ -158,8 +155,7 @@ def _get_allocations(graph: Graph, operators: Sequence[Operator], variables: Seq
                 # Create new allocation object
                 height, width = TextureShape.get(v)
                 width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
-                allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN,
-                                                 name=v.name)
+                allocations[v] = WebGLAllocation(size=v.size, width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN, name=v.name)
                 retain_count[v] = len(v.input_to)
                 allocated.add(v)
 
@@ -168,8 +164,7 @@ def _get_allocations(graph: Graph, operators: Sequence[Operator], variables: Seq
                 # Allocate
                 height, width = TextureShape.get(v)
                 width = (width + ChannelMode.elements_per_pixel(v) - 1) // ChannelMode.elements_per_pixel(v)
-                allocations[v] = WebGLAllocation(width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN,
-                                                 name=v.name)
+                allocations[v] = WebGLAllocation(size=v.size, width=width, height=height, channel_mode=ChannelMode.get(v), begin=t, end=_T_UNKNOWN, name=v.name)
                 retain_count[v] = len(v.input_to)
                 allocated.add(v)
 
