@@ -59,7 +59,14 @@ class ConstantEncoderEightbit(ConstantEncoder):
     def encode(self, memory_layout: MemoryLayout) -> bytes:
         all_code = b""
         for alloc in memory_layout.allocations.values():
-            if alloc.offset >= memory_layout.data.size:
+            # TODO
+            # This if-statement checks whether this allocation has the initial values.
+            #
+            # We should improve this as follows:
+            #   1. Instead of concatenating all initial values, separate them and store it in each allocation instance.
+            #   2. When generating graph descriptor and related assets, concatenate them.
+            #
+            if alloc.offset < 0 or alloc.offset >= memory_layout.data.size:
                 continue
 
             single_data = memory_layout.data[alloc.offset:alloc.offset + alloc.size]
