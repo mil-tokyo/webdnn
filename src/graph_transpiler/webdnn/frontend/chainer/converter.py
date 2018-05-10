@@ -2,7 +2,7 @@
 
 """
 Chainer Link -> Graph object converters
-Assuming Chainer >=1.23-1.24, <4.0.0
+Assuming Chainer >=1.23-1.24, <5.0.0
 """
 import traceback
 import warnings
@@ -42,8 +42,10 @@ try:
 
     VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(chainer.__version__)
 
-    if VERSION_MAJOR == 3:
+    if VERSION_MAJOR >= 3:
         # v3.x.x
+        if VERSION_MAJOR >= 5:
+            warnings.warn(f"WebDNN does not support Chainer version >= 5. Currently, Chainer {chainer.__version__} is installed.")
 
         # In v3, Many functions are represented as instance of `chainer.function_node.FunctionNode`. However some functions are still
         # instance of `chainer.function.Function` (ex. Im2Col).
@@ -87,7 +89,7 @@ try:
             return c_var
 
     else:
-        raise NotImplementedError(f"WebDNN supports Chainer from v1.23 to v3. Currently, Chainer {chainer.__version__} is installed.")
+        raise NotImplementedError(f"WebDNN does not support Chainer older than v1.23. Currently, Chainer {chainer.__version__} is installed.")
 
     FLAG_CHAINER_INSTALLED = True
 
@@ -146,7 +148,7 @@ class ChainerConverter(Converter["T_FUNCTION"]):
 
     Converter for `Chainer <https://chainer.org/>`_.
 
-    Currently, from :code:`v1.23` to :code:`v3.1.0` is supported.
+    Currently, from :code:`v1.23` to :code:`v4.0.0` is supported.
     """
 
     def __init__(self):
