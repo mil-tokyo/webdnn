@@ -15,6 +15,7 @@ from webdnn.graph.order import Order
 from webdnn.graph.order import OrderNCHW
 from webdnn.graph.placeholder import Placeholder
 from webdnn.util.misc import mul
+from webdnn.frontend.util import semver
 
 
 # noinspection PyUnusedLocal
@@ -238,10 +239,19 @@ def _convert_spatial_transformer_sampler(converter: ChainerConverter,
 def _convert_split_axis(converter: ChainerConverter, c_op: "chainer.functions.SplitAxis"):
     x = converter.get_variable(c_op.inputs[0])
 
-    if isinstance(c_op.indices_or_sections, int):
-        raise NotImplementedError("[ChainerConverter] SplitAxis with indices are not supported.")
+    VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = semver(chainer.__version__)
+    if VERSION_MAJOR >= 4:
+        # Internal data structure changed
+        # https://github.com/chainer/chainer/commit/906a8e9b0837cd9a4e5ee6f1dbda26431a1e12d1#diff-9e610d281c820d44c4a0cbf0ca6263fd
+        if c_op.indices is None:
+            raise NotImplementedError("[ChainerConverter] SplitAxis with sections are not supported.")
+        indices = c_op.indices
+    else:
+        if isinstance(c_op.indices_or_sections, int):
+            raise NotImplementedError("[ChainerConverter] SplitAxis with sections are not supported.")
+        indices = c_op.indices_or_sections
 
-    ys = SplitAxis(None, sections=c_op.indices_or_sections, axis=x.order.axes[c_op.axis])(x)
+    ys = SplitAxis(None, sections=indices, axis=x.order.axes[c_op.axis])(x)
     for i, y in enumerate(ys):
         converter.set_variable(c_op.outputs[i](), y)
 
