@@ -170,7 +170,7 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Chainer Link -&gt; Graph object converters</span>
-<span class="sd">Assuming Chainer &gt;=1.23-1.24, &lt;4.0.0</span>
+<span class="sd">Assuming Chainer &gt;=1.23-1.24, &lt;5.0.0</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -210,8 +210,10 @@
 
     <span class="n">VERSION_MAJOR</span><span class="p">,</span> <span class="n">VERSION_MINOR</span><span class="p">,</span> <span class="n">VERSION_PATCH</span> <span class="o">=</span> <span class="n">semver</span><span class="p">(</span><span class="n">chainer</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">VERSION_MAJOR</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">VERSION_MAJOR</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="c1"># v3.x.x</span>
+        <span class="k">if</span> <span class="n">VERSION_MAJOR</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN does not support Chainer version &gt;= 5. Currently, Chainer </span><span class="si">{chainer.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
 
         <span class="c1"># In v3, Many functions are represented as instance of `chainer.function_node.FunctionNode`. However some functions are still</span>
         <span class="c1"># instance of `chainer.function.Function` (ex. Im2Col).</span>
@@ -255,7 +257,7 @@
             <span class="k">return</span> <span class="n">c_var</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN supports Chainer from v1.23 to v3. Currently, Chainer </span><span class="si">{chainer.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;WebDNN does not support Chainer older than v1.23. Currently, Chainer </span><span class="si">{chainer.__version__}</span><span class="s2"> is installed.&quot;</span><span class="p">)</span>
 
     <span class="n">FLAG_CHAINER_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -314,7 +316,7 @@
 
 <span class="sd">    Converter for `Chainer &lt;https://chainer.org/&gt;`_.</span>
 
-<span class="sd">    Currently, from :code:`v1.23` to :code:`v3.1.0` is supported.</span>
+<span class="sd">    Currently, from :code:`v1.23` to :code:`v4.0.0` is supported.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
