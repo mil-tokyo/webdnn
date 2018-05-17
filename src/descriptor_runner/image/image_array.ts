@@ -363,7 +363,7 @@ export async function getImageArray(image: ImageSource,
     } else if (image instanceof HTMLCanvasElement) {
         return getImageArrayFromCanvas(image, options)
 
-    } else if (image instanceof HTMLImageElement || image instanceof HTMLVideoElement) {
+    } else if (image instanceof HTMLImageElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
         return getImageArrayFromDrawable(image, options);
 
         // FIXME: This feature is not supported for all web browsers.
@@ -371,7 +371,7 @@ export async function getImageArray(image: ImageSource,
         //     return getImageArrayFromDrawable(await loadImageByDialog(), options);
 
     } else throw TypeError('Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
-        ' HTMLInputElement, HTMLCanvasElement, HTMLImageElement, or HTMLVideoElement object');
+        ' HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object');
 }
 
 /**
