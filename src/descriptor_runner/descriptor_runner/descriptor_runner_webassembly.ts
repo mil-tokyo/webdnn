@@ -48,6 +48,15 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         return Promise.resolve();
     }
 
+    // https://qiita.com/sounisi5011/items/e24d0e1dfd71c5dd528e
+    // helper function to transform relative path to absolute path
+    // FIXME: use URL constructor. URL does not work on IE11, so polyfill is also needed to use it.
+    private absolutePath(path) {
+        var e = document.createElement('span');
+        e.insertAdjacentHTML('beforeend', '<a href="' + path + '" />');
+        return (<HTMLAnchorElement>e!.firstChild!).href;
+    }
+
     async setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void> {
         this.descriptor = descriptor;
         this.placeholderContext = new PlaceholderContext(this.descriptor!.placeholders);
@@ -63,7 +72,27 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         worker_entry_js_path = transformUrl(worker_entry_js_path);
         this.worker_entry_js_path = worker_entry_js_path;
 
-        await this.compile();
+        let worker_src_fetch = await fetch(this.worker_entry_js_path);
+        let worker_src = await worker_src_fetch.text();
+
+        /*
+        Worker internally try to fetch 'kernels_webassembly.wasm' with relative url.
+        However, worker which constructed with blob of source code fails to fetch with relative url.
+        To avoid the problem, file name is transformed to absolute url and embedded to webassembly_header.js.
+        */
+        let map_aux_file_src = (basename, key) => {
+            let file_abs = this.absolutePath(`${this.directory}/${basename}`);
+            let file_abs_transformed = transformUrl(file_abs);// absolute path is given
+            worker_src = worker_src.replace(key, file_abs_transformed);
+        }
+
+        if (kernel_backend === 'webassembly') {
+            map_aux_file_src('kernels_webassembly.wasm', 'WEBDNN_URL_KERNELS_WASM');
+        } else {
+            map_aux_file_src('kernels_asmjs.js.mem', 'WEBDNN_URL_KERNELS_ASMJS_MEM');
+        }
+
+        await this.compile(worker_src);
 
         await this.loadWeights(new Uint8Array(parameters));
 
@@ -207,8 +236,10 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         });
     }
 
-    private compile(): Promise<void> {
-        let worker = new Worker(this.worker_entry_js_path);
+    private compile(worker_src: string): Promise<void> {
+        let blob = new Blob([worker_src], {type: "text/javascript"});
+        let blob_url = URL.createObjectURL(blob);
+        let worker = new Worker(blob_url);
         worker.onerror = (event) => {
             console.error(event);
             // console.error('Worker Exception: ' + event.message);

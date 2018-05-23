@@ -1,4 +1,4 @@
-var Module = {};
+var Module = typeof Module !== "undefined" ? Module : {};
 
 // ES6 (let) cannot be used
 onmessage = function (event) {
@@ -71,4 +71,11 @@ Module.quit = function (status, toThrow) {
 
 Module.onRuntimeInitialized = function () {
     postMessage(0);
+};
+
+Module.locateFile = function (name) {
+    return {
+        'kernels_webassembly.wasm': 'WEBDNN_URL_KERNELS_WASM',
+        'kernels_asmjs.js.mem': 'WEBDNN_URL_KERNELS_ASMJS_MEM'
+    }[name];
 };
