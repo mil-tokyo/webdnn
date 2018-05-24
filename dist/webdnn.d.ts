@@ -875,6 +875,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    static checkAvailability(): boolean;
 	    constructor();
 	    init(): Promise<void>;
+	    private absolutePath(path);
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void>;
 	    /**
 	     * Fetch graph descriptor from specified directory.
@@ -925,7 +926,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	        [key: string]: number;
 	    }): Promise<void>;
 	    private setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray);
-	    private compile();
+	    private compile(worker_src);
 	    private loadWeights(weightsData);
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
