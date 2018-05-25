@@ -257,17 +257,16 @@ export function getImageArrayFromDrawable(drawable: Drawable,
     if (drawable instanceof HTMLVideoElement) {
         srcW = drawable.videoWidth;
         srcH = drawable.videoHeight;
-
     } else if (drawable instanceof HTMLImageElement) {
         srcW = drawable.naturalWidth;
         srcH = drawable.naturalHeight;
-
     } else if (drawable instanceof HTMLCanvasElement) {
-        return getImageArrayFromCanvas(drawable, options)
-
+        return getImageArrayFromCanvas(drawable, options);
     } else if (drawable instanceof ImageData) {
-        return getImageArrayFromImageData(drawable, options)
-
+        let canvas = document.createElement('canvas');
+        let context = getContext2D(canvas);
+        context.putImageData(drawable, 0, 0);
+        return getImageArrayFromCanvas(canvas, options);
     } else throw TypeError('Failed to execute "getImageDataFromDrawable(drawable, options)": "drawable" must be an instanceof Drawable');
 
     let {
