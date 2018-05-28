@@ -264,6 +264,8 @@ export function getImageArrayFromDrawable(drawable: Drawable,
         return getImageArrayFromCanvas(drawable, options);
     } else if (drawable instanceof ImageData) {
         let canvas = document.createElement('canvas');
+        canvas.height = drawable.height;
+        canvas.width = drawable.width;
         let context = getContext2D(canvas);
         context.putImageData(drawable, 0, 0);
         return getImageArrayFromCanvas(canvas, options);
