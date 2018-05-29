@@ -60,3 +60,11 @@ python -m http.server
 You can run the demo on `http://localhost:8000/example/mnist/descriptor_run_mnist.html`
 
 For IE11, `http://localhost:8000/example/mnist/descriptor_run_mnist.es5.html`
+
+# Generating script.es5.js from script.js
+
+```
+npx babel-cli script.js -o script.es5.js
+```
+
+This command references `.babelrc`, which is configured to transform the code for IE11.
