@@ -34,6 +34,35 @@ def test_2d():
     )
 
 
+def test_2d_odd():
+    vx1 = np.random.rand(2, 3)
+    vx2 = np.random.rand(2, 3)
+    vx3 = np.random.rand(2, 3)
+    vx4 = np.random.rand(2, 3)
+    vx5 = np.random.rand(2, 3)
+    vy = np.concatenate((vx1, vx2, vx3, vx4, vx5), 0)
+
+    x1 = Variable(vx1.shape, order=OrderNC)
+    x2 = Variable(vx2.shape, order=OrderNC)
+    x3 = Variable(vx3.shape, order=OrderNC)
+    x4 = Variable(vx4.shape, order=OrderNC)
+    x5 = Variable(vx5.shape, order=OrderNC)
+    y, = Concat(None, axis=Axis.N)(x1, x2, x3, x4, x5)
+
+    generate_kernel_test_case(
+        description=f"concat_2d_odd",
+        graph=Graph([x1, x2, x3, x4, x5], [y]),
+        inputs={
+            x1: vx1,
+            x2: vx2,
+            x3: vx3,
+            x4: vx4,
+            x5: vx5
+        },
+        expected={y: vy}
+    )
+
+
 def test_major_axis():
     vx1 = np.random.rand(2, 3, 4, 5)
     vx2 = np.random.rand(2, 3, 4, 5)

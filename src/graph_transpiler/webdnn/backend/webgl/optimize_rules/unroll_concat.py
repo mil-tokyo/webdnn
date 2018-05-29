@@ -48,7 +48,7 @@ class UnrollConcat(OptimizeRule):
                 hs = []
                 while len(xs) > 0:
                     if len(xs) == 1:
-                        hs.append(xs[0])
+                        hs.append(xs.pop(0))
 
                     else:
                         x0, x1 = xs.pop(0), xs.pop(0)
