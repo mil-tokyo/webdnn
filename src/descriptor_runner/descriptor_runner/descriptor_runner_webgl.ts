@@ -12,7 +12,7 @@ import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName, getConfiguration } from "../webdnn";
 import WebGLHandler from "../webgl_handler";
-import { DescriptorRunner } from "./descriptor_runner";
+import {DescriptorRunner, DescriptorRunnerOptions} from "./descriptor_runner";
 
 /**
  * @protected
@@ -72,6 +72,10 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
         return WebGLHandler.checkAvailability();
     }
 
+    constructor(options: DescriptorRunnerOptions = {}) {
+        super(options);
+    }
+
     async init() {
         if (!DescriptorRunnerWebGL.checkAvailability()) throw Error('WebGL backend is not supported in this browser.');
 
@@ -84,12 +88,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
     }
 
     async fetchDescriptor(directory: string) {
-        let res = await webdnnFetch(`${directory}/graph_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.json`);
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.json`, this.transformUrlDelegate);
         return res.json();
     }
 
     async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any) {
-        let res = await webdnnFetch(`${directory}/weight_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.bin`);
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}_${this.handler.MAX_TEXTURE_SIZE}.bin`, this.transformUrlDelegate);
         return readArrayBufferProgressively(res, progressCallback);
     }
 

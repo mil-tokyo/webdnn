@@ -5,12 +5,12 @@
 
 import * as localforage from "localforage";
 import get_weight_decoder from "../decoder/get_weight_decoder";
-import webDNNFetch, { readArrayBufferProgressively, transformUrl } from "../fetch";
+import webDNNFetch, { readArrayBufferProgressively } from "../fetch";
 import { GraphDescriptorWebassembly } from "../graph_descriptor/graph_descriptor_webassembly";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName } from "../webdnn";
-import { DescriptorRunner } from "./descriptor_runner";
+import { DescriptorRunner, DescriptorRunnerOptions } from "./descriptor_runner";
 
 /**
  * @private
@@ -33,8 +33,8 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         return 'Worker' in window;
     }
 
-    constructor() {
-        super();
+    constructor(options: DescriptorRunnerOptions = {}) {
+        super(options);
         if (typeof Worker === 'undefined') throw new Error('WebWorker is needed for WebAssembly backend');
         if (typeof WebAssembly !== 'object') {
             console.warn('WebAssembly is not supported on this browser, trying to use asm.js code');
@@ -69,7 +69,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
             kernel_backend = 'asmjs';
         }
         let worker_entry_js_path = `${this.directory}/kernels_${kernel_backend}.js`;
-        worker_entry_js_path = transformUrl(worker_entry_js_path);
+        worker_entry_js_path = this.transformUrlDelegate(worker_entry_js_path);
         this.worker_entry_js_path = worker_entry_js_path;
 
         let worker_src_fetch = await fetch(this.worker_entry_js_path);
@@ -82,7 +82,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
         */
         let map_aux_file_src = (basename, key) => {
             let file_abs = this.absolutePath(`${this.directory}/${basename}`);
-            let file_abs_transformed = transformUrl(file_abs);// absolute path is given
+            let file_abs_transformed = this.transformUrlDelegate(file_abs);// absolute path is given
             worker_src = worker_src.replace(key, file_abs_transformed);
         }
 
@@ -126,7 +126,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
      */
     async fetchDescriptor(directory: string): Promise<GraphDescriptorWebassembly> {
         this.directory = directory;
-        let res = await webDNNFetch(`${directory}/graph_${this.backendName}.json`);
+        let res = await webDNNFetch(`${directory}/graph_${this.backendName}.json`, this.transformUrlDelegate);
         return res.json();
     }
 
@@ -147,7 +147,7 @@ export default class DescriptorRunnerWebassembly extends DescriptorRunner<GraphD
      */
     async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer> {
         let weight_url = `${directory}/weight_${this.backendName}.bin`;
-        let weight_fetch = await webDNNFetch(weight_url);
+        let weight_fetch = await webDNNFetch(weight_url, this.transformUrlDelegate);
         return readArrayBufferProgressively(weight_fetch, progressCallback);
     }
 
