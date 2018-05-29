@@ -375,6 +375,22 @@ export async function getImageArray(image: ImageSource,
         ' HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object');
 }
 
+function createImageData(array: Uint8ClampedArray, width: number, height: number): ImageData {
+    try {
+        return new ImageData(array, width, height);
+    } catch (e) {
+        // FIXME: Removing this warning causes the following error. Maybe bug in webpack?
+        // Uncaught (in promise) SyntaxError: Identifier 'n' has already been declared
+        console.warn(`new ImageData failed: ${e}`);
+        // IE11 does not support ImageData constructor
+        let canvas_ = document.createElement('canvas');
+        let context = getContext2D(canvas_);
+        let data = context.createImageData(width, height);
+        data.data.set(array);
+        return data;
+    }
+}
+
 /**
  * Set image array data into canvas.
  *
@@ -553,5 +569,5 @@ export function setImageArrayToCanvas(array: Float32Array | Int32Array,
             break;
     }
 
-    setImageDataToCanvas(new ImageData(data, srcW, srcH), canvas, {srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH});
+    setImageDataToCanvas(createImageData(data, srcW, srcH), canvas, {srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH});
 }
