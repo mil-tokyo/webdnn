@@ -188,7 +188,7 @@ declare module 'webdnn/symbolic_typed_array/symbolic_typed_array' {
 	    /**
 	     * The size in bytes of each element in the array.
 	     */
-	    readonly abstract BYTES_PER_ELEMENT: number;
+	    readonly BYTES_PER_ELEMENT: number;
 	    /**
 	     * @protected
 	     */
