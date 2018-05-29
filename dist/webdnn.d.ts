@@ -495,17 +495,21 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	import PlaceholderContext from 'webdnn/placeholder';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
+	export interface DescriptorRunnerOptions {
+	    transformUrlDelegate?: (base: string) => string;
+	}
 	/**
 	 * @protected
 	 */
 	export interface DescriptorRunnerConstructor<D extends GraphDescriptor, P> {
-	    new (option?: any): DescriptorRunner<D, P>;
+	    new (option: DescriptorRunnerOptions): DescriptorRunner<D, P>;
 	    checkAvailability(): boolean;
 	}
 	/**
 	 * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
 	 */
 	export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
+	    constructor(option?: DescriptorRunnerOptions);
 	    /**
 	     * For Developer:
 	     *
@@ -539,6 +543,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner' {
 	     * The backend name
 	     */
 	    readonly backendName: BackendName;
+	    readonly transformUrlDelegate: (base: string) => string;
 	    /**
 	     * The descriptor
 	     */
@@ -736,27 +741,16 @@ declare module 'webdnn/fetch' {
 	    progressCallback?: (loaded: number, total: number) => any;
 	}
 	/**
-	 * Transform url generated based on current active backend
-	 * @param url transformed url
-	 * @protected
-	 */
-	export function transformUrl(url: string): string;
-	/**
-	 * Register delegate function for transform url.
-	 * @param delegate Delegate function which will be called with original url, and must return converted url strings.
-	 * @protected
-	 */
-	export function registerTransformUrlDelegate(delegate: (base: string) => string): void;
-	/**
 	 * Fetch function. WebDNN API use this function instead of original `fetch` function.
 	 * FIXME
 	 * @param input Requested url
-	 * @param init Additional information about webdnnFetch
-	 * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
+	 * @param transformUrlDelegate url transform function
+	 * @param init? Additional information about webdnnFetch
+	 * @param init?.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
 	 * @returns Response
 	 * @protected
 	 */
-	export default function webdnnFetch(input: RequestInfo, init?: WebDNNRequestInit): Promise<any>;
+	export default function webdnnFetch(input: RequestInfo, transformUrlDelegate: (base: string) => string, init?: WebDNNRequestInit): Promise<any>;
 	/**
 	 * Read `Response.body` stream as ArrayBuffer. This function provide progress information by callback.
 	 * @param res Response object
@@ -796,7 +790,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	import { GraphDescriptorFallback } from 'webdnn/graph_descriptor/graph_descriptor_fallback';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
-	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
@@ -808,6 +802,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	    private dynamicBuffer;
 	    private directory;
 	    static checkAvailability(): boolean;
+	    constructor(options?: DescriptorRunnerOptions);
 	    init(): Promise<void>;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorFallback, parameters: ArrayBuffer): Promise<void>;
 	    fetchDescriptor(directory: string): Promise<any>;
@@ -861,7 +856,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	import { GraphDescriptorWebassembly } from 'webdnn/graph_descriptor/graph_descriptor_webassembly';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
-	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
@@ -873,7 +868,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    private worker_initial_error;
 	    private directory;
 	    static checkAvailability(): boolean;
-	    constructor();
+	    constructor(options?: DescriptorRunnerOptions);
 	    init(): Promise<void>;
 	    private absolutePath(path);
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void>;
@@ -1260,7 +1255,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
-	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * @protected
 	 */
@@ -1272,6 +1267,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	    private programs;
 	    private buffers;
 	    static checkAvailability(): boolean;
+	    constructor(options?: DescriptorRunnerOptions);
 	    init(): Promise<void>;
 	    fetchDescriptor(directory: string): Promise<any>;
 	    fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer>;
@@ -1395,12 +1391,13 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	import { GraphDescriptorWebGPU } from 'webdnn/graph_descriptor/graph_descriptor_webgpu';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
-	import { DescriptorRunner } from 'webdnn/descriptor_runner/descriptor_runner';
+	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
 	 * DescriptorRunner for WebGPU
 	 * @protected
 	 */
 	export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
+	    constructor(options?: DescriptorRunnerOptions);
 	    /**
 	     * backend name
 	     */
