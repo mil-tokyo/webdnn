@@ -37,7 +37,7 @@ export abstract class SymbolicTypedArray<T extends Float32Array | Int32Array> {
     /**
      * The size in bytes of each element in the array.
      */
-    abstract readonly BYTES_PER_ELEMENT: number;
+    readonly BYTES_PER_ELEMENT: number; // removed "abstract" due to TS2715
 
     /**
      * @protected

@@ -1,9 +1,7 @@
-// compile in https://babeljs.io/repl/#?babili=false&browsers=&build=&builtIns=false
-
 'use strict';
 
-var run_entry = function() {
-    var _ref = _asyncToGenerator(/*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+var run_entry = function () {
+    var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
         return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
@@ -37,15 +35,15 @@ var run_entry = function() {
     };
 }();
 
-var loadImage = function() {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+var loadImage = function () {
+    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
         var imageData;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
                         _context2.next = 2;
-                        return WebDNN.Image.getImageArray(document.getElementById("image_url").value, {dstW: 224, dstH: 224});
+                        return WebDNN.Image.getImageArray(document.getElementById("image_url").value, { dstW: 224, dstH: 224 });
 
                     case 2:
                         imageData = _context2.sent;
@@ -68,8 +66,8 @@ var loadImage = function() {
     };
 }();
 
-var prepare_run = function() {
-    var _ref3 = _asyncToGenerator(/*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+var prepare_run = function () {
+    var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
         var backend_name, framework_name, backend_key, runner;
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
             while (1) {
@@ -86,12 +84,12 @@ var prepare_run = function() {
 
                         log('Initializing and loading model');
                         _context3.next = 7;
-                        return WebDNN.load('./output_' + framework_name, {backendOrder: backend_name});
+                        return WebDNN.load('./output_' + framework_name, { backendOrder: backend_name });
 
                     case 7:
                         runner = _context3.sent;
 
-                        log('Loaded backend: ' + runner.backendName + ', model converted from ' + framework_name);
+                        log('Loaded backend: ' + runner.backendName + ', version: ' + runner.descriptor.converted_at);
 
                         runners[backend_key] = runner;
                         _context3.next = 13;
@@ -116,9 +114,9 @@ var prepare_run = function() {
     };
 }();
 
-var run = function() {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
-        var runner, start, elapsed_time, out_vec, top_labels, predicted_str, j;
+var run = function () {
+    var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
+        var runner, x, y, start, elapsed_time, top_labels, predicted_str, j;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
             while (1) {
                 switch (_context4.prev = _context4.next) {
@@ -128,27 +126,28 @@ var run = function() {
 
                     case 2:
                         runner = _context4.sent;
-                        _context4.t0 = runner.inputs[0];
-                        _context4.next = 6;
+                        x = runner.inputs[0];
+                        y = runner.outputs[0];
+                        _context4.t0 = x;
+                        _context4.next = 8;
                         return WebDNN.Image.getImageArray(document.getElementById('input_image'), {
                             order: getFrameworkName() === 'chainer' ? WebDNN.Image.Order.CHW : WebDNN.Image.Order.HWC,
                             color: WebDNN.Image.Color.BGR,
                             bias: [123.68, 116.779, 103.939]
                         });
 
-                    case 6:
+                    case 8:
                         _context4.t1 = _context4.sent;
 
                         _context4.t0.set.call(_context4.t0, _context4.t1);
 
                         start = performance.now();
-                        _context4.next = 11;
+                        _context4.next = 13;
                         return runner.run();
 
-                    case 11:
+                    case 13:
                         elapsed_time = performance.now() - start;
-                        out_vec = runner.outputs[0].toActual();
-                        top_labels = WebDNN.Math.argmax(out_vec, 5);
+                        top_labels = WebDNN.Math.argmax(y, 5);
                         predicted_str = 'Predicted:';
 
                         for (j = 0; j < top_labels.length; j++) {
@@ -156,10 +155,10 @@ var run = function() {
                         }
                         log(predicted_str);
 
-                        console.log('output vector: ', out_vec);
+                        console.log('output vector: ', y.toActual());
                         log('Total Elapsed Time[ms/image]: ' + elapsed_time.toFixed(2));
 
-                    case 19:
+                    case 20:
                     case 'end':
                         return _context4.stop();
                 }
@@ -172,33 +171,7 @@ var run = function() {
     };
 }();
 
-function _asyncToGenerator(fn) {
-    return function() {
-        var gen = fn.apply(this, arguments);
-        return new Promise(function(resolve, reject) {
-            function step(key, arg) {
-                try {
-                    var info = gen[key](arg);
-                    var value = info.value;
-                } catch (error) {
-                    reject(error);
-                    return;
-                }
-                if (info.done) {
-                    resolve(value);
-                } else {
-                    return Promise.resolve(value).then(function(value) {
-                        step("next", value);
-                    }, function(err) {
-                        step("throw", err);
-                    });
-                }
-            }
-
-            return step("next");
-        });
-    };
-}
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 function log(msg) {
     var msg_node = document.getElementById('messages');
