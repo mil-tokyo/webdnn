@@ -12,7 +12,7 @@ import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName, getConfiguration } from "../webdnn";
 import WebGPUHandler, { IS_WEBGPU_SUPPORTED } from "../webgpu_handler";
-import { DescriptorRunner } from "./descriptor_runner";
+import {DescriptorRunner, DescriptorRunnerOptions} from "./descriptor_runner";
 
 /**
  * Check this device is iOS devices or not.
@@ -25,6 +25,12 @@ const IS_IOS = navigator.userAgent.includes('iPhone') || navigator.userAgent.inc
  * @protected
  */
 export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
+
+
+    constructor(options: DescriptorRunnerOptions = {}) {
+        super(options);
+    }
+
     /**
      * backend name
      */
@@ -129,7 +135,7 @@ using namespace metal;
      * @protected
      */
     async fetchDescriptor(directory: string): Promise<GraphDescriptorWebGPU> {
-        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`);
+        let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`, this.transformUrlDelegate);
         return res.json();
     }
 
@@ -149,7 +155,7 @@ using namespace metal;
      * @protected
      */
     async fetchParameters(directory: string, progressCallback?: (loaded: number, total: number) => any): Promise<ArrayBuffer> {
-        let res = await webdnnFetch(`${directory}/weight_${this.backendName}.bin`);
+        let res = await webdnnFetch(`${directory}/weight_${this.backendName}.bin`, this.transformUrlDelegate);
         return readArrayBufferProgressively(res, progressCallback);
     }
 

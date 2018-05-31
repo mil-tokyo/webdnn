@@ -2,7 +2,7 @@
     "name": "webdnn",
     "version": "1.2.5",
     "description": "Deep Neural Network Execution Framework for Web Browsers",
-    "main": "src/descriptor_runner/webdnn.js",
+    "main": "dist/webdnn.js",
     "types": "dist/webdnn.d.ts",
     "directories": {
         "doc": "docs",

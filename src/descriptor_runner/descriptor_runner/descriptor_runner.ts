@@ -8,11 +8,16 @@ import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName } from "../webdnn";
 
+export interface DescriptorRunnerOptions {
+    transformUrlDelegate? : (base: string) => string
+}
+
+
 /**
  * @protected
  */
 export interface DescriptorRunnerConstructor<D extends GraphDescriptor, P> {
-    new(option?: any): DescriptorRunner<D, P>
+    new(option: DescriptorRunnerOptions): DescriptorRunner<D, P>
 
     checkAvailability(): boolean;
 }
@@ -21,6 +26,13 @@ export interface DescriptorRunnerConstructor<D extends GraphDescriptor, P> {
  * `DescriptorRunner` provides interface to execute DNN model and access input and output buffers.
  */
 export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
+
+    constructor(option : DescriptorRunnerOptions = {}) {
+        let {
+            transformUrlDelegate = function(url){return url;}
+        } = option;
+        this.transformUrlDelegate = transformUrlDelegate;
+    }
     /**
      * For Developer:
      *
@@ -55,6 +67,8 @@ export abstract class DescriptorRunner<D extends GraphDescriptor, P> {
      * The backend name
      */
     readonly backendName: BackendName;
+
+    readonly transformUrlDelegate: (base : string) => string;
 
     /**
      * The descriptor

@@ -5,10 +5,6 @@
 
 import DispatchScheduler from "./util/dispatch_scheduler";
 
-/**
- * @protected
- */
-let transformDelegate: (base: string) => string = url => url;
 
 /**
  * @protected
@@ -19,38 +15,21 @@ export interface WebDNNRequestInit extends RequestInit {
 }
 
 /**
- * Transform url generated based on current active backend
- * @param url transformed url
- * @protected
- */
-export function transformUrl(url: string) {
-    return transformDelegate(url);
-}
-
-/**
- * Register delegate function for transform url.
- * @param delegate Delegate function which will be called with original url, and must return converted url strings.
- * @protected
- */
-export function registerTransformUrlDelegate(delegate: (base: string) => string) {
-    transformDelegate = delegate;
-}
-
-/**
  * Fetch function. WebDNN API use this function instead of original `fetch` function.
  * FIXME
  * @param input Requested url
- * @param init Additional information about webdnnFetch
- * @param init.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
+ * @param transformUrlDelegate url transform function
+ * @param init? Additional information about webdnnFetch
+ * @param init?.ignoreCache If true, cache is ignored by appending '?t=(timestamp)' to the end of request url.
  * @returns Response
  * @protected
  */
-export default async function webdnnFetch(input: RequestInfo, init?: WebDNNRequestInit) {
+export default async function webdnnFetch(input: RequestInfo, transformUrlDelegate: (base: string) => string, init?: WebDNNRequestInit) {
     if (typeof input == 'string') {
-        input = transformUrl(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
+        input = transformUrlDelegate(input) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '');
     } else {
         input = Object.assign({}, input, {
-            url: transformUrl(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
+            url: transformUrlDelegate(input.url) + ((init && init.ignoreCache) ? '?t=' + Date.now() : '')
         });
     }
 
