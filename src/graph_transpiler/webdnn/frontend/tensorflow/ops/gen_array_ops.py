@@ -80,7 +80,7 @@ def concat_v2_handler(converter: TensorFlowConverter, tf_op: "tf.Operation"):
     assert isinstance(axis, ConstantVariable), "[TensorFlowConverter] Dynamic axis concatenation is not supported yet."
     axis = xs[0].order.axes[int(axis.data.flatten()[0])]
 
-    for x0, x1 in itertools.permutations(xs):
+    for x0, x1 in itertools.permutations(xs, r=2):
         x0.order.unify(x1.order)
 
     y, = Concat(None, axis=axis)(*xs)
