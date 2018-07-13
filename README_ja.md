@@ -98,7 +98,7 @@ async function run() {
 # WebDNNを用いたアプリケーション・デモ
 
 - [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
-- [https://y-ich.github.io/A9.js/index.html](https://y-ich.github.io/A9.js/index.html) - 囲碁AI ([Pyaq](https://github.com/ymgaq/Pyaq)のJavaScript移植)
+- [https://new3rs.github.io/AZ.js/index.ja.html](https://new3rs.github.io/AZ.js/index.ja.html) ([英語版](https://new3rs.github.io/AZ.js/index.html)) - 囲碁AI ([Pyaq](https://github.com/ymgaq/Pyaq)のJavaScript移植)
 - [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - 画像説明文生成デモ
 - [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - WebDNNの基本的な使い方の演習
 
