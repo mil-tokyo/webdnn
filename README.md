@@ -106,6 +106,7 @@ Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.ht
 - [https://new3rs.github.io/AZ.js/index.html](https://new3rs.github.io/AZ.js/index.html) ([Japanese ver](https://new3rs.github.io/AZ.js/index.ja.html)) - Go AI (JavaScript version of [Pyaq](https://github.com/ymgaq/Pyaq))
 - [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - Generating image caption demo
 - [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - Exercise of basic usage of WebDNN
+- [https://emotionaltrackingsdk.morphcast.com](https://emotionaltrackingsdk.morphcast.com/index.html#https://www.youtube.com/watch?v=iHciomXGxUA&feature=youtu.be) - Emotion recognition from camera by Cynny, see [https://www.morphcast.com] for more info
 
 ---
 
