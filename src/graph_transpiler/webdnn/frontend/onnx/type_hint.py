@@ -142,7 +142,7 @@ DataTypeMappingDict = {
     DataType.UINT16: NumPyDataType("UINT16", np.uint16),
     DataType.INT16: NumPyDataType("INT16", np.int16),
     DataType.INT32: NumPyDataType("INT32", np.int32),
-    DataType.INT64: NumPyDataType("INT64", None),
+    DataType.INT64: NumPyDataType("INT64", np.int64),
     DataType.STRING: NumPyDataType("STRING", None),
     DataType.BOOL: NumPyDataType("BOOL", None),
 

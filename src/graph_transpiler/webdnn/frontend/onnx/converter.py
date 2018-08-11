@@ -36,6 +36,8 @@ class ONNXConverter(Converter["onnx.NodeProto"]):
     To use this converter, you need to install ONNX python module. see `ONNX github repository <https://github.com/onnx/onnx>`_.
     """
 
+    opset_version: int  # ONNX operator set version
+
     def __init__(self):
         super(ONNXConverter, self).__init__()
         if not FLAG_ONNX_INSTALLED:
@@ -76,6 +78,7 @@ Module "onnx" cannot be imported. Please check that follow command works correct
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
         onnx_graph = model.graph  # type: IGraphProto
+        self.opset_version = model.opset_import[0].version
 
         # Convert constant parameters
         for proto in onnx_graph.initializer:
@@ -130,7 +133,8 @@ def _convert_value_info_proto(proto: IValueInfoProto) -> Variable:
     """
     Convert ValueInfoProto into variable.
     """
-    shape = [1] if len(proto.type.tensor_type.shape.dim) == 0 else [d.dim_value for d in proto.type.tensor_type.shape.dim]
+    shape = [1] if len(proto.type.tensor_type.shape.dim) == 0 else [d.dim_value for d in
+                                                                    proto.type.tensor_type.shape.dim]
     return Variable(shape, Order([None] * len(shape)))
 
 
@@ -166,7 +170,8 @@ def _listup_functions(graph: IGraphProto) -> Sequence[INodeProto]:
             return [] if node not in creator_map else [creator_map[node]]
 
     result = []  # type: List[Container]
-    stack = [(node.name, None) for node in graph.output]  # type: List[Tuple[Union[Container, str], Union[Container, str]]]
+    stack = [(node.name, None) for node in
+             graph.output]  # type: List[Tuple[Union[Container, str], Union[Container, str]]]
     dependency_count = {}  # type: Dict[Union[Container, str], int]
 
     while len(stack) > 0:
