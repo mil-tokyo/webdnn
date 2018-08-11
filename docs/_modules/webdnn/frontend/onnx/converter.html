@@ -204,6 +204,8 @@
 <span class="sd">    To use this converter, you need to install ONNX python module. see `ONNX github repository &lt;https://github.com/onnx/onnx&gt;`_.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">opset_version</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># ONNX operator set version</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ONNXConverter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">FLAG_ONNX_INSTALLED</span><span class="p">:</span>
@@ -244,6 +246,7 @@
 <span class="sd">            (:class:`~webdnn.Graph`): WebDNN Graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">onnx_graph</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">graph</span>  <span class="c1"># type: IGraphProto</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opset_version</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">opset_import</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">version</span>
 
         <span class="c1"># Convert constant parameters</span>
         <span class="k">for</span> <span class="n">proto</span> <span class="ow">in</span> <span class="n">onnx_graph</span><span class="o">.</span><span class="n">initializer</span><span class="p">:</span>
@@ -298,7 +301,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ValueInfoProto into variable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">tensor_type</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">dim_value</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">proto</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">tensor_type</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">proto</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">tensor_type</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">dim_value</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span>
+                                                                    <span class="n">proto</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">tensor_type</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">Order</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)))</span>
 
 
@@ -334,7 +338,8 @@
             <span class="k">return</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">creator_map</span> <span class="k">else</span> <span class="p">[</span><span class="n">creator_map</span><span class="p">[</span><span class="n">node</span><span class="p">]]</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[Container]</span>
-    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">output</span><span class="p">]</span>  <span class="c1"># type: List[Tuple[Union[Container, str], Union[Container, str]]]</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span>
+             <span class="n">graph</span><span class="o">.</span><span class="n">output</span><span class="p">]</span>  <span class="c1"># type: List[Tuple[Union[Container, str], Union[Container, str]]]</span>
     <span class="n">dependency_count</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[Union[Container, str], int]</span>
 
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
