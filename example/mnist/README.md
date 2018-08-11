@@ -50,6 +50,16 @@ Train and convert MNIST classification model
 python train_mnist_chainer.py
 ```
 
+## PyTorch
+
+To run this example, you need to install [PyTorch](https://pytorch.org/) (v0.4) and
+[ONNX](https://github.com/onnx/onnx#installation). See their official website for installation.
+
+Train and convert MNIST classification model
+```
+python train_mnist_pytorch.py
+```
+
 ## Running on the web browser
 Start a HTTP server on the package root directory (where `setup.py` exists)
 

@@ -29,8 +29,17 @@ def _convert_cast(converter: ONNXConverter, onnx_op: INodeProto):
 @ONNXConverter.register_handler("Reshape")
 def _convert_reshape(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
-    attrs = attribute_dict(onnx_op)
-    out_shape = [r if s == 0 else s for r, s in zip(x.shape, attrs["shape"].ints)]
+    if converter.opset_version >= 5:
+        # output shape is specified by onnx_op.input[1]
+        # It have to be ConstantVariable.
+        # TODO: test for different operator set version
+        shape_var = converter.get_variable(onnx_op.input[1])
+        assert isinstance(shape_var, ConstantVariable), "Shape specifier of Reshape operator have to be constant."
+        out_shape = [int(d) for d in shape_var.data]
+    else:
+        # Reshape-1
+        attrs = attribute_dict(onnx_op)
+        out_shape = [r if s == 0 else s for r, s in zip(x.shape, attrs["shape"].ints)]
 
     if -1 in out_shape:
         i = out_shape.index(-1)
