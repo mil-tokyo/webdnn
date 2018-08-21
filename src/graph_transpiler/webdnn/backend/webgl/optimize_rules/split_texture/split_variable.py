@@ -25,9 +25,11 @@ from webdnn.graph.operators.pooling_2d import Pooling2D
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tensordot import Tensordot
+from webdnn.graph.operators.transpose import Transpose
 from webdnn.graph.optimize_rule import OptimizeRule
 from webdnn.graph.variable import Variable
 from webdnn.graph.variables.constant_variable import ConstantVariable
+from webdnn.optimizer.sub_rules.constant_folding import ConstantFolding
 from webdnn.util import console
 from webdnn.util.misc import mul
 
@@ -41,6 +43,14 @@ class GraphVars(NamedTuple):
 class SplitVariable(OptimizeRule):
     def optimize(self, graph: Graph):
         flag_changed = False
+
+        """
+        Some operators does not support splitting, but only appear as constant.
+        Workaround for such case, use ConstantFolding for limited operators even if it is turned off.
+        """
+        cf = ConstantFolding()
+        graph, flag_changed_in_cf = cf.optimize(graph, (Transpose,))
+        flag_changed |= flag_changed_in_cf
 
         c_before = traverse.filter_nodes(traverse.listup_variables(graph), ConstantVariable)
         c_size_before = sum([c.size for c in c_before])

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional, Type
 
 from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
@@ -19,7 +19,7 @@ class ConstantFolding(OptimizeRule):
             flags.optimize.CONSTANT_FOLDING
         ]
 
-    def optimize(self, graph: Graph) -> Tuple[Graph, bool]:
+    def optimize(self, graph: Graph, target_ops: Optional[Tuple[Type[Operator]]] = None) -> Tuple[Graph, bool]:
         flag_changed = False
 
         for op in traverse.listup_operators(graph):
@@ -28,6 +28,8 @@ class ConstantFolding(OptimizeRule):
                 continue
 
             if all(isinstance(v, ConstantVariable) for v in op.inputs.values()):
+                if target_ops is not None and not isinstance(op, target_ops):
+                    continue
                 op.fold_constance(graph)
                 flag_changed = True
 
