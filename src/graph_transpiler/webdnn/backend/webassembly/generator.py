@@ -86,6 +86,8 @@ class GraphExecutionData(IGraphExecutionData):
         args.append(
             "EXPORTED_FUNCTIONS=['_run','_init','_get_static_buffer','_allocate_dynamic_buffer','_get_dynamic_buffer','_set_placeholder_value']")
         args.append("-s")
+        args.append("WASM=0")
+        args.append("-s")
         args.append(f"TOTAL_MEMORY={self.descriptor.required_heap}")
         args.append("-s")
         args.append(f"LEGACY_VM_SUPPORT=1")  # polyfills Math.imul, which is needed in IE11 (since emscripten v1.37.23)
