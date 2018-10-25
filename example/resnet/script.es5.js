@@ -116,7 +116,7 @@ var prepare_run = function () {
 
 var run = function () {
     var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
-        var runner, x, y, start, elapsed_time, top_labels, predicted_str, j;
+        var runner, x, y, image_options, start, elapsed_time, top_labels, predicted_str, j;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
             while (1) {
                 switch (_context4.prev = _context4.next) {
@@ -128,24 +128,36 @@ var run = function () {
                         runner = _context4.sent;
                         x = runner.inputs[0];
                         y = runner.outputs[0];
-                        _context4.t0 = x;
-                        _context4.next = 8;
-                        return WebDNN.Image.getImageArray(document.getElementById('input_image'), {
-                            order: getFrameworkName() === 'chainer' ? WebDNN.Image.Order.CHW : WebDNN.Image.Order.HWC,
+                        image_options = {
+                            order: WebDNN.Image.Order.HWC,
                             color: WebDNN.Image.Color.BGR,
                             bias: [123.68, 116.779, 103.939]
-                        });
+                        };
 
-                    case 8:
+
+                        if (getFrameworkName() === 'chainer' || getFrameworkName() === 'pytorch') {
+                            image_options.order = WebDNN.Image.Order.CHW;
+                        }
+
+                        if (getFrameworkName() === 'pytorch') {
+                            image_options.color = WebDNN.Image.Color.RGB;
+                            image_options.scale = [58.40, 57.12, 57.38];
+                        }
+
+                        _context4.t0 = x;
+                        _context4.next = 11;
+                        return WebDNN.Image.getImageArray(document.getElementById('input_image'), image_options);
+
+                    case 11:
                         _context4.t1 = _context4.sent;
 
                         _context4.t0.set.call(_context4.t0, _context4.t1);
 
                         start = performance.now();
-                        _context4.next = 13;
+                        _context4.next = 16;
                         return runner.run();
 
-                    case 13:
+                    case 16:
                         elapsed_time = performance.now() - start;
                         top_labels = WebDNN.Math.argmax(y, 5);
                         predicted_str = 'Predicted:';
@@ -158,7 +170,7 @@ var run = function () {
                         console.log('output vector: ', y.toActual());
                         log('Total Elapsed Time[ms/image]: ' + elapsed_time.toFixed(2));
 
-                    case 20:
+                    case 23:
                     case 'end':
                         return _context4.stop();
                 }
