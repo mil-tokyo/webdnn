@@ -95,7 +95,8 @@ def make_node(op_type: str, inputs: Sequence[str], outputs: Sequence[str], **kwa
 def make_model(nodes: Sequence[INodeProto],
                inputs: Sequence[IValueInfoProto],
                outputs: Sequence[IValueInfoProto],
-               initializer=None) -> IModelProto:
+               initializer=None,
+               opset_version=1) -> IModelProto:
     if initializer is None:
         initializer = []
     graph = GraphProto()
@@ -105,6 +106,7 @@ def make_model(nodes: Sequence[INodeProto],
     graph.initializer.extend(initializer)
 
     model = ModelProto()
+    model.opset_import.add(version=opset_version)
     model.graph.CopyFrom(graph)
 
     return model
