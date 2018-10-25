@@ -171,7 +171,7 @@ def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
     else:
         y = x
         for i in attrs["axes"].ints:
-            y = x.expand_dims(Axis(), i)
+            y = y.expand_dims(Axis(), i)
 
     converter.set_variable(onnx_op.output[0], y)
 
