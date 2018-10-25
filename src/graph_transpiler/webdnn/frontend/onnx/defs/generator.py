@@ -15,7 +15,8 @@ def _convert_constant(converter: ONNXConverter, onnx_op: INodeProto):
     np_type = DataTypeMappingDict[value.data_type]
     if np_type.type is None:
         raise TypeError(f"[ONNXConverter] type \"{np_type.name}\" is not supported")
-    data = np.frombuffer(value.raw_data, np_type.type).reshape([1] if len(value.dims) == 0 else value.dims)
+    # There may be scalar value, which is represented as 0-dim numpy array
+    data = np.frombuffer(value.raw_data, np_type.type).reshape(() if len(value.dims) == 0 else value.dims)
 
     y = ConstantVariable(data, Order([None] * data.ndim))
     converter.set_variable(onnx_op.output[0], y)
