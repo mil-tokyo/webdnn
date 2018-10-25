@@ -51,11 +51,22 @@ async function run() {
     let x = runner.inputs[0];
     let y = runner.outputs[0];
 
-    x.set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), {
-        order: getFrameworkName() === 'chainer' ? WebDNN.Image.Order.CHW : WebDNN.Image.Order.HWC,
+    let image_options = {
+        order: WebDNN.Image.Order.HWC,
         color: WebDNN.Image.Color.BGR,
-        bias: [123.68, 116.779, 103.939]
-    }));
+        bias: [123.68, 116.779, 103.939],
+    };
+
+    if (getFrameworkName() === 'chainer' || getFrameworkName() === 'pytorch') {
+        image_options.order = WebDNN.Image.Order.CHW;
+    }
+
+    if (getFrameworkName() === 'pytorch') {
+        image_options.color = WebDNN.Image.Color.RGB;
+        image_options.scale = [58.40, 57.12, 57.38];
+    }
+
+    x.set(await WebDNN.Image.getImageArray(document.getElementById('input_image'), image_options));
 
     let start = performance.now();
     await runner.run();

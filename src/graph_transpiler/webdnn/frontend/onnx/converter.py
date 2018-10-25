@@ -125,7 +125,7 @@ def _convert_tensor_proto(proto: ITensorProto) -> ConstantVariable:
     if np_type.type is None:
         raise TypeError(f"[ONNXConverter] type \"{np_type.name}\" is not supported")
 
-    data = np.frombuffer(proto.raw_data, np_type.type).reshape([1] if len(proto.dims) == 0 else proto.dims)
+    data = np.frombuffer(proto.raw_data, np_type.type).reshape(() if len(proto.dims) == 0 else proto.dims)
     return ConstantVariable(data, Order([None] * data.ndim))
 
 

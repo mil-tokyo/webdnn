@@ -1,5 +1,5 @@
 # ResNet-50 model conversion example
-This example converts pre-trained ResNet-50 image classification model of Keras or Chainer into WebDNN format (graph descriptor).
+This example converts pre-trained ResNet-50 image classification model of Keras, Chainer or PyTorch into WebDNN format (graph descriptor).
 
 ## Model conversion (Keras)
 Our scripts assume Keras version 2.0.x.
@@ -26,11 +26,20 @@ The script consists of two parts:
 You can convert the model with `convert_resnet_chainer.py`.
 
 ```
-python convert.py --model resnet50 --backend webgpu --encoding eightbit
+python convert_resnet_chainer.py --backend webgpu,webgl,webassembly --encoding eightbit
 ```
 
-- model can be either vgg16 and resnet50.
-- backend can be webgpu, webassembly, fallback.
+- backend can be webgpu, webgl, webassembly, fallback.
+- encoding is optional argument, `--encoding eightbit` compresses the model weight into about 1/5 size (using approximation).
+
+## Model conversion (PyTorch)
+You can convert the model with `convert_resnet_pytorch.py`.
+
+```
+python convert_resnet_pytorch.py --backend webgpu,webgl,webassembly --encoding eightbit
+```
+
+- backend can be webgpu, webgl, webassembly, fallback.
 - encoding is optional argument, `--encoding eightbit` compresses the model weight into about 1/5 size (using approximation).
 
 ## Running on the web browser

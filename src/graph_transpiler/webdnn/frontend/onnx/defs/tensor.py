@@ -5,7 +5,7 @@ import numpy as np
 
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
-from webdnn.graph.axis import AxisKeyDict
+from webdnn.graph.axis import AxisKeyDict, Axis
 from webdnn.graph.operators.concat import Concat
 from webdnn.graph.operators.depth2space import Depth2Space
 from webdnn.graph.operators.reshape import Reshape
@@ -13,7 +13,7 @@ from webdnn.graph.operators.space2depth import Space2Depth
 from webdnn.graph.operators.split_axis import SplitAxis
 from webdnn.graph.operators.tile import Tile
 from webdnn.graph.operators.transpose import Transpose
-from webdnn.graph.order import Order, OrderNCHW
+from webdnn.graph.order import Order, OrderNCHW, OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
 from webdnn.util import console
 from webdnn.util.misc import mul
@@ -59,9 +59,14 @@ def _convert_concat(converter: ONNXConverter, onnx_op: INodeProto):
         xs[0].order.unify(x.order)
 
     attrs = attribute_dict(onnx_op)
-    axis = xs[0].order.axes[attrs["axis"].i]
+    if all(isinstance(x, ConstantVariable) for x in xs):
+        # generate actual data as constant
+        concat_data = np.concatenate([x.data for x in xs], axis=attrs["axis"].i)
+        y = ConstantVariable(concat_data, xs[0].order)
+    else:
+        axis = xs[0].order.axes[attrs["axis"].i]
 
-    y, = Concat(None, axis=axis)(*xs)
+        y, = Concat(None, axis=axis)(*xs)
     converter.set_variable(onnx_op.output[0], y)
 
 
@@ -74,7 +79,8 @@ def _convert_split(converter: ONNXConverter, onnx_op: INodeProto):
     axis = x.order.axes[attrs["axis"].i]
 
     if "split" not in attrs:
-        raise NotImplementedError("[ONNXConverter] Operator \"Split\" without \"split\" parameter is not supported yet.")
+        raise NotImplementedError(
+            "[ONNXConverter] Operator \"Split\" without \"split\" parameter is not supported yet.")
     split = attrs["split"].ints
     sections = np.cumsum(split).tolist()[:-1]
 
@@ -85,7 +91,21 @@ def _convert_split(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("Slice")
 def _convert_slice(converter: ONNXConverter, onnx_op: INodeProto):
-    raise NotImplementedError("[ONNXConverter] Operator \"Slice\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+    if not isinstance(x, ConstantVariable):
+        raise NotImplementedError("[ONNXConverter] Operator \"Slice\" for non-constant variable is not supported yet.")
+
+    numpy_slice = [slice(None) for i in range(x.ndim)]
+    attrs = attribute_dict(onnx_op)
+    axes = attrs["axes"].ints  # may not present (not supported)
+    starts = attrs["starts"].ints
+    ends = attrs["ends"].ints
+    for a, s, e in zip(axes, starts, ends):
+        numpy_slice[a] = slice(s, e)
+    data_sliced = x.data[tuple(numpy_slice)].copy()
+    y = ConstantVariable(data_sliced, x.order)
+
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("Transpose")
@@ -105,14 +125,54 @@ def _convert_gather(converter: ONNXConverter, onnx_op: INodeProto):
     raise NotImplementedError("[ONNXConverter] Operator \"Gather\" is not supported yet.")
 
 
+@ONNXConverter.register_handler("Shape")
+def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
+    x = converter.get_variable(onnx_op.input[0])
+
+    y = ConstantVariable(np.array(x.shape, dtype=np.float32), OrderC)  # 1-d data
+    converter.set_variable(onnx_op.output[0], y)
+
+
 @ONNXConverter.register_handler("Squeeze")
 def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
 
     attrs = attribute_dict(onnx_op)
-    axes = [x.order.axes[i] for i in attrs["axes"].ints]
 
-    y = x.squeeze(axes)
+    if isinstance(x, ConstantVariable):
+        # generate actual data as constant
+        new_axes = list(x.order.axes)
+        new_data = x.data.copy()
+        for i in reversed(attrs["axes"].ints):  # considering shape (1, 2, 3, 1, 5) and axes=(0,3)
+            new_axes.pop(i)
+            new_data = np.squeeze(new_data, axis=i)
+        y = ConstantVariable(new_data, Order(new_axes))
+    else:
+        axes = [x.order.axes[i] for i in attrs["axes"].ints]
+
+        y = x.squeeze(axes)
+    converter.set_variable(onnx_op.output[0], y)
+
+
+@ONNXConverter.register_handler("Unsqueeze")
+def _convert_squeeze(converter: ONNXConverter, onnx_op: INodeProto):
+    x = converter.get_variable(onnx_op.input[0])
+
+    attrs = attribute_dict(onnx_op)
+
+    if isinstance(x, ConstantVariable):
+        # generate actual data as constant
+        new_axes = list(x.order.axes)
+        new_data = x.data.copy()
+        for i in attrs["axes"].ints:
+            new_axes.insert(i, Axis())
+            new_data = np.expand_dims(new_data, axis=i)
+        y = ConstantVariable(new_data, Order(new_axes))
+    else:
+        y = x
+        for i in attrs["axes"].ints:
+            y = y.expand_dims(Axis(), i)
+
     converter.set_variable(onnx_op.output[0], y)
 
 
@@ -124,7 +184,8 @@ def _convert_pad(converter: ONNXConverter, onnx_op: INodeProto):
 
     pads = attrs["pads"].ints
     if len(pads) != 2 * x.ndim:
-        raise ValueError("[ONNXConverter] The length of parameter \"pads\" in \"Pad\" node must be double of input tensor's dimension")
+        raise ValueError(
+            "[ONNXConverter] The length of parameter \"pads\" in \"Pad\" node must be double of input tensor's dimension")
     pads_begin = pads[:x.ndim]
     pads_end = pads[x.ndim:]
 
@@ -137,7 +198,8 @@ def _convert_pad(converter: ONNXConverter, onnx_op: INodeProto):
 
         if pad_begin > 0:
             if mode == b"constant":
-                multiplier = AxisKeyDict(x.order.axes, [pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes])
+                multiplier = AxisKeyDict(x.order.axes,
+                                         [pad_begin if a == axis else x.shape_dict[a] for a in x.order.axes])
                 xs.append(Tile(None, multiplier)(constant_values)[0])
 
             elif mode == b"reflect":
@@ -155,7 +217,8 @@ def _convert_pad(converter: ONNXConverter, onnx_op: INodeProto):
 
         if pad_end > 0:
             if mode == b"constant":
-                multiplier = AxisKeyDict(x.order.axes, [pad_end if a == axis else x.shape_dict[a] for a in x.order.axes])
+                multiplier = AxisKeyDict(x.order.axes,
+                                         [pad_end if a == axis else x.shape_dict[a] for a in x.order.axes])
                 xs.append(Tile(None, multiplier)(constant_values)[0])
 
             elif mode == b"reflect":
