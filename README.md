@@ -101,6 +101,8 @@ For more information, please see [documents](https://mil-tokyo.github.io/webdnn/
 
 Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.html).
 
+Also, Docker image is provided. See [docker](./docker).
+
 # Applications / demos using WebDNN
 - [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
 - [https://new3rs.github.io/AZ.js/index.html](https://new3rs.github.io/AZ.js/index.html) ([Japanese ver](https://new3rs.github.io/AZ.js/index.ja.html)) - Go AI (JavaScript version of [Pyaq](https://github.com/ymgaq/Pyaq))
