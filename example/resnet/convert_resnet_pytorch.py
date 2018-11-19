@@ -14,7 +14,7 @@ from webdnn.util import console
 
 
 def generate_graph():
-    model = torchvision.models.alexnet(pretrained=True)
+    model = torchvision.models.resnet50(pretrained=True)
     dummy_input = torch.autograd.Variable(torch.zeros(1, 3, 224, 224))
     graph = PyTorchConverter().convert(model, dummy_input)
     return graph
