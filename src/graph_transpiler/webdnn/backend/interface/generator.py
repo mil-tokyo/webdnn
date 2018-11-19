@@ -9,14 +9,12 @@ from webdnn.graph import traverse
 from webdnn.graph.graph import Graph
 from webdnn.graph.operator import Operator
 from webdnn.optimizer.general_optimize_rule import GeneralOptimizeRule
-from webdnn.util import console
+from webdnn.util import console, flags
 
 backend_names = ["webgpu", "webassembly", "fallback"]
 
 T_KERNEL = TypeVar("T_KERNEL")
 T_EXEC_DATA = TypeVar("T_EXEC_DATA")
-
-sys.setrecursionlimit(10000)
 
 
 class DescriptorGenerator(Generic[T_KERNEL, T_EXEC_DATA]):
@@ -91,17 +89,34 @@ def generate_descriptor(backend: str, graph: Graph, **kwargs) -> IGraphExecution
     Returns:
         (:class:`~webdnn.backend.interface.graph_descriptor.IGraphExecutionData`) generated graph descriptor
     """
-    generator = get_generator(backend)
 
-    try:
-        # Graph is transformed by backend-specific optimization
-        graph = copy.deepcopy(graph)
-    except RecursionError:
-        # Occurs when the graph has many nodes (e.g. ResNet)
-        raise RecursionError("Recursion error occurred when copying graph." +
-                             " sys.setrecursionlimit(10000) may help fixing it.")
+    result = []
+    error = []
 
-    # some optimize rule work even when OPTIMIZE=0
-    graph, _ = GeneralOptimizeRule().optimize(graph)
+    # run on thread which have large stack
+    def worker():
+        try:
+            generator = get_generator(backend)
 
-    return generator(graph, **kwargs)
+            # Graph is transformed by backend-specific optimization
+            c_graph = copy.deepcopy(graph)
+
+            # some optimize rule work even when OPTIMIZE=0
+            opt_graph, _ = GeneralOptimizeRule().optimize(c_graph)
+
+            result.append(generator(opt_graph, **kwargs))
+        except Exception as ex:
+            error.append(ex)
+
+    if flags.NO_WORKER_THREAD:
+        worker()
+    else:
+        import threading
+        sys.setrecursionlimit(16384)
+        threading.stack_size(64 * 1024 * 1024)
+        t = threading.Thread(target=worker)
+        t.start()
+        t.join()
+    if len(error) > 0:
+        raise error[0]
+    return result[0]
