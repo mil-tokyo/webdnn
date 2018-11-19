@@ -11,7 +11,7 @@ from webdnn.graph.operator import Operator
 from webdnn.optimizer.general_optimize_rule import GeneralOptimizeRule
 from webdnn.util import console, flags
 
-backend_names = ["webgpu", "webassembly", "fallback"]
+backend_names = ["webgpu", "webgl", "webassembly", "fallback"]
 
 T_KERNEL = TypeVar("T_KERNEL")
 T_EXEC_DATA = TypeVar("T_EXEC_DATA")

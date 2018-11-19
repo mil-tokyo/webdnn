@@ -12,7 +12,7 @@ import torch.onnx
 from torchvision import datasets, transforms
 import onnx
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.onnx import ONNXConverter
 
 
@@ -86,7 +86,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
     parser.add_argument('--out', '-o', default='output_pytorch',
                         help='Directory to output the graph descriptor and sample test data')
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+    parser.add_argument("--backend", default=",".join(backend_names))
     args = parser.parse_args()
 
     training_dir = os.path.join(args.out, "pytorch_model")
