@@ -6,7 +6,7 @@ import argparse
 
 from keras.applications import resnet50
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.keras import KerasConverter
 from webdnn.util import console
 
@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', '-o', default='output_keras', help='Directory to output the graph descriptor')
     parser.add_argument("--encoding", help="name of weight encoder")
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
+    parser.add_argument("--backend", default=",".join(backend_names), help="backend")
     args = parser.parse_args()
 
     _, graph = generate_graph()

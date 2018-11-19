@@ -5,4 +5,4 @@ from webdnn.backend import webassembly
 from webdnn.backend import webgl
 from webdnn.backend import webgpu
 # alias
-from webdnn.backend.interface.generator import generate_descriptor
+from webdnn.backend.interface.generator import generate_descriptor, backend_names

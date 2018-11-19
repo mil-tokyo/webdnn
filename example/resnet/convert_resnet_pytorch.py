@@ -8,13 +8,13 @@ import os
 import torch, torchvision
 import numpy as np
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.pytorch import PyTorchConverter
 from webdnn.util import console
 
 
 def generate_graph():
-    model = torchvision.models.alexnet(pretrained=True)
+    model = torchvision.models.resnet50(pretrained=True)
     dummy_input = torch.autograd.Variable(torch.zeros(1, 3, 224, 224))
     graph = PyTorchConverter().convert(model, dummy_input)
     return graph
@@ -22,7 +22,7 @@ def generate_graph():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+    parser.add_argument("--backend", default=",".join(backend_names))
     parser.add_argument("--encoding")
     parser.add_argument('--out', '-o', default='output_pytorch',
                         help='Directory to output the graph descriptor')
