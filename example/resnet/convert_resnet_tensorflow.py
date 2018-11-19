@@ -14,7 +14,7 @@ except ImportError:
     import urllib.request as urllib
 
 from tensorflow.contrib import slim
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.tensorflow import TensorFlowConverter
 import sys
 import subprocess
@@ -76,7 +76,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', '-o', default='output_tensorflow', help='Directory to output the graph descriptor')
     parser.add_argument("--encoding", help="name of weight encoder")
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback", help="backend")
+    parser.add_argument("--backend", default=",".join(backend_names), help="backend")
     args = parser.parse_args()
 
     _, _, _, graph = generate_graph(args.out)

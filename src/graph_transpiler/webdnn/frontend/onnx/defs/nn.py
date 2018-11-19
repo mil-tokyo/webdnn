@@ -140,8 +140,28 @@ def _convert_global_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
 @ONNXConverter.register_handler("BatchNormalization")
 def _convert_batch_normalization(converter: ONNXConverter, onnx_op: INodeProto):
-    # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"BatchNormalization\" is not supported yet.")
+    x = converter.get_variable(onnx_op.input[0])
+    x.order.axes[0].unify(Axis.N)
+    x.order.axes[1].unify(Axis.C)
+
+    scale = converter.get_variable(onnx_op.input[1])
+    scale.order.unify(OrderC)
+
+    B = converter.get_variable(onnx_op.input[2])
+    B.order.unify(OrderC)
+
+    mean = converter.get_variable(onnx_op.input[3])
+    mean.order.unify(OrderC)
+
+    var = converter.get_variable(onnx_op.input[4])
+    var.order.unify(OrderC)
+
+    attrs = attribute_dict(onnx_op)
+    assert "spatial" not in attrs or attrs["spatial"].i == 1, \
+        "[ONNXConverter] Operator \"BatchNormalization\" spatial==0 is not implemented."
+    epsilon = attrs["epsilon"].f if "epsilon" in attrs else 1e-5
+    y = (x - mean) / ((var + epsilon) ** 0.5) * scale + B
+    converter.set_variable(onnx_op.output[0], y)
 
 
 @ONNXConverter.register_handler("Dropout")

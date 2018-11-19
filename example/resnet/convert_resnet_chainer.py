@@ -9,7 +9,7 @@ import chainer
 import chainer.computational_graph
 import numpy as np
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.chainer import ChainerConverter
 from webdnn.util import console
 
@@ -33,7 +33,7 @@ def generate_graph():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+    parser.add_argument("--backend", default=",".join(backend_names))
     parser.add_argument("--encoding")
     parser.add_argument('--out', '-o', default='output_chainer',
                         help='Directory to output the graph descriptor')

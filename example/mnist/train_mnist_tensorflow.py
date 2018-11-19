@@ -5,7 +5,7 @@ import os
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.tensorflow import TensorFlowConverter
 
 
@@ -116,12 +116,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="fc", choices=["fc", "conv"])
     parser.add_argument("--out", default="output_tensorflow")
-    parser.add_argument("--backends", action="append", default=["webgpu", "webgl", "webassembly", "fallback"])
+    parser.add_argument("--backend", default=",".join(backend_names))
     args = parser.parse_args()
 
     _, _, _, graph = generate_graph(args.model, args.out)
 
-    for backend in args.backends:
+    for backend in args.backend.split(","):
         desc = generate_descriptor(backend, graph)
         desc.save(args.out)
 

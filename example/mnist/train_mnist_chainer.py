@@ -47,7 +47,7 @@ import chainer.links as L
 from chainer import training
 from chainer.training import extensions
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.chainer import ChainerConverter
 
 
@@ -151,7 +151,7 @@ def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
     parser.add_argument("--model", default="fc", choices=["fc", "conv"])
     parser.add_argument('--out', '-o', default='output_chainer', help='Directory to output the graph descriptor and sample test data')
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+    parser.add_argument("--backend", default=",".join(backend_names))
 
     args = parser.parse_args()
 

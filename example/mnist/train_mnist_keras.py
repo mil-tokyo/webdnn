@@ -10,7 +10,7 @@ import os
 
 import keras
 
-from webdnn.backend import generate_descriptor
+from webdnn.backend import generate_descriptor, backend_names
 from webdnn.frontend.keras import KerasConverter
 
 batch_size = 128
@@ -190,7 +190,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="fc", choices=["fc", "conv", "dilated_conv", "residual", "complex"])
     parser.add_argument("--out", default="output_keras")
-    parser.add_argument("--backend", default="webgpu,webgl,webassembly,fallback")
+    parser.add_argument("--backend", default=",".join(backend_names))
     args = parser.parse_args()
 
     model, graph = generate_graph(args.model, args.out)
