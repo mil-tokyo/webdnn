@@ -1,6 +1,6 @@
 {
     "name": "webdnn",
-    "version": "1.2.6",
+    "version": "1.2.7",
     "description": "Deep Neural Network Execution Framework for Web Browsers",
     "main": "dist/webdnn.js",
     "types": "dist/webdnn.d.ts",
