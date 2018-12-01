@@ -48,8 +48,8 @@ Before setting up Emscripten which supports WebAssembly, `brew/apt-get install c
 ```
 git clone https://github.com/juj/emsdk.git
 cd emsdk
-./emsdk install sdk-incoming-64bit binaryen-master-64bit
-./emsdk activate sdk-incoming-64bit binaryen-master-64bit
+./emsdk install latest
+./emsdk activate latest
 ```
 (see also http://webassembly.org/getting-started/developers-guide/ )
 
@@ -66,11 +66,8 @@ wget http://bitbucket.org/eigen/eigen/get/3.3.3.tar.bz2
 tar jxf 3.3.3.tar.bz2
 ```
 
-To enable Eigen to be included on compile, you need to type command on the shell.
+To enable Eigen to be included on compile, make symlink to header directory (path depends on your environment).
 
 ```
-export CPLUS_INCLUDE_PATH=$PWD/eigen-eigen-67e894c6cd8f
+ln -s /path/to/eigen-eigen-67e894c6cd8f/Eigen /path/to/emsdk/emscripten/*/system/local/include
 ```
-
-## Notes on python environment
-Emscripten requires `python2` command, you need to setup python environment which `python` (or `python3`) is python 3.6+ and `python2` is python 2.7. [pyenv](https://github.com/pyenv/pyenv) may help to setup such environment ([see also](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-global-advanced)).

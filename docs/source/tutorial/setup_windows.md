@@ -22,7 +22,7 @@ This framework requires python3.6+. This document is based on Anaconda 4.4.0.
 
 If you want to convert models of Caffe or Chainer, install chainer package. Refer to [Chainer document](http://docs.chainer.org/en/stable/install.html).
 
-(Currently, tested with `chainer==2.0` and  `chainer==1.23`)
+(Currently, tested with `chainer==4.4.0`)
 
 ## Installing Emscripten and Eigen
 If you want to enable WebAssembly backend, em++ command from [Emscripten](https://github.com/kripken/emscripten) is required. You can skip this section if you try WebGPU backend only.
@@ -30,8 +30,6 @@ If you want to enable WebAssembly backend, em++ command from [Emscripten](https:
 To setup Emscripten which supports WebAssembly, follow the official page [http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
 Please note that "Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)" is too old because WebDNN uses options only avaliable on newer versions.
-
-When installing, you should add PATH of `emcc` to PATH, but PATH of `python` should not be added (as it conflicts with Anaconda).
 
 Please note that `emsdk_env.bat` have to be run every time.
 
@@ -45,6 +43,8 @@ python environment (3.6.x) of Anaconda have to be executed with `python3` comman
 ```bat
 "C:\ProgramData\Anaconda3\python.exe" %*
 ```
+
+The actual path depends on your Anaconda installation. This is needed because `emsdk_env.bat` overwrites `python` to Emscripten's python 2.7.
 
 ## Verification of Emscripten and Eigen installation
 Create a file named `hello.cpp`:
@@ -72,10 +72,8 @@ If Emscripten works well, files such as `hello.wasm`, `hello.html` are generated
 ## Installing graph transpiler
 Install graph transpiler for Anaconda python environment.
 
-At the top directory of WebDNN is cloned, type
-
 ```bat
-python3 setup.py install
+python3 -m pip install webdnn
 ```
 
 Here, `python3.bat` have to exist on the current directory.
