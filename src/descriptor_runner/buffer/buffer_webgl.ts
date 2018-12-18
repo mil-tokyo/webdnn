@@ -151,7 +151,7 @@ export default class BufferWebGL extends Buffer {
 
         let tmp = this.pack(this.array);
         if (tmp.length != this.textureWidth * this.textureHeight * this.pixelStride) {
-            let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * this.elementsPerPixel);
+            let tmp2 = new Float32Array(this.textureWidth * this.textureHeight * this.pixelStride);
             tmp2.set(tmp, 0);
             tmp = tmp2;
         }
