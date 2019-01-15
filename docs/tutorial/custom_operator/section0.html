@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>0. Architecture of Graph Transpiler and How to Extend &mdash; MIL WebDNN 1.2.6 documentation</title>
+  <title>0. Architecture of Graph Transpiler and How to Extend &mdash; MIL WebDNN 1.2.5 documentation</title>
   
 
   
@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.2.6 documentation" href="../../index.html"/>
-        <link rel="up" title="Use your custom operator" href="index.html"/>
-        <link rel="next" title="1. Elementwise Operator without Parameters" href="section1.html"/>
-        <link rel="prev" title="Use your custom operator" href="index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="1. Elementwise Operator without Parameters" href="section1.html" />
+    <link rel="prev" title="Use your custom operator" href="index.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -140,7 +132,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">MIL WebDNN</a>
@@ -148,9 +140,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -205,26 +198,26 @@
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>WebDNN graph transpiler is consist of three modules: <strong>Model Converter</strong>, <strong>Optimizer</strong>, and <strong>Descriptor Generator</strong>.</p>
 <img alt="../../_images/transpiler_pipeline.png" src="../../_images/transpiler_pipeline.png" />
-<p>Model Converter (<a class="reference internal" href="../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter" title="webdnn.frontend.converter.Converter"><code class="xref py py-class docutils literal"><span class="pre">Converter</span></code></a>) converts trained model in other frameworks (e.g. <code class="code docutils literal"><span class="pre">keras.models.Model</span></code>,
-<code class="code docutils literal"><span class="pre">chainer.Chain</span></code>) into WebDNN intermediate representation (IR). Optimizer transform graph to optimize execution speed and model data size.
-Descriptor Generator (<code class="xref py py-class docutils literal"><span class="pre">DescriptorGenerator</span></code>) converts IR into graph descriptor.</p>
+<p>Model Converter (<a class="reference internal" href="../../api_reference/graph_transpiler/frontend/converter.html#webdnn.frontend.converter.Converter" title="webdnn.frontend.converter.Converter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Converter</span></code></a>) converts trained model in other frameworks (e.g. <code class="code docutils literal notranslate"><span class="pre">keras.models.Model</span></code>,
+<code class="code docutils literal notranslate"><span class="pre">chainer.Chain</span></code>) into WebDNN intermediate representation (IR). Optimizer transform graph to optimize execution speed and model data size.
+Descriptor Generator (<code class="xref py py-class docutils literal notranslate"><span class="pre">DescriptorGenerator</span></code>) converts IR into graph descriptor.</p>
 </div>
 <div class="section" id="webdnn-ir">
 <h2>WebDNN IR<a class="headerlink" href="#webdnn-ir" title="Permalink to this headline">¶</a></h2>
 <img alt="../../_images/ir.png" class="align-left" src="../../_images/ir.png" />
-<p>WebDNN IR consists two type of nodes: <code class="xref py py-class docutils literal"><span class="pre">Operator</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code>. Operator represents each operation in DNN
-model such as convolution, activation, and so on. <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code> represents each operator&#8217;s inputs and outputs.</p>
-<p>Each <code class="xref py py-class docutils literal"><span class="pre">Variable</span></code> is referenced from operators with a name. For example, in left figure, two input variables are referenced as
+<p>WebDNN IR consists two type of nodes: <code class="xref py py-class docutils literal notranslate"><span class="pre">Operator</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Variable</span></code>. Operator represents each operation in DNN
+model such as convolution, activation, and so on. <code class="xref py py-class docutils literal notranslate"><span class="pre">Variable</span></code> represents each operator’s inputs and outputs.</p>
+<p>Each <code class="xref py py-class docutils literal notranslate"><span class="pre">Variable</span></code> is referenced from operators with a name. For example, in left figure, two input variables are referenced as
 <strong>x</strong> and <strong>w</strong> respectively, and output variable is referenced as <strong>y</strong>.</p>
-<p>All WebDNN operators are stateless, and operator doesn&#8217;t have any reference to variables without input and output connections. All data
+<p>All WebDNN operators are stateless, and operator doesn’t have any reference to variables without input and output connections. All data
 required to calculate outputs is given as input variable.</p>
 </div>
 <div class="section" id="converter-handler">
 <h2>Converter Handler<a class="headerlink" href="#converter-handler" title="Permalink to this headline">¶</a></h2>
-<p>Converter handler is function which convert other framework&#8217;s operator (Keras layers, Chainer functions, etc.) into WebDNN IR operators.
+<p>Converter handler is function which convert other framework’s operator (Keras layers, Chainer functions, etc.) into WebDNN IR operators.
 In converter handler, not only the operator itself, related variables (<em>kernel</em> and <em>bias</em> in the follow figure) are also converted into
-WebDNN IR variables. Many preset converter handlers like <code class="code docutils literal"><span class="pre">conv2d_handler()</span></code> and <code class="code docutils literal"><span class="pre">dense_handler()</span></code> are registered to model converter
-with corresponding operator type. In model conversion phase, converter traverse model&#8217;s computation graph from input to output and when any
+WebDNN IR variables. Many preset converter handlers like <code class="code docutils literal notranslate"><span class="pre">conv2d_handler()</span></code> and <code class="code docutils literal notranslate"><span class="pre">dense_handler()</span></code> are registered to model converter
+with corresponding operator type. In model conversion phase, converter traverse model’s computation graph from input to output and when any
 operator is found, corresponding converter handler is called.</p>
 <img alt="../../_images/converter_handler.png" src="../../_images/converter_handler.png" />
 </div>
@@ -241,9 +234,9 @@ WebDNN IR operator into kernel source code.</p>
 <ol class="arabic">
 <li><p class="first">If your custom operator can be constructed with preset WebDNN operators, you have to do is only implementing converter handler from
 your custom operator to preset WebDNN operators.</p>
-<p>For example, <code class="code docutils literal"><span class="pre">keras.layers.Average</span></code>, which computes average of inputs elementwisely, can be constructed as right figure (when
-number of inputs is 4). In this case, both <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.elementwise_sum.ElementwiseSum" title="webdnn.graph.operators.elementwise_sum.ElementwiseSum"><code class="xref py py-class docutils literal"><span class="pre">ElementwiseSum</span></code></a> and
-<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.scalar_affine.ScalarAffine" title="webdnn.graph.operators.scalar_affine.ScalarAffine"><code class="xref py py-class docutils literal"><span class="pre">ScalarAffine</span></code></a> are already supported in generators. Therefore, you have to implement
+<p>For example, <code class="code docutils literal notranslate"><span class="pre">keras.layers.Average</span></code>, which computes average of inputs elementwisely, can be constructed as right figure (when
+number of inputs is 4). In this case, both <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.elementwise_sum.ElementwiseSum" title="webdnn.graph.operators.elementwise_sum.ElementwiseSum"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElementwiseSum</span></code></a> and
+<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.scalar_affine.ScalarAffine" title="webdnn.graph.operators.scalar_affine.ScalarAffine"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarAffine</span></code></a> are already supported in generators. Therefore, you have to implement
 only converter handler.</p>
 </li>
 <li><p class="first">Otherwise, you have to implement both converter handler and generator handler.</p>
@@ -251,16 +244,14 @@ only converter handler.</p>
 </ol>
 <hr class="docutils" />
 <ul class="simple">
-<li><a class="reference internal" href="section1.html"><span class="doc">Next: &#8220;1. Elementwise Operator without Parameters&#8221;</span></a></li>
+<li><a class="reference internal" href="section1.html"><span class="doc">Next: “1. Elementwise Operator without Parameters”</span></a></li>
 </ul>
 </div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -282,7 +273,7 @@ only converter handler.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -300,7 +291,8 @@ only converter handler.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.2.6',
+            VERSION:'1.2.5',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -310,7 +302,7 @@ only converter handler.</p>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
@@ -319,14 +311,13 @@ only converter handler.</p>
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

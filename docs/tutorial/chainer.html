@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Use with Chainer model &mdash; MIL WebDNN 1.2.6 documentation</title>
+  <title>Use with Chainer model &mdash; MIL WebDNN 1.2.5 documentation</title>
   
 
   
@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.2.6 documentation" href="../index.html"/>
-        <link rel="up" title="Tutorial" href="index.html"/>
-        <link rel="next" title="Use with Keras model" href="keras.html"/>
-        <link rel="prev" title="Use with Caffemodel" href="caffe.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Use with Keras model" href="keras.html" />
+    <link rel="prev" title="Use with Caffemodel" href="caffe.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -127,7 +119,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">MIL WebDNN</a>
@@ -135,9 +127,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -183,11 +176,11 @@
             
   <div class="section" id="use-with-chainer-model">
 <h1>Use with Chainer model<a class="headerlink" href="#use-with-chainer-model" title="Permalink to this headline">¶</a></h1>
-<p>In this tutorial, we&#8217;ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model pretrained in Chainer <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
+<p>In this tutorial, we’ll convert ResNet50 <a class="footnote-reference" href="#f1" id="id1">[1]</a> classification model pretrained in Chainer <a class="footnote-reference" href="#f2" id="id2">[2]</a> into WebDNN execution format.</p>
 <ol class="arabic simple">
 <li>Load chainer pretrained model</li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">chainer</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">chainer</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">ResNet50Layers</span><span class="p">()</span>
 </pre></div>
@@ -195,7 +188,7 @@
 <ol class="arabic simple" start="2">
 <li>Execute model with dummy data. In chainer, computation graph are defined by run. Therefore we need execute model at least once to construct the graph.</li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">chainer</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">])[</span><span class="s2">&quot;fc6&quot;</span><span class="p">]</span>
@@ -204,7 +197,7 @@
 <ol class="arabic simple" start="3">
 <li>Convert chainer computation graph to our computation graph format</li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.chainer</span> <span class="kn">import</span> <span class="n">ChainerConverter</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.chainer</span> <span class="kn">import</span> <span class="n">ChainerConverter</span>
 
 <span class="n">graph</span> <span class="o">=</span> <span class="n">ChainerConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
 </pre></div>
@@ -212,19 +205,19 @@
 <ol class="arabic simple" start="4">
 <li>Generate and save execution information.</li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.backend</span> <span class="kn">import</span> <span class="n">generate_descriptor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.backend</span> <span class="kn">import</span> <span class="n">generate_descriptor</span>
 
 <span class="n">exec_info</span> <span class="o">=</span> <span class="n">generate_descriptor</span><span class="p">(</span><span class="s2">&quot;webgpu&quot;</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>  <span class="c1"># also &quot;webassembly&quot;, &quot;webgl&quot;, &quot;fallback&quot; are available.</span>
 <span class="n">exec_info</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./output&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To run converted model on web browser, please see <a class="reference internal" href="keras.html#js-api"><span class="std std-ref">&#8220;#3. Run on web browser&#8221; in keras tutorial</span></a></p>
+<p>To run converted model on web browser, please see <a class="reference internal" href="keras.html#js-api"><span class="std std-ref">“#3. Run on web browser” in keras tutorial</span></a></p>
 <p class="rubric">References</p>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="11">
-<li>He, X. Zhang, S. Ren, and J. Sun, &#8220;Deep Residual Learning for Image Recognition&#8221;, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.</li>
+<li>He, X. Zhang, S. Ren, and J. Sun, “Deep Residual Learning for Image Recognition”, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.</li>
 </ol>
 </td></tr>
 </tbody>
@@ -239,9 +232,7 @@
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -263,7 +254,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -281,7 +272,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.2.6',
+            VERSION:'1.2.5',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -291,7 +283,7 @@
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
@@ -300,14 +292,13 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Setup guide (for Windows) &mdash; MIL WebDNN 1.2.6 documentation</title>
+  <title>Setup guide (for Windows) &mdash; MIL WebDNN 1.2.5 documentation</title>
   
 
   
@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.2.6 documentation" href="../index.html"/>
-        <link rel="up" title="Tutorial" href="index.html"/>
-        <link rel="next" title="Use with Caffemodel" href="caffe.html"/>
-        <link rel="prev" title="Setup guide (for Mac / Linux)" href="setup.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Use with Caffemodel" href="caffe.html" />
+    <link rel="prev" title="Setup guide (for Mac / Linux)" href="setup.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -136,7 +128,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">MIL WebDNN</a>
@@ -144,9 +136,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -195,7 +188,7 @@
 <p>No browser on Windows supports WebGPU, but you can still develop applications using WebDNN. Commands have to be used on command prompt.</p>
 <div class="section" id="downloading-code">
 <span id="downloading-code"></span><h2>Downloading code<a class="headerlink" href="#downloading-code" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">mil</span><span class="o">-</span><span class="n">tokyo</span><span class="o">/</span><span class="n">webdnn</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">mil</span><span class="o">-</span><span class="n">tokyo</span><span class="o">/</span><span class="n">webdnn</span>
 </pre></div>
 </div>
 <p>If you do not have git, zip file is also available: <a class="reference external" href="https://github.com/mil-tokyo/webdnn/archive/master.zip">https://github.com/mil-tokyo/webdnn/archive/master.zip</a></p>
@@ -208,29 +201,29 @@
 <p>When installing, adding PATH to system is optional.</p>
 <p>This framework requires python3.6+. This document is based on Anaconda 4.4.0.</p>
 <p>If you want to convert models of Caffe or Chainer, install chainer package. Refer to <a class="reference external" href="http://docs.chainer.org/en/stable/install.html">Chainer document</a>.</p>
-<p>(Currently, tested with <code class="docutils literal"><span class="pre">chainer==2.0</span></code> and  <code class="docutils literal"><span class="pre">chainer==1.23</span></code>)</p>
+<p>(Currently, tested with <code class="docutils literal notranslate"><span class="pre">chainer==4.4.0</span></code>)</p>
 </div>
 <div class="section" id="installing-emscripten-and-eigen">
 <span id="installing-emscripten-and-eigen"></span><h2>Installing Emscripten and Eigen<a class="headerlink" href="#installing-emscripten-and-eigen" title="Permalink to this headline">¶</a></h2>
 <p>If you want to enable WebAssembly backend, em++ command from <a class="reference external" href="https://github.com/kripken/emscripten">Emscripten</a> is required. You can skip this section if you try WebGPU backend only.</p>
 <p>To setup Emscripten which supports WebAssembly, follow the official page <a class="reference external" href="http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html</a>.</p>
-<p>Please note that &#8220;Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)&#8221; is too old because WebDNN uses options only avaliable on newer versions.</p>
-<p>When installing, you should add PATH of <code class="docutils literal"><span class="pre">emcc</span></code> to PATH, but PATH of <code class="docutils literal"><span class="pre">python</span></code> should not be added (as it conflicts with Anaconda).</p>
-<p>Please note that <code class="docutils literal"><span class="pre">emsdk_env.bat</span></code> have to be run every time.</p>
+<p>Please note that “Emscripten SDK Offline Installer (emsdk-1.35.0-full-64bit.exe)” is too old because WebDNN uses options only avaliable on newer versions.</p>
+<p>Please note that <code class="docutils literal notranslate"><span class="pre">emsdk_env.bat</span></code> have to be run every time.</p>
 <p><a class="reference external" href="http://eigen.tuxfamily.org">Eigen</a> is needed as the library. Download latest source from <a class="reference external" href="http://eigen.tuxfamily.org/index.php?title=Main_Page">http://eigen.tuxfamily.org/index.php?title=Main_Page</a> and decompress.</p>
-<p>Move <code class="docutils literal"><span class="pre">Eigen</span></code> directory into <code class="docutils literal"><span class="pre">emsdk/emscripten/*/system/include</span></code>. * is version number of emscripten. The file <code class="docutils literal"><span class="pre">include/Eigen/Dense</span></code> have to exist.</p>
+<p>Move <code class="docutils literal notranslate"><span class="pre">Eigen</span></code> directory into <code class="docutils literal notranslate"><span class="pre">emsdk/emscripten/*/system/include</span></code>. * is version number of emscripten. The file <code class="docutils literal notranslate"><span class="pre">include/Eigen/Dense</span></code> have to exist.</p>
 </div>
 <div class="section" id="setting-for-using-proper-python">
 <span id="setting-for-using-proper-python"></span><h2>Setting for using proper python<a class="headerlink" href="#setting-for-using-proper-python" title="Permalink to this headline">¶</a></h2>
-<p>python environment (3.6.x) of Anaconda have to be executed with <code class="docutils literal"><span class="pre">python3</span></code> command. To accompilsh it, create a file named <code class="docutils literal"><span class="pre">python3.bat</span></code> and fill with the following content.</p>
-<div class="highlight-bat"><div class="highlight"><pre><span></span><span class="s2">&quot;C:\ProgramData\Anaconda3\python.exe&quot;</span> <span class="nv">%*</span>
+<p>python environment (3.6.x) of Anaconda have to be executed with <code class="docutils literal notranslate"><span class="pre">python3</span></code> command. To accompilsh it, create a file named <code class="docutils literal notranslate"><span class="pre">python3.bat</span></code> and fill with the following content.</p>
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;C:\ProgramData\Anaconda3\python.exe&quot;</span> <span class="nv">%*</span>
 </pre></div>
 </div>
+<p>The actual path depends on your Anaconda installation. This is needed because <code class="docutils literal notranslate"><span class="pre">emsdk_env.bat</span></code> overwrites <code class="docutils literal notranslate"><span class="pre">python</span></code> to Emscripten’s python 2.7.</p>
 </div>
 <div class="section" id="verification-of-emscripten-and-eigen-installation">
 <span id="verification-of-emscripten-and-eigen-installation"></span><h2>Verification of Emscripten and Eigen installation<a class="headerlink" href="#verification-of-emscripten-and-eigen-installation" title="Permalink to this headline">¶</a></h2>
-<p>Create a file named <code class="docutils literal"><span class="pre">hello.cpp</span></code>:</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;Eigen/Dense&gt;</span><span class="cp"></span>
+<p>Create a file named <code class="docutils literal notranslate"><span class="pre">hello.cpp</span></code>:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;Eigen/Dense&gt;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
@@ -241,36 +234,33 @@
 </pre></div>
 </div>
 <p>Then, try to compile it into WebAssembly:</p>
-<div class="highlight-bat"><div class="highlight"><pre><span></span>em++ hello.cpp -O3 -s WASM=1 -o hello.html
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span>em++ hello.cpp -O3 -s WASM=1 -o hello.html
 </pre></div>
 </div>
-<p>If Emscripten works well, files such as <code class="docutils literal"><span class="pre">hello.wasm</span></code>, <code class="docutils literal"><span class="pre">hello.html</span></code> are generated.</p>
+<p>If Emscripten works well, files such as <code class="docutils literal notranslate"><span class="pre">hello.wasm</span></code>, <code class="docutils literal notranslate"><span class="pre">hello.html</span></code> are generated.</p>
 </div>
 <div class="section" id="installing-graph-transpiler">
 <span id="installing-graph-transpiler"></span><h2>Installing graph transpiler<a class="headerlink" href="#installing-graph-transpiler" title="Permalink to this headline">¶</a></h2>
 <p>Install graph transpiler for Anaconda python environment.</p>
-<p>At the top directory of WebDNN is cloned, type</p>
-<div class="highlight-bat"><div class="highlight"><pre><span></span>python3 setup.py install
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span>python3 -m pip install webdnn
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal"><span class="pre">python3.bat</span></code> have to exist on the current directory.</p>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">python3.bat</span></code> have to exist on the current directory.</p>
 </div>
 <div class="section" id="running-example">
 <span id="running-example"></span><h2>Running example<a class="headerlink" href="#running-example" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">example</span>\<span class="n">mnist</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">example</span>\<span class="n">mnist</span>
 <span class="n">python3</span> <span class="n">train_mnist_chainer</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal"><span class="pre">python3.bat</span></code> have to exist on the current directory.</p>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">python3.bat</span></code> have to exist on the current directory.</p>
 <p>Graph descriptor files for each backend are generated.</p>
 </div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -292,7 +282,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -310,7 +300,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.2.6',
+            VERSION:'1.2.5',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -320,7 +311,7 @@
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
@@ -329,14 +320,13 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

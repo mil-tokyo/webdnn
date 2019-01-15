@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>3. Layer with Weights &mdash; MIL WebDNN 1.2.6 documentation</title>
+  <title>3. Layer with Weights &mdash; MIL WebDNN 1.2.5 documentation</title>
   
 
   
@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="MIL WebDNN 1.2.6 documentation" href="../../index.html"/>
-        <link rel="up" title="Use your custom operator" href="index.html"/>
-        <link rel="next" title="Tips" href="../../tips/index.html"/>
-        <link rel="prev" title="2. Elementwise Operator with Parameters" href="section2.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Tips" href="../../tips/index.html" />
+    <link rel="prev" title="2. Elementwise Operator with Parameters" href="section2.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -139,7 +131,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">MIL WebDNN</a>
@@ -147,9 +139,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -200,12 +193,12 @@
 <div class="toctree-wrapper compound">
 </div>
 <p>In this section, you will learn about how to convert <strong>custom keras layer which has trainable weights</strong>.</p>
-<p>Complete sample code is included in <code class="code docutils literal"><span class="pre">/example/custom_operator/section3</span></code>.</p>
+<p>Complete sample code is included in <code class="code docutils literal notranslate"><span class="pre">/example/custom_operator/section3</span></code>.</p>
 <div class="section" id="example-bias">
 <h2>Example: Bias<a class="headerlink" href="#example-bias" title="Permalink to this headline">¶</a></h2>
 <p>In <a class="reference internal" href="section1.html"><span class="doc">section 1</span></a> and <a class="reference internal" href="section2.html"><span class="doc">section 2</span></a>, we learned how to convert operators which have no weights.</p>
-<p>In this section, we&#8217;ll consider <code class="code docutils literal"><span class="pre">BiasLayer</span></code> defined as follows:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BiasLayer</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<p>In this section, we’ll consider <code class="code docutils literal notranslate"><span class="pre">BiasLayer</span></code> defined as follows:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BiasLayer</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Trainable bias layer</span>
 
@@ -225,43 +218,43 @@
         <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
 </pre></div>
 </div>
-<p>This layer has a trainable weight named <code class="code docutils literal"><span class="pre">&quot;bias&quot;</span></code>.</p>
+<p>This layer has a trainable weight named <code class="code docutils literal notranslate"><span class="pre">&quot;bias&quot;</span></code>.</p>
 </div>
 <div class="section" id="axis-and-order">
 <h2>Axis and Order<a class="headerlink" href="#axis-and-order" title="Permalink to this headline">¶</a></h2>
-<p>To define variables and operations&#8217; semantics, <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Order</span></code> object is defined in WebDNN.</p>
+<p>To define variables and operations’ semantics, <code class="xref py py-class docutils literal notranslate"><span class="pre">Axis</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Order</span></code> object is defined in WebDNN.</p>
 <div class="section" id="axis">
 <h3>Axis<a class="headerlink" href="#axis" title="Permalink to this headline">¶</a></h3>
-<p><code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> object represents each dimension of tensors. Typical axes are pre-defined like follows:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span>  <span class="c1"># batch size</span>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Axis</span></code> object represents each dimension of tensors. Typical axes are pre-defined like follows:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Axis</span><span class="o">.</span><span class="n">N</span>  <span class="c1"># batch size</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">C</span>  <span class="c1"># number of features</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">H</span>  <span class="c1"># height of image</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">W</span>  <span class="c1"># width of image</span>
 <span class="n">Axis</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># length of series</span>
 </pre></div>
 </div>
-<p>For example, a tensor of shape <code class="code docutils literal"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is 2D tensor. This tensor&#8217;s first dimension is represented as
-<code class="xref py py-obj docutils literal"><span class="pre">Axis.N</span></code>, and second dimension is represented as <code class="xref py py-obj docutils literal"><span class="pre">Axis.C</span></code> in WebDNN.</p>
-<p>Also, <code class="xref py py-class docutils literal"><span class="pre">Axis</span></code> object is used to define operation. For example <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a>
-operator is compute normalized exponential values. Generally, that values are normalized along to <code class="xref py py-obj docutils literal"><span class="pre">Axis.C</span></code>.</p>
+<p>For example, a tensor of shape <code class="code docutils literal notranslate"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is 2D tensor. This tensor’s first dimension is represented as
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Axis.N</span></code>, and second dimension is represented as <code class="xref py py-obj docutils literal notranslate"><span class="pre">Axis.C</span></code> in WebDNN.</p>
+<p>Also, <code class="xref py py-class docutils literal notranslate"><span class="pre">Axis</span></code> object is used to define operation. For example <a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal notranslate"><span class="pre">Softmax</span></code></a>
+operator is compute normalized exponential values. Generally, that values are normalized along to <code class="xref py py-obj docutils literal notranslate"><span class="pre">Axis.C</span></code>.</p>
 </div>
 <div class="section" id="order">
 <h3>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h3>
-<p><code class="xref py py-class docutils literal"><span class="pre">Order</span></code> object represents the data order of variables. For example, the data order of a tensor of shape
-<code class="code docutils literal"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code>.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Order</span></code> object represents the data order of variables. For example, the data order of a tensor of shape
+<code class="code docutils literal notranslate"><span class="pre">(batch_size,</span> <span class="pre">features)</span></code> is <code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderNC</span></code>.</p>
 <p>WebDNN operators are designed to receive various data order. For example, generally
-<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a> operator is used to normalize <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code> variable
-along to <code class="xref py py-obj docutils literal"><span class="pre">Axis.C</span></code> and the output is also <code class="xref py py-obj docutils literal"><span class="pre">OrderNC</span></code> variable. However WebDNN
-<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal"><span class="pre">Softmax</span></code></a> operator can receives <code class="xref py py-obj docutils literal"><span class="pre">OrderCN</span></code> variable too.</p>
-<p>Typical order is defined in <code class="xref py py-mod docutils literal"><span class="pre">webdnn.graph.order</span></code>.</p>
+<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal notranslate"><span class="pre">Softmax</span></code></a> operator is used to normalize <code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderNC</span></code> variable
+along to <code class="xref py py-obj docutils literal notranslate"><span class="pre">Axis.C</span></code> and the output is also <code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderNC</span></code> variable. However WebDNN
+<a class="reference internal" href="../../api_reference/graph_transpiler/operators.html#webdnn.graph.operators.softmax.Softmax" title="webdnn.graph.operators.softmax.Softmax"><code class="xref py py-class docutils literal notranslate"><span class="pre">Softmax</span></code></a> operator can receives <code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderCN</span></code> variable too.</p>
+<p>Typical order is defined in <code class="xref py py-mod docutils literal notranslate"><span class="pre">webdnn.graph.order</span></code>.</p>
 </div>
 </div>
 <div class="section" id="define-converter-handler">
 <h2>Define Converter Handler<a class="headerlink" href="#define-converter-handler" title="Permalink to this headline">¶</a></h2>
-<p>Based on previous section, Let&#8217;s convert <code class="code docutils literal"><span class="pre">BiasLayer</span></code>.
-Luckily, bias operator is already implemented in webdnn as <code class="code docutils literal"><span class="pre">ElementwiseAdd</span></code>, or operator <code class="code docutils literal"><span class="pre">+</span></code>. You only have to implement
+<p>Based on previous section, Let’s convert <code class="code docutils literal notranslate"><span class="pre">BiasLayer</span></code>.
+Luckily, bias operator is already implemented in webdnn as <code class="code docutils literal notranslate"><span class="pre">ElementwiseAdd</span></code>, or operator <code class="code docutils literal notranslate"><span class="pre">+</span></code>. You only have to implement
 converter handler. Converter handler is implemented like follows:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.keras.converter</span> <span class="k">import</span> <span class="n">KerasConverter</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">webdnn.frontend.keras.converter</span> <span class="k">import</span> <span class="n">KerasConverter</span>
 
 <span class="nd">@KerasConverter</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="s2">&quot;BiasLayer&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">square_converter_handler</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">keras_layer</span><span class="p">):</span>
@@ -277,19 +270,19 @@ converter handler. Converter handler is implemented like follows:</p>
 </pre></div>
 </div>
 <p>The important lines are follows:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">webdnn_b</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert_to_constant_variable</span><span class="p">(</span><span class="n">keras_layer</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">OrderC</span><span class="p">)</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">webdnn_b</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert_to_constant_variable</span><span class="p">(</span><span class="n">keras_layer</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">OrderC</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="../../api_reference/graph_transpiler/frontend/keras.html#webdnn.frontend.keras.KerasConverter.convert_to_constant_variable" title="webdnn.frontend.keras.KerasConverter.convert_to_constant_variable"><code class="xref py py-func docutils literal"><span class="pre">converter.convert_to_constant_variable(weight,</span> <span class="pre">order)</span></code></a> is the
-function which converts keras weights into WebDNN variables. The output variables&#8217; data order is determined by <code class="code docutils literal"><span class="pre">order</span></code>. In
-<code class="code docutils literal"><span class="pre">BiasLayer</span></code>&#8216;s case, <code class="code docutils literal"><span class="pre">bias</span></code> is a tensor of shape <code class="code docutils literal"><span class="pre">(features,)</span></code>. Therefore <code class="code docutils literal"><span class="pre">order=OrderC</span></code> is specified.</p>
-<p>Different from <code class="code docutils literal"><span class="pre">webdnn_x</span></code> and <code class="code docutils literal"><span class="pre">webdnn_y</span></code>, it&#8217;s not need to store <code class="code docutils literal"><span class="pre">webdnn_b</span></code> into converter because
-<code class="code docutils literal"><span class="pre">keras_layer.bias</span></code> is not referenced from other keras layers.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">converter.convert_to_constant_variable(weight,</span> <span class="pre">order)</span></code> is the
+function which converts keras weights into WebDNN variables. The output variables’ data order is determined by <code class="code docutils literal notranslate"><span class="pre">order</span></code>. In
+<code class="code docutils literal notranslate"><span class="pre">BiasLayer</span></code>’s case, <code class="code docutils literal notranslate"><span class="pre">bias</span></code> is a tensor of shape <code class="code docutils literal notranslate"><span class="pre">(features,)</span></code>. Therefore <code class="code docutils literal notranslate"><span class="pre">order=OrderC</span></code> is specified.</p>
+<p>Different from <code class="code docutils literal notranslate"><span class="pre">webdnn_x</span></code> and <code class="code docutils literal notranslate"><span class="pre">webdnn_y</span></code>, it’s not need to store <code class="code docutils literal notranslate"><span class="pre">webdnn_b</span></code> into converter because
+<code class="code docutils literal notranslate"><span class="pre">keras_layer.bias</span></code> is not referenced from other keras layers.</p>
 </div>
 <div class="section" id="test">
 <h2>Test<a class="headerlink" href="#test" title="Permalink to this headline">¶</a></h2>
-<p>Let&#8217;s test the implementation.</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="c1"># test.py</span>
+<p>Let’s test the implementation.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># test.py</span>
 
 <span class="kn">import</span> <span class="nn">bias</span>
 <span class="kn">import</span> <span class="nn">keras</span>
@@ -317,7 +310,7 @@ function which converts keras weights into WebDNN variables. The output variable
 <span class="n">FallbackDescriptorGenerator</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./output&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-html"><div class="highlight"><pre><span></span><span class="c">&lt;!--index.html--&gt;</span>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!--index.html--&gt;</span>
 
 <span class="p">&lt;</span><span class="nt">button</span> <span class="na">onclick</span><span class="o">=</span><span class="s">&quot;main()&quot;</span><span class="p">&gt;</span>RUN<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
 <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;../../../dist/webdnn.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
@@ -340,16 +333,14 @@ function which converts keras weights into WebDNN variables. The output variable
 <img alt="../../_images/section3_result.png" src="../../_images/section3_result.png" />
 <hr class="docutils" />
 <ul class="simple">
-<li><a class="reference internal" href="section2.html"><span class="doc">Prev: &#8220;2. Elementwise Operator with Parameters&#8221;</span></a></li>
+<li><a class="reference internal" href="section2.html"><span class="doc">Prev: “2. Elementwise Operator with Parameters”</span></a></li>
 </ul>
 </div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -371,7 +362,7 @@ function which converts keras weights into WebDNN variables. The output variable
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -389,7 +380,8 @@ function which converts keras weights into WebDNN variables. The output variable
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.2.6',
+            VERSION:'1.2.5',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -399,7 +391,7 @@ function which converts keras weights into WebDNN variables. The output variable
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
@@ -408,14 +400,13 @@ function which converts keras weights into WebDNN variables. The output variable
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
