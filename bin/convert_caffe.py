@@ -11,6 +11,7 @@ import chainer
 import chainer.computational_graph
 import chainer.links.caffe
 import numpy as np
+from chainer import initializers
 
 from webdnn.backend import generate_descriptor
 from webdnn.frontend.chainer import ChainerConverter
@@ -34,6 +35,37 @@ def parse_input_blob(args):
             raise ValueError("caffe converter does not support an input with placeholder")
         input_blob = chainer.Variable(np.zeros(input_shape, dtype=np.float32))
     return input_blob, input_filled
+
+
+def attach_dummy_bn_gamma_beta(link: chainer.links.caffe.caffe_function.CaffeFunction):
+    """
+
+    Args:
+        link: CaffeFunction
+
+    Returns:
+        None
+    """
+
+    """
+    This function is needed because gamma and beta becomes missing in graph processing.
+    In caffe_function.py, batch normalization is initialized as follows:
+            func = batch_normalization.BatchNormalization(
+            size, decay=decay, eps=eps, use_gamma=False, use_beta=False)
+    It causes gamma and beta passed to FixedBatchNormalization to be local variable, which immediately garbage collected.
+    """
+
+    for key in dir(link):
+        bn_link = link[key]
+        if isinstance(bn_link, chainer.links.normalization.batch_normalization.BatchNormalization):
+            gamma_initializer = initializers._get_initializer(1)
+            gamma_initializer.dtype = bn_link._dtype
+            bn_link.gamma = chainer.variable.Parameter(gamma_initializer)
+            bn_link.gamma.initialize(bn_link.avg_mean.shape)
+            beta_initializer = initializers._get_initializer(0)
+            beta_initializer.dtype = bn_link._dtype
+            bn_link.beta = chainer.variable.Parameter(beta_initializer)
+            bn_link.beta.initialize(bn_link.avg_mean.shape)
 
 
 def main():
@@ -62,12 +94,13 @@ def main():
 
     console.stderr("[convert_caffe] Loading caffe model... (usually takes several minutes)")
     link = chainer.links.caffe.CaffeFunction(args.caffemodel)
+    attach_dummy_bn_gamma_beta(link)
 
     console.stderr("[convert_caffe] Generating feedforward graph")
     if chainer.__version__ >= "2.":
-        chainer.using_config("train", False)
-        output_blobs = list(
-            link(inputs={args.input_name: input_blob}, outputs=output_names))  # list of Variable
+        with chainer.using_config("train", False):
+            output_blobs = list(
+                link(inputs={args.input_name: input_blob}, outputs=output_names))  # list of Variable
     else:
         output_blobs = list(
             link(inputs={args.input_name: input_blob}, outputs=output_names, train=False))  # list of Variable
