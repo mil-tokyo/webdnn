@@ -5,12 +5,12 @@
  * Module `WebDNN` provides main features of WebDNN.
  */
 /** Don't Remove This comment block */
-/// <reference path="./webgpu.d.ts" />
+/// <reference path="./webmetal.ts" />
 import { DescriptorRunner as DescriptorRunnerGeneric, DescriptorRunnerConstructor } from "./descriptor_runner/descriptor_runner";
 import DescriptorRunnerFallback from "./descriptor_runner/descriptor_runner_fallback";
 import DescriptorRunnerWebassembly from "./descriptor_runner/descriptor_runner_webassembly";
 import DescriptorRunnerWebGL from "./descriptor_runner/descriptor_runner_webgl";
-import DescriptorRunnerWebGPU from "./descriptor_runner/descriptor_runner_webgpu";
+import DescriptorRunnerWebMetal from "./descriptor_runner/descriptor_runner_webmetal";
 import { GraphDescriptor } from "./graph_descriptor/graph_descriptor";
 import * as Image from "./image";
 import * as Math from "./math";
@@ -53,7 +53,7 @@ export type DescriptorRunner = DescriptorRunnerGeneric<GraphDescriptor, any>;
  * @private
  */
 const descriptorRunners: { [k in BackendName]: DescriptorRunnerConstructor<GraphDescriptor, any> } = {
-    webgpu: DescriptorRunnerWebGPU,
+    webgpu: DescriptorRunnerWebMetal,
     webgl: DescriptorRunnerWebGL,
     webassembly: DescriptorRunnerWebassembly,
     fallback: DescriptorRunnerFallback

@@ -4,14 +4,14 @@
 /** Don't Remove This comment block */
 
 import * as localforage from "localforage";
-import BufferWebGPU from "../buffer/buffer_webgpu";
+import BufferWebMetal from "../buffer/buffer_webmetal";
 import getWeightDecoder from "../decoder/get_weight_decoder";
 import webdnnFetch, { readArrayBufferProgressively } from "../fetch";
-import { GraphDescriptorWebGPU, GraphDescriptorWebGPUExecInfos } from "../graph_descriptor/graph_descriptor_webgpu";
+import { GraphDescriptorWebMetal, GraphDescriptorWebMetalExecInfos } from "../graph_descriptor/graph_descriptor_webmetal";
 import PlaceholderContext from "../placeholder";
 import SymbolicFloat32Array from "../symbolic_typed_array/symbolic_float32array";
 import { BackendName, getConfiguration } from "../webdnn";
-import WebGPUHandler, { IS_WEBGPU_SUPPORTED } from "../webgpu_handler";
+import WebMetalHandler, { IS_WEBMETAL_SUPPORTED } from "../webmetal_handler";
 import {DescriptorRunner, DescriptorRunnerOptions} from "./descriptor_runner";
 
 /**
@@ -24,7 +24,7 @@ const IS_IOS = navigator.userAgent.includes('iPhone') || navigator.userAgent.inc
  * DescriptorRunner for WebGPU
  * @protected
  */
-export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
+export default class DescriptorRunnerWebMetal extends DescriptorRunner<GraphDescriptorWebMetal, ArrayBuffer> {
 
 
     constructor(options: DescriptorRunnerOptions = {}) {
@@ -34,39 +34,39 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
     /**
      * backend name
      */
-    readonly backendName: BackendName = 'webgpu';
+    readonly backendName: BackendName = 'webgpu';// will be changed to 'webmetal' in future version
 
     /**
      * WebGPU Handler
      */
-    private webgpuHandler: WebGPUHandler;
+    private webgpuHandler: WebMetalHandler;
 
     /**
      * Static buffer, whose size and layout can be determined in compile time.
      */
-    private staticBuffer: BufferWebGPU | null;
+    private staticBuffer: BufferWebMetal | null;
 
     /**
      * Buffers whose size and layout cannot be determined without runtime information like image size (if it's dynamic).
      */
-    private dynamicBuffer: BufferWebGPU | null;
+    private dynamicBuffer: BufferWebMetal | null;
 
     /**
      * Buffers which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
      */
-    private metaBuffers: BufferWebGPU[] | null;
+    private metaBuffers: BufferWebMetal[] | null;
 
     /**
      * Execution information such as each kernel size, input and output buffers, etc.
      */
-    private executionInfos: GraphDescriptorWebGPUExecInfos[] | null;
+    private executionInfos: GraphDescriptorWebMetalExecInfos[] | null;
 
     /**
      * Return `true` if this backend is available in this environment.
      * @returns {boolean}
      */
     static checkAvailability() {
-        return IS_WEBGPU_SUPPORTED;
+        return IS_WEBMETAL_SUPPORTED;
     }
 
     /**
@@ -74,7 +74,7 @@ export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescri
      * @returns {Promise<void>} Promise object which is resolved when the initialization finished.
      */
     async init() {
-        this.webgpuHandler = WebGPUHandler.getInstance();
+        this.webgpuHandler = WebMetalHandler.getInstance();
 
         await this.checkIncompatibleGPU();
     }
@@ -134,7 +134,7 @@ using namespace metal;
      *
      * @protected
      */
-    async fetchDescriptor(directory: string): Promise<GraphDescriptorWebGPU> {
+    async fetchDescriptor(directory: string): Promise<GraphDescriptorWebMetal> {
         let res = await webdnnFetch(`${directory}/graph_${this.backendName}.json`, this.transformUrlDelegate);
         return res.json();
     }
@@ -163,8 +163,8 @@ using namespace metal;
      * Load cached descriptor from WebStorage
      * @protected
      */
-    async restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebGPU | null> {
-        return localforage.getItem<GraphDescriptorWebGPU>(`${directory}_${this.backendName}_descriptor`).catch(() => null);
+    async restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebMetal | null> {
+        return localforage.getItem<GraphDescriptorWebMetal>(`${directory}_${this.backendName}_descriptor`).catch(() => null);
     }
 
     /**
@@ -180,14 +180,14 @@ using namespace metal;
     /**
      * save cache
      */
-    async saveCache(directory: string, descriptor: GraphDescriptorWebGPU, parameters: ArrayBuffer): Promise<void> {
+    async saveCache(directory: string, descriptor: GraphDescriptorWebMetal, parameters: ArrayBuffer): Promise<void> {
         await Promise.all([
             localforage.setItem(`${directory}_${this.backendName}_descriptor`, descriptor),
             localforage.setItem(`${directory}_${this.backendName}_parameters`, parameters)
         ]);
     };
 
-    async setDescriptorAndParameters(descriptor: GraphDescriptorWebGPU, parameter: ArrayBuffer) {
+    async setDescriptorAndParameters(descriptor: GraphDescriptorWebMetal, parameter: ArrayBuffer) {
         this.descriptor = descriptor;
 
         //reset all datum depend on old descriptor
@@ -220,7 +220,7 @@ using namespace metal;
         if (!this.descriptor) throw Error("GraphDescriptor is not loaded.");
         let descriptor = this.descriptor;
 
-        let staticBuffer = new BufferWebGPU(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
+        let staticBuffer = new BufferWebMetal(descriptor.memory_layout.static.size * Float32Array.BYTES_PER_ELEMENT);
         this.staticBuffer = staticBuffer;
 
         let decoder = getWeightDecoder(descriptor.weight_encoding);
@@ -246,9 +246,9 @@ using namespace metal;
     private async initializeMetaBuffers() {
         if (!this.descriptor) throw Error("GraphDescriptor is not loaded.");
 
-        this.metaBuffers = await Promise.all<BufferWebGPU>(
+        this.metaBuffers = await Promise.all<BufferWebMetal>(
             this.descriptor.exec_infos.map(async executionInfo => {
-                let buffer = new BufferWebGPU(executionInfo.meta_buffer.length * Int32Array.BYTES_PER_ELEMENT);
+                let buffer = new BufferWebMetal(executionInfo.meta_buffer.length * Int32Array.BYTES_PER_ELEMENT);
                 await buffer.write(new Uint8Array(executionInfo.meta_buffer));
 
                 return buffer;
@@ -270,7 +270,7 @@ using namespace metal;
         let placeholderContext = this.placeholderContext;
 
         let dynamicBufferSize = placeholderContext.resolve(descriptor.memory_layout.dynamic.size);
-        let dynamicBuffer = new BufferWebGPU(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
+        let dynamicBuffer = new BufferWebMetal(dynamicBufferSize * Float32Array.BYTES_PER_ELEMENT);
         this.dynamicBuffer = dynamicBuffer;
 
         (await this.getInputViews())

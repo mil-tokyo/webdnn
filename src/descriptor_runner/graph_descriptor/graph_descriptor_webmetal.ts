@@ -9,18 +9,18 @@ import { GraphDescriptor } from "./graph_descriptor";
 /**
  * @protected
  */
-export interface GraphDescriptorWebGPU extends GraphDescriptor {
+export interface GraphDescriptorWebMetal extends GraphDescriptor {
     kernel_source: string;
-    exec_infos: GraphDescriptorWebGPUExecInfos[];
+    exec_infos: GraphDescriptorWebMetalExecInfos[];
 }
 
 /**
  * @protected
  */
-export interface GraphDescriptorWebGPUExecInfos {
+export interface GraphDescriptorWebMetalExecInfos {
     entry_func_name: string;
-    threadgroups_per_grid: WebGPUSize;
-    threads_per_thread_group: WebGPUSize;
+    threadgroups_per_grid: WebMetalSize;
+    threads_per_thread_group: WebMetalSize;
     meta_buffer: number[];
     unresolved_value_list: { offset: number, placeholder: Placeholder }[]
 }
