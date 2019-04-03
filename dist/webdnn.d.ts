@@ -211,8 +211,8 @@ declare module 'webdnn/symbolic_typed_array/symbolic_typed_array' {
 	     * The ArrayBuffer instance referenced by the array.
 	     */
 	    /**
-	     * The ArrayBuffer instance referenced by the array.
-	     */
+	    * The ArrayBuffer instance referenced by the array.
+	    */
 	    buffer: ArrayBufferLike;
 	    /**
 	     * The length in bytes of the array.
@@ -670,6 +670,10 @@ declare module 'webdnn/decoder/weight_decoder' {
 
 }
 declare module 'webdnn/decoder/weight_decoder_eightbit' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import WeightDecoder from 'webdnn/decoder/weight_decoder';
 	/**
 	 * @protected
@@ -708,6 +712,10 @@ declare module 'webdnn/decoder/get_weight_decoder' {
 }
 declare module 'webdnn/util/dispatch_scheduler' {
 	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	/**
 	 * Schedule function which is called too much frequently.
 	 *
 	 * @private
@@ -733,6 +741,10 @@ declare module 'webdnn/util/dispatch_scheduler' {
 
 }
 declare module 'webdnn/fetch' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	/**
 	 * @protected
 	 */
@@ -787,6 +799,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorFallback } from 'webdnn/graph_descriptor/graph_descriptor_fallback';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -821,10 +837,10 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	     * save cache
 	     */
 	    saveCache(directory: string, descriptor: GraphDescriptorFallback, parameters: ArrayBuffer): Promise<void>;
-	    private setDescriptor(descriptor);
-	    private compile();
-	    private initializeStaticBuffer(weightRawArray);
-	    private initializeDynamicBuffer();
+	    private setDescriptor;
+	    private compile;
+	    private initializeStaticBuffer;
+	    private initializeDynamicBuffer;
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
@@ -853,6 +869,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webassembly' {
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorWebassembly } from 'webdnn/graph_descriptor/graph_descriptor_webassembly';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -870,7 +890,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    static checkAvailability(): boolean;
 	    constructor(options?: DescriptorRunnerOptions);
 	    init(): Promise<void>;
-	    private absolutePath(path);
+	    private absolutePath;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void>;
 	    /**
 	     * Fetch graph descriptor from specified directory.
@@ -920,9 +940,9 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
-	    private setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray);
-	    private compile(worker_src);
-	    private loadWeights(weightsData);
+	    private setPlaceholderValueWorker;
+	    private compile;
+	    private loadWeights;
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
 	    run(): Promise<void>;
@@ -1057,6 +1077,10 @@ declare interface WebGLVertexArrayObjectExtension {
     createVertexArrayOES(): WebGLVertexArrayObject;
 }
 declare module 'webdnn/webgl_handler' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	/// <reference path="webgl2.d.ts" />
 	/**
 	 * @protected
@@ -1081,7 +1105,7 @@ declare module 'webdnn/webgl_handler' {
 	    createFragmentShader(source: string): WebGLShader;
 	    createShader(type: number, source: string): WebGLShader;
 	    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram;
-	    createArrayBuffer(vertexArray: number | Float32Array): WebGLBuffer;
+	    createArrayBuffer(vertexArray: Float32Array): WebGLBuffer;
 	    createFrameBuffer(): WebGLFramebuffer;
 	    bindArrayBuffer(buffer: WebGLBuffer): void;
 	    bindFrameBuffer(frameBuffer: WebGLFramebuffer, width: number, height: number): void;
@@ -1245,13 +1269,17 @@ declare module 'webdnn/buffer/buffer_webgl' {
 	    unbindFromReadTexture(): void;
 	    bindToDrawTexture(): void;
 	    unbindFromDrawTexture(): void;
-	    private pack(array);
-	    private unpack(array);
-	    private allocateTexture();
+	    private pack;
+	    private unpack;
+	    private allocateTexture;
 	}
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -1286,16 +1314,16 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	     */
 	    saveCache(directory: string, descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer): Promise<void>;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer): Promise<void>;
-	    private initializeStaticBuffer(weightRawArray);
-	    private initializeDynamicBuffer();
-	    private setDescriptor(descriptor);
-	    private compile();
+	    private initializeStaticBuffer;
+	    private initializeDynamicBuffer;
+	    private setDescriptor;
+	    private compile;
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
-	    private buildPipeline();
+	    private buildPipeline;
 	    run(): Promise<void>;
 	}
 
@@ -1338,6 +1366,10 @@ declare module 'webdnn/webgpu_handler' {
 
 }
 declare module 'webdnn/buffer/buffer_webgpu' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { Buffer } from 'webdnn/buffer/buffer';
 	/**
 	 * @protected
@@ -1388,6 +1420,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorWebGPU } from 'webdnn/graph_descriptor/graph_descriptor_webgpu';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -1436,7 +1472,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * Check whether current GPU is supported or not. If it's not supported, an error is thrown.
 	     * @returns {Promise<void>}
 	     */
-	    private checkIncompatibleGPU();
+	    private checkIncompatibleGPU;
 	    /**
 	     * Fetch graph descriptor from specified directory.
 	     *
@@ -1489,12 +1525,12 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * @param {ArrayBuffer} weightRawArray constant weight buffer
 	     * @returns {Promise<void>}
 	     */
-	    private initializeStaticBuffer(weightRawArray);
+	    private initializeStaticBuffer;
 	    /**
 	     * Initialize meta buffers, which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
 	     * @returns {Promise<void>}
 	     */
-	    private initializeMetaBuffers();
+	    private initializeMetaBuffers;
 	    /**
 	     * Initialize dynamic buffers, whose size and position cannot be determined without runtime-information such as input image size
 	     * (if it's dynamic).
@@ -1502,7 +1538,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     *
 	     * @returns {Promise<void>}
 	     */
-	    private initializeDynamicBuffer();
+	    private initializeDynamicBuffer;
 	    /**
 	     * Set actual value into placeholder. If all placeholder is resolved,
 	     * [[DescriptorRunnerWebGPU#initializeDynamicBuffer|`initializeDynamicBuffer()`]] is automatically called.
@@ -1547,7 +1583,7 @@ declare module 'webdnn/image/enums' {
 	    /** `[Channel, Height, Width]` format */
 	    CHW = 0,
 	    /** `[Height, Width, Channel]` format */
-	    HWC = 1,
+	    HWC = 1
 	}
 	/**
 	 * The color format
@@ -1562,7 +1598,7 @@ declare module 'webdnn/image/enums' {
 	    /** RGBA format */
 	    RGBA = 3,
 	    /** BGRA format */
-	    BGRA = 4,
+	    BGRA = 4
 	}
 
 }
@@ -1581,6 +1617,10 @@ declare module 'webdnn/image/canvas' {
 
 }
 declare module 'webdnn/image/image_data' {
+	/**
+	 * @module webdnn/image
+	 */
+	/** Don't Remove This comment block */
 	/**
 	 * The rectangle of source position of image
 	 */
@@ -1660,6 +1700,10 @@ declare module 'webdnn/image/image_source' {
 
 }
 declare module 'webdnn/image/image_array' {
+	/**
+	 * @module webdnn/image
+	 */
+	/** Don't Remove This comment block */
 	import { Color, Order } from 'webdnn/image/enums';
 	import { DestinationRect, SourceRect } from 'webdnn/image/image_data';
 	/**

@@ -93,7 +93,7 @@ export default class WebGLHandler {
         return program;
     }
 
-    createArrayBuffer(vertexArray: number | Float32Array) {
+    createArrayBuffer(vertexArray: Float32Array) {
         let buffer = checkNull(this.gl.createBuffer());
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexArray, this.gl.STATIC_DRAW);
