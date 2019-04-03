@@ -30,6 +30,6 @@ ${npm_bin_dir}/webpack --config ${script_dir}/../src/descriptor_runner/webpack.c
 
 # type declaration file
 ${npm_bin_dir}/dts-generator \
-    --name webdnn \
+    --prefix webdnn --name webdnn --main webdnn/webdnn \
     --project ${script_dir}/../src/descriptor_runner \
-    --out ${script_dir}/../dist/webdnn.d.ts --main 'webdnn/webdnn'
+    --out ${script_dir}/../dist/webdnn.d.ts

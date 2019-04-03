@@ -1,47 +1,52 @@
-///<reference path="./webgpu.d.ts" />
+///<reference path="./webmetal.ts" />
 
 /**
  * @module webdnn
  */
 /** Don't Remove This comment block */
 
-import BufferWebGPU from "./buffer/buffer_webgpu";
+import BufferWebMetal from "./buffer/buffer_webmetal";
 
 /**
  * @private
  */
-let instance: WebGPUHandler;
+let instance: WebMetalHandler;
 
 /**
  * @protected
  */
-export default class WebGPUHandler {
-    private context: WebGPURenderingContext;
-    private commandQueue: WebGPUCommandQueue;
-    private pipelineStates: Map<string, WebGPUComputePipelineState> = new Map();
-    private commandBuffer: WebGPUCommandBuffer | null;
+export default class WebMetalHandler {
+    private context: WebMetalRenderingContext;
+    private commandQueue: WebMetalCommandQueue;
+    private pipelineStates: Map<string, WebMetalComputePipelineState> = new Map();
+    private commandBuffer: WebMetalCommandBuffer | null;
 
     static getInstance() {
-        if (!instance) instance = new WebGPUHandler();
+        if (!instance) instance = new WebMetalHandler();
         return instance;
     }
 
     /**
-     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     * WebMetalHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
      *
      * Since the number of GPU contexts may be limited, the handler is used as a singleton
      * and only one context is shared among multiple runners.
      */
     private constructor() {
-        if (!IS_WEBGPU_SUPPORTED) throw new Error('This browser does not support WebGPU');
+        if (!IS_WEBMETAL_SUPPORTED) throw new Error('This browser does not support WebMetal');
 
-        let context: WebGPURenderingContext | null;
+        let context: WebMetalRenderingContext | null;
         try {
-            context = document.createElement('canvas').getContext('webgpu');
+            if (IS_APPLE_WEBGPU_SUPPORTED) {
+                // for compatibility, get context by 'webgpu'
+                context = <WebMetalRenderingContext | null>document.createElement('canvas').getContext('webgpu');
+            } else {
+                context = document.createElement('canvas').getContext('webmetal');
+            }
         } catch (err) {
-            throw new Error(`During initializing WebGPURenderingContext, unexpected error is occurred: ${err.message}`);
+            throw new Error(`During initializing WebMetalRenderingContext, unexpected error is occurred: ${err.message}`);
         }
-        if (!context) throw new Error('WebGPURenderingContext initialization failed');
+        if (!context) throw new Error('WebMetalRenderingContext initialization failed');
 
         this.context = context;
         this.commandQueue = context.createCommandQueue();
@@ -49,7 +54,7 @@ export default class WebGPUHandler {
         this.loadKernel('kernel void sync(){}', 'basic');
     }
 
-    createBuffer(arrayBuffer: ArrayBufferView): WebGPUBuffer {
+    createBuffer(arrayBuffer: ArrayBufferView): WebMetalBuffer {
         return this.context.createBuffer(arrayBuffer);
     }
 
@@ -64,11 +69,11 @@ export default class WebGPUHandler {
         }
     }
 
-    createCommandBuffer(): WebGPUCommandBuffer {
+    createCommandBuffer(): WebMetalCommandBuffer {
         return this.commandQueue.createCommandBuffer();
     }
 
-    getPipelineStateByName(name: string): WebGPUComputePipelineState {
+    getPipelineStateByName(name: string): WebMetalComputePipelineState {
         let state = this.pipelineStates.get(name);
         if (!state) {
             throw TypeError(`Kernel function "${name}" is not loaded.`);
@@ -77,9 +82,9 @@ export default class WebGPUHandler {
     }
 
     executeSinglePipelineState(name: string,
-                               threadgroupsPerGrid: WebGPUSize,
-                               threadsPerThreadgroup: WebGPUSize,
-                               buffers: (WebGPUBuffer | BufferWebGPU)[],
+                               threadgroupsPerGrid: WebMetalSize,
+                               threadsPerThreadgroup: WebMetalSize,
+                               buffers: (WebMetalBuffer | BufferWebMetal)[],
                                getCompletedPromise?: boolean): Promise<void> | null {
         let commandBuffer = this.commandBuffer || (this.commandBuffer = this.createCommandBuffer());
         let commandEncoder = commandBuffer.createComputeCommandEncoder();
@@ -87,11 +92,11 @@ export default class WebGPUHandler {
         commandEncoder.setComputePipelineState(this.getPipelineStateByName(name));
         for (let i = 0; i < buffers.length; i++) {
             let buffer = buffers[i];
-            let wgbuf: WebGPUBuffer;
-            if (buffer instanceof BufferWebGPU) {
+            let wgbuf: WebMetalBuffer;
+            if (buffer instanceof BufferWebMetal) {
                 wgbuf = buffer.buffer;
             } else {
-                // cannot perform (buffer instanceof WebGPUBuffer) currently
+                // cannot perform (buffer instanceof WebMetalBuffer) currently
                 wgbuf = buffer;
             }
 
@@ -132,7 +137,15 @@ export default class WebGPUHandler {
 }
 
 /**
- * Flag whether WebGPU is supported or not
+ * Flag whether WebGPU on Safari is supported or not
+ * Its name was changed to WebMetal in 2019 (macOS 10.14.4 / iOS 12.2).
+ * This is used for backward compatibility.
  * @protected
  */
-export const IS_WEBGPU_SUPPORTED = 'WebGPURenderingContext' in window && 'WebGPUComputeCommandEncoder' in window;
+export const IS_APPLE_WEBGPU_SUPPORTED = 'WebGPURenderingContext' in window && 'WebGPUComputeCommandEncoder' in window;
+
+/**
+ * Flag whether WebMetal is supported or not
+ * @protected
+ */
+export const IS_WEBMETAL_SUPPORTED = ('WebMetalRenderingContext' in window && 'WebMetalComputeCommandEncoder' in window) || IS_APPLE_WEBGPU_SUPPORTED;

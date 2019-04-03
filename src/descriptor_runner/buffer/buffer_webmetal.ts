@@ -3,23 +3,23 @@
  */
 /** Don't Remove This comment block */
 
-import WebGPUHandler from "../webgpu_handler";
+import WebMetalHandler from "../webmetal_handler";
 import { Buffer } from "./buffer";
 
 /**
  * @protected
  */
-export default class BufferWebGPU extends Buffer {
-    buffer: WebGPUBuffer;
+export default class BufferWebMetal extends Buffer {
+    buffer: WebMetalBuffer;
     bufferView: Uint8Array;
-    private handler: WebGPUHandler;
+    private handler: WebMetalHandler;
 
     constructor(byteLength: number) {
         super(byteLength, 'webgpu');
         if (byteLength == 0) {
             byteLength = 4;//0 length buffer causes error
         }
-        this.handler = WebGPUHandler.getInstance();
+        this.handler = WebMetalHandler.getInstance();
         this.buffer = this.handler.createBuffer(new Uint8Array(byteLength));
         this.bufferView = new Uint8Array(this.buffer.contents);
     }

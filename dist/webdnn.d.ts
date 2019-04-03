@@ -1,61 +1,43 @@
-interface WebGPURenderingContext {
-    createCommandQueue(): WebGPUCommandQueue;
-
-    createBuffer(data: ArrayBufferView): WebGPUBuffer;
-
-    createLibrary(sourceCode: string): WebGPULibrary;
-
-    createComputePipelineState(function_: WebGPUFunction): WebGPUComputePipelineState;
+interface WebMetalRenderingContext {
+    createCommandQueue(): WebMetalCommandQueue;
+    createBuffer(data: ArrayBufferView): WebMetalBuffer;
+    createLibrary(sourceCode: string): WebMetalLibrary;
+    createComputePipelineState(function_: WebMetalFunction): WebMetalComputePipelineState;
 }
-
-interface WebGPUFunction {
+interface WebMetalFunction {
 }
-
-interface WebGPULibrary {
+interface WebMetalLibrary {
     functionNames: string[];
-
-    functionWithName(name: string): WebGPUFunction;
+    functionWithName(name: string): WebMetalFunction;
 }
-
-interface WebGPUBuffer {
+interface WebMetalBuffer {
     contents: any;
 }
-
-interface WebGPUSize {
+interface WebMetalSize {
     width: number;
     height: number;
     depth: number;
 }
-
-interface WebGPUCommandQueue {
-    createCommandBuffer(): WebGPUCommandBuffer;
+interface WebMetalCommandQueue {
+    createCommandBuffer(): WebMetalCommandBuffer;
 }
-
-interface WebGPUCommandBuffer {
-    createComputeCommandEncoder(): WebGPUComputeCommandEncoder;
-
+interface WebMetalCommandBuffer {
+    createComputeCommandEncoder(): WebMetalComputeCommandEncoder;
     commit(): void;
-
     completed: Promise<void>;
 }
-
-interface WebGPUCommandEncoder {
+interface WebMetalCommandEncoder {
     endEncoding(): void;
 }
-
-interface WebGPUComputeCommandEncoder extends WebGPUCommandEncoder {
-    setComputePipelineState(state: WebGPUComputePipelineState): void;
-
-    setBuffer(buffer: WebGPUBuffer, offset: number, index: number): void;
-
-    dispatch(threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize): void;
+interface WebMetalComputeCommandEncoder extends WebMetalCommandEncoder {
+    setComputePipelineState(state: WebMetalComputePipelineState): void;
+    setBuffer(buffer: WebMetalBuffer, offset: number, index: number): void;
+    dispatch(threadgroupsPerGrid: WebMetalSize, threadsPerThreadgroup: WebMetalSize): void;
 }
-
-interface WebGPUComputePipelineState {
+interface WebMetalComputePipelineState {
 }
-
 interface HTMLCanvasElement {
-    getContext(contextId: "webgpu"): WebGPURenderingContext | null;
+    getContext(contextId: "webmetal"): WebMetalRenderingContext | null;
 }
 declare module 'webdnn/placeholder' {
 	/**
@@ -211,8 +193,8 @@ declare module 'webdnn/symbolic_typed_array/symbolic_typed_array' {
 	     * The ArrayBuffer instance referenced by the array.
 	     */
 	    /**
-	     * The ArrayBuffer instance referenced by the array.
-	     */
+	    * The ArrayBuffer instance referenced by the array.
+	    */
 	    buffer: ArrayBufferLike;
 	    /**
 	     * The length in bytes of the array.
@@ -670,6 +652,10 @@ declare module 'webdnn/decoder/weight_decoder' {
 
 }
 declare module 'webdnn/decoder/weight_decoder_eightbit' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import WeightDecoder from 'webdnn/decoder/weight_decoder';
 	/**
 	 * @protected
@@ -708,6 +694,10 @@ declare module 'webdnn/decoder/get_weight_decoder' {
 }
 declare module 'webdnn/util/dispatch_scheduler' {
 	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	/**
 	 * Schedule function which is called too much frequently.
 	 *
 	 * @private
@@ -733,6 +723,10 @@ declare module 'webdnn/util/dispatch_scheduler' {
 
 }
 declare module 'webdnn/fetch' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	/**
 	 * @protected
 	 */
@@ -787,6 +781,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_fallback' {
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorFallback } from 'webdnn/graph_descriptor/graph_descriptor_fallback';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -821,10 +819,10 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_fallback' {
 	     * save cache
 	     */
 	    saveCache(directory: string, descriptor: GraphDescriptorFallback, parameters: ArrayBuffer): Promise<void>;
-	    private setDescriptor(descriptor);
-	    private compile();
-	    private initializeStaticBuffer(weightRawArray);
-	    private initializeDynamicBuffer();
+	    private setDescriptor;
+	    private compile;
+	    private initializeStaticBuffer;
+	    private initializeDynamicBuffer;
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
@@ -853,6 +851,10 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webassembly' {
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorWebassembly } from 'webdnn/graph_descriptor/graph_descriptor_webassembly';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -870,7 +872,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    static checkAvailability(): boolean;
 	    constructor(options?: DescriptorRunnerOptions);
 	    init(): Promise<void>;
-	    private absolutePath(path);
+	    private absolutePath;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebassembly, parameters: ArrayBuffer): Promise<void>;
 	    /**
 	     * Fetch graph descriptor from specified directory.
@@ -920,9 +922,9 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webassembly' {
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
-	    private setPlaceholderValueWorker(dynamicBufferSize, metaBufferFillArray);
-	    private compile(worker_src);
-	    private loadWeights(weightsData);
+	    private setPlaceholderValueWorker;
+	    private compile;
+	    private loadWeights;
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
 	    run(): Promise<void>;
@@ -1057,6 +1059,10 @@ declare interface WebGLVertexArrayObjectExtension {
     createVertexArrayOES(): WebGLVertexArrayObject;
 }
 declare module 'webdnn/webgl_handler' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	/// <reference path="webgl2.d.ts" />
 	/**
 	 * @protected
@@ -1081,7 +1087,7 @@ declare module 'webdnn/webgl_handler' {
 	    createFragmentShader(source: string): WebGLShader;
 	    createShader(type: number, source: string): WebGLShader;
 	    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram;
-	    createArrayBuffer(vertexArray: number | Float32Array): WebGLBuffer;
+	    createArrayBuffer(vertexArray: Float32Array): WebGLBuffer;
 	    createFrameBuffer(): WebGLFramebuffer;
 	    bindArrayBuffer(buffer: WebGLBuffer): void;
 	    bindFrameBuffer(frameBuffer: WebGLFramebuffer, width: number, height: number): void;
@@ -1245,13 +1251,17 @@ declare module 'webdnn/buffer/buffer_webgl' {
 	    unbindFromReadTexture(): void;
 	    bindToDrawTexture(): void;
 	    unbindFromDrawTexture(): void;
-	    private pack(array);
-	    private unpack(array);
-	    private allocateTexture();
+	    private pack;
+	    private unpack;
+	    private allocateTexture;
 	}
 
 }
 declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { GraphDescriptorWebGL } from 'webdnn/graph_descriptor/graph_descriptor_webgl';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
@@ -1286,64 +1296,75 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgl' {
 	     */
 	    saveCache(directory: string, descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer): Promise<void>;
 	    setDescriptorAndParameters(descriptor: GraphDescriptorWebGL, parameters: ArrayBuffer): Promise<void>;
-	    private initializeStaticBuffer(weightRawArray);
-	    private initializeDynamicBuffer();
-	    private setDescriptor(descriptor);
-	    private compile();
+	    private initializeStaticBuffer;
+	    private initializeDynamicBuffer;
+	    private setDescriptor;
+	    private compile;
 	    setPlaceholderValue(values: {
 	        [key: string]: number;
 	    }): Promise<void>;
 	    getInputViews(): SymbolicFloat32Array[];
 	    getOutputViews(): SymbolicFloat32Array[];
-	    private buildPipeline();
+	    private buildPipeline;
 	    run(): Promise<void>;
 	}
 
 }
-declare module 'webdnn/webgpu_handler' {
-	/// <reference path="webgpu.d.ts" />
+declare module 'webdnn/webmetal_handler' {
+	/// <reference path="webmetal.d.ts" />
 	/**
 	 * @module webdnn
 	 */
 	/** Don't Remove This comment block */
-	import BufferWebGPU from 'webdnn/buffer/buffer_webgpu';
+	import BufferWebMetal from 'webdnn/buffer/buffer_webmetal';
 	/**
 	 * @protected
 	 */
-	export default class WebGPUHandler {
+	export default class WebMetalHandler {
 	    private context;
 	    private commandQueue;
 	    private pipelineStates;
 	    private commandBuffer;
-	    static getInstance(): WebGPUHandler;
+	    static getInstance(): WebMetalHandler;
 	    /**
-	     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+	     * WebMetalHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
 	     *
 	     * Since the number of GPU contexts may be limited, the handler is used as a singleton
 	     * and only one context is shared among multiple runners.
 	     */
 	    private constructor();
-	    createBuffer(arrayBuffer: ArrayBufferView): WebGPUBuffer;
+	    createBuffer(arrayBuffer: ArrayBufferView): WebMetalBuffer;
 	    loadKernel(librarySource: string, namespace?: string): void;
-	    createCommandBuffer(): WebGPUCommandBuffer;
-	    getPipelineStateByName(name: string): WebGPUComputePipelineState;
-	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebGPUSize, threadsPerThreadgroup: WebGPUSize, buffers: (WebGPUBuffer | BufferWebGPU)[], getCompletedPromise?: boolean): Promise<void> | null;
+	    createCommandBuffer(): WebMetalCommandBuffer;
+	    getPipelineStateByName(name: string): WebMetalComputePipelineState;
+	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebMetalSize, threadsPerThreadgroup: WebMetalSize, buffers: (WebMetalBuffer | BufferWebMetal)[], getCompletedPromise?: boolean): Promise<void> | null;
 	    sync(): Promise<void>;
 	}
 	/**
-	 * Flag whether WebGPU is supported or not
+	 * Flag whether WebGPU on Safari is supported or not
+	 * Its name was changed to WebMetal in 2019 (macOS 10.14.4 / iOS 12.2).
+	 * This is used for backward compatibility.
 	 * @protected
 	 */
-	export const IS_WEBGPU_SUPPORTED: boolean;
+	export const IS_APPLE_WEBGPU_SUPPORTED: boolean;
+	/**
+	 * Flag whether WebMetal is supported or not
+	 * @protected
+	 */
+	export const IS_WEBMETAL_SUPPORTED: boolean;
 
 }
-declare module 'webdnn/buffer/buffer_webgpu' {
+declare module 'webdnn/buffer/buffer_webmetal' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
 	import { Buffer } from 'webdnn/buffer/buffer';
 	/**
 	 * @protected
 	 */
-	export default class BufferWebGPU extends Buffer {
-	    buffer: WebGPUBuffer;
+	export default class BufferWebMetal extends Buffer {
+	    buffer: WebMetalBuffer;
 	    bufferView: Uint8Array;
 	    private handler;
 	    constructor(byteLength: number);
@@ -1358,7 +1379,7 @@ declare module 'webdnn/buffer/buffer_webgpu' {
 	}
 
 }
-declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
+declare module 'webdnn/graph_descriptor/graph_descriptor_webmetal' {
 	/**
 	 * @module webdnn
 	 */
@@ -1368,17 +1389,17 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
 	/**
 	 * @protected
 	 */
-	export interface GraphDescriptorWebGPU extends GraphDescriptor {
+	export interface GraphDescriptorWebMetal extends GraphDescriptor {
 	    kernel_source: string;
-	    exec_infos: GraphDescriptorWebGPUExecInfos[];
+	    exec_infos: GraphDescriptorWebMetalExecInfos[];
 	}
 	/**
 	 * @protected
 	 */
-	export interface GraphDescriptorWebGPUExecInfos {
+	export interface GraphDescriptorWebMetalExecInfos {
 	    entry_func_name: string;
-	    threadgroups_per_grid: WebGPUSize;
-	    threads_per_thread_group: WebGPUSize;
+	    threadgroups_per_grid: WebMetalSize;
+	    threads_per_thread_group: WebMetalSize;
 	    meta_buffer: number[];
 	    unresolved_value_list: {
 	        offset: number;
@@ -1387,25 +1408,29 @@ declare module 'webdnn/graph_descriptor/graph_descriptor_webgpu' {
 	}
 
 }
-declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
-	import { GraphDescriptorWebGPU } from 'webdnn/graph_descriptor/graph_descriptor_webgpu';
+declare module 'webdnn/descriptor_runner/descriptor_runner_webmetal' {
+	/**
+	 * @module webdnn
+	 */
+	/** Don't Remove This comment block */
+	import { GraphDescriptorWebMetal } from 'webdnn/graph_descriptor/graph_descriptor_webmetal';
 	import SymbolicFloat32Array from 'webdnn/symbolic_typed_array/symbolic_float32array';
 	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
-	 * DescriptorRunner for WebGPU
+	 * DescriptorRunner for WebMetal
 	 * @protected
 	 */
-	export default class DescriptorRunnerWebGPU extends DescriptorRunner<GraphDescriptorWebGPU, ArrayBuffer> {
+	export default class DescriptorRunnerWebMetal extends DescriptorRunner<GraphDescriptorWebMetal, ArrayBuffer> {
 	    constructor(options?: DescriptorRunnerOptions);
 	    /**
 	     * backend name
 	     */
 	    readonly backendName: BackendName;
 	    /**
-	     * WebGPU Handler
+	     * WebMetal Handler
 	     */
-	    private webgpuHandler;
+	    private webmetalHandler;
 	    /**
 	     * Static buffer, whose size and layout can be determined in compile time.
 	     */
@@ -1436,7 +1461,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * Check whether current GPU is supported or not. If it's not supported, an error is thrown.
 	     * @returns {Promise<void>}
 	     */
-	    private checkIncompatibleGPU();
+	    private checkIncompatibleGPU;
 	    /**
 	     * Fetch graph descriptor from specified directory.
 	     *
@@ -1451,7 +1476,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     *
 	     * @protected
 	     */
-	    fetchDescriptor(directory: string): Promise<GraphDescriptorWebGPU>;
+	    fetchDescriptor(directory: string): Promise<GraphDescriptorWebMetal>;
 	    /**
 	     * Fetch parameter files from specified directory.
 	     *
@@ -1472,7 +1497,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     * Load cached descriptor from WebStorage
 	     * @protected
 	     */
-	    restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebGPU | null>;
+	    restoreCachedDescriptor(directory: string): Promise<GraphDescriptorWebMetal | null>;
 	    /**
 	     * Load cached descriptor from WebStorage
 	     * @protected
@@ -1481,20 +1506,20 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	    /**
 	     * save cache
 	     */
-	    saveCache(directory: string, descriptor: GraphDescriptorWebGPU, parameters: ArrayBuffer): Promise<void>;
-	    setDescriptorAndParameters(descriptor: GraphDescriptorWebGPU, parameter: ArrayBuffer): Promise<void>;
+	    saveCache(directory: string, descriptor: GraphDescriptorWebMetal, parameters: ArrayBuffer): Promise<void>;
+	    setDescriptorAndParameters(descriptor: GraphDescriptorWebMetal, parameter: ArrayBuffer): Promise<void>;
 	    /**
 	     * Initialize static buffers, whose size and position can be determined in compile time.
 	     *
 	     * @param {ArrayBuffer} weightRawArray constant weight buffer
 	     * @returns {Promise<void>}
 	     */
-	    private initializeStaticBuffer(weightRawArray);
+	    private initializeStaticBuffer;
 	    /**
 	     * Initialize meta buffers, which contains metadata shared in each GPU kernel thread (ex. hyper parameters).
 	     * @returns {Promise<void>}
 	     */
-	    private initializeMetaBuffers();
+	    private initializeMetaBuffers;
 	    /**
 	     * Initialize dynamic buffers, whose size and position cannot be determined without runtime-information such as input image size
 	     * (if it's dynamic).
@@ -1502,10 +1527,10 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webgpu' {
 	     *
 	     * @returns {Promise<void>}
 	     */
-	    private initializeDynamicBuffer();
+	    private initializeDynamicBuffer;
 	    /**
 	     * Set actual value into placeholder. If all placeholder is resolved,
-	     * [[DescriptorRunnerWebGPU#initializeDynamicBuffer|`initializeDynamicBuffer()`]] is automatically called.
+	     * [[DescriptorRunnerWebMetal#initializeDynamicBuffer|`initializeDynamicBuffer()`]] is automatically called.
 	     *
 	     * @param values mapping object of placeholder name and value
 	     * @returns {Promise<void>}
@@ -1547,7 +1572,7 @@ declare module 'webdnn/image/enums' {
 	    /** `[Channel, Height, Width]` format */
 	    CHW = 0,
 	    /** `[Height, Width, Channel]` format */
-	    HWC = 1,
+	    HWC = 1
 	}
 	/**
 	 * The color format
@@ -1562,7 +1587,7 @@ declare module 'webdnn/image/enums' {
 	    /** RGBA format */
 	    RGBA = 3,
 	    /** BGRA format */
-	    BGRA = 4,
+	    BGRA = 4
 	}
 
 }
@@ -1581,6 +1606,10 @@ declare module 'webdnn/image/canvas' {
 
 }
 declare module 'webdnn/image/image_data' {
+	/**
+	 * @module webdnn/image
+	 */
+	/** Don't Remove This comment block */
 	/**
 	 * The rectangle of source position of image
 	 */
@@ -1660,6 +1689,10 @@ declare module 'webdnn/image/image_source' {
 
 }
 declare module 'webdnn/image/image_array' {
+	/**
+	 * @module webdnn/image
+	 */
+	/** Don't Remove This comment block */
 	import { Color, Order } from 'webdnn/image/enums';
 	import { DestinationRect, SourceRect } from 'webdnn/image/image_data';
 	/**
@@ -1865,7 +1898,7 @@ declare module 'webdnn/math' {
 
 }
 declare module 'webdnn/webdnn' {
-	/// <reference path="webgpu.d.ts" />
+	/// <reference path="webmetal.d.ts" />
 	/**
 	 * @module webdnn
 	 * @preferred

@@ -2,6 +2,7 @@ const path = require('path');
 const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 module.exports = {
+    mode: 'production',
     entry: path.join(__dirname, './webdnn.js'),
     output: {
         filename: 'webdnn.es5.js',
@@ -9,7 +10,7 @@ module.exports = {
         library: 'WebDNN',
         libraryTarget: 'umd'
     },
-    devtool: 'source-map',
+    // devtool: 'source-map',
     plugins: [
         new MinifyPlugin()
     ]
