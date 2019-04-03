@@ -1327,7 +1327,7 @@ declare module 'webdnn/webmetal_handler' {
 	    private commandBuffer;
 	    static getInstance(): WebMetalHandler;
 	    /**
-	     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+	     * WebMetalHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
 	     *
 	     * Since the number of GPU contexts may be limited, the handler is used as a singleton
 	     * and only one context is shared among multiple runners.
@@ -1340,6 +1340,13 @@ declare module 'webdnn/webmetal_handler' {
 	    executeSinglePipelineState(name: string, threadgroupsPerGrid: WebMetalSize, threadsPerThreadgroup: WebMetalSize, buffers: (WebMetalBuffer | BufferWebMetal)[], getCompletedPromise?: boolean): Promise<void> | null;
 	    sync(): Promise<void>;
 	}
+	/**
+	 * Flag whether WebGPU on Safari is supported or not
+	 * Its name was changed to WebMetal in 2019 (macOS 10.14.4 / iOS 12.2).
+	 * This is used for backward compatibility.
+	 * @protected
+	 */
+	export const IS_APPLE_WEBGPU_SUPPORTED: boolean;
 	/**
 	 * Flag whether WebMetal is supported or not
 	 * @protected
@@ -1411,7 +1418,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webmetal' {
 	import { BackendName } from 'webdnn/webdnn';
 	import { DescriptorRunner, DescriptorRunnerOptions } from 'webdnn/descriptor_runner/descriptor_runner';
 	/**
-	 * DescriptorRunner for WebGPU
+	 * DescriptorRunner for WebMetal
 	 * @protected
 	 */
 	export default class DescriptorRunnerWebMetal extends DescriptorRunner<GraphDescriptorWebMetal, ArrayBuffer> {
@@ -1421,9 +1428,9 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webmetal' {
 	     */
 	    readonly backendName: BackendName;
 	    /**
-	     * WebGPU Handler
+	     * WebMetal Handler
 	     */
-	    private webgpuHandler;
+	    private webmetalHandler;
 	    /**
 	     * Static buffer, whose size and layout can be determined in compile time.
 	     */
@@ -1523,7 +1530,7 @@ declare module 'webdnn/descriptor_runner/descriptor_runner_webmetal' {
 	    private initializeDynamicBuffer;
 	    /**
 	     * Set actual value into placeholder. If all placeholder is resolved,
-	     * [[DescriptorRunnerWebGPU#initializeDynamicBuffer|`initializeDynamicBuffer()`]] is automatically called.
+	     * [[DescriptorRunnerWebMetal#initializeDynamicBuffer|`initializeDynamicBuffer()`]] is automatically called.
 	     *
 	     * @param values mapping object of placeholder name and value
 	     * @returns {Promise<void>}

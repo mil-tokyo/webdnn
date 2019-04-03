@@ -27,21 +27,26 @@ export default class WebMetalHandler {
     }
 
     /**
-     * WebGPUHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
+     * WebMetalHandler is singleton class and instantiate directly is forbidden (constructor is hidden).
      *
      * Since the number of GPU contexts may be limited, the handler is used as a singleton
      * and only one context is shared among multiple runners.
      */
     private constructor() {
-        if (!IS_WEBMETAL_SUPPORTED) throw new Error('This browser does not support WebGPU');
+        if (!IS_WEBMETAL_SUPPORTED) throw new Error('This browser does not support WebMetal');
 
         let context: WebMetalRenderingContext | null;
         try {
-            context = document.createElement('canvas').getContext('webmetal');
+            if (IS_APPLE_WEBGPU_SUPPORTED) {
+                // for compatibility, get context by 'webgpu'
+                context = <WebMetalRenderingContext | null>document.createElement('canvas').getContext('webgpu');
+            } else {
+                context = document.createElement('canvas').getContext('webmetal');
+            }
         } catch (err) {
-            throw new Error(`During initializing WebGPURenderingContext, unexpected error is occurred: ${err.message}`);
+            throw new Error(`During initializing WebMetalRenderingContext, unexpected error is occurred: ${err.message}`);
         }
-        if (!context) throw new Error('WebGPURenderingContext initialization failed');
+        if (!context) throw new Error('WebMetalRenderingContext initialization failed');
 
         this.context = context;
         this.commandQueue = context.createCommandQueue();
@@ -91,7 +96,7 @@ export default class WebMetalHandler {
             if (buffer instanceof BufferWebMetal) {
                 wgbuf = buffer.buffer;
             } else {
-                // cannot perform (buffer instanceof WebGPUBuffer) currently
+                // cannot perform (buffer instanceof WebMetalBuffer) currently
                 wgbuf = buffer;
             }
 
@@ -132,7 +137,15 @@ export default class WebMetalHandler {
 }
 
 /**
+ * Flag whether WebGPU on Safari is supported or not
+ * Its name was changed to WebMetal in 2019 (macOS 10.14.4 / iOS 12.2).
+ * This is used for backward compatibility.
+ * @protected
+ */
+export const IS_APPLE_WEBGPU_SUPPORTED = 'WebGPURenderingContext' in window && 'WebGPUComputeCommandEncoder' in window;
+
+/**
  * Flag whether WebMetal is supported or not
  * @protected
  */
-export const IS_WEBMETAL_SUPPORTED = 'WebMetalRenderingContext' in window && 'WebMetalComputeCommandEncoder' in window;
+export const IS_WEBMETAL_SUPPORTED = ('WebMetalRenderingContext' in window && 'WebMetalComputeCommandEncoder' in window) || IS_APPLE_WEBGPU_SUPPORTED;

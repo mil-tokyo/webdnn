@@ -26,8 +26,12 @@ DNN applications to end-users is very hard.
 **WebDNN** solves this problem by using web browser as installation-free DNN execution 
 framework. This framework optimizes trained DNN model to compress the model data and 
 accelerate the execution, and executes it with novel JavaScript API such as WebAssembly 
-and WebGPU to achieve zero-overhead execution. Empirical evaluations showed that it 
+and WebMetal to achieve zero-overhead execution. Empirical evaluations showed that it 
 achieved more than 200x acceleration.
+
+Note: WebGPU introduced by Apple was renamed to WebMetal in 2019.
+In WebDNN 1.2.8, both WebMetal and old name WebGPU are supported for compatiblity.
+For string constant, currently `webgpu` is used, but will be changed to `webmetal` in the future version.
 
 # Performance
 
@@ -46,7 +50,7 @@ achieved more than 200x acceleration.
 
 Elapsed time per image are shown in vertical axis as logarithmic scale.
 
-WebDNN with WebGPU backend was significantly faster than Keras.js. 
+WebDNN with WebMetal backend was significantly faster than Keras.js. 
 WebDNN with WebAssembly backend was comparable with GPU backend of Keras.js.
 In each DNN model and backend, WebDNN obtained better results in terms of speed.
 More speed improvement is observed when the optimizations are applied in the graph transpiler. 
