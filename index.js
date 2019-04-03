@@ -9927,7 +9927,7 @@ var BrowserCompatibilitySection = (function (_super) {
                 React.createElement("div", { className: bootstrap.col12 },
                     React.createElement("p", null,
                         "WebDNN supports 4 execution backend implementations:\u00A0",
-                        React.createElement("b", null, "WebGPU"),
+                        React.createElement("b", null, "WebMetal"),
                         ", ",
                         React.createElement("b", null, "WebGL"),
                         ",",
@@ -9938,8 +9938,8 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("b", null, "WebDNN works all major browsers"),
                         "."),
                     React.createElement("dl", null,
-                        React.createElement("dt", null, "WebGPU backend"),
-                        React.createElement("dd", null, "Compute on GPU by WebGPU API. This backend is fastest in 4 backends, but currently WebGPU API is supported only in Safari Technology Preview."),
+                        React.createElement("dt", null, "WebMetal backend"),
+                        React.createElement("dd", null, "Compute on GPU by WebMetal API. This backend is fastest in 4 backends, but currently WebMetal API is supported only in Safari. (Apple originally proposed this API as WebGPU in 2017, and renamed to WebMetal in 2019.)"),
                         React.createElement("dt", null, "WebGL backend"),
                         React.createElement("dd", null, "Compute on GPU by WebGL API. This backend is also faster than CPU-based backends, and WebGL is supported by almost all browsers."),
                         React.createElement("dt", null, "WebAssembly backend"),
@@ -10027,7 +10027,9 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }, "this document"),
-                        "."),
+                        ". (For latest safari, enable ",
+                        React.createElement("b", null, "WebMetal"),
+                        " instead of WebGPU.)"),
                     React.createElement("p", { style: { display: this.state.flagWebGPUDisabled ? 'none' : '' }, className: style.webgpuTips },
                         "In ",
                         React.createElement("b", null, "macOS High Sierra"),
@@ -10039,7 +10041,9 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }, "this document"),
-                        ".")))));
+                        ". (For latest safari, enable ",
+                        React.createElement("b", null, "WebMetal"),
+                        " instead of WebGPU.)")))));
     };
     return BrowserCompatibilitySection;
 }(React.Component));

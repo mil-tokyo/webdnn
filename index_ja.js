@@ -22691,7 +22691,7 @@ var BrowserCompatibilitySection = (function (_super) {
                 React.createElement("div", { className: bootstrap.col12 },
                     React.createElement("p", null,
                         "WebDNN supports 4 execution backend implementations:\u00A0",
-                        React.createElement("b", null, "WebGPU"),
+                        React.createElement("b", null, "WebMetal"),
                         ", ",
                         React.createElement("b", null, "WebGL"),
                         ",",
@@ -22702,8 +22702,8 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("b", null, "WebDNN works all major browsers"),
                         "."),
                     React.createElement("dl", null,
-                        React.createElement("dt", null, "WebGPU backend"),
-                        React.createElement("dd", null, "Compute on GPU by WebGPU API. This backend is fastest in 4 backends, but currently WebGPU API is supported only in Safari Technology Preview."),
+                        React.createElement("dt", null, "WebMetal backend"),
+                        React.createElement("dd", null, "Compute on GPU by WebMetal API. This backend is fastest in 4 backends, but currently WebMetal API is supported only in Safari. (Apple originally proposed this API as WebGPU in 2017, and renamed to WebMetal in 2019.)"),
                         React.createElement("dt", null, "WebGL backend"),
                         React.createElement("dd", null, "Compute on GPU by WebGL API. This backend is also faster than CPU-based backends, and WebGL is supported by almost all browsers."),
                         React.createElement("dt", null, "WebAssembly backend"),
@@ -22791,7 +22791,9 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }, "this document"),
-                        "."),
+                        ". (For latest safari, enable ",
+                        React.createElement("b", null, "WebMetal"),
+                        " instead of WebGPU.)"),
                     React.createElement("p", { style: { display: this.state.flagWebGPUDisabled ? 'none' : '' }, className: style.webgpuTips },
                         "In ",
                         React.createElement("b", null, "macOS High Sierra"),
@@ -22803,7 +22805,9 @@ var BrowserCompatibilitySection = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }, "this document"),
-                        ".")))));
+                        ". (For latest safari, enable ",
+                        React.createElement("b", null, "WebMetal"),
+                        " instead of WebGPU.)")))));
     };
     return BrowserCompatibilitySection;
 }(React.Component));
@@ -23462,10 +23466,10 @@ var BrowserCompatibilitySectionJA = (function (_super) {
                 React.createElement("div", { className: bootstrap.col12 },
                     React.createElement("p", null, "WebDNN\u306F4\u7A2E\u985E\u306E\u5B9F\u884C\u74B0\u5883(\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9)\u3092\u5B9F\u88C5\u3057\u3066\u3044\u307E\u3059\u3002 \u3053\u308C\u3089\u306E\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u3092\u7D44\u307F\u5408\u308F\u305B\u3066\u7528\u3044\u308B\u3053\u3068\u3067\u3001WebDNN\u306F\u4E3B\u8981\u30D6\u30E9\u30A6\u30B6\u306E\u3059\u3079\u3066\u3067\u52D5\u4F5C\u3057\u307E\u3059\u3002"),
                     React.createElement("dl", null,
-                        React.createElement("dt", null, "WebGPU backend"),
-                        React.createElement("dd", null, "\u3059\u3079\u3066\u306E\u6F14\u7B97\u3092GPU\u3067\u884C\u3044\u307E\u3059\u3002GPU API\u306B\u306FWebGPU\u3092\u4F7F\u7528\u3057\u3066\u304A\u308A\u30014\u7A2E\u985E\u306E\u4E2D\u3067\u6700\u3082\u9AD8\u901F\u306B\u52D5\u4F5C\u3057\u307E\u3059\u3002\u305F\u3060\u3057\u3001 \u73FE\u5728WebGPU\u3092\u30B5\u30DD\u30FC\u30C8\u3057\u3066\u3044\u308B\u30D6\u30E9\u30A6\u30B6\u306FSafari Technology Preview\u7248\u3057\u304B\u3042\u308A\u307E\u305B\u3093\u3002"),
+                        React.createElement("dt", null, "WebMetal backend"),
+                        React.createElement("dd", null, "\u3059\u3079\u3066\u306E\u6F14\u7B97\u3092GPU\u3067\u884C\u3044\u307E\u3059\u3002GPU API\u306B\u306FWebMetal\u3092\u4F7F\u7528\u3057\u3066\u304A\u308A\u30014\u7A2E\u985E\u306E\u4E2D\u3067\u6700\u3082\u9AD8\u901F\u306B\u52D5\u4F5C\u3057\u307E\u3059\u3002\u305F\u3060\u3057\u3001 \u73FE\u5728WebMetal\u3092\u30B5\u30DD\u30FC\u30C8\u3057\u3066\u3044\u308B\u30D6\u30E9\u30A6\u30B6\u306FSafari\u3057\u304B\u3042\u308A\u307E\u305B\u3093\u3002(2017\u5E74\u306BApple\u793E\u306B\u3088\u308AWebGPU\u3068\u3057\u3066\u63D0\u6848\u3055\u308C\u305F\u898F\u683C\u3067\u30012019\u5E74\u306BWebMetal\u306B\u6539\u79F0\u3055\u308C\u307E\u3057\u305F\u3002)"),
                         React.createElement("dt", null, "WebGL backend"),
-                        React.createElement("dd", null, "\u3059\u3079\u3066\u306E\u6F14\u7B97\u3092GPU\u3067\u884C\u3044\u307E\u3059\u3002GPU API\u306B\u306FWebGL\u3092\u4F7F\u7528\u3057\u3066\u304A\u308A\u3001WebGPU\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u3068\u540C\u69D8CPU\u30D9\u30FC\u30B9\u306E\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u3088\u308A\u9AD8\u901F\u306B\u52D5\u4F5C\u3057\u307E\u3059\u3002 \u307E\u305F\u3001WebGL\u306F\u30E2\u30C0\u30F3\u306A\u30D6\u30E9\u30A6\u30B6\u306E\u307B\u307C\u5168\u3066\u3067\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u3059\u3002"),
+                        React.createElement("dd", null, "\u3059\u3079\u3066\u306E\u6F14\u7B97\u3092GPU\u3067\u884C\u3044\u307E\u3059\u3002GPU API\u306B\u306FWebGL\u3092\u4F7F\u7528\u3057\u3066\u304A\u308A\u3001WebMetal\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u3068\u540C\u69D8CPU\u30D9\u30FC\u30B9\u306E\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u3088\u308A\u9AD8\u901F\u306B\u52D5\u4F5C\u3057\u307E\u3059\u3002 \u307E\u305F\u3001WebGL\u306F\u30E2\u30C0\u30F3\u306A\u30D6\u30E9\u30A6\u30B6\u306E\u307B\u307C\u5168\u3066\u3067\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u3059\u3002"),
                         React.createElement("dt", null, "WebAssembly backend"),
                         React.createElement("dd", null,
                             "\u3059\u3079\u3066\u306E\u6F14\u7B97\u3092CPU\u3067\u884C\u3044\u307E\u3059\u3002\u5B9F\u88C5\u306B\u306FWebAssembly\u3092\u4F7F\u7528\u3057\u3001\u30AA\u30FC\u30D0\u30FC\u30D8\u30C3\u30C9\u306E\u5C11\u306A\u3044\u51E6\u7406\u3092\u53EF\u80FD\u306B\u3057\u3066\u3044\u307E\u3059\u3002 \u3053\u306E\u30D0\u30C3\u30AF\u30A8\u30F3\u30C9\u306FKeras.js",
@@ -23551,7 +23555,9 @@ var BrowserCompatibilitySectionJA = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios_ja.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos_ja.html" }, "\u3053\u306E\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8"),
-                        "\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002"),
+                        "\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002(\u6700\u65B0\u306ESafari\u3067\u306F\u3001",
+                        React.createElement("b", null, "WebMetal"),
+                        "\u3092WebGPU\u306E\u4EE3\u308F\u308A\u306B\u6709\u52B9\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002)"),
                     React.createElement("p", { style: { display: this.state.flagWebGPUDisabled ? 'none' : '' }, className: style.webgpuTips },
                         React.createElement("b", null, "macOS High Sierra"),
                         ", ",
@@ -23562,7 +23568,9 @@ var BrowserCompatibilitySectionJA = (function (_super) {
                         React.createElement("a", { href: /iPhone/.test(navigator.userAgent) ?
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios_ja.html" :
                                 "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos_ja.html" }, "\u3053\u306E\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8"),
-                        "\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002")))));
+                        "\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002(\u6700\u65B0\u306ESafari\u3067\u306F\u3001",
+                        React.createElement("b", null, "WebMetal"),
+                        "\u3092WebGPU\u306E\u4EE3\u308F\u308A\u306B\u6709\u52B9\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002)")))));
     };
     return BrowserCompatibilitySectionJA;
 }(React.Component));
