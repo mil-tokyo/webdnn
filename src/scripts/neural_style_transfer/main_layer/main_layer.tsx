@@ -350,7 +350,7 @@ class MainLayer extends React.Component<Props, State> {
         let video = dom.getFromRef<HTMLVideoElement>(this, 'previewVideo');
 
         if (video.srcObject) {
-            for (let stream of video.srcObject.getTracks()) {
+            for (let stream of (video.srcObject as MediaStream).getTracks()) {
                 stream.stop();
             }
         }

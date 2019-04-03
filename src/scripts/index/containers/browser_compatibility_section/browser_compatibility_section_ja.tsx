@@ -70,12 +70,12 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                         これらのバックエンドを組み合わせて用いることで、WebDNNは主要ブラウザのすべてで動作します。
                     </p>
                     <dl>
-                        <dt>WebGPU backend</dt>
-                        <dd>すべての演算をGPUで行います。GPU APIにはWebGPUを使用しており、4種類の中で最も高速に動作します。ただし、
-                            現在WebGPUをサポートしているブラウザはSafari Technology Preview版しかありません。
+                        <dt>WebMetal backend</dt>
+                        <dd>すべての演算をGPUで行います。GPU APIにはWebMetalを使用しており、4種類の中で最も高速に動作します。ただし、
+                            現在WebMetalをサポートしているブラウザはSafariしかありません。(2017年にApple社によりWebGPUとして提案された規格で、2019年にWebMetalに改称されました。)
                         </dd>
                         <dt>WebGL backend</dt>
-                        <dd>すべての演算をGPUで行います。GPU APIにはWebGLを使用しており、WebGPUバックエンドと同様CPUベースのバックエンドより高速に動作します。
+                        <dd>すべての演算をGPUで行います。GPU APIにはWebGLを使用しており、WebMetalバックエンドと同様CPUベースのバックエンドより高速に動作します。
                             また、WebGLはモダンなブラウザのほぼ全てでサポートされています。
                         </dd>
                         <dt>WebAssembly backend</dt>
@@ -205,7 +205,7 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                                   "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios_ja.html" :
                                   "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos_ja.html" }>
                             このドキュメント
-                        </a>を確認してください。
+                        </a>を確認してください。(最新のSafariでは、<b>WebMetal</b>をWebGPUの代わりに有効にしてください。)
                     </p>
                     <p style={ { display: this.state.flagWebGPUDisabled ? 'none' : '' } }
                        className={ style.webgpuTips }>
@@ -216,7 +216,7 @@ export default class BrowserCompatibilitySectionJA extends React.Component<React
                                   "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios_ja.html" :
                                   "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos_ja.html" }>
                             このドキュメント
-                        </a>を確認してください。
+                        </a>を確認してください。(最新のSafariでは、<b>WebMetal</b>をWebGPUの代わりに有効にしてください。)
                     </p>
                 </div>
             </div>

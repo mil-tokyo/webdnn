@@ -66,15 +66,16 @@ export default class BrowserCompatibilitySection extends React.Component<React.H
             <div className={ bootstrap.row }>
                 <div className={ bootstrap.col12 }>
                     <p>
-                        WebDNN supports 4 execution backend implementations:&nbsp;<b>WebGPU</b>, <b>WebGL</b>,
+                        WebDNN supports 4 execution backend implementations:&nbsp;<b>WebMetal</b>, <b>WebGL</b>,
                         <b>WebAssembly</b>, and&nbsp;<b>fallback pure javascript implementation</b>.
                         By using these backends, <b>WebDNN works all major browsers</b>.
                     </p>
                     <dl>
-                        <dt>WebGPU backend</dt>
-                        <dd>Compute on GPU by WebGPU API. This backend is fastest in 4 backends, but currently WebGPU
+                        <dt>WebMetal backend</dt>
+                        <dd>Compute on GPU by WebMetal API. This backend is fastest in 4 backends, but currently WebMetal
                             API is
-                            supported only in Safari Technology Preview.
+                            supported only in Safari.
+                            (Apple originally proposed this API as WebGPU in 2017, and renamed to WebMetal in 2019.)
                         </dd>
                         <dt>WebGL backend</dt>
                         <dd>Compute on GPU by WebGL API. This backend is also faster than CPU-based backends, and WebGL
@@ -206,7 +207,7 @@ export default class BrowserCompatibilitySection extends React.Component<React.H
                                                                            "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                                                            "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }>
                         this document
-                    </a>.
+                    </a>. (For latest safari, enable <b>WebMetal</b> instead of WebGPU.)
                     </p>
                     <p style={ { display: this.state.flagWebGPUDisabled ? 'none' : '' } }
                        className={ style.webgpuTips }>
@@ -216,7 +217,7 @@ export default class BrowserCompatibilitySection extends React.Component<React.H
                                                              "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_ios.html" :
                                                              "https://mil-tokyo.github.io/webdnn/docs/tips/enable_webgpu_macos.html" }>
                         this document
-                    </a>.
+                    </a>. (For latest safari, enable <b>WebMetal</b> instead of WebGPU.)
                     </p>
                 </div>
             </div>
