@@ -113,6 +113,7 @@ Also, Docker image is provided. See [docker](./docker).
 - [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - Generating image caption demo
 - [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - Exercise of basic usage of WebDNN
 - [https://emotionaltrackingsdk.morphcast.com](https://emotionaltrackingsdk.morphcast.com/index.html#https://www.youtube.com/watch?v=iHciomXGxUA&feature=youtu.be) - Emotion recognition from camera by Cynny, see [https://www.morphcast.com] for more info
+- [https://github.com/zaghaghi/nsfw-webdnn](https://github.com/zaghaghi/nsfw-webdnn) - [Yahoo Open NSFW](https://github.com/yahoo/open_nsfw) inside your browser
 
 ---
 
