@@ -34,6 +34,7 @@ from webdnn.backend.webassembly.kernels import lstm
 from webdnn.backend.webassembly.kernels import max
 from webdnn.backend.webassembly.kernels import max_pooling_2d
 from webdnn.backend.webassembly.kernels import min
+from webdnn.backend.webassembly.kernels import normalize
 from webdnn.backend.webassembly.kernels import prod
 from webdnn.backend.webassembly.kernels import reinterpret_axis
 from webdnn.backend.webassembly.kernels import relu

@@ -34,6 +34,7 @@ from webdnn.backend.webgpu.kernels import lstm
 from webdnn.backend.webgpu.kernels import max
 from webdnn.backend.webgpu.kernels import max_pooling_2d
 from webdnn.backend.webgpu.kernels import min
+from webdnn.backend.webgpu.kernels import normalize
 from webdnn.backend.webgpu.kernels import prod
 from webdnn.backend.webgpu.kernels import reinterpret_axis
 from webdnn.backend.webgpu.kernels import relu
