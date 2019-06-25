@@ -14,6 +14,7 @@ from webdnn.graph.operators.im2col import Im2Col
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
 from webdnn.graph.operators.lstm import LSTM
 from webdnn.graph.operators.max_pooling_2d import MaxPooling2D
+from webdnn.graph.operators.normalize import Normalize
 from webdnn.graph.operators.reinterpret_axis import ReinterpretAxis
 from webdnn.graph.operators.reshape import Reshape
 from webdnn.graph.operators.softmax import Softmax
@@ -188,6 +189,10 @@ class InsertTranspose(OptimizeRule):
                 continue
 
             elif isinstance(op, Softmax):
+                flag_changed |= _replace_output(graph, op, "y", op.inputs["x"].order)
+                continue
+
+            elif isinstance(op, Normalize):
                 flag_changed |= _replace_output(graph, op, "y", op.inputs["x"].order)
                 continue
 

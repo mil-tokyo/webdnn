@@ -3,14 +3,20 @@ import chainer
 from webdnn.frontend.chainer.converter import ChainerConverter
 from webdnn.graph.axis import Axis
 from webdnn.graph.operators.local_response_normalization import LocalResponseNormalization
+from webdnn.graph.operators.normalize import Normalize
 from webdnn.graph.order import OrderNCHW, OrderC
 from webdnn.graph.variables.constant_variable import ConstantVariable
 
 
 @ChainerConverter.register_handler("NormalizeL2")
 def _convert_normalize_l2(converter: ChainerConverter, c_op: "chainer.functions.NormalizeL2"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] NormalizeL2 is not supported")
+    x = converter.get_variable(c_op.inputs[0])
+
+    if len(c_op.axis) > 1:  # c_op.axis: tuple
+        raise ValueError("The number of axis for NormalizeL2 must be 1.")
+    y, = Normalize(None, axis=x.order.axes[c_op.axis[0]], eps=c_op.eps)(x)
+
+    converter.set_variable(c_op.outputs[0](), y)
 
 
 @ChainerConverter.register_handler("LocalResponseNormalization")

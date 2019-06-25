@@ -27,6 +27,7 @@ from webdnn.backend.fallback.kernels import linear
 from webdnn.backend.fallback.kernels import local_response_normalization
 from webdnn.backend.fallback.kernels import log
 from webdnn.backend.fallback.kernels import max_pooling_2d
+from webdnn.backend.fallback.kernels import normalize
 from webdnn.backend.fallback.kernels import reinterpret_axis
 from webdnn.backend.fallback.kernels import relu
 from webdnn.backend.fallback.kernels import reshape
