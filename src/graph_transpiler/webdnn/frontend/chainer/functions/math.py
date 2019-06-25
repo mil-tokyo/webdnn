@@ -16,6 +16,7 @@ from webdnn.graph.operators.min import Min
 from webdnn.graph.operators.sin import Sin
 from webdnn.graph.operators.sinh import Sinh
 from webdnn.graph.operators.sum import Sum
+from webdnn.graph.operators.sqrt import Sqrt
 from webdnn.graph.operators.tan import Tan
 from webdnn.graph.operators.tensordot import Tensordot
 from webdnn.graph.order import Order
@@ -246,13 +247,6 @@ def _convert_min(converter: ChainerConverter, c_op: "chainer.functions.Min"):
 
 
 # noinspection PyUnusedLocal
-@ChainerConverter.register_handler("Sqrt")
-def _convert_sqrt(converter: ChainerConverter, c_op: "chainer.functions.Sqrt"):
-    # TODO
-    raise NotImplementedError("[ChainerConverter] Sqrt is not supported")
-
-
-# noinspection PyUnusedLocal
 @ChainerConverter.register_handler("Square")
 def _convert_square(converter: ChainerConverter, c_op: "chainer.functions.Square"):
     # TODO
@@ -293,3 +287,5 @@ ChainerConverter.register_handler("Cos")(unary_op_handler(Cos))
 ChainerConverter.register_handler("Sin")(unary_op_handler(Sin))
 
 ChainerConverter.register_handler("Tan")(unary_op_handler(Tan))
+
+ChainerConverter.register_handler("Sqrt")(unary_op_handler(Sqrt))

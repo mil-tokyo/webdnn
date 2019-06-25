@@ -52,6 +52,7 @@ from webdnn.backend.webgl.kernels import softplus
 from webdnn.backend.webgl.kernels import softsign
 from webdnn.backend.webgl.kernels import space2depth
 from webdnn.backend.webgl.kernels import split_axis
+from webdnn.backend.webgl.kernels import sqrt
 from webdnn.backend.webgl.kernels import sum
 from webdnn.backend.webgl.kernels import tan
 from webdnn.backend.webgl.kernels import tanh
