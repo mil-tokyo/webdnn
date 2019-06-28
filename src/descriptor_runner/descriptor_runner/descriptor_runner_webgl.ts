@@ -431,7 +431,12 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
             for (let buffer of runtimeInfo.inputs) await buffer.syncWriteViews();
 
             if (getConfiguration('DEBUG', false)) {
-                let records: any = [];
+                let records: {
+                    'Kernel': string,
+                    'Elapsed time [ms]': number,
+                    'xs': Float32Array[],
+                    'y': Float32Array
+                }[] = [];
                 let totalElapsedTime = 0;
 
                 for (let runtimeProgramInfo of runtimeInfo.programs) {
@@ -480,7 +485,7 @@ export default class DescriptorRunnerWebGL extends DescriptorRunner<GraphDescrip
                     });
                 }
 
-                let summary = Array.from(Object.values(records.reduce((summary, record) => {
+                let summary: any[] = Array.from(Object.values(records.reduce((summary, record) => {
                     if (!(record['Kernel'] in summary)) {
                         summary[record['Kernel']] = {
                             'Kernel': record['Kernel'],

@@ -400,7 +400,10 @@ using namespace metal;
         let metaBuffers = this.metaBuffers;
 
         if (getConfiguration('DEBUG', false)) {
-            let records: any = [];
+            let records: {
+                'Kernel': string,
+                'Elapsed time [ms]': number
+            }[] = [];
             let totalElapsedTime = 0;
 
             for (let i = 0; i < this.executionInfos.length; i++) {
@@ -422,7 +425,7 @@ using namespace metal;
                 totalElapsedTime += elapsedTime;
             }
 
-            let summary = Array.from(Object.values(records.reduce((summary, record) => {
+            let summary: any[] = Array.from(Object.values(records.reduce((summary, record) => {
                 if (!(record['Kernel'] in summary)) {
                     summary[record['Kernel']] = {
                         'Kernel': record['Kernel'],
