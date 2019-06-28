@@ -8,7 +8,7 @@ onmessage = function (event) {
                 var data_offset = [Module._get_static_buffer(), Module._get_dynamic_buffer()];
                 for (var i = 0; i < event.data.inputs.length; i++) {
                     var var_alloc = event.data.inputs[i];
-                    var data_buf = new Float32Array(Module.buffer, data_offset[var_alloc.space] + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
+                    var data_buf = new Float32Array(Module.HEAPF32.buffer, data_offset[var_alloc.space] + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
                     data_buf.set(var_alloc.data);
                 }
 
@@ -18,7 +18,7 @@ onmessage = function (event) {
                 var output_buffers = [];
                 for (var i = 0; i < event.data.outputs.length; i++) {
                     var var_alloc = event.data.outputs[i];
-                    var data_buf_view = new Float32Array(Module.buffer, data_offset[var_alloc.space] + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
+                    var data_buf_view = new Float32Array(Module.HEAPF32.buffer, data_offset[var_alloc.space] + var_alloc.offset * Float32Array.BYTES_PER_ELEMENT, var_alloc.size);
                     var data_buf_copy = new Float32Array(data_buf_view.length);
                     data_buf_copy.set(data_buf_view);
                     outputs.push(data_buf_copy);
@@ -32,7 +32,7 @@ onmessage = function (event) {
 
         case 'weight':
             try {
-                var weight_buf = new Float32Array(Module.buffer, Module._get_static_buffer(), event.data.data.length);
+                var weight_buf = new Float32Array(Module.HEAPF32.buffer, Module._get_static_buffer(), event.data.data.length);
                 weight_buf.set(event.data.data);
                 postMessage(0);
             } catch (ex) {
