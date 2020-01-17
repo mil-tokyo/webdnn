@@ -16,7 +16,7 @@ setup(
     python_requires=">=3.6",
     package_dir={"": "src/graph_transpiler"},
     packages=find_packages("src/graph_transpiler"),
-    package_data={"": "*.js"}, install_requires=['numpy'],
+    package_data={"": ["*.js"]}, install_requires=['numpy'],
     url="https://github.com/mil-tokyo/webdnn",
     description=package_info["description"],
     author=package_info["author"]["name"],
