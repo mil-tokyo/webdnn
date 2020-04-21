@@ -95,6 +95,7 @@ class GraphExecutionData(IGraphExecutionData):
         args.append(path.join(path.dirname(__file__), "webassembly_header.js"))
         args.append("-o")
         args.append(path.join(dirname, "kernels_{}.js".format(backend_suffix)))
+        args.append("-I/usr/include/eigen3")
         try:
             subprocess.check_call(args, shell=self.platform_windows)
         except Exception as ex:
