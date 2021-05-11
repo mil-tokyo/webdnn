@@ -8,30 +8,29 @@
  * The data order
  */
 export enum Order {
-    /** `[Channel, Height, Width]` format */
-    CHW,
+  /** `[Channel, Height, Width]` format */
+  CHW,
 
-        /** `[Height, Width, Channel]` format */
-    HWC
+  /** `[Height, Width, Channel]` format */
+  HWC,
 }
 
 /**
  * The color format
  */
 export enum Color {
-    /** RGB format */
-    RGB,
+  /** RGB format */
+  RGB,
 
-        /** BGR format */
-    BGR,
+  /** BGR format */
+  BGR,
 
-        /** grey scale */
-    GREY,
+  /** grey scale */
+  GREY,
 
-    /** RGBA format */
-    RGBA,
+  /** RGBA format */
+  RGBA,
 
-    /** BGRA format */
-    BGRA,
-
+  /** BGRA format */
+  BGRA,
 }

@@ -12,7 +12,7 @@
  */
 /** Don't Remove This comment block */
 // export * from "./image/canvas" // internal API
-export * from "./image/enums"
-export * from "./image/image_array"
+export * from "./image/enums";
+export * from "./image/image_array";
 // export * from "./image/image_data" // internal API
-export * from "./image/image_source"
+export * from "./image/image_source";

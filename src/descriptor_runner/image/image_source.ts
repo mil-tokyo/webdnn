@@ -11,14 +11,13 @@
  * @returns {Promise<HTMLImageElement>} image element
  */
 export async function loadImageByUrl(url: string): Promise<HTMLImageElement> {
-    let image = document.createElement('img');
+  const image = document.createElement("img");
 
-    return new Promise((resolve, reject) => {
-        image.onload = resolve;
-        image.onerror = reject;
-        image.src = url;
-    })
-        .then(() => image);
+  return new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = url;
+  }).then(() => image);
 }
 
 /* istanbul ignore next */
@@ -28,13 +27,15 @@ export async function loadImageByUrl(url: string): Promise<HTMLImageElement> {
  * @param {HTMLInputElement} input the `<input type="file">` element
  * @returns {Promise<HTMLImageElement>} image element
  */
-export async function loadImageFromFileInput(input: HTMLInputElement): Promise<HTMLImageElement> {
-    let files = input.files;
-    if (!files || files.length == 0) throw new Error('No file is selected');
+export async function loadImageFromFileInput(
+  input: HTMLInputElement
+): Promise<HTMLImageElement> {
+  const files = input.files;
+  if (!files || files.length == 0) throw new Error("No file is selected");
 
-    let url = URL.createObjectURL(files[0]);
+  const url = URL.createObjectURL(files[0]);
 
-    return loadImageByUrl(url);
+  return loadImageByUrl(url);
 }
 
 /* istanbul ignore next */
@@ -48,12 +49,20 @@ export async function loadImageFromFileInput(input: HTMLInputElement): Promise<H
  * @protected
  */
 export async function loadImageByDialog(): Promise<HTMLImageElement> {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+  const input = document.createElement("input");
+  input.style.display = "none";
+  input.type = "file";
+  input.accept = "image/*";
+  // avoid GC for iOS Safari
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any)._webdnn_image_input = input;
 
-    return new Promise<HTMLImageElement>((resolve) => {
-        input.onchange = () => resolve(loadImageFromFileInput(input));
-        input.click();
-    });
+  return new Promise<HTMLImageElement>((resolve) => {
+    input.onchange = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)._webdnn_image_input;
+      resolve(loadImageFromFileInput(input));
+    };
+    input.click();
+  });
 }

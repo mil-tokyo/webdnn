@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Minimum example of WebDNN</title>
+    <script src="../../dist/webdnn.js"></script>
+    <script>
+      let runner;
+
+      async function load() {
+        try {
+          runner = await WebDNN.load('output/');
+          alert('Loaded.');
+        } catch (error) {
+          alert(`Failed: ${error}`);
+        }
+      }
+      async function run() {
+        if (!runner) {
+          alert('Click load first.');
+          return;
+        }
+        // row-major data
+        const inputDataArray = new Float32Array([5.1, -2.3]);
+        const inputTensor = new WebDNN.CPUTensor([1, 2], "float32", inputDataArray);
+        const [outputTensor] = await runner.run([inputTensor]);
+        alert(`Input: ${inputDataArray}`);
+        alert(`Output: ${outputTensor.data}`);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Minimum example of WebDNN</h1>
+    <p>Runs model which only contains Relu operator.</p>
+    <button type="button" onclick="load()">load</button>
+    <button type="button" onclick="run()">run</button>
+  </body>
+</html>

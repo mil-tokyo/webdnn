@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="../../dist/webdnn-core.js"></script>
+    <title>WebDNN custom operator test</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <style>
+      #result {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      #result table {
+        border: 1px solid black;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <h1 class="text-center py-4">WebDNN custom operator test</h1>
+    <div class="container text-center">
+      <p id="msg" class="my-2 font-weight-bold"></p>
+      <div>
+        <button
+          type="button"
+          onClick="run()"
+          class="btn btn-primary font-weight-bold"
+        >
+          Run
+        </button>
+      </div>
+      <div id="result" style="display: flex;" />
+    </div>
+    <script src="index.js"></script>
+  </body>
+</html>

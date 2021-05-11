@@ -1,4 +1,0 @@
-keras==2.1.2
-tensorflow
-h5py
-protobuf>=3.4

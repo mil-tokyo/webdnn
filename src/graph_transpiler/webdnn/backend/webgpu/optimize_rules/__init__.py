@@ -1,3 +1,0 @@
-from webdnn.backend.webgpu.optimize_rules import concat_lstm_input_and_hidden
-from webdnn.backend.webgpu.optimize_rules import insert_transpose
-from webdnn.backend.webgpu.optimize_rules import webgpu_optimize_rule

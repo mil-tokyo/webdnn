@@ -1,3 +1,0 @@
-from webdnn.backend.webassembly.optimize_rules import insert_transpose
-from webdnn.backend.webassembly.optimize_rules import use_eigen
-from webdnn.backend.webassembly.optimize_rules import webassembly_optimize_rule

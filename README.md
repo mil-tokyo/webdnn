@@ -1,127 +1,79 @@
-[![CircleCI](https://circleci.com/gh/mil-tokyo/webdnn.svg?style=svg)](https://circleci.com/gh/mil-tokyo/webdnn)
+# WebDNN
 
-# WebDNN: Fastest DNN Execution Framework on Web Browser
+[日本語](README.ja.md)
 
-**WebDNN** is an open source software framework for executing deep neural network (DNN) pre-trained model on web browser.
+This is the alpha version of WebDNN version 2. The main difference between WebDNN 1.x and WebDNN 2.x is that WebDNN 2.x only accepts ONNX models as input, allowing ONNX models to be loaded directly into a web browser without Python preprocessing. In addition, offline model optimization is also possible.
 
-- [Japanese(日本語) README](https://github.com/mil-tokyo/webdnn/blob/master/README_ja.md)
-- [website](https://mil-tokyo.github.io/webdnn)
-- [document](https://mil-tokyo.github.io/webdnn/docs)
+[Version 1.x](https://github.com/mil-tokyo/webdnn/tree/v1.2.11)
 
-WebDNN can execute DNN models trained by follow deep learning frameworks on web browser.
+# Supported backends (acceleration technologies)
 
-- [TensorFlow](https://github.com/tensorflow/tensorflow) (`v1.2.0` - `v1.4.0`)
-- [Keras](https://github.com/fchollet/keras) (`v2.1.3` - )
-- [PyTorch](https://github.com/pytorch/pytorch) (`v0.3.0 - v0.4.1`)
-- [Chainer](https://github.com/chainer/chainer) (`v1.23.0` - `v4.0.0`)
-- [Caffe](https://github.com/BVLC/caffe)
+WebGL is available in most modern browsers.
 
-# Why is WebDNN needed?
+- WebGPU
+  - The draft version implemented in Chrome Canary.
+  - The WebGPU in iOS13 is not supported because it requires shaders based on the deprecated WSL language.
+- WebGL
+  - Use WebGL2 if available; also supports Safari, which only supports WebGL1.
+- WebAssembly
 
-Deep neural network (DNN) is getting much attention to use in many applications. However, 
-it requires a lot of computational resources, and there are many tremendous processes to 
-setup execution environment based hardware acceleration such as GPGPU. Therefore providing 
-DNN applications to end-users is very hard. 
+# Environment setting
 
-**WebDNN** solves this problem by using web browser as installation-free DNN execution 
-framework. This framework optimizes trained DNN model to compress the model data and 
-accelerate the execution, and executes it with novel JavaScript API such as WebAssembly 
-and WebMetal to achieve zero-overhead execution. Empirical evaluations showed that it 
-achieved more than 200x acceleration.
+The environment which runs node.js 14, python 3.6+ and emscripten 2.0+.
 
-Note: WebGPU introduced by Apple was renamed to WebMetal in 2019.
-In WebDNN 1.2.8, both WebMetal and old name WebGPU are supported for compatiblity.
-For string constant, currently `webgpu` is used, but will be changed to `webmetal` in the future version.
-
-# Performance
-
-- Compared processing time with [Keras.js](https://github.com/transcranial/keras-js)
-- Test environment: 
-    - Mac Book Pro early 2015
-    - macOS 10.12.4 Sierra
-    - Intel Core i5 2.7 GHz CPU
-    - 16 GB Memory
-    - Intel Iris Graphics 6100 GPU
-    - Safari Technology Preview 30
-- Model: VGG16[[1]](#1), Inception-v3[[4]](#4), and ResNet50[[2]](#2). 
-- Input Shape: `(1, 299, 299, 3)` for Inception-v3, `(1, 224, 224, 3)` for others.
-
-![Benchmark result with Keras.js](https://github.com/mil-tokyo/webdnn/blob/master/docs/misc/performance.png)
-
-Elapsed time per image are shown in vertical axis as logarithmic scale.
-
-WebDNN with WebMetal backend was significantly faster than Keras.js. 
-WebDNN with WebAssembly backend was comparable with GPU backend of Keras.js.
-In each DNN model and backend, WebDNN obtained better results in terms of speed.
-More speed improvement is observed when the optimizations are applied in the graph transpiler. 
-
-# Getting started in 30 seconds
-
-Let's convert and execute ResNet50 pre-trained Keras model[[3]](#3) on your web browser.
-
-First, save ResNet50 pre-trained model provided by Keras.
-
-```python
-from keras.applications import resnet50
-model = resnet50.ResNet50(include_top=True, weights='imagenet')
-model.save("resnet50.h5")
+```
+yarn
+python setup.py develop
 ```
 
-Next, convert the model by CLI. In this phase, model is optimized.
-
-```bash
-python ./bin/convert_keras.py resnet50.h5 --input_shape '(1,224,224,3)' --out output
+# Build
+```
+yarn build:all
 ```
 
-Then, generated files (called as `Descriptor`) can be loaded and executed by JavaScript as follows,
+Build outputs:
+- `dist/webdnn.js`
+  - Library that can load unoptimized ONNX models
+- `dist/webdnn-core.js`
+  - Library that can load optimized ONNX models by WebDNN
 
-```js
-let runner, image, probabilities;
+# Basic usage
 
-async function init() {
-    // Initialize descriptor runner
-    runner = await WebDNN.load('./output');
-    image = runner.inputs[0]; 
-    probabilities = runner.outputs[0];
-}
+Load `dist/webdnn.js` with the `<script>` tag to globally add a `WebDNN` object. Assuming that the ONNX model `model_directory/model.onnx` exists, and run the model with a input tensor of the shape `[1, 2]`.
 
-async function run() {
-    // Set the value into input variable.
-    image.set(await WebDNN.Image.getImageArray('./input_image.png'));
-    
-    // Run
-    await runner.run(); 
+```javascript
+const runner = await WebDNN.load("model_directory/");
+const inputDataArray = new Float32Array([5.1, -2.3]);
+const inputTensor = new WebDNN.CPUTensor([1, 2], "float32", inputDataArray);
+const [outputTensor] = await runner.run([inputTensor]);
 
-    // Show the result
-    console.log('Output', WebDNN.Math.argmax(probabilities));
-}
+console.log(outputTensor.data);  // Float32Array
 ```
 
-WebDNN also supports Caffemodel and Chainer model.
+See `example/minimum` for the complete minimal code that works.
 
-For more information, please see [documents](https://mil-tokyo.github.io/webdnn/docs).
+# Test
 
-# Setup
+Generate ONNX models and input/output tensors to be tested
 
-Please see [documents](https://mil-tokyo.github.io/webdnn/docs/tutorial/setup.html).
+```
+python test/model_test/make_models.py
+```
 
-Also, Docker image is provided. See [docker](./docker).
+Run on web browser
 
-# Applications / demos using WebDNN
-- [http://make.girls.moe/#/](http://make.girls.moe/#/) - MakeGirls.moe - Create Anime Characters with A.I.!
-- [https://new3rs.github.io/AZ.js/index.html](https://new3rs.github.io/AZ.js/index.html) ([Japanese ver](https://new3rs.github.io/AZ.js/index.ja.html)) - Go AI (JavaScript version of [Pyaq](https://github.com/ymgaq/Pyaq))
-- [https://milhidaka.github.io/chainer-image-caption/](https://milhidaka.github.io/chainer-image-caption/) - Generating image caption demo
-- [https://github.com/milhidaka/webdnn-exercise](https://github.com/milhidaka/webdnn-exercise) - Exercise of basic usage of WebDNN
-- [https://emotionaltrackingsdk.morphcast.com](https://emotionaltrackingsdk.morphcast.com/index.html#https://www.youtube.com/watch?v=iHciomXGxUA&feature=youtu.be) - Emotion recognition from camera by Cynny, see [https://www.morphcast.com] for more info
-- [https://github.com/zaghaghi/nsfw-webdnn](https://github.com/zaghaghi/nsfw-webdnn) - [Yahoo Open NSFW](https://github.com/yahoo/open_nsfw) inside your browser
+```
+yarn server
+```
 
----
+Open <http://localhost:8080/test/model_test/runner/standard.html> with web browser, check the backend you want to test, and click the Test button to run the test.
 
-- <i id=1></i>[1] Karen Simonyan and Andrew Zisserman. 2014. Very Deep Convolutional Networks for Large-Scale Image Recognition. 
-    In Proceedings of the International Conference on Learning Representations (ICLR).
-- <i id=2></i>[2] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. 2015. Deep Residual
-    Learning for Image Recognition. In Proceedings of the Conference on Computer Vision and Pattern Recognition (CVPR). 
-    [https://github.com/KaimingHe/deep-residual-networks](https://github.com/KaimingHe/deep-residual-networks)
-- <i id=3></i>[3] [Applications - Keras Documentation](https://keras.io/ja/applications/#resnet50)
-- <i id=4></i>[4] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jon Shlens, and Zbigniew Wojna. 2016.
-    Rethinking the Inception Architecture for Computer Vision. In Proceedings of the Conference on Computer Vision and Pattern Recognition (CVPR).
+Use
+
+```
+python test/model_test/make_models.py --optimize
+```
+
+<http://localhost:8080/test/model_test/runner/optimized.html>
+
+when testing, including model optimization. However, the execution time of `make_models.py` takes a long time.

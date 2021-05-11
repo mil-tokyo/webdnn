@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="../../dist/webdnn.js"></script>
+    <title>DETR Object Detection on Web Browser</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="bg-light">
+    <h1 class="text-center py-4">DETR Object Detection on Web Browser</h1>
+    <div class="container text-center">
+      <div>
+        <canvas
+          id="result"
+          width="640"
+          height="480"
+          style="border: 2px gray solid"
+        ></canvas>
+        <canvas id="source" style="display: none"></canvas>
+      </div>
+      <small>Drag and drop the input image onto the box above.</small>
+      <p id="msg" class="my-2 font-weight-bold"></p>
+      <div>
+        <span class="mx-4">
+          Image input rescale width:
+          <input
+            id="rescaleWidth"
+            type="number"
+            value="640"
+            min="32"
+            max="1600"
+            style="width: 64px"
+          />px</span
+        >
+        <button
+          type="button"
+          onClick="run()"
+          class="btn btn-primary font-weight-bold"
+        >
+          Run
+        </button>
+        <!-- <button
+          type="button"
+          onClick="displaySampleResult()"
+          class="btn btn-secondary font-weight-bold"
+        >
+          Sample
+        </button> -->
+      </div>
+    </div>
+    <script src="common.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

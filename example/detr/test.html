@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="../../dist/webdnn.js"></script>
+    <title>DETR test</title>
+  </head>
+  <body>
+    DETR test (see developer console)
+    <button type="button" onClick="testEmbedding()">Embedding</button>
+    <button type="button" onClick="testDNN()">DNN</button>
+    <!-- <button type="button" onClick="testFull()">Full pipeline</button> -->
+    <p id="msg"></p>
+    <div>
+      <canvas
+        id="result"
+        width="640"
+        height="480"
+        style="border: 2px gray solid"
+      ></canvas>
+      <canvas id="source" style="display: none"></canvas>
+    </div>
+    <script src="common.js"></script>
+    <script src="test.js"></script>
+  </body>
+</html>

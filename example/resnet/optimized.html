@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="../../dist/webdnn-core.js"></script>
+    <title>ResNet-50 Image Classification on Web Browser</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="bg-light">
+    <h1 class="text-center py-4">
+      ResNet-50 Image Classification on Web Browser (Optimized model)
+    </h1>
+    <div class="container text-center">
+      <div>
+        <canvas
+          id="result"
+          width="640"
+          height="480"
+          style="border: 2px gray solid"
+        ></canvas>
+        <canvas id="source" style="display: none"></canvas>
+      </div>
+      <small>Drag and drop the input image onto the box above.</small>
+      <p id="msg" class="my-2 font-weight-bold"></p>
+      <div>
+        <button
+          type="button"
+          onClick="run()"
+          class="btn btn-primary font-weight-bold"
+        >
+          Run
+        </button>
+        <!-- <button
+          type="button"
+          onClick="displaySampleResult()"
+          class="btn btn-secondary font-weight-bold"
+        >
+          Sample
+        </button> -->
+      </div>
+      <div class="my-2 mx-auto w-25">
+        <table class="table table-bordered bg-white">
+          <tbody id="result-lines"></tbody>
+        </table>
+      </div>
+      <div class="my-2 mx-auto">
+        Change backend:
+        <a href="./optimized.html?backend=webgpu" class="btn btn-secondary">
+          WebGPU
+        </a>
+        <a href="./optimized.html?backend=webgl" class="btn btn-secondary">
+          WebGL
+        </a>
+        <a href="./optimized.html?backend=wasm" class="btn btn-secondary">
+          Webassembly
+        </a>
+        <a href="./optimized.html?backend=cpu" class="btn btn-secondary">
+          CPU
+        </a>
+        <a href="./" class="btn btn-secondary"> Unoptimized </a>
+      </div>
+    </div>
+    <script src="imagenet_classes.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

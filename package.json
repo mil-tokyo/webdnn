@@ -1,71 +1,62 @@
 {
-    "name": "webdnn",
-    "version": "1.2.11",
-    "description": "Deep Neural Network Execution Framework for Web Browsers",
-    "main": "dist/webdnn.js",
-    "types": "dist/webdnn.d.ts",
-    "directories": {
-        "doc": "docs",
-        "example": "example",
-        "test": "test"
-    },
-    "scripts": {
-        "build": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build.sh\" instead.'; exit 1",
-        "build-doc": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc.sh\" instead.'; exit 1",
-        "build-doc-py": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc-py.sh\" instead.'; exit 1",
-        "build-doc-ts": "echo '\"npm run\" is no longer used in webdnn. Please use \"/scripts/build-doc-ts.sh\" instead.'; exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/mil-tokyo/webdnn.git"
-    },
-    "author": {
-        "name": "Yuichiro Kikura",
-        "email": "kikura@mi.t.u-tokyo.ac.jp",
-        "url": "https://github.com/Kiikurage"
-    },
-    "contributors": [
-        {
-            "name": "Masatoshi Hidaka",
-            "email": "hidaka@mi.t.u-tokyo.ac.jp",
-            "url": "https://milhidaka.github.io/"
-        },
-        {
-            "name": "Yuichiro Kikura",
-            "email": "kikura@mi.t.u-tokyo.ac.jp",
-            "url": "https://github.com/Kiikurage"
-        }
-    ],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/mil-tokyo/webdnn/issues"
-    },
-    "homepage": "https://mil-tokyo.github.io/webdnn/",
-    "resolutions": {
-        "webpack-sources": "1.0.1"
-    },
-    "dependencies": {
-        "@types/pako": "^1.0.1",
-        "localforage": "^1.7.3",
-        "pako": "^1.0.10"
-    },
-    "devDependencies": {
-        "babel-minify-webpack-plugin": "^0.3.1",
-        "dts-generator": "^3.0.0",
-        "handlebars": "^4.1.2",
-        "typedoc": "^0.14.2",
-        "typedoc-default-themes": "^0.5.0",
-        "typedoc-plugin-webdnn": "file:docs/template/typedoc/plugin",
-        "typescript": "^3.5.2",
-        "webpack": "^4.35.0",
-        "webpack-cli": "^3.3.5",
-        "webpack-sources": "^1.3.0"
-    },
-    "keywords": [
-        "deep-neural-networks",
-        "accelerate",
-        "optimization",
-        "javascript",
-        "webgpu"
-    ]
+  "name": "webdnn",
+  "version": "2.0.0",
+  "description": "WebDNN",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack -w",
+    "build:all": "npm run shader:wasm && npm run shader:webgpu && npm run makeShaderList && npm run build && npm run build:core",
+    "build:core": "webpack --config webpack-core.config.js",
+    "build:cpu": "webpack --config webpack-cpu.config.js",
+    "build:wasm": "webpack --config webpack-wasm.config.js",
+    "build:webgl": "webpack --config webpack-webgl.config.js",
+    "build:webgpu": "webpack --config webpack-webgpu.config.js",
+    "eslint": "eslint ./src/descriptor_runner/**/*.ts",
+    "eslint:fix": "eslint --fix ./src/descriptor_runner/**/*.ts",
+    "shader:wasm": "python src/shader/wasm/compile.py",
+    "shader:webgpu": "node src/shader/webgpu/compile.js",
+    "makeShaderList": "python scripts/make_operator_entries.py",
+    "prepublishOnly": "npm run build",
+    "server": "npx http-server -c-1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github:milhidaka/webdnn2alpha.git"
+  },
+  "author": {
+    "name": "Masatoshi Hidaka",
+    "email": "hidaka@edgeintelligence.jp"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@webgpu/types": "^0.0.45",
+    "onnx-proto": "^4.0.4",
+    "pako": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/pako": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "@webgpu/glslang": "^0.0.15",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.0",
+    "ts-loader": "^8.0.17",
+    "typescript": "^4.2.3",
+    "webpack": "^5.24.4",
+    "webpack-cli": "^4.5.0"
+  },
+  "keywords": [
+    "deep-neural-networks",
+    "accelerate",
+    "optimization",
+    "javascript",
+    "webgpu"
+  ]
 }

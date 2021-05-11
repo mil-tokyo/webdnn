@@ -1,0 +1,2 @@
+class OperatorShader:
+    pass
