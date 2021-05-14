@@ -37,12 +37,13 @@ async function runTest(optimized) {
   for (const caseDir of caseDirs) {
     for (const backendOrder of backendOrders) {
       console.log("test", caseDir, backendOrder);
-      const ok = await runTestOne(caseDir, backendOrder, optimized);
+      const msg = await runTestOne(caseDir, backendOrder, optimized);
+      const ok = !msg;
       allOk &= ok;
       allResults[caseDir] = ok;
       resultList.innerHTML += `<li><span class="${
         ok ? "result-ok" : "result-fail"
-      }">${ok ? "OK" : "Fail"}, ${caseDir}, ${backendOrder[0]}</span></li>`;
+      }">${ok ? "OK" : "Fail"}, ${caseDir}, ${backendOrder[0]}</span> <span>${msg ? msg : ''}</span></li>`;
       await wait();
     }
   }
@@ -68,41 +69,43 @@ async function runTestOne(directory, backendOrder, optimized) {
   console.timeEnd(`Run ${directory}`);
   const isClose = (expected, actual, name) => {
     if (expected.dims.length !== actual.dims.length) {
-      console.error(
-        `${name}: expected.dims(${expected.dims}) !== actual.dims(${actual.dims})`
-      );
-      return false;
+      return `${name}: expected.dims(${expected.dims}) !== actual.dims(${actual.dims})`;
     }
     if (expected.dims.some((nd, i) => nd !== actual.dims[i])) {
-      console.error(
-        `${name}: expected.dims(${expected.dims}) !== actual.dims(${actual.dims})`
-      );
-      return false;
+      return `${name}: expected.dims(${expected.dims}) !== actual.dims(${actual.dims})`;
     }
 
     if (expected.data.length !== actual.data.length) {
-      console.error(`${name}: data length mismatch`);
-      return false;
+      return `${name}: data length mismatch`;
     }
 
     for (let i = 0; i < expected.data.length; i++) {
       const e = expected.data[i];
       const a = actual.data[i];
       if (Math.abs(e - a) > Math.abs(e) * 1e-3 + 1e-5) {
-        console.error(`${name}: index ${i}, expected ${e} !== actual ${a}`);
-        return false;
+        // let kvs = "";
+        // for (let j = 0; j < Math.min(2048, expected.data.length); j++) {
+        //   kvs += `${j}=${actual.data[j]},`;
+        // }
+        // return `${kvs}`;
+        return `${name}: index ${i}, expected ${e} !== actual ${a}`;
       }
     }
 
-    return true;
+    return null;
   };
 
-  const check = runner
-    .getOutputNames()
-    .every((oname, i) =>
-      isClose(expectedTensors.get(oname), outputTensors[i], oname)
-    );
-  return check;
+  const outputNames = runner.getOutputNames();
+  let errorMessage = null;
+  for (let i = 0; i < outputNames.length; i++) {
+    const oname = outputNames[i];
+    errorMessage = isClose(expectedTensors.get(oname), outputTensors[i], oname);
+    if (errorMessage) {
+      break;
+    }
+  }
+
+  return errorMessage;
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
