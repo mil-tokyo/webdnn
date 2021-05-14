@@ -48,7 +48,7 @@ float decode_float(vec4 code) {
 }
 `;
 
-export const shaderHeaderWebGL1 = `
+export const shaderHeaderWebGL1 = `#version 100
 precision highp float;
 precision highp int;
 precision highp sampler2D;
@@ -297,8 +297,12 @@ export function shaderGenTensorOutputCoordsWithReturn(ndim: number): string {
       throw new Error();
   }
 
+  // gl_FragCoord.x 's precision is mediump, which only has 10bit precision
+  // force casting to highp is needed in iOS. Also, "-0.5" cannot be removed.
   return `
-  int tex_output_flat = int(gl_FragCoord.x) + tex_output_texture_w * int(gl_FragCoord.y);
+  highp float helper_gfcx = gl_FragCoord.x;
+  highp float helper_gfcy = gl_FragCoord.y;
+  int tex_output_flat = int(helper_gfcx - 0.5) + tex_output_texture_w * int(helper_gfcy - 0.5);
   ${source}
   `;
 }
