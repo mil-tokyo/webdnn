@@ -29,11 +29,6 @@ async function runOnce(runner, expectedTensors, validateResult) {
         const e = expected.data[i];
         const a = actual.data[i];
         if (Math.abs(e - a) > Math.abs(e) * 1e-3 + 1e-5) {
-          // let kvs = "";
-          // for (let j = 0; j < Math.min(2048, expected.data.length); j++) {
-          //   kvs += `${j}=${actual.data[j]},`;
-          // }
-          // return `${kvs}`;
           return `${name}: index ${i}, expected ${e} !== actual ${a}`;
         }
       }
@@ -57,6 +52,10 @@ async function runOnce(runner, expectedTensors, validateResult) {
   return { time: endTime - startTime, validationError: errorMessage };
 }
 
+function displayMessage(message) {
+  document.getElementById("result").innerText = message;
+}
+
 async function runBenchmark(optimized) {
   const backend = document.getElementById("backend").value;
   const model = document.getElementById("model").value;
@@ -64,6 +63,7 @@ async function runBenchmark(optimized) {
     return;
   }
   location.hash = `#backend=${backend}&model=${model}`;
+  displayMessage("Running benchmark");
 
   const backendOrder = backend === "cpu" ? [backend] : [backend, "cpu"];
   const directory = `./model/${model}/`;
@@ -78,12 +78,15 @@ async function runBenchmark(optimized) {
     .loadAll();
 
   // warm up
-  const warmupResult = await runOnce(runner, expectedTensors, true);
-  if (warmupResult.validationError) {
-    document.getElementById("result").innerText = "Output validation error";
-    return;
+  // run multiple times makes JIT optimize JavaScript part
+  for (let i = 0; i < 3; i++) {
+    const warmupResult = await runOnce(runner, expectedTensors, true);
+    if (warmupResult.validationError) {
+      displayMessage(`Output validation error: ${warmupResult.validationError}`);
+      return;
+    }
+    await wait();
   }
-  await wait();
 
   const nTrial = 10;
   const times = [];
@@ -97,9 +100,7 @@ async function runBenchmark(optimized) {
   const avg = times.reduce((p, c) => p + c, 0) / nTrial;
   const max = Math.max(...times);
   const min = Math.min(...times);
-  document.getElementById(
-    "result"
-  ).innerText = `Model ${model}, backend ${backend}, average ${avg} ms, min ${min} ms, max ${max} ms`;
+  displayMessage(`Model ${model}, backend ${backend}, average ${avg} ms, min ${min} ms, max ${max} ms`);
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -112,8 +113,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     modelDom.appendChild(opt);
   }
   const usp = new URLSearchParams(location.hash.substring(1));
-  const backend = usp.get("backend") || "webgl";
-  const model = usp.get("model") || "";
-  document.getElementById("backend").value = backend;
-  document.getElementById("model").value = model;
+  document.getElementById("backend").value = usp.get("backend") || "webgl";
+  document.getElementById("model").value = usp.get("model") || "";
 });
