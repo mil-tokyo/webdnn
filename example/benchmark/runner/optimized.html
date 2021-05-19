@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../../../dist/webdnn-core.js"></script>
+    <script src="bench.js"></script>
+  </head>
+  <body>
+    <h1>WebDNN Benchmark (Optimized Model)</h1>
+    <div>
+      <button type="button" onClick="runBenchmark(true)">Benchmark</button>
+    </div>
+    <div>
+      Backend:
+      <select id="backend">
+        <option value="cpu">CPU</option>
+        <option value="wasm">WebAssembly</option>
+        <option value="webgl">WebGL</option>
+        <option value="webgpu">WebGPU</option>
+      </select>
+      Model:
+      <select id="model">
+        <option value="">--Choice--</option>
+      </select>
+    </div>
+    <div id="result"></div>
+  </body>
+</html>
