@@ -9,8 +9,6 @@ export function modelTransform(
   backendOrder: Backend[]
 ): void {
   // TODO: implementation
-  console.log("model transformation");
-
   // if (backendOrder.includes("webgl")) {
   //   const webglContext = WebDNNWebGLContext.getInstance();
   //   if (webglContext.webgl2 && webglContext.canOnlyReadRGBA) {

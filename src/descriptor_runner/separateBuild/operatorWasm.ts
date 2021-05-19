@@ -6,7 +6,6 @@ import { wasmWorkerSrcUrl } from "../operators/wasm/worker/worker";
 declare let WebDNN: any;
 
 function injectOperators() {
-  console.log("injecting wasm operators");
   if (WebDNN.injectOperators) {
     WebDNN.injectOperators({
       operatorEntries: [...getOpEntriesCPU(), ...getOpEntriesWasm()],

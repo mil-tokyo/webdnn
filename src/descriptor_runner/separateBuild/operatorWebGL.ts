@@ -5,7 +5,6 @@ import { getOpEntries as getOpEntriesWebGL } from "../operators/webgl/opEntriesA
 declare let WebDNN: any;
 
 function injectOperators() {
-  console.log("injecting webgl operators");
   if (WebDNN.injectOperators) {
     WebDNN.injectOperators({
       operatorEntries: [...getOpEntriesCPU(), ...getOpEntriesWebGL()],

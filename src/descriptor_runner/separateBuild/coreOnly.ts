@@ -79,7 +79,6 @@ async function loadWebGL(
   const ctx = new WebDNNWebGLContextImpl(cpuContext);
   const injectionParams = await loadJS(`${directory}op-webgl.js`);
   await ctx.initialize();
-  console.dir(injectionParams.operatorEntries);
   registerOperators(injectionParams.operatorEntries);
   return ctx;
 }
@@ -175,7 +174,6 @@ export async function load(
   }
   const actualBackendOrder: Backend[] =
     succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"];
-  console.log("actualBackendOrder", actualBackendOrder);
   const runner = new RunnerImpl(actualBackendOrder, backendContexts);
   await runner.loadModel(directory, `model-${actualBackendOrder[0]}.onnx`);
   return runner;

@@ -49,7 +49,6 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
     return new Promise((resolve) => {
       this.resolvers.push((ev: MessageEvent) => {
         if (ev.data.type === "initializeComplete") {
-          console.log("WASM init ok");
           this.initializing = false;
           this.initialized = true;
           resolve();

@@ -154,10 +154,8 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       if (!gl) {
         throw new Error("WebGLRenderingContext initialization failed.");
       }
-      console.info("WebDNNWebGLContext initialized with WebGL");
       this.webgl2 = false;
     } else {
-      console.info("WebDNNWebGLContext initialized with WebGL2");
       this.webgl2 = true;
     }
     this.gl = gl;
@@ -180,7 +178,6 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.fb = nonnull(gl.createFramebuffer());
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
     this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
-    console.log("max texture size", this.maxTextureSize);
   }
 
   async initialize(): Promise<void> {

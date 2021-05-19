@@ -110,7 +110,6 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       );
       data = new Float32Array(buf.buffer, 0, this.length);
     }
-    // console.log("packdataget", packdata);
     this.unbindFromDrawTexture();
     return data;
   }

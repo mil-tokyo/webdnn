@@ -4,7 +4,6 @@ import { getOpEntries as getOpEntriesCPU } from "../operators/cpu/opEntriesAll";
 declare let WebDNN: any;
 
 function injectOperators() {
-  console.log("injecting wasm operators");
   if (WebDNN.injectOperators) {
     WebDNN.injectOperators({ operatorEntries: [...getOpEntriesCPU()] });
   } else {

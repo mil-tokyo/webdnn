@@ -61,12 +61,10 @@ export class RunnerImpl implements Runner {
   }
 
   async loadModel(directory: string, onnxBasename: string): Promise<void> {
-    console.log("loading onnx file");
     const f = await fetch(directory + onnxBasename);
     const b = await f.arrayBuffer();
     this.model = onnx.ModelProto.decode(new Uint8Array(b));
     modelTransform(this.model, this.backendOrder);
-    console.log("decoded onnx file");
     if (this.model!.opsetImport.length !== 1) {
       console.warn(
         `Specifying multiple opset_import is not supported. Using first one.`
@@ -229,7 +227,6 @@ export class RunnerImpl implements Runner {
     if (!inputs) {
       // from inputProxy
       if (this.useCompatibilityProxy) {
-        console.log("using input proxy");
         inputs = this.inputs.map((v) => {
           const t = this.backendContexts.cpu.emptyTensor(v.dims, v.dataType);
           t.data.set(v);
@@ -299,7 +296,6 @@ export class RunnerImpl implements Runner {
               `Operator implementation for ${opType}, opset=${this.opset} does not exist.`
             );
           }
-          console.debug(`Running ${node.name} on ${operator.backend}`);
           operator.initialize(nonnull(node.attribute));
           const tensorBackendRequirement = operator.getTensorBackendRequirement(
             node.input!.length,
@@ -396,7 +392,6 @@ export class RunnerImpl implements Runner {
         for (const backend of Object.keys(tensorsForBackends) as Backend[]) {
           const t = tensorsForBackends[backend].get(name);
           if (t) {
-            console.debug(`Releasing ${name} on ${backend}`);
             t.dispose();
             tensorsForBackends[backend].delete(name);
           }
@@ -461,7 +456,6 @@ export class RunnerImpl implements Runner {
       }
     }
 
-    console.dir(nodePerformances);
     return outputs;
   }
 }
