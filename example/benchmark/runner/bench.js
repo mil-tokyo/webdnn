@@ -80,6 +80,7 @@ async function runBenchmark(optimized) {
   // warm up
   // run multiple times makes JIT optimize JavaScript part
   for (let i = 0; i < 3; i++) {
+    console.log(`Warmup ${i}`);
     const warmupResult = await runOnce(runner, expectedTensors, true);
     if (warmupResult.validationError) {
       displayMessage(`Output validation error: ${warmupResult.validationError}`);
