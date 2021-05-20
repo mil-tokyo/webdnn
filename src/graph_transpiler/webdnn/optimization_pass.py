@@ -19,6 +19,9 @@ class OptimizationPassResult:
     def write_code(self, root_directory: str):
         raise NotImplementedError
 
+    def remove_code(self, root_directory: str):
+        raise NotImplementedError
+
 class OptimizationPass:
     def optimize(model: onnx.ModelProto) -> Optional[OptimizationPassResult]:
         raise NotImplementedError
