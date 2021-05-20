@@ -8,6 +8,7 @@ from webdnn.optimization_pass_result_cpu import OptimizationPassResultCPU
 from webdnn.pass_fusion_unary_wasm import PassFusionUnaryWasm
 from webdnn.optimization_pass_result_wasm import OptimizationPassResultWasm
 from webdnn.pass_fusion_unary_webgl import PassFusionUnaryWebGL
+from webdnn.pass_conv_pack_webgl2 import PassConvPackWebGL2
 from webdnn.optimization_pass_result_webgl import OptimizationPassResultWebGL
 
 def make_backend_passes(backend: str) -> List[OptimizationPass]:
@@ -15,8 +16,10 @@ def make_backend_passes(backend: str) -> List[OptimizationPass]:
         return [PassFusionUnaryCPU()]
     elif backend == "wasm":
         return [PassFusionUnaryWasm()]
-    elif backend == "webgl":
+    elif backend == "webgl1":
         return [PassFusionUnaryWebGL()]
+    elif backend == "webgl2":
+        return [PassFusionUnaryWebGL(), PassConvPackWebGL2()]
     else:
         raise ValueError
 
@@ -26,7 +29,7 @@ def run_passes(model: onnx.ModelProto, backend: str) -> OptimizationPassResult:
         result_merged = OptimizationPassResultCPU()
     elif backend == "wasm":
         result_merged = OptimizationPassResultWasm()
-    elif backend == "webgl":
+    elif backend.startswith("webgl"):
         result_merged = OptimizationPassResultWebGL()
     else:
         raise NotImplementedError

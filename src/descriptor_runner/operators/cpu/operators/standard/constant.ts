@@ -12,14 +12,16 @@ class Constant extends OperatorImpl {
     dataType: DataType;
     dims: number[];
   };
+
   constructor() {
     super("cpu");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     const constant = getAttrTensor(attribute, "value");
     if (!constant) {
-      // sparse_value, value_float etc in opset 12 is not yet supported
+      // Sparse_value, value_float etc in opset 12 is not yet supported
       throw new Error("value not exist in Constant");
     }
     this.constant = constant;

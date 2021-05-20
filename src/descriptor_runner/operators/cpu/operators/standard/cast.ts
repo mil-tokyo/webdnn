@@ -9,13 +9,14 @@ import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 6+ (opset 1 requires "to" is string)
+// Opset 6+ (opset 1 requires "to" is string)
 class Cast extends OperatorImpl {
   to!: onnx.TensorProto.DataType;
 
   constructor() {
     super("cpu");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.to = getAttrInt(attribute, "to", onnx.TensorProto.DataType.FLOAT);

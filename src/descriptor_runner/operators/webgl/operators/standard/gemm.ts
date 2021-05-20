@@ -8,13 +8,13 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { Gemm } from "../../../base/gemm";
 import { broadcastUni } from "../../../operatorUtil";
 import {
+  shaderGenHeader,
   shaderGenOutput,
   shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
   shaderGenTensorOutputCoordsWithReturn,
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
-  shaderGenHeader,
 } from "../../shaderHelper";
 
 export class WebGLGemm extends Gemm {
@@ -24,15 +24,15 @@ export class WebGLGemm extends Gemm {
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
-    const inputC = inputs[2];
+    const inputA = inputs[0],
+      inputB = inputs[1],
+      inputC = inputs[2];
     if (inputC) {
       return this.runWithC(context, inputA, inputB, inputC);
-    } else {
-      throw new Error();
     }
+    throw new Error();
   }
+
   private async runWithC(
     context: WebDNNWebGLContext,
     inputA: WebGLTensor,
@@ -40,13 +40,13 @@ export class WebGLGemm extends Gemm {
     inputC: WebGLTensor
   ): Promise<WebGLTensor[]> {
     const {
-      m,
-      n,
-      k,
-      strideA: [strideA0, strideA1],
-      strideB: [strideB0, strideB1],
-    } = this.calcShape(inputA.dims, inputB.dims);
-    const [strideC0, strideC1] = broadcastUni([m, n], inputC.dims);
+        m,
+        n,
+        k,
+        strideA: [strideA0, strideA1],
+        strideB: [strideB0, strideB1],
+      } = this.calcShape(inputA.dims, inputB.dims),
+      [strideC0, strideC1] = broadcastUni([m, n], inputC.dims);
 
     if (
       inputA.dimPerPixel !== 1 ||
@@ -56,9 +56,9 @@ export class WebGLGemm extends Gemm {
       throw new Error();
     }
 
-    const outputTensor = context.emptyTensor([m, n], "float32", 1);
-    // ループ回数は定数が必要
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const outputTensor = context.emptyTensor([m, n], "float32", 1),
+      // ループ回数は定数が必要
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define m ${m}
 #define n ${n}
@@ -82,8 +82,8 @@ void main() {
   ${shaderGenOutput("s", context.webgl2)}
   return;
 }
-`;
-    const kernelName = `gemm_${m}_${n}_${k}`;
+`,
+      kernelName = `gemm_${m}_${n}_${k}`;
     context.addKernel(kernelName, kernelSource);
 
     const uniforms: WebGLUniformItem[] = [

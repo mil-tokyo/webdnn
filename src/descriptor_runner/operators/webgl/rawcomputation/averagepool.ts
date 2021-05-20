@@ -5,11 +5,11 @@ import {
 import { WebGLTensor } from "../../../interface/backend/webgl/webglTensor";
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
-  shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenOutput,
+  shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../shaderHelper";
 

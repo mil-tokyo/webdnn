@@ -3,7 +3,7 @@ module.exports = {
   entry: './src/descriptor_runner/separateBuild/operatorWebGL.ts',
 
   output: {
-    filename: 'op-webgl.js',
+    filename: 'op-webgl1.js',
     path: __dirname + '/dist',
   },
 
@@ -22,3 +22,6 @@ module.exports = {
     ]
   }
 };
+// Currently, webgl1 and webgl2 has same operator
+// source codes and dynamically branching in each operator.
+// This may change in the future.

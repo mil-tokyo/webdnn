@@ -7,7 +7,9 @@ import { arrayProd } from "../operators/operatorUtil";
 
 export class OutputProxy implements ArrayLike<number> {
   readonly length: number;
+
   [n: number]: number;
+
   readonly dims: ReadonlyArray<number>;
 
   constructor(dims: ReadonlyArray<number>, public readonly dataType: DataType) {

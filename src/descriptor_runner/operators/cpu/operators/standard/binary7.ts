@@ -15,8 +15,8 @@ class Binary7 extends OperatorImpl {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
+    const inputA = inputs[0],
+      inputB = inputs[1];
     if (inputA.dataType !== inputB.dataType) {
       throw new Error(
         `Binary: input dataTypes mismatch: ${inputA.dataType} !== ${inputB.dataType}`
@@ -30,12 +30,11 @@ class Binary7 extends OperatorImpl {
     // TODO: broadcast不要の場合に特化したパフォーマンス向上
 
     const { dims: outShape, allStrides: inAllStrides } = broadcastMulti([
-      inputA.dims,
-      inputB.dims,
-    ]);
-
-    const output = context.emptyTensor(outShape, inputA.dataType);
-    const op = this.op;
+        inputA.dims,
+        inputB.dims,
+      ]),
+      output = context.emptyTensor(outShape, inputA.dataType),
+      { op } = this;
     switch (outShape.length) {
       case 0:
         this.op0d(
@@ -234,7 +233,7 @@ export function getOpEntries(): OperatorEntry[] {
       backend: "cpu",
       opsetMin: 7,
       factory: () =>
-        new Binary7((lhs, rhs) => Math.pow(lhs, rhs), ["float32", "int32"]),
+        new Binary7((lhs, rhs) => lhs ** rhs, ["float32", "int32"]),
     },
   ];
 }

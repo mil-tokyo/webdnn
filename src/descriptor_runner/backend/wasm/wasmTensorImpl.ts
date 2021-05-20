@@ -12,7 +12,9 @@ import {
 
 export class WasmSharedBuffer implements WasmSharedBufferInterface {
   private static nextBackendBufferId = 1;
+
   refCount: number;
+
   backendBufferId: number;
 
   constructor(

@@ -11,6 +11,7 @@ class Softmax extends OperatorImpl {
   constructor() {
     super("cpu");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     // TODO: support axis, whose default is different between opsets
@@ -20,7 +21,7 @@ class Softmax extends OperatorImpl {
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const input = inputs[0];
-    let axis = this.axis;
+    let { axis } = this;
     if (axis < 0) {
       axis += input.ndim;
     }
@@ -30,11 +31,11 @@ class Softmax extends OperatorImpl {
       );
     }
     // 最終軸のreductionに特化した実装
-    const reductionLength = input.dims[axis];
-    const outerLength = input.length / reductionLength;
-    const output = context.emptyTensor(input.dims, input.dataType);
-    const dI = input.data;
-    const dO = output.data;
+    const reductionLength = input.dims[axis],
+      outerLength = input.length / reductionLength,
+      output = context.emptyTensor(input.dims, input.dataType),
+      dI = input.data,
+      dO = output.data;
     for (let outer = 0; outer < outerLength; outer++) {
       let max = -Infinity;
       for (let r = 0; r < reductionLength; r++) {
@@ -45,8 +46,8 @@ class Softmax extends OperatorImpl {
       }
       let expsum = 0;
       for (let r = 0; r < reductionLength; r++) {
-        const v = dI[outer * reductionLength + r];
-        const exp = Math.exp(v - max);
+        const v = dI[outer * reductionLength + r],
+          exp = Math.exp(v - max);
         dO[outer * reductionLength + r] = exp;
         expsum += exp;
       }

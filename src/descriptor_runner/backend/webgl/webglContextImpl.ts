@@ -10,17 +10,15 @@ import { nonnull } from "../../util";
 import { WebGLTensorImpl } from "./webglTensorImpl";
 
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
-const vertexArray = new Float32Array([-1, +1, -1, -1, +1, +1, +1, -1]);
-
-const vertex_shader_source_1 = `
+const vertexArray = new Float32Array([-1, +1, -1, -1, +1, +1, +1, -1]),
+  vertex_shader_source_1 = `
 precision highp float;
 attribute vec2 _xy;
 void main() { 
   gl_Position = vec4(_xy, 0, 1); 
 }
-`;
-
-const vertex_shader_source_2 = `#version 300 es
+`,
+  vertex_shader_source_2 = `#version 300 es
 precision highp float;
 in vec2 _xy;
 void main() { 
@@ -37,6 +35,7 @@ interface WebGLSharedTexturePoolItem {
 
 export class WebGLSharedTexture {
   refCount: number;
+
   texture: WebGLTexture;
 
   constructor(
@@ -46,7 +45,7 @@ export class WebGLSharedTexture {
     public dimPerPixel: 1 | 4
   ) {
     this.refCount = 1;
-    const gl = this.context.gl;
+    const { gl } = this.context;
     let pooled: WebGLTexture | null = null;
     for (let i = 0; i < this.context.texturePool.length; i++) {
       const item = this.context.texturePool[i];
@@ -67,8 +66,10 @@ export class WebGLSharedTexture {
 
       gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
       gl.bindTexture(gl.TEXTURE_2D, this.texture);
-      // WebGL2: dimPerPixel==1: R channelのみ使用, dimPerPixel==4: RGBAチャンネルを利用（一部の最適化されたオペレータ用）
-      // WebGL1: RGBA各8bitにfloatをpackして使用（floatテクスチャ未対応環境を想定）
+      /*
+       * WebGL2: dimPerPixel==1: R channelのみ使用, dimPerPixel==4: RGBAチャンネルを利用（一部の最適化されたオペレータ用）
+       * WebGL1: RGBA各8bitにfloatをpackして使用（floatテクスチャ未対応環境を想定）
+       */
       if (this.context.isWebGL2(gl)) {
         gl.texImage2D(
           gl.TEXTURE_2D,
@@ -113,9 +114,11 @@ export class WebGLSharedTexture {
   dispose(): void {
     this.refCount--;
     if (this.refCount <= 0) {
-      // TODO: pool量が多すぎる場合に開放
-      // let gl = WebDNNWebGLContext.getInstance().gl;
-      // gl.deleteTexture(this.texture);
+      /*
+       * TODO: pool量が多すぎる場合に開放
+       * let gl = WebDNNWebGLContext.getInstance().gl;
+       * gl.deleteTexture(this.texture);
+       */
       this.context.texturePool.push({
         textureWidth: this.textureWidth,
         textureHeight: this.textureHeight,
@@ -128,15 +131,25 @@ export class WebGLSharedTexture {
 
 export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   backend = "webgl" as const;
+
   isMac: boolean;
+
   canOnlyReadRGBA: boolean;
+
   gl: WebGLRenderingContext | WebGL2RenderingContext;
+
   vshader!: WebGLShader;
+
   fb: WebGLFramebuffer;
+
   webgl2: boolean;
+
   programs: Map<string, { program: WebGLProgram }> = new Map();
+
   initialized = false;
+
   maxTextureSize: number;
+
   texturePool: WebGLSharedTexturePoolItem[] = [];
 
   constructor(public cpuContext: WebDNNCPUContext) {
@@ -160,7 +173,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     }
     this.gl = gl;
     if (this.webgl2) {
-      // enable color mode of gl.R32F
+      // Enable color mode of gl.R32F
       gl.getExtension("EXT_color_buffer_float");
     }
     gl.disable(gl.DEPTH_TEST);
@@ -220,8 +233,16 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     return new WebGLTensorImpl(this, dims, dataType, dimPerPixel);
   }
 
-  async moveTensor(tensor: Tensor): Promise<WebGLTensor> {
-    const dst = new WebGLTensorImpl(this, tensor.dims, tensor.dataType);
+  async moveTensor(
+    tensor: Tensor,
+    option: { dimPerPixel?: 1 | 4 }
+  ): Promise<WebGLTensor> {
+    const dst = new WebGLTensorImpl(
+      this,
+      tensor.dims,
+      tensor.dataType,
+      option.dimPerPixel
+    );
     await dst.setData(await tensor.getData());
     return dst;
   }
@@ -245,7 +266,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.gl.compileShader(shader);
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       console.error(this.gl.getShaderInfoLog(shader));
-      throw Error("Shader Compile failed: " + this.gl.getShaderInfoLog(shader));
+      throw Error(`Shader Compile failed: ${this.gl.getShaderInfoLog(shader)}`);
     }
 
     return shader;
@@ -263,16 +284,15 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   }
 
   compileKernel(sourceCode: string): WebGLProgram {
-    const gl = this.gl;
+    const { gl } = this;
     if (!this.vshader) {
       this.vshader = this.createShader(
         gl.VERTEX_SHADER,
         this.webgl2 ? vertex_shader_source_2 : vertex_shader_source_1
       );
     }
-    const fshader = this.createShader(gl.FRAGMENT_SHADER, sourceCode);
-
-    const program = nonnull(this.gl.createProgram());
+    const fshader = this.createShader(gl.FRAGMENT_SHADER, sourceCode),
+      program = nonnull(this.gl.createProgram());
 
     this.gl.attachShader(program, fshader);
     this.gl.attachShader(program, this.vshader);
@@ -296,8 +316,8 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     if (!kobj) {
       throw new Error(`Unknown kernel ${name}`);
     }
-    const gl = this.gl;
-    const xyAttribLoc = gl.getAttribLocation(kobj.program, "_xy");
+    const { gl } = this,
+      xyAttribLoc = gl.getAttribLocation(kobj.program, "_xy");
     for (let i = 0; i < inputs.length; i++) {
       inputs[i].tensor.bindToReadTexture(i);
     }
@@ -339,6 +359,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
 
     output.unbindFromDrawTexture();
   }
+
   isWebGL2(
     gl: WebGLRenderingContext | WebGL2RenderingContext
   ): gl is WebGL2RenderingContext {

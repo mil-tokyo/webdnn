@@ -10,21 +10,21 @@ class CpuMatMul extends MatMul {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
+    const inputA = inputs[0],
+      inputB = inputs[1];
     if (inputA.dataType !== "float32" || inputB.dataType !== "float32") {
       throw new Error("only float32 is supported");
     }
     const {
-      resultLength,
-      resultDims,
-      resultStrides,
-      resultDimsAfterSqueeze,
-      stridesA,
-      stridesB,
-      innerProductLength,
-    } = this.calcShape(inputA.dims, inputB.dims);
-    const newData = new Float32Array(resultLength);
+        resultLength,
+        resultDims,
+        resultStrides,
+        resultDimsAfterSqueeze,
+        stridesA,
+        stridesB,
+        innerProductLength,
+      } = this.calcShape(inputA.dims, inputB.dims),
+      newData = new Float32Array(resultLength);
     if (resultDims.length === 2) {
       this.calcDim2(
         inputA.data as Float32Array,

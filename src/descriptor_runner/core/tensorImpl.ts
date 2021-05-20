@@ -3,8 +3,11 @@ import { Tensor } from "../interface/core/tensor";
 
 export abstract class TensorImpl implements Tensor {
   readonly dims: ReadonlyArray<number>;
+
   readonly ndim: number;
+
   readonly length: number;
+
   readonly strides: ReadonlyArray<number>;
 
   constructor(
@@ -12,7 +15,7 @@ export abstract class TensorImpl implements Tensor {
     readonly dataType: DataType,
     readonly backend: Backend
   ) {
-    this.dims = dims.slice(); //呼び出し元で誤って書き換えることを防止
+    this.dims = dims.slice(); // 呼び出し元で誤って書き換えることを防止
     this.ndim = dims.length;
     let length = 1;
     const strides: number[] = [];
@@ -26,6 +29,8 @@ export abstract class TensorImpl implements Tensor {
   }
 
   abstract getData(): Promise<DataArrayTypes>;
+
   abstract setData(data: DataArrayTypes): Promise<void>;
+
   abstract dispose(): void;
 }

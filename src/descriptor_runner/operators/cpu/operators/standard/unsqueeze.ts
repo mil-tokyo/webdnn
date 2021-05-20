@@ -3,8 +3,10 @@ import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 1
-// opset 11以降はaxesがinputとして与えられるため非互換(また、負の軸も許容)
+/*
+ * Opset 1
+ * opset 11以降はaxesがinputとして与えられるため非互換(また、負の軸も許容)
+ */
 export class CPUUnsqueeze extends Unsqueeze {
   constructor() {
     super("cpu");
@@ -12,10 +14,9 @@ export class CPUUnsqueeze extends Unsqueeze {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0];
-    const newShape = this.calcShape(input);
-
-    const output = context.emptyTensor(newShape, input.dataType, input.data);
+    const input = inputs[0],
+      newShape = this.calcShape(input),
+      output = context.emptyTensor(newShape, input.dataType, input.data);
     return [output];
   }
 }

@@ -10,12 +10,12 @@ class CPUFlatten extends Flatten {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0];
-    const output = context.emptyTensor(
-      this.calcShape(input),
-      input.dataType,
-      input.data
-    );
+    const input = inputs[0],
+      output = context.emptyTensor(
+        this.calcShape(input),
+        input.dataType,
+        input.data
+      );
     return [output];
   }
 }

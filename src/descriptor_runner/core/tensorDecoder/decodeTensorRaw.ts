@@ -19,9 +19,9 @@ export function decodeTensorRaw(
     default:
       throw new Error("Unsupported DataType");
   }
-  // buf may not be aligned
-  const dataUint8View = new Uint8Array(data.buffer);
-  const srcUint8View = new Uint8Array(buf, bodyByteOffset, data.byteLength);
+  // Buf may not be aligned
+  const dataUint8View = new Uint8Array(data.buffer),
+    srcUint8View = new Uint8Array(buf, bodyByteOffset, data.byteLength);
   dataUint8View.set(srcUint8View);
   return data;
 }

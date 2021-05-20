@@ -19,9 +19,9 @@ export interface Operator {
 
 export interface OperatorEntry {
   opType: string;
-  // inclusive
+  // Inclusive
   opsetMin: number;
-  // exclusive, undefined means infinite
+  // Exclusive, undefined means infinite
   opsetMax?: number;
   // Operator set domain. Not yet supported.
   domain?: string;

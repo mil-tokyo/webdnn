@@ -7,9 +7,11 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 
 class Cast extends OperatorImpl {
   to!: onnx.TensorProto.DataType;
+
   constructor() {
     super("webgl");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.to = getAttrInt(attribute, "to", onnx.TensorProto.DataType.FLOAT);

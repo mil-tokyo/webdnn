@@ -10,8 +10,8 @@ class WebGLFlatten extends Flatten {
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const input = inputs[0];
-    const computedShape = this.calcShape(input);
+    const input = inputs[0],
+      computedShape = this.calcShape(input);
 
     return [input.alias(computedShape)];
   }

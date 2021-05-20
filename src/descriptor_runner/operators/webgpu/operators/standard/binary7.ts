@@ -21,16 +21,15 @@ class WebGPUBinary7 extends OperatorImpl {
 
   async run(context: WebDNNWebGPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGPUTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
+    const inputA = inputs[0],
+      inputB = inputs[1];
     if (inputA.dataType !== "float32" || inputB.dataType !== "float32") {
       throw new Error();
     }
     if (arrayEqual(inputA.dims, inputB.dims)) {
       return this.runElementwise(context, inputA, inputB);
-    } else {
-      return this.runBroadcast(context, inputA, inputB);
     }
+    return this.runBroadcast(context, inputA, inputB);
   }
 
   private async runElementwise(
@@ -70,14 +69,14 @@ class WebGPUBinary7 extends OperatorImpl {
     inputB: WebGPUTensor
   ) {
     const { dims: outShape, allStrides: inAllStrides } = broadcastMulti([
-      inputA.dims,
-      inputB.dims,
-    ]);
-    const outputTensor = context.emptyTensor(outShape, "float32");
-    const outNDim = outputTensor.ndim;
-    const metaElements: WebGPUMetaBufferContentElement[] = [
-      { value: outputTensor.length, type: "uint32" },
-    ];
+        inputA.dims,
+        inputB.dims,
+      ]),
+      outputTensor = context.emptyTensor(outShape, "float32"),
+      outNDim = outputTensor.ndim,
+      metaElements: WebGPUMetaBufferContentElement[] = [
+        { value: outputTensor.length, type: "uint32" },
+      ];
     for (let dim = 0; dim < outNDim; dim++) {
       metaElements.push({ value: outShape[dim], type: "uint32" });
     }
@@ -123,7 +122,7 @@ export function getOpEntries(): OperatorEntry[] {
       factory: () =>
         new WebGPUBinary7(
           "binary_elementwise_add",
-          webgpuShaders["binary_elementwise_add"],
+          webgpuShaders.binary_elementwise_add,
           [
             "binary_broadcast_add_0d",
             "binary_broadcast_add_1d",
@@ -132,11 +131,11 @@ export function getOpEntries(): OperatorEntry[] {
             "binary_broadcast_add_4d",
           ],
           [
-            webgpuShaders["binary_broadcast_add_0d"],
-            webgpuShaders["binary_broadcast_add_1d"],
-            webgpuShaders["binary_broadcast_add_2d"],
-            webgpuShaders["binary_broadcast_add_3d"],
-            webgpuShaders["binary_broadcast_add_4d"],
+            webgpuShaders.binary_broadcast_add_0d,
+            webgpuShaders.binary_broadcast_add_1d,
+            webgpuShaders.binary_broadcast_add_2d,
+            webgpuShaders.binary_broadcast_add_3d,
+            webgpuShaders.binary_broadcast_add_4d,
           ]
         ),
     },

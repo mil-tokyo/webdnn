@@ -4,11 +4,15 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { Conv } from "../../../base/conv";
 
 class CpuConv extends Conv {
-  dilations!: number[]; //[y, x]
+  dilations!: number[]; // [y, x]
+
   group!: number;
-  kernelShape!: number[]; //[y, x]
+
+  kernelShape!: number[]; // [y, x]
+
   pads!: number[]; // [y_begin, x_begin, y_end, x_end]
-  strides!: number[]; //[y, x]
+
+  strides!: number[]; // [y, x]
 
   constructor() {
     super("cpu");
@@ -16,42 +20,42 @@ class CpuConv extends Conv {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const inputX = inputs[0];
-    const inputW = inputs[1];
-    const inputB = inputs[2];
+    const inputX = inputs[0],
+      inputW = inputs[1],
+      inputB = inputs[2];
     // TODO: 2D以外対応
     if (inputX.ndim !== 4) {
       throw new Error("Conv other than 2D is not yet supported");
     }
     const {
-      batch,
-      dilations,
-      group,
-      kernelShape,
-      pads,
-      strides,
-      inShape,
-      outShape,
-      chIn,
-      chInPerGroup,
-      chOut,
-      chOutPerGroup,
-    } = this.calcShape(inputX.dims, inputW.dims);
-    const im2colData = new Float32Array(
-      group *
-        batch *
-        outShape[0] *
-        outShape[1] *
-        chInPerGroup *
-        kernelShape[0] *
-        kernelShape[1]
-    );
-    const matmulData = new Float32Array(
-      group * batch * outShape[0] * outShape[1] * chOutPerGroup
-    );
-    const transposeData = new Float32Array(
-      batch * chOut * outShape[0] * outShape[1]
-    );
+        batch,
+        dilations,
+        group,
+        kernelShape,
+        pads,
+        strides,
+        inShape,
+        outShape,
+        chIn,
+        chInPerGroup,
+        chOut,
+        chOutPerGroup,
+      } = this.calcShape(inputX.dims, inputW.dims),
+      im2colData = new Float32Array(
+        group *
+          batch *
+          outShape[0] *
+          outShape[1] *
+          chInPerGroup *
+          kernelShape[0] *
+          kernelShape[1]
+      ),
+      matmulData = new Float32Array(
+        group * batch * outShape[0] * outShape[1] * chOutPerGroup
+      ),
+      transposeData = new Float32Array(
+        batch * chOut * outShape[0] * outShape[1]
+      );
     this.im2col(
       inputX.data as Float32Array,
       im2colData,
@@ -127,8 +131,8 @@ class CpuConv extends Conv {
               for (let ky = 0; ky < kernelShape[0]; ky++) {
                 for (let kx = 0; kx < kernelShape[1]; kx++) {
                   let v = 0;
-                  const iny = oy * strides[0] - pads[0] + ky * dilations[0];
-                  const inx = ox * strides[1] - pads[1] + kx * dilations[1];
+                  const iny = oy * strides[0] - pads[0] + ky * dilations[0],
+                    inx = ox * strides[1] - pads[1] + kx * dilations[1];
                   if (
                     iny >= 0 &&
                     iny < inShape[0] &&
@@ -162,7 +166,7 @@ class CpuConv extends Conv {
     cinkhkw: number,
     chOutPerGroup: number
   ) {
-    // dI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
+    // DI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
     for (let g = 0; g < group; g++) {
       for (let y = 0; y < bout; y++) {
         for (let x = 0; x < chOutPerGroup; x++) {
@@ -186,7 +190,7 @@ class CpuConv extends Conv {
     outarea: number,
     chOutPerGroup: number
   ) {
-    // dT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
+    // DT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
     let idx = 0;
     for (let b = 0; b < batch; b++) {
       for (let g = 0; g < group; g++) {

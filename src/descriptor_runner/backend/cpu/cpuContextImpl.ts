@@ -6,12 +6,13 @@ import { CPUTensorImpl } from "./cpuTensorImpl";
 
 export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   backend = "cpu" as const;
-  async initialize(): Promise<void> {
-    return;
-  }
+
+  async initialize(): Promise<void> {}
+
   isCPUTensor(tensor: Tensor): tensor is CPUTensor {
     return tensor.backend === this.backend;
   }
+
   assertsCPUTensor(tensor: Tensor): asserts tensor is CPUTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
@@ -19,6 +20,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
       );
     }
   }
+
   assertsCPUTensorArray(tensors: Tensor[]): asserts tensors is CPUTensor[] {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
@@ -28,6 +30,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
       }
     }
   }
+
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
@@ -35,6 +38,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   ): CPUTensor {
     return new CPUTensorImpl(dims, dataType, data);
   }
+
   async moveTensor(tensor: Tensor): Promise<CPUTensor> {
     const dst = new CPUTensorImpl(
       tensor.dims,

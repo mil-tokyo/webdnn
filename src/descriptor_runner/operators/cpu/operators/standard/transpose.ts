@@ -11,9 +11,9 @@ class CPUTranspose extends Transpose {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0];
-    const { outShape, inStrides } = this.calcShape(input);
-    const output = context.emptyTensor(outShape, input.dataType);
+    const input = inputs[0],
+      { outShape, inStrides } = this.calcShape(input),
+      output = context.emptyTensor(outShape, input.dataType);
     if (input.ndim === 1) {
       this.copy1d(input.data, output.data, outShape, inStrides);
     } else if (input.ndim === 2) {

@@ -2,13 +2,13 @@ import { onnx } from "onnx-proto";
 import { OperatorImpl } from "../../../operatorImpl";
 import { getAttrInt } from "../../../operatorUtil";
 import {
+  shaderGenHeader,
   shaderGenOutput,
   shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
   shaderGenTensorOutputCoordsWithReturn,
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
-  shaderGenHeader,
 } from "../../shaderHelper";
 import {
   WebDNNWebGLContext,
@@ -18,13 +18,14 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { WebGLTensor } from "../../../../interface/backend/webgl/webglTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 1
+// Opset 1
 export class Softmax extends OperatorImpl {
   axis!: number;
 
   constructor() {
     super("webgl");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     // TODO: cpuと共通
     super.initialize(attribute);
@@ -34,7 +35,7 @@ export class Softmax extends OperatorImpl {
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
     const input = inputs[0];
-    let axis = this.axis;
+    let { axis } = this;
     if (axis < 0) {
       axis += input.ndim;
     }
@@ -44,14 +45,13 @@ export class Softmax extends OperatorImpl {
       );
     }
     // 最終軸のreductionに特化した実装
-    const reductionLength = input.dims[axis];
-    const outerLength = input.length / reductionLength;
-
-    // 最大値計算
-    const maxTensor = context.emptyTensor([outerLength]);
+    const reductionLength = input.dims[axis],
+      outerLength = input.length / reductionLength,
+      // 最大値計算
+      maxTensor = context.emptyTensor([outerLength]);
     await this.calcMax(context, outerLength, reductionLength, input, maxTensor);
 
-    // sum(exp)計算
+    // Sum(exp)計算
     const sumExpTensor = context.emptyTensor([outerLength]);
     await this.calcSumExp(
       context,
@@ -84,8 +84,8 @@ export class Softmax extends OperatorImpl {
     input: WebGLTensor,
     maxTensor: WebGLTensor
   ) {
-    const kernelName = `softmax_max_${reductionLength}`;
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const kernelName = `softmax_max_${reductionLength}`,
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define reductionLength ${reductionLength}
 ${shaderGenTensorOutputUniform(1)}
@@ -135,8 +135,8 @@ void main() {
     maxTensor: WebGLTensor,
     sumExpTensor: WebGLTensor
   ) {
-    const kernelName = `softmax_sumexp_${reductionLength}`;
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const kernelName = `softmax_sumexp_${reductionLength}`,
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define reductionLength ${reductionLength}
 ${shaderGenTensorOutputUniform(1)}
@@ -197,8 +197,8 @@ void main() {
     sumExpTensor: WebGLTensor,
     output: WebGLTensor
   ) {
-    const kernelName = `softmax_output`;
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const kernelName = `softmax_output`,
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 ${shaderGenTensorOutputUniform(2)}
 

@@ -4,7 +4,7 @@ import { WebDNNWebGLContext } from "../../../../interface/backend/webgl/webglCon
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// version 1, 7, 10, 11+
+// Version 1, 7, 10, 11+
 class WebGLAveragePool extends AveragePool {
   constructor() {
     super("webgl");
@@ -22,12 +22,12 @@ class WebGLAveragePool extends AveragePool {
     }
 
     const { batch, kernelShape, pads, strides, inShape, outShape, ch } =
-      this.calcShape(inputX.dims);
-    const output = context.emptyTensor(
-      [batch, ch, outShape[0], outShape[1]],
-      "float32",
-      1
-    );
+        this.calcShape(inputX.dims),
+      output = context.emptyTensor(
+        [batch, ch, outShape[0], outShape[1]],
+        "float32",
+        1
+      );
     await averagepool(
       context,
       inputX,

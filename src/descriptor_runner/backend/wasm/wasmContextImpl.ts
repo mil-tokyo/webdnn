@@ -10,10 +10,15 @@ import { WasmSharedBuffer, WasmTensorImpl } from "./wasmTensorImpl";
 
 export class WebDNNWasmContextImpl implements WebDNNWasmContext {
   backend = "wasm" as const;
+
   initialized = false;
+
   private initializing = false;
+
   private worker!: Worker;
+
   private resolvers: ((ev: MessageEvent) => boolean | undefined)[] = [];
+
   private wasmWorkerSrcUrl!: string;
 
   constructor(public cpuContext: WebDNNCPUContext) {
@@ -69,6 +74,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
       );
     }
   }
+
   assertsWasmTensorArray(tensors: Tensor[]): asserts tensors is WasmTensor[] {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
@@ -78,6 +84,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
       }
     }
   }
+
   emptyTensor(dims: ReadonlyArray<number>, dataType?: DataType): WasmTensor {
     return new WasmTensorImpl(this, dims, dataType);
   }
@@ -125,9 +132,9 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
   }
 
   writeTensor(buffer: WasmSharedBuffer, data: DataArrayTypes): void {
-    const copyData = new Uint8Array(buffer.byteLength);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const copyDataView = new (data.constructor as any)(copyData.buffer);
+    const copyData = new Uint8Array(buffer.byteLength),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      copyDataView = new (data.constructor as any)(copyData.buffer);
     copyDataView.set(data);
     this.worker.postMessage(
       { type: "write", bufferId: buffer.backendBufferId, data: copyData },

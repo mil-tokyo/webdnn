@@ -11,9 +11,9 @@ class Shape extends OperatorImpl {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     // メタデータしか使わないので、どのバックエンドに存在してもよい
-    const input = inputs[0];
-    const shapeData = new Int32Array(input.dims);
-    const output = context.emptyTensor([shapeData.length], "int32", shapeData);
+    const input = inputs[0],
+      shapeData = new Int32Array(input.dims),
+      output = context.emptyTensor([shapeData.length], "int32", shapeData);
     return [output];
   }
 

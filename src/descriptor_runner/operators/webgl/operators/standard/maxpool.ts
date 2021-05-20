@@ -7,15 +7,15 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { MaxPool } from "../../../base/maxpool";
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
-  shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenOutput,
+  shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
 
-// version 11
+// Version 11
 export class WebGLMaxPool extends MaxPool {
   constructor() {
     super("webgl");
@@ -41,23 +41,23 @@ export class WebGLMaxPool extends MaxPool {
     }
 
     const {
-      batch,
-      dilations,
-      kernelShape,
-      pads,
-      strides,
-      inShape,
-      outShape,
-      ch,
-    } = this.calcShape(inputX.dims);
-    const output = context.emptyTensor(
-      [batch, ch, outShape[0], outShape[1]],
-      "float32",
-      1
-    );
-    // ループ回数は定数が必要
-    const kernelName = `maxpool_${kernelShape[0]}_${kernelShape[1]}`;
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+        batch,
+        dilations,
+        kernelShape,
+        pads,
+        strides,
+        inShape,
+        outShape,
+        ch,
+      } = this.calcShape(inputX.dims),
+      output = context.emptyTensor(
+        [batch, ch, outShape[0], outShape[1]],
+        "float32",
+        1
+      ),
+      // ループ回数は定数が必要
+      kernelName = `maxpool_${kernelShape[0]}_${kernelShape[1]}`,
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define K0 ${kernelShape[0]}
 #define K1 ${kernelShape[1]}

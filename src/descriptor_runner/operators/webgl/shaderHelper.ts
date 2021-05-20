@@ -2,7 +2,7 @@ import { WebGLUniformItem } from "../../interface/backend/webgl/webglContext";
 import { WebGLTensor } from "../../interface/backend/webgl/webglTensor";
 import { Tensor } from "../../interface/core/tensor";
 
-// float encode: https://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target/20859830#20859830
+// Float encode: https://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target/20859830#20859830
 export const shaderFloatPack = `
 float shift_right (float v, float amt) { 
   v = floor(v) + 0.5; 
@@ -64,17 +64,22 @@ out vec4 fragColor;
 export function shaderGenHeader(webgl2: boolean): string {
   if (webgl2) {
     return shaderHeaderWebGL2;
-  } else {
-    return shaderHeaderWebGL1 + shaderFloatPack;
   }
+  return shaderHeaderWebGL1 + shaderFloatPack;
 }
 
 export function shaderGenOutput(expr: string, webgl2: boolean): string {
   if (webgl2) {
     return `fragColor = vec4((${expr}), 0.0, 0.0, 0.0);`;
-  } else {
-    return `gl_FragColor = encode_float(${expr});`;
   }
+  return `gl_FragColor = encode_float(${expr});`;
+}
+
+export function shaderGenOutputVec4(expr: string, webgl2: boolean): string {
+  if (webgl2) {
+    return `fragColor = (${expr});`;
+  }
+  throw new Error("shaderGenOutputVec4 is only for WebGL2");
 }
 
 export function shaderGenTensorNDGet(
@@ -82,9 +87,7 @@ export function shaderGenTensorNDGet(
   ndim: number,
   webgl2: boolean
 ): string {
-  let uniforms: string;
-  let args: string;
-  let flat_index: string;
+  let args: string, flat_index: string, uniforms: string;
   switch (ndim) {
     case 0:
       uniforms = "";
@@ -141,8 +144,8 @@ int x = flat_index - y * texture_w;
 return texelFetch(${name}, ivec2(x, y), 0).r;
 }
 `;
-  } else {
-    return `
+  }
+  return `
     uniform sampler2D ${name};
     ${uniforms}
     uniform int ${name}_texture_w;
@@ -157,7 +160,72 @@ return texelFetch(${name}, ivec2(x, y), 0).r;
       return decode_float(p);
     }
 `;
+}
+
+export function shaderGenTensorNDGetVec4(
+  name: string,
+  ndim: number,
+  webgl2: boolean
+): string {
+  let args: string, flat_index: string, uniforms: string;
+  switch (ndim) {
+    case 0:
+      uniforms = "";
+      args = "";
+      flat_index = "0";
+      break;
+    case 1:
+      uniforms = `
+  uniform int ${name}_stride_0;
+          `;
+      args = "int d0";
+      flat_index = `d0 * ${name}_stride_0`;
+      break;
+    case 2:
+      uniforms = `
+    uniform int ${name}_stride_0;
+    uniform int ${name}_stride_1;
+            `;
+      args = "int d0, int d1";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1`;
+      break;
+    case 3:
+      uniforms = `
+      uniform int ${name}_stride_0;
+      uniform int ${name}_stride_1;
+      uniform int ${name}_stride_2;
+              `;
+      args = "int d0, int d1, int d2";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2`;
+      break;
+    case 4:
+      uniforms = `
+uniform int ${name}_stride_0;
+uniform int ${name}_stride_1;
+uniform int ${name}_stride_2;
+uniform int ${name}_stride_3;
+        `;
+      args = "int d0, int d1, int d2, int d3";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3`;
+      break;
+    default:
+      throw new Error();
   }
+  if (webgl2) {
+    return `
+uniform sampler2D ${name};
+${uniforms}
+
+vec4 get_vec4_${name}(${args}) {
+int flat_index = ${flat_index};
+int texture_w = textureSize(${name}, 0).x;
+int y = flat_index / texture_w;
+int x = flat_index - y * texture_w;
+return texelFetch(${name}, ivec2(x, y), 0);
+}
+`;
+  }
+  throw new Error("shaderGenTensorNDGetVec4 is only for WebGL2");
 }
 
 function isWebGLTensor(tensor: unknown): tensor is WebGLTensor {
@@ -211,8 +279,8 @@ export function shaderGenTensorOutputUniformItem(
   } else {
     textureShapeArray = textureShape;
   }
-  const name = "tex_output";
-  const uniforms: WebGLUniformItem[] = [];
+  const name = "tex_output",
+    uniforms: WebGLUniformItem[] = [];
   for (let i = 0; i < shape.length; i++) {
     uniforms.push({
       name: `${name}_shape_${i}`,
@@ -297,8 +365,10 @@ export function shaderGenTensorOutputCoordsWithReturn(ndim: number): string {
       throw new Error();
   }
 
-  // gl_FragCoord.x 's precision is mediump, which only has 10bit precision
-  // force casting to highp is needed in iOS. Also, "-0.5" cannot be removed.
+  /*
+   * Gl_FragCoord.x 's precision is mediump, which only has 10bit precision
+   * force casting to highp is needed in iOS. Also, "-0.5" cannot be removed.
+   */
   return `
   highp float helper_gfcx = gl_FragCoord.x;
   highp float helper_gfcy = gl_FragCoord.y;
@@ -319,8 +389,8 @@ float get_${name}() {
   return texelFetch(${name}, ivec2(int(gl_FragCoord.x), int(gl_FragCoord.y)), 0).r;
 }
 `;
-  } else {
-    return `
+  }
+  return `
 uniform sampler2D ${name};
 uniform int ${name}_texture_w;
 uniform int ${name}_texture_h;
@@ -330,7 +400,6 @@ float get_${name}() {
   return decode_float(p);
 }
 `;
-  }
 }
 
 export function shaderGenTensorElementwiseGetUniformItem(

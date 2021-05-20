@@ -13,14 +13,13 @@ export class WebGPUGemm extends Gemm {
 
   async run(context: WebDNNWebGPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGPUTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
-    const inputC = inputs[2];
+    const inputA = inputs[0],
+      inputB = inputs[1],
+      inputC = inputs[2];
     if (inputC) {
       return this.runWithC(context, inputA, inputB, inputC);
-    } else {
-      throw new Error();
     }
+    throw new Error();
   }
 
   async runWithC(
@@ -33,20 +32,18 @@ export class WebGPUGemm extends Gemm {
       throw new Error();
     }
     const {
-      m,
-      n,
-      k,
-      strideA: [strideA0, strideA1],
-      strideB: [strideB0, strideB1],
-    } = this.calcShape(inputA.dims, inputB.dims);
-    const [strideC0, strideC1] = broadcastUni([m, n], inputC.dims);
-
-    const outputTensor = context.emptyTensor([m, n], "float32");
-
-    const shaderName = "gemm";
+        m,
+        n,
+        k,
+        strideA: [strideA0, strideA1],
+        strideB: [strideB0, strideB1],
+      } = this.calcShape(inputA.dims, inputB.dims),
+      [strideC0, strideC1] = broadcastUni([m, n], inputC.dims),
+      outputTensor = context.emptyTensor([m, n], "float32"),
+      shaderName = "gemm";
 
     if (!context.hasPipeline(shaderName)) {
-      context.createPipeline(shaderName, webgpuShaders["gemm"], 5);
+      context.createPipeline(shaderName, webgpuShaders.gemm, 5);
     }
 
     await context.run({

@@ -43,13 +43,13 @@ export function decodeTensorEightbit(
   if (dataType !== onnx.TensorProto.DataType.FLOAT) {
     throw new Error("Unsupported DataType");
   }
-  const view = new DataView(buf, bodyByteOffset, bodyCompressedLength);
-  const codeByteLength = view.getUint32(0, true);
-  const scale = view.getFloat32(4, true);
-  const decompressed = inflate(
-    new Uint8Array(buf, bodyByteOffset + 8, codeByteLength)
-  );
-  const scaledTable = new Float32Array(256);
+  const view = new DataView(buf, bodyByteOffset, bodyCompressedLength),
+    codeByteLength = view.getUint32(0, true),
+    scale = view.getFloat32(4, true),
+    decompressed = inflate(
+      new Uint8Array(buf, bodyByteOffset + 8, codeByteLength)
+    ),
+    scaledTable = new Float32Array(256);
   for (let i = 0; i < 256; i++) {
     scaledTable[i] = decodeTable[i & 0x7f] * scale * (i < 128 ? 1.0 : -1.0);
   }

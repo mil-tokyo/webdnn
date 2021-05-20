@@ -4,7 +4,7 @@ import { CPUTensor } from "../../interface/backend/cpu/cpuTensor";
 import { Tensor } from "../../interface/core/tensor";
 import { getAttrInt } from "../operatorUtil";
 
-// opset under 5 takes shape as attribute. not compatible.
+// Opset under 5 takes shape as attribute. not compatible.
 export abstract class Reshape5 extends OperatorImpl {
   allowzero!: boolean;
 
@@ -18,8 +18,8 @@ export abstract class Reshape5 extends OperatorImpl {
 
     let computedShape: number[];
     if (this.allowzero) {
-      let explicitProd = 1;
-      let minusDim = -1;
+      let explicitProd = 1,
+        minusDim = -1;
       shapeInput.forEach((s, i) => {
         if (s > 0) {
           explicitProd *= s;
@@ -37,13 +37,12 @@ export abstract class Reshape5 extends OperatorImpl {
       computedShape = shapeInput.map((s) => {
         if (s >= 0) {
           return s;
-        } else {
-          return minusDimValue;
         }
+        return minusDimValue;
       });
     } else {
-      let explicitProd = 1;
-      let minusDim = -1;
+      let explicitProd = 1,
+        minusDim = -1;
       shapeInput.forEach((s, i) => {
         if (s > 0) {
           explicitProd *= s;
@@ -68,9 +67,8 @@ export abstract class Reshape5 extends OperatorImpl {
           return s;
         } else if (s === 0) {
           return input.dims[i];
-        } else {
-          return minusDimValue;
         }
+        return minusDimValue;
       });
     }
     return computedShape;

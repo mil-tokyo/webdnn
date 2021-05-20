@@ -16,10 +16,15 @@ interface WebGPURunnerPipeline {
 
 export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
   backend = "webgpu" as const;
+
   initialized: boolean;
+
   isSupported: boolean;
+
   device!: GPUDevice;
+
   private pipelines: Map<string, WebGPURunnerPipeline>;
+
   pooledMetaBuffer: WebGPUMetaBuffer[] = [];
 
   constructor(public cpuContext: WebDNNCPUContext) {
@@ -108,8 +113,8 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     if (this.hasPipeline(name)) {
       return;
     }
-    const device = this.device;
-    const bindings: GPUBindGroupLayoutEntry[] = [];
+    const { device } = this,
+      bindings: GPUBindGroupLayoutEntry[] = [];
     for (let i = 0; i < nBuffers; i++) {
       bindings.push({
         binding: i,
@@ -118,21 +123,19 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       });
     }
     const bindGroupLayout = device.createBindGroupLayout({
-      entries: bindings,
-    });
-
-    const pipelineLayout = device.createPipelineLayout({
-      bindGroupLayouts: [bindGroupLayout],
-    });
-
-    const shaderModule = device.createShaderModule({ code: shader });
-    const pipeline = device.createComputePipeline({
-      layout: pipelineLayout,
-      computeStage: {
-        module: shaderModule,
-        entryPoint: "main",
-      },
-    });
+        entries: bindings,
+      }),
+      pipelineLayout = device.createPipelineLayout({
+        bindGroupLayouts: [bindGroupLayout],
+      }),
+      shaderModule = device.createShaderModule({ code: shader }),
+      pipeline = device.createComputePipeline({
+        layout: pipelineLayout,
+        computeStage: {
+          module: shaderModule,
+          entryPoint: "main",
+        },
+      });
 
     this.pipelines.set(name, { bindGroupLayout, pipeline });
   }
@@ -142,14 +145,14 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     if (!pipeline) {
       throw new Error(`Pipeline ${pipeline} not found`);
     }
-    const device = this.device;
-    const entries: GPUBindGroupEntry[] = request.tensors.map((t, i) => ({
-      binding: i,
-      resource: {
-        buffer: (t as WebGPUTensorImpl).buffer,
-        size: (t as WebGPUTensorImpl).bufferSize,
-      },
-    }));
+    const { device } = this,
+      entries: GPUBindGroupEntry[] = request.tensors.map((t, i) => ({
+        binding: i,
+        resource: {
+          buffer: (t as WebGPUTensorImpl).buffer,
+          size: (t as WebGPUTensorImpl).bufferSize,
+        },
+      }));
     let meta: WebGPUMetaBuffer | null = null;
     if (request.meta) {
       meta = await WebGPUMetaBuffer.createBuffer(this, request.meta);
@@ -162,12 +165,11 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       });
     }
     const bindGroup = device.createBindGroup({
-      layout: pipeline.bindGroupLayout,
-      entries,
-    });
-
-    const commandEncoder = device.createCommandEncoder();
-    const passEncoder = commandEncoder.beginComputePass();
+        layout: pipeline.bindGroupLayout,
+        entries,
+      }),
+      commandEncoder = device.createCommandEncoder(),
+      passEncoder = commandEncoder.beginComputePass();
     passEncoder.setBindGroup(0, bindGroup);
     passEncoder.setPipeline(pipeline.pipeline);
     passEncoder.dispatch(

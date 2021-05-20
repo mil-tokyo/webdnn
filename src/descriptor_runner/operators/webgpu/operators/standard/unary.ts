@@ -39,7 +39,7 @@ export function getOpEntries(): OperatorEntry[] {
       opType: "Relu",
       backend: "webgpu",
       opsetMin: 1,
-      factory: () => new WebGPUUnary("relu", webgpuShaders["relu"]),
+      factory: () => new WebGPUUnary("relu", webgpuShaders.relu),
     },
   ];
 }

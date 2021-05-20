@@ -16,14 +16,14 @@ export class CpuGlobalAveragePool extends OperatorImpl {
     if (inputX.ndim !== 4) {
       throw new Error("MaxPool other than 2D is not yet supported");
     }
-    const batch = inputX.dims[0];
-    const ch = inputX.dims[1];
-    const inShape = [inputX.dims[2], inputX.dims[3]];
-    const outputData = new Float32Array(batch * ch);
+    const batch = inputX.dims[0],
+      ch = inputX.dims[1],
+      inShape = [inputX.dims[2], inputX.dims[3]],
+      outputData = new Float32Array(batch * ch);
     averagepool(
       inputX.data as Float32Array,
       outputData,
-      true, //わずかに計算量が減る
+      true, // わずかに計算量が減る
       batch,
       inShape,
       [0, 0, 0, 0],

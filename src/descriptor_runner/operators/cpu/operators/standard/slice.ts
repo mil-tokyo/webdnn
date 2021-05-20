@@ -4,8 +4,10 @@ import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 10
-// opset 1では区間指定がattributeなので互換性なし
+/*
+ * Opset 10
+ * opset 1では区間指定がattributeなので互換性なし
+ */
 class Slice10 extends OperatorImpl {
   constructor() {
     super("cpu");
@@ -13,17 +15,17 @@ class Slice10 extends OperatorImpl {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const data = inputs[0];
-    const starts = inputs[1];
-    const ends = inputs[2];
-    const axes = inputs[3];
+    const data = inputs[0],
+      starts = inputs[1],
+      ends = inputs[2],
+      axes = inputs[3];
     let steps = inputs[4];
-    // currently, only common usage is supported
+    // Currently, only common usage is supported
     if (!steps) {
       steps = context.emptyTensor([axes.length], "int32");
       steps.data.fill(1);
     }
-    const ranges = data.dims.map((d) => [0, d, 1, d]); //start, stop, step, srcsize
+    const ranges = data.dims.map((d) => [0, d, 1, d]); // Start, stop, step, srcsize
     for (let i = 0; i < axes.length; i++) {
       ranges[axes.data[i]] = [
         starts.data[i],
@@ -33,24 +35,24 @@ class Slice10 extends OperatorImpl {
       ];
     }
     const rangesWithSize = ranges.map(([start, stop, step, srcsize]) => {
-      if (start < 0) {
-        start = start + srcsize;
-      }
-      start = Math.max(Math.min(start, srcsize), 0);
-      if (stop < 0) {
-        stop = stop + srcsize;
-      }
-      stop = Math.max(Math.min(stop, srcsize), 0);
-      if (step < 0) {
-        throw new Error("Slice: step < 0 is not yet supported");
-      }
-      const dstsize = Math.ceil((stop - start) / step);
-      return [start, stop, step, srcsize, dstsize];
-    });
-    const output = context.emptyTensor(
-      rangesWithSize.map(([, , , , dstsize]) => dstsize),
-      data.dataType
-    );
+        if (start < 0) {
+          start += srcsize;
+        }
+        start = Math.max(Math.min(start, srcsize), 0);
+        if (stop < 0) {
+          stop += srcsize;
+        }
+        stop = Math.max(Math.min(stop, srcsize), 0);
+        if (step < 0) {
+          throw new Error("Slice: step < 0 is not yet supported");
+        }
+        const dstsize = Math.ceil((stop - start) / step);
+        return [start, stop, step, srcsize, dstsize];
+      }),
+      output = context.emptyTensor(
+        rangesWithSize.map(([, , , , dstsize]) => dstsize),
+        data.dataType
+      );
     if (data.ndim === 1) {
       this.copy1d(
         data.data,

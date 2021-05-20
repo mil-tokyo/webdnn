@@ -11,9 +11,9 @@ export class WebGPUMetaBuffer {
   ) {}
 
   private static buildCPUBuffer(content: WebGPUMetaBufferContent) {
-    const byteLength = content.elements.length * 4;
-    const cpuBuffer = new Uint8Array(byteLength);
-    const cpuBufferView = new DataView(cpuBuffer.buffer);
+    const byteLength = content.elements.length * 4,
+      cpuBuffer = new Uint8Array(byteLength),
+      cpuBufferView = new DataView(cpuBuffer.buffer);
     let ofs = 0;
     for (const element of content.elements) {
       switch (element.type) {
@@ -75,14 +75,10 @@ export class WebGPUMetaBuffer {
     context: WebDNNWebGPUContextImpl,
     content: WebGPUMetaBufferContent
   ): Promise<WebGPUMetaBuffer> {
-    const cpuBuffer = WebGPUMetaBuffer.buildCPUBuffer(content);
-    const cpuBufferHash = WebGPUMetaBuffer.calcBufferHash(cpuBuffer);
-    // 全く同じ内容がプールにあればそれを使い、なければバッファ作成とGPUへの転送
-    const found = WebGPUMetaBuffer.findPooled(
-      context,
-      cpuBuffer,
-      cpuBufferHash
-    );
+    const cpuBuffer = WebGPUMetaBuffer.buildCPUBuffer(content),
+      cpuBufferHash = WebGPUMetaBuffer.calcBufferHash(cpuBuffer),
+      // 全く同じ内容がプールにあればそれを使い、なければバッファ作成とGPUへの転送
+      found = WebGPUMetaBuffer.findPooled(context, cpuBuffer, cpuBufferHash);
     if (found) {
       return found;
     }

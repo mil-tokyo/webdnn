@@ -17,8 +17,8 @@ export class WebGLReshape5 extends Reshape5 {
   }
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
-    const input = inputs[0];
-    const shapeTensor = inputs[1];
+    const input = inputs[0],
+      shapeTensor = inputs[1];
     if (!context.cpuContext.isCPUTensor(shapeTensor)) {
       throw new Error(`Reshape: shapeTensor is not on cpu.`);
     }

@@ -3,9 +3,8 @@ import Long from "long";
 export function nonnull<T>(value: T | null | undefined): T {
   if (value != null) {
     return value;
-  } else {
-    throw new Error("value is null");
   }
+  throw new Error("value is null");
 }
 
 export function arraySum(vec: ArrayLike<number>): number {
@@ -41,8 +40,8 @@ export function arrayEqual(
   return true;
 }
 
-const longPositive32BitMax = new Long(0x7fffffff, 0);
-const longPositive32BitMin = new Long(0x80000000, 0xffffffff);
+const longPositive32BitMax = new Long(0x7fffffff, 0),
+  longPositive32BitMin = new Long(0x80000000, 0xffffffff);
 
 // 符号付きLongを丸めて、-2^31から2^31-1の範囲のnumberを返す
 export function clipLong(v: Long): number {
@@ -51,17 +50,15 @@ export function clipLong(v: Long): number {
     return -0x80000000;
   } else if (v.greaterThan(longPositive32BitMax)) {
     return 0x7fffffff;
-  } else {
-    return v.toNumber();
   }
+  return v.toNumber();
 }
 
 export function intOrLongToInt(v: number | Long): number {
   if (v instanceof Long) {
     return clipLong(v);
-  } else {
-    return v;
   }
+  return v;
 }
 
 export function intOrLongToIntVector(v: (number | Long)[]): number[] {

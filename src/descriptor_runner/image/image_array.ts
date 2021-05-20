@@ -7,9 +7,9 @@ import { getContext2D } from "./canvas";
 import { Color, Order } from "./enums";
 import {
   DestinationRect,
+  SourceRect,
   getImageData,
   setImageDataToCanvas,
-  SourceRect,
 } from "./image_data";
 import { loadImageByUrl, loadImageFromFileInput } from "./image_source";
 
@@ -29,21 +29,19 @@ function flatten<T>(arr: ArrayLike<T>): ArrayLike<T> {
  * @protected
  */
 function normalizeBiasTuple(arr: number[] | number): number[] {
-  if (typeof arr == "number") {
+  if (typeof arr === "number") {
     return [arr, arr, arr, arr];
-  } else {
-    if (arr.length == 4) {
-      return [arr[0], arr[1], arr[2], arr[3]];
-    } else if (arr.length == 3) {
-      return [arr[0], arr[1], arr[2], arr[0]];
-    } else if (arr.length == 1) {
-      return [arr[0], arr[0], arr[0], arr[0]];
-    } else {
-      throw new Error(
-        "bias and scale must be scalar number or array of length 1 or 3 or 4."
-      );
-    }
   }
+  if (arr.length == 4) {
+    return [arr[0], arr[1], arr[2], arr[3]];
+  } else if (arr.length == 3) {
+    return [arr[0], arr[1], arr[2], arr[0]];
+  } else if (arr.length == 1) {
+    return [arr[0], arr[0], arr[0], arr[0]];
+  }
+  throw new Error(
+    "bias and scale must be scalar number or array of length 1 or 3 or 4."
+  );
 }
 
 /**
@@ -91,23 +89,26 @@ export function getImageArrayFromImageData(
   options: SourceRect & DestinationRect & ImageArrayOption = {}
 ): Float32Array | Int32Array {
   const {
-    type = Float32Array,
-    color = Color.RGB,
-    order = Order.HWC,
-    bias = [0, 0, 0],
-    scale = [1, 1, 1],
-  } = options;
-
-  const bias_n = normalizeBiasTuple(bias);
-  const scale_n = normalizeBiasTuple(scale);
-
-  const width = imageData.width;
-  const height = imageData.height;
-
-  const data = imageData.data;
-  let array: Float32Array | Int32Array;
-  let biasR: number, biasG: number, biasB: number, biasA: number;
-  let scaleR: number, scaleG: number, scaleB: number, scaleA: number;
+      type = Float32Array,
+      color = Color.RGB,
+      order = Order.HWC,
+      bias = [0, 0, 0],
+      scale = [1, 1, 1],
+    } = options,
+    bias_n = normalizeBiasTuple(bias),
+    scale_n = normalizeBiasTuple(scale),
+    { width } = imageData,
+    { height } = imageData,
+    { data } = imageData;
+  let array: Float32Array | Int32Array,
+    biasA: number,
+    biasB: number,
+    biasG: number,
+    biasR: number,
+    scaleA: number,
+    scaleB: number,
+    scaleG: number,
+    scaleR: number;
 
   switch (color) {
     case Color.RGB:
@@ -133,7 +134,7 @@ export function getImageArrayFromImageData(
             for (let w = 0; w < width; w++) {
               array[(0 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
-              array[(1 * height + h) * width + w] =
+              array[(Number(height) + h) * width + w] =
                 (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
               array[(2 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
@@ -166,7 +167,7 @@ export function getImageArrayFromImageData(
             for (let w = 0; w < width; w++) {
               array[(0 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
-              array[(1 * height + h) * width + w] =
+              array[(Number(height) + h) * width + w] =
                 (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
               array[(2 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
@@ -201,7 +202,7 @@ export function getImageArrayFromImageData(
             for (let w = 0; w < width; w++) {
               array[(0 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
-              array[(1 * height + h) * width + w] =
+              array[(Number(height) + h) * width + w] =
                 (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
               array[(2 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
@@ -238,7 +239,7 @@ export function getImageArrayFromImageData(
             for (let w = 0; w < width; w++) {
               array[(0 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 2] - biasB) / scaleB;
-              array[(1 * height + h) * width + w] =
+              array[(Number(height) + h) * width + w] =
                 (data[(h * width + w) * 4 + 1] - biasG) / scaleG;
               array[(2 * height + h) * width + w] =
                 (data[(h * width + w) * 4 + 0] - biasR) / scaleR;
@@ -256,9 +257,9 @@ export function getImageArrayFromImageData(
       [biasR, biasG, biasB] = bias_n;
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
-          const r = data[(h * width + w) * 4 + 0];
-          const g = data[(h * width + w) * 4 + 1];
-          const b = data[(h * width + w) * 4 + 2];
+          const r = data[(h * width + w) * 4 + 0],
+            g = data[(h * width + w) * 4 + 1],
+            b = data[(h * width + w) * 4 + 2];
           array[h * width + w] =
             (0.2126 * (r - biasR)) / scaleR +
             (0.7162 * (g - biasG)) / scaleG +
@@ -285,30 +286,29 @@ export function getImageArrayFromCanvas(
   options: SourceRect & DestinationRect & ImageArrayOption = {}
 ): Float32Array | Int32Array {
   const {
-    type = Float32Array,
-    color = Color.RGB,
-    order = Order.HWC,
-    srcX = 0,
-    srcY = 0,
-    srcW = canvas.width,
-    srcH = canvas.height,
-    dstX = 0,
-    dstY = 0,
-    bias = [0, 0, 0],
-    scale = [1, 1, 1],
-  } = options;
-  const { dstW = srcW, dstH = srcH } = options;
-
-  const imageData = getImageData(canvas, {
-    srcX,
-    srcY,
-    srcW,
-    srcH,
-    dstX,
-    dstY,
-    dstW,
-    dstH,
-  });
+      type = Float32Array,
+      color = Color.RGB,
+      order = Order.HWC,
+      srcX = 0,
+      srcY = 0,
+      srcW = canvas.width,
+      srcH = canvas.height,
+      dstX = 0,
+      dstY = 0,
+      bias = [0, 0, 0],
+      scale = [1, 1, 1],
+    } = options,
+    { dstW = srcW, dstH = srcH } = options,
+    imageData = getImageData(canvas, {
+      srcX,
+      srcY,
+      srcW,
+      srcH,
+      dstX,
+      dstY,
+      dstW,
+      dstH,
+    });
   return getImageArrayFromImageData(imageData, {
     type,
     color,
@@ -328,7 +328,7 @@ export function getImageArrayFromDrawable(
   drawable: Drawable,
   options: SourceRect & DestinationRect & ImageArrayOption = {}
 ): Float32Array | Int32Array {
-  let srcW: number, srcH: number;
+  let srcH: number, srcW: number;
 
   if (drawable instanceof HTMLVideoElement) {
     srcW = drawable.videoWidth;
@@ -351,20 +351,19 @@ export function getImageArrayFromDrawable(
     );
 
   const {
-    type = Float32Array,
-    color = Color.RGB,
-    order = Order.HWC,
-    srcX = 0,
-    srcY = 0,
-    dstX = 0,
-    dstY = 0,
-    dstW = srcW,
-    dstH = srcH,
-    bias = [0, 0, 0],
-    scale = [1, 1, 1],
-  } = options;
-
-  const canvas = document.createElement("canvas");
+      type = Float32Array,
+      color = Color.RGB,
+      order = Order.HWC,
+      srcX = 0,
+      srcY = 0,
+      dstX = 0,
+      dstY = 0,
+      dstW = srcW,
+      dstH = srcH,
+      bias = [0, 0, 0],
+      scale = [1, 1, 1],
+    } = options,
+    canvas = document.createElement("canvas");
   canvas.width = dstX + dstW;
   canvas.height = dstY + dstH;
 
@@ -458,14 +457,16 @@ export async function getImageArray(
   ) {
     return getImageArrayFromDrawable(image, options);
 
-    // FIXME: This feature is not supported for all web browsers.
-    // } else if (image === null) {
-    //     return getImageArrayFromDrawable(await loadImageByDialog(), options);
-  } else
-    throw TypeError(
-      'Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
-        " HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object"
-    );
+    /*
+     * FIXME: This feature is not supported for all web browsers.
+     * } else if (image === null) {
+     *     return getImageArrayFromDrawable(await loadImageByDialog(), options);
+     */
+  }
+  throw TypeError(
+    'Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
+      " HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object"
+  );
 }
 
 function createImageData(
@@ -476,13 +477,15 @@ function createImageData(
   try {
     return new ImageData(array, width, height);
   } catch (e) {
-    // FIXME: Removing this warning causes the following error. Maybe bug in webpack?
-    // Uncaught (in promise) SyntaxError: Identifier 'n' has already been declared
+    /*
+     * FIXME: Removing this warning causes the following error. Maybe bug in webpack?
+     * Uncaught (in promise) SyntaxError: Identifier 'n' has already been declared
+     */
     console.warn(`new ImageData failed: ${e}`);
     // IE11 does not support ImageData constructor
-    const canvas_ = document.createElement("canvas");
-    const context = getContext2D(canvas_);
-    const data = context.createImageData(width, height);
+    const canvas_ = document.createElement("canvas"),
+      context = getContext2D(canvas_),
+      data = context.createImageData(width, height);
     data.data.set(array);
     return data;
   }
@@ -529,26 +532,32 @@ export function setImageArrayToCanvas(
   options: SourceRect & DestinationRect & ImageArrayOption = {}
 ): void {
   const {
-    color = Color.RGB,
-    order = Order.HWC,
-    srcX = 0,
-    srcY = 0,
-    dstX = 0,
-    dstY = 0,
-    dstW = canvas.width,
-    dstH = canvas.height,
-    bias = [0, 0, 0],
-    scale = [1, 1, 1],
-  } = options;
-  const bias_n = normalizeBiasTuple(bias);
-  const scale_n = normalizeBiasTuple(scale);
-  const srcW = imageW,
+      color = Color.RGB,
+      order = Order.HWC,
+      srcX = 0,
+      srcY = 0,
+      dstX = 0,
+      dstY = 0,
+      dstW = canvas.width,
+      dstH = canvas.height,
+      bias = [0, 0, 0],
+      scale = [1, 1, 1],
+    } = options,
+    bias_n = normalizeBiasTuple(bias),
+    scale_n = normalizeBiasTuple(scale),
+    srcW = imageW,
     srcH = imageH;
 
   array = flatten(array);
   const data = new Uint8ClampedArray(srcW * srcH * 4);
-  let biasR: number, biasG: number, biasB: number, biasA: number;
-  let scaleR: number, scaleG: number, scaleB: number, scaleA: number;
+  let biasA: number,
+    biasB: number,
+    biasG: number,
+    biasR: number,
+    scaleA: number,
+    scaleB: number,
+    scaleG: number,
+    scaleR: number;
 
   switch (color) {
     case Color.RGB:
@@ -575,7 +584,7 @@ export function setImageArrayToCanvas(
               data[(h * imageW + w) * 4 + 0] =
                 array[(0 * imageH + h) * imageW + w] * scaleR + biasR;
               data[(h * imageW + w) * 4 + 1] =
-                array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                array[(Number(imageH) + h) * imageW + w] * scaleG + biasG;
               data[(h * imageW + w) * 4 + 2] =
                 array[(2 * imageH + h) * imageW + w] * scaleB + biasB;
               data[(h * imageW + w) * 4 + 3] = 255;
@@ -609,7 +618,7 @@ export function setImageArrayToCanvas(
               data[(h * imageW + w) * 4 + 0] =
                 array[(2 * imageH + h) * imageW + w] * scaleR + biasR;
               data[(h * imageW + w) * 4 + 1] =
-                array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                array[(Number(imageH) + h) * imageW + w] * scaleG + biasG;
               data[(h * imageW + w) * 4 + 2] =
                 array[(0 * imageH + h) * imageW + w] * scaleB + biasB;
               data[(h * imageW + w) * 4 + 3] = 255;
@@ -644,7 +653,7 @@ export function setImageArrayToCanvas(
               data[(h * imageW + w) * 4 + 0] =
                 array[(0 * imageH + h) * imageW + w] * scaleR + biasR;
               data[(h * imageW + w) * 4 + 1] =
-                array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                array[(Number(imageH) + h) * imageW + w] * scaleG + biasG;
               data[(h * imageW + w) * 4 + 2] =
                 array[(2 * imageH + h) * imageW + w] * scaleB + biasB;
               data[(h * imageW + w) * 4 + 3] =
@@ -680,7 +689,7 @@ export function setImageArrayToCanvas(
               data[(h * imageW + w) * 4 + 0] =
                 array[(2 * imageH + h) * imageW + w] * scaleR + biasR;
               data[(h * imageW + w) * 4 + 1] =
-                array[(1 * imageH + h) * imageW + w] * scaleG + biasG;
+                array[(Number(imageH) + h) * imageW + w] * scaleG + biasG;
               data[(h * imageW + w) * 4 + 2] =
                 array[(0 * imageH + h) * imageW + w] * scaleB + biasB;
               data[(h * imageW + w) * 4 + 3] =

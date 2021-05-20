@@ -6,13 +6,16 @@ import { BackendContext } from "../interface/core/backendContext";
 
 export abstract class OperatorImpl implements Operator {
   constructor(public backend: Backend) {}
+
   abstract run(
     context: BackendContext,
     inputs: TensorImpl[],
     nOutputs: number
   ): Promise<TensorImpl[]>;
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
   initialize(attribute: onnx.IAttributeProto[]): void {}
+
   getTensorBackendRequirement(
     nInputs: number,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

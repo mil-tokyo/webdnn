@@ -1,10 +1,10 @@
 import { DataArrayTypes, DataType } from "../../interface/core/constants";
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
   shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../operators/webgl/shaderHelper";
 import { TensorImpl } from "../../core/tensorImpl";
@@ -14,9 +14,13 @@ import { WebGLUniformItem } from "../../interface/backend/webgl/webglContext";
 
 export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   textureWidth: number;
+
   textureHeight: number;
+
   sharedTexture: WebGLSharedTexture;
+
   private isBoundToDrawFrameBuffer = false;
+
   private readTextureUnitIndices: number[] = [];
 
   constructor(
@@ -67,7 +71,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   }
 
   async getData(): Promise<DataArrayTypes> {
-    const gl = this.context.gl;
+    const { gl } = this.context;
     let data: Float32Array;
 
     if (
@@ -115,7 +119,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   }
 
   async setData(data: DataArrayTypes): Promise<void> {
-    const gl = this.context.gl;
+    const { gl } = this.context;
     this.bindToReadTexture(9);
     if (this.context.isWebGL2(gl)) {
       const buf = new Float32Array(
@@ -129,7 +133,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         0,
         this.textureWidth,
         this.textureHeight,
-        this.dimPerPixel ? gl.RED : gl.RGBA,
+        this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
         gl.FLOAT,
         buf
       );
@@ -163,7 +167,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           "You may forgot to unbind the binding while previous operations."
       );
 
-    const gl = this.context.gl;
+    const { gl } = this.context;
 
     gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, this.getTexture());
@@ -172,7 +176,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   }
 
   unbindFromReadTexture(): void {
-    const gl = this.context.gl;
+    const { gl } = this.context;
 
     for (const unit of this.readTextureUnitIndices) {
       gl.activeTexture(gl.TEXTURE0 + unit);
@@ -194,7 +198,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           "You may forgot to unbind the binding while previous operations."
       );
 
-    const gl = this.context.gl;
+    const { gl } = this.context;
     gl.viewport(0, 0, this.textureWidth, this.textureHeight);
     gl.scissor(0, 0, this.textureWidth, this.textureHeight);
 
@@ -212,7 +216,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   unbindFromDrawTexture(): void {
     if (!this.isBoundToDrawFrameBuffer) return;
 
-    const gl = this.context.gl;
+    const { gl } = this.context;
 
     gl.framebufferTexture2D(
       gl.FRAMEBUFFER,
@@ -227,15 +231,14 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
 
   private async packToRGBA(): Promise<WebGLTensorImpl> {
     const outputTensor = new WebGLTensorImpl(
-      this.context,
-      this.dims,
-      "float32",
-      4
-    );
-    const inputPixels = this.length;
-    const outputPixels = Math.ceil(outputTensor.length / 4);
-
-    const kernelName = "RToRGBA";
+        this.context,
+        this.dims,
+        "float32",
+        4
+      ),
+      inputPixels = this.length,
+      outputPixels = Math.ceil(outputTensor.length / 4),
+      kernelName = "RToRGBA";
     if (!this.context.hasKernel(kernelName)) {
       const kernelSource = `${shaderGenHeader(this.context.webgl2)}
   

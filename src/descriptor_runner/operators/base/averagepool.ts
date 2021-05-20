@@ -3,13 +3,17 @@ import { Backend } from "../../interface/core/constants";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrInt, getAttrInts } from "../operatorUtil";
 
-// version 11
+// Version 11
 export abstract class AveragePool extends OperatorImpl {
   ceilMode!: boolean;
+
   countIncludePad!: boolean;
-  kernelShape!: number[]; //[y, x]
+
+  kernelShape!: number[]; // [y, x]
+
   pads!: number[]; // [y_begin, x_begin, y_end, x_end]
-  strides!: number[]; //[y, x]
+
+  strides!: number[]; // [y, x]
 
   constructor(backend: Backend) {
     super(backend);
@@ -25,12 +29,11 @@ export abstract class AveragePool extends OperatorImpl {
   }
 
   protected calcShape(dimsX: ReadonlyArray<number>) {
-    const batch = dimsX[0];
-    const kernelShape = this.kernelShape;
-    const pads = this.pads.length > 0 ? this.pads : [0, 0, 0, 0];
-    const strides = this.strides.length > 0 ? this.strides : [1, 1];
-
-    const inShape = [dimsX[2], dimsX[3]];
+    const batch = dimsX[0],
+      { kernelShape } = this,
+      pads = this.pads.length > 0 ? this.pads : [0, 0, 0, 0],
+      strides = this.strides.length > 0 ? this.strides : [1, 1],
+      inShape = [dimsX[2], dimsX[3]];
     let outShape: number[];
     if (this.ceilMode) {
       outShape = [

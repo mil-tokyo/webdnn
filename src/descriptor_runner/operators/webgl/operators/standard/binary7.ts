@@ -26,26 +26,27 @@ export class WebGLBinary7 extends OperatorImpl {
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
+    const inputA = inputs[0],
+      inputB = inputs[1];
     if (inputA.dataType !== "float32" || inputB.dataType !== "float32") {
       throw new Error();
     }
-    // elementwiseのアクセスにおいてテクスチャサイズが同じであることを仮定
+    // Elementwiseのアクセスにおいてテクスチャサイズが同じであることを仮定
     if (inputA.dimPerPixel !== 1 || inputB.dimPerPixel !== 1) {
       throw new Error();
     }
 
     const { dims: outShape, allStrides: inAllStrides } = broadcastMulti([
-      inputA.dims,
-      inputB.dims,
-    ]);
-
-    const outputTensor = context.emptyTensor(outShape, "float32");
-    // gl_FragCoord.x: 0.5, 1.5, 2.5, ..., textureWidth-0.5
-    // texture2D(textureName, vec2(x, y)): x=(0.5, 1.5, 2.5, ...) / textureWidth
-    const outNdim = outShape.length;
-    const kernelName = `${this.kernelName}_${outNdim}`;
+        inputA.dims,
+        inputB.dims,
+      ]),
+      outputTensor = context.emptyTensor(outShape, "float32"),
+      /*
+       * Gl_FragCoord.x: 0.5, 1.5, 2.5, ..., textureWidth-0.5
+       * Texture2D(textureName, vec2(x, y)): x=(0.5, 1.5, 2.5, ...) / textureWidth
+       */
+      outNdim = outShape.length,
+      kernelName = `${this.kernelName}_${outNdim}`;
     if (!context.hasKernel(kernelName)) {
       let idxs: string;
       switch (outNdim) {
@@ -145,7 +146,7 @@ export function getOpEntries(): OperatorEntry[] {
       opsetMin: 7,
       factory: () => new WebGLBinary7("div", "float v = sa / sb;"),
     },
-    // pow(-1.1, 2) is error in GLSL, but useful in normalization algorithm
+    // Pow(-1.1, 2) is error in GLSL, but useful in normalization algorithm
     {
       opType: "Pow",
       backend: "webgl",

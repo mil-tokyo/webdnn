@@ -12,36 +12,36 @@ class WebGPUConv extends Conv {
 
   async run(context: WebDNNWebGPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGPUTensorArray(inputs);
-    const inputX = inputs[0];
-    const inputW = inputs[1];
-    const inputB = inputs[2];
+    const inputX = inputs[0],
+      inputW = inputs[1],
+      inputB = inputs[2];
     // TODO: 2D以外対応
     if (inputX.ndim !== 4) {
       throw new Error("Conv other than 2D is not yet supported");
     }
     const {
-      batch,
-      dilations,
-      group,
-      kernelShape,
-      pads,
-      strides,
-      inShape,
-      outShape,
-      chIn,
-      chInPerGroup,
-      chOut,
-      chOutPerGroup,
-    } = this.calcShape(inputX.dims, inputW.dims);
-    const im2colData = context.emptyTensor([
-      group *
-        batch *
-        outShape[0] *
-        outShape[1] *
-        chInPerGroup *
-        kernelShape[0] *
-        kernelShape[1],
-    ]);
+        batch,
+        dilations,
+        group,
+        kernelShape,
+        pads,
+        strides,
+        inShape,
+        outShape,
+        chIn,
+        chInPerGroup,
+        chOut,
+        chOutPerGroup,
+      } = this.calcShape(inputX.dims, inputW.dims),
+      im2colData = context.emptyTensor([
+        group *
+          batch *
+          outShape[0] *
+          outShape[1] *
+          chInPerGroup *
+          kernelShape[0] *
+          kernelShape[1],
+      ]);
     await this.im2col(
       context,
       inputX,

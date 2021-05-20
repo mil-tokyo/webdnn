@@ -1,10 +1,10 @@
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
-  shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenOutput,
+  shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
 import { MatMul } from "../../../base/matmul";
@@ -16,7 +16,7 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { WebGLTensor } from "../../../../interface/backend/webgl/webglTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// version 13
+// Version 13
 export class WebGLMatMul extends MatMul {
   constructor() {
     super("webgl");
@@ -24,8 +24,8 @@ export class WebGLMatMul extends MatMul {
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const inputA = inputs[0];
-    const inputB = inputs[1];
+    const inputA = inputs[0],
+      inputB = inputs[1];
     if (inputA.dataType !== "float32" || inputB.dataType !== "float32") {
       throw new Error("only float32 is supported");
     }
@@ -33,15 +33,15 @@ export class WebGLMatMul extends MatMul {
       throw new Error();
     }
     const {
-      resultLength,
-      resultDims,
-      resultStrides,
-      resultDimsAfterSqueeze,
-      stridesA,
-      stridesB,
-      innerProductLength,
-    } = this.calcShape(inputA.dims, inputB.dims);
-    const output = context.emptyTensor(resultDimsAfterSqueeze, "float32", 1);
+        resultLength,
+        resultDims,
+        resultStrides,
+        resultDimsAfterSqueeze,
+        stridesA,
+        stridesB,
+        innerProductLength,
+      } = this.calcShape(inputA.dims, inputB.dims),
+      output = context.emptyTensor(resultDimsAfterSqueeze, "float32", 1);
     if (resultDims.length === 2) {
       await this.calcDim2(
         context,
@@ -102,8 +102,8 @@ void main() {
   ${shaderGenOutput("s", context.webgl2)}
   return;
 }
-`;
-    const kernelName = `matmul_2_${innerProductLength}`;
+`,
+      kernelName = `matmul_2_${innerProductLength}`;
     context.addKernel(kernelName, kernelSource);
 
     const uniforms: WebGLUniformItem[] = [
@@ -160,8 +160,8 @@ void main() {
   ${shaderGenOutput("s", context.webgl2)}
   return;
 }
-`;
-    const kernelName = `matmul_3_${innerProductLength}`;
+`,
+      kernelName = `matmul_3_${innerProductLength}`;
     context.addKernel(kernelName, kernelSource);
 
     const uniforms: WebGLUniformItem[] = [

@@ -3,7 +3,7 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
 import { MaxPool } from "../../../base/maxpool";
 
-// version 11
+// Version 11
 class CpuMaxPool extends MaxPool {
   constructor() {
     super("cpu");
@@ -25,16 +25,16 @@ class CpuMaxPool extends MaxPool {
       throw new Error("MaxPool other than 2D is not yet supported");
     }
     const {
-      batch,
-      dilations,
-      kernelShape,
-      pads,
-      strides,
-      inShape,
-      outShape,
-      ch,
-    } = this.calcShape(inputX.dims);
-    const outputData = new Float32Array(batch * outShape[0] * outShape[1] * ch);
+        batch,
+        dilations,
+        kernelShape,
+        pads,
+        strides,
+        inShape,
+        outShape,
+        ch,
+      } = this.calcShape(inputX.dims),
+      outputData = new Float32Array(batch * outShape[0] * outShape[1] * ch);
     this.maxpool(
       inputX.data as Float32Array,
       outputData,
@@ -68,14 +68,15 @@ class CpuMaxPool extends MaxPool {
     ch: number
   ): void {
     /*
-      batch,
-      dilations,
-      kernelShape,
-      pads,
-      strides,
-      inShape,
-      outShape,
-      ch, */
+     *Batch,
+     *dilations,
+     *kernelShape,
+     *pads,
+     *strides,
+     *inShape,
+     *outShape,
+     *ch,
+     */
     let idx = 0;
     for (let b = 0; b < batch; b++) {
       for (let c = 0; c < ch; c++) {
@@ -84,8 +85,8 @@ class CpuMaxPool extends MaxPool {
             let mv = -Infinity;
             for (let ky = 0; ky < kernelShape[0]; ky++) {
               for (let kx = 0; kx < kernelShape[1]; kx++) {
-                const iny = oy * strides[0] - pads[0] + ky * dilations[0];
-                const inx = ox * strides[1] - pads[1] + kx * dilations[1];
+                const iny = oy * strides[0] - pads[0] + ky * dilations[0],
+                  inx = ox * strides[1] - pads[1] + kx * dilations[1];
                 if (
                   iny >= 0 &&
                   iny < inShape[0] &&
@@ -93,11 +94,11 @@ class CpuMaxPool extends MaxPool {
                   inx < inShape[1]
                 ) {
                   const xidx =
-                    ((b * ch + c) * inShape[0] + iny) * inShape[1] + inx;
-                  const v = dX[xidx];
+                      ((b * ch + c) * inShape[0] + iny) * inShape[1] + inx,
+                    v = dX[xidx];
                   if (v > mv) {
                     mv = v;
-                    // max position: xidxを出力
+                    // Max position: xidxを出力
                   }
                 }
               }

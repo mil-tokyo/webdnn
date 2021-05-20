@@ -26,7 +26,10 @@ export interface WebDNNWebGLContext extends BackendContext {
     dataType?: DataType,
     dimPerPixel?: 1 | 4
   ): WebGLTensor;
-  moveTensor(tensor: Tensor): Promise<WebGLTensor>;
+  moveTensor(
+    tensor: Tensor,
+    option: { dimPerPixel?: 1 | 4 }
+  ): Promise<WebGLTensor>;
   addKernel(name: string, sourceCode: string): void;
   hasKernel(name: string): boolean;
   runKernel(

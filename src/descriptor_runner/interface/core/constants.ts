@@ -1,4 +1,11 @@
-export type Backend = "cpu" | "webgl" | "wasm" | "webgpu";
+export type BackendWithoutCPU = "webgl" | "wasm" | "webgpu";
+export type Backend = "cpu" | BackendWithoutCPU;
+export const backendsWithoutCPU: BackendWithoutCPU[] = [
+  "wasm",
+  "webgl",
+  "webgpu",
+];
+export const backends: Backend[] = ["cpu", "wasm", "webgl", "webgpu"];
 export type DataType = "float32" | "int32" | "bool";
 export const DataArrayConstructor = {
   float32: Float32Array,

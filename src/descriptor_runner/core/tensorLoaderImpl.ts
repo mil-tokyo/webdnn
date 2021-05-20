@@ -7,9 +7,9 @@ import { arrayProd, arraySum } from "../util";
 import { decodeTensorEightbit } from "./tensorDecoder/decodeTensorEightbit";
 import { decodeTensorRaw } from "./tensorDecoder/decodeTensorRaw";
 
-const signatureFile = 843990103; //"WDN2"
-const signatureTensor = 1397638484; //"TENS"
-const signautreClose = 1397705795; //"CLOS"
+const signatureFile = 843990103, // "WDN2"
+  signatureTensor = 1397638484, // "TENS"
+  signautreClose = 1397705795; // "CLOS"
 
 export class TensorLoaderImpl implements TensorLoader {
   paths: string[];
@@ -24,12 +24,12 @@ export class TensorLoaderImpl implements TensorLoader {
 
   async loadAll(): Promise<Map<string, CPUTensor>> {
     // TODO: progress
-    const fileArray = await this.fetchAllFile();
-    const view = new DataView(
-      fileArray.buffer,
-      fileArray.byteOffset,
-      fileArray.byteLength
-    );
+    const fileArray = await this.fetchAllFile(),
+      view = new DataView(
+        fileArray.buffer,
+        fileArray.byteOffset,
+        fileArray.byteLength
+      );
     if (signatureFile !== view.getUint32(0, true)) {
       throw new Error("Unexpected file signature");
     }
@@ -61,12 +61,12 @@ export class TensorLoaderImpl implements TensorLoader {
   private async fetchAllFile(): Promise<Uint8Array> {
     const abs: ArrayBuffer[] = [];
     for (const path of this.paths) {
-      const f = await fetch(path);
-      const ab = await f.arrayBuffer();
+      const f = await fetch(path),
+        ab = await f.arrayBuffer();
       abs.push(ab);
     }
-    const totalLength = arraySum(abs.map((ab) => ab.byteLength));
-    const concatArray = new Uint8Array(totalLength);
+    const totalLength = arraySum(abs.map((ab) => ab.byteLength)),
+      concatArray = new Uint8Array(totalLength);
     let ofs = 0;
     for (const ab of abs) {
       const src = new Uint8Array(ab);
@@ -90,9 +90,9 @@ export class TensorLoaderImpl implements TensorLoader {
     if (view.byteLength < 8) {
       throw new Error("Unexpected EOF");
     }
-    const signature = view.getUint32(0, true);
-    const bodyByteLength = view.getUint32(4, true);
-    const bodyByteOffset = byteOffset + 8;
+    const signature = view.getUint32(0, true),
+      bodyByteLength = view.getUint32(4, true),
+      bodyByteOffset = byteOffset + 8;
     if (view.byteLength < 8 + bodyByteLength) {
       throw new Error("Unexpected EOF");
     }
@@ -121,14 +121,14 @@ export class TensorLoaderImpl implements TensorLoader {
       dims.push(view.getUint32(ofs, true));
       ofs += 4;
     }
-    const numel = arrayProd(dims);
-    const nameLength = view.getUint32(ofs, true);
+    const numel = arrayProd(dims),
+      nameLength = view.getUint32(ofs, true);
     ofs += 4;
     const name = this.parseString(buf, bodyByteOffset + ofs, nameLength);
     ofs += nameLength;
     const extraLength = view.getUint32(ofs, true);
     ofs += 4;
-    // skip extra data
+    // Skip extra data
     ofs += extraLength;
 
     const data = this.parseTensorBody(

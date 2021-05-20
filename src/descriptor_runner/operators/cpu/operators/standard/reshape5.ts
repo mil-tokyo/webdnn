@@ -18,15 +18,10 @@ class CPUReshape5 extends Reshape5 {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0];
-    const shapeTensor = inputs[1];
-    const computedShape = this.calcShape(input, shapeTensor);
-
-    const output = context.emptyTensor(
-      computedShape,
-      input.dataType,
-      input.data
-    );
+    const input = inputs[0],
+      shapeTensor = inputs[1],
+      computedShape = this.calcShape(input, shapeTensor),
+      output = context.emptyTensor(computedShape, input.dataType, input.data);
     return [output];
   }
 }

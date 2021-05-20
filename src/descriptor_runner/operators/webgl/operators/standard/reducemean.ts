@@ -7,24 +7,26 @@ import {
 import { Tensor } from "../../../../interface/core/tensor";
 import { getAttrInt, getAttrInts } from "../../../operatorUtil";
 import {
+  shaderGenHeader,
   shaderGenOutput,
   shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
   shaderGenTensorOutputCoordsWithReturn,
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
-  shaderGenHeader,
 } from "../../shaderHelper";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 1
+// Opset 1
 export class ReduceMean extends OperatorImpl {
   axes!: number[];
+
   keepdims!: boolean;
 
   constructor() {
     super("webgl");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.axes = getAttrInts(attribute, "axes", []);
@@ -47,17 +49,17 @@ export class ReduceMean extends OperatorImpl {
       );
     }
     // 最終軸のreductionに特化した実装
-    const reductionLength = input.dims[axis];
-    const outerLength = input.length / reductionLength;
-    const outShape = input.dims.slice();
+    const reductionLength = input.dims[axis],
+      outerLength = input.length / reductionLength,
+      outShape = input.dims.slice();
     if (this.keepdims) {
       outShape[axis] = 1;
     } else {
       outShape.pop();
     }
-    const output = context.emptyTensor(outShape, input.dataType);
-    const kernelName = `reducemean_${reductionLength}`;
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const output = context.emptyTensor(outShape, input.dataType),
+      kernelName = `reducemean_${reductionLength}`,
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define reductionLength ${reductionLength}
 #define reductionMul ${1 / reductionLength}

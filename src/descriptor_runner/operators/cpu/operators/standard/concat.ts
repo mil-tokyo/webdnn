@@ -7,11 +7,12 @@ import { CPUTensor } from "../../../../interface/backend/cpu/cpuTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
 class Concat extends OperatorImpl {
-  axis!: number; //負の場合は後ろから
+  axis!: number; // 負の場合は後ろから
 
   constructor() {
     super("cpu");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.axis = getAttrInt(attribute, "axis", 0);
@@ -26,11 +27,11 @@ class Concat extends OperatorImpl {
     const inTensors: [CPUTensor, number, number, number, number, number][] = [];
     let axisLength = 0;
     for (let i = 0; i < inputs.length; i++) {
-      const it = inputs[i];
-      const dim = it.dims[axis];
-      const outerStride = it.strides[Math.max(axis - 1, 0)];
-      const concatStride = it.strides[axis];
-      const innerStride = 1;
+      const it = inputs[i],
+        dim = it.dims[axis],
+        outerStride = it.strides[Math.max(axis - 1, 0)],
+        concatStride = it.strides[axis],
+        innerStride = 1;
       inTensors.push([
         it,
         axisLength,
@@ -43,12 +44,12 @@ class Concat extends OperatorImpl {
     }
     const outputShape = inputs[0].dims.slice();
     outputShape[axis] = axisLength;
-    const outerLength = arrayProd(inputs[0].dims.slice(0, axis));
-    const innerLength = arrayProd(inputs[0].dims.slice(axis + 1));
-    const output = context.emptyTensor(outputShape, inputs[0].dataType);
-    const outOuterStride = output.strides[Math.max(axis - 1, 0)];
-    const outConcatStride = output.strides[axis];
-    const outInnerStride = 1;
+    const outerLength = arrayProd(inputs[0].dims.slice(0, axis)),
+      innerLength = arrayProd(inputs[0].dims.slice(axis + 1)),
+      output = context.emptyTensor(outputShape, inputs[0].dataType),
+      outOuterStride = output.strides[Math.max(axis - 1, 0)],
+      outConcatStride = output.strides[axis],
+      outInnerStride = 1;
     for (const [
       it,
       itAxisOffset,

@@ -25,7 +25,7 @@ export enum Color {
   /** BGR format */
   BGR,
 
-  /** grey scale */
+  /** Grey scale */
   GREY,
 
   /** RGBA format */

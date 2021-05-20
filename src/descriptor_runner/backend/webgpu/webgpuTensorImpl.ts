@@ -5,8 +5,11 @@ import { WebGPUTensor } from "../../interface/backend/webgpu/webgpuTensor";
 
 export class WebGPUTensorImpl extends TensorImpl implements WebGPUTensor {
   buffer: GPUBuffer;
+
   private mappedForWriteFromCPU: boolean;
-  bufferSize: number; //unit: byte
+
+  bufferSize: number; // Unit: byte
+
   constructor(
     private context: WebDNNWebGPUContextImpl,
     dims: ReadonlyArray<number>,
@@ -36,18 +39,17 @@ export class WebGPUTensorImpl extends TensorImpl implements WebGPUTensor {
   }
 
   async getData(): Promise<DataArrayTypes> {
-    const data: Float32Array = new Float32Array(this.length);
-
-    const dst = this.context.device.createBuffer({
-      size: this.bufferSize,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    });
-    const commandEncoder = this.context.device.createCommandEncoder();
+    const data: Float32Array = new Float32Array(this.length),
+      dst = this.context.device.createBuffer({
+        size: this.bufferSize,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+      }),
+      commandEncoder = this.context.device.createCommandEncoder();
     commandEncoder.copyBufferToBuffer(this.buffer, 0, dst, 0, this.bufferSize);
     this.context.device.queue.submit([commandEncoder.finish()]);
     await dst.mapAsync(GPUMapMode.READ);
-    const arrayBuffer = dst.getMappedRange();
-    const buffer_mapped_array = new Float32Array(arrayBuffer, 0, this.length);
+    const arrayBuffer = dst.getMappedRange(),
+      buffer_mapped_array = new Float32Array(arrayBuffer, 0, this.length);
     data.set(buffer_mapped_array);
     dst.unmap();
     dst.destroy();
@@ -58,8 +60,8 @@ export class WebGPUTensorImpl extends TensorImpl implements WebGPUTensor {
     if (!this.mappedForWriteFromCPU) {
       throw new Error("The buffer is not mapped");
     }
-    const ab = this.buffer.getMappedRange();
-    const mappedArray = new Float32Array(ab);
+    const ab = this.buffer.getMappedRange(),
+      mappedArray = new Float32Array(ab);
     mappedArray.set(data);
     this.buffer.unmap();
     this.mappedForWriteFromCPU = false;

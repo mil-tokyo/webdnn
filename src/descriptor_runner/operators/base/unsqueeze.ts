@@ -3,8 +3,10 @@ import { OperatorImpl } from "../operatorImpl";
 import { getAttrInts } from "../operatorUtil";
 import { Tensor } from "../../interface/core/tensor";
 
-// opset 1
-// opset 11以降はaxesがinputとして与えられるため非互換(また、負の軸も許容)
+/*
+ * Opset 1
+ * opset 11以降はaxesがinputとして与えられるため非互換(また、負の軸も許容)
+ */
 export abstract class Unsqueeze extends OperatorImpl {
   axes!: number[];
 

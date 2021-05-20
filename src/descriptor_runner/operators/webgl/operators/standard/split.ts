@@ -1,10 +1,10 @@
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
-  shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenOutput,
+  shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
 import { Split } from "../../../base/split";
@@ -16,8 +16,10 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { WebGLTensor } from "../../../../interface/backend/webgl/webglTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 2
-// opset 11では区間指定がinputなので互換性なし
+/*
+ * Opset 2
+ * opset 11では区間指定がinputなので互換性なし
+ */
 export class WebGLSplit extends Split {
   constructor() {
     super("webgl");
@@ -29,17 +31,17 @@ export class WebGLSplit extends Split {
     nOutputs: number
   ): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const input = inputs[0];
-    const {
-      eachOutputParams,
-      outerLength,
-      innerLength,
-      inOuterStride,
-      inConcatStride,
-    } = this.calcShape(input, nOutputs);
-    const outputs: WebGLTensor[] = [];
-    const kernelName = "split";
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const input = inputs[0],
+      {
+        eachOutputParams,
+        outerLength,
+        innerLength,
+        inOuterStride,
+        inConcatStride,
+      } = this.calcShape(input, nOutputs),
+      outputs: WebGLTensor[] = [],
+      kernelName = "split",
+      kernelSource = `${shaderGenHeader(context.webgl2)}
 
 ${shaderGenTensorOutputUniform(3)}
 uniform int offset;
@@ -55,22 +57,22 @@ void main() {
 `;
     context.addKernel(kernelName, kernelSource);
     for (let i = 0; i < nOutputs; i++) {
-      const { dim, offset, outShape } = eachOutputParams[i];
-      const ot = context.emptyTensor(outShape, input.dataType);
-      const uniforms: WebGLUniformItem[] = [
-        ...shaderGenTensorNDGetUniformItem(
-          "tex_input",
-          [inOuterStride, inConcatStride, 1],
-          input,
-          context.webgl2
-        ),
-        ...shaderGenTensorOutputUniformItem(
-          [outerLength, dim, innerLength],
-          ot,
-          context.webgl2
-        ),
-        { name: "offset", type: "int", value: offset },
-      ];
+      const { dim, offset, outShape } = eachOutputParams[i],
+        ot = context.emptyTensor(outShape, input.dataType),
+        uniforms: WebGLUniformItem[] = [
+          ...shaderGenTensorNDGetUniformItem(
+            "tex_input",
+            [inOuterStride, inConcatStride, 1],
+            input,
+            context.webgl2
+          ),
+          ...shaderGenTensorOutputUniformItem(
+            [outerLength, dim, innerLength],
+            ot,
+            context.webgl2
+          ),
+          { name: "offset", type: "int", value: offset },
+        ];
       await context.runKernel(
         kernelName,
         [{ tensor: input, name: "tex_input" }],

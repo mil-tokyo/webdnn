@@ -77,8 +77,8 @@ export function getAttrTensor(
     throw new Error(`Attribute ${name} is not int`);
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const dims = intOrLongToIntVector(v.dims!);
-  const rawData = v.rawData;
+  const dims = intOrLongToIntVector(v.dims!),
+    { rawData } = v;
   if (!rawData) {
     throw new Error(`rawData in TensorProto is empty`);
   }
@@ -96,11 +96,11 @@ export function getAttrTensor(
     case onnx.TensorProto.DataType.INT64: {
       // 1要素が8byte (int64)
       const view = new DataView(
-        rawData.buffer,
-        rawData.byteOffset,
-        rawData.byteLength
-      );
-      const ab = new Int32Array(view.byteLength / 8);
+          rawData.buffer,
+          rawData.byteOffset,
+          rawData.byteLength
+        ),
+        ab = new Int32Array(view.byteLength / 8);
       for (let idx = 0; idx < ab.length; idx++) {
         ab[idx] = clipLong(
           new Long(
@@ -163,23 +163,25 @@ export function broadcastUni(
   dimsA: ReadonlyArray<number>,
   dimsB: ReadonlyArray<number>
 ): number[] {
-  // 行列Bを行列Aのshapeに合うようにbroadcast
-  // 行列Bのstridesを返す
+  /*
+   * 行列Bを行列Aのshapeに合うようにbroadcast
+   * 行列Bのstridesを返す
+   */
 
   if (dimsA.length < dimsB.length) {
     throw new Error(`Unidirectional broadcast error: ${dimsA}, ${dimsB}`);
   }
-  // step1 次元数が合うように先頭に1を付加
+  // Step1 次元数が合うように先頭に1を付加
   const expandedDimsB = dimsB.slice();
   while (expandedDimsB.length < dimsA.length) {
     expandedDimsB.unshift(1);
   }
   const stridesB = calcStrides(expandedDimsB);
-  // step2 行列Bの次元サイズが1の箇所はstrideを0にする
+  // Step2 行列Bの次元サイズが1の箇所はstrideを0にする
   for (let i = 0; i < dimsA.length; i++) {
     if (dimsA[i] !== expandedDimsB[i]) {
       if (expandedDimsB[i] === 1) {
-        // broadcast
+        // Broadcast
         stridesB[i] = 0;
       } else {
         throw new Error(`Unidirectional broadcast error: ${dimsA}, ${dimsB}`);
@@ -195,20 +197,20 @@ export function broadcastMulti(allDims: ReadonlyArray<number>[]): {
   allStrides: number[][];
 } {
   // 全行列をbroadcast
-  const expandedNdims = Math.max(...allDims.map((dims) => dims.length));
-  // step1 次元数が合うように先頭に1を付加
-  const expandedAllDims = allDims.map((dims) => {
-    const expandedDims = dims.slice();
-    while (expandedDims.length < expandedNdims) {
-      expandedDims.unshift(1);
-    }
-    return expandedDims;
-  });
-  const expandedDims: number[] = [];
+  const expandedNdims = Math.max(...allDims.map((dims) => dims.length)),
+    // Step1 次元数が合うように先頭に1を付加
+    expandedAllDims = allDims.map((dims) => {
+      const expandedDims = dims.slice();
+      while (expandedDims.length < expandedNdims) {
+        expandedDims.unshift(1);
+      }
+      return expandedDims;
+    }),
+    expandedDims: number[] = [];
   for (let i = 0; i < expandedNdims; i++) {
     expandedDims.push(Math.max(...expandedAllDims.map((ad) => ad[i])));
   }
-  // step2 行列の次元サイズが1の箇所はstrideを0にする
+  // Step2 行列の次元サイズが1の箇所はstrideを0にする
   const allStrides = expandedAllDims.map((dims) => {
     const strides = calcStrides(dims);
     for (let i = 0; i < expandedNdims; i++) {

@@ -4,7 +4,7 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { averagepool } from "../../rawcomputation/averagepool";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// version 11
+// Version 11
 export class WebGLGlobalAveragePool extends OperatorImpl {
   constructor() {
     super("webgl");
@@ -21,20 +21,20 @@ export class WebGLGlobalAveragePool extends OperatorImpl {
       throw new Error();
     }
 
-    const batch = inputX.dims[0];
-    const ch = inputX.dims[1];
-    const inShape = [inputX.dims[2], inputX.dims[3]];
-    const outShape = [1, 1];
-    const output = context.emptyTensor(
-      [batch, ch, outShape[0], outShape[1]],
-      "float32",
-      1
-    );
+    const batch = inputX.dims[0],
+      ch = inputX.dims[1],
+      inShape = [inputX.dims[2], inputX.dims[3]],
+      outShape = [1, 1],
+      output = context.emptyTensor(
+        [batch, ch, outShape[0], outShape[1]],
+        "float32",
+        1
+      );
     await averagepool(
       context,
       inputX,
       output,
-      true, //わずかに計算量が減る
+      true, // わずかに計算量が減る
       batch,
       inShape,
       [0, 0, 0, 0],

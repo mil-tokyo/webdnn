@@ -1,10 +1,10 @@
 import {
   shaderGenHeader,
-  shaderGenTensorOutputUniform,
-  shaderGenTensorNDGet,
-  shaderGenTensorOutputCoordsWithReturn,
   shaderGenOutput,
+  shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
+  shaderGenTensorOutputCoordsWithReturn,
+  shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
 import { Transpose } from "../../../base/transpose";
@@ -15,7 +15,7 @@ import {
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// version 11
+// Version 11
 export class WebGLTranspose extends Transpose {
   constructor() {
     super("webgl");
@@ -30,10 +30,9 @@ export class WebGLTranspose extends Transpose {
     if (input.dimPerPixel !== 1) {
       throw new Error();
     }
-    const { outShape, inStrides } = this.calcShape(input);
-
-    const output = context.emptyTensor(outShape, "float32", 1);
-    const kernelName = `transpose_${outShape.length}`;
+    const { outShape, inStrides } = this.calcShape(input),
+      output = context.emptyTensor(outShape, "float32", 1),
+      kernelName = `transpose_${outShape.length}`;
     let tex_input_idxs: string;
     switch (inStrides.length) {
       case 0:

@@ -3,7 +3,7 @@ import { OperatorImpl } from "../operatorImpl";
 import { Tensor } from "../../interface/core/tensor";
 import { getAttrInts } from "../operatorUtil";
 
-// opset 1 (13はdifferentiableがついただけ)
+// Opset 1 (13はdifferentiableがついただけ)
 export abstract class Transpose extends OperatorImpl {
   perm!: number[];
 
@@ -16,7 +16,7 @@ export abstract class Transpose extends OperatorImpl {
     outShape: number[];
     inStrides: number[];
   } {
-    // default perm: [ndim-1, ndim-2, ..., 0]
+    // Default perm: [ndim-1, ndim-2, ..., 0]
     const perm =
       this.perm.length > 0
         ? this.perm
@@ -24,8 +24,8 @@ export abstract class Transpose extends OperatorImpl {
     if (perm.length !== input.ndim) {
       throw new Error();
     }
-    const outShape: number[] = new Array(input.ndim);
-    const inStrides: number[] = new Array(input.ndim);
+    const outShape: number[] = new Array(input.ndim),
+      inStrides: number[] = new Array(input.ndim);
     for (let outAxis = 0; outAxis < input.ndim; outAxis++) {
       const inAxis = perm[outAxis];
       outShape[outAxis] = input.dims[inAxis];

@@ -33,14 +33,14 @@ export function getImageDataFromCanvas(
   options: SourceRect & DestinationRect = {}
 ): ImageData {
   const {
-    srcX = 0,
-    srcY = 0,
-    srcW = canvas.width,
-    srcH = canvas.height,
-    dstX = 0,
-    dstY = 0,
-  } = options;
-  const { dstW = srcW, dstH = srcH } = options;
+      srcX = 0,
+      srcY = 0,
+      srcW = canvas.width,
+      srcH = canvas.height,
+      dstX = 0,
+      dstY = 0,
+    } = options,
+    { dstW = srcW, dstH = srcH } = options;
 
   let imageData = getContext2D(canvas).getImageData(srcX, srcY, srcW, srcH);
 
@@ -58,7 +58,7 @@ export function getImageDataFromDrawable(
   drawable: HTMLVideoElement | HTMLImageElement,
   options: SourceRect & DestinationRect = {}
 ): ImageData {
-  let srcW: number, srcH: number;
+  let srcH: number, srcW: number;
 
   if (drawable instanceof HTMLVideoElement) {
     srcW = drawable.videoWidth;
@@ -72,14 +72,14 @@ export function getImageDataFromDrawable(
     );
 
   const {
-    srcX = 0,
-    srcY = 0,
-    dstX = 0,
-    dstY = 0,
-    dstW = srcW,
-    dstH = srcH,
-  } = options;
-  const canvas = document.createElement("canvas");
+      srcX = 0,
+      srcY = 0,
+      dstX = 0,
+      dstY = 0,
+      dstW = srcW,
+      dstH = srcH,
+    } = options,
+    canvas = document.createElement("canvas");
   canvas.width = dstX + dstW;
   canvas.height = dstY + dstH;
 
@@ -101,16 +101,15 @@ function cropAndResizeImageData(
   options: SourceRect & DestinationRect = {}
 ) {
   const {
-    srcX = 0,
-    srcY = 0,
-    srcW = src.width,
-    srcH = src.height,
-    dstX = 0,
-    dstY = 0,
-  } = options;
-  const { dstW = srcW, dstH = srcH } = options;
-
-  const canvas1 = document.createElement("canvas");
+      srcX = 0,
+      srcY = 0,
+      srcW = src.width,
+      srcH = src.height,
+      dstX = 0,
+      dstY = 0,
+    } = options,
+    { dstW = srcW, dstH = srcH } = options,
+    canvas1 = document.createElement("canvas");
   canvas1.width = srcW;
   canvas1.height = srcH;
   const context1 = getContext2D(canvas1);
@@ -150,10 +149,10 @@ export function getImageData(
     image instanceof HTMLImageElement
   ) {
     return getImageDataFromDrawable(image, options);
-  } else
-    throw TypeError(
-      'Failed to execute "getImageData(image, options)": "image" must be an instance of HTMLCanvasElement, HTMLVideoElement, or HTMLImageElement'
-    );
+  }
+  throw TypeError(
+    'Failed to execute "getImageData(image, options)": "image" must be an instance of HTMLCanvasElement, HTMLVideoElement, or HTMLImageElement'
+  );
 }
 
 /**
@@ -165,14 +164,14 @@ export function setImageDataToCanvas(
   options: SourceRect & DestinationRect = {}
 ): void {
   const {
-    srcX = 0,
-    srcY = 0,
-    srcW = imageData.width,
-    srcH = imageData.height,
-    dstX = 0,
-    dstY = 0,
-  } = options;
-  const { dstW = srcW, dstH = srcH } = options;
+      srcX = 0,
+      srcY = 0,
+      srcW = imageData.width,
+      srcH = imageData.height,
+      dstX = 0,
+      dstY = 0,
+    } = options,
+    { dstW = srcW, dstH = srcH } = options;
 
   if (srcX !== 0 || srcY !== 0 || srcW !== dstW || srcH !== dstH) {
     imageData = cropAndResizeImageData(imageData, {

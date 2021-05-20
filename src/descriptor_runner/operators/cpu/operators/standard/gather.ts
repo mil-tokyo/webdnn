@@ -19,9 +19,9 @@ class Gather extends OperatorImpl {
 
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const data = inputs[0];
-    const indices = inputs[1];
-    const axis = this.axis;
+    const data = inputs[0],
+      indices = inputs[1],
+      { axis } = this;
     if (!(data.ndim === 1 && indices.ndim === 0 && axis === 0)) {
       throw new Error(
         "Gather: currently supports data.ndim === 1 && indices.ndim === 0 && axis === 0"

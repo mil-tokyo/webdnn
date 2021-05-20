@@ -4,7 +4,7 @@ import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// version 1, 7, 10, 11+
+// Version 1, 7, 10, 11+
 class CpuAveragePool extends AveragePool {
   constructor() {
     super("cpu");
@@ -18,8 +18,8 @@ class CpuAveragePool extends AveragePool {
       throw new Error("AveragePool other than 2D is not yet supported");
     }
     const { batch, kernelShape, pads, strides, inShape, outShape, ch } =
-      this.calcShape(inputX.dims);
-    const outputData = new Float32Array(batch * outShape[0] * outShape[1] * ch);
+        this.calcShape(inputX.dims),
+      outputData = new Float32Array(batch * outShape[0] * outShape[1] * ch);
     averagepool(
       inputX.data as Float32Array,
       outputData,

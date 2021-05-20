@@ -21,8 +21,8 @@ class CPUUnary extends OperatorImpl {
     if (!this.allowDataTypes.includes(input.dataType)) {
       throw new Error(`Unary: DataType ${input.dataType} not supported`);
     }
-    const newData = new DataArrayConstructor[input.dataType](input.data.length);
-    const op = this.op;
+    const newData = new DataArrayConstructor[input.dataType](input.data.length),
+      { op } = this;
     for (let i = 0; i < newData.length; i++) {
       newData[i] = op(input.data[i]);
     }

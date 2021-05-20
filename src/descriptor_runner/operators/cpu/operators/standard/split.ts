@@ -15,19 +15,19 @@ class CPUSplit extends Split {
     nOutputs: number
   ): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0];
-    const {
-      eachOutputParams,
-      outerLength,
-      innerLength,
-      inOuterStride,
-      inConcatStride,
-    } = this.calcShape(input, nOutputs);
-    const outputs: CPUTensor[] = [];
+    const input = inputs[0],
+      {
+        eachOutputParams,
+        outerLength,
+        innerLength,
+        inOuterStride,
+        inConcatStride,
+      } = this.calcShape(input, nOutputs),
+      outputs: CPUTensor[] = [];
     for (let i = 0; i < nOutputs; i++) {
       const { dim, offset, outShape, outerStride, splitStride } =
-        eachOutputParams[i];
-      const ot = context.emptyTensor(outShape, input.dataType);
+          eachOutputParams[i],
+        ot = context.emptyTensor(outShape, input.dataType);
       for (let c = 0; c < dim; c++) {
         for (let outer = 0; outer < outerLength; outer++) {
           for (let inner = 0; inner < innerLength; inner++) {

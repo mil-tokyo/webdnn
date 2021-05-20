@@ -5,14 +5,16 @@ import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-// opset 1
+// Opset 1
 class ReduceMean extends OperatorImpl {
   axes!: number[];
+
   keepdims!: boolean;
 
   constructor() {
     super("cpu");
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.axes = getAttrInts(attribute, "axes", []);
@@ -35,17 +37,17 @@ class ReduceMean extends OperatorImpl {
       );
     }
     // 最終軸のreductionに特化した実装
-    const reductionLength = input.dims[axis];
-    const outerLength = input.length / reductionLength;
-    const outShape = input.dims.slice();
+    const reductionLength = input.dims[axis],
+      outerLength = input.length / reductionLength,
+      outShape = input.dims.slice();
     if (this.keepdims) {
       outShape[axis] = 1;
     } else {
       outShape.pop();
     }
-    const output = context.emptyTensor(outShape, input.dataType);
-    const dI = input.data;
-    const dO = output.data;
+    const output = context.emptyTensor(outShape, input.dataType),
+      dI = input.data,
+      dO = output.data;
     for (let outer = 0; outer < outerLength; outer++) {
       let s = 0;
       for (let r = 0; r < reductionLength; r++) {

@@ -3,16 +3,20 @@ import { Backend } from "../../interface/core/constants";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrFloat, getAttrInt } from "../operatorUtil";
 
-// version 13
+// Version 13
 export abstract class Gemm extends OperatorImpl {
   alpha!: number;
+
   beta!: number;
+
   transA!: number;
+
   transB!: number;
 
   constructor(backend: Backend) {
     super(backend);
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     this.alpha = getAttrFloat(attribute, "alpha", 1.0);
@@ -22,8 +26,12 @@ export abstract class Gemm extends OperatorImpl {
   }
 
   calcShape(dimsA: ReadonlyArray<number>, dimsB: ReadonlyArray<number>) {
-    let m: number, n: number, k: number, kcheck: number;
-    let strideA: number[], strideB: number[];
+    let k: number,
+      kcheck: number,
+      m: number,
+      n: number,
+      strideA: number[],
+      strideB: number[];
     if (dimsA.length !== 2 || dimsB.length !== 2) {
       throw new Error();
     }

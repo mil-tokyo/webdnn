@@ -5,14 +5,19 @@ import { getAttrInt, getAttrInts } from "../operatorUtil";
 
 export abstract class MaxPool extends OperatorImpl {
   ceilMode!: boolean;
-  dilations!: number[]; //[y, x]
-  kernelShape!: number[]; //[y, x]
+
+  dilations!: number[]; // [y, x]
+
+  kernelShape!: number[]; // [y, x]
+
   pads!: number[]; // [y_begin, x_begin, y_end, x_end]
-  strides!: number[]; //[y, x]
+
+  strides!: number[]; // [y, x]
 
   constructor(backend: Backend) {
     super(backend);
   }
+
   initialize(attribute: onnx.IAttributeProto[]): void {
     super.initialize(attribute);
     // TODO: check auto_pad is 'NOTSET'
@@ -28,13 +33,12 @@ export abstract class MaxPool extends OperatorImpl {
   }
 
   protected calcShape(dimsX: ReadonlyArray<number>) {
-    const batch = dimsX[0];
-    const dilations = this.dilations.length > 0 ? this.dilations : [1, 1];
-    const kernelShape = this.kernelShape;
-    const pads = this.pads.length > 0 ? this.pads : [0, 0, 0, 0];
-    const strides = this.strides.length > 0 ? this.strides : [1, 1];
-
-    const inShape = [dimsX[2], dimsX[3]];
+    const batch = dimsX[0],
+      dilations = this.dilations.length > 0 ? this.dilations : [1, 1],
+      { kernelShape } = this,
+      pads = this.pads.length > 0 ? this.pads : [0, 0, 0, 0],
+      strides = this.strides.length > 0 ? this.strides : [1, 1],
+      inShape = [dimsX[2], dimsX[3]];
     let outShape: number[];
     if (this.ceilMode) {
       outShape = [

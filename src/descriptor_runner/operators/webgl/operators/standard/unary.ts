@@ -28,7 +28,7 @@ export class WebGLUnary extends OperatorImpl {
       throw new Error();
     }
     const outputTensor = context.emptyTensor(input.dims, "float32");
-    // elementwiseのアクセスにおいてテクスチャサイズが同じであることを仮定
+    // Elementwiseのアクセスにおいてテクスチャサイズが同じであることを仮定
     if (
       input.textureWidth !== outputTensor.textureWidth ||
       input.textureHeight !== outputTensor.textureHeight ||
@@ -37,8 +37,10 @@ export class WebGLUnary extends OperatorImpl {
       throw new Error();
     }
 
-    // gl_FragCoord.x: 0.5, 1.5, 2.5, ..., textureWidth-0.5
-    // texture2D(textureName, vec2(x, y)): x=(0.5, 1.5, 2.5, ...) / textureWidth
+    /*
+     * Gl_FragCoord.x: 0.5, 1.5, 2.5, ..., textureWidth-0.5
+     * texture2D(textureName, vec2(x, y)): x=(0.5, 1.5, 2.5, ...) / textureWidth
+     */
     if (!context.hasKernel(this.kernelName)) {
       const kernelSource = `${shaderGenHeader(context.webgl2)}
   ${shaderGenTensorElementwiseGet("tex_input", context.webgl2)}

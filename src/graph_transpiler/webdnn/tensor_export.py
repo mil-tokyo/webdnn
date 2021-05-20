@@ -3,25 +3,12 @@ import struct
 import numpy as np
 import onnx
 from webdnn.constant_codec_eightbit import compress_tensor_eightbit
+from webdnn.onnx_util import DATA_TYPE_TO_NUMPY, tensor_proto_to_numpy
 
 FILE_SIGNATURE = b"WDN2"
 TENSOR_SIGNATURE = b"TENS"
 CLOSE_SIGNATURE = b"CLOS"
 
-DATA_TYPE_TO_NUMPY = {
-    1: np.float32,
-    2: np.uint8,
-    3: np.int8,
-    4: np.uint16,
-    5: np.int16,
-    6: np.int32,
-    7: np.int64,
-    9: np.bool,
-    10: np.float16,
-    11: np.float64,
-    12: np.uint32,
-    13: np.uint64,
-}
 
 def _data_type_from_numpy(np_dtype) -> int:
     # dict like {np.float32: 1} cannot be used due to key equality check
@@ -93,20 +80,10 @@ def serialize_tensors(path_template: str, tensors: Dict[str, np.ndarray], split_
                 f.write(full_data[i*split_size:(i+1)*split_size])
         return file_paths
 
-def _tensor_proto_to_numpy(tensor_proto: onnx.TensorProto) -> np.ndarray:
-    shape = tuple(tensor_proto.dims)
-    dtype = DATA_TYPE_TO_NUMPY[tensor_proto.data_type]
-    array = np.frombuffer(tensor_proto.raw_data, dtype=dtype).reshape(shape)
-    if dtype == np.int64:
-        array = np.clip(array, -2**31, 2**31-1).astype(np.int32)
-    elif dtype == np.uint64:
-        array = np.clip(array, 0, 2**32-1).astype(np.uint32)
-    return array
-
 def export_initializers(path_template: str, model: onnx.ModelProto, split_size: int=0, compression_algorithm: int=0) -> List[str]:
     tensors = {}
     initializers = model.graph.initializer
     while len(initializers) > 0:
         tensor_proto = initializers.pop()
-        tensors[tensor_proto.name] = _tensor_proto_to_numpy(tensor_proto)
+        tensors[tensor_proto.name] = tensor_proto_to_numpy(tensor_proto)
     return serialize_tensors(path_template, tensors, split_size, compression_algorithm)

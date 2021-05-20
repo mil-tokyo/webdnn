@@ -7,13 +7,13 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
 import { Conv } from "../../../base/conv";
 import {
+  shaderGenHeader,
   shaderGenOutput,
   shaderGenTensorNDGet,
   shaderGenTensorNDGetUniformItem,
   shaderGenTensorOutputCoordsWithReturn,
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
-  shaderGenHeader,
 } from "../../shaderHelper";
 
 export class WebGLConv extends Conv {
@@ -23,9 +23,9 @@ export class WebGLConv extends Conv {
 
   async run(context: WebDNNWebGLContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
-    const inputX = inputs[0];
-    const inputW = inputs[1];
-    const inputB = inputs[2];
+    const inputX = inputs[0],
+      inputW = inputs[1],
+      inputB = inputs[2];
     // TODO: 2D以外対応
     if (inputX.ndim !== 4) {
       throw new Error("Conv other than 2D is not yet supported");
@@ -252,8 +252,10 @@ export class WebGLConv extends Conv {
     cinkhkw: number,
     chOutPerGroup: number
   ) {
-    // dI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
-    // ループ回数は定数が必要
+    /*
+     * DI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
+     * ループ回数は定数が必要
+     */
     const kernelName = `conv_matmul_${cinkhkw}`;
     if (!context.hasKernel(kernelName)) {
       const kernelSource = `${shaderGenHeader(context.webgl2)}
@@ -326,7 +328,7 @@ export class WebGLConv extends Conv {
     outarea: number,
     chOutPerGroup: number
   ) {
-    // dT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
+    // DT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
 
     const kernelName = `conv_transpose`;
     if (!context.hasKernel(kernelName)) {

@@ -16,14 +16,14 @@ export function argmax(arr: number[] | Float32Array, k = 1): number[] {
   // Top-k Quicksort
 
   arr = arr.slice();
-  const stack = [[0, arr.length]];
-  const workspace: number[] = [];
+  const stack = [[0, arr.length]],
+    workspace: number[] = [];
   for (let i = 0; i < arr.length; i++) workspace[i] = i;
 
   while (stack.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const [from, to] = stack.pop()!;
-    const pivot = arr[to - 1];
+    const [from, to] = stack.pop()!,
+      pivot = arr[to - 1];
     let left = from,
       right = to - 2,
       tmp: number;
@@ -51,7 +51,7 @@ export function argmax(arr: number[] | Float32Array, k = 1): number[] {
     workspace[left] = tmp;
 
     // If partial segment contains top-K elements, append it into stack
-    stack.push([from, left]); // left (=larger) segment always contains top-K elements
+    stack.push([from, left]); // Left (=larger) segment always contains top-K elements
     if (left + 1 < k) stack.push([left + 1, to]);
   }
 
@@ -76,8 +76,8 @@ export function argmin(
   // Top-k Quicksort
 
   arr = arr.slice();
-  const stack = [[0, arr.length]];
-  const workspace: number[] = [];
+  const stack = [[0, arr.length]],
+    workspace: number[] = [];
   for (let i = 0; i < arr.length; i++) workspace[i] = i;
 
   while (stack.length > 0) {
@@ -111,7 +111,7 @@ export function argmin(
     workspace[left] = tmp;
 
     // If partial segment contains top-K elements, append it into stack
-    stack.push([from, left]); // left (=larger) segment always contains top-K elements
+    stack.push([from, left]); // Left (=larger) segment always contains top-K elements
     if (left + 1 < k) stack.push([left + 1, to]);
   }
 

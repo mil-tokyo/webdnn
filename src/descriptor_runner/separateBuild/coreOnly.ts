@@ -61,8 +61,8 @@ async function loadWasm(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWasmContextImpl> {
-  const ctx = new WebDNNWasmContextImpl(cpuContext);
-  const injectionParams = await loadJS(`${directory}op-wasm.js`);
+  const ctx = new WebDNNWasmContextImpl(cpuContext),
+    injectionParams = await loadJS(`${directory}op-wasm.js`);
   if (typeof injectionParams.wasmWorkerSrcUrl !== "string") {
     throw new Error("Invalid injection parameter");
   }
@@ -76,8 +76,10 @@ async function loadWebGL(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWebGLContextImpl> {
-  const ctx = new WebDNNWebGLContextImpl(cpuContext);
-  const injectionParams = await loadJS(`${directory}op-webgl.js`);
+  const ctx = new WebDNNWebGLContextImpl(cpuContext),
+    injectionParams = await loadJS(
+      `${directory}op-webgl${ctx.webgl2 ? "2" : "1"}.js`
+    );
   await ctx.initialize();
   registerOperators(injectionParams.operatorEntries);
   return ctx;
@@ -88,8 +90,8 @@ async function loadWebGPU(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWebGPUContextImpl> {
-  const ctx = new WebDNNWebGPUContextImpl(cpuContext);
-  const injectionParams = await loadJS(`${directory}op-webgpu.js`);
+  const ctx = new WebDNNWebGPUContextImpl(cpuContext),
+    injectionParams = await loadJS(`${directory}op-webgpu.js`);
   await ctx.initialize();
   registerOperators(injectionParams.operatorEntries);
   return ctx;
@@ -109,8 +111,8 @@ export async function load(
     defaultContexts.cpu = new WebDNNCPUContextImpl();
     await defaultContexts.cpu.initialize();
   }
-  const cpuContext: WebDNNCPUContextImpl = defaultContexts.cpu;
-  const backendContexts: BackendContexts = { cpu: cpuContext };
+  const cpuContext: WebDNNCPUContextImpl = defaultContexts.cpu,
+    backendContexts: BackendContexts = { cpu: cpuContext };
   let succeedBackend: Backend | null = null;
   const opDirectory = directory;
   for (const tryBackend of backendOrder) {
@@ -173,8 +175,12 @@ export async function load(
     throw new Error("No backend available");
   }
   const actualBackendOrder: Backend[] =
-    succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"];
-  const runner = new RunnerImpl(actualBackendOrder, backendContexts);
-  await runner.loadModel(directory, `model-${actualBackendOrder[0]}.onnx`);
+      succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"],
+    runner = new RunnerImpl(actualBackendOrder, backendContexts);
+  let modelNameBackendPart: string = actualBackendOrder[0];
+  if (modelNameBackendPart === "webgl") {
+    modelNameBackendPart = backendContexts.webgl!.webgl2 ? "webgl2" : "webgl1";
+  }
+  await runner.loadModel(directory, `model-${modelNameBackendPart}.onnx`);
   return runner;
 }

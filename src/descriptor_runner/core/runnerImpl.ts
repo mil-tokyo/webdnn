@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { onnx } from "onnx-proto";
-import { Backend, DataType } from "../interface/core/constants";
+import {
+  Backend,
+  DataType,
+  backendsWithoutCPU,
+} from "../interface/core/constants";
 import {
   clipLong,
   intOrLongToInt,
@@ -35,13 +39,23 @@ export interface BackendContexts {
 
 export class RunnerImpl implements Runner {
   model?: onnx.ModelProto;
+
   loaded: boolean;
+
   initializerTensors!: Map<string, CPUTensor>;
+
   copiedInitializerTensors!: Map<Backend, Map<string, Tensor>>;
+
   useCompatibilityProxy: boolean;
+
   inputs!: InputProxy[];
+
   outputs!: OutputProxy[];
+
   opset!: number;
+
+  tensorMoveOptions: { [key: string]: Record<string, any> };
+
   /**
    * Primary backend
    */
@@ -54,6 +68,7 @@ export class RunnerImpl implements Runner {
     this.backendName = this.backendOrder[0];
     this.loaded = false;
     this.useCompatibilityProxy = false;
+    this.tensorMoveOptions = {};
   }
 
   getTensorLoader(path: string[] | string): TensorLoader {
@@ -61,8 +76,8 @@ export class RunnerImpl implements Runner {
   }
 
   async loadModel(directory: string, onnxBasename: string): Promise<void> {
-    const f = await fetch(directory + onnxBasename);
-    const b = await f.arrayBuffer();
+    const f = await fetch(directory + onnxBasename),
+      b = await f.arrayBuffer();
     this.model = onnx.ModelProto.decode(new Uint8Array(b));
     modelTransform(this.model, this.backendOrder);
     if (this.model!.opsetImport.length !== 1) {
@@ -90,6 +105,11 @@ export class RunnerImpl implements Runner {
         this.copiedInitializerTensors.set(backend, new Map());
       }
     }
+    for (const md of this.model!.metadataProps) {
+      if (md.key === "WebDNN2.TensorMoveOptions") {
+        this.tensorMoveOptions = JSON.parse(md.value!);
+      }
+    }
     this.loaded = true;
   }
 
@@ -115,13 +135,13 @@ export class RunnerImpl implements Runner {
         );
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT64) {
         // 1要素が8byte (int64)
-        const rawData = initializer.rawData!;
-        const view = new DataView(
-          rawData.buffer,
-          rawData.byteOffset,
-          rawData.byteLength
-        );
-        const ab = new Int32Array(view.byteLength / 8);
+        const rawData = initializer.rawData!,
+          view = new DataView(
+            rawData.buffer,
+            rawData.byteOffset,
+            rawData.byteLength
+          ),
+          ab = new Int32Array(view.byteLength / 8);
         for (let idx = 0; idx < ab.length; idx++) {
           ab[idx] = clipLong(
             new Long(
@@ -148,8 +168,8 @@ export class RunnerImpl implements Runner {
   ): Promise<Map<string, CPUTensor>> {
     for (const md of this.model!.metadataProps) {
       if (md.key === "WebDNN2.WeightPaths") {
-        const paths = md.value!.split(":").map((bn) => directory + bn);
-        const loader = this.getTensorLoader(paths);
+        const paths = md.value!.split(":").map((bn) => directory + bn),
+          loader = this.getTensorLoader(paths);
         return loader.loadAll();
       }
     }
@@ -207,16 +227,16 @@ export class RunnerImpl implements Runner {
     if (!this.model || !this.loaded) {
       throw new Error("not initialized");
     }
-    const graph = nonnull(this.model.graph);
-    const tensorsForBackends = {
-      cpu: new Map<string, CPUTensor>(),
-      wasm: new Map<string, WasmTensor>(),
-      webgl: new Map<string, WebGLTensor>(),
-      webgpu: new Map<string, WebGPUTensor>(),
-    };
+    const graph = nonnull(this.model.graph),
+      tensorsForBackends = {
+        cpu: new Map<string, CPUTensor>(),
+        wasm: new Map<string, WasmTensor>(),
+        webgl: new Map<string, WebGLTensor>(),
+        webgpu: new Map<string, WebGPUTensor>(),
+      };
 
     for (const [name, tensor] of this.initializerTensors.entries()) {
-      tensorsForBackends["cpu"].set(name, tensor);
+      tensorsForBackends.cpu.set(name, tensor);
     }
     for (const [backend, kv] of this.copiedInitializerTensors.entries()) {
       for (const [name, tensor] of kv.entries()) {
@@ -225,7 +245,7 @@ export class RunnerImpl implements Runner {
     }
 
     if (!inputs) {
-      // from inputProxy
+      // From inputProxy
       if (this.useCompatibilityProxy) {
         inputs = this.inputs.map((v) => {
           const t = this.backendContexts.cpu.emptyTensor(v.dims, v.dataType);
@@ -246,26 +266,29 @@ export class RunnerImpl implements Runner {
       if (graphInput.type!.tensorType!.elemType !== 1) {
         throw new Error("graph input type must be float32");
       }
-      tensorsForBackends["cpu"].set(graphInput.name!, inputs[i]);
+      tensorsForBackends.cpu.set(graphInput.name!, inputs[i]);
     }
 
-    const tensorReleaseTiming = findTensorReleaseTiming(this.model!);
-    const forceCPUOperators: string[] = [];
-    const nodePerformances: {
-      opType: string;
-      name: string;
-      backend: string;
-      inputDims: ReadonlyArray<number>[];
-      elapsed: number;
-    }[] = [];
+    const tensorReleaseTiming = findTensorReleaseTiming(
+        this.model!,
+        new Set(this.initializerTensors.keys())
+      ),
+      forceCPUOperators: string[] = [],
+      nodePerformances: {
+        opType: string;
+        name: string;
+        backend: Backend;
+        inputDims: ReadonlyArray<number>[];
+        elapsed: number;
+      }[] = [];
 
     for (let i = 0; i < graph.node!.length; i++) {
-      const nodeStartTime = Date.now();
-      const node = graph.node![i];
-      const opType = nonnull(node.opType);
-      let actualBackend: string;
-      let actualInputDims: ReadonlyArray<number>[];
-      let backendOrderForNode = this.backendOrder;
+      const nodeStartTime = Date.now(),
+        node = graph.node![i],
+        opType = nonnull(node.opType);
+      let actualBackend: Backend,
+        actualInputDims: ReadonlyArray<number>[],
+        backendOrderForNode = this.backendOrder;
       if (forceCPUOperators.includes(node.name!)) {
         backendOrderForNode = ["cpu"];
       }
@@ -276,8 +299,8 @@ export class RunnerImpl implements Runner {
           // テンソルがどこにあるのか調べる
           const currentTensorsBackends: Backend[][] = [];
           for (let j = 0; j < node.input!.length; j++) {
-            const inputName = node.input![j];
-            const bs: Backend[] = [];
+            const inputName = node.input![j],
+              bs: Backend[] = [];
             for (const backend of backendOrderForNode) {
               if (tensorsForBackends[backend].has(inputName)) {
                 bs.push(backend);
@@ -298,14 +321,14 @@ export class RunnerImpl implements Runner {
           }
           operator.initialize(nonnull(node.attribute));
           const tensorBackendRequirement = operator.getTensorBackendRequirement(
-            node.input!.length,
-            node.output!.length
-          );
-          // 入力を集める
-          const operatorInputs: Tensor[] = [];
+              node.input!.length,
+              node.output!.length
+            ),
+            // 入力を集める
+            operatorInputs: Tensor[] = [];
           for (let j = 0; j < node.input!.length; j++) {
-            const inputName = node.input![j];
-            const reqBackend = tensorBackendRequirement[j];
+            const inputName = node.input![j],
+              reqBackend = tensorBackendRequirement[j];
             if (!reqBackend) {
               // どこでもいい
               const t =
@@ -324,9 +347,11 @@ export class RunnerImpl implements Runner {
                   const otherT =
                     tensorsForBackends[otherBackend].get(inputName);
                   if (otherT) {
-                    const movedT = await this.backendContexts[
-                      reqBackend
-                    ]!.moveTensor(otherT);
+                    const tensorMoveOption =
+                        this.tensorMoveOptions[inputName] || {},
+                      movedT = await this.backendContexts[
+                        reqBackend
+                      ]!.moveTensor(otherT, tensorMoveOption);
                     tensorsForBackends[reqBackend].set(
                       inputName,
                       movedT as any
@@ -410,13 +435,16 @@ export class RunnerImpl implements Runner {
     const outputs = [];
     for (let j = 0; j < graph.output!.length; j++) {
       const outputInfo = graph.output![j];
-      let outputTensor = tensorsForBackends["cpu"].get(outputInfo.name!);
+      let outputTensor = tensorsForBackends.cpu.get(outputInfo.name!);
       if (!outputTensor) {
         for (const otherBackend of this.backendOrder) {
           const otherT = tensorsForBackends[otherBackend].get(outputInfo.name!);
           if (otherT) {
-            const movedT = await this.backendContexts.cpu.moveTensor(otherT);
-            tensorsForBackends["cpu"].set(outputInfo.name!, movedT as any);
+            const movedT = await this.backendContexts.cpu.moveTensor(
+              otherT,
+              {}
+            );
+            tensorsForBackends.cpu.set(outputInfo.name!, movedT as any);
             outputTensor = movedT;
             break;
           }
@@ -427,32 +455,20 @@ export class RunnerImpl implements Runner {
       }
 
       if (this.useCompatibilityProxy) {
-        // copy value to output proxy
+        // Copy value to output proxy
         this.outputs[j].set(outputTensor.data);
       }
 
       outputs.push(outputTensor);
     }
 
-    for (const [name, t] of tensorsForBackends.wasm.entries()) {
-      if (this.initializerTensors.has(name)) {
-        this.copiedInitializerTensors.get("wasm")!.set(name, t);
-      } else {
-        t.dispose();
-      }
-    }
-    for (const [name, t] of tensorsForBackends.webgl.entries()) {
-      if (this.initializerTensors.has(name)) {
-        this.copiedInitializerTensors.get("webgl")!.set(name, t);
-      } else {
-        t.dispose();
-      }
-    }
-    for (const [name, t] of tensorsForBackends.webgpu.entries()) {
-      if (this.initializerTensors.has(name)) {
-        this.copiedInitializerTensors.get("webgpu")!.set(name, t);
-      } else {
-        t.dispose();
+    for (const backend of backendsWithoutCPU) {
+      for (const [name, t] of tensorsForBackends[backend].entries()) {
+        if (this.initializerTensors.has(name)) {
+          this.copiedInitializerTensors.get(backend)!.set(name, t);
+        } else {
+          t.dispose();
+        }
       }
     }
 

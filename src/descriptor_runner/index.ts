@@ -43,8 +43,8 @@ export async function load(
     await defaultContexts.cpu.initialize();
     registerOperators(getOpEntriesCPU());
   }
-  const cpuContext: WebDNNCPUContextImpl = defaultContexts.cpu;
-  const backendContexts: BackendContexts = { cpu: cpuContext };
+  const cpuContext: WebDNNCPUContextImpl = defaultContexts.cpu,
+    backendContexts: BackendContexts = { cpu: cpuContext };
   let succeedBackend: Backend | null = null;
   for (const tryBackend of backendOrder) {
     switch (tryBackend) {
@@ -118,8 +118,8 @@ export async function load(
     throw new Error("No backend available");
   }
   const actualBackendOrder: Backend[] =
-    succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"];
-  const runner = new RunnerImpl(actualBackendOrder, backendContexts);
+      succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"],
+    runner = new RunnerImpl(actualBackendOrder, backendContexts);
   await runner.loadModel(directory, "model.onnx");
   return runner;
 }
