@@ -1,7 +1,9 @@
 import argparse
 import json
 import os
+import shutil
 import subprocess
+import sys
 import numpy as np
 import torch
 import torch.onnx
@@ -9,6 +11,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 from webdnn.tensor_export import serialize_tensors
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "models"))
 
 torch.manual_seed(0)
 
@@ -84,6 +88,15 @@ def dump(name, model, input_shapes):
     dump_expected(output_dir, dumps)
     optimize_if_requested(output_dir)
 
+def use_detr():
+    name = "detr"
+    name_all.append(name)
+    if TARGET_MODELS is not None and name not in TARGET_MODELS:
+        return
+    from detr import dump_detr
+    output_dir = f"{OUTPUT_DIR}/{name}"
+    dump_detr(output_dir)
+    optimize_if_requested(output_dir)
 
 def output_list():
     with open(f"{OUTPUT_DIR}/cases.json", "w") as f:
@@ -110,6 +123,7 @@ def main():
     dump("conv-512-128-1-1-0", nn.Conv2d(512, 128, 1, stride=1, padding=0, bias=False), [(1, 512, 28, 28)])
     dump("conv-256-256-3-1-1", nn.Conv2d(256, 256, 3, stride=1, padding=1, bias=False), [(1, 256, 14, 14)])
     dump("conv-1024-256-1-1-0", nn.Conv2d(1024, 256, 1, stride=1, padding=0, bias=False), [(1, 1024, 14, 14)])
+    use_detr()
     output_list()
 
 
