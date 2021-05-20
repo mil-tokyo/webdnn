@@ -10,6 +10,8 @@ import torch.nn.functional as F
 import torchvision.models as models
 from webdnn.tensor_export import serialize_tensors
 
+torch.manual_seed(0)
+
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "runner", "model")
 RUN_OPTIMIZE = False
 

@@ -82,7 +82,7 @@ async function runTestOne(directory, backendOrder, optimized) {
     for (let i = 0; i < expected.data.length; i++) {
       const e = expected.data[i];
       const a = actual.data[i];
-      if (Math.abs(e - a) > Math.abs(e) * 1e-3 + 1e-5) {
+      if (Math.abs(e - a) > Math.abs(e) * 1e-2 + 1e-3) {
         // let kvs = "";
         // for (let j = 0; j < Math.min(2048, expected.data.length); j++) {
         //   kvs += `${j}=${actual.data[j]},`;

@@ -7,7 +7,7 @@ import onnx
 from webdnn.passes import run_passes
 from webdnn.tensor_export import export_initializers
 
-ALL_BACKENDS = ["webgpu", "webgl2", "webgl1", "wasm", "cpu"]
+ALL_BACKENDS = ["webgl2", "webgl1", "wasm", "cpu"] # "webgpu" is not yet supported
 SUBPROCESS_SHELL = os.name=='nt'
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
