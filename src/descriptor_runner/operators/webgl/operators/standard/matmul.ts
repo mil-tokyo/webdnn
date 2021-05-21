@@ -85,7 +85,59 @@ export class WebGLMatMul extends MatMul {
     stridesB: ReadonlyArray<number>,
     innerProductLength: number
   ) {
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const kernelSource = context.webgl2
+        ? `${shaderGenHeader(context.webgl2)}
+
+#define innerProductLength ${innerProductLength}
+${shaderGenTensorOutputUniform(resultDims.length)}
+
+uniform sampler2D tex_input_a;
+uniform int tex_input_a_stride_0;
+uniform int tex_input_a_stride_1;
+
+ivec2 get_coord_a(int d0) {
+  int flat_index = d0 * tex_input_a_stride_0;
+  int texture_w = textureSize(tex_input_a, 0).x;
+  int y = flat_index / texture_w;
+  int x = flat_index - y * texture_w;
+  return ivec2(x, y);
+}
+
+uniform sampler2D tex_input_b;
+uniform int tex_input_b_stride_0;
+uniform int tex_input_b_stride_1;
+
+ivec2 get_coord_b(int d1, int d2) {
+  int flat_index = d1 * tex_input_b_stride_1;
+  int texture_w = textureSize(tex_input_b, 0).x;
+  int y = flat_index / texture_w;
+  int x = flat_index - y * texture_w;
+  return ivec2(x, y);
+}
+
+void main() {
+  ${shaderGenTensorOutputCoordsWithReturn(resultDims.length)}
+  float s = 0.0;
+  ivec2 c_a = get_coord_a(tex_output_0);
+  ivec2 c_b = get_coord_b(tex_output_1);
+  int texture_w_a = textureSize(tex_input_a, 0).x;
+  int texture_w_b = textureSize(tex_input_b, 0).x;
+  for (int ip = 0; ip < innerProductLength; ip++) {
+    s += texelFetch(tex_input_a, c_a, 0).r * texelFetch(tex_input_b, c_b, 0).r;
+    c_a.x += tex_input_a_stride_1;
+    if (c_a.x >= texture_w_a) {
+      c_a = ivec2(c_a.x - texture_w_a, c_a.y + 1);
+    }
+    c_b.x += tex_input_b_stride_0;
+    if (c_b.x >= texture_w_b) {
+      c_b = ivec2(c_b.x - texture_w_b, c_b.y + 1);
+    }
+  }
+  ${shaderGenOutput("s", context.webgl2)}
+  return;
+}
+`
+        : `${shaderGenHeader(context.webgl2)}
 
 #define innerProductLength ${innerProductLength}
 ${shaderGenTensorOutputUniform(resultDims.length)}
@@ -143,7 +195,61 @@ void main() {
     stridesB: ReadonlyArray<number>,
     innerProductLength: number
   ) {
-    const kernelSource = `${shaderGenHeader(context.webgl2)}
+    const kernelSource = context.webgl2
+        ? `${shaderGenHeader(context.webgl2)}
+
+#define innerProductLength ${innerProductLength}
+${shaderGenTensorOutputUniform(resultDims.length)}
+
+uniform sampler2D tex_input_a;
+uniform int tex_input_a_stride_0;
+uniform int tex_input_a_stride_1;
+uniform int tex_input_a_stride_2;
+
+ivec2 get_coord_a(int d0, int d1) {
+  int flat_index = d0 * tex_input_a_stride_0 + d1 * tex_input_a_stride_1;
+  int texture_w = textureSize(tex_input_a, 0).x;
+  int y = flat_index / texture_w;
+  int x = flat_index - y * texture_w;
+  return ivec2(x, y);
+}
+
+uniform sampler2D tex_input_b;
+uniform int tex_input_b_stride_0;
+uniform int tex_input_b_stride_1;
+uniform int tex_input_b_stride_2;
+
+ivec2 get_coord_b(int d0, int d2) {
+  int flat_index = d0 * tex_input_b_stride_0 + d2 * tex_input_b_stride_2;
+  int texture_w = textureSize(tex_input_b, 0).x;
+  int y = flat_index / texture_w;
+  int x = flat_index - y * texture_w;
+  return ivec2(x, y);
+}
+
+void main() {
+  ${shaderGenTensorOutputCoordsWithReturn(resultDims.length)}
+  float s = 0.0;
+  ivec2 c_a = get_coord_a(tex_output_0, tex_output_1);
+  ivec2 c_b = get_coord_b(tex_output_0, tex_output_2);
+  int texture_w_a = textureSize(tex_input_a, 0).x;
+  int texture_w_b = textureSize(tex_input_b, 0).x;
+  for (int ip = 0; ip < innerProductLength; ip++) {
+    s += texelFetch(tex_input_a, c_a, 0).r * texelFetch(tex_input_b, c_b, 0).r;
+    c_a.x += tex_input_a_stride_2;
+    if (c_a.x >= texture_w_a) {
+      c_a = ivec2(c_a.x - texture_w_a, c_a.y + 1);
+    }
+    c_b.x += tex_input_b_stride_1;
+    if (c_b.x >= texture_w_b) {
+      c_b = ivec2(c_b.x - texture_w_b, c_b.y + 1);
+    }
+  }
+  ${shaderGenOutput("s", context.webgl2)}
+  return;
+}
+`
+        : `${shaderGenHeader(context.webgl2)}
 
 #define innerProductLength ${innerProductLength}
 ${shaderGenTensorOutputUniform(resultDims.length)}
@@ -163,6 +269,10 @@ void main() {
 `,
       kernelName = `matmul_3_${innerProductLength}`;
     context.addKernel(kernelName, kernelSource);
+
+    if (stridesA[2] > dA.textureWidth || stridesB[1] > dB.textureWidth) {
+      throw new Error("MatMul: kernel assumption does not hold");
+    }
 
     const uniforms: WebGLUniformItem[] = [
       ...shaderGenTensorNDGetUniformItem(
