@@ -291,9 +291,23 @@ export class ConvOptWebGL2 extends Conv {
     uniform int BOUT;
     uniform int COPG;
     
-    ${shaderGenTensorNDGetVec4("tex_input_w", 1, context.webgl2)}
-    ${shaderGenTensorNDGetVec4("tex_input_i", 1, context.webgl2)}
-    
+    uniform sampler2D tex_input_w;
+    uniform sampler2D tex_input_i;
+
+    ivec2 first_idx_w(int flat_index) {
+      int texture_w = textureSize(tex_input_w, 0).x;
+      int y = flat_index / texture_w;
+      int x = flat_index - y * texture_w;
+      return ivec2(x, y);
+    }
+
+    ivec2 first_idx_i(int flat_index) {
+      int texture_w = textureSize(tex_input_i, 0).x;
+      int y = flat_index / texture_w;
+      int x = flat_index - y * texture_w;
+      return ivec2(x, y);
+    }
+
     float calc_one_pixel(int tex_output_flat) {
       int rem = tex_output_flat;
       int quo = rem / COPG;
@@ -304,8 +318,20 @@ export class ConvOptWebGL2 extends Conv {
       int g = quo;
     
       float acc = 0.0;
+      ivec2 c_i = first_idx_i((g * BOUT + y) * cinkhkwdiv4);
+      ivec2 c_w = first_idx_w((g * COPG + x) * cinkhkwdiv4);
+      int texture_w_i = textureSize(tex_input_i, 0).x;
+      int texture_w_w = textureSize(tex_input_w, 0).x;
       for (int ip = 0; ip < cinkhkwdiv4; ip++) {
-        acc += dot(get_vec4_tex_input_i((g * BOUT + y) * cinkhkwdiv4 + ip), get_vec4_tex_input_w((g * COPG + x) * cinkhkwdiv4 + ip));
+        acc += dot(texelFetch(tex_input_i, c_i, 0), texelFetch(tex_input_w, c_w, 0));
+        c_i.x += 1;
+        if (c_i.x >= texture_w_i) {
+          c_i = ivec2(0, c_i.y + 1);
+        }
+        c_w.x += 1;
+        if (c_w.x >= texture_w_w) {
+          c_w = ivec2(0, c_w.y + 1);
+        }
       }
 
       return acc;
@@ -325,18 +351,6 @@ export class ConvOptWebGL2 extends Conv {
     }
 
     const uniforms: WebGLUniformItem[] = [
-      ...shaderGenTensorNDGetUniformItem(
-        "tex_input_w",
-        [1],
-        dW,
-        context.webgl2
-      ),
-      ...shaderGenTensorNDGetUniformItem(
-        "tex_input_i",
-        [1],
-        dI,
-        context.webgl2
-      ),
       ...shaderGenTensorOutputUniformItem([dT.length / 4], dT, context.webgl2), // Div by RGBA
       { name: "GROUP", type: "int", value: group },
       { name: "BOUT", type: "int", value: bout },
