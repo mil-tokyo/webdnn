@@ -123,9 +123,32 @@ def main():
     dump("conv-512-128-1-1-0", nn.Conv2d(512, 128, 1, stride=1, padding=0, bias=False), [(1, 512, 28, 28)])
     dump("conv-256-256-3-1-1", nn.Conv2d(256, 256, 3, stride=1, padding=1, bias=False), [(1, 256, 14, 14)])
     dump("conv-1024-256-1-1-0", nn.Conv2d(1024, 256, 1, stride=1, padding=0, bias=False), [(1, 1024, 14, 14)])
+    dump("matmul-850x1x256-256x2048", MatMul(), [(850, 1, 256), (256, 2048)])
+    dump("matmul-850x1x2048-2048x256", MatMul(), [(850, 1, 2048), (2048, 256)])
+    dump("matmul-8x850x32-8x32x850", MatMul(), [(8, 850, 32), (8, 32, 850)])
+    dump("matmul-8x850x850-8x850x32", MatMul(), [(8, 850, 850), (8, 850, 32)])
+    dump("softmax-8-850-850", torch.nn.Softmax(dim=2), [(8, 850, 850)])
+    dump("softmax-8-100-850", torch.nn.Softmax(dim=2), [(8, 100, 850)])
+    dump("softmax-8-100-100", torch.nn.Softmax(dim=2), [(8, 100, 100)])
     use_detr()
     output_list()
 
+class MatMul(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, y):
+        return torch.matmul(x, y)
+
+class Permute(nn.Module):
+    def __init__(self, order):
+        super().__init__()
+        self.order = order
+
+    def forward(self, x):
+        # Transpose runs on backend where tensor is, so moving the tensor to non-cpu backend by using Add operator
+        x = x + 1.0
+        return x.permute(*self.order)
 
 if __name__ == '__main__':
     main()

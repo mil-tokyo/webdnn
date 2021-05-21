@@ -185,6 +185,8 @@ class Slice2d2(nn.Module):
 
 class Permute(nn.Module):
     def forward(self, x):
+        # Transpose runs on backend where tensor is, so moving the tensor to non-cpu backend by using Add operator
+        x = x + 1.0
         return x.permute(2, 0, 1)
 
 

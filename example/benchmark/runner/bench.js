@@ -28,7 +28,7 @@ async function runOnce(runner, expectedTensors, validateResult) {
       for (let i = 0; i < expected.data.length; i++) {
         const e = expected.data[i];
         const a = actual.data[i];
-        if (Math.abs(e - a) > Math.abs(e) * 1e-2 + 1e-3) {
+        if (!(Math.abs(e - a) <= Math.abs(e) * 1e-2 + 1e-3)) {
           return `${name}: index ${i}, expected ${e} !== actual ${a}`;
         }
       }
