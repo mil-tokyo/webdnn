@@ -34,11 +34,15 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     if (dataType !== "float32") {
       throw new Error("WebGLTensor only supports float32");
     }
+    const pixels = Math.ceil(this.length / dimPerPixel);
+    // This makes computing slightly slow. why?
+    // this.textureWidth = Math.pow(
+    //   2,
+    //   Math.ceil(Math.log2(Math.min(pixels, this.context.maxTextureSize)))
+    // );
     this.textureWidth = this.context.maxTextureSize;
-    this.textureHeight = Math.ceil(
-      this.length / this.textureWidth / dimPerPixel
-    );
-    if (this.textureHeight > this.textureWidth) {
+    this.textureHeight = Math.ceil(pixels / this.textureWidth);
+    if (this.textureHeight > this.context.maxTextureSize) {
       throw new Error(
         `Cannot allocate texture of size ${this.length} in this environment. Please split large tensor in the model.`
       );
