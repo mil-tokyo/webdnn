@@ -17,6 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "models
 torch.manual_seed(0)
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "runner", "model")
+EXTERNAL_MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "runner", "external_model")
 RUN_OPTIMIZE = False
 TARGET_MODELS = None
 BACKENDS = None
@@ -98,9 +99,25 @@ def use_detr():
     dump_detr(output_dir)
     optimize_if_requested(output_dir)
 
+def use_external_model(name):
+    name_all.append(name)
+    if TARGET_MODELS is not None and name not in TARGET_MODELS:
+        return
+    output_dir = f"{OUTPUT_DIR}/{name}"
+    os.makedirs(output_dir, exist_ok=True)
+    for filename in ["model.onnx", "expected.bin"]:
+        shutil.copy(os.path.join(EXTERNAL_MODEL_DIR, name, filename), os.path.join(output_dir, filename))
+    optimize_if_requested(output_dir)
+
+def use_external_models():
+    dirs = os.listdir(EXTERNAL_MODEL_DIR)
+    for name in dirs:
+        if os.path.exists(os.path.join(EXTERNAL_MODEL_DIR, name, "model.onnx")):
+            use_external_model(name)
+
 def output_list():
     with open(f"{OUTPUT_DIR}/cases.json", "w") as f:
-        json.dump(name_all, f)
+        json.dump(list(sorted(name_all)), f)
 
 
 def main():
@@ -125,12 +142,14 @@ def main():
     dump("conv-1024-256-1-1-0", nn.Conv2d(1024, 256, 1, stride=1, padding=0, bias=False), [(1, 1024, 14, 14)])
     dump("matmul-850x1x256-256x2048", MatMul(), [(850, 1, 256), (256, 2048)])
     dump("matmul-850x1x2048-2048x256", MatMul(), [(850, 1, 2048), (2048, 256)])
+    dump("matmul-850x1x2048-c2048x256", MatMulConstR((2048, 256)), [(850, 1, 2048)])
     dump("matmul-8x850x32-8x32x850", MatMul(), [(8, 850, 32), (8, 32, 850)])
     dump("matmul-8x850x850-8x850x32", MatMul(), [(8, 850, 850), (8, 850, 32)])
     dump("softmax-8-850-850", torch.nn.Softmax(dim=2), [(8, 850, 850)])
     dump("softmax-8-100-850", torch.nn.Softmax(dim=2), [(8, 100, 850)])
     dump("softmax-8-100-100", torch.nn.Softmax(dim=2), [(8, 100, 100)])
     use_detr()
+    use_external_models()
     output_list()
 
 class MatMul(nn.Module):
@@ -139,6 +158,15 @@ class MatMul(nn.Module):
 
     def forward(self, x, y):
         return torch.matmul(x, y)
+
+class MatMulConstR(nn.Module):
+    def __init__(self, rhs_shape):
+        super().__init__()
+        self.rhs = nn.Parameter(torch.Tensor(
+                np.random.normal(size=rhs_shape)))
+    
+    def forward(self, lhs):
+        return torch.matmul(lhs, self.rhs)
 
 class Permute(nn.Module):
     def __init__(self, order):
