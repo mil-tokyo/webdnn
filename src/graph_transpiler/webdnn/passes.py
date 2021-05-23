@@ -9,6 +9,7 @@ from webdnn.pass_fusion_unary_wasm import PassFusionUnaryWasm
 from webdnn.optimization_pass_result_wasm import OptimizationPassResultWasm
 from webdnn.pass_fusion_unary_webgl import PassFusionUnaryWebGL
 from webdnn.pass_conv_pack_webgl2 import PassConvPackWebGL2
+from webdnn.pass_matmul_transpose_webgl2 import PassMatMulTransposeWebGL2
 from webdnn.optimization_pass_result_webgl import OptimizationPassResultWebGL
 
 def make_backend_passes(backend: str) -> List[OptimizationPass]:
@@ -19,7 +20,7 @@ def make_backend_passes(backend: str) -> List[OptimizationPass]:
     elif backend == "webgl1":
         return [PassFusionUnaryWebGL()]
     elif backend == "webgl2":
-        return [PassFusionUnaryWebGL(), PassConvPackWebGL2()]
+        return [PassFusionUnaryWebGL(), PassConvPackWebGL2(), PassMatMulTransposeWebGL2()]
     else:
         raise ValueError
 

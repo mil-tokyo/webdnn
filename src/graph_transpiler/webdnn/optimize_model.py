@@ -26,7 +26,7 @@ def main():
         # print(optimization_result)
         optimization_result.write_code(ROOT_DIR)
         optimized_model = src_model
-        tensor_pathes = export_initializers(os.path.join(args.dst_dir, f"weight-{backend}-{{}}.bin"), optimized_model, 4 * 1024 * 1024, args.compression)
+        tensor_pathes = export_initializers(os.path.join(args.dst_dir, f"weight-{backend}-{{}}.bin"), optimized_model, optimization_result.initializers, 4 * 1024 * 1024, args.compression)
         weight_paths = ":".join([os.path.basename(tensor_path) for tensor_path in tensor_pathes])
         optimized_model.metadata_props.append(onnx.StringStringEntryProto(key="WebDNN2.WeightPaths", value=weight_paths))
         optimized_model.metadata_props.append(onnx.StringStringEntryProto(key="WebDNN2.TensorMoveOptions", value=json.dumps(optimization_result.tensor_move_options)))

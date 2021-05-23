@@ -80,8 +80,8 @@ def serialize_tensors(path_template: str, tensors: Dict[str, np.ndarray], split_
                 f.write(full_data[i*split_size:(i+1)*split_size])
         return file_paths
 
-def export_initializers(path_template: str, model: onnx.ModelProto, split_size: int=0, compression_algorithm: int=0) -> List[str]:
-    tensors = {}
+def export_initializers(path_template: str, model: onnx.ModelProto, initializers: Dict[str, np.ndarray], split_size: int=0, compression_algorithm: int=0) -> List[str]:
+    tensors = initializers.copy()
     initializers = model.graph.initializer
     while len(initializers) > 0:
         tensor_proto = initializers.pop()
