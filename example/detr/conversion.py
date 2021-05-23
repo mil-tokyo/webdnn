@@ -3,6 +3,7 @@ import os
 import numpy as np
 import json
 import requests
+import subprocess
 
 import torch
 from torch import nn
@@ -143,10 +144,12 @@ def main():
     detr_onnx.eval()
 
     img_preprocessed = torch.zeros(1, 3, 800, 1066)
-    torch.onnx.export(detr_onnx, (img_preprocessed, embed_const, query_pos_us), f"{output_dir}/model.onnx",
+    onnx_path = f"{output_dir}/unoptimized_model.onnx"
+    torch.onnx.export(detr_onnx, (img_preprocessed, embed_const, query_pos_us), onnx_path,
                   verbose=True,
                   input_names=["input_0", "input_embed_const", "input_query_pos_us"],
                   output_names=["output_logits", "output_boxes"], opset_version=10)
+    subprocess.check_call(["python", "-m", "webdnn.optimize_model", onnx_path, os.path.join(output_dir)])
     serialize_tensors(os.path.join(output_dir, "embedding.bin"), {
         "col_embed": state_dict["col_embed"].float().numpy(),
         "row_embed": state_dict["row_embed"].float().numpy(),

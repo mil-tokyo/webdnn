@@ -274,7 +274,7 @@ function makeEmbed(h, w, rowEmbed, colEmbed) {
 let inputArrays, runner;
 
 async function loadModel(directory) {
-  runner = await WebDNN.load(directory, {backendOrder: ["webgl", "cpu"]});
+  runner = await WebDNN.load(directory, {backendOrder: ["webgl", "cpu"], optimized: true});
   inputArrays = await runner
   .getTensorLoader(directory + "embedding.bin")
   .loadAll();
