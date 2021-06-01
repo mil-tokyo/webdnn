@@ -4,6 +4,7 @@ import { OperatorEntry } from "../../interface/core/operator";
 import { getOpEntries as getOpEntriesoperatorsstandardaveragepool } from "./operators/standard/averagepool";
 import { getOpEntries as getOpEntriesoperatorsstandardbinary7 } from "./operators/standard/binary7";
 import { getOpEntries as getOpEntriesoperatorsstandardcast } from "./operators/standard/cast";
+import { getOpEntries as getOpEntriesoperatorsstandardclip } from "./operators/standard/clip";
 import { getOpEntries as getOpEntriesoperatorsstandardconcat } from "./operators/standard/concat";
 import { getOpEntries as getOpEntriesoperatorsstandardconstant } from "./operators/standard/constant";
 import { getOpEntries as getOpEntriesoperatorsstandardconv } from "./operators/standard/conv";
@@ -28,6 +29,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardaveragepool());
   entries.push(...getOpEntriesoperatorsstandardbinary7());
   entries.push(...getOpEntriesoperatorsstandardcast());
+  entries.push(...getOpEntriesoperatorsstandardclip());
   entries.push(...getOpEntriesoperatorsstandardconcat());
   entries.push(...getOpEntriesoperatorsstandardconstant());
   entries.push(...getOpEntriesoperatorsstandardconv());
