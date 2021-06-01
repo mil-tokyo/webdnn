@@ -63,6 +63,7 @@ async function runBenchmark(optimized) {
     return;
   }
   location.hash = `#backend=${backend}&model=${model}`;
+  const validateResult = document.getElementById("enableValidateResult").checked;
   displayMessage("Running benchmark");
 
   const backendOrder = backend === "cpu" ? [backend] : [backend, "cpu"];
@@ -81,7 +82,7 @@ async function runBenchmark(optimized) {
   // run multiple times makes JIT optimize JavaScript part
   for (let i = 0; i < 3; i++) {
     console.log(`Warmup ${i}`);
-    const warmupResult = await runOnce(runner, expectedTensors, true);
+    const warmupResult = await runOnce(runner, expectedTensors, validateResult);
     if (warmupResult.validationError) {
       displayMessage(`Output validation error: ${warmupResult.validationError}`);
       return;
