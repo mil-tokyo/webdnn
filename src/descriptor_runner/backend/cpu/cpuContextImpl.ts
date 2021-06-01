@@ -7,6 +7,7 @@ import { CPUTensorImpl } from "./cpuTensorImpl";
 export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   backend = "cpu" as const;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async initialize(): Promise<void> {}
 
   isCPUTensor(tensor: Tensor): tensor is CPUTensor {
