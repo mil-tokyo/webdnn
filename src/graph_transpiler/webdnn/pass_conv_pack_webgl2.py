@@ -536,7 +536,6 @@ class PassConvPackWebGL2(OptimizationPass):
         for node in graph.node:
             if node.op_type == "Conv":
                 weight_name = node.input[1]
-                group = get_attr_int(node, "group", 1)
                 initializers = graph.initializer
                 optimizable = False
                 for initializer in initializers:
@@ -545,7 +544,7 @@ class PassConvPackWebGL2(OptimizationPass):
                         weight_array_shape = weight_array.shape
                         if len(weight_array_shape) != 4:
                             continue
-                        cinpg_kh_kw = (weight_array_shape[1] // group) * weight_array_shape[2] * weight_array_shape[3]
+                        cinpg_kh_kw = weight_array_shape[1] * weight_array_shape[2] * weight_array_shape[3]
                         if cinpg_kh_kw % 4 == 0 and weight_array_shape[0] % 4 == 0:
                             optimizable = True
                 if not optimizable:
