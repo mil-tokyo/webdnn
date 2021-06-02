@@ -116,10 +116,36 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         gl.UNSIGNED_BYTE,
         buf
       );
-      data = new Float32Array(buf.buffer, 0, this.length);
+      data = this.unpackColor(buf);
     }
     this.unbindFromDrawTexture();
     return data;
+  }
+
+  private unpackColor(buf: Uint8Array): Float32Array {
+    // unpack 8bit texture according to shaderHelper
+    const unpacked = new Float32Array(this.length);
+    for (let i = 0; i < this.length; i++) {
+      const b0 = buf[i * 4];
+      const b1 = buf[i * 4 + 1];
+      const b2 = buf[i * 4 + 2];
+      const b3 = buf[i * 4 + 3];
+      let val = 0.0;
+      if (b0 > 0) {
+        let sign: number, exponent: number;
+        if (b0 >= 128) {
+          sign = 1.0;
+          exponent = b0 - 192;
+        } else {
+          sign = -1.0;
+          exponent = b0 - 64;
+        }
+        const scaled = b1 / 255 + b2 / (255 * 255) + b3 / (255 * 255 * 255);
+        val = scaled * Math.pow(2, exponent) * sign;
+      }
+      unpacked[i] = val;
+    }
+    return unpacked;
   }
 
   async setData(data: DataArrayTypes): Promise<void> {
@@ -142,8 +168,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         buf
       );
     } else {
-      const buf = new Float32Array(this.textureWidth * this.textureHeight);
-      buf.set(data);
+      const buf = this.packColor(data);
       gl.texSubImage2D(
         gl.TEXTURE_2D,
         0,
@@ -153,11 +178,44 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         this.textureHeight,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        new Uint8Array(buf.buffer)
+        buf
       );
     }
 
     this.unbindFromReadTexture();
+  }
+
+  private packColor(data: DataArrayTypes): Uint8Array {
+    const packed = new Uint8Array(this.textureWidth * this.textureHeight * 4);
+    for (let i = 0; i < this.length; i++) {
+      const val = data[i];
+      let b0 = 0,
+        b1 = 0,
+        b2 = 0,
+        b3 = 0;
+      if (val !== 0.0) {
+        const sign = val > 0.0 ? 192 : 64;
+        const absval = Math.abs(val);
+        const exponent = Math.ceil(Math.log2(absval) + 0.0001);
+        const scaled = absval * Math.pow(2, -exponent);
+        let s1 = scaled;
+        let s2 = scaled * 255;
+        s2 -= Math.trunc(s2);
+        s1 -= s2 / 255;
+        let s3 = scaled * (255 * 255);
+        s3 -= Math.trunc(s3);
+        s2 -= s3 / 255;
+        b0 = sign + exponent;
+        b1 = Math.min(Math.max(Math.ceil((s1 - 0.5 / 255) * 255), 0), 255);
+        b2 = Math.min(Math.max(Math.ceil((s2 - 0.5 / 255) * 255), 0), 255);
+        b3 = Math.min(Math.max(Math.ceil((s3 - 0.5 / 255) * 255), 0), 255);
+      }
+      packed[i * 4] = b0;
+      packed[i * 4 + 1] = b1;
+      packed[i * 4 + 2] = b2;
+      packed[i * 4 + 3] = b3;
+    }
+    return packed;
   }
 
   dispose(): void {

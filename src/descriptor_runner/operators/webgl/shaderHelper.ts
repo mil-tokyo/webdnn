@@ -2,49 +2,36 @@ import { WebGLUniformItem } from "../../interface/backend/webgl/webglContext";
 import { WebGLTensor } from "../../interface/backend/webgl/webglTensor";
 import { Tensor } from "../../interface/core/tensor";
 
-// Float encode: https://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target/20859830#20859830
+// Float encode: https://community.khronos.org/t/packing-multiple-floats-into-a-single-float-value/59320/3
 export const shaderFloatPack = `
-float shift_right (float v, float amt) { 
-  v = floor(v) + 0.5; 
-  return floor(v / exp2(amt)); 
-}
-float shift_left (float v, float amt) { 
-  return floor(v * exp2(amt) + 0.5); 
-}
-float mask_last (float v, float bits) { 
-  return mod(v, shift_left(1.0, bits)); 
-}
-float extract_bits (float num, float from, float to) { 
-  from = floor(from + 0.5); to = floor(to + 0.5); 
-  return mask_last(shift_right(num, from), to - from); 
-}
-vec4 encode_float (float val) { 
-  if (val == 0.0) return vec4(0, 0, 0, 0); 
-  float sign = val > 0.0 ? 0.0 : 1.0; 
-  val = abs(val); 
-  float exponent = floor(log2(val)); 
-  float biased_exponent = exponent + 127.0; 
-  float fraction = ((val / exp2(exponent)) - 1.0) * 8388608.0; 
-  float t = biased_exponent / 2.0; 
-  float last_bit_of_biased_exponent = fract(t) * 2.0; 
-  float remaining_bits_of_biased_exponent = floor(t); 
-  float byte4 = extract_bits(fraction, 0.0, 8.0) / 255.0; 
-  float byte3 = extract_bits(fraction, 8.0, 16.0) / 255.0; 
-  float byte2 = (last_bit_of_biased_exponent * 128.0 + extract_bits(fraction, 16.0, 23.0)) / 255.0; 
-  float byte1 = (sign * 128.0 + remaining_bits_of_biased_exponent) / 255.0; 
-  return vec4(byte4, byte3, byte2, byte1); 
+vec4 encode_float (float val) {
+  if (val == 0.0) return vec4(0, 0, 0, 0);
+  float sign = val > 0.0 ? 192.0 : 64.0;
+  float absval = abs(val);
+  float exponent = ceil(log2(absval) + 0.0001);
+  float scaled = absval * exp2(-exponent);
+  vec3 enc = vec3(1.0, 255.0, 65025.0) * scaled;
+  enc = fract(enc);
+  enc -= enc.yzz * vec3(1.0/255.0, 1.0/255.0, 0.0);
+  return vec4((sign + exponent) * (1.0 / 255.0), enc.x, enc.y, enc.z);
 }
 
 float decode_float(vec4 code) {
-  if (all(equal(code, vec4(0.0)))) {
+  if (code.x == 0.0) {
     return 0.0;
   }
-  vec4 bytes = code * 255.0;
-  float sign = bytes.w >= 128.0 ? -1.0 : 1.0;
-  float biased_exponent = shift_left(extract_bits(bytes.w, 0.0, 7.0), 1.0) + extract_bits(bytes.z, 7.0, 8.0);
-  float fraction = (extract_bits(bytes.z, 0.0, 7.0) * 65536.0 + bytes.y * 256.0 + bytes.x) / 8388608.0;
-  float v = (fraction + 1.0) * exp2(biased_exponent - 127.0) * sign;
-  return v;
+  float ebyte = code.x * 255.0;
+  float sign, exponent;
+  if (ebyte >= 128.0) {
+    sign = 1.0;
+    exponent = ebyte - 192.0;
+  } else {
+    sign = -1.0;
+    exponent = ebyte - 64.0;
+  }
+  float scaled = code.y + code.z * (1.0 / 255.0) + code.w * (1.0 / 65025.0);
+  float value = scaled * exp2(exponent) * sign;
+  return value;
 }
 `;
 
