@@ -340,6 +340,17 @@ def main():
          groups=2, bias=False), [(3, 4, 8, 16)])
     dump("conv5", nn.Conv2d(4, 8, 3, 2, 3,
          dilation=2, groups=2), [(3, 4, 8, 16)])
+    # go through each path in ConvReshapeWebGL
+    # cinkhkw % 4 == 0, outc_per_group % 4 == 0
+    dump("conv6", nn.Conv2d(16, 32, 3, 1, 1, bias=False), [(2, 16, 28, 28)])
+    # cinkhkw % 4 == 0, outc_per_group % 4 != 0
+    dump("conv7", nn.Conv2d(16, 33, 3, 1, 1, bias=False), [(2, 16, 28, 28)])
+    # cinkhkw % 4 == 0, group * batch * outh * outw > 16384
+    dump("conv8", nn.Conv2d(2048, 512, 3, 1, 1, groups=512, bias=False), [(1, 2048, 7, 7)])
+    # cinkhkw % 4 != 0
+    dump("conv9", nn.Conv2d(64, 64, 3, 1, 1, groups=64, bias=False), [(1, 64, 7, 7)])
+    # cinkhkw % 4 != 0, group * batch * outh * outw > 16384
+    dump("conv10", nn.Conv2d(512, 512, 3, 1, 1, groups=512, bias=False), [(1, 512, 7, 7)])
     dump("maxpool1", nn.MaxPool2d(kernel_size=3,
          stride=2, padding=0), [(2, 3, 10, 12)])
     dump("maxpool2", nn.MaxPool2d(kernel_size=3, stride=2,

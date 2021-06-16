@@ -16,6 +16,7 @@ export interface WebDNNWebGLContext extends BackendContext {
   canOnlyReadRGBA: boolean;
   gl: WebGLRenderingContext | WebGL2RenderingContext;
   webgl2: boolean;
+  maxTextureSize: number;
 
   initialize(): Promise<void>;
   isWebGLTensor(tensor: Tensor): tensor is WebGLTensor;
