@@ -52,8 +52,7 @@ export class WebGLMaxPool extends MaxPool {
       } = this.calcShape(inputX.dims),
       output = context.emptyTensor(
         [batch, ch, outShape[0], outShape[1]],
-        "float32",
-        1
+        "float32"
       ),
       // ループ回数は定数が必要
       kernelName = `maxpool_${kernelShape[0]}_${kernelShape[1]}`,

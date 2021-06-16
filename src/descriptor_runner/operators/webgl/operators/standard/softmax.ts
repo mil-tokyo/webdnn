@@ -54,7 +54,7 @@ export class Softmax extends OperatorImpl {
       const maxSumExpTensor = context.emptyTensor(
         [outerLength * 4],
         "float32",
-        4
+        { dimPerPixel: 4 }
       );
       await this.calcMax2(
         context,

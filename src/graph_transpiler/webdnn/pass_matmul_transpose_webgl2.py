@@ -140,7 +140,7 @@ class MatMulNT141 extends OperatorImpl {
         stridesB,
         innerProductLength,
       } = this.calcShapeNT141(inputA.dims, inputB.dims),
-      output = context.emptyTensor(resultDimsAfterSqueeze, "float32", 1);
+      output = context.emptyTensor(resultDimsAfterSqueeze, "float32");
     console.dir(this.calcShapeNT141(inputA.dims, inputB.dims));
     if (resultDims.length === 2) {
       await this.calcDim2(

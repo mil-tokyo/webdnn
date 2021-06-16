@@ -28,6 +28,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     dims: ReadonlyArray<number>,
     dataType: DataType = "float32",
     public readonly dimPerPixel: 1 | 4 = 1,
+    textureShape?: ReadonlyArray<number>,
     sharedTexture?: WebGLSharedTexture
   ) {
     super(dims, dataType, "webgl");
@@ -40,9 +41,17 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     //   2,
     //   Math.ceil(Math.log2(Math.min(pixels, this.context.maxTextureSize)))
     // );
-    this.textureWidth = this.context.maxTextureSize;
-    this.textureHeight = Math.ceil(pixels / this.textureWidth);
-    if (this.textureHeight > this.context.maxTextureSize) {
+    if (textureShape) {
+      this.textureHeight = textureShape[0];
+      this.textureWidth = textureShape[1];
+    } else {
+      this.textureWidth = this.context.maxTextureSize;
+      this.textureHeight = Math.ceil(pixels / this.textureWidth);
+    }
+    if (
+      this.textureHeight > this.context.maxTextureSize ||
+      this.textureWidth > this.context.maxTextureSize
+    ) {
       throw new Error(
         `Cannot allocate texture of size ${this.length} in this environment. Please split large tensor in the model.`
       );
@@ -70,6 +79,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       dims,
       this.dataType,
       this.dimPerPixel,
+      [this.textureHeight, this.textureWidth],
       this.sharedTexture
     );
   }

@@ -31,7 +31,7 @@ export class WebGLTranspose extends Transpose {
       throw new Error();
     }
     const { outShape, inStrides } = this.calcShape(input),
-      output = context.emptyTensor(outShape, "float32", 1),
+      output = context.emptyTensor(outShape, "float32"),
       kernelName = `transpose_${outShape.length}`;
     let tex_input_idxs: string;
     switch (inStrides.length) {

@@ -41,7 +41,7 @@ export class WebGLMatMul extends MatMul {
         stridesB,
         innerProductLength,
       } = this.calcShape(inputA.dims, inputB.dims),
-      output = context.emptyTensor(resultDimsAfterSqueeze, "float32", 1);
+      output = context.emptyTensor(resultDimsAfterSqueeze, "float32");
     if (resultDims.length === 2) {
       await this.calcDim2(
         context,

@@ -77,7 +77,7 @@ export class ConvOptWebGL2 extends Conv {
           kernelShape[1],
       ],
       "float32",
-      4
+      { dimPerPixel: 4 }
     );
     await this.im2col(
       context,
@@ -97,7 +97,7 @@ export class ConvOptWebGL2 extends Conv {
     const matmulData = context.emptyTensor(
       [group * batch * outShape[0] * outShape[1] * chOutPerGroup],
       "float32",
-      4
+      { dimPerPixel: 4 }
     );
     await this.matmul(
       context,

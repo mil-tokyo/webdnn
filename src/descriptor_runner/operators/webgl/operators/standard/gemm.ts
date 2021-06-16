@@ -56,7 +56,7 @@ export class WebGLGemm extends Gemm {
       throw new Error();
     }
 
-    const outputTensor = context.emptyTensor([m, n], "float32", 1),
+    const outputTensor = context.emptyTensor([m, n], "float32"),
       // ループ回数は定数が必要
       kernelSource = `${shaderGenHeader(context.webgl2)}
 

@@ -24,11 +24,11 @@ export interface WebDNNWebGLContext extends BackendContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    dimPerPixel?: 1 | 4
+    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
   ): WebGLTensor;
   moveTensor(
     tensor: Tensor,
-    option: { dimPerPixel?: 1 | 4 }
+    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
   ): Promise<WebGLTensor>;
   addKernel(name: string, sourceCode: string): void;
   hasKernel(name: string): boolean;

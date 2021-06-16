@@ -228,20 +228,27 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    dimPerPixel?: 1 | 4
+    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
   ): WebGLTensor {
-    return new WebGLTensorImpl(this, dims, dataType, dimPerPixel);
+    return new WebGLTensorImpl(
+      this,
+      dims,
+      dataType,
+      option?.dimPerPixel,
+      option?.textureShape
+    );
   }
 
   async moveTensor(
     tensor: Tensor,
-    option: { dimPerPixel?: 1 | 4 }
+    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
   ): Promise<WebGLTensor> {
     const dst = new WebGLTensorImpl(
       this,
       tensor.dims,
       tensor.dataType,
-      option.dimPerPixel
+      option.dimPerPixel,
+      option.textureShape
     );
     await dst.setData(await tensor.getData());
     return dst;
