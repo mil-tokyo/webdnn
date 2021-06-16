@@ -13,7 +13,7 @@ vec4 encode_float (float val) {
   vec3 enc = vec3(1.0, 255.0, 65025.0) * scaled;
   enc = fract(enc);
   enc -= enc.yzz * vec3(1.0/255.0, 1.0/255.0, 0.0);
-  return vec4((sign + exponent) * (1.0 / 255.0), enc.x, enc.y, enc.z);
+  return vec4((sign + clamp(exponent, -63.0, 63.0)) * (1.0 / 255.0), enc.x, enc.y, enc.z);
 }
 
 float decode_float(vec4 code) {
@@ -29,7 +29,7 @@ float decode_float(vec4 code) {
     sign = -1.0;
     exponent = ebyte - 64.0;
   }
-  float scaled = code.y + code.z * (1.0 / 255.0) + code.w * (1.0 / 65025.0);
+  float scaled = code.w * (1.0 / 65025.0) + code.z * (1.0 / 255.0) + code.y;
   float value = scaled * exp2(exponent) * sign;
   return value;
 }
