@@ -3,7 +3,7 @@ module.exports = {
   entry: './src/descriptor_runner/separateBuild/operatorWebGL.ts',
 
   output: {
-    filename: 'op-webgl2.js',
+    filename: 'op-webgl1-16384.js',
     path: __dirname + '/dist',
   },
 

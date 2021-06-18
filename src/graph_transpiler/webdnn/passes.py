@@ -17,10 +17,12 @@ def make_backend_passes(backend: str) -> List[OptimizationPass]:
         return [PassFusionUnaryCPU()]
     elif backend == "wasm":
         return [PassFusionUnaryWasm()]
-    elif backend == "webgl1":
-        return [PassFusionUnaryWebGL(), PassConvReshapeWebGL(webgl2=False)]
-    elif backend == "webgl2":
-        return [PassFusionUnaryWebGL(), PassConvReshapeWebGL(webgl2=True), PassMatMulTransposeWebGL2()]
+    elif backend.startswith("webgl1"):
+        max_texture_size = int(backend.split("-")[1])
+        return [PassFusionUnaryWebGL(), PassConvReshapeWebGL(webgl2=False, max_texture_size=max_texture_size)]
+    elif backend.startswith("webgl2"):
+        max_texture_size = int(backend.split("-")[1])
+        return [PassFusionUnaryWebGL(), PassConvReshapeWebGL(webgl2=True, max_texture_size=max_texture_size), PassMatMulTransposeWebGL2()]
     else:
         raise ValueError
 

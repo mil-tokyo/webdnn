@@ -191,6 +191,10 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.fb = nonnull(gl.createFramebuffer());
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
     this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
+    if (window.location.search.indexOf("max_texture_size_4096") >= 0) {
+      console.warn("Forcing WebGL MAX_TEXTURE_SIZE to 4096");
+      this.maxTextureSize = 4096;
+    }
   }
 
   async initialize(): Promise<void> {

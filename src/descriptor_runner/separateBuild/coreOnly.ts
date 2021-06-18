@@ -78,7 +78,9 @@ async function loadWebGL(
 ): Promise<WebDNNWebGLContextImpl> {
   const ctx = new WebDNNWebGLContextImpl(cpuContext),
     injectionParams = await loadJS(
-      `${directory}op-webgl${ctx.webgl2 ? "2" : "1"}.js`
+      `${directory}op-webgl${ctx.webgl2 ? "2" : "1"}-${
+        ctx.maxTextureSize >= 16384 ? "16384" : "4096"
+      }.js`
     );
   await ctx.initialize();
   registerOperators(injectionParams.operatorEntries);
@@ -179,7 +181,11 @@ export async function load(
     runner = new RunnerImpl(actualBackendOrder, backendContexts);
   let modelNameBackendPart: string = actualBackendOrder[0];
   if (modelNameBackendPart === "webgl") {
-    modelNameBackendPart = backendContexts.webgl!.webgl2 ? "webgl2" : "webgl1";
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const webglctx = backendContexts.webgl!;
+    modelNameBackendPart = `${webglctx.webgl2 ? "webgl2" : "webgl1"}-${
+      webglctx.maxTextureSize >= 16384 ? "16384" : "4096"
+    }`;
   }
   await runner.loadModel(directory, `model-${modelNameBackendPart}.onnx`);
   return runner;

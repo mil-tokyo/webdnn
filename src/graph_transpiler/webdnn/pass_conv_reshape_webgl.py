@@ -1238,9 +1238,10 @@ export function getOpEntries(): OperatorEntry[] {
 """
 
 class PassConvReshapeWebGL(OptimizationPass):
-    def __init__(self, webgl2: bool) -> None:
+    def __init__(self, webgl2: bool, max_texture_size: int) -> None:
         super().__init__()
         self.webgl2 = webgl2
+        self.max_texture_size = max_texture_size
 
     def optimize(self, model: onnx.ModelProto) -> Optional[OptimizationPassResult]:
         graph = model.graph
@@ -1261,11 +1262,10 @@ class PassConvReshapeWebGL(OptimizationPass):
                         cinpg_kh_kw = weight_array_shape[1] * weight_array_shape[2] * weight_array_shape[3]
                         cout = weight_array_shape[0]
                         if self.webgl2 and cinpg_kh_kw % 4 == 0:
-                            if cinpg_kh_kw <= 16384 and cout <= 4096:
+                            if cinpg_kh_kw <= self.max_texture_size * 4 and cout <= self.max_texture_size:
                                 optimizable = True
                         else:
-                            # TODO: allow 16384 when hardware allows
-                            if cinpg_kh_kw <= 4096 and cout <= 4096:
+                            if cinpg_kh_kw <= self.max_texture_size and cout <= self.max_texture_size:
                                 optimizable = True
                 if not optimizable:
                     continue
