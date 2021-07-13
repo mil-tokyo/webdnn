@@ -210,6 +210,111 @@ class Sigmoid(nn.Module):
         return torch.sigmoid(x)
 
 
+class Abs(nn.Module):
+    def forward(self, x):
+        return torch.abs(x)
+
+
+class Acos(nn.Module):
+    def forward(self, x):
+        return torch.acos(x)
+
+
+class Acosh(nn.Module):
+    def forward(self, x):
+        return torch.acosh(x)
+
+
+class Asin(nn.Module):
+    def forward(self, x):
+        return torch.asin(x)
+
+
+class Asinh(nn.Module):
+    def forward(self, x):
+        return torch.asinh(x)
+
+
+class Atan(nn.Module):
+    def forward(self, x):
+        return torch.atan(x)
+
+
+class Atanh(nn.Module):
+    def forward(self, x):
+        return torch.atanh(x)
+
+
+class Cos(nn.Module):
+    def forward(self, x):
+        return torch.cos(x)
+
+
+class Cosh(nn.Module):
+    def forward(self, x):
+        return torch.cosh(x)
+
+
+class Exp(nn.Module):
+    def forward(self, x):
+        return torch.exp(x)
+
+
+class Log(nn.Module):
+    def forward(self, x):
+        return torch.log(x)
+
+
+class Round(nn.Module):
+    def forward(self, x):
+        return torch.round(x)
+
+
+class Sign(nn.Module):
+    def forward(self, x):
+        return torch.sign(x)
+
+
+class Sin(nn.Module):
+    def forward(self, x):
+        return torch.sin(x)
+
+
+class Sinh(nn.Module):
+    def forward(self, x):
+        return torch.sinh(x)
+
+
+class Tan(nn.Module):
+    def forward(self, x):
+        return torch.tan(x)
+
+
+class HardSwish(nn.Module):
+    def forward(self, x):
+        return torch.nn.Hardswish()(x)
+
+
+class Neg(nn.Module):
+    def forward(self, x):
+        return torch.neg(x)
+
+
+class Softplus(nn.Module):
+    def forward(self, x):
+        return torch.nn.Softplus()(x)
+
+
+class Softsign(nn.Module):
+    def forward(self, x):
+        return torch.nn.Softsign()(x)
+
+
+class Reciprocal(nn.Module):
+    def forward(self, x):
+        return torch.reciprocal(x)
+
+
 class Tanh(nn.Module):
     def forward(self, x):
         return torch.tanh(x)
@@ -268,7 +373,7 @@ def rand_scalar():
 def randn_scalar():
     return torch.randn(1).squeeze()
 
-def dump(name, model, input_shapes):
+def dump(name, model, input_shapes, opset_version=10):
     name_all.append(name)
     output_dir = f"{OUTPUT_DIR}/{name}"
     os.makedirs(output_dir, exist_ok=True)
@@ -294,7 +399,7 @@ def dump(name, model, input_shapes):
         torch.onnx.export(model, tuple(inputs), onnx_path,
                           verbose=True,
                           input_names=input_names,
-                          output_names=output_names, opset_version=10)
+                          output_names=output_names, opset_version=opset_version)
     dumps = {}
     for tensor, name in zip(inputs, input_names):
         dumps[name] = tensor.numpy()
@@ -325,8 +430,30 @@ def main():
     dump("sqrt", Sqrt(), [torch.rand(3, 4)])
     dump("sqrtscalar", Sqrt(), [rand_scalar()])
     dump("sigmoid", Sigmoid(), [(3, 4)])
+    dump("abs", Abs(), [(3, 4)])
+    dump("acos", Acos(), [torch.rand(3, 4)])
+    # dump("acosh", Acosh(), [torch.rand(3, 4) + 2]) # unsupported ONNX export
+    dump("asin", Asin(), [torch.rand(3, 4)])
+    # dump("asinh", Asinh(), [torch.rand(3, 4)]) # unsupported ONNX export
+    dump("atan", Atan(), [torch.rand(3, 4)])
+    # dump("atanh", Atanh(), [torch.rand(3, 4) * 0.5]) # unsupported ONNX export
     dump("ceil", Ceil(), [(3, 4)])
+    dump("cos", Cos(), [(3, 4)])
+    # dump("cosh", Cosh(), [(3, 4)]) # unsupported ONNX export
+    dump("exp", Exp(), [(3, 4)])
     dump("floor", Floor(), [(3, 4)])
+    # dump("hardswish", HardSwish(), [(3, 4)], opset_version=14) # ONNX opset 14
+    dump("log", Log(), [torch.rand(3, 4) + 1])
+    dump("neg", Neg(), [(3, 4)])
+    # dump("reciprocal", Reciprocal(), [(3, 4)]) # does not output Reciprocal operator
+    dump("round", Round(), [torch.randn(3, 4) * 10], opset_version=11)
+    dump("sign", Sign(), [torch.randn(3, 4) * 10])#TODO 0
+    dump("sin", Sin(), [(3, 4)])
+    # dump("sinh", Sinh(), [(3, 4)]) # unsupported ONNX export
+    dump("softplus", Softplus(), [(3, 4)])
+    dump("softsign", Softsign(), [(3, 4)])
+    dump("tan", Tan(), [(3, 4)])
+    dump("tanh", Tanh(), [(3, 4)])
     dump("gemm", Gemm(), [(3, 128)])
     dump("matmul", MatMul(), [(3, 128)])
     dump("matmul2", MatMul2(), [(1, 3, 128), (4, 128, 1)])

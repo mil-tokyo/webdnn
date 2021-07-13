@@ -79,10 +79,84 @@ export class WebGLUnary extends OperatorImpl {
 export function getOpEntries(): OperatorEntry[] {
   return [
     {
+      opType: "Abs",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("abs", "float v = abs(s);"),
+    },
+    {
+      opType: "Acos",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("acos", "float v = acos(s);"),
+    },
+    {
+      opType: "Acosh",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "acosh",
+          "float v = acosh(s);",
+          "float v = log(s + sqrt(s * s - 1.0));"
+        ),
+    },
+    {
+      opType: "Asin",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("asin", "float v = asin(s);"),
+    },
+    {
+      opType: "Asinh",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "asinh",
+          "float v = asinh(s);",
+          "float v = log(s + sqrt(s * s + 1.0));"
+        ),
+    },
+    {
+      opType: "Atan",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("atan", "float v = atan(s);"),
+    },
+    {
+      opType: "Atanh",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "atanh",
+          "float v = atanh(s);",
+          "float v = log((s + 1.0) / (1.0 - s)) * 0.5;"
+        ),
+    },
+    {
       opType: "Ceil",
       backend: "webgl",
       opsetMin: 1,
       factory: () => new WebGLUnary("ceil", "float v = ceil(s);"),
+    },
+    {
+      opType: "Cos",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("cos", "float v = cos(s);"),
+    },
+    {
+      opType: "Cosh",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "cosh",
+          "float v = cosh(s);",
+          "float v = (exp(s) + exp(-s)) * 0.5;"
+        ),
     },
     {
       opType: "Exp",
@@ -97,10 +171,49 @@ export function getOpEntries(): OperatorEntry[] {
       factory: () => new WebGLUnary("floor", "float v = floor(s);"),
     },
     {
+      opType: "HardSwish",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "hardswish",
+          "float v; if (s <= -3.0) { v = 0.0; } else if (s >= 3.0) { v = s; } else { v = s * (s + 3.0) / 6.0; }"
+        ),
+    },
+    {
+      opType: "Log",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("log", "float v = log(s);"),
+    },
+    {
+      opType: "Neg",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("neg", "float v = -s;"),
+    },
+    {
+      opType: "Reciprocal",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("neg", "float v = 1.0 / s;"),
+    },
+    {
       opType: "Relu",
       backend: "webgl",
       opsetMin: 1,
       factory: () => new WebGLUnary("relu", "float v = max(s, 0.0);"),
+    },
+    {
+      opType: "Round",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary(
+          "round",
+          "float v = round(s);",
+          "float v = floor(s + 0.5);"
+        ),
     },
     {
       opType: "Sigmoid",
@@ -114,10 +227,41 @@ export function getOpEntries(): OperatorEntry[] {
         ),
     },
     {
+      opType: "Sign",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("sign", "float v = sign(s);"),
+    },
+    {
+      opType: "Sin",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("sin", "float v = sin(s);"),
+    },
+    {
+      opType: "Softplus",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("softplus", "float v = log(exp(s) + 1.0);"),
+    },
+    {
+      opType: "Softsign",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new WebGLUnary("softsign", "float v = s / (1.0 + abs(s));"),
+    },
+    {
       opType: "Sqrt",
       backend: "webgl",
       opsetMin: 1,
       factory: () => new WebGLUnary("sqrt", "float v = sqrt(s);"),
+    },
+    {
+      opType: "Tan",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new WebGLUnary("tan", "float v = tan(s);"),
     },
     {
       opType: "Tanh",
