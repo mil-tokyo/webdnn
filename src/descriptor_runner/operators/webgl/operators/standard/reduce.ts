@@ -18,12 +18,17 @@ import {
 import { OperatorEntry } from "../../../../interface/core/operator";
 
 // Opset 1
-export class ReduceMean extends OperatorImpl {
+export class ReduceOp extends OperatorImpl {
   axes!: number[];
 
   keepdims!: boolean;
 
-  constructor() {
+  constructor(
+    private opType: string,
+    private shaderInit: string,
+    private shaderAccum: string,
+    private shaderOutput: string
+  ) {
     super("webgl");
   }
 
@@ -37,7 +42,7 @@ export class ReduceMean extends OperatorImpl {
     context.assertsWebGLTensorArray(inputs);
     const input = inputs[0];
     if (this.axes.length !== 1) {
-      throw new Error(`ReduceMean: only single axis is supported`);
+      throw new Error(`${this.opType}: only single axis is supported`);
     }
     let axis = this.axes[0];
     if (axis < 0) {
@@ -45,7 +50,7 @@ export class ReduceMean extends OperatorImpl {
     }
     if (axis !== input.ndim - 1) {
       throw new Error(
-        "ReduceMean: currently only reducing final axis is supported"
+        `${this.opType}: currently only reducing final axis is supported`
       );
     }
     // 最終軸のreductionに特化した実装
@@ -58,7 +63,7 @@ export class ReduceMean extends OperatorImpl {
       outShape.pop();
     }
     const output = context.emptyTensor(outShape, input.dataType),
-      kernelName = `reducemean_${reductionLength}`,
+      kernelName = `reduceop_${this.opType}_${reductionLength}`,
       kernelSource = `${shaderGenHeader(context.webgl2)}
 
 #define reductionLength ${reductionLength}
@@ -69,12 +74,12 @@ ${shaderGenTensorNDGet("tex_input", 2, context.webgl2)}
 
 void main() {
   ${shaderGenTensorOutputCoordsWithReturn(1)}
-  float s = 0.0;
+  float s = ${this.shaderInit}
   for (int i = 0; i < reductionLength; i++) {
     float v = get_tex_input(tex_output_0, i);
-    s += v;
+    ${this.shaderAccum}
   }
-  s *= reductionMul;
+  ${this.shaderOutput}
   ${shaderGenOutput("s", context.webgl2)}
   return;
 }
@@ -106,10 +111,70 @@ void main() {
 export function getOpEntries(): OperatorEntry[] {
   return [
     {
+      opType: "ReduceL1",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new ReduceOp("ReduceL1", "0.0;", "s += abs(v);", ""),
+    },
+    {
+      opType: "ReduceL2",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new ReduceOp("ReduceL2", "0.0;", "s += v * v;", "s = sqrt(s);"),
+    },
+    {
+      opType: "ReduceLogSum",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new ReduceOp("ReduceLogSum", "0.0;", "s += v;", "s = log(s);"),
+    },
+    {
+      opType: "ReduceLogSumExp",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new ReduceOp("ReduceLogSumExp", "0.0;", "s += exp(v);", "s = log(s);"),
+    },
+    {
+      opType: "ReduceMax",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new ReduceOp("ReduceMax", "-65536.0;", "if (v > s) { s = v; }", ""),
+    },
+    {
       opType: "ReduceMean",
       backend: "webgl",
       opsetMin: 1,
-      factory: () => new ReduceMean(),
+      factory: () =>
+        new ReduceOp("ReduceMean", "0.0;", "s += v;", "s *= reductionMul;"),
+    },
+    {
+      opType: "ReduceMin",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () =>
+        new ReduceOp("ReduceMin", "65536.0;", "if (v < s) { s = v; }", ""),
+    },
+    {
+      opType: "ReduceProd",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new ReduceOp("ReduceProd", "1.0;", "s *= v;", ""),
+    },
+    {
+      opType: "ReduceSum",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new ReduceOp("ReduceSum", "0.0;", "s += v;", ""),
+    },
+    {
+      opType: "ReduceSumSquare",
+      backend: "webgl",
+      opsetMin: 1,
+      factory: () => new ReduceOp("ReduceSumSquare", "0.0;", "s += v * v;", ""),
     },
   ];
 }

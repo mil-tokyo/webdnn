@@ -14,7 +14,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/s
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
 import { getOpEntries as getOpEntriesoperatorsstandardmatmul } from "./operators/standard/matmul";
 import { getOpEntries as getOpEntriesoperatorsstandardmaxpool } from "./operators/standard/maxpool";
-import { getOpEntries as getOpEntriesoperatorsstandardreducemean } from "./operators/standard/reducemean";
+import { getOpEntries as getOpEntriesoperatorsstandardreduce } from "./operators/standard/reduce";
 import { getOpEntries as getOpEntriesoperatorsstandardreshape5 } from "./operators/standard/reshape5";
 import { getOpEntries as getOpEntriesoperatorsstandardshape } from "./operators/standard/shape";
 import { getOpEntries as getOpEntriesoperatorsstandardslice } from "./operators/standard/slice";
@@ -39,7 +39,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
   entries.push(...getOpEntriesoperatorsstandardmatmul());
   entries.push(...getOpEntriesoperatorsstandardmaxpool());
-  entries.push(...getOpEntriesoperatorsstandardreducemean());
+  entries.push(...getOpEntriesoperatorsstandardreduce());
   entries.push(...getOpEntriesoperatorsstandardreshape5());
   entries.push(...getOpEntriesoperatorsstandardshape());
   entries.push(...getOpEntriesoperatorsstandardslice());

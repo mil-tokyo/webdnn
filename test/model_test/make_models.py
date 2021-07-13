@@ -341,9 +341,29 @@ class Gather1D(nn.Module):
         return x[[2, 4, 5]]
 
 
+class ReduceMax(nn.Module):
+    def forward(self, x):
+        return torch.max(x, -1, keepdim=True)[0]
+
+
 class ReduceMean(nn.Module):
     def forward(self, x):
         return torch.mean(x, -1, keepdim=True)
+
+
+class ReduceMin(nn.Module):
+    def forward(self, x):
+        return torch.min(x, -1, keepdim=True)[0]
+
+
+class ReduceProd(nn.Module):
+    def forward(self, x):
+        return torch.prod(x, -1, keepdim=True)
+
+
+class ReduceSum(nn.Module):
+    def forward(self, x):
+        return torch.sum(x, -1, keepdim=True)
 
 
 class Split(nn.Module):
@@ -528,7 +548,11 @@ def main():
     dump("cast", Cast(), [(3, 4)])
     # dump("gather0d", Gather0D(), [(10,)])
     # #dump("gather1d", Gather1D(), [(10,)])
+    dump("reducemax", ReduceMax(), [(3, 4, 5, 6)])
     dump("reducemean", ReduceMean(), [(3, 4, 5, 6)])
+    dump("reducemin", ReduceMin(), [(3, 4, 5, 6)])
+    dump("reduceprod", ReduceProd(), [(3, 4, 5, 6)])
+    dump("reducesum", ReduceSum(), [(3, 4, 5, 6)])
     dump("softmax", torch.nn.Softmax(dim=-1), [(3, 4, 5, 6)])
     dump("split1", Split([2, 3, 5, 7, 60-2-3-5-7], -1), [(3, 4, 5, 60)])
     dump("split2", Split([2, 3, 5, 7, 40-2-3-5-7], 1), [(3, 40, 5, 6)])
