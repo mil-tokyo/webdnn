@@ -107,7 +107,7 @@ uniform sampler2D tex_input_b;
 uniform int tex_input_b_stride_0;
 uniform int tex_input_b_stride_1;
 
-ivec2 get_coord_b(int d1, int d2) {
+ivec2 get_coord_b(int d1) {
   int flat_index = d1 * tex_input_b_stride_1;
   int texture_w = textureSize(tex_input_b, 0).x;
   int y = flat_index / texture_w;
