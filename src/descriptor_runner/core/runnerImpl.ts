@@ -290,9 +290,9 @@ export class RunnerImpl implements Runner {
     }
     for (let i = 0; i < inputs.length; i++) {
       const graphInput = graph.input![i];
-      if (graphInput.type!.tensorType!.elemType !== 1) {
-        throw new Error("graph input type must be float32");
-      }
+      // if (graphInput.type!.tensorType!.elemType !== 1) {
+      //   throw new Error("graph input type must be float32");
+      // }
       tensorsForBackends.cpu.set(graphInput.name!, inputs[i]);
     }
 

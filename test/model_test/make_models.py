@@ -381,7 +381,18 @@ class Split(nn.Module):
 
 
 def dump_expected(directory, arrays_dict):
-    serialize_tensors(directory + "/expected.bin", arrays_dict)
+    casted_arrays_dict = {}
+    for k, array in arrays_dict.items():
+        if array.dtype == np.float64:
+            c_array = array.astype(np.float32)
+        elif array.dtype == np.int64:
+            c_array = array.astype(np.int32)
+        elif array.dtype == np.uint64:
+            c_array = array.astype(np.uint32)
+        else:
+            c_array = array
+        casted_arrays_dict[k] = c_array
+    serialize_tensors(directory + "/expected.bin", casted_arrays_dict)
 
 name_all = []
 
@@ -521,6 +532,7 @@ def main():
     RUN_OPTIMIZE = args.optimize
     dump_direct_onnx("max", "Max", [np.random.rand(3, 4).astype(np.float32), np.random.rand(1, 4).astype(np.float32)], [np.random.rand(3, 4).astype(np.float32)])
     dump_direct_onnx("mean", "Mean", [np.random.rand(3, 4).astype(np.float32), np.random.rand(1, 4).astype(np.float32)], [np.random.rand(3, 4).astype(np.float32)])
+    dump_direct_onnx("tile", "Tile", [np.random.rand(3, 4, 5, 6).astype(np.float32), np.array([2, 3, 4, 5], dtype=np.int64)], [np.zeros((3*2, 4*3, 5*4, 6*5), dtype=np.float32)])
     dump("relu", ReLU(), [(3, 4)])
     dump("relu2", ReLU(), [(100, 20, 30, 400)])
     dump("reluexp", ReLUExp(), [(3, 4)])

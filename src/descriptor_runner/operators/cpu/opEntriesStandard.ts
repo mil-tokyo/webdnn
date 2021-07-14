@@ -21,6 +21,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardshape } from "./operators/
 import { getOpEntries as getOpEntriesoperatorsstandardslice } from "./operators/standard/slice";
 import { getOpEntries as getOpEntriesoperatorsstandardsoftmax } from "./operators/standard/softmax";
 import { getOpEntries as getOpEntriesoperatorsstandardsplit } from "./operators/standard/split";
+import { getOpEntries as getOpEntriesoperatorsstandardtile } from "./operators/standard/tile";
 import { getOpEntries as getOpEntriesoperatorsstandardtranspose } from "./operators/standard/transpose";
 import { getOpEntries as getOpEntriesoperatorsstandardunary } from "./operators/standard/unary";
 import { getOpEntries as getOpEntriesoperatorsstandardunsqueeze } from "./operators/standard/unsqueeze";
@@ -47,6 +48,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardslice());
   entries.push(...getOpEntriesoperatorsstandardsoftmax());
   entries.push(...getOpEntriesoperatorsstandardsplit());
+  entries.push(...getOpEntriesoperatorsstandardtile());
   entries.push(...getOpEntriesoperatorsstandardtranspose());
   entries.push(...getOpEntriesoperatorsstandardunary());
   entries.push(...getOpEntriesoperatorsstandardunsqueeze());

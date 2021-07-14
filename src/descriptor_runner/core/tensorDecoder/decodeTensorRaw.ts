@@ -1,5 +1,7 @@
+import Long from "long";
 import { onnx } from "onnx-proto";
 import { DataArrayTypes } from "../../interface/core/constants";
+import { clipLong } from "../../util";
 
 export function decodeTensorRaw(
   buf: ArrayBuffer,
@@ -16,6 +18,19 @@ export function decodeTensorRaw(
     case onnx.TensorProto.DataType.INT32:
       data = new Int32Array(numel);
       break;
+    case onnx.TensorProto.DataType.INT64: {
+      data = new Int32Array(numel);
+      const view = new DataView(buf, bodyByteOffset, numel * 8);
+      for (let idx = 0; idx < numel; idx++) {
+        data[idx] = clipLong(
+          new Long(
+            view.getUint32(idx * 8, true),
+            view.getUint32(idx * 8 + 4, true)
+          )
+        );
+      }
+      return data;
+    }
     default:
       throw new Error("Unsupported DataType");
   }
