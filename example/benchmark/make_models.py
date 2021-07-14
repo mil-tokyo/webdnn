@@ -99,21 +99,28 @@ def use_detr():
     dump_detr(output_dir)
     optimize_if_requested(output_dir)
 
-def use_external_model(name):
+def use_external_model(name, src_dir):
     name_all.append(name)
     if TARGET_MODELS is not None and name not in TARGET_MODELS:
         return
     output_dir = f"{OUTPUT_DIR}/{name}"
     os.makedirs(output_dir, exist_ok=True)
     for filename in ["model.onnx", "expected.bin"]:
-        shutil.copy(os.path.join(EXTERNAL_MODEL_DIR, name, filename), os.path.join(output_dir, filename))
+        src_path = os.path.join(src_dir, filename)
+        if os.path.exists(src_path):
+            shutil.copy(src_path, os.path.join(output_dir, filename))
+    expected_numpy_path = os.path.join(src_dir, "expected.npz")
+    if os.path.exists(expected_numpy_path):
+        expected_numpy_arrays = dict(np.load(expected_numpy_path))
+        dump_expected(output_dir, expected_numpy_arrays)
     optimize_if_requested(output_dir)
 
 def use_external_models():
     dirs = os.listdir(EXTERNAL_MODEL_DIR)
     for name in dirs:
-        if os.path.exists(os.path.join(EXTERNAL_MODEL_DIR, name, "model.onnx")):
-            use_external_model(name)
+        src_dir = os.path.join(EXTERNAL_MODEL_DIR, name)
+        if os.path.exists(os.path.join(src_dir, "model.onnx")):
+            use_external_model(name, src_dir)
 
 def output_list():
     with open(f"{OUTPUT_DIR}/cases.json", "w") as f:
