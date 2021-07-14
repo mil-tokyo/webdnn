@@ -118,7 +118,7 @@ export class RunnerImpl implements Runner {
     for (const initializer of this.model!.graph!.initializer!) {
       const dims = intOrLongToIntVector(initializer.dims!);
       if (initializer.dataType === onnx.TensorProto.DataType.FLOAT) {
-        if (initializer.rawData!.byteLength) {
+        if (initializer.rawData?.byteLength) {
           // Float32Array(initializer.rawData!.buffer) は不可(4byteにアライメントされていない場合がある)
           const newBuffer = new Uint8Array(initializer.rawData!.byteLength);
           newBuffer.set(initializer.rawData!);
@@ -134,53 +134,76 @@ export class RunnerImpl implements Runner {
               )
             )
           );
-        } else {
+        } else if (initializer.floatData) {
           tensors.set(
             initializer.name!,
             this.backendContexts.cpu.emptyTensor(
               dims,
               "float32",
-              new Float32Array(initializer.floatData!)
+              new Float32Array(initializer.floatData)
             )
           );
         }
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT64) {
+        console.log("initializer64", initializer);
         // 1要素が8byte (int64)
-        const rawData = initializer.rawData!,
-          view = new DataView(
-            rawData.buffer,
-            rawData.byteOffset,
-            rawData.byteLength
-          ),
-          ab = new Int32Array(view.byteLength / 8);
-        for (let idx = 0; idx < ab.length; idx++) {
-          ab[idx] = clipLong(
-            new Long(
-              view.getUint32(idx * 8, true),
-              view.getUint32(idx * 8 + 4, true)
+        if (initializer.rawData?.byteLength) {
+          const rawData = initializer.rawData!,
+            view = new DataView(
+              rawData.buffer,
+              rawData.byteOffset,
+              rawData.byteLength
+            ),
+            ab = new Int32Array(view.byteLength / 8);
+          for (let idx = 0; idx < ab.length; idx++) {
+            ab[idx] = clipLong(
+              new Long(
+                view.getUint32(idx * 8, true),
+                view.getUint32(idx * 8 + 4, true)
+              )
+            );
+          }
+          tensors.set(
+            initializer.name!,
+            this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
+          );
+        } else if (initializer.int64Data) {
+          tensors.set(
+            initializer.name!,
+            this.backendContexts.cpu.emptyTensor(
+              dims,
+              "int32",
+              new Int32Array(intOrLongToIntVector(initializer.int64Data))
             )
           );
         }
-        tensors.set(
-          initializer.name!,
-          this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
-        );
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT32) {
-        // 1要素が4byte (int32)
-        const rawData = initializer.rawData!,
-          view = new DataView(
-            rawData.buffer,
-            rawData.byteOffset,
-            rawData.byteLength
-          ),
-          ab = new Int32Array(view.byteLength / 4);
-        for (let idx = 0; idx < ab.length; idx++) {
-          ab[idx] = view.getInt32(idx * 4, true);
+        if (initializer.rawData?.byteLength) {
+          // 1要素が4byte (int32)
+          const rawData = initializer.rawData!,
+            view = new DataView(
+              rawData.buffer,
+              rawData.byteOffset,
+              rawData.byteLength
+            ),
+            ab = new Int32Array(view.byteLength / 4);
+          for (let idx = 0; idx < ab.length; idx++) {
+            ab[idx] = view.getInt32(idx * 4, true);
+          }
+          tensors.set(
+            initializer.name!,
+            this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
+          );
+        } else if (initializer.int32Data) {
+          tensors.set(
+            initializer.name!,
+            this.backendContexts.cpu.emptyTensor(
+              dims,
+              "int32",
+              new Int32Array(initializer.int32Data)
+            )
+          );
         }
-        tensors.set(
-          initializer.name!,
-          this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
-        );
       } else {
         throw new Error(
           `Unsupported initializer dataType ${initializer.dataType}`
