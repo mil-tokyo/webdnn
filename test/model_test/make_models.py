@@ -8,6 +8,10 @@ import torch.onnx
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+import onnx
+from onnx import helper
+from onnx import AttributeProto, TensorProto, GraphProto
+import onnxruntime
 from webdnn.tensor_export import serialize_tensors
 
 torch.manual_seed(0)
@@ -393,6 +397,77 @@ def rand_scalar():
 def randn_scalar():
     return torch.randn(1).squeeze()
 
+DATA_TYPE_TO_NUMPY = {
+    1: np.float32,
+    2: np.uint8,
+    3: np.int8,
+    4: np.uint16,
+    5: np.int16,
+    6: np.int32,
+    7: np.int64,
+    9: np.bool,
+    10: np.float16,
+    11: np.float64,
+    12: np.uint32,
+    13: np.uint64,
+}
+
+def _data_type_from_numpy(np_dtype) -> int:
+    # dict like {np.float32: 1} cannot be used due to key equality check
+    for k, v in DATA_TYPE_TO_NUMPY.items():
+        if v == np_dtype:
+            return k
+    raise ValueError
+
+def array_to_tensor_value_info(array, name):
+    dtype = _data_type_from_numpy(array.dtype)
+    return helper.make_tensor_value_info(name, dtype, list(array.shape))
+
+def dump_direct_onnx(name, op_type, input_arrays, output_arrays, attributes={}, opset_version=10):
+    name_all.append(name)
+    output_dir = f"{OUTPUT_DIR}/{name}"
+    os.makedirs(output_dir, exist_ok=True)
+    input_tvs = []
+    input_names = []
+    for i, array in enumerate(input_arrays):
+        name = f"input_{i}"
+        input_names.append(name)
+        input_tvs.append(array_to_tensor_value_info(array, name))
+    output_tvs = []
+    output_names = []
+    for i, array in enumerate(output_arrays):
+        name = f"output_{i}"
+        output_names.append(name)
+        output_tvs.append(array_to_tensor_value_info(array, name))
+    node_def = helper.make_node(
+        op_type,                  # name
+        input_names,
+        output_names,
+        attributes,        # attributes
+    )
+    graph_def = helper.make_graph(
+        [node_def],        # nodes
+        'test-model',      # name
+        input_tvs,  # inputs
+        output_tvs,               # outputs
+    )
+    model_def = helper.make_model(graph_def, producer_name='onnx-example')
+    model_def.opset_import[0].version = opset_version
+    onnx.checker.check_model(model_def)
+    onnx_path = f"{output_dir}/model.onnx"
+    onnx.save_model(model_def, onnx_path)
+
+    # make test case expected value
+    session = onnxruntime.InferenceSession(onnx_path)
+    dumps = {f"input_{i}": array for i, array in enumerate(input_arrays)}
+    outputs = session.run(output_names, dumps)
+    for i in range(len(outputs)):
+        dumps[f"output_{i}"] = outputs[i]
+    dump_expected(output_dir, dumps)
+    if RUN_OPTIMIZE:
+        subprocess.check_call(["python", "-m", "webdnn.optimize_model", onnx_path, os.path.join(output_dir, "optimized")])
+
+
 def dump(name, model, input_shapes, opset_version=10):
     name_all.append(name)
     output_dir = f"{OUTPUT_DIR}/{name}"
@@ -444,6 +519,8 @@ def main():
     parser.add_argument("--optimize", action="store_true", help="specify this to make optimized model (takes time)")
     args = parser.parse_args()
     RUN_OPTIMIZE = args.optimize
+    dump_direct_onnx("max", "Max", [np.random.rand(3, 4).astype(np.float32), np.random.rand(1, 4).astype(np.float32)], [np.random.rand(3, 4).astype(np.float32)])
+    dump_direct_onnx("mean", "Mean", [np.random.rand(3, 4).astype(np.float32), np.random.rand(1, 4).astype(np.float32)], [np.random.rand(3, 4).astype(np.float32)])
     dump("relu", ReLU(), [(3, 4)])
     dump("relu2", ReLU(), [(100, 20, 30, 400)])
     dump("reluexp", ReLUExp(), [(3, 4)])
