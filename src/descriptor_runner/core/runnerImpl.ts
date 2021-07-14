@@ -145,7 +145,6 @@ export class RunnerImpl implements Runner {
           );
         }
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT64) {
-        console.log("initializer64", initializer);
         // 1要素が8byte (int64)
         if (initializer.rawData?.byteLength) {
           const rawData = initializer.rawData!,
