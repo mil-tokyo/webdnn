@@ -116,6 +116,23 @@ export function getAttrTensor(
   }
 }
 
+export function getAttrString(
+  attribute: onnx.IAttributeProto[],
+  name: string,
+  defaultValue: string
+): string {
+  const attr = getAttr(attribute, name);
+  if (!attr) {
+    return defaultValue;
+  }
+  // Only ASCII chars are considered
+  const v = attr.s;
+  if (v == null) {
+    throw new Error(`Attribute ${name} is not string`);
+  }
+  return String.fromCharCode(...Array.from(v));
+}
+
 export function arraySum(vec: ArrayLike<number>): number {
   let x = 0;
   for (let i = 0; i < vec.length; i++) {
