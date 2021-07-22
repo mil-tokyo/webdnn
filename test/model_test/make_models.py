@@ -454,7 +454,7 @@ def dump_direct_onnx(name, op_type, input_arrays, output_arrays, attributes={}, 
         op_type,                  # name
         input_names,
         output_names,
-        attributes,        # attributes
+        **attributes,        # attributes
     )
     graph_def = helper.make_graph(
         [node_def],        # nodes
