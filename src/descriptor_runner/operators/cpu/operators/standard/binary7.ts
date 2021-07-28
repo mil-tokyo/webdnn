@@ -35,60 +35,35 @@ class Binary7 extends OperatorImpl {
       ]),
       output = context.emptyTensor(outShape, inputA.dataType),
       { op } = this;
+    let func;
     switch (outShape.length) {
       case 0:
-        this.op0d(
-          inputA.data,
-          inputB.data,
-          output.data,
-          op,
-          outShape,
-          inAllStrides
-        );
+        func = this.op0d;
         break;
       case 1:
-        this.op1d(
-          inputA.data,
-          inputB.data,
-          output.data,
-          op,
-          outShape,
-          inAllStrides
-        );
+        func = this.op1d;
         break;
       case 2:
-        this.op2d(
-          inputA.data,
-          inputB.data,
-          output.data,
-          op,
-          outShape,
-          inAllStrides
-        );
+        func = this.op2d;
         break;
       case 3:
-        this.op3d(
-          inputA.data,
-          inputB.data,
-          output.data,
-          op,
-          outShape,
-          inAllStrides
-        );
+        func = this.op3d;
         break;
       case 4:
-        this.op4d(
-          inputA.data,
-          inputB.data,
-          output.data,
-          op,
-          outShape,
-          inAllStrides
-        );
+        func = this.op4d;
+        break;
+      case 5:
+        func = this.op5d;
+        break;
+      case 6:
+        func = this.op6d;
         break;
       default:
-        throw new Error(`Binary: input ndim > 4 is not yet supported`);
+        throw new Error(
+          `Binary: input ndim ${outShape.length} > 4 is not yet supported`
+        );
     }
+    func(inputA.data, inputB.data, output.data, op, outShape, inAllStrides);
     return [output];
   }
 
@@ -194,6 +169,84 @@ class Binary7 extends OperatorImpl {
                   a3 * inAllStrides[1][3]
               ]
             );
+          }
+        }
+      }
+    }
+  }
+
+  private op5d(
+    dL: DataArrayTypes,
+    dR: DataArrayTypes,
+    dO: DataArrayTypes,
+    op: (lhs: number, rhs: number) => number,
+    outShape: number[],
+    inAllStrides: number[][]
+  ) {
+    let idx = 0;
+    for (let a0 = 0; a0 < outShape[0]; a0++) {
+      for (let a1 = 0; a1 < outShape[1]; a1++) {
+        for (let a2 = 0; a2 < outShape[2]; a2++) {
+          for (let a3 = 0; a3 < outShape[3]; a3++) {
+            for (let a4 = 0; a4 < outShape[4]; a4++) {
+              dO[idx++] = op(
+                dL[
+                  a0 * inAllStrides[0][0] +
+                    a1 * inAllStrides[0][1] +
+                    a2 * inAllStrides[0][2] +
+                    a3 * inAllStrides[0][3] +
+                    a4 * inAllStrides[0][4]
+                ],
+                dR[
+                  a0 * inAllStrides[1][0] +
+                    a1 * inAllStrides[1][1] +
+                    a2 * inAllStrides[1][2] +
+                    a3 * inAllStrides[1][3] +
+                    a4 * inAllStrides[1][4]
+                ]
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private op6d(
+    dL: DataArrayTypes,
+    dR: DataArrayTypes,
+    dO: DataArrayTypes,
+    op: (lhs: number, rhs: number) => number,
+    outShape: number[],
+    inAllStrides: number[][]
+  ) {
+    let idx = 0;
+    for (let a0 = 0; a0 < outShape[0]; a0++) {
+      for (let a1 = 0; a1 < outShape[1]; a1++) {
+        for (let a2 = 0; a2 < outShape[2]; a2++) {
+          for (let a3 = 0; a3 < outShape[3]; a3++) {
+            for (let a4 = 0; a4 < outShape[4]; a4++) {
+              for (let a5 = 0; a5 < outShape[5]; a5++) {
+                dO[idx++] = op(
+                  dL[
+                    a0 * inAllStrides[0][0] +
+                      a1 * inAllStrides[0][1] +
+                      a2 * inAllStrides[0][2] +
+                      a3 * inAllStrides[0][3] +
+                      a4 * inAllStrides[0][4] +
+                      a5 * inAllStrides[0][5]
+                  ],
+                  dR[
+                    a0 * inAllStrides[1][0] +
+                      a1 * inAllStrides[1][1] +
+                      a2 * inAllStrides[1][2] +
+                      a3 * inAllStrides[1][3] +
+                      a4 * inAllStrides[1][4] +
+                      a5 * inAllStrides[1][5]
+                  ]
+                );
+              }
+            }
           }
         }
       }

@@ -2,20 +2,16 @@ import { onnx } from "onnx-proto";
 import { OperatorImpl } from "../operatorImpl";
 import { arrayProd, getAttrInt, getAttrInts } from "../operatorUtil";
 import { Tensor } from "../../interface/core/tensor";
+import { CPUTensor } from "../..";
 
-// Incompatible with opset 13 because it takes "split" as tensor
-export abstract class Split extends OperatorImpl {
+abstract class Split extends OperatorImpl {
   axis!: number;
 
-  split!: number[];
-
-  initialize(attribute: onnx.IAttributeProto[]): void {
-    super.initialize(attribute);
-    this.axis = getAttrInt(attribute, "axis", 0);
-    this.split = getAttrInts(attribute, "split", []);
-  }
-
-  protected calcShape(input: Tensor, nOutputs: number) {
+  protected calcShapeBase(
+    input: Tensor,
+    nOutputs: number,
+    splitSrc: ReadonlyArray<number>
+  ) {
     let { axis } = this;
     if (axis < 0) {
       axis += input.ndim;
@@ -25,8 +21,8 @@ export abstract class Split extends OperatorImpl {
     }
     const axisLength = input.dims[axis],
       split =
-        this.split.length > 0
-          ? this.split
+        splitSrc.length > 0
+          ? splitSrc
           : Array.from({ length: nOutputs }, () =>
               Math.floor(axisLength / nOutputs)
             ),
@@ -67,5 +63,38 @@ export abstract class Split extends OperatorImpl {
       inOuterStride,
       inConcatStride,
     };
+  }
+}
+
+export abstract class Split2 extends Split {
+  split!: number[];
+
+  initialize(attribute: onnx.IAttributeProto[]): void {
+    super.initialize(attribute);
+    this.axis = getAttrInt(attribute, "axis", 0);
+    this.split = getAttrInts(attribute, "split", []);
+  }
+
+  protected calcShape(input: Tensor, nOutputs: number) {
+    return this.calcShapeBase(input, nOutputs, this.split);
+  }
+}
+
+export abstract class Split13 extends Split {
+  initialize(attribute: onnx.IAttributeProto[]): void {
+    super.initialize(attribute);
+    this.axis = getAttrInt(attribute, "axis", 0);
+  }
+
+  protected calcShape(
+    input: Tensor,
+    nOutputs: number,
+    splitTensor?: CPUTensor
+  ) {
+    return this.calcShapeBase(
+      input,
+      nOutputs,
+      splitTensor ? Array.from(splitTensor.data) : []
+    );
   }
 }

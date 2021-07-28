@@ -1,9 +1,9 @@
-import { Unsqueeze1, Unsqueeze13 } from "../../../base/unsqueeze";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
+import { Squeeze1, Squeeze13 } from "../../../base/squeeze";
 
-export class CPUUnsqueeze1 extends Unsqueeze1 {
+export class CPUSqueeze1 extends Squeeze1 {
   constructor() {
     super("cpu");
   }
@@ -17,7 +17,7 @@ export class CPUUnsqueeze1 extends Unsqueeze1 {
   }
 }
 
-export class CPUUnsqueeze13 extends Unsqueeze13 {
+export class CPUSqueeze13 extends Squeeze13 {
   constructor() {
     super("cpu");
   }
@@ -35,17 +35,17 @@ export class CPUUnsqueeze13 extends Unsqueeze13 {
 export function getOpEntries(): OperatorEntry[] {
   return [
     {
-      opType: "Unsqueeze",
+      opType: "Squeeze",
       backend: "cpu",
       opsetMin: 13,
-      factory: () => new CPUUnsqueeze13(),
+      factory: () => new CPUSqueeze13(),
     },
     {
-      opType: "Unsqueeze",
+      opType: "Squeeze",
       backend: "cpu",
       opsetMin: 1,
       opsetMax: 13,
-      factory: () => new CPUUnsqueeze1(),
+      factory: () => new CPUSqueeze1(),
     },
   ];
 }

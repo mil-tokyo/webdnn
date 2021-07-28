@@ -199,6 +199,16 @@ class Unsqueeze(nn.Module):
         return x.unsqueeze(2).unsqueeze(-1)
 
 
+class Squeeze1(nn.Module):
+    def forward(self, x):
+        return x.squeeze()
+
+
+class Squeeze2(nn.Module):
+    def forward(self, x):
+        return x.squeeze(4)
+
+
 class Cast(nn.Module):
     def forward(self, x):
         return x.type(torch.int32)
@@ -377,6 +387,21 @@ class ReduceProd(nn.Module):
 class ReduceSum(nn.Module):
     def forward(self, x):
         return torch.sum(x, -1, keepdim=True)
+
+
+class ReduceSum2(nn.Module):
+    def forward(self, x):
+        return torch.sum(x, (1, 3), keepdim=True)
+
+
+class ReduceSum3(nn.Module):
+    def forward(self, x):
+        return torch.sum(x, (1, 3), keepdim=False)
+
+
+class ReduceSum4(nn.Module):
+    def forward(self, x):
+        return torch.sum(x)
 
 
 class Split(nn.Module):
@@ -658,6 +683,8 @@ def main():
     # dump("concat3", Concat3(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224)])
     # dump("concat4", Concat4(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224), (2, 9, 224, 224)])
     dump("transpose", Permute(), [(3, 4, 5)])
+    dump("squeeze1", Squeeze1(), [(3, 4, 1, 5, 1, 6)])
+    dump("squeeze2", Squeeze2(), [(3, 4, 1, 5, 1, 6)])
     dump("unsqueeze", Unsqueeze(), [(3, 4, 5, 6)])
     dump("cast", Cast(), [(3, 4)])
     # dump("gather0d", Gather0D(), [(10,)])
@@ -667,6 +694,9 @@ def main():
     dump("reducemin", ReduceMin(), [(3, 4, 5, 6)])
     dump("reduceprod", ReduceProd(), [(3, 4, 5, 6)])
     dump("reducesum", ReduceSum(), [(3, 4, 5, 6)])
+    dump("reducesum2", ReduceSum2(), [(3, 4, 5, 6)])
+    dump("reducesum3", ReduceSum3(), [(3, 4, 5, 6)])
+    dump("reducesum4", ReduceSum4(), [(3, 4, 5, 6)])
     dump("softmax", torch.nn.Softmax(dim=-1), [(3, 4, 5, 6)])
     dump("split1", Split([2, 3, 5, 7, 60-2-3-5-7], -1), [(3, 4, 5, 60)])
     dump("split2", Split([2, 3, 5, 7, 40-2-3-5-7], 1), [(3, 40, 5, 6)])

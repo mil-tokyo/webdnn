@@ -7,7 +7,7 @@ import {
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
-import { Split } from "../../../base/split";
+import { Split2 } from "../../../base/split";
 import {
   WebDNNWebGLContext,
   WebGLUniformItem,
@@ -16,11 +16,7 @@ import { Tensor } from "../../../../interface/core/tensor";
 import { WebGLTensor } from "../../../../interface/backend/webgl/webglTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
-/*
- * Opset 2
- * opset 11では区間指定がinputなので互換性なし
- */
-export class WebGLSplit extends Split {
+export class WebGLSplit2 extends Split2 {
   constructor() {
     super("webgl");
   }
@@ -92,7 +88,7 @@ export function getOpEntries(): OperatorEntry[] {
       backend: "webgl",
       opsetMin: 1,
       opsetMax: 13,
-      factory: () => new WebGLSplit(),
+      factory: () => new WebGLSplit2(),
     },
   ];
 }

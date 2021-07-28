@@ -2,9 +2,9 @@ import { WebDNNWebGLContext } from "../../../../interface/backend/webgl/webglCon
 import { Backend } from "../../../../interface/core/constants";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
-import { Unsqueeze1, Unsqueeze13 } from "../../../base/unsqueeze";
+import { Squeeze1, Squeeze13 } from "../../../base/squeeze";
 
-export class WebGLUnsqueeze1 extends Unsqueeze1 {
+export class WebGLSqueeze1 extends Squeeze1 {
   constructor() {
     super("webgl");
   }
@@ -18,7 +18,7 @@ export class WebGLUnsqueeze1 extends Unsqueeze1 {
   }
 }
 
-export class WebGLUnsqueeze13 extends Unsqueeze13 {
+export class WebGLSqueeze13 extends Squeeze13 {
   constructor() {
     super("webgl");
   }
@@ -48,17 +48,17 @@ export class WebGLUnsqueeze13 extends Unsqueeze13 {
 export function getOpEntries(): OperatorEntry[] {
   return [
     {
-      opType: "Unsqueeze",
+      opType: "Squeeze",
       backend: "webgl",
       opsetMin: 13,
-      factory: () => new WebGLUnsqueeze13(),
+      factory: () => new WebGLSqueeze13(),
     },
     {
-      opType: "Unsqueeze",
+      opType: "Squeeze",
       backend: "webgl",
       opsetMin: 1,
       opsetMax: 13,
-      factory: () => new WebGLUnsqueeze1(),
+      factory: () => new WebGLSqueeze1(),
     },
   ];
 }
