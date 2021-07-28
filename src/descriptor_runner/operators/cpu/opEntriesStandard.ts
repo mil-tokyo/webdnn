@@ -8,6 +8,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardclip } from "./operators/s
 import { getOpEntries as getOpEntriesoperatorsstandardconcat } from "./operators/standard/concat";
 import { getOpEntries as getOpEntriesoperatorsstandardconstant } from "./operators/standard/constant";
 import { getOpEntries as getOpEntriesoperatorsstandardconv } from "./operators/standard/conv";
+import { getOpEntries as getOpEntriesoperatorsstandardconvtranspose } from "./operators/standard/convtranspose";
 import { getOpEntries as getOpEntriesoperatorsstandardeachelementwise } from "./operators/standard/eachelementwise";
 import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operators/standard/flatten";
 import { getOpEntries as getOpEntriesoperatorsstandardgather } from "./operators/standard/gather";
@@ -35,6 +36,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardconcat());
   entries.push(...getOpEntriesoperatorsstandardconstant());
   entries.push(...getOpEntriesoperatorsstandardconv());
+  entries.push(...getOpEntriesoperatorsstandardconvtranspose());
   entries.push(...getOpEntriesoperatorsstandardeachelementwise());
   entries.push(...getOpEntriesoperatorsstandardflatten());
   entries.push(...getOpEntriesoperatorsstandardgather());
