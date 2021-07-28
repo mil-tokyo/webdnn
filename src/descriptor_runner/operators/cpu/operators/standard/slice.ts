@@ -64,25 +64,30 @@ class Slice10 extends OperatorImpl {
         rangesWithSize.map(([, , , , dstsize]) => dstsize),
         data.dataType
       );
-    if (data.ndim === 1) {
-      this.copy1d(
-        data.data,
-        output.data,
-        rangesWithSize,
-        data.strides,
-        output.strides
-      );
-    } else if (data.ndim === 2) {
-      this.copy2d(
-        data.data,
-        output.data,
-        rangesWithSize,
-        data.strides,
-        output.strides
-      );
-    } else {
-      throw new Error(`Slice: ${data.ndim} > 2 is not yet supported`);
+    let func;
+    switch (data.ndim) {
+      case 1:
+        func = this.copy1d;
+        break;
+        case 2:
+          func = this.copy2d;
+          break;
+          case 3:
+            func = this.copy3d;
+            break;
+            case 4:
+              func = this.copy4d;
+              break;
+              default:
+                throw new Error(`Slice: input dimension ${data.ndim} > 4 is not yet supported`);
     }
+    func(
+      data.data,
+      output.data,
+      rangesWithSize,
+      data.strides,
+      output.strides
+    );
     return [output];
   }
 
@@ -113,6 +118,51 @@ class Slice10 extends OperatorImpl {
             (rangesWithSize[0][0] + y * rangesWithSize[0][2]) * srcStrides[0] +
               (rangesWithSize[1][0] + x * rangesWithSize[1][2]) * srcStrides[1]
           ];
+      }
+    }
+  }
+
+  copy3d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    rangesWithSize: number[][],
+    srcStrides: ReadonlyArray<number>,
+    dstStrides: ReadonlyArray<number>
+  ) {
+    for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
+      for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {
+        for (let d2 = 0; d2 < rangesWithSize[2][4]; d2++) {
+        dO[d0 * dstStrides[0] + d1 * dstStrides[1]+ d2 * dstStrides[2]] =
+          dI[
+            (rangesWithSize[0][0] + d0 * rangesWithSize[0][2]) * srcStrides[0] +
+              (rangesWithSize[1][0] + d1 * rangesWithSize[1][2]) * srcStrides[1] +
+              (rangesWithSize[2][0] + d1 * rangesWithSize[2][2]) * srcStrides[2]
+          ];
+      }
+      }
+    }
+  }
+
+  copy4d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    rangesWithSize: number[][],
+    srcStrides: ReadonlyArray<number>,
+    dstStrides: ReadonlyArray<number>
+  ) {
+    for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
+      for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {
+        for (let d2 = 0; d2 < rangesWithSize[2][4]; d2++) {
+          for (let d3 = 0; d1 < rangesWithSize[3][4]; d3++) {
+        dO[d0 * dstStrides[0] + d1 * dstStrides[1]+ d2 * dstStrides[2]+ d3 * dstStrides[3]] =
+          dI[
+            (rangesWithSize[0][0] + d0 * rangesWithSize[0][2]) * srcStrides[0] +
+              (rangesWithSize[1][0] + d1 * rangesWithSize[1][2]) * srcStrides[1] +
+              (rangesWithSize[2][0] + d1 * rangesWithSize[2][2]) * srcStrides[2] +
+              (rangesWithSize[3][0] + d1 * rangesWithSize[3][2]) * srcStrides[3]
+          ];
+        }
+      }
       }
     }
   }

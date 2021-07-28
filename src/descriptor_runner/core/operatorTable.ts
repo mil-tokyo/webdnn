@@ -34,8 +34,9 @@ export function instantiateOperator(
   switch (opType) {
     case "Flatten":
     case "Reshape":
-    case "Unsqueeze":
+    case "Squeeze":
     case "Transpose":
+    case "Unsqueeze":
       // データ側テンソル(currentTensorsBackends[0])のあるオペレータ上で実行
       for (const backend of backendOrder) {
         if (currentTensorsBackends[0].includes(backend)) {
