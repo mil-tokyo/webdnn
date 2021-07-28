@@ -142,7 +142,7 @@ class Slice10 extends OperatorImpl {
           dI[
             (rangesWithSize[0][0] + d0 * rangesWithSize[0][2]) * srcStrides[0] +
               (rangesWithSize[1][0] + d1 * rangesWithSize[1][2]) * srcStrides[1] +
-              (rangesWithSize[2][0] + d1 * rangesWithSize[2][2]) * srcStrides[2]
+              (rangesWithSize[2][0] + d2 * rangesWithSize[2][2]) * srcStrides[2]
           ];
       }
       }

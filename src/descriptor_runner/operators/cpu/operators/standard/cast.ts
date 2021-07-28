@@ -31,6 +31,7 @@ class Cast extends OperatorImpl {
       case onnx.TensorProto.DataType.FLOAT:
         outputDataType = "float32";
         break;
+      case onnx.TensorProto.DataType.UINT8: // TODO: clip value
       case onnx.TensorProto.DataType.INT32:
       case onnx.TensorProto.DataType.INT64:
         outputDataType = "int32";

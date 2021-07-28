@@ -1,6 +1,8 @@
+import { CPUTensor } from "../../../..";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
+import { arrayEqual } from "../../../../util";
 import { Conv } from "../../../base/conv";
 
 class CpuConv extends Conv {
@@ -18,6 +20,82 @@ class CpuConv extends Conv {
     super("cpu");
   }
 
+  runSpecial(context: WebDNNCPUContext, inputXFull: CPUTensor, inputW: CPUTensor): Tensor {
+    console.log("Special conv");
+    let results = [];
+    for (let i = 0; i < 2; i++) {
+      const inputX = context.emptyTensor([16, 1, 1027, 1027]);
+      inputX.data.set(new Float32Array(inputXFull.data.buffer, inputXFull.data.byteOffset + i * 16 * 1027 * 1027 * 4, 16 * 1027 * 1027));
+    const {
+      batch,
+      dilations,
+      group,
+      kernelShape,
+      pads,
+      strides,
+      inShape,
+      outShape,
+      chIn,
+      chInPerGroup,
+      chOut,
+      chOutPerGroup,
+    } = this.calcShape(inputX.dims, inputW.dims),
+    im2colData = new Float32Array(
+      group *
+        batch *
+        outShape[0] *
+        outShape[1] *
+        chInPerGroup *
+        kernelShape[0] *
+        kernelShape[1]
+    ),
+    matmulData = new Float32Array(
+      group * batch * outShape[0] * outShape[1] * chOutPerGroup
+    ),
+    transposeData = new Float32Array(
+      batch * chOut * outShape[0] * outShape[1]
+    );
+  this.im2col(
+    inputX.data as Float32Array,
+    im2colData,
+    batch,
+    dilations,
+    group,
+    kernelShape,
+    pads,
+    strides,
+    inShape,
+    outShape,
+    chIn,
+    chInPerGroup,
+    chOut,
+    chOutPerGroup
+  );
+  this.matmul(
+    im2colData,
+    inputW.data as Float32Array,
+    matmulData,
+    group,
+    batch * outShape[0] * outShape[1],
+    chInPerGroup * kernelShape[0] * kernelShape[1],
+    chOutPerGroup
+  );
+  this.transpose(
+    matmulData,
+    transposeData,
+    group,
+    batch,
+    outShape[0] * outShape[1],
+    chOutPerGroup
+  );
+  results.push(transposeData);
+    }
+    const output = context.emptyTensor([32, 1, 1024, 1024]);
+    output.data.set(results[0], 0);
+    output.data.set(results[1], 16 * 1024 * 1024);
+    return output;
+  }
+
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const inputX = inputs[0],
@@ -26,6 +104,9 @@ class CpuConv extends Conv {
     // TODO: 2D以外対応
     if (inputX.ndim !== 4) {
       throw new Error("Conv other than 2D is not yet supported");
+    }
+    if (arrayEqual(inputX.dims, [32, 1, 1027, 1027])) {
+      return [this.runSpecial(context, inputX, inputW)];
     }
     const {
         batch,
