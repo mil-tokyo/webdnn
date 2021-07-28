@@ -199,6 +199,16 @@ class Unsqueeze(nn.Module):
         return x.unsqueeze(2).unsqueeze(-1)
 
 
+class Squeeze1(nn.Module):
+    def forward(self, x):
+        return x.squeeze()
+
+
+class Squeeze2(nn.Module):
+    def forward(self, x):
+        return x.squeeze(4)
+
+
 class Cast(nn.Module):
     def forward(self, x):
         return x.type(torch.int32)
@@ -658,6 +668,8 @@ def main():
     # dump("concat3", Concat3(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224)])
     # dump("concat4", Concat4(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224), (2, 9, 224, 224)])
     dump("transpose", Permute(), [(3, 4, 5)])
+    dump("squeeze1", Squeeze1(), [(3, 4, 1, 5, 1, 6)])
+    dump("squeeze2", Squeeze2(), [(3, 4, 1, 5, 1, 6)])
     dump("unsqueeze", Unsqueeze(), [(3, 4, 5, 6)])
     dump("cast", Cast(), [(3, 4)])
     # dump("gather0d", Gather0D(), [(10,)])
