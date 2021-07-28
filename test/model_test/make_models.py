@@ -389,6 +389,21 @@ class ReduceSum(nn.Module):
         return torch.sum(x, -1, keepdim=True)
 
 
+class ReduceSum2(nn.Module):
+    def forward(self, x):
+        return torch.sum(x, (1, 3), keepdim=True)
+
+
+class ReduceSum3(nn.Module):
+    def forward(self, x):
+        return torch.sum(x, (1, 3), keepdim=False)
+
+
+class ReduceSum4(nn.Module):
+    def forward(self, x):
+        return torch.sum(x)
+
+
 class Split(nn.Module):
     def __init__(self, split_size_or_sections, dim) -> None:
         super().__init__()
@@ -679,6 +694,9 @@ def main():
     dump("reducemin", ReduceMin(), [(3, 4, 5, 6)])
     dump("reduceprod", ReduceProd(), [(3, 4, 5, 6)])
     dump("reducesum", ReduceSum(), [(3, 4, 5, 6)])
+    dump("reducesum2", ReduceSum2(), [(3, 4, 5, 6)])
+    dump("reducesum3", ReduceSum3(), [(3, 4, 5, 6)])
+    dump("reducesum4", ReduceSum4(), [(3, 4, 5, 6)])
     dump("softmax", torch.nn.Softmax(dim=-1), [(3, 4, 5, 6)])
     dump("split1", Split([2, 3, 5, 7, 60-2-3-5-7], -1), [(3, 4, 5, 60)])
     dump("split2", Split([2, 3, 5, 7, 40-2-3-5-7], 1), [(3, 40, 5, 6)])

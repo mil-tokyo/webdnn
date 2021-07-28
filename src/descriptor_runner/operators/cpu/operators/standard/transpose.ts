@@ -14,17 +14,30 @@ class CPUTranspose extends Transpose {
     const input = inputs[0],
       { outShape, inStrides } = this.calcShape(input),
       output = context.emptyTensor(outShape, input.dataType);
-    if (input.ndim === 1) {
-      this.copy1d(input.data, output.data, outShape, inStrides);
-    } else if (input.ndim === 2) {
-      this.copy2d(input.data, output.data, outShape, inStrides);
-    } else if (input.ndim === 3) {
-      this.copy3d(input.data, output.data, outShape, inStrides);
-    } else if (input.ndim === 4) {
-      this.copy4d(input.data, output.data, outShape, inStrides);
-    } else {
-      throw new Error(`Transpose: ${input.ndim} > 4 is not yet supported`);
+    let func;
+    switch (input.ndim) {
+      case 1:
+        func = this.copy1d;
+        break;
+        case 2:
+          func = this.copy2d;
+          break;
+          case 3:
+            func = this.copy3d;
+            break;
+            case 4:
+              func = this.copy4d;
+              break;
+              case 5:
+                func = this.copy5d;
+                break;
+                case 6:
+                  func = this.copy6d;
+                  break;
+                default:
+                  throw new Error(`Transpose: ndim ${input.ndim} > 4 is not yet supported`);
     }
+    func(input.data, output.data, outShape, inStrides);
     return [output];
   }
 
@@ -90,6 +103,60 @@ class CPUTranspose extends Transpose {
                   a3 * inStrides[3]
               ];
           }
+        }
+      }
+    }
+  }
+  
+  copy5d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    outShape: number[],
+    inStrides: number[]
+  ) {
+    let idx = 0;
+    for (let a0 = 0; a0 < outShape[0]; a0++) {
+      for (let a1 = 0; a1 < outShape[1]; a1++) {
+        for (let a2 = 0; a2 < outShape[2]; a2++) {
+          for (let a3 = 0; a3 < outShape[3]; a3++) {
+            for (let a4 = 0; a4 < outShape[4]; a4++) {
+            dO[idx++] =
+              dI[
+                a0 * inStrides[0] +
+                  a1 * inStrides[1] +
+                  a2 * inStrides[2] +
+                  a3 * inStrides[3] +
+                  a4 * inStrides[4]
+              ];
+          }}
+        }
+      }
+    }
+  }
+
+  copy6d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    outShape: number[],
+    inStrides: number[]
+  ) {
+    let idx = 0;
+    for (let a0 = 0; a0 < outShape[0]; a0++) {
+      for (let a1 = 0; a1 < outShape[1]; a1++) {
+        for (let a2 = 0; a2 < outShape[2]; a2++) {
+          for (let a3 = 0; a3 < outShape[3]; a3++) {
+            for (let a4 = 0; a4 < outShape[4]; a4++) {
+              for (let a5 = 0; a5 < outShape[5]; a5++) {
+            dO[idx++] =
+              dI[
+                a0 * inStrides[0] +
+                  a1 * inStrides[1] +
+                  a2 * inStrides[2] +
+                  a3 * inStrides[3] +
+                  a4 * inStrides[4] +
+                  a5 * inStrides[5]
+              ];
+          }}}
         }
       }
     }
