@@ -572,7 +572,10 @@ def main():
     dump("softsign", Softsign(), [(3, 4)])
     dump("tan", Tan(), [(3, 4)])
     dump("tanh", Tanh(), [(3, 4)])
+    dump("elu", nn.ELU(alpha=2.0), [(3, 4, 5, 6)])
+    # dump("hardsigmoid", nn.Hardsigmoid(), [(3, 4, 5, 6)]) # unsupported ONNX export
     dump("leakyrelu", nn.LeakyReLU(negative_slope=0.5), [(3, 4, 5, 6)])
+    dump("selu", nn.SELU(), [(3, 4, 5, 6)])
     dump("gemm", Gemm(), [(3, 128)])
     dump("matmul", MatMul(), [(3, 128)])
     dump("matmul2", MatMul2(), [(1, 3, 128), (4, 128, 1)])

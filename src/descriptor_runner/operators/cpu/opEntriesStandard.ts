@@ -10,12 +10,12 @@ import { getOpEntries as getOpEntriesoperatorsstandardconstant } from "./operato
 import { getOpEntries as getOpEntriesoperatorsstandardconstantofshape } from "./operators/standard/constantofshape";
 import { getOpEntries as getOpEntriesoperatorsstandardconv } from "./operators/standard/conv";
 import { getOpEntries as getOpEntriesoperatorsstandardconvtranspose } from "./operators/standard/convtranspose";
+import { getOpEntries as getOpEntriesoperatorsstandarddynamicunary } from "./operators/standard/dynamicunary";
 import { getOpEntries as getOpEntriesoperatorsstandardeachelementwise } from "./operators/standard/eachelementwise";
 import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operators/standard/flatten";
 import { getOpEntries as getOpEntriesoperatorsstandardgather } from "./operators/standard/gather";
 import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/standard/gemm";
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
-import { getOpEntries as getOpEntriesoperatorsstandardleakyrelu } from "./operators/standard/leakyrelu";
 import { getOpEntries as getOpEntriesoperatorsstandardmatmul } from "./operators/standard/matmul";
 import { getOpEntries as getOpEntriesoperatorsstandardmaxpool } from "./operators/standard/maxpool";
 import { getOpEntries as getOpEntriesoperatorsstandardpad11 } from "./operators/standard/pad11";
@@ -41,12 +41,12 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardconstantofshape());
   entries.push(...getOpEntriesoperatorsstandardconv());
   entries.push(...getOpEntriesoperatorsstandardconvtranspose());
+  entries.push(...getOpEntriesoperatorsstandarddynamicunary());
   entries.push(...getOpEntriesoperatorsstandardeachelementwise());
   entries.push(...getOpEntriesoperatorsstandardflatten());
   entries.push(...getOpEntriesoperatorsstandardgather());
   entries.push(...getOpEntriesoperatorsstandardgemm());
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
-  entries.push(...getOpEntriesoperatorsstandardleakyrelu());
   entries.push(...getOpEntriesoperatorsstandardmatmul());
   entries.push(...getOpEntriesoperatorsstandardmaxpool());
   entries.push(...getOpEntriesoperatorsstandardpad11());
