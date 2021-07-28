@@ -18,8 +18,22 @@ class Slice10 extends OperatorImpl {
     const data = inputs[0],
       starts = inputs[1],
       ends = inputs[2],
-      axes = inputs[3];
+      axesTensor = inputs[3];
     let steps = inputs[4];
+    let axes: number[];
+    if (axesTensor) {
+      axes = Array.from(axesTensor.data);
+      for (let i = 0; i < axes.length; i++) {
+        if (axes[i] < 0) {
+          axes[i] += data.ndim;
+        }
+      }
+    } else {
+      axes = [];
+      for (let i = 0; i < data.ndim; i++) {
+        axes.push(i);
+      }
+    }
     // Currently, only common usage is supported
     if (!steps) {
       steps = context.emptyTensor([axes.length], "int32");
@@ -27,26 +41,23 @@ class Slice10 extends OperatorImpl {
     }
     const ranges = data.dims.map((d) => [0, d, 1, d]); // Start, stop, step, srcsize
     for (let i = 0; i < axes.length; i++) {
-      ranges[axes.data[i]] = [
+      ranges[axes[i]] = [
         starts.data[i],
         ends.data[i],
         steps.data[i],
-        data.dims[axes.data[i]],
+        data.dims[axes[i]],
       ];
     }
     const rangesWithSize = ranges.map(([start, stop, step, srcsize]) => {
         if (start < 0) {
           start += srcsize;
         }
-        start = Math.max(Math.min(start, srcsize), 0);
+        start = Math.max(Math.min(start, srcsize - 1), 0);
         if (stop < 0) {
           stop += srcsize;
         }
-        stop = Math.max(Math.min(stop, srcsize), 0);
-        if (step < 0) {
-          throw new Error("Slice: step < 0 is not yet supported");
-        }
-        const dstsize = Math.ceil((stop - start) / step);
+        stop = Math.max(Math.min(stop, srcsize), -1);
+        const dstsize = Math.max(Math.ceil((stop - start) / step), 0);
         return [start, stop, step, srcsize, dstsize];
       }),
       output = context.emptyTensor(
