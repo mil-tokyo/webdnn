@@ -345,6 +345,15 @@ class Gather1D(nn.Module):
         return x[[2, 4, 5]]
 
 
+class Pad(nn.Module):
+    def __init__(self, pad):
+        super().__init__()
+        self.pad = pad
+
+    def forward(self, x):
+        return F.pad(x, pad=self.pad)
+
+
 class ReduceMax(nn.Module):
     def forward(self, x):
         return torch.max(x, -1, keepdim=True)[0]
@@ -603,6 +612,12 @@ def main():
     dump("avgpool3", nn.AvgPool2d(kernel_size=3, stride=2, padding=0,
          ceil_mode=True, count_include_pad=False), [(2, 3, 10, 12)])
     dump("globalavgpool", nn.AdaptiveAvgPool2d((1, 1)), [(2, 3, 10, 12)])
+    dump("pad1", Pad((1, 2)), [(2, )], opset_version=11)
+    dump("pad2", Pad((1, 2, 3, 4)), [(2, 3)], opset_version=11)
+    dump("pad3", Pad((1, 2, 3, 4, 5, 6)), [(2, 3, 4)], opset_version=11)
+    dump("pad4", Pad((1, 2, 3, 4, 5, 6, 7, 8)), [(2, 3, 4, 5)], opset_version=11)
+    dump("pad5", Pad((1, 2, 3, 4, 5, 6, 7, 8, 9, 10)), [(2, 3, 4, 5, 6)], opset_version=11)
+    dump("pad6", Pad((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)), [(2, 3, 4, 5, 6, 7)], opset_version=11)
     # (2, 3, 10, 12) -< (2, 3*10*12)
     dump("flatten", nn.Flatten(), [(2, 3, 10, 12)])
     dump("add1", Add(), [(2, 3, 10, 12), (2, 3, 10, 12)])
@@ -634,8 +649,8 @@ def main():
     # dump("resnet18-partial", ResNetPartial(), [(1, 3, 224, 224)])
     # dump("resnet50", models.resnet50(pretrained=True), [(1, 3, 224, 224)])
     dump("flatten2", Flatten2(), [(2, 3, 4, 5)])
-    # dump("slice2d", Slice2d(), [(100, 200)])
-    # dump("slice2d2", Slice2d2(), [(100, 200)])
+    dump("slice2d", Slice2d(), [(100, 200)])
+    dump("slice2d2", Slice2d2(), [(100, 200)])
     # dump("concat3", Concat3(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224)])
     # dump("concat4", Concat4(), [(2, 3, 224, 224), (2, 8, 224, 224), (2, 1, 224, 224), (2, 9, 224, 224)])
     dump("transpose", Permute(), [(3, 4, 5)])

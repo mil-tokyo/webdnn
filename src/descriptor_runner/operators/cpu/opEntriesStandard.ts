@@ -7,6 +7,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardcast } from "./operators/s
 import { getOpEntries as getOpEntriesoperatorsstandardclip } from "./operators/standard/clip";
 import { getOpEntries as getOpEntriesoperatorsstandardconcat } from "./operators/standard/concat";
 import { getOpEntries as getOpEntriesoperatorsstandardconstant } from "./operators/standard/constant";
+import { getOpEntries as getOpEntriesoperatorsstandardconstantofshape } from "./operators/standard/constantofshape";
 import { getOpEntries as getOpEntriesoperatorsstandardconv } from "./operators/standard/conv";
 import { getOpEntries as getOpEntriesoperatorsstandardconvtranspose } from "./operators/standard/convtranspose";
 import { getOpEntries as getOpEntriesoperatorsstandardeachelementwise } from "./operators/standard/eachelementwise";
@@ -16,6 +17,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/s
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
 import { getOpEntries as getOpEntriesoperatorsstandardmatmul } from "./operators/standard/matmul";
 import { getOpEntries as getOpEntriesoperatorsstandardmaxpool } from "./operators/standard/maxpool";
+import { getOpEntries as getOpEntriesoperatorsstandardpad11 } from "./operators/standard/pad11";
 import { getOpEntries as getOpEntriesoperatorsstandardreduce } from "./operators/standard/reduce";
 import { getOpEntries as getOpEntriesoperatorsstandardreshape5 } from "./operators/standard/reshape5";
 import { getOpEntries as getOpEntriesoperatorsstandardshape } from "./operators/standard/shape";
@@ -35,6 +37,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardclip());
   entries.push(...getOpEntriesoperatorsstandardconcat());
   entries.push(...getOpEntriesoperatorsstandardconstant());
+  entries.push(...getOpEntriesoperatorsstandardconstantofshape());
   entries.push(...getOpEntriesoperatorsstandardconv());
   entries.push(...getOpEntriesoperatorsstandardconvtranspose());
   entries.push(...getOpEntriesoperatorsstandardeachelementwise());
@@ -44,6 +47,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
   entries.push(...getOpEntriesoperatorsstandardmatmul());
   entries.push(...getOpEntriesoperatorsstandardmaxpool());
+  entries.push(...getOpEntriesoperatorsstandardpad11());
   entries.push(...getOpEntriesoperatorsstandardreduce());
   entries.push(...getOpEntriesoperatorsstandardreshape5());
   entries.push(...getOpEntriesoperatorsstandardshape());
