@@ -131,7 +131,8 @@ class ReduceOp1 extends ReduceOp {
   }
 }
 
-class ReduceOp13 extends ReduceOp {
+// Only ReduceSum has backward-incompatible opset 13
+class ReduceSum13 extends ReduceOp {
   keepdims!: boolean;
   noopWithEmptyAxes!: boolean;
 
@@ -183,21 +184,24 @@ export function getOpEntries(): OperatorEntry[] {
       innerLength: number,
       reductionLength: number,
       totalReductionLength: number
-    ) => void
+    ) => void,
+    reduceSum13?: boolean
   ) => {
     opEntries.push({
       opType: opType,
       backend: "cpu",
       opsetMin: 1,
-      opsetMax: 13,
+      opsetMax: reduceSum13 ? 13 : undefined,
       factory: () => new ReduceOp1(opType, opNotFinalAxis, opFinalAxis),
     });
-    opEntries.push({
-      opType: opType,
-      backend: "cpu",
-      opsetMin: 13,
-      factory: () => new ReduceOp13(opType, opNotFinalAxis, opFinalAxis),
-    });
+    if (reduceSum13) {
+      opEntries.push({
+        opType: opType,
+        backend: "cpu",
+        opsetMin: 13,
+        factory: () => new ReduceSum13(opType, opNotFinalAxis, opFinalAxis),
+      });
+    }
   };
   addOps(
     "ReduceL1",
@@ -461,7 +465,9 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
+    undefined,
+    true
   );
   addOps(
     "ReduceSumSquare",
