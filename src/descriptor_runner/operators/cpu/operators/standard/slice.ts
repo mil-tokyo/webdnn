@@ -82,7 +82,7 @@ class Slice10 extends OperatorImpl {
         break;
       default:
         throw new Error(
-          `Slice: input dimension ${data.ndim} > 4 is not yet supported`
+          `Slice: input dimension ${data.ndim} > 6 is not yet supported`
         );
     }
     func(data.data, output.data, rangesWithSize, data.strides, output.strides);
