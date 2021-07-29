@@ -625,6 +625,8 @@ def main():
     dump("conv9", nn.Conv2d(64, 64, 3, 1, 1, groups=64, bias=False), [(1, 64, 7, 7)])
     # cinkhkw % 4 != 0, group * batch * outh * outw > 16384
     dump("conv10", nn.Conv2d(512, 512, 3, 1, 1, groups=512, bias=False), [(1, 512, 7, 7)])
+    # very large im2col (IM2COL_NUMEL_LIMIT)
+    dump("conv11", nn.Conv2d(1, 1, 4, 1, 1, bias=True), [(32, 1, 1027, 1027)])
     # in_channels, out_channels, kernel_size
     dump("convtranspose1", nn.ConvTranspose2d(16, 32, 3, stride=1, padding=0, output_padding=0, groups=1, dilation=1, bias=False), [(1, 16, 7, 7)])
     dump("convtranspose2", nn.ConvTranspose2d(16, 32, 3, stride=2, padding=0, output_padding=0, groups=1, dilation=1, bias=True), [(2, 16, 7, 9)])

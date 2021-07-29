@@ -2,30 +2,144 @@ import { CPUTensor } from "../../../..";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
-import { arrayEqual } from "../../../../util";
+import { arrayProd } from "../../../../util";
 import { Conv } from "../../../base/conv";
 
+// if number of elements of im2col output exceeds it, split the task by batch dimension.
+const IM2COL_NUMEL_LIMIT = 511 * 1024 * 1024;
+
 class CpuConv extends Conv {
-  dilations!: number[]; // [y, x]
-
-  group!: number;
-
-  kernelShape!: number[]; // [y, x]
-
-  pads!: number[]; // [y_begin, x_begin, y_end, x_end]
-
-  strides!: number[]; // [y, x]
-
   constructor() {
     super("cpu");
   }
 
-  runSpecial(context: WebDNNCPUContext, inputXFull: CPUTensor, inputW: CPUTensor): Tensor {
-    console.log("Special conv");
-    let results = [];
-    for (let i = 0; i < 2; i++) {
-      const inputX = context.emptyTensor([16, 1, 1027, 1027]);
-      inputX.data.set(new Float32Array(inputXFull.data.buffer, inputXFull.data.byteOffset + i * 16 * 1027 * 1027 * 4, 16 * 1027 * 1027));
+  runSplitBatch(
+    context: WebDNNCPUContext,
+    inputXFull: CPUTensor,
+    inputW: CPUTensor,
+    inputB?: CPUTensor
+  ): Tensor[] {
+    if (this.group > 1) {
+      throw new Error("Conv: batch splitting with group > 1 is not supported");
+    }
+
+    const {
+      batch: allBatch,
+      dilations,
+      group,
+      kernelShape,
+      pads,
+      strides,
+      inShape,
+      outShape,
+      chIn,
+      chInPerGroup,
+      chOut,
+      chOutPerGroup,
+    } = this.calcShape(inputXFull.dims, inputW.dims);
+    const im2colNumelPerBatch =
+      group *
+      outShape[0] *
+      outShape[1] *
+      chInPerGroup *
+      kernelShape[0] *
+      kernelShape[1];
+    const iterBatch = Math.floor(IM2COL_NUMEL_LIMIT / im2colNumelPerBatch);
+    const yShape = [allBatch, chOut, outShape[0], outShape[1]];
+    if (iterBatch <= 0) {
+      throw new Error(
+        `Conv: the size of buffer needed to process single batch exceeds limit. Input shape: ${inputXFull.dims}, weight shape: ${inputW.dims}`
+      );
+    }
+    const output = context.emptyTensor(yShape);
+    for (let i = 0; i < allBatch; i += iterBatch) {
+      const batch = Math.min(iterBatch, allBatch - i);
+      const iterXShape = inputXFull.dims.slice();
+      iterXShape[0] = batch;
+      const xSizePerBatch = arrayProd(iterXShape.slice(1));
+      const iterXData = new Float32Array(
+        inputXFull.data.buffer,
+        inputXFull.data.byteOffset +
+          i * xSizePerBatch * Float32Array.BYTES_PER_ELEMENT,
+        batch * xSizePerBatch
+      );
+      const inputX = context.emptyTensor(iterXShape, "float32", iterXData);
+      const im2colData = new Float32Array(
+          group *
+            batch *
+            outShape[0] *
+            outShape[1] *
+            chInPerGroup *
+            kernelShape[0] *
+            kernelShape[1]
+        ),
+        matmulData = new Float32Array(
+          group * batch * outShape[0] * outShape[1] * chOutPerGroup
+        ),
+        transposeData = new Float32Array(
+          output.data.buffer,
+          output.data.byteOffset +
+            i *
+              chOut *
+              outShape[0] *
+              outShape[1] *
+              Float32Array.BYTES_PER_ELEMENT,
+          batch * chOut * outShape[0] * outShape[1]
+        );
+      this.im2col(
+        inputX.data as Float32Array,
+        im2colData,
+        batch,
+        dilations,
+        group,
+        kernelShape,
+        pads,
+        strides,
+        inShape,
+        outShape,
+        chIn,
+        chInPerGroup
+      );
+      this.matmul(
+        im2colData,
+        inputW.data as Float32Array,
+        matmulData,
+        group,
+        batch * outShape[0] * outShape[1],
+        chInPerGroup * kernelShape[0] * kernelShape[1],
+        chOutPerGroup
+      );
+      this.transpose(
+        matmulData,
+        transposeData,
+        group,
+        batch,
+        outShape[0] * outShape[1],
+        chOutPerGroup
+      );
+    }
+
+    if (inputB) {
+      this.bias(
+        inputB.data as Float32Array,
+        output.data as Float32Array,
+        allBatch,
+        chOut,
+        outShape[0] * outShape[1]
+      );
+    }
+    return [output];
+  }
+
+  async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
+    context.assertsCPUTensorArray(inputs);
+    const inputX = inputs[0],
+      inputW = inputs[1],
+      inputB = inputs[2];
+    // TODO: 2D以外対応
+    if (inputX.ndim !== 4) {
+      throw new Error("Conv other than 2D is not yet supported");
+    }
     const {
       batch,
       dilations,
@@ -39,98 +153,19 @@ class CpuConv extends Conv {
       chInPerGroup,
       chOut,
       chOutPerGroup,
-    } = this.calcShape(inputX.dims, inputW.dims),
-    im2colData = new Float32Array(
+    } = this.calcShape(inputX.dims, inputW.dims);
+    const im2colNumel =
       group *
-        batch *
-        outShape[0] *
-        outShape[1] *
-        chInPerGroup *
-        kernelShape[0] *
-        kernelShape[1]
-    ),
-    matmulData = new Float32Array(
-      group * batch * outShape[0] * outShape[1] * chOutPerGroup
-    ),
-    transposeData = new Float32Array(
-      batch * chOut * outShape[0] * outShape[1]
-    );
-  this.im2col(
-    inputX.data as Float32Array,
-    im2colData,
-    batch,
-    dilations,
-    group,
-    kernelShape,
-    pads,
-    strides,
-    inShape,
-    outShape,
-    chIn,
-    chInPerGroup,
-    chOut,
-    chOutPerGroup
-  );
-  this.matmul(
-    im2colData,
-    inputW.data as Float32Array,
-    matmulData,
-    group,
-    batch * outShape[0] * outShape[1],
-    chInPerGroup * kernelShape[0] * kernelShape[1],
-    chOutPerGroup
-  );
-  this.transpose(
-    matmulData,
-    transposeData,
-    group,
-    batch,
-    outShape[0] * outShape[1],
-    chOutPerGroup
-  );
-  results.push(transposeData);
+      batch *
+      outShape[0] *
+      outShape[1] *
+      chInPerGroup *
+      kernelShape[0] *
+      kernelShape[1];
+    if (im2colNumel > IM2COL_NUMEL_LIMIT) {
+      return this.runSplitBatch(context, inputX, inputW, inputB);
     }
-    const output = context.emptyTensor([32, 1, 1024, 1024]);
-    output.data.set(results[0], 0);
-    output.data.set(results[1], 16 * 1024 * 1024);
-    return output;
-  }
-
-  async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
-    context.assertsCPUTensorArray(inputs);
-    const inputX = inputs[0],
-      inputW = inputs[1],
-      inputB = inputs[2];
-    // TODO: 2D以外対応
-    if (inputX.ndim !== 4) {
-      throw new Error("Conv other than 2D is not yet supported");
-    }
-    if (arrayEqual(inputX.dims, [32, 1, 1027, 1027])) {
-      return [this.runSpecial(context, inputX, inputW)];
-    }
-    const {
-        batch,
-        dilations,
-        group,
-        kernelShape,
-        pads,
-        strides,
-        inShape,
-        outShape,
-        chIn,
-        chInPerGroup,
-        chOut,
-        chOutPerGroup,
-      } = this.calcShape(inputX.dims, inputW.dims),
-      im2colData = new Float32Array(
-        group *
-          batch *
-          outShape[0] *
-          outShape[1] *
-          chInPerGroup *
-          kernelShape[0] *
-          kernelShape[1]
-      ),
+    const im2colData = new Float32Array(im2colNumel),
       matmulData = new Float32Array(
         group * batch * outShape[0] * outShape[1] * chOutPerGroup
       ),
@@ -149,9 +184,7 @@ class CpuConv extends Conv {
       inShape,
       outShape,
       chIn,
-      chInPerGroup,
-      chOut,
-      chOutPerGroup
+      chInPerGroup
     );
     this.matmul(
       im2colData,
@@ -199,9 +232,7 @@ class CpuConv extends Conv {
     inShape: number[],
     outShape: number[],
     chIn: number,
-    chInPerGroup: number,
-    chOut: number,
-    chOutPerGroup: number
+    chInPerGroup: number
   ): void {
     let idx = 0;
     for (let g = 0; g < group; g++) {
