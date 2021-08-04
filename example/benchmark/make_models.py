@@ -147,6 +147,8 @@ def main():
     dump("conv-512-128-1-1-0", nn.Conv2d(512, 128, 1, stride=1, padding=0, bias=False), [(1, 512, 28, 28)])
     dump("conv-256-256-3-1-1", nn.Conv2d(256, 256, 3, stride=1, padding=1, bias=False), [(1, 256, 14, 14)])
     dump("conv-1024-256-1-1-0", nn.Conv2d(1024, 256, 1, stride=1, padding=0, bias=False), [(1, 1024, 14, 14)])
+    dump("convtranspose-512-256-3-2-0", nn.ConvTranspose2d(512, 256, 3, stride=2, padding=0, bias=False), [(1, 512, 64, 64)])
+    dump("convtranspose-32-16-3-2-0", nn.ConvTranspose2d(32, 16, 3, stride=2, padding=0, bias=False), [(1, 32, 64, 64)])
     dump("matmul-850x1x256-256x2048", MatMul(), [(850, 1, 256), (256, 2048)])
     dump("matmul-850x1x2048-2048x256", MatMul(), [(850, 1, 2048), (2048, 256)])
     dump("matmul-850x1x2048-c2048x256", MatMulConstR((2048, 256)), [(850, 1, 2048)])

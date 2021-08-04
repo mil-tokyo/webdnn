@@ -6,6 +6,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardbinary7 } from "./operator
 import { getOpEntries as getOpEntriesoperatorsstandardcast } from "./operators/standard/cast";
 import { getOpEntries as getOpEntriesoperatorsstandardclip } from "./operators/standard/clip";
 import { getOpEntries as getOpEntriesoperatorsstandardconv } from "./operators/standard/conv";
+import { getOpEntries as getOpEntriesoperatorsstandardconvtranspose } from "./operators/standard/convtranspose";
 import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operators/standard/flatten";
 import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/standard/gemm";
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
@@ -27,6 +28,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardcast());
   entries.push(...getOpEntriesoperatorsstandardclip());
   entries.push(...getOpEntriesoperatorsstandardconv());
+  entries.push(...getOpEntriesoperatorsstandardconvtranspose());
   entries.push(...getOpEntriesoperatorsstandardflatten());
   entries.push(...getOpEntriesoperatorsstandardgemm());
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
