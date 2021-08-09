@@ -29,6 +29,9 @@ import { WebDNNWebGLContext } from "../interface/backend/webgl/webglContext";
 import { WebDNNWebGPUContext } from "../interface/backend/webgpu/webgpuContext";
 import { TensorLoaderImpl } from "./tensorLoaderImpl";
 import { TensorLoader } from "../interface/core/tensorLoader";
+import { WebDNNLogging } from "../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.runner");
 
 export interface BackendContexts {
   cpu: WebDNNCPUContext;
@@ -81,7 +84,7 @@ export class RunnerImpl implements Runner {
     this.model = onnx.ModelProto.decode(new Uint8Array(b));
     modelTransform(this.model, this.backendOrder);
     if (this.model!.opsetImport.length !== 1) {
-      console.warn(
+      logger.warn(
         `Specifying multiple opset_import is not supported. Using first one.`
       );
     }
@@ -451,7 +454,7 @@ export class RunnerImpl implements Runner {
           break;
         } catch (error) {
           if (firstTry) {
-            console.warn(`Failed to run ${node.name}. Retrying on cpu.`, error);
+            logger.warn(`Failed to run ${node.name}. Retrying on cpu.`, error);
             firstTry = false;
             backendOrderForNode = ["cpu"];
             continue;
@@ -520,6 +523,8 @@ export class RunnerImpl implements Runner {
         }
       }
     }
+
+    logger.debug("Performance", nodePerformances);
 
     return outputs;
   }

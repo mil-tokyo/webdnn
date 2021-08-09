@@ -82,7 +82,6 @@ export abstract class AveragePool extends OperatorImpl {
       } else {
         throw new Error();
       }
-      console.log("MP", outShape, pads);
     } else if (this.autoPad === "VALID") {
       outShape = [
         Math.ceil((inShape[0] - kernelShape[0] + 1) / strides[0]),

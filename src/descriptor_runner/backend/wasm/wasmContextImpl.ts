@@ -7,6 +7,9 @@ import { WasmTensor } from "../../interface/backend/wasm/wasmTensor";
 import { DataArrayTypes, DataType } from "../../interface/core/constants";
 import { Tensor } from "../../interface/core/tensor";
 import { WasmSharedBuffer, WasmTensorImpl } from "./wasmTensorImpl";
+import { WebDNNLogging } from "../../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.WebDNNWasmContextImpl");
 
 export class WebDNNWasmContextImpl implements WebDNNWasmContext {
   backend = "wasm" as const;
@@ -47,7 +50,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
     };
     this.resolvers.push((ev: MessageEvent) => {
       if (ev.data.type === "error") {
-        console.error("WebAssembly Error", ev.data.message);
+        logger.error("WebAssembly Error", ev.data.message);
         return true;
       }
     });

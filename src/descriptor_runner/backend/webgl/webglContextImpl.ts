@@ -8,6 +8,9 @@ import { DataType } from "../../interface/core/constants";
 import { Tensor } from "../../interface/core/tensor";
 import { nonnull } from "../../util";
 import { WebGLTensorImpl } from "./webglTensorImpl";
+import { WebDNNLogging } from "../../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.WebDNNWebGLContextImpl");
 
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 const vertexArray = new Float32Array([-1, +1, -1, -1, +1, +1, +1, -1]),
@@ -160,7 +163,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     if (window.location.search.indexOf("webgl1") < 0) {
       gl = canvas.getContext("webgl2");
     } else {
-      console.log("option to force using WebGL1");
+      logger.info("option to force using WebGL1");
     }
     if (!gl) {
       gl = canvas.getContext("webgl");
@@ -192,7 +195,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
     this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
     if (window.location.search.indexOf("max_texture_size_4096") >= 0) {
-      console.warn("Forcing WebGL MAX_TEXTURE_SIZE to 4096");
+      logger.warn("Forcing WebGL MAX_TEXTURE_SIZE to 4096");
       this.maxTextureSize = 4096;
     }
   }
@@ -276,7 +279,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-      console.error(this.gl.getShaderInfoLog(shader));
+      logger.error(this.gl.getShaderInfoLog(shader));
       throw Error(`Shader Compile failed: ${this.gl.getShaderInfoLog(shader)}`);
     }
 
@@ -309,7 +312,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.gl.attachShader(program, this.vshader);
     this.gl.linkProgram(program);
     if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-      console.error(this.gl.getProgramInfoLog(program));
+      logger.error(this.gl.getProgramInfoLog(program));
       throw new Error("ShaderProgram Initialization failed.");
     }
 

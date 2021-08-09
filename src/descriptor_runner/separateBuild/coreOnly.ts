@@ -2,6 +2,8 @@ import { Backend } from "../interface/core/constants";
 import * as Image from "../image";
 import * as Math from "../math";
 export { Image, Math };
+import { WebDNNLogging } from "../logging";
+export { WebDNNLogging as Logging };
 import { BackendContexts, RunnerImpl } from "../core/runnerImpl";
 import { WebDNNCPUContextImpl } from "../backend/cpu/cpuContextImpl";
 import { WebDNNWebGLContextImpl } from "../backend/webgl/webglContextImpl";
