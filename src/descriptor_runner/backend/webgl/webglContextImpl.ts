@@ -12,6 +12,16 @@ import { WebDNNLogging } from "../../logging";
 
 const logger = WebDNNLogging.getLogger("WebDNN.WebDNNWebGLContextImpl");
 
+/**
+ * Maximum GPU memory allocation in the context
+ * TODO: specify from user code
+ */
+const maxBytes = 512 * 1024 * 1024;
+/**
+ * When memory deletion is needed, the deletion occurs until total memory allocation becomes below this value.
+ */
+const reductionBytes = maxBytes - 128 * 1024 * 1024;
+
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 const vertexArray = new Float32Array([-1, +1, -1, -1, +1, +1, +1, -1]),
   vertex_shader_source_1 = `
@@ -28,6 +38,12 @@ void main() {
   gl_Position = vec4(_xy, 0, 1); 
 }
 `;
+
+function deleteTextureWait() {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, 1);
+  });
+}
 
 interface WebGLSharedTexturePoolItem {
   textureWidth: number;
@@ -62,9 +78,25 @@ export class WebGLSharedTexture {
         break;
       }
     }
+
+    const byteLength =
+      this.textureWidth *
+      this.textureHeight *
+      this.dimPerPixel *
+      Float32Array.BYTES_PER_ELEMENT;
+
     if (pooled) {
       this.texture = pooled;
+
+      logger.debug("WEBGL memory from pool", {
+        size: byteLength,
+        total: this.context.perfTotalMemory,
+      });
     } else {
+      this.context.limitTexturePool(
+        maxBytes - byteLength,
+        reductionBytes - byteLength
+      );
       this.texture = nonnull(gl.createTexture());
 
       gl.activeTexture(gl.TEXTURE0 + 9); // TODO: texture unit 9 is always available?
@@ -107,6 +139,12 @@ export class WebGLSharedTexture {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
       gl.bindTexture(gl.TEXTURE_2D, null);
+
+      this.context.perfTotalMemory += byteLength;
+      logger.debug("WEBGL memory allocation", {
+        size: byteLength,
+        total: this.context.perfTotalMemory,
+      });
     }
   }
 
@@ -116,17 +154,21 @@ export class WebGLSharedTexture {
 
   dispose(): void {
     this.refCount--;
+    const byteLength =
+      this.textureWidth *
+      this.textureHeight *
+      this.dimPerPixel *
+      Float32Array.BYTES_PER_ELEMENT;
     if (this.refCount <= 0) {
-      /*
-       * TODO: pool量が多すぎる場合に開放
-       * let gl = WebDNNWebGLContext.getInstance().gl;
-       * gl.deleteTexture(this.texture);
-       */
       this.context.texturePool.push({
         textureWidth: this.textureWidth,
         textureHeight: this.textureHeight,
         dimPerPixel: this.dimPerPixel,
         texture: this.texture,
+      });
+      logger.debug("WEBGL memory to pool", {
+        size: byteLength,
+        total: this.context.perfTotalMemory,
       });
     }
   }
@@ -154,6 +196,10 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   maxTextureSize: number;
 
   texturePool: WebGLSharedTexturePoolItem[] = [];
+
+  perfTotalMemory = 0;
+
+  private needsDeleteTextureWait = false;
 
   constructor(public cpuContext: WebDNNCPUContext) {
     this.isMac = navigator.userAgent.includes("Mac");
@@ -326,6 +372,10 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     uniforms: WebGLUniformItem[]
   ): Promise<void> {
     this.checkInitialized();
+    if (this.needsDeleteTextureWait) {
+      await deleteTextureWait();
+      this.needsDeleteTextureWait = false;
+    }
     const kobj = this.programs.get(name);
     if (!kobj) {
       throw new Error(`Unknown kernel ${name}`);
@@ -378,5 +428,34 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     gl: WebGLRenderingContext | WebGL2RenderingContext
   ): gl is WebGL2RenderingContext {
     return this.webgl2;
+  }
+
+  limitTexturePool(maxBytes: number, reductionBytes: number): void {
+    // remove oldest textures when total size exceeds limitThreshold.
+    // remove continues until total size is below removeThreshold
+    // why remove multiple textures once?
+    // deleteTexture does not immediately free memory, so timer wait is needed
+
+    if (this.perfTotalMemory > maxBytes) {
+      while (this.perfTotalMemory > reductionBytes) {
+        const tex = this.texturePool.shift();
+        if (!tex) {
+          break;
+        }
+
+        const byteLength =
+          tex.textureWidth *
+          tex.textureHeight *
+          tex.dimPerPixel *
+          Float32Array.BYTES_PER_ELEMENT;
+        this.perfTotalMemory -= byteLength;
+        logger.debug("WEBGL memory free", {
+          size: byteLength,
+          total: this.perfTotalMemory,
+        });
+        this.gl.deleteTexture(tex.texture);
+        this.needsDeleteTextureWait = true;
+      }
+    }
   }
 }

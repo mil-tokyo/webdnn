@@ -9,6 +9,9 @@ import {
   WasmSharedBufferInterface,
   WasmTensor,
 } from "../../interface/backend/wasm/wasmTensor";
+import { WebDNNLogging } from "../../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.WasmTensorImpl");
 
 export class WasmSharedBuffer implements WasmSharedBufferInterface {
   private static nextBackendBufferId = 1;
@@ -24,6 +27,11 @@ export class WasmSharedBuffer implements WasmSharedBufferInterface {
     this.refCount = 1;
     this.backendBufferId = WasmSharedBuffer.nextBackendBufferId++;
     this.context.allocBuffer(this);
+    this.context.perfTotalMemory += this.byteLength;
+    logger.debug("WASM memory allocation", {
+      size: this.byteLength,
+      total: this.context.perfTotalMemory,
+    });
   }
 
   incrRef(): void {
@@ -33,6 +41,11 @@ export class WasmSharedBuffer implements WasmSharedBufferInterface {
   dispose(): void {
     this.refCount--;
     if (this.refCount <= 0) {
+      this.context.perfTotalMemory -= this.byteLength;
+      logger.debug("WASM memory free", {
+        size: this.byteLength,
+        total: this.context.perfTotalMemory,
+      });
       this.context.destroyBuffer(this);
     }
   }

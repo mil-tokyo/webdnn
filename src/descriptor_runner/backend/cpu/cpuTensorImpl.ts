@@ -5,6 +5,11 @@ import {
 } from "../../interface/core/constants";
 import { TensorImpl } from "../../core/tensorImpl";
 import { CPUTensor } from "../../interface/backend/cpu/cpuTensor";
+import { WebDNNLogging } from "../../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.CPUTensorImpl");
+
+let perfTotalMemory = 0;
 
 export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   data: DataArrayTypes;
@@ -16,6 +21,11 @@ export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   ) {
     super(dims, dataType, "cpu");
     this.data = data || new DataArrayConstructor[dataType](this.length);
+    perfTotalMemory += this.data.byteLength;
+    logger.debug("CPU memory allocation", {
+      size: this.data.byteLength,
+      total: perfTotalMemory,
+    });
   }
 
   async getData(): Promise<DataArrayTypes> {
@@ -27,6 +37,11 @@ export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   }
 
   dispose(): void {
+    perfTotalMemory -= this.data.byteLength;
+    logger.debug("CPU memory free", {
+      size: this.data.byteLength,
+      total: perfTotalMemory,
+    });
     this.data = new Float32Array(1);
   }
 

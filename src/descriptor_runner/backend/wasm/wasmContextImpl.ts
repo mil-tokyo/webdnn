@@ -24,6 +24,8 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   private wasmWorkerSrcUrl!: string;
 
+  perfTotalMemory = 0;
+
   constructor(public cpuContext: WebDNNCPUContext) {
     if (typeof WebAssembly !== "object") {
       throw new Error("WebAssembly is not supported on this browser.");
