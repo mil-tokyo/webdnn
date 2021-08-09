@@ -56,7 +56,7 @@ function displayMessage(message) {
   document.getElementById("result").innerText = message;
 }
 
-async function runBenchmark(optimized) {
+async function runBenchmark(optimized, measure) {
   const backend = document.getElementById("backend").value;
   const model = document.getElementById("model").value;
   if (!model || !backend) {
@@ -68,6 +68,26 @@ async function runBenchmark(optimized) {
 
   const backendOrder = backend === "cpu" ? [backend] : [backend, "cpu"];
   const directory = `./model/${model}/`;
+
+  if (measure) {
+    const logging = WebDNN.Logging.getInstance();
+    logging.config({
+      adapters: {
+        console: {
+          adapter: "console",
+          loglevel: {
+            "": logging.WARN,
+          }
+        },
+        file: {
+          adapter: "file",
+          loglevel: {
+            "": logging.DEBUG,
+          }
+        }
+      }
+    });
+  }
 
   const runner = await WebDNN.load(
     optimized ? `${directory}optimized/` : directory,
@@ -90,7 +110,12 @@ async function runBenchmark(optimized) {
     await wait();
   }
 
-  const nTrial = 10;
+  if (measure) {
+    const logging = WebDNN.Logging.getInstance();
+    logging.clear();
+  }
+
+  const nTrial = measure ? 1 : 10;
   const times = [];
   for (let i = 0; i < nTrial; i++) {
     console.log(`Trial ${i}`);
@@ -103,6 +128,11 @@ async function runBenchmark(optimized) {
   const max = Math.max(...times);
   const min = Math.min(...times);
   displayMessage(`Model ${model}, backend ${backend}, average ${avg} ms, min ${min} ms, max ${max} ms`);
+
+  if (measure) {
+    const logging = WebDNN.Logging.getInstance();
+    logging.adapters.file.saveToLocalFile();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", async () => {

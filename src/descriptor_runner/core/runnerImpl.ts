@@ -437,6 +437,9 @@ export class RunnerImpl implements Runner {
             default:
               throw new Error();
           }
+          logger.debug(
+            `Running ${node.name!}(${opType}) on ${operator.backend}`
+          );
           const operatorOutputs = await operator.run(
             context,
             operatorInputs,
