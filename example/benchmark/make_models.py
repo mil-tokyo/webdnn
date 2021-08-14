@@ -149,6 +149,8 @@ def main():
     dump("conv-1024-256-1-1-0", nn.Conv2d(1024, 256, 1, stride=1, padding=0, bias=False), [(1, 1024, 14, 14)])
     dump("convtranspose-512-256-3-2-0", nn.ConvTranspose2d(512, 256, 3, stride=2, padding=0, bias=False), [(1, 512, 64, 64)])
     dump("convtranspose-32-16-3-2-0", nn.ConvTranspose2d(32, 16, 3, stride=2, padding=0, bias=False), [(1, 32, 64, 64)])
+    dump("gemm-1024-2048-4096", Gemm(n=2048,k=4096), [(1024, 4096)])
+    dump("gemm-1048576-32-288", Gemm(n=32,k=288), [(1048576, 288)])
     dump("matmul-850x1x256-256x2048", MatMul(), [(850, 1, 256), (256, 2048)])
     dump("matmul-850x1x2048-2048x256", MatMul(), [(850, 1, 2048), (2048, 256)])
     dump("matmul-850x1x2048-c2048x256", MatMulConstR((2048, 256)), [(850, 1, 2048)])
@@ -186,6 +188,15 @@ class Permute(nn.Module):
         # Transpose runs on backend where tensor is, so moving the tensor to non-cpu backend by using Add operator
         x = x + 1.0
         return x.permute(*self.order)
+
+class Gemm(nn.Module):
+    def __init__(self, n, k):
+        super().__init__()
+        # input, output
+        self.fc = nn.Linear(k, n, bias=True)
+
+    def forward(self, x):
+        return self.fc(x)
 
 if __name__ == '__main__':
     main()
