@@ -60,6 +60,11 @@ export class RunnerImpl implements Runner {
   tensorMoveOptions: { [key: string]: Record<string, any> };
 
   /**
+   * key: operator name
+   */
+  forceOperatorBackendOrder: { [key: string]: Backend[] };
+
+  /**
    * Primary backend
    */
   readonly backendName: Backend;
@@ -72,6 +77,7 @@ export class RunnerImpl implements Runner {
     this.loaded = false;
     this.useCompatibilityProxy = false;
     this.tensorMoveOptions = {};
+    this.forceOperatorBackendOrder = {};
   }
 
   getTensorLoader(path: string[] | string): TensorLoader {
@@ -111,6 +117,9 @@ export class RunnerImpl implements Runner {
     for (const md of this.model!.metadataProps) {
       if (md.key === "WebDNN2.TensorMoveOptions") {
         this.tensorMoveOptions = JSON.parse(md.value!);
+      }
+      if (md.key === "WebDNN2.ForceOperatorBackendOrder") {
+        this.forceOperatorBackendOrder = JSON.parse(md.value!);
       }
     }
     this.loaded = true;
@@ -325,7 +334,6 @@ export class RunnerImpl implements Runner {
         this.model!,
         new Set(this.initializerTensors.keys())
       ),
-      forceCPUOperators: string[] = [],
       nodePerformances: {
         opType: string;
         name: string;
@@ -340,10 +348,8 @@ export class RunnerImpl implements Runner {
         opType = nonnull(node.opType);
       let actualBackend: Backend,
         actualInputDims: ReadonlyArray<number>[],
-        backendOrderForNode = this.backendOrder;
-      if (forceCPUOperators.includes(node.name!)) {
-        backendOrderForNode = ["cpu"];
-      }
+        backendOrderForNode =
+          this.forceOperatorBackendOrder[node.name!] || this.backendOrder;
       let firstTry = true;
       // eslint-disable-next-line no-constant-condition
       while (true) {
