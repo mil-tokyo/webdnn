@@ -70,4 +70,5 @@ output
 /src/descriptor_runner/operators/wasm/opEntriesAll.ts
 /src/descriptor_runner/operators/webgl/opEntriesAll.ts
 /src/descriptor_runner/operators/webgpu/opEntriesAll.ts
+/src/descriptor_runner/custom
 /src/shader/wasm/lib
