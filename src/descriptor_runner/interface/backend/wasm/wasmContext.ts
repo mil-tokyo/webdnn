@@ -4,6 +4,10 @@ import { Tensor } from "../../core/tensor";
 import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WasmTensor } from "./wasmTensor";
 
+// for future use
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface WebDNNWasmContextOption {}
+
 export interface WasmKernelArgumentTensor {
   type: "tensor";
   value: WasmTensor;

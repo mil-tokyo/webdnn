@@ -1,6 +1,8 @@
 import { WebDNNCPUContext } from "../../interface/backend/cpu/cpuContext";
 import {
   WebDNNWebGLContext,
+  WebDNNWebGLContextOption,
+  WebDNNWebGLVersion,
   WebGLUniformItem,
 } from "../../interface/backend/webgl/webglContext";
 import { WebGLTensor } from "../../interface/backend/webgl/webglTensor";
@@ -11,16 +13,6 @@ import { WebGLTensorImpl } from "./webglTensorImpl";
 import { WebDNNLogging } from "../../logging";
 
 const logger = WebDNNLogging.getLogger("WebDNN.WebDNNWebGLContextImpl");
-
-/**
- * Maximum GPU memory allocation in the context
- * TODO: specify from user code
- */
-const maxBytes = 512 * 1024 * 1024;
-/**
- * When memory deletion is needed, the deletion occurs until total memory allocation becomes below this value.
- */
-const reductionBytes = maxBytes - 128 * 1024 * 1024;
 
 // [x y u v] * [upper-left, lower-left, upper-right, lower-right]
 const vertexArray = new Float32Array([-1, +1, -1, -1, +1, +1, +1, -1]),
@@ -94,8 +86,8 @@ export class WebGLSharedTexture {
       });
     } else {
       this.context.limitTexturePool(
-        maxBytes - byteLength,
-        reductionBytes - byteLength
+        this.context.maxAllocationBytes - byteLength,
+        this.context.deallocateToBytes - byteLength
       );
       this.texture = nonnull(gl.createTexture());
 
@@ -174,6 +166,44 @@ export class WebGLSharedTexture {
   }
 }
 
+function initWebGL(versionOrder?: WebDNNWebGLVersion[]) {
+  const canvas = document.createElement("canvas");
+  let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+  for (const version of versionOrder || [
+    "webgl2-16384",
+    "webgl2-4096",
+    "webgl1-16384",
+    "webgl1-4096",
+  ]) {
+    let webgl2 = false;
+    if (version.startsWith("webgl2")) {
+      gl = canvas.getContext("webgl2");
+      if (!gl) {
+        continue;
+      }
+      webgl2 = true;
+    } else {
+      gl = canvas.getContext("webgl");
+      if (!gl) {
+        continue;
+      }
+    }
+    const allowedTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
+    const maxTextureSize = Number(version.slice(7)); // 16384 or 4096
+    if (maxTextureSize > allowedTextureSize) {
+      continue;
+    }
+
+    return {
+      version,
+      webgl2,
+      maxTextureSize,
+      gl,
+    };
+  }
+  return null;
+}
+
 export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   backend = "webgl" as const;
 
@@ -201,26 +231,34 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
 
   private needsDeleteTextureWait = false;
 
-  constructor(public cpuContext: WebDNNCPUContext) {
+  maxAllocationBytes: number;
+
+  deallocateToBytes: number;
+
+  version: WebDNNWebGLVersion;
+
+  constructor(
+    public cpuContext: WebDNNCPUContext,
+    option: WebDNNWebGLContextOption
+  ) {
+    this.maxAllocationBytes = option.maxAllocationBytes || 512 * 1024 * 1024;
+    this.deallocateToBytes =
+      option.deallocateToBytes || Math.floor(this.maxAllocationBytes / 2);
+
     this.isMac = navigator.userAgent.includes("Mac");
     this.canOnlyReadRGBA = this.isMac;
-    const canvas = document.createElement("canvas");
-    let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
-    if (window.location.search.indexOf("webgl1") < 0) {
-      gl = canvas.getContext("webgl2");
-    } else {
-      logger.info("option to force using WebGL1");
+
+    const initResult = initWebGL(option.versionOrder);
+    if (!initResult) {
+      throw new Error(
+        "WebGL is not supported or does not have enough capability on this platform."
+      );
     }
-    if (!gl) {
-      gl = canvas.getContext("webgl");
-      if (!gl) {
-        throw new Error("WebGLRenderingContext initialization failed.");
-      }
-      this.webgl2 = false;
-    } else {
-      this.webgl2 = true;
-    }
+    const { gl, version, webgl2, maxTextureSize } = initResult;
     this.gl = gl;
+    this.webgl2 = webgl2;
+    this.maxTextureSize = maxTextureSize;
+    this.version = version;
     if (this.webgl2) {
       // Enable color mode of gl.R32F
       gl.getExtension("EXT_color_buffer_float");
@@ -239,11 +277,6 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.bindArrayBuffer(vertexBuffer);
     this.fb = nonnull(gl.createFramebuffer());
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-    this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
-    if (window.location.search.indexOf("max_texture_size_4096") >= 0) {
-      logger.warn("Forcing WebGL MAX_TEXTURE_SIZE to 4096");
-      this.maxTextureSize = 4096;
-    }
   }
 
   async initialize(): Promise<void> {

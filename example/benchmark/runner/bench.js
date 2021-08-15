@@ -62,7 +62,10 @@ async function runBenchmark(optimized, measure) {
   if (!model || !backend) {
     return;
   }
-  location.hash = `#backend=${backend}&model=${model}`;
+  const webgl_max_allocation_bytes = document.getElementById("webgl_max_allocation_bytes").value;
+  const webgl_deallocate_to_bytes = document.getElementById("webgl_deallocate_to_bytes").value;
+  const webgl_version = document.getElementById("webgl_version").value;
+  location.hash = `#backend=${backend}&model=${model}&webgl_max_allocation_bytes=${webgl_max_allocation_bytes}&webgl_deallocate_to_bytes=${webgl_deallocate_to_bytes}&webgl_version=${webgl_version}`;
   const validateResult = document.getElementById("enableValidateResult").checked;
   displayMessage("Running benchmark");
 
@@ -89,9 +92,17 @@ async function runBenchmark(optimized, measure) {
     });
   }
 
+  const backendOptions = {
+    webgl: {
+      maxAllocationBytes: Number(webgl_max_allocation_bytes) * 1024 * 1024,
+      deallocateToBytes: Number(webgl_deallocate_to_bytes) * 1024 * 1024,
+      versionOrder: webgl_version ? [webgl_version] : undefined,
+    },
+  };
+
   const runner = await WebDNN.load(
     optimized ? `${directory}optimized/` : directory,
-    { backendOrder, optimized }
+    { backendOrder, optimized, backendOptions }
   );
 
   const expectedTensors = await runner
@@ -147,4 +158,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const usp = new URLSearchParams(location.hash.substring(1));
   document.getElementById("backend").value = usp.get("backend") || "webgl";
   document.getElementById("model").value = usp.get("model") || "";
+  document.getElementById("webgl_max_allocation_bytes").value = usp.get("webgl_max_allocation_bytes") || "1024";
+  document.getElementById("webgl_deallocate_to_bytes").value = usp.get("webgl_deallocate_to_bytes") || "512";
+  document.getElementById("webgl_version").value = usp.get("webgl_version") || "";
 });

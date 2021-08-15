@@ -12,11 +12,18 @@ import { WebDNNWebGPUContextImpl } from "../backend/webgpu/webgpuContextImpl";
 import { registerOperators } from "../core/operatorTable";
 import { Runner } from "../interface/core/runner";
 import { OperatorEntry } from "../interface/core/operator";
+import { WebDNNWebGLContextOption } from "../interface/backend/webgl/webglContext";
+import { WebDNNWebGPUContextOption } from "../interface/backend/webgpu/webgpuContext";
 export { CPUTensorImpl as CPUTensor } from "../backend/cpu/cpuTensorImpl";
 
 export interface InitOption {
   backendOrder?: Backend[];
   optimized?: boolean;
+  backendOptions?: {
+    wasm?: WebDNNWebGLContextOption;
+    webgl?: WebDNNWebGLContextOption;
+    webgpu?: WebDNNWebGPUContextOption;
+  };
 }
 
 const defaultContexts = {
@@ -63,7 +70,10 @@ async function loadWasm(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWasmContextImpl> {
-  const ctx = new WebDNNWasmContextImpl(cpuContext),
+  const ctx = new WebDNNWasmContextImpl(
+      cpuContext,
+      options.backendOptions?.wasm || {}
+    ),
     injectionParams = await loadJS(`${directory}op-wasm.js`);
   if (typeof injectionParams.wasmWorkerSrcUrl !== "string") {
     throw new Error("Invalid injection parameter");
@@ -78,12 +88,11 @@ async function loadWebGL(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWebGLContextImpl> {
-  const ctx = new WebDNNWebGLContextImpl(cpuContext),
-    injectionParams = await loadJS(
-      `${directory}op-webgl${ctx.webgl2 ? "2" : "1"}-${
-        ctx.maxTextureSize >= 16384 ? "16384" : "4096"
-      }.js`
-    );
+  const ctx = new WebDNNWebGLContextImpl(
+      cpuContext,
+      options.backendOptions?.webgl || {}
+    ),
+    injectionParams = await loadJS(`${directory}op-${ctx.version}.js`);
   await ctx.initialize();
   registerOperators(injectionParams.operatorEntries);
   return ctx;
@@ -94,7 +103,10 @@ async function loadWebGPU(
   options: InitOption,
   cpuContext: WebDNNCPUContextImpl
 ): Promise<WebDNNWebGPUContextImpl> {
-  const ctx = new WebDNNWebGPUContextImpl(cpuContext),
+  const ctx = new WebDNNWebGPUContextImpl(
+      cpuContext,
+      options.backendOptions?.webgpu || {}
+    ),
     injectionParams = await loadJS(`${directory}op-webgpu.js`);
   await ctx.initialize();
   registerOperators(injectionParams.operatorEntries);
@@ -184,10 +196,7 @@ export async function load(
   let modelNameBackendPart: string = actualBackendOrder[0];
   if (modelNameBackendPart === "webgl") {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const webglctx = backendContexts.webgl!;
-    modelNameBackendPart = `${webglctx.webgl2 ? "webgl2" : "webgl1"}-${
-      webglctx.maxTextureSize >= 16384 ? "16384" : "4096"
-    }`;
+    modelNameBackendPart = backendContexts.webgl!.version;
   }
   await runner.loadModel(directory, `model-${modelNameBackendPart}.onnx`);
   return runner;

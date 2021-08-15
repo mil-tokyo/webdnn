@@ -2,6 +2,7 @@ import { WebDNNCPUContext } from "../../interface/backend/cpu/cpuContext";
 import {
   WasmKernelArgument,
   WebDNNWasmContext,
+  WebDNNWasmContextOption,
 } from "../../interface/backend/wasm/wasmContext";
 import { WasmTensor } from "../../interface/backend/wasm/wasmTensor";
 import { DataArrayTypes, DataType } from "../../interface/core/constants";
@@ -26,7 +27,11 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   perfTotalMemory = 0;
 
-  constructor(public cpuContext: WebDNNCPUContext) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(
+    public cpuContext: WebDNNCPUContext,
+    option: WebDNNWasmContextOption
+  ) {
     if (typeof WebAssembly !== "object") {
       throw new Error("WebAssembly is not supported on this browser.");
     }

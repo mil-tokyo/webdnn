@@ -16,11 +16,18 @@ import { getOpEntries as getOpEntriesWasm } from "./operators/wasm/opEntriesStan
 import { getOpEntries as getOpEntriesWebGL } from "./operators/webgl/opEntriesStandard";
 import { getOpEntries as getOpEntriesWebGPU } from "./operators/webgpu/opEntriesStandard";
 import { Runner } from "./interface/core/runner";
+import { WebDNNWebGLContextOption } from "./interface/backend/webgl/webglContext";
+import { WebDNNWebGPUContextOption } from "./interface/backend/webgpu/webgpuContext";
 export { CPUTensorImpl as CPUTensor } from "./backend/cpu/cpuTensorImpl";
 
 export interface InitOption {
   backendOrder?: Backend[];
   optimized?: boolean;
+  backendOptions?: {
+    wasm?: WebDNNWebGLContextOption;
+    webgl?: WebDNNWebGLContextOption;
+    webgpu?: WebDNNWebGPUContextOption;
+  };
 }
 
 const defaultContexts = {
@@ -57,7 +64,10 @@ export async function load(
         {
           if (!defaultContexts.wasm) {
             try {
-              const ctx = new WebDNNWasmContextImpl(cpuContext);
+              const ctx = new WebDNNWasmContextImpl(
+                cpuContext,
+                options.backendOptions?.wasm || {}
+              );
               await ctx.initialize(wasmWorkerSrcUrl);
               defaultContexts.wasm = ctx;
               registerOperators(getOpEntriesWasm());
@@ -75,7 +85,10 @@ export async function load(
         {
           if (!defaultContexts.webgl) {
             try {
-              const ctx = new WebDNNWebGLContextImpl(cpuContext);
+              const ctx = new WebDNNWebGLContextImpl(
+                cpuContext,
+                options.backendOptions?.webgl || {}
+              );
               await ctx.initialize();
               defaultContexts.webgl = ctx;
               registerOperators(getOpEntriesWebGL());
@@ -94,7 +107,10 @@ export async function load(
         {
           if (!defaultContexts.webgpu) {
             try {
-              const ctx = new WebDNNWebGPUContextImpl(cpuContext);
+              const ctx = new WebDNNWebGPUContextImpl(
+                cpuContext,
+                options.backendOptions?.webgpu || {}
+              );
               await ctx.initialize();
               defaultContexts.webgpu = ctx;
               registerOperators(getOpEntriesWebGPU());

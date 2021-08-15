@@ -1,6 +1,7 @@
 import { WebDNNCPUContext } from "../../interface/backend/cpu/cpuContext";
 import {
   WebDNNWebGPUContext,
+  WebDNNWebGPUContextOption,
   WebGPURunnerRequest,
 } from "../../interface/backend/webgpu/webgpuContext";
 import { WebGPUTensor } from "../../interface/backend/webgpu/webgpuTensor";
@@ -27,7 +28,11 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
 
   pooledMetaBuffer: WebGPUMetaBuffer[] = [];
 
-  constructor(public cpuContext: WebDNNCPUContext) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(
+    public cpuContext: WebDNNCPUContext,
+    option: WebDNNWebGPUContextOption
+  ) {
     if (
       typeof navigator.gpu !== "object" ||
       typeof navigator.gpu.requestAdapter !== "function"

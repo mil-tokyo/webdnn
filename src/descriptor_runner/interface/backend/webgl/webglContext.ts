@@ -10,6 +10,29 @@ export interface WebGLUniformItem {
   type: "float" | "int";
 }
 
+export type WebDNNWebGLVersion =
+  | "webgl2-16384"
+  | "webgl2-4096"
+  | "webgl1-16384"
+  | "webgl1-4096";
+
+export interface WebDNNWebGLContextOption {
+  /**
+   * Version order in which initialization is attempted.
+   * The version means the combination of webgl version and max texture size.
+   */
+  versionOrder?: WebDNNWebGLVersion[];
+  /**
+   * Maximum GPU memory allocation in the context.
+   * Pool deleted textures for future use until this capacity is exceeded.
+   */
+  maxAllocationBytes?: number;
+  /**
+   * When memory deletion is needed, the deallocation occurs until total memory allocation becomes below this value.
+   */
+  deallocateToBytes?: number;
+}
+
 export interface WebDNNWebGLContext extends BackendContext {
   backend: "webgl";
   cpuContext: WebDNNCPUContext;
@@ -17,6 +40,7 @@ export interface WebDNNWebGLContext extends BackendContext {
   gl: WebGLRenderingContext | WebGL2RenderingContext;
   webgl2: boolean;
   maxTextureSize: number;
+  version: WebDNNWebGLVersion;
 
   initialize(): Promise<void>;
   isWebGLTensor(tensor: Tensor): tensor is WebGLTensor;

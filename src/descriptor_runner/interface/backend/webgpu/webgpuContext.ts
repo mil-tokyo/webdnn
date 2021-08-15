@@ -4,6 +4,10 @@ import { Tensor } from "../../core/tensor";
 import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WebGPUTensor } from "./webgpuTensor";
 
+// for future use
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface WebDNNWebGPUContextOption {}
+
 type WorkGroupDim = "x" | "y" | "z";
 
 export interface WebGPUMetaBufferContentElement {

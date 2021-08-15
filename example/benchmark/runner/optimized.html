@@ -12,7 +12,24 @@
     <h1>WebDNN Benchmark (Optimized Model)</h1>
     <div>
       <button type="button" onClick="runBenchmark(true)">Benchmark</button>
-      <button type="button" onClick="runBenchmark(true,true)">Measure & Save Log</button>
+      <button type="button" onClick="runBenchmark(true,true)">
+        Measure & Save Log
+      </button>
+      <div>
+        WebGL Options<br />
+        maxAllocationBytes:
+        <input type="number" id="webgl_max_allocation_bytes" />MB<br />
+        deallocateToBytes:
+        <input type="number" id="webgl_deallocate_to_bytes" />MB<br />
+        version:
+        <select id="webgl_version">
+          <option value="">any</option>
+          <option value="webgl2-16384">webgl2-16384</option>
+          <option value="webgl2-4096">webgl2-4096</option>
+          <option value="webgl1-16384">webgl1-16384</option>
+          <option value="webgl1-4096">webgl1-4096</option>
+        </select>
+      </div>
     </div>
     <div>
       Backend:
@@ -27,7 +44,8 @@
         <option value="">--Choice--</option>
       </select>
       <label>
-        <input type="checkbox" id="enableValidateResult" checked />Validate result
+        <input type="checkbox" id="enableValidateResult" checked />Validate
+        result
       </label>
     </div>
     <div id="result"></div>
