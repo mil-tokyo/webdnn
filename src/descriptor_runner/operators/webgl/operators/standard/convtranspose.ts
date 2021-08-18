@@ -54,7 +54,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     const inputTransposeData = context.emptyTensor([
       chIn * batch * inShape[0] * inShape[1],
     ]);
-    this.transposeInput(
+    await this.transposeInput(
       context,
       inputX,
       inputTransposeData,
@@ -66,7 +66,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     const weightTransposeData = context.emptyTensor([
       chOut * kernelShape[0] * kernelShape[1] * chInPerGroup,
     ]);
-    this.transposeWeight(
+    await this.transposeWeight(
       context,
       inputW,
       weightTransposeData,
@@ -78,7 +78,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     const matmulData = context.emptyTensor([
       chOut * batch * inShape[0] * inShape[1] * kernelShape[0] * kernelShape[1],
     ]);
-    this.matmul(
+    await this.matmul(
       context,
       inputTransposeData,
       weightTransposeData,
@@ -101,7 +101,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       const col2ImData = context.emptyTensor([
         batch * chOut * outShape[0] * outShape[1],
       ]);
-      this.col2im(
+      await this.col2im(
         context,
         matmulData,
         col2ImData,
@@ -127,7 +127,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       );
       col2ImData.dispose();
     } else {
-      this.col2im(
+      await this.col2im(
         context,
         matmulData,
         output,
