@@ -339,6 +339,7 @@ export class RunnerImpl implements Runner {
         name: string;
         backend: Backend;
         inputDims: ReadonlyArray<number>[];
+        outputDims: ReadonlyArray<number>[];
         elapsed: number;
       }[] = [];
 
@@ -348,6 +349,7 @@ export class RunnerImpl implements Runner {
         opType = nonnull(node.opType);
       let actualBackend: Backend,
         actualInputDims: ReadonlyArray<number>[],
+        actualOutputDims: ReadonlyArray<number>[],
         backendOrderForNode =
           this.forceOperatorBackendOrder[node.name!] || this.backendOrder;
       let firstTry = true;
@@ -452,6 +454,7 @@ export class RunnerImpl implements Runner {
             node.output!.length
           );
           actualInputDims = operatorInputs.map((t) => t.dims);
+          actualOutputDims = operatorOutputs.map((t) => t.dims);
           for (let j = 0; j < node.output!.length; j++) {
             const outputName = node.output![j];
             tensorsForBackends[operatorOutputs[j].backend].set(
@@ -489,6 +492,7 @@ export class RunnerImpl implements Runner {
         name: node.name!,
         backend: actualBackend,
         inputDims: actualInputDims,
+        outputDims: actualOutputDims,
         elapsed: nodeEndTime - nodeStartTime,
       });
     }
