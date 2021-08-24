@@ -5,6 +5,7 @@ import {
   Backend,
   DataType,
   backendsWithoutCPU,
+  backends,
 } from "../interface/core/constants";
 import {
   clipLong,
@@ -364,6 +365,14 @@ export class RunnerImpl implements Runner {
             for (const backend of backendOrderForNode) {
               if (tensorsForBackends[backend].has(inputName)) {
                 bs.push(backend);
+              }
+            }
+            if (bs.length === 0) {
+              // forceOperatorBackendOrder == ["webgl"]のような場合に、cpu上にあるTensorをスキャンする
+              for (const backend of backends) {
+                if (tensorsForBackends[backend].has(inputName)) {
+                  bs.push(backend);
+                }
               }
             }
             currentTensorsBackends.push(bs);
