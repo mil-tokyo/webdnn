@@ -7,3 +7,4 @@
 /** Don't Remove This comment block */
 
 export * from "./math/argsort";
+export * from "./math/random";
