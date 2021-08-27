@@ -7,7 +7,7 @@ class OptimizationPassResultCPU(OptimizationPassResult):
         self.remove_code(root_directory)
         directory = os.path.join(root_directory, "src/descriptor_runner/operators/cpu/operators/autogen")
         for key, s in self.operator_shaders.items():
-            with open(os.path.join(directory, f"{key}.ts"), "w") as f:
+            with open(os.path.join(directory, f"{key}.ts"), "w", encoding="utf-8", newline="\n") as f:
                 f.write(s.ts_code)
 
     def remove_code(self, root_directory: str):

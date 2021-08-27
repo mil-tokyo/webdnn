@@ -33,7 +33,7 @@ subprocess.check_call(["emcc", "-std=c++11", "--pre-js", "pre.js", "-I", "lib/ei
 # embed wasm into worker js
 with open(f"{DST_DIR}/workerRaw.wasm", "rb") as f:
     worker_wasm = f.read()
-with open(f"{DST_DIR}/workerRaw.js", "rt") as f:
+with open(f"{DST_DIR}/workerRaw.js", "rt", encoding="utf-8") as f:
     worker_js = f.read()
 
 worker_js_with_wasm = worker_js.replace("WASM_WORKER_WASM_BINARY_BASE64", base64.b64encode(worker_wasm).decode("ascii"))
@@ -43,5 +43,5 @@ worker_data_url_src = f"""/* eslint-disable */
 export const wasmWorkerSrcUrl = URL.createObjectURL(new File([`{worker_js_with_wasm_escaped}`], "worker.js", {{type: "text/javascript"}}));
 """
 
-with open(f"{DST_DIR}/worker.ts", "wt") as f:
+with open(f"{DST_DIR}/worker.ts", "wt", encoding="utf-8", newline="\n") as f:
     f.write(worker_data_url_src)
