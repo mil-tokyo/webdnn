@@ -65,6 +65,14 @@ export class WebGLBinary7 extends OperatorImpl {
         case 4:
           idxs = "tex_output_0, tex_output_1, tex_output_2, tex_output_3";
           break;
+        case 5:
+          idxs =
+            "tex_output_0, tex_output_1, tex_output_2, tex_output_3, tex_output_4";
+          break;
+        case 6:
+          idxs =
+            "tex_output_0, tex_output_1, tex_output_2, tex_output_3, tex_output_4, tex_output_5";
+          break;
         default:
           throw new Error();
       }

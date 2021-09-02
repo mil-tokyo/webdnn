@@ -115,6 +115,29 @@ uniform int ${name}_stride_3;
       args = "int d0, int d1, int d2, int d3";
       flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3`;
       break;
+    case 5:
+      uniforms = `
+  uniform int ${name}_stride_0;
+  uniform int ${name}_stride_1;
+  uniform int ${name}_stride_2;
+  uniform int ${name}_stride_3;
+  uniform int ${name}_stride_4;
+          `;
+      args = "int d0, int d1, int d2, int d3, int d4";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3 + d4 * ${name}_stride_4`;
+      break;
+    case 6:
+      uniforms = `
+  uniform int ${name}_stride_0;
+  uniform int ${name}_stride_1;
+  uniform int ${name}_stride_2;
+  uniform int ${name}_stride_3;
+  uniform int ${name}_stride_4;
+  uniform int ${name}_stride_5;
+          `;
+      args = "int d0, int d1, int d2, int d3, int d4, int d5";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3 + d4 * ${name}_stride_4 + d5 * ${name}_stride_5`;
+      break;
     default:
       throw new Error();
   }
@@ -194,6 +217,29 @@ uniform int ${name}_stride_3;
         `;
       args = "int d0, int d1, int d2, int d3";
       flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3`;
+      break;
+    case 5:
+      uniforms = `
+  uniform int ${name}_stride_0;
+  uniform int ${name}_stride_1;
+  uniform int ${name}_stride_2;
+  uniform int ${name}_stride_3;
+  uniform int ${name}_stride_4;
+          `;
+      args = "int d0, int d1, int d2, int d3, int d4";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3 + d4 * ${name}_stride_4`;
+      break;
+    case 6:
+      uniforms = `
+  uniform int ${name}_stride_0;
+  uniform int ${name}_stride_1;
+  uniform int ${name}_stride_2;
+  uniform int ${name}_stride_3;
+  uniform int ${name}_stride_4;
+  uniform int ${name}_stride_5;
+          `;
+      args = "int d0, int d1, int d2, int d3, int d4, int d5";
+      flat_index = `d0 * ${name}_stride_0 + d1 * ${name}_stride_1 + d2 * ${name}_stride_2 + d3 * ${name}_stride_3 + d4 * ${name}_stride_4 + d5 * ${name}_stride_5`;
       break;
     default:
       throw new Error();
@@ -347,6 +393,40 @@ export function shaderGenTensorOutputCoordsWithReturn(ndim: number): string {
       return;
     }
     `;
+      break;
+    case 5:
+      source = `
+    int tmp4 = tex_output_flat / tex_output_shape_4;
+    int tex_output_4 = tex_output_flat - tmp4 * tex_output_shape_4;
+    int tmp3 = tmp4 / tex_output_shape_3;
+    int tex_output_3 = tmp4 - tmp3 * tex_output_shape_3;
+    int tmp2 = tmp3 / tex_output_shape_2;
+    int tex_output_2 = tmp3 - tmp2 * tex_output_shape_2;
+    int tmp1 = tmp2 / tex_output_shape_1;
+    int tex_output_1 = tmp2 - tmp1 * tex_output_shape_1;
+    int tex_output_0 = tmp1;
+    if (tex_output_0 >= tex_output_shape_0) {
+      return;
+    }
+    `;
+      break;
+    case 6:
+      source = `
+        int tmp5 = tex_output_flat / tex_output_shape_5;
+        int tex_output_5 = tex_output_flat - tmp5 * tex_output_shape_5;
+      int tmp4 = tmp5 / tex_output_shape_4;
+      int tex_output_4 = tmp5 - tmp4 * tex_output_shape_4;
+      int tmp3 = tmp4 / tex_output_shape_3;
+      int tex_output_3 = tmp4 - tmp3 * tex_output_shape_3;
+      int tmp2 = tmp3 / tex_output_shape_2;
+      int tex_output_2 = tmp3 - tmp2 * tex_output_shape_2;
+      int tmp1 = tmp2 / tex_output_shape_1;
+      int tex_output_1 = tmp2 - tmp1 * tex_output_shape_1;
+      int tex_output_0 = tmp1;
+      if (tex_output_0 >= tex_output_shape_0) {
+        return;
+      }
+      `;
       break;
     default:
       throw new Error();
