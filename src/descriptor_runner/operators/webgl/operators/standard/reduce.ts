@@ -168,6 +168,7 @@ export function getOpEntries(): OperatorEntry[] {
       opType: "ReduceSum",
       backend: "webgl",
       opsetMin: 1,
+      opsetMax: 13,
       factory: () => new ReduceOp("ReduceSum", "0.0;", "s += v;", ""),
     },
     {
