@@ -3,14 +3,22 @@ import { OperatorEntry } from "../../interface/core/operator";
 
 import { getOpEntries as getOpEntriesoperatorsstandardbinary7 } from "./operators/standard/binary7";
 import { getOpEntries as getOpEntriesoperatorsstandarddynamicunary } from "./operators/standard/dynamicunary";
+import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operators/standard/flatten";
 import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/standard/gemm";
+import { getOpEntries as getOpEntriesoperatorsstandardreshape5 } from "./operators/standard/reshape5";
+import { getOpEntries as getOpEntriesoperatorsstandardsqueeze } from "./operators/standard/squeeze";
 import { getOpEntries as getOpEntriesoperatorsstandardunary } from "./operators/standard/unary";
+import { getOpEntries as getOpEntriesoperatorsstandardunsqueeze } from "./operators/standard/unsqueeze";
 
 export function getOpEntries(): OperatorEntry[] {
   const entries: OperatorEntry[] = [];
   entries.push(...getOpEntriesoperatorsstandardbinary7());
   entries.push(...getOpEntriesoperatorsstandarddynamicunary());
+  entries.push(...getOpEntriesoperatorsstandardflatten());
   entries.push(...getOpEntriesoperatorsstandardgemm());
+  entries.push(...getOpEntriesoperatorsstandardreshape5());
+  entries.push(...getOpEntriesoperatorsstandardsqueeze());
   entries.push(...getOpEntriesoperatorsstandardunary());
+  entries.push(...getOpEntriesoperatorsstandardunsqueeze());
   return entries;
 }
