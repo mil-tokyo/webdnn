@@ -6,4 +6,5 @@ export interface CPUTensor extends Tensor {
   getDataSync(): DataArrayTypes;
   getValue(idxs: number[]): number;
   setValue(value: number, idxs: number[]): void;
+  useExternalBuffer: boolean;
 }

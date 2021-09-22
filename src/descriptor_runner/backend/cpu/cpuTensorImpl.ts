@@ -13,6 +13,7 @@ let perfTotalMemory = 0;
 
 export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   data: DataArrayTypes;
+  useExternalBuffer: boolean;
 
   constructor(
     dims: ReadonlyArray<number>,
@@ -21,11 +22,20 @@ export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   ) {
     super(dims, dataType, "cpu");
     this.data = data || new DataArrayConstructor[dataType](this.length);
-    perfTotalMemory += this.data.byteLength;
-    logger.debug("CPU memory allocation", {
-      size: this.data.byteLength,
-      total: perfTotalMemory,
-    });
+    if (data) {
+      this.useExternalBuffer = true;
+      logger.debug("CPU memory use existing buffer", {
+        size: this.data.byteLength,
+        total: perfTotalMemory,
+      });
+    } else {
+      this.useExternalBuffer = false;
+      perfTotalMemory += this.data.byteLength;
+      logger.debug("CPU memory allocation", {
+        size: this.data.byteLength,
+        total: perfTotalMemory,
+      });
+    }
   }
 
   async getData(): Promise<DataArrayTypes> {
@@ -37,7 +47,9 @@ export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   }
 
   dispose(): void {
-    perfTotalMemory -= this.data.byteLength;
+    if (!this.useExternalBuffer) {
+      perfTotalMemory -= this.data.byteLength;
+    }
     logger.debug("CPU memory free", {
       size: this.data.byteLength,
       total: perfTotalMemory,
