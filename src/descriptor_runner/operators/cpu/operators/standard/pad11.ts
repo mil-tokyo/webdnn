@@ -1,68 +1,117 @@
 import { DataArrayTypes } from "../../../../interface/core/constants";
-import { OperatorImpl } from "../../../operatorImpl";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { onnx } from "onnx-proto";
 import { getAttrString } from "../../../operatorUtil";
+import { Pad11 } from "../../../base/pad11";
 
 /*
  * Opset 11
  * opset 2は互換性なし
  */
-class Pad11 extends OperatorImpl {
-  mode!: string;
-
+class CPUPad11 extends Pad11 {
   constructor() {
     super("cpu");
   }
 
-  initialize(attribute: onnx.IAttributeProto[]): void {
-    super.initialize(attribute);
-    this.mode = getAttrString(attribute, "mode", "constant");
-  }
-
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0],
-      pads = Array.from(inputs[1].data),
-      constantValueTensor = inputs[2];
-    if (this.mode !== "constant") {
-      throw new Error("Pad: mode !== constant is not yet supported");
-    }
+    const [input, shapeTensor, constantValueTensor] = inputs;
+    const { outputShape, pads } = this.calcShape(input, shapeTensor);
     let constantValue = 0;
     if (constantValueTensor) {
       constantValue = constantValueTensor.data[0];
     }
-    const outputShape: number[] = [];
-    for (let i = 0; i < input.ndim; i++) {
-      outputShape.push(input.dims[i] + pads[i] + pads[i + input.ndim]);
-    }
+
+    // edge:
+    // [0,1,2,3] -> pad (3,3) -> [0,0,0,*0,1,2,3*,3,3,3]
+    // [0,1,2,3] -> pad (6,6) -> [0,0,0,0,0,0,*0,1,2,3*,3,3,3,3,3,3]
+    // reflect:
+    // [0,1,2,3] -> pad (3,3) -> [3,2,1,*0,1,2,3*,2,1,0]
+    // [0,1,2,3] -> pad (6,6) -> [0,1,2,3,2,1,*0,1,2,3*,2,1,0,1,2,3]
+    // [0,1,2,3] -> pad (8,8) -> [2,1,0,1,2,3,2,1,*0,1,2,3*,2,1,0,1,2,3,2,1]
     const output = context.emptyTensor(outputShape, input.dataType);
     let func;
-    switch (input.ndim) {
-      case 1:
-        func = this.copy1d;
+    switch (this.mode) {
+      case "constant":
+        switch (input.ndim) {
+          case 1:
+            func = this.constCopy1d;
+            break;
+          case 2:
+            func = this.constCopy2d;
+            break;
+          case 3:
+            func = this.constCopy3d;
+            break;
+          case 4:
+            func = this.constCopy4d;
+            break;
+          case 5:
+            func = this.constCopy5d;
+            break;
+          case 6:
+            func = this.constCopy6d;
+            break;
+          default:
+            throw new Error(
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+            );
+        }
         break;
-      case 2:
-        func = this.copy2d;
+      case "reflect":
+        switch (input.ndim) {
+          case 1:
+            func = this.reflectCopy1d;
+            break;
+          case 2:
+            func = this.reflectCopy2d;
+            break;
+          case 3:
+            func = this.reflectCopy3d;
+            break;
+          case 4:
+            func = this.reflectCopy4d;
+            break;
+          case 5:
+            func = this.reflectCopy5d;
+            break;
+          case 6:
+            func = this.reflectCopy6d;
+            break;
+          default:
+            throw new Error(
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+            );
+        }
         break;
-      case 3:
-        func = this.copy3d;
+      case "edge":
+        switch (input.ndim) {
+          case 1:
+            func = this.edgeCopy1d;
+            break;
+          case 2:
+            func = this.edgeCopy2d;
+            break;
+          case 3:
+            func = this.edgeCopy3d;
+            break;
+          case 4:
+            func = this.edgeCopy4d;
+            break;
+          case 5:
+            func = this.edgeCopy5d;
+            break;
+          case 6:
+            func = this.edgeCopy6d;
+            break;
+          default:
+            throw new Error(
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+            );
+        }
         break;
-      case 4:
-        func = this.copy4d;
-        break;
-      case 5:
-        func = this.copy5d;
-        break;
-      case 6:
-        func = this.copy6d;
-        break;
-      default:
-        throw new Error(
-          `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
-        );
     }
     func(
       input.data,
@@ -77,7 +126,7 @@ class Pad11 extends OperatorImpl {
     return [output];
   }
 
-  copy1d(
+  constCopy1d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -99,7 +148,7 @@ class Pad11 extends OperatorImpl {
     }
   }
 
-  copy2d(
+  constCopy2d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -123,7 +172,8 @@ class Pad11 extends OperatorImpl {
       }
     }
   }
-  copy3d(
+
+  constCopy3d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -167,7 +217,7 @@ class Pad11 extends OperatorImpl {
     }
   }
 
-  copy4d(
+  constCopy4d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -218,7 +268,7 @@ class Pad11 extends OperatorImpl {
     }
   }
 
-  copy5d(
+  constCopy5d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -276,7 +326,7 @@ class Pad11 extends OperatorImpl {
     }
   }
 
-  copy6d(
+  constCopy6d(
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     inputShape: ReadonlyArray<number>,
@@ -340,6 +390,865 @@ class Pad11 extends OperatorImpl {
       }
     }
   }
+
+  reflectCopy1d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0] = inputShape;
+    const [outputShape0] = outputShape;
+    const [inputStrides0] = inputStrides;
+    const [outputStrides0] = outputStrides;
+    const [pads0] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      let i0 = d0 - pads0;
+      if (i0 < 0) {
+        i0 = -i0 % (inputShape0 * 2 - 2);
+        if (i0 >= inputShape0) {
+          i0 = inputShape0 * 2 - i0 - 2;
+        }
+      } else if (i0 >= inputShape0) {
+        i0 = i0 % (inputShape0 * 2 - 2);
+        if (i0 >= inputShape0) {
+          i0 = inputShape0 * 2 - i0 - 2;
+        }
+      }
+      const v = dI[i0 * inputStrides0];
+      dO[d0 * outputStrides0] = v;
+    }
+  }
+
+  reflectCopy2d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1] = inputShape;
+    const [outputShape0, outputShape1] = outputShape;
+    const [inputStrides0, inputStrides1] = inputStrides;
+    const [outputStrides0, outputStrides1] = outputStrides;
+    const [pads0, pads1] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        let i0 = d0 - pads0,
+          i1 = d1 - pads1;
+        if (i0 < 0) {
+          i0 = -i0 % (inputShape0 * 2 - 2);
+          if (i0 >= inputShape0) {
+            i0 = inputShape0 * 2 - i0 - 2;
+          }
+        } else if (i0 >= inputShape0) {
+          i0 = i0 % (inputShape0 * 2 - 2);
+          if (i0 >= inputShape0) {
+            i0 = inputShape0 * 2 - i0 - 2;
+          }
+        }
+        if (i1 < 0) {
+          i1 = -i1 % (inputShape1 * 2 - 2);
+          if (i1 >= inputShape1) {
+            i1 = inputShape1 * 2 - i1 - 2;
+          }
+        } else if (i1 >= inputShape1) {
+          i1 = i1 % (inputShape1 * 2 - 2);
+          if (i1 >= inputShape1) {
+            i1 = inputShape1 * 2 - i1 - 2;
+          }
+        }
+        const v = dI[i0 * inputStrides0 + i1 * inputStrides1];
+        dO[d0 * outputStrides0 + d1 * outputStrides1] = v;
+      }
+    }
+  }
+
+  reflectCopy3d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2] = inputShape;
+    const [outputShape0, outputShape1, outputShape2] = outputShape;
+    const [inputStrides0, inputStrides1, inputStrides2] = inputStrides;
+    const [outputStrides0, outputStrides1, outputStrides2] = outputStrides;
+    const [pads0, pads1, pads2] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          let i0 = d0 - pads0,
+            i1 = d1 - pads1,
+            i2 = d2 - pads2;
+          if (i0 < 0) {
+            i0 = -i0 % (inputShape0 * 2 - 2);
+            if (i0 >= inputShape0) {
+              i0 = inputShape0 * 2 - i0 - 2;
+            }
+          } else if (i0 >= inputShape0) {
+            i0 = i0 % (inputShape0 * 2 - 2);
+            if (i0 >= inputShape0) {
+              i0 = inputShape0 * 2 - i0 - 2;
+            }
+          }
+          if (i1 < 0) {
+            i1 = -i1 % (inputShape1 * 2 - 2);
+            if (i1 >= inputShape1) {
+              i1 = inputShape1 * 2 - i1 - 2;
+            }
+          } else if (i1 >= inputShape1) {
+            i1 = i1 % (inputShape1 * 2 - 2);
+            if (i1 >= inputShape1) {
+              i1 = inputShape1 * 2 - i1 - 2;
+            }
+          }
+          if (i2 < 0) {
+            i2 = -i2 % (inputShape2 * 2 - 2);
+            if (i2 >= inputShape2) {
+              i2 = inputShape2 * 2 - i2 - 2;
+            }
+          } else if (i2 >= inputShape2) {
+            i2 = i2 % (inputShape2 * 2 - 2);
+            if (i2 >= inputShape2) {
+              i2 = inputShape2 * 2 - i2 - 2;
+            }
+          }
+          const v =
+            dI[i0 * inputStrides0 + i1 * inputStrides1 + i2 * inputStrides2];
+          dO[d0 * outputStrides0 + d1 * outputStrides1 + d2 * outputStrides2] =
+            v;
+        }
+      }
+    }
+  }
+
+  reflectCopy4d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2, inputShape3] = inputShape;
+    const [outputShape0, outputShape1, outputShape2, outputShape3] =
+      outputShape;
+    const [inputStrides0, inputStrides1, inputStrides2, inputStrides3] =
+      inputStrides;
+    const [outputStrides0, outputStrides1, outputStrides2, outputStrides3] =
+      outputStrides;
+    const [pads0, pads1, pads2, pads3] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            let i0 = d0 - pads0,
+              i1 = d1 - pads1,
+              i2 = d2 - pads2,
+              i3 = d3 - pads3;
+            if (i0 < 0) {
+              i0 = -i0 % (inputShape0 * 2 - 2);
+              if (i0 >= inputShape0) {
+                i0 = inputShape0 * 2 - i0 - 2;
+              }
+            } else if (i0 >= inputShape0) {
+              i0 = i0 % (inputShape0 * 2 - 2);
+              if (i0 >= inputShape0) {
+                i0 = inputShape0 * 2 - i0 - 2;
+              }
+            }
+            if (i1 < 0) {
+              i1 = -i1 % (inputShape1 * 2 - 2);
+              if (i1 >= inputShape1) {
+                i1 = inputShape1 * 2 - i1 - 2;
+              }
+            } else if (i1 >= inputShape1) {
+              i1 = i1 % (inputShape1 * 2 - 2);
+              if (i1 >= inputShape1) {
+                i1 = inputShape1 * 2 - i1 - 2;
+              }
+            }
+            if (i2 < 0) {
+              i2 = -i2 % (inputShape2 * 2 - 2);
+              if (i2 >= inputShape2) {
+                i2 = inputShape2 * 2 - i2 - 2;
+              }
+            } else if (i2 >= inputShape2) {
+              i2 = i2 % (inputShape2 * 2 - 2);
+              if (i2 >= inputShape2) {
+                i2 = inputShape2 * 2 - i2 - 2;
+              }
+            }
+            if (i3 < 0) {
+              i3 = -i3 % (inputShape3 * 2 - 2);
+              if (i3 >= inputShape3) {
+                i3 = inputShape3 * 2 - i3 - 2;
+              }
+            } else if (i3 >= inputShape3) {
+              i3 = i3 % (inputShape3 * 2 - 2);
+              if (i3 >= inputShape3) {
+                i3 = inputShape3 * 2 - i3 - 2;
+              }
+            }
+            const v =
+              dI[
+                i0 * inputStrides0 +
+                  i1 * inputStrides1 +
+                  i2 * inputStrides2 +
+                  i3 * inputStrides3
+              ];
+            dO[
+              d0 * outputStrides0 +
+                d1 * outputStrides1 +
+                d2 * outputStrides2 +
+                d3 * outputStrides3
+            ] = v;
+          }
+        }
+      }
+    }
+  }
+  reflectCopy5d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2, inputShape3, inputShape4] =
+      inputShape;
+    const [
+      outputShape0,
+      outputShape1,
+      outputShape2,
+      outputShape3,
+      outputShape4,
+    ] = outputShape;
+    const [
+      inputStrides0,
+      inputStrides1,
+      inputStrides2,
+      inputStrides3,
+      inputStrides4,
+    ] = inputStrides;
+    const [
+      outputStrides0,
+      outputStrides1,
+      outputStrides2,
+      outputStrides3,
+      outputStrides4,
+    ] = outputStrides;
+    const [pads0, pads1, pads2, pads3, pads4] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            for (let d4 = 0; d4 < outputShape4; d4++) {
+              let i0 = d0 - pads0,
+                i1 = d1 - pads1,
+                i2 = d2 - pads2,
+                i3 = d3 - pads3,
+                i4 = d4 - pads4;
+              if (i0 < 0) {
+                i0 = -i0 % (inputShape0 * 2 - 2);
+                if (i0 >= inputShape0) {
+                  i0 = inputShape0 * 2 - i0 - 2;
+                }
+              } else if (i0 >= inputShape0) {
+                i0 = i0 % (inputShape0 * 2 - 2);
+                if (i0 >= inputShape0) {
+                  i0 = inputShape0 * 2 - i0 - 2;
+                }
+              }
+              if (i1 < 0) {
+                i1 = -i1 % (inputShape1 * 2 - 2);
+                if (i1 >= inputShape1) {
+                  i1 = inputShape1 * 2 - i1 - 2;
+                }
+              } else if (i1 >= inputShape1) {
+                i1 = i1 % (inputShape1 * 2 - 2);
+                if (i1 >= inputShape1) {
+                  i1 = inputShape1 * 2 - i1 - 2;
+                }
+              }
+              if (i2 < 0) {
+                i2 = -i2 % (inputShape2 * 2 - 2);
+                if (i2 >= inputShape2) {
+                  i2 = inputShape2 * 2 - i2 - 2;
+                }
+              } else if (i2 >= inputShape2) {
+                i2 = i2 % (inputShape2 * 2 - 2);
+                if (i2 >= inputShape2) {
+                  i2 = inputShape2 * 2 - i2 - 2;
+                }
+              }
+              if (i3 < 0) {
+                i3 = -i3 % (inputShape3 * 2 - 2);
+                if (i3 >= inputShape3) {
+                  i3 = inputShape3 * 2 - i3 - 2;
+                }
+              } else if (i3 >= inputShape3) {
+                i3 = i3 % (inputShape3 * 2 - 2);
+                if (i3 >= inputShape3) {
+                  i3 = inputShape3 * 2 - i3 - 2;
+                }
+              }
+              if (i4 < 0) {
+                i4 = -i4 % (inputShape4 * 2 - 2);
+                if (i4 >= inputShape4) {
+                  i4 = inputShape4 * 2 - i4 - 2;
+                }
+              } else if (i4 >= inputShape4) {
+                i4 = i4 % (inputShape4 * 2 - 2);
+                if (i4 >= inputShape4) {
+                  i4 = inputShape4 * 2 - i4 - 2;
+                }
+              }
+              const v =
+                dI[
+                  i0 * inputStrides0 +
+                    i1 * inputStrides1 +
+                    i2 * inputStrides2 +
+                    i3 * inputStrides3 +
+                    i4 * inputStrides4
+                ];
+              dO[
+                d0 * outputStrides0 +
+                  d1 * outputStrides1 +
+                  d2 * outputStrides2 +
+                  d3 * outputStrides3 +
+                  d4 * outputStrides4
+              ] = v;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  reflectCopy6d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [
+      inputShape0,
+      inputShape1,
+      inputShape2,
+      inputShape3,
+      inputShape4,
+      inputShape5,
+    ] = inputShape;
+    const [
+      outputShape0,
+      outputShape1,
+      outputShape2,
+      outputShape3,
+      outputShape4,
+      outputShape5,
+    ] = outputShape;
+    const [
+      inputStrides0,
+      inputStrides1,
+      inputStrides2,
+      inputStrides3,
+      inputStrides4,
+      inputStrides5,
+    ] = inputStrides;
+    const [
+      outputStrides0,
+      outputStrides1,
+      outputStrides2,
+      outputStrides3,
+      outputStrides4,
+      outputStrides5,
+    ] = outputStrides;
+    const [pads0, pads1, pads2, pads3, pads4, pads5] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            for (let d4 = 0; d4 < outputShape4; d4++) {
+              for (let d5 = 0; d5 < outputShape5; d5++) {
+                let i0 = d0 - pads0,
+                  i1 = d1 - pads1,
+                  i2 = d2 - pads2,
+                  i3 = d3 - pads3,
+                  i4 = d4 - pads4,
+                  i5 = d5 - pads5;
+                if (i0 < 0) {
+                  i0 = -i0 % (inputShape0 * 2 - 2);
+                  if (i0 >= inputShape0) {
+                    i0 = inputShape0 * 2 - i0 - 2;
+                  }
+                } else if (i0 >= inputShape0) {
+                  i0 = i0 % (inputShape0 * 2 - 2);
+                  if (i0 >= inputShape0) {
+                    i0 = inputShape0 * 2 - i0 - 2;
+                  }
+                }
+                if (i1 < 0) {
+                  i1 = -i1 % (inputShape1 * 2 - 2);
+                  if (i1 >= inputShape1) {
+                    i1 = inputShape1 * 2 - i1 - 2;
+                  }
+                } else if (i1 >= inputShape1) {
+                  i1 = i1 % (inputShape1 * 2 - 2);
+                  if (i1 >= inputShape1) {
+                    i1 = inputShape1 * 2 - i1 - 2;
+                  }
+                }
+                if (i2 < 0) {
+                  i2 = -i2 % (inputShape2 * 2 - 2);
+                  if (i2 >= inputShape2) {
+                    i2 = inputShape2 * 2 - i2 - 2;
+                  }
+                } else if (i2 >= inputShape2) {
+                  i2 = i2 % (inputShape2 * 2 - 2);
+                  if (i2 >= inputShape2) {
+                    i2 = inputShape2 * 2 - i2 - 2;
+                  }
+                }
+                if (i3 < 0) {
+                  i3 = -i3 % (inputShape3 * 2 - 2);
+                  if (i3 >= inputShape3) {
+                    i3 = inputShape3 * 2 - i3 - 2;
+                  }
+                } else if (i3 >= inputShape3) {
+                  i3 = i3 % (inputShape3 * 2 - 2);
+                  if (i3 >= inputShape3) {
+                    i3 = inputShape3 * 2 - i3 - 2;
+                  }
+                }
+                if (i4 < 0) {
+                  i4 = -i4 % (inputShape4 * 2 - 2);
+                  if (i4 >= inputShape4) {
+                    i4 = inputShape4 * 2 - i4 - 2;
+                  }
+                } else if (i4 >= inputShape4) {
+                  i4 = i4 % (inputShape4 * 2 - 2);
+                  if (i4 >= inputShape4) {
+                    i4 = inputShape4 * 2 - i4 - 2;
+                  }
+                }
+                if (i5 < 0) {
+                  i5 = -i5 % (inputShape5 * 2 - 2);
+                  if (i5 >= inputShape5) {
+                    i5 = inputShape5 * 2 - i5 - 2;
+                  }
+                } else if (i5 >= inputShape5) {
+                  i5 = i5 % (inputShape5 * 2 - 2);
+                  if (i5 >= inputShape5) {
+                    i5 = inputShape5 * 2 - i5 - 2;
+                  }
+                }
+                const v =
+                  dI[
+                    i0 * inputStrides0 +
+                      i1 * inputStrides1 +
+                      i2 * inputStrides2 +
+                      i3 * inputStrides3 +
+                      i4 * inputStrides4 +
+                      i5 * inputStrides5
+                  ];
+                dO[
+                  d0 * outputStrides0 +
+                    d1 * outputStrides1 +
+                    d2 * outputStrides2 +
+                    d3 * outputStrides3 +
+                    d4 * outputStrides4 +
+                    d5 * outputStrides5
+                ] = v;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  edgeCopy1d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0] = inputShape;
+    const [outputShape0] = outputShape;
+    const [inputStrides0] = inputStrides;
+    const [outputStrides0] = outputStrides;
+    const [pads0] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      let i0 = d0 - pads0;
+      if (i0 < 0) {
+        i0 = 0;
+      } else if (i0 >= inputShape0) {
+        i0 = inputShape0 - 1;
+      }
+      const v = dI[i0 * inputStrides0];
+      dO[d0 * outputStrides0] = v;
+    }
+  }
+
+  edgeCopy2d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1] = inputShape;
+    const [outputShape0, outputShape1] = outputShape;
+    const [inputStrides0, inputStrides1] = inputStrides;
+    const [outputStrides0, outputStrides1] = outputStrides;
+    const [pads0, pads1] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        let i0 = d0 - pads0,
+          i1 = d1 - pads1;
+        if (i0 < 0) {
+          i0 = 0;
+        } else if (i0 >= inputShape0) {
+          i0 = inputShape0 - 1;
+        }
+        if (i1 < 0) {
+          i1 = 0;
+        } else if (i1 >= inputShape1) {
+          i1 = inputShape1 - 1;
+        }
+        const v = dI[i0 * inputStrides0 + i1 * inputStrides1];
+        dO[d0 * outputStrides0 + d1 * outputStrides1] = v;
+      }
+    }
+  }
+
+  edgeCopy3d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2] = inputShape;
+    const [outputShape0, outputShape1, outputShape2] = outputShape;
+    const [inputStrides0, inputStrides1, inputStrides2] = inputStrides;
+    const [outputStrides0, outputStrides1, outputStrides2] = outputStrides;
+    const [pads0, pads1, pads2] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          let i0 = d0 - pads0,
+            i1 = d1 - pads1,
+            i2 = d2 - pads2;
+          if (i0 < 0) {
+            i0 = 0;
+          } else if (i0 >= inputShape0) {
+            i0 = inputShape0 - 1;
+          }
+          if (i1 < 0) {
+            i1 = 0;
+          } else if (i1 >= inputShape1) {
+            i1 = inputShape1 - 1;
+          }
+          if (i2 < 0) {
+            i2 = 0;
+          } else if (i2 >= inputShape2) {
+            i2 = inputShape2 - 1;
+          }
+          const v =
+            dI[i0 * inputStrides0 + i1 * inputStrides1 + i2 * inputStrides2];
+          dO[d0 * outputStrides0 + d1 * outputStrides1 + d2 * outputStrides2] =
+            v;
+        }
+      }
+    }
+  }
+
+  edgeCopy4d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2, inputShape3] = inputShape;
+    const [outputShape0, outputShape1, outputShape2, outputShape3] =
+      outputShape;
+    const [inputStrides0, inputStrides1, inputStrides2, inputStrides3] =
+      inputStrides;
+    const [outputStrides0, outputStrides1, outputStrides2, outputStrides3] =
+      outputStrides;
+    const [pads0, pads1, pads2, pads3] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            let i0 = d0 - pads0,
+              i1 = d1 - pads1,
+              i2 = d2 - pads2,
+              i3 = d3 - pads3;
+            if (i0 < 0) {
+              i0 = 0;
+            } else if (i0 >= inputShape0) {
+              i0 = inputShape0 - 1;
+            }
+            if (i1 < 0) {
+              i1 = 0;
+            } else if (i1 >= inputShape1) {
+              i1 = inputShape1 - 1;
+            }
+            if (i2 < 0) {
+              i2 = 0;
+            } else if (i2 >= inputShape2) {
+              i2 = inputShape2 - 1;
+            }
+            if (i3 < 0) {
+              i3 = 0;
+            } else if (i3 >= inputShape3) {
+              i3 = inputShape3 - 1;
+            }
+            const v =
+              dI[
+                i0 * inputStrides0 +
+                  i1 * inputStrides1 +
+                  i2 * inputStrides2 +
+                  i3 * inputStrides3
+              ];
+            dO[
+              d0 * outputStrides0 +
+                d1 * outputStrides1 +
+                d2 * outputStrides2 +
+                d3 * outputStrides3
+            ] = v;
+          }
+        }
+      }
+    }
+  }
+
+  edgeCopy5d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [inputShape0, inputShape1, inputShape2, inputShape3, inputShape4] =
+      inputShape;
+    const [
+      outputShape0,
+      outputShape1,
+      outputShape2,
+      outputShape3,
+      outputShape4,
+    ] = outputShape;
+    const [
+      inputStrides0,
+      inputStrides1,
+      inputStrides2,
+      inputStrides3,
+      inputStrides4,
+    ] = inputStrides;
+    const [
+      outputStrides0,
+      outputStrides1,
+      outputStrides2,
+      outputStrides3,
+      outputStrides4,
+    ] = outputStrides;
+    const [pads0, pads1, pads2, pads3, pads4] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            for (let d4 = 0; d4 < outputShape4; d4++) {
+              let i0 = d0 - pads0,
+                i1 = d1 - pads1,
+                i2 = d2 - pads2,
+                i3 = d3 - pads3,
+                i4 = d4 - pads4;
+              if (i0 < 0) {
+                i0 = 0;
+              } else if (i0 >= inputShape0) {
+                i0 = inputShape0 - 1;
+              }
+              if (i1 < 0) {
+                i1 = 0;
+              } else if (i1 >= inputShape1) {
+                i1 = inputShape1 - 1;
+              }
+              if (i2 < 0) {
+                i2 = 0;
+              } else if (i2 >= inputShape2) {
+                i2 = inputShape2 - 1;
+              }
+              if (i3 < 0) {
+                i3 = 0;
+              } else if (i3 >= inputShape3) {
+                i3 = inputShape3 - 1;
+              }
+              if (i4 < 0) {
+                i4 = 0;
+              } else if (i4 >= inputShape4) {
+                i4 = inputShape4 - 1;
+              }
+              const v =
+                dI[
+                  i0 * inputStrides0 +
+                    i1 * inputStrides1 +
+                    i2 * inputStrides2 +
+                    i3 * inputStrides3 +
+                    i4 * inputStrides4
+                ];
+              dO[
+                d0 * outputStrides0 +
+                  d1 * outputStrides1 +
+                  d2 * outputStrides2 +
+                  d3 * outputStrides3 +
+                  d4 * outputStrides4
+              ] = v;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  edgeCopy6d(
+    dI: DataArrayTypes,
+    dO: DataArrayTypes,
+    inputShape: ReadonlyArray<number>,
+    outputShape: ReadonlyArray<number>,
+    inputStrides: ReadonlyArray<number>,
+    outputStrides: ReadonlyArray<number>,
+    pads: ReadonlyArray<number>
+  ) {
+    const [
+      inputShape0,
+      inputShape1,
+      inputShape2,
+      inputShape3,
+      inputShape4,
+      inputShape5,
+    ] = inputShape;
+    const [
+      outputShape0,
+      outputShape1,
+      outputShape2,
+      outputShape3,
+      outputShape4,
+      outputShape5,
+    ] = outputShape;
+    const [
+      inputStrides0,
+      inputStrides1,
+      inputStrides2,
+      inputStrides3,
+      inputStrides4,
+      inputStrides5,
+    ] = inputStrides;
+    const [
+      outputStrides0,
+      outputStrides1,
+      outputStrides2,
+      outputStrides3,
+      outputStrides4,
+      outputStrides5,
+    ] = outputStrides;
+    const [pads0, pads1, pads2, pads3, pads4, pads5] = pads;
+    for (let d0 = 0; d0 < outputShape0; d0++) {
+      for (let d1 = 0; d1 < outputShape1; d1++) {
+        for (let d2 = 0; d2 < outputShape2; d2++) {
+          for (let d3 = 0; d3 < outputShape3; d3++) {
+            for (let d4 = 0; d4 < outputShape4; d4++) {
+              for (let d5 = 0; d5 < outputShape5; d5++) {
+                let i0 = d0 - pads0,
+                  i1 = d1 - pads1,
+                  i2 = d2 - pads2,
+                  i3 = d3 - pads3,
+                  i4 = d4 - pads4,
+                  i5 = d5 - pads5;
+                if (i0 < 0) {
+                  i0 = 0;
+                } else if (i0 >= inputShape0) {
+                  i0 = inputShape0 - 1;
+                }
+                if (i1 < 0) {
+                  i1 = 0;
+                } else if (i1 >= inputShape1) {
+                  i1 = inputShape1 - 1;
+                }
+                if (i2 < 0) {
+                  i2 = 0;
+                } else if (i2 >= inputShape2) {
+                  i2 = inputShape2 - 1;
+                }
+                if (i3 < 0) {
+                  i3 = 0;
+                } else if (i3 >= inputShape3) {
+                  i3 = inputShape3 - 1;
+                }
+                if (i4 < 0) {
+                  i4 = 0;
+                } else if (i4 >= inputShape4) {
+                  i4 = inputShape4 - 1;
+                }
+                if (i5 < 0) {
+                  i5 = 0;
+                } else if (i5 >= inputShape5) {
+                  i5 = inputShape5 - 1;
+                }
+                const v =
+                  dI[
+                    i0 * inputStrides0 +
+                      i1 * inputStrides1 +
+                      i2 * inputStrides2 +
+                      i3 * inputStrides3 +
+                      i4 * inputStrides4 +
+                      i5 * inputStrides5
+                  ];
+                dO[
+                  d0 * outputStrides0 +
+                    d1 * outputStrides1 +
+                    d2 * outputStrides2 +
+                    d3 * outputStrides3 +
+                    d4 * outputStrides4 +
+                    d5 * outputStrides5
+                ] = v;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 export function getOpEntries(): OperatorEntry[] {
@@ -348,7 +1257,7 @@ export function getOpEntries(): OperatorEntry[] {
       opType: "Pad",
       backend: "cpu",
       opsetMin: 11,
-      factory: () => new Pad11(),
+      factory: () => new CPUPad11(),
     },
   ];
 }

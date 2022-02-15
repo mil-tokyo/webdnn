@@ -33,6 +33,7 @@ export function instantiateOperator(
   // 特殊なオペレータ
   switch (opType) {
     case "Flatten":
+    case "Pad":
     case "Reshape":
     case "Squeeze":
     case "Transpose":
