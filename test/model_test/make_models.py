@@ -356,13 +356,14 @@ class Gather1D(nn.Module):
 
 
 class Pad(nn.Module):
-    def __init__(self, pad):
+    def __init__(self, pad, mode="constant", constant=0.0):
         super().__init__()
         self.pad = pad
+        self.mode = mode
+        self.constant = constant
 
     def forward(self, x):
-        return F.pad(x, pad=self.pad)
-
+        return F.pad(x, pad=self.pad, mode=self.mode, value=self.constant)
 
 class ReduceMax(nn.Module):
     def forward(self, x):
@@ -649,6 +650,17 @@ def main():
     dump("pad4", Pad((1, 2, 3, 4, 5, 6, 7, 8)), [(2, 3, 4, 5)], opset_version=11)
     dump("pad5", Pad((1, 2, 3, 4, 5, 6, 7, 8, 9, 10)), [(2, 3, 4, 5, 6)], opset_version=11)
     dump("pad6", Pad((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)), [(2, 3, 4, 5, 6, 7)], opset_version=11)
+    dump("padc2", Pad((1, 2, 3, 4), constant=-1.0), [(2, 3)], opset_version=11)
+    dump("padc3", Pad((1, 2, 3, 4, 5, 6), constant=-1.0), [(2, 3, 4)], opset_version=11)
+    dump("padc4", Pad((1, 2, 3, 4, 5, 6, 7, 8), constant=-1.0), [(2, 3, 4, 5)], opset_version=11)
+    dump("padc5", Pad((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), constant=-1.0), [(2, 3, 4, 5, 6)], opset_version=11)
+    # only padding 2, 3, 4 dim for tensor with dimension 3,4,5 is supported
+    dump("padr3", Pad((2, 1), mode="reflect"), [(2, 3, 4)], opset_version=11)
+    dump("padr4", Pad((4, 3, 2, 1), mode="reflect"), [(2, 3, 4, 5)], opset_version=11)
+    dump("padr5", Pad((6, 5, 4, 3, 2, 1), mode="reflect"), [(3, 4, 5, 6, 7)], opset_version=11)
+    dump("pade3", Pad((2, 1), mode="replicate"), [(2, 3, 4)], opset_version=11)
+    dump("pade4", Pad((4, 3, 2, 1), mode="replicate"), [(2, 3, 4, 5)], opset_version=11)
+    dump("pade5", Pad((6, 5, 4, 3, 2, 1), mode="replicate"), [(3, 4, 5, 6, 7)], opset_version=11)
     # (2, 3, 10, 12) -< (2, 3*10*12)
     dump("flatten", nn.Flatten(), [(2, 3, 10, 12)])
     dump("add1", Add(), [(2, 3, 10, 12), (2, 3, 10, 12)])
