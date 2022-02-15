@@ -296,6 +296,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     gl.enable(gl.SCISSOR_TEST);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
     const vertexBuffer = this.createArrayBuffer(vertexArray);
     this.bindArrayBuffer(vertexBuffer);
