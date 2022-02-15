@@ -363,7 +363,9 @@ class Pad(nn.Module):
         self.constant = constant
 
     def forward(self, x):
+        x = F.relu(x) # Padは入力テンソルがCPUならGPUに移動せず実行する仕様としているため、まずGPUに移動させる
         return F.pad(x, pad=self.pad, mode=self.mode, value=self.constant)
+
 
 class ReduceMax(nn.Module):
     def forward(self, x):

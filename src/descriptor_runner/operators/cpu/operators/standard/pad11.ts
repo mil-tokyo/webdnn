@@ -1,41 +1,27 @@
 import { DataArrayTypes } from "../../../../interface/core/constants";
-import { OperatorImpl } from "../../../operatorImpl";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { onnx } from "onnx-proto";
 import { getAttrString } from "../../../operatorUtil";
-
-type PadMode = "constant" | "reflect" | "edge";
+import { Pad11 } from "../../../base/pad11";
 
 /*
  * Opset 11
  * opset 2は互換性なし
  */
-class Pad11 extends OperatorImpl {
-  mode!: PadMode;
-
+class CPUPad11 extends Pad11 {
   constructor() {
     super("cpu");
   }
 
-  initialize(attribute: onnx.IAttributeProto[]): void {
-    super.initialize(attribute);
-    this.mode = getAttrString(attribute, "mode", "constant") as PadMode;
-  }
-
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
-    const input = inputs[0],
-      pads = Array.from(inputs[1].data),
-      constantValueTensor = inputs[2];
+    const [input, shapeTensor, constantValueTensor] = inputs;
+    const { outputShape, pads } = this.calcShape(input, shapeTensor);
     let constantValue = 0;
     if (constantValueTensor) {
       constantValue = constantValueTensor.data[0];
-    }
-    const outputShape: number[] = [];
-    for (let i = 0; i < input.ndim; i++) {
-      outputShape.push(input.dims[i] + pads[i] + pads[i + input.ndim]);
     }
 
     // edge:
@@ -1271,7 +1257,7 @@ export function getOpEntries(): OperatorEntry[] {
       opType: "Pad",
       backend: "cpu",
       opsetMin: 11,
-      factory: () => new Pad11(),
+      factory: () => new CPUPad11(),
     },
   ];
 }
