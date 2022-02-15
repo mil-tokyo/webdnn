@@ -11,6 +11,12 @@ import { TensorImpl } from "../../core/tensorImpl";
 import { WebDNNWebGLContextImpl, WebGLSharedTexture } from "./webglContextImpl";
 import { WebGLTensor } from "../../interface/backend/webgl/webglTensor";
 import { WebGLUniformItem } from "../../interface/backend/webgl/webglContext";
+import {
+  packToFloat16Array,
+  packToFloat32Array,
+  unpackFromFloat16Array,
+  unpackFromFloat32Array,
+} from "./pack";
 
 export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
   textureWidth: number;
@@ -102,19 +108,36 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
 
     this.bindToDrawTexture();
     if (this.context.isWebGL2(gl)) {
-      const buf = new Float32Array(
-        this.textureHeight * this.textureWidth * this.dimPerPixel
-      );
-      gl.readPixels(
-        0,
-        0,
-        this.textureWidth,
-        this.textureHeight,
-        this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
-        gl.FLOAT,
-        buf
-      );
-      data = new Float32Array(buf.buffer, 0, this.length);
+      if (this.context.supportsTexture32bit) {
+        const buf = new Float32Array(
+          this.textureHeight * this.textureWidth * this.dimPerPixel
+        );
+        gl.readPixels(
+          0,
+          0,
+          this.textureWidth,
+          this.textureHeight,
+          this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
+          gl.FLOAT,
+          buf
+        );
+        data = unpackFromFloat32Array(buf, this.length);
+      } else {
+        // 16bit
+        const buf = new Uint16Array(
+          this.textureHeight * this.textureWidth * this.dimPerPixel
+        );
+        gl.readPixels(
+          0,
+          0,
+          this.textureWidth,
+          this.textureHeight,
+          this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
+          gl.HALF_FLOAT,
+          buf
+        );
+        data = unpackFromFloat16Array(buf, this.length);
+      }
     } else {
       const buf = new Uint8Array(this.textureHeight * this.textureWidth * 4);
       gl.readPixels(
@@ -162,21 +185,39 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     const { gl } = this.context;
     this.bindToReadTexture(9);
     if (this.context.isWebGL2(gl)) {
-      const buf = new Float32Array(
-        this.textureWidth * this.textureHeight * this.dimPerPixel
-      );
-      buf.set(data);
-      gl.texSubImage2D(
-        gl.TEXTURE_2D,
-        0,
-        0,
-        0,
-        this.textureWidth,
-        this.textureHeight,
-        this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
-        gl.FLOAT,
-        buf
-      );
+      if (this.context.supportsTexture32bit) {
+        const buf = packToFloat32Array(
+          data,
+          this.textureWidth * this.textureHeight * this.dimPerPixel
+        );
+        gl.texSubImage2D(
+          gl.TEXTURE_2D,
+          0,
+          0,
+          0,
+          this.textureWidth,
+          this.textureHeight,
+          this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
+          gl.FLOAT,
+          buf
+        );
+      } else {
+        const buf = packToFloat16Array(
+          data,
+          this.textureWidth * this.textureHeight * this.dimPerPixel
+        );
+        gl.texSubImage2D(
+          gl.TEXTURE_2D,
+          0,
+          0,
+          0,
+          this.textureWidth,
+          this.textureHeight,
+          this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
+          gl.HALF_FLOAT,
+          buf
+        );
+      }
     } else {
       const buf = this.packColor(data);
       gl.texSubImage2D(
