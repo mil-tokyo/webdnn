@@ -98,16 +98,18 @@ export class WebGLSharedTexture {
        * WebGL1: RGBA各8bitにfloatをpackして使用（floatテクスチャ未対応環境を想定）
        */
       if (this.context.isWebGL2(gl)) {
-        gl.texImage2D(
+        gl.texStorage2D(
           gl.TEXTURE_2D,
-          0,
-          dimPerPixel === 1 ? gl.R32F : gl.RGBA32F,
+          1,
+          this.context.supportsTexture32bit
+            ? dimPerPixel === 1
+              ? gl.R32F
+              : gl.RGBA32F
+            : dimPerPixel === 1
+            ? gl.R16F
+            : gl.RGBA16F,
           this.textureWidth,
-          this.textureHeight,
-          0,
-          dimPerPixel === 1 ? gl.RED : gl.RGBA,
-          gl.FLOAT,
-          null
+          this.textureHeight
         );
       } else {
         if (dimPerPixel !== 1) {
@@ -207,8 +209,6 @@ function initWebGL(versionOrder?: WebDNNWebGLVersion[]) {
 export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   backend = "webgl" as const;
 
-  isMac: boolean;
-
   canOnlyReadRGBA: boolean;
 
   gl: WebGLRenderingContext | WebGL2RenderingContext;
@@ -236,6 +236,8 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   deallocateToBytes: number;
 
   version: WebDNNWebGLVersion;
+  supportsTexture32bit: boolean;
+  supportsTexture16bit: boolean;
 
   constructor(
     public cpuContext: WebDNNCPUContext,
@@ -245,8 +247,13 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.deallocateToBytes =
       option.deallocateToBytes || Math.floor(this.maxAllocationBytes / 2);
 
-    this.isMac = navigator.userAgent.includes("Mac");
-    this.canOnlyReadRGBA = this.isMac;
+    // バグ回避
+    // Mac+(Chrome/Firefox)で、RチャンネルのみのテクスチャをreadPixelsで読みだそうとするとエラーとなる
+    // GL ERROR :GL_INVALID_OPERATION : glReadPixels: format and type incompatible with the current read framebuffer
+    const ua = navigator.userAgent;
+    this.canOnlyReadRGBA =
+      ua.includes("Macintosh") &&
+      (ua.includes("Chrome/") || ua.includes("Firefox/"));
 
     const initResult = initWebGL(option.versionOrder);
     if (!initResult) {
@@ -260,8 +267,25 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     this.maxTextureSize = maxTextureSize;
     this.version = version;
     if (this.webgl2) {
-      // Enable color mode of gl.R32F
-      gl.getExtension("EXT_color_buffer_float");
+      if (gl.getExtension("EXT_color_buffer_float")) {
+        // Enable color mode of gl.R32F
+        this.supportsTexture32bit = true;
+        // EXT_color_buffer_float が取得できればR16Fも含んでいる
+        // これが取得できても、EXT_color_buffer_half_floatが取得できない環境もある
+        this.supportsTexture16bit = true;
+      } else if (gl.getExtension("EXT_color_buffer_half_float")) {
+        // Enable color mode of gl.R16F
+        this.supportsTexture32bit = false;
+        this.supportsTexture16bit = true;
+      } else {
+        // 浮動小数点数テクスチャが格納できない環境はサポート外
+        throw new Error(
+          "Neither EXT_color_buffer_float nor EXT_color_buffer_half_float are supported"
+        );
+      }
+    } else {
+      this.supportsTexture32bit = false;
+      this.supportsTexture16bit = false;
     }
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
@@ -272,6 +296,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     gl.enable(gl.SCISSOR_TEST);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
     const vertexBuffer = this.createArrayBuffer(vertexArray);
     this.bindArrayBuffer(vertexBuffer);

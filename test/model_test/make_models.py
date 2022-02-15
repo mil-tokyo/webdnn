@@ -468,8 +468,8 @@ def array_to_tensor_value_info(array, name):
     dtype = _data_type_from_numpy(array.dtype)
     return helper.make_tensor_value_info(name, dtype, list(array.shape))
 
-def dump_direct_onnx(name, op_type, input_arrays, output_arrays, attributes={}, opset_version=10):
-    name_all.append(name)
+def dump_direct_onnx(name, op_type, input_arrays, output_arrays, attributes={}, opset_version=10, large=False):
+    name_all.append({"name": name, "large": large})
     output_dir = f"{OUTPUT_DIR}/{name}"
     os.makedirs(output_dir, exist_ok=True)
     input_tvs = []
@@ -513,8 +513,8 @@ def dump_direct_onnx(name, op_type, input_arrays, output_arrays, attributes={}, 
         subprocess.check_call(["python", "-m", "webdnn.optimize_model", onnx_path, os.path.join(output_dir, "optimized")])
 
 
-def dump(name, model, input_shapes, opset_version=10):
-    name_all.append(name)
+def dump(name, model, input_shapes, opset_version=10, large=False):
+    name_all.append({"name": name, "large": large})
     output_dir = f"{OUTPUT_DIR}/{name}"
     os.makedirs(output_dir, exist_ok=True)
     inputs = []
@@ -568,7 +568,7 @@ def main():
     dump_direct_onnx("mean", "Mean", [np.random.rand(3, 4).astype(np.float32), np.random.rand(1, 4).astype(np.float32)], [np.random.rand(3, 4).astype(np.float32)])
     dump_direct_onnx("tile", "Tile", [np.random.rand(3, 4, 5, 6).astype(np.float32), np.array([2, 3, 4, 5], dtype=np.int64)], [np.zeros((3*2, 4*3, 5*4, 6*5), dtype=np.float32)])
     dump("relu", ReLU(), [(3, 4)])
-    dump("relu2", ReLU(), [(100, 20, 30, 400)])
+    dump("relu2", ReLU(), [(100, 20, 30, 400)], large=True)
     dump("reluexp", ReLUExp(), [(3, 4)])
     dump("sqrt", Sqrt(), [torch.rand(3, 4)])
     dump("sqrtscalar", Sqrt(), [rand_scalar()])
@@ -626,7 +626,7 @@ def main():
     # cinkhkw % 4 != 0, group * batch * outh * outw > 16384
     dump("conv10", nn.Conv2d(512, 512, 3, 1, 1, groups=512, bias=False), [(1, 512, 7, 7)])
     # very large im2col (IM2COL_NUMEL_LIMIT)
-    dump("conv11", nn.Conv2d(1, 1, 4, 1, 1, bias=True), [(32, 1, 1027, 1027)])
+    dump("conv11", nn.Conv2d(1, 1, 4, 1, 1, bias=True), [(32, 1, 1027, 1027)], large=True)
     # in_channels, out_channels, kernel_size
     dump("convtranspose1", nn.ConvTranspose2d(16, 32, 3, stride=1, padding=0, output_padding=0, groups=1, dilation=1, bias=False), [(1, 16, 7, 7)])
     dump("convtranspose2", nn.ConvTranspose2d(16, 32, 3, stride=2, padding=0, output_padding=0, groups=1, dilation=1, bias=True), [(2, 16, 7, 9)])
