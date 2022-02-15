@@ -5,59 +5,73 @@ function wait() {
 }
 
 async function runTest(optimized) {
-  let caseDirs = [];
-  const resultDom = document.getElementById("result");
-  const previousResultList = document.getElementById("resultList");
-  if (previousResultList) {
-    resultDom.removeChild(previousResultList);
-  }
-  const resultList = document.createElement("ol");
-  resultDom.appendChild(resultList);
+  try {
+    let caseDirs = [];
+    const resultDom = document.getElementById("result");
+    const previousResultList = document.getElementById("resultList");
+    if (previousResultList) {
+      resultDom.removeChild(previousResultList);
+    }
+    const resultList = document.createElement("ol");
+    resultDom.appendChild(resultList);
 
-  // URLに?case=xxx があればケースxxxだけを実行
-  const usp = new URLSearchParams(location.search);
-  const selectedCase = usp.get("case");
-  if (selectedCase) {
-    caseDirs.push(`model/${selectedCase}/`);
-  } else {
-    const listJSON = await (await fetch("model/cases.json")).json();
-    for (const name of listJSON) {
-      caseDirs.push(`model/${name}/`);
+    // URLに?case=xxx があればケースxxxだけを実行
+    const runLarge = document.getElementsByName("large")[0].checked;
+    const usp = new URLSearchParams(location.search);
+    const selectedCase = usp.get("case");
+    if (selectedCase) {
+      caseDirs.push(`model/${selectedCase}/`);
+    } else {
+      const listJSON = await (await fetch("model/cases.json")).json();
+      for (const {name, large} of listJSON) {
+        if (!large || (large && runLarge)) {
+          caseDirs.push(`model/${name}/`);
+        }
+      }
     }
-  }
-  const checkboxes = document.getElementsByName("backend");
-  const backendOrders = [["cpu"]];
-  for (const checkbox of checkboxes) {
-    if (checkbox.checked) {
-      backendOrders.push([checkbox.value, "cpu"]);
+    const checkboxes = document.getElementsByName("backend");
+    const backendOrders = [["cpu"]];
+    for (const checkbox of checkboxes) {
+      if (checkbox.checked) {
+        backendOrders.push([checkbox.value, "cpu"]);
+      }
     }
-  }
-  let allOk = true;
-  const allResults = {};
-  for (const caseDir of caseDirs) {
-    for (const backendOrder of backendOrders) {
-      console.log("test", caseDir, backendOrder);
-      const msg = await runTestOne(caseDir, backendOrder, optimized);
-      const ok = !msg;
-      allOk &= ok;
-      allResults[caseDir] = ok;
-      resultList.innerHTML += `<li><span class="${
-        ok ? "result-ok" : "result-fail"
-      }">${ok ? "OK" : "Fail"}, ${caseDir}, ${backendOrder[0]}</span> <span>${msg ? msg : ''}</span></li>`;
-      await wait();
+    let allOk = true;
+    const allResults = {};
+    for (const caseDir of caseDirs) {
+      for (const backendOrder of backendOrders) {
+        console.log("test", caseDir, backendOrder);
+        const msg = await runTestOne(caseDir, backendOrder, optimized);
+        const ok = !msg;
+        allOk &= ok;
+        allResults[caseDir] = ok;
+        resultList.innerHTML += `<li><span class="${
+          ok ? "result-ok" : "result-fail"
+        }">${ok ? "OK" : "Fail"}, ${caseDir}, ${backendOrder[0]}</span> <span>${
+          msg ? msg : ""
+        }</span></li>`;
+        await wait();
+      }
     }
-  }
-  console.log("done all test");
-  if (allOk) {
-    console.log("all ok");
-    resultList.innerHTML += `<li><span class="result-ok">Done. All cases OK.</span></li>`;
-  } else {
-    console.error("failed", allResults);resultList.innerHTML += `<li><span class="result-fail">Some cases failed.</span></li>`;
+    console.log("done all test");
+    if (allOk) {
+      console.log("all ok");
+      resultList.innerHTML += `<li><span class="result-ok">Done. All cases OK.</span></li>`;
+    } else {
+      console.error("failed", allResults);
+      resultList.innerHTML += `<li><span class="result-fail">Some cases failed.</span></li>`;
+    }
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
   }
 }
 
 async function runTestOne(directory, backendOrder, optimized) {
-  const runner = await WebDNN.load(optimized ? `${directory}optimized/` : directory, { backendOrder, optimized });
+  const runner = await WebDNN.load(
+    optimized ? `${directory}optimized/` : directory,
+    { backendOrder, optimized }
+  );
   const expectedTensors = await runner
     .getTensorLoader(directory + "expected.bin")
     .loadAll();
