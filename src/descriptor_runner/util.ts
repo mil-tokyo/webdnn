@@ -7,6 +7,32 @@ export function nonnull<T>(value: T | null | undefined): T {
   throw new Error("value is null");
 }
 
+export function arange(stop: number): number[];
+export function arange(start: number, stop: number): number[];
+export function arange(start: number, stop: number, step: number): number[];
+export function arange(start: number, stop?: number, step = 1): number[] {
+  if (stop == null) {
+    const len = start;
+    const array = new Array(len);
+    for (let i = 0; i < len; i++) {
+      array[i] = i;
+    }
+    return array;
+  } else {
+    const array: number[] = [];
+    if (step > 0) {
+      for (let i = start; i < stop; i += step) {
+        array.push(i);
+      }
+    } else {
+      for (let i = start; i > stop; i += step) {
+        array.push(i);
+      }
+    }
+    return array;
+  }
+}
+
 export function arraySum(vec: ArrayLike<number>): number {
   let x = 0;
   for (let i = 0; i < vec.length; i++) {
