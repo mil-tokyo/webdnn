@@ -417,6 +417,17 @@ class Split(nn.Module):
         return torch.split(x, self.split_size_or_sections, dim=self.dim)
 
 
+class InstanceNorm(nn.Module):
+    def __init__(self, num_features, eps) -> None:
+        super().__init__()
+        self.instance_norm = torch.nn.InstanceNorm2d(num_features, eps, affine=True)
+        self.instance_norm.bias.data = torch.rand(*self.instance_norm.bias.data.shape)
+        self.instance_norm.weight.data = torch.rand(*self.instance_norm.weight.data.shape)
+
+    def forward(self, x):
+        return self.instance_norm(x)
+
+
 def dump_expected(directory, arrays_dict):
     casted_arrays_dict = {}
     for k, array in arrays_dict.items():
@@ -717,6 +728,7 @@ def main():
     dump("split1", Split([2, 3, 5, 7, 60-2-3-5-7], -1), [(3, 4, 5, 60)])
     dump("split2", Split([2, 3, 5, 7, 40-2-3-5-7], 1), [(3, 40, 5, 6)])
     dump("split3", Split(4, 0), [(30, 4, 5, 6)])
+    dump("instancenorm1", InstanceNorm(4, 0.01), [(3, 4, 5, 6)])
     output_list()
 
 
