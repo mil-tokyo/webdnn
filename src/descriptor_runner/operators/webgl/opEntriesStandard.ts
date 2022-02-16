@@ -10,6 +10,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardconvtranspose } from "./op
 import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operators/standard/flatten";
 import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/standard/gemm";
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
+import { getOpEntries as getOpEntriesoperatorsstandardinstancenormalization } from "./operators/standard/instancenormalization";
 import { getOpEntries as getOpEntriesoperatorsstandardmatmul } from "./operators/standard/matmul";
 import { getOpEntries as getOpEntriesoperatorsstandardmaxpool } from "./operators/standard/maxpool";
 import { getOpEntries as getOpEntriesoperatorsstandardpad11 } from "./operators/standard/pad11";
@@ -33,6 +34,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardflatten());
   entries.push(...getOpEntriesoperatorsstandardgemm());
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
+  entries.push(...getOpEntriesoperatorsstandardinstancenormalization());
   entries.push(...getOpEntriesoperatorsstandardmatmul());
   entries.push(...getOpEntriesoperatorsstandardmaxpool());
   entries.push(...getOpEntriesoperatorsstandardpad11());

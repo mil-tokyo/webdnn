@@ -16,6 +16,7 @@ import { getOpEntries as getOpEntriesoperatorsstandardflatten } from "./operator
 import { getOpEntries as getOpEntriesoperatorsstandardgather } from "./operators/standard/gather";
 import { getOpEntries as getOpEntriesoperatorsstandardgemm } from "./operators/standard/gemm";
 import { getOpEntries as getOpEntriesoperatorsstandardglobalaveragepool } from "./operators/standard/globalaveragepool";
+import { getOpEntries as getOpEntriesoperatorsstandardinstancenormalization } from "./operators/standard/instancenormalization";
 import { getOpEntries as getOpEntriesoperatorsstandardmatmul } from "./operators/standard/matmul";
 import { getOpEntries as getOpEntriesoperatorsstandardmaxpool } from "./operators/standard/maxpool";
 import { getOpEntries as getOpEntriesoperatorsstandardpad11 } from "./operators/standard/pad11";
@@ -48,6 +49,7 @@ export function getOpEntries(): OperatorEntry[] {
   entries.push(...getOpEntriesoperatorsstandardgather());
   entries.push(...getOpEntriesoperatorsstandardgemm());
   entries.push(...getOpEntriesoperatorsstandardglobalaveragepool());
+  entries.push(...getOpEntriesoperatorsstandardinstancenormalization());
   entries.push(...getOpEntriesoperatorsstandardmatmul());
   entries.push(...getOpEntriesoperatorsstandardmaxpool());
   entries.push(...getOpEntriesoperatorsstandardpad11());
