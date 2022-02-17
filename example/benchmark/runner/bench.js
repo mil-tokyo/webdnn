@@ -4,12 +4,12 @@ function wait() {
   });
 }
 
-async function runOnce(runner, expectedTensors, validateResult) {
+async function runOnce(runner, expectedTensors, validateResult, runnerOptions=undefined) {
   const inputTensors = runner
     .getInputNames()
     .map((iname) => expectedTensors.get(iname));
   const startTime = Date.now();
-  const outputTensors = await runner.run(inputTensors);
+  const outputTensors = await runner.run(inputTensors, runnerOptions);
   const endTime = Date.now();
   let errorMessage = null;
   if (validateResult) {
@@ -143,7 +143,7 @@ async function runBenchmark(optimized, measure) {
     const times = [];
     for (let i = 0; i < nTrial; i++) {
       console.log(`Trial ${i}`);
-      const trialResult = await runOnce(runner, expectedTensors, false);
+      const trialResult = await runOnce(runner, expectedTensors, false, {measurePerformance: !!measure});
       await wait();
       times.push(trialResult.time);
     }
