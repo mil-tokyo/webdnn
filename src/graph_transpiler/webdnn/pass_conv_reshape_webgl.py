@@ -14,6 +14,7 @@ SHADER_CODE = """import {
 import { WebGLTensor } from "../../../../interface/backend/webgl/webglTensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
 import { Tensor } from "../../../../interface/core/tensor";
+import { arange } from "../../../../util";
 import { Conv } from "../../../base/conv";
 import {
   shaderGenHeader,
@@ -26,6 +27,8 @@ import {
   shaderGenTensorOutputUniform,
   shaderGenTensorOutputUniformItem,
 } from "../../shaderHelper";
+
+const IM2COL_SPLIT_NUMEL = 4194304;
 
 class WebGLConvReshapeWebGL extends Conv {
   constructor() {
@@ -62,68 +65,151 @@ class WebGLConvReshapeWebGL extends Conv {
     // 場合分け
     let matmulData: WebGLTensor;
 
+    const im2colLengthPerOutRow =
+      group *
+      batch *
+      outShape[1] *
+      chInPerGroup *
+      kernelShape[0] *
+      kernelShape[1];
+    const im2colLength = im2colLengthPerOutRow * outShape[0];
     const cinkhkw = chInPerGroup * kernelShape[0] * kernelShape[1];
-    const gbout = group * batch * outShape[0] * outShape[1];
-    // W is reshaped to *, cinkhkw by optimizer
-    if (gbout < context.maxTextureSize) {
-      if (context.webgl2 && cinkhkw % 4 === 0 && inputW.dimPerPixel === 4) {
-        if (chOutPerGroup % 4 === 0) {
-          // all 4ch
+    // const gbout = group * batch * outShape[0] * outShape[1];
+    const chunkCount = Math.ceil(im2colLength / IM2COL_SPLIT_NUMEL);
+    const defaultChunkSize = Math.ceil(outShape[0] / chunkCount);
+    const chunkInfos: { offset: number; length: number }[] = [];
+    const matmulOutputs: WebGLTensor[] = [];
+    // split by outShape0 -> im2col -> matmul -> concat
+    const rectangleCase = group * batch * defaultChunkSize * outShape[1] < context.maxTextureSize;
+    for (let chunk = 0; chunk < chunkCount; chunk++) {
+      const chunkOffset = chunk * defaultChunkSize;
+      const chunkSize = Math.min(defaultChunkSize, outShape[0] - chunkOffset);
+      chunkInfos.push({ offset: chunkOffset, length: chunkSize });
+      const chunkGBout = group * batch * chunkSize * outShape[1];
+      // W is reshaped to *, cinkhkw by optimizer
+      if (rectangleCase) {
+        if (context.webgl2 && cinkhkw % 4 === 0 && inputW.dimPerPixel === 4) {
+          if (chOutPerGroup % 4 === 0) {
+            // all 4ch
 
-          const im2colData = context.emptyTensor(
-            [
-              group *
-                batch *
-                outShape[0] *
-                outShape[1] *
-                chInPerGroup *
-                kernelShape[0] *
-                kernelShape[1],
-            ],
-            "float32",
-            {
-              dimPerPixel: 4,
-              textureShape: [gbout, cinkhkw / 4],
-            }
-          );
-          await this.im2col4(
-            context,
-            inputX,
-            im2colData,
-            batch,
-            dilations,
-            group,
-            kernelShape,
-            pads,
-            strides,
-            inShape,
-            outShape,
-            chIn,
-            chInPerGroup
-          );
-          matmulData = context.emptyTensor([gbout * chOutPerGroup], "float32", {
-            dimPerPixel: 4,
-            textureShape: [gbout, chOutPerGroup / 4],
-          });
-          await this.matmul44(
-            context,
-            im2colData,
-            inputW,
-            matmulData,
-            group,
-            batch * outShape[0] * outShape[1],
-            chInPerGroup * kernelShape[0] * kernelShape[1],
-            chOutPerGroup
-          );
-          im2colData.dispose();
+            const im2colData = context.emptyTensor(
+              [
+                group *
+                  batch *
+                  chunkSize *
+                  outShape[1] *
+                  chInPerGroup *
+                  kernelShape[0] *
+                  kernelShape[1],
+              ],
+              "float32",
+              {
+                dimPerPixel: 4,
+                textureShape: [chunkGBout, cinkhkw / 4],
+              }
+            );
+            await this.im2col4(
+              context,
+              inputX,
+              im2colData,
+              batch,
+              dilations,
+              group,
+              kernelShape,
+              pads,
+              strides,
+              inShape,
+              outShape,
+              chIn,
+              chInPerGroup,
+              chunkOffset,
+              chunkSize
+            );
+            const matmulChunkData = context.emptyTensor(
+              [chunkGBout * chOutPerGroup],
+              "float32",
+              {
+                dimPerPixel: 4,
+                textureShape: [chunkGBout, chOutPerGroup / 4],
+              }
+            );
+            await this.matmul44(
+              context,
+              im2colData,
+              inputW,
+              matmulChunkData,
+              group,
+              batch * chunkSize * outShape[1],
+              chInPerGroup * kernelShape[0] * kernelShape[1],
+              chOutPerGroup
+            );
+            im2colData.dispose();
+            matmulOutputs.push(matmulChunkData);
+          } else {
+            // input 4ch, output 1ch
+
+            const im2colData = context.emptyTensor(
+              [
+                group *
+                  batch *
+                  chunkSize *
+                  outShape[1] *
+                  chInPerGroup *
+                  kernelShape[0] *
+                  kernelShape[1],
+              ],
+              "float32",
+              {
+                dimPerPixel: 4,
+                textureShape: [chunkGBout, cinkhkw / 4],
+              }
+            );
+            await this.im2col4(
+              context,
+              inputX,
+              im2colData,
+              batch,
+              dilations,
+              group,
+              kernelShape,
+              pads,
+              strides,
+              inShape,
+              outShape,
+              chIn,
+              chInPerGroup,
+              chunkOffset,
+              chunkSize
+            );
+            const matmulChunkData = context.emptyTensor(
+              [chunkGBout * chOutPerGroup],
+              "float32",
+              {
+                dimPerPixel: 1,
+                textureShape: [chunkGBout, chOutPerGroup],
+              }
+            );
+            await this.matmul41(
+              context,
+              im2colData,
+              inputW,
+              matmulChunkData,
+              group,
+              batch * chunkSize * outShape[1],
+              chInPerGroup * kernelShape[0] * kernelShape[1],
+              chOutPerGroup
+            );
+            im2colData.dispose();
+            matmulOutputs.push(matmulChunkData);
+          }
         } else {
-          // input 4ch, output 1ch
+          // all 1ch
 
           const im2colData = context.emptyTensor(
             [
               group *
                 batch *
-                outShape[0] *
+                chunkSize *
                 outShape[1] *
                 chInPerGroup *
                 kernelShape[0] *
@@ -131,11 +217,14 @@ class WebGLConvReshapeWebGL extends Conv {
             ],
             "float32",
             {
-              dimPerPixel: 4,
-              textureShape: [gbout, cinkhkw / 4],
+              dimPerPixel: 1,
+              textureShape: [
+                group * batch * chunkSize * outShape[1],
+                chInPerGroup * kernelShape[0] * kernelShape[1],
+              ],
             }
           );
-          await this.im2col4(
+          await this.im2col1(
             context,
             inputX,
             im2colData,
@@ -148,175 +237,154 @@ class WebGLConvReshapeWebGL extends Conv {
             inShape,
             outShape,
             chIn,
-            chInPerGroup
+            chInPerGroup,
+            chOut,
+            chOutPerGroup,
+            chunkOffset,
+            chunkSize
           );
-          matmulData = context.emptyTensor([gbout * chOutPerGroup], "float32", {
-            dimPerPixel: 1,
-            textureShape: [gbout, chOutPerGroup],
-          });
-          await this.matmul41(
+          const matmulChunkData = context.emptyTensor(
+            [group * batch * chunkSize * outShape[1] * chOutPerGroup],
+            "float32",
+            {
+              dimPerPixel: 1,
+              textureShape: [
+                group * batch * chunkSize * outShape[1],
+                chOutPerGroup,
+              ],
+            }
+          );
+          await this.matmul11(
             context,
             im2colData,
             inputW,
-            matmulData,
+            matmulChunkData,
             group,
-            batch * outShape[0] * outShape[1],
+            batch * chunkSize * outShape[1],
             chInPerGroup * kernelShape[0] * kernelShape[1],
             chOutPerGroup
           );
           im2colData.dispose();
+          matmulOutputs.push(matmulChunkData);
         }
       } else {
-        // all 1ch
+        if (inputW.dimPerPixel === 4) {
+          // generic but W is 4ch
 
-        const im2colData = context.emptyTensor(
-          [
+          const im2colData = context.emptyTensor([
             group *
               batch *
-              outShape[0] *
+              chunkSize *
               outShape[1] *
               chInPerGroup *
               kernelShape[0] *
               kernelShape[1],
-          ],
-          "float32",
-          {
-            dimPerPixel: 1,
-            textureShape: [
-              group * batch * outShape[0] * outShape[1],
-              chInPerGroup * kernelShape[0] * kernelShape[1],
-            ],
-          }
-        );
-        await this.im2col1(
-          context,
-          inputX,
-          im2colData,
-          batch,
-          dilations,
-          group,
-          kernelShape,
-          pads,
-          strides,
-          inShape,
-          outShape,
-          chIn,
-          chInPerGroup,
-          chOut,
-          chOutPerGroup
-        );
-        matmulData = context.emptyTensor(
-          [group * batch * outShape[0] * outShape[1] * chOutPerGroup],
-          "float32",
-          {
-            dimPerPixel: 1,
-            textureShape: [
-              group * batch * outShape[0] * outShape[1],
-              chOutPerGroup,
-            ],
-          }
-        );
-        await this.matmul11(
-          context,
-          im2colData,
-          inputW,
-          matmulData,
-          group,
-          batch * outShape[0] * outShape[1],
-          chInPerGroup * kernelShape[0] * kernelShape[1],
-          chOutPerGroup
-        );
-        im2colData.dispose();
-      }
-    } else {
-      if (inputW.dimPerPixel === 4) {
-        // generic but W is 4ch
+          ]);
+          await this.im2col1(
+            context,
+            inputX,
+            im2colData,
+            batch,
+            dilations,
+            group,
+            kernelShape,
+            pads,
+            strides,
+            inShape,
+            outShape,
+            chIn,
+            chInPerGroup,
+            chOut,
+            chOutPerGroup,
+            chunkOffset,
+            chunkSize
+          );
+          const matmulChunkData = context.emptyTensor([
+            group * batch * chunkSize * outShape[1] * chOutPerGroup,
+          ]);
+          await this.matmulgw4(
+            context,
+            im2colData,
+            inputW,
+            matmulChunkData,
+            group,
+            batch * chunkSize * outShape[1],
+            chInPerGroup * kernelShape[0] * kernelShape[1],
+            chOutPerGroup
+          );
+          im2colData.dispose();
+          matmulOutputs.push(matmulChunkData);
+        } else {
+          // generic all 1ch
 
-        const im2colData = context.emptyTensor([
-          group *
-            batch *
-            outShape[0] *
-            outShape[1] *
-            chInPerGroup *
-            kernelShape[0] *
-            kernelShape[1],
-        ]);
-        await this.im2col1(
-          context,
-          inputX,
-          im2colData,
-          batch,
-          dilations,
-          group,
-          kernelShape,
-          pads,
-          strides,
-          inShape,
-          outShape,
-          chIn,
-          chInPerGroup,
-          chOut,
-          chOutPerGroup
-        );
-        matmulData = context.emptyTensor([
-          group * batch * outShape[0] * outShape[1] * chOutPerGroup,
-        ]);
-        await this.matmulgw4(
-          context,
-          im2colData,
-          inputW,
-          matmulData,
-          group,
-          batch * outShape[0] * outShape[1],
-          chInPerGroup * kernelShape[0] * kernelShape[1],
-          chOutPerGroup
-        );
-        im2colData.dispose();
-      } else {
-        // generic all 1ch
-
-        const im2colData = context.emptyTensor([
-          group *
-            batch *
-            outShape[0] *
-            outShape[1] *
-            chInPerGroup *
-            kernelShape[0] *
-            kernelShape[1],
-        ]);
-        await this.im2col1(
-          context,
-          inputX,
-          im2colData,
-          batch,
-          dilations,
-          group,
-          kernelShape,
-          pads,
-          strides,
-          inShape,
-          outShape,
-          chIn,
-          chInPerGroup,
-          chOut,
-          chOutPerGroup
-        );
-        matmulData = context.emptyTensor([
-          group * batch * outShape[0] * outShape[1] * chOutPerGroup,
-        ]);
-        await this.matmulg1(
-          context,
-          im2colData,
-          inputW,
-          matmulData,
-          group,
-          batch * outShape[0] * outShape[1],
-          chInPerGroup * kernelShape[0] * kernelShape[1],
-          chOutPerGroup
-        );
-        im2colData.dispose();
+          const im2colData = context.emptyTensor([
+            group *
+              batch *
+              chunkSize *
+              outShape[1] *
+              chInPerGroup *
+              kernelShape[0] *
+              kernelShape[1],
+          ]);
+          await this.im2col1(
+            context,
+            inputX,
+            im2colData,
+            batch,
+            dilations,
+            group,
+            kernelShape,
+            pads,
+            strides,
+            inShape,
+            outShape,
+            chIn,
+            chInPerGroup,
+            chOut,
+            chOutPerGroup,
+            chunkOffset,
+            chunkSize
+          );
+          const matmulChunkData = context.emptyTensor([
+            group * batch * chunkSize * outShape[1] * chOutPerGroup,
+          ]);
+          await this.matmulg1(
+            context,
+            im2colData,
+            inputW,
+            matmulChunkData,
+            group,
+            batch * chunkSize * outShape[1],
+            chInPerGroup * kernelShape[0] * kernelShape[1],
+            chOutPerGroup
+          );
+          im2colData.dispose();
+          matmulOutputs.push(matmulChunkData);
+        }
       }
     }
+    if (matmulOutputs.length === 1) {
+      matmulData = matmulOutputs[0];
+    } else {
+      matmulData = context.emptyTensor(
+        [group * batch * outShape[0] * outShape[1] * chOutPerGroup],
+        "float32",
+        {
+          dimPerPixel: matmulOutputs[0].dimPerPixel,
+        }
+      );
+      await this.concat(
+        context,
+        matmulOutputs,
+        matmulData,
+        group * batch,
+        outShape[0],
+        outShape[1] * chOutPerGroup,
+        chunkInfos
+      );
+      matmulOutputs.forEach((mO) => mO.dispose());
+    }
+
     const output = context.emptyTensor([
       batch,
       chOut,
@@ -443,6 +511,112 @@ class WebGLConvReshapeWebGL extends Conv {
     await context.runKernel(
       kernelName,
       [{ tensor: dT, name: "tex_input" }],
+      dO,
+      uniforms
+    );
+  }
+
+  private async concat(
+    context: WebDNNWebGLContext,
+    dCs: WebGLTensor[],
+    dO: WebGLTensor,
+    outerLength: number,
+    concatLength: number,
+    innerLength: number,
+    chunks: { offset: number; length: number }[]
+  ): Promise<void> {
+    const dPP4 = dCs.every((dC) => dC.dimPerPixel === 4);
+    if (!dPP4 && !dCs.every((dC) => dC.dimPerPixel === 1)) {
+      throw new Error(
+        "ConvReshapeWebGL: concat tensor's dimPerPixel is not unified"
+      );
+    }
+    const kernelName = `convreshapewebgl_concat_${chunks.length}_${dPP4}`;
+    if (!context.hasKernel(kernelName)) {
+      const getEach = arange(chunks.length)
+        .map((i) =>
+          dPP4
+            ? shaderGenTensorNDGetVec4(`tex_input_${i}`, 3, context.webgl2)
+            : shaderGenTensorNDGet(`tex_input_${i}`, 3, context.webgl2)
+        )
+        .join("");
+      const uniformChunks = arange(chunks.length)
+        .map((i) => `uniform int CHUNK_OFS${i};`)
+        .join("");
+      let takeCode = `
+if (tex_output_1 < CHUNK_OFS1) {
+  s = get${
+    dPP4 ? "_vec4" : ""
+  }_tex_input_0(tex_output_0, tex_output_1, tex_output_2);
+}
+`;
+      for (let i = 1; i < chunks.length - 1; i++) {
+        takeCode += ` else if (tex_output_1 < CHUNK_OFS${i + 1}) {
+  s = get${
+    dPP4 ? "_vec4" : ""
+  }_tex_input_${i}(tex_output_0, tex_output_1 - CHUNK_OFS${i}, tex_output_2);
+}
+`;
+      }
+      takeCode += `
+else {
+  s = get${dPP4 ? "_vec4" : ""}_tex_input_${
+        chunks.length - 1
+      }(tex_output_0, tex_output_1 - CHUNK_OFS${
+        chunks.length - 1
+      }, tex_output_2);
+}
+`;
+
+      const kernelSource = `${shaderGenHeader(context.webgl2)}
+  
+  ${shaderGenTensorOutputUniform(3)}
+  ${uniformChunks}
+  
+  ${getEach}
+  
+  void main() {
+    ${shaderGenTensorOutputCoordsWithReturn(3)}
+    ${dPP4 ? "vec4 s = vec4(0.0, 0.0, 0.0, 0.0);" : "float s = 0.0;"}
+
+    ${takeCode}
+    ${
+      dPP4
+        ? shaderGenOutputVec4("s", context.webgl2)
+        : shaderGenOutput("s", context.webgl2)
+    }
+    return;
+  }
+  `;
+      context.addKernel(kernelName, kernelSource);
+    }
+
+    const innerLengthPixel = dPP4 ? innerLength / 4 : innerLength;
+    const uniforms: WebGLUniformItem[] = [
+      ...shaderGenTensorOutputUniformItem(
+        [outerLength, concatLength, innerLengthPixel],
+        dO,
+        context.webgl2
+      ),
+    ];
+    for (let i = 0; i < chunks.length; i++) {
+      uniforms.push(
+        ...shaderGenTensorNDGetUniformItem(
+          `tex_input_${i}`,
+          [chunks[i].length * innerLengthPixel, innerLengthPixel, 1],
+          dCs[i],
+          context.webgl2
+        )
+      );
+      uniforms.push({
+        name: `CHUNK_OFS${i}`,
+        value: chunks[i].offset,
+        type: "int",
+      });
+    }
+    await context.runKernel(
+      kernelName,
+      dCs.map((dC, i) => ({ tensor: dC, name: `tex_input_${i}` })),
       dO,
       uniforms
     );
@@ -607,9 +781,11 @@ class WebGLConvReshapeWebGL extends Conv {
     inShape: number[],
     outShape: number[],
     chIn: number,
-    chInPerGroup: number
+    chInPerGroup: number,
+    outShape0Offset: number,
+    outShape0ChunkSize: number
   ) {
-    const kernelName = `convreshapewebgl_im2col4`;
+    const kernelName = `convreshapewebgl_im2col4_split`;
     if (!context.hasKernel(kernelName)) {
       const kernelSource = `${shaderGenHeader(context.webgl2)}
     
@@ -630,6 +806,8 @@ class WebGLConvReshapeWebGL extends Conv {
     uniform int D1;
     uniform int IS0;
     uniform int IS1;
+    uniform int O0OFS;
+    uniform int O0CHUNK;
     
     ${shaderGenTensorNDGet("tex_input", 1, context.webgl2)}
     
@@ -647,8 +825,8 @@ class WebGLConvReshapeWebGL extends Conv {
       quo = rem / O1;
       int o1 = rem - quo * O1;
       rem = quo;
-      quo = rem / O0;
-      int o0 = rem - quo * O0;
+      quo = rem / O0CHUNK;
+      int o0 = rem - quo * O0CHUNK + O0OFS;
       rem = quo;
       quo = rem / BATCH;
       int b = rem - quo * BATCH;
@@ -696,6 +874,8 @@ class WebGLConvReshapeWebGL extends Conv {
       { name: "D1", type: "int", value: dilations[1] },
       { name: "IS0", type: "int", value: inShape[0] },
       { name: "IS1", type: "int", value: inShape[1] },
+      { name: "O0OFS", type: "int", value: outShape0Offset },
+      { name: "O0CHUNK", type: "int", value: outShape0ChunkSize },
     ];
     await context.runKernel(
       kernelName,
@@ -884,9 +1064,11 @@ class WebGLConvReshapeWebGL extends Conv {
     chIn: number,
     chInPerGroup: number,
     chOut: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
+    outShape0Offset: number,
+    outShape0ChunkSize: number
   ) {
-    const kernelName = `convreshapewebgl_im2col1`;
+    const kernelName = `convreshapewebgl_im2col1_split`;
     if (!context.hasKernel(kernelName)) {
       const kernelSource = `${shaderGenHeader(context.webgl2)}
   
@@ -907,6 +1089,8 @@ class WebGLConvReshapeWebGL extends Conv {
   uniform int D1;
   uniform int IS0;
   uniform int IS1;
+  uniform int O0OFS;
+  uniform int O0CHUNK;
   
   ${shaderGenTensorNDGet("tex_input", 1, context.webgl2)}
   
@@ -925,8 +1109,8 @@ class WebGLConvReshapeWebGL extends Conv {
     quo = rem / O1;
     int o1 = rem - quo * O1;
     rem = quo;
-    quo = rem / O0;
-    int o0 = rem - quo * O0;
+    quo = rem / O0CHUNK;
+    int o0 = rem - quo * O0CHUNK + O0OFS;
     rem = quo;
     quo = rem / BATCH;
     int b = rem - quo * BATCH;
@@ -964,6 +1148,8 @@ class WebGLConvReshapeWebGL extends Conv {
       { name: "D1", type: "int", value: dilations[1] },
       { name: "IS0", type: "int", value: inShape[0] },
       { name: "IS1", type: "int", value: inShape[1] },
+      { name: "O0OFS", type: "int", value: outShape0Offset },
+      { name: "O0CHUNK", type: "int", value: outShape0ChunkSize },
     ];
     await context.runKernel(
       kernelName,
