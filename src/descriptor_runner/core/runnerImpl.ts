@@ -285,7 +285,10 @@ export class RunnerImpl implements Runner {
     return graph.output!.map((gi) => gi.name!);
   }
 
-  async run(inputs?: CPUTensor[]): Promise<CPUTensor[]> {
+  async run(
+    inputs?: CPUTensor[],
+    options: { measurePerformance?: boolean } = {}
+  ): Promise<CPUTensor[]> {
     if (!this.model || !this.loaded) {
       throw new Error("not initialized");
     }
@@ -457,6 +460,11 @@ export class RunnerImpl implements Runner {
           logger.debug(
             `Running ${node.name!}(${opType}) on ${operator.backend}`
           );
+          if (options.measurePerformance && operator.backend === "webgl") {
+            this.backendContexts["webgl"]?.enablePerformanceQuery(
+              `${node.name}(${opType})`
+            );
+          }
           const operatorOutputs = await operator.run(
             context,
             operatorInputs,
@@ -546,7 +554,16 @@ export class RunnerImpl implements Runner {
       }
     }
 
-    logger.debug("Performance", nodePerformances);
+    if (options.measurePerformance) {
+      logger.debug("Performance", nodePerformances);
+      try {
+        const webglPerformance =
+          await this.backendContexts.webgl?.gatherPerformanceQueryResult();
+        logger.debug("WebGL Performance", webglPerformance);
+      } catch {
+        logger.warn("Failed to get WebGL Performance");
+      }
+    }
 
     return outputs;
   }

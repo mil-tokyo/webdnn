@@ -4,12 +4,12 @@ function wait() {
   });
 }
 
-async function runOnce(runner, expectedTensors, validateResult) {
+async function runOnce(runner, expectedTensors, validateResult, runnerOptions=undefined) {
   const inputTensors = runner
     .getInputNames()
     .map((iname) => expectedTensors.get(iname));
   const startTime = Date.now();
-  const outputTensors = await runner.run(inputTensors);
+  const outputTensors = await runner.run(inputTensors, runnerOptions);
   const endTime = Date.now();
   let errorMessage = null;
   if (validateResult) {
@@ -57,92 +57,111 @@ function displayMessage(message) {
 }
 
 async function runBenchmark(optimized, measure) {
-  const backend = document.getElementById("backend").value;
-  const model = document.getElementById("model").value;
-  if (!model || !backend) {
-    return;
-  }
-  const webgl_max_allocation_bytes = document.getElementById("webgl_max_allocation_bytes").value;
-  const webgl_deallocate_to_bytes = document.getElementById("webgl_deallocate_to_bytes").value;
-  const webgl_version = document.getElementById("webgl_version").value;
-  location.hash = `#backend=${backend}&model=${model}&webgl_max_allocation_bytes=${webgl_max_allocation_bytes}&webgl_deallocate_to_bytes=${webgl_deallocate_to_bytes}&webgl_version=${webgl_version}`;
-  const validateResult = document.getElementById("enableValidateResult").checked;
-  displayMessage("Running benchmark");
-
-  const backendOrder = backend === "cpu" ? [backend] : [backend, "cpu"];
-  const directory = `./model/${model}/`;
-
-  if (measure) {
-    const logging = WebDNN.Logging.getInstance();
-    logging.config({
-      adapters: {
-        console: {
-          adapter: "console",
-          loglevel: {
-            "": logging.WARN,
-          }
-        },
-        file: {
-          adapter: "file",
-          loglevel: {
-            "": logging.DEBUG,
-          }
-        }
-      }
-    });
-  }
-
-  const backendOptions = {
-    webgl: {
-      maxAllocationBytes: Number(webgl_max_allocation_bytes) * 1024 * 1024,
-      deallocateToBytes: Number(webgl_deallocate_to_bytes) * 1024 * 1024,
-      versionOrder: webgl_version ? [webgl_version] : undefined,
-    },
-  };
-
-  const runner = await WebDNN.load(
-    optimized ? `${directory}optimized/` : directory,
-    { backendOrder, optimized, backendOptions }
-  );
-
-  const expectedTensors = await runner
-    .getTensorLoader(directory + "expected.bin")
-    .loadAll();
-
-  // warm up
-  // run multiple times makes JIT optimize JavaScript part
-  for (let i = 0; i < 3; i++) {
-    console.log(`Warmup ${i}`);
-    const warmupResult = await runOnce(runner, expectedTensors, validateResult);
-    if (warmupResult.validationError) {
-      displayMessage(`Output validation error: ${warmupResult.validationError}`);
+  try {
+    const backend = document.getElementById("backend").value;
+    const model = document.getElementById("model").value;
+    if (!model || !backend) {
       return;
     }
-    await wait();
-  }
+    const webgl_max_allocation_bytes = document.getElementById(
+      "webgl_max_allocation_bytes"
+    ).value;
+    const webgl_deallocate_to_bytes = document.getElementById(
+      "webgl_deallocate_to_bytes"
+    ).value;
+    const webgl_version = document.getElementById("webgl_version").value;
+    location.hash = `#backend=${backend}&model=${model}&webgl_max_allocation_bytes=${webgl_max_allocation_bytes}&webgl_deallocate_to_bytes=${webgl_deallocate_to_bytes}&webgl_version=${webgl_version}`;
+    const validateResult = document.getElementById(
+      "enableValidateResult"
+    ).checked;
+    displayMessage("Running benchmark");
 
-  if (measure) {
-    const logging = WebDNN.Logging.getInstance();
-    logging.clear();
-  }
+    const backendOrder = backend === "cpu" ? [backend] : [backend, "cpu"];
+    const directory = `./model/${model}/`;
 
-  const nTrial = measure ? 1 : 10;
-  const times = [];
-  for (let i = 0; i < nTrial; i++) {
-    console.log(`Trial ${i}`);
-    const trialResult = await runOnce(runner, expectedTensors, false);
-    await wait();
-    times.push(trialResult.time);
-  }
+    if (measure) {
+      const logging = WebDNN.Logging.getInstance();
+      logging.config({
+        adapters: {
+          console: {
+            adapter: "console",
+            loglevel: {
+              "": WebDNN.Logging.WARN,
+            },
+          },
+          file: {
+            adapter: "file",
+            loglevel: {
+              "": WebDNN.Logging.DEBUG,
+            },
+          },
+        },
+      });
+    }
 
-  const avg = times.reduce((p, c) => p + c, 0) / nTrial;
-  const max = Math.max(...times);
-  const min = Math.min(...times);
-  displayMessage(`Model ${model}, backend ${backend}, average ${avg} ms, min ${min} ms, max ${max} ms`);
+    const backendOptions = {
+      webgl: {
+        maxAllocationBytes: Number(webgl_max_allocation_bytes) * 1024 * 1024,
+        deallocateToBytes: Number(webgl_deallocate_to_bytes) * 1024 * 1024,
+        versionOrder: webgl_version ? [webgl_version] : undefined,
+      },
+    };
 
-  if (measure) {
-    const logging = WebDNN.Logging.getInstance();
-    logging.adapters.file.saveToLocalFile();
+    const runner = await WebDNN.load(
+      optimized ? `${directory}optimized/` : directory,
+      { backendOrder, optimized, backendOptions }
+    );
+
+    const expectedTensors = await runner
+      .getTensorLoader(directory + "expected.bin")
+      .loadAll();
+
+    // warm up
+    // run multiple times makes JIT optimize JavaScript part
+    for (let i = 0; i < 3; i++) {
+      console.log(`Warmup ${i}`);
+      const warmupResult = await runOnce(
+        runner,
+        expectedTensors,
+        validateResult
+      );
+      if (warmupResult.validationError) {
+        displayMessage(
+          `Output validation error: ${warmupResult.validationError}`
+        );
+        return;
+      }
+      await wait();
+    }
+
+    if (measure) {
+      const logging = WebDNN.Logging.getInstance();
+      logging.clear();
+    }
+
+    const nTrial = measure ? 1 : 10;
+    const times = [];
+    for (let i = 0; i < nTrial; i++) {
+      console.log(`Trial ${i}`);
+      const trialResult = await runOnce(runner, expectedTensors, false, {measurePerformance: !!measure});
+      await wait();
+      times.push(trialResult.time);
+    }
+
+    const avg = times.reduce((p, c) => p + c, 0) / nTrial;
+    const max = Math.max(...times);
+    const min = Math.min(...times);
+    displayMessage(
+      `Model ${model}, backend ${backend}, average ${avg} ms, min ${min} ms, max ${max} ms`
+    );
+
+    if (measure) {
+      const logging = WebDNN.Logging.getInstance();
+      logging.adapters.file.saveToLocalFile();
+    }
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+    displayMessage(`Error: ${error.message}`);
   }
 }
 
@@ -158,7 +177,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const usp = new URLSearchParams(location.hash.substring(1));
   document.getElementById("backend").value = usp.get("backend") || "webgl";
   document.getElementById("model").value = usp.get("model") || "";
-  document.getElementById("webgl_max_allocation_bytes").value = usp.get("webgl_max_allocation_bytes") || "1024";
-  document.getElementById("webgl_deallocate_to_bytes").value = usp.get("webgl_deallocate_to_bytes") || "512";
-  document.getElementById("webgl_version").value = usp.get("webgl_version") || "";
+  document.getElementById("webgl_max_allocation_bytes").value =
+    usp.get("webgl_max_allocation_bytes") || "1024";
+  document.getElementById("webgl_deallocate_to_bytes").value =
+    usp.get("webgl_deallocate_to_bytes") || "512";
+  document.getElementById("webgl_version").value =
+    usp.get("webgl_version") || "";
 });
