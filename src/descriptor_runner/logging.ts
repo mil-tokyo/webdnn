@@ -216,7 +216,7 @@ export class WebDNNLogging {
       if (ll) {
         const rootLoglevel = ll[""];
         if (rootLoglevel !== undefined) {
-          if (severity >= rootLoglevel) {
+          if (severity > rootLoglevel) {
             // high severity value = unimportant
             match = false;
           }
