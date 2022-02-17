@@ -25,15 +25,26 @@ async function runOnce(runner, expectedTensors, validateResult, runnerOptions=un
         return `${name}: data length mismatch`;
       }
 
+      let foundError = null;
+      let diffSum = 0.0;
+      let expectedSum = 0.0;
       for (let i = 0; i < expected.data.length; i++) {
         const e = expected.data[i];
         const a = actual.data[i];
-        if (!(Math.abs(e - a) <= Math.abs(e) * 1e-2 + 1e-3)) {
-          return `${name}: index ${i}, expected ${e} !== actual ${a}`;
+        const diff = Math.abs(e - a);
+        diffSum += diff;
+        expectedSum += Math.abs(e);
+        if (!(diff <= Math.abs(e) * 1e-2 + 1e-3)) {
+          if (!foundError) {
+            foundError = `${name}: index ${i}, expected ${e} !== actual ${a}`;
+          }
         }
       }
+      if (foundError) {
+        foundError += ` abs mean of diff = ${diffSum / expected.data.length}, abs mean of expected = ${expectedSum / expected.data.length}`;
+      }
 
-      return null;
+      return foundError;
     };
     const outputNames = runner.getOutputNames();
     for (let i = 0; i < outputNames.length; i++) {
