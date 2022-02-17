@@ -2,6 +2,7 @@ import { WebDNNCPUContext } from "../../interface/backend/cpu/cpuContext";
 import {
   WebDNNWebGLContext,
   WebDNNWebGLContextOption,
+  WebDNNWebGLContextPerformance,
   WebDNNWebGLVersion,
   WebGLUniformItem,
 } from "../../interface/backend/webgl/webglContext";
@@ -34,6 +35,12 @@ void main() {
 function deleteTextureWait() {
   return new Promise<void>((resolve) => {
     setTimeout(resolve, 1);
+  });
+}
+
+function wait(msec = 1) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, msec);
   });
 }
 
@@ -239,6 +246,16 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   supportsTexture32bit: boolean;
   supportsTexture16bit: boolean;
 
+  private timerQueryExt: {
+    TIME_ELAPSED_EXT: number;
+    GPU_DISJOINT_EXT: number;
+  } | null = null;
+  private performanceQueries: {
+    info: WebDNNWebGLContextPerformance;
+    query: WebGLQuery;
+  }[] = [];
+  performanceQueryKey: string | null = null;
+
   constructor(
     public cpuContext: WebDNNCPUContext,
     option: WebDNNWebGLContextOption
@@ -283,6 +300,8 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
           "Neither EXT_color_buffer_float nor EXT_color_buffer_half_float are supported"
         );
       }
+
+      this.timerQueryExt = gl.getExtension("EXT_disjoint_timer_query_webgl2");
     } else {
       this.supportsTexture32bit = false;
       this.supportsTexture16bit = false;
@@ -430,6 +449,19 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     uniforms: WebGLUniformItem[]
   ): Promise<void> {
     this.checkInitialized();
+    const gl2 = this.gl;
+    let query: WebGLQuery | null = null;
+    if (
+      this.isWebGL2(gl2) &&
+      this.timerQueryExt &&
+      this.performanceQueryKey != null
+    ) {
+      query = gl2.createQuery();
+      if (query) {
+        gl2.beginQuery(this.timerQueryExt.TIME_ELAPSED_EXT, query);
+      }
+    }
+
     if (this.needsDeleteTextureWait) {
       await deleteTextureWait();
       this.needsDeleteTextureWait = false;
@@ -480,6 +512,25 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     }
 
     output.unbindFromDrawTexture();
+
+    if (query) {
+      if (this.isWebGL2(gl2) && this.timerQueryExt) {
+        gl2.endQuery(this.timerQueryExt.TIME_ELAPSED_EXT);
+        const info: WebDNNWebGLContextPerformance = {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          key: this.performanceQueryKey!,
+          kernelName: name,
+          inputs: inputs.map(({ tensor, name }) => ({
+            dims: tensor.dims.slice(),
+            name,
+          })),
+          output: { dims: output.dims.slice() },
+          elapsedNanoSecond: 0,
+          gpuDisjoint: false,
+        };
+        this.performanceQueries.push({ info, query });
+      }
+    }
   }
 
   isWebGL2(
@@ -514,6 +565,52 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
         this.gl.deleteTexture(tex.texture);
         this.needsDeleteTextureWait = true;
       }
+    }
+  }
+
+  enablePerformanceQuery(key: string | null): void {
+    this.performanceQueryKey = key;
+  }
+
+  gatherPerformanceQueryResult(): Promise<WebDNNWebGLContextPerformance[]> {
+    const gl2 = this.gl;
+    if (this.isWebGL2(gl2) && this.timerQueryExt) {
+      let gpuDisjoint = false;
+      if (gl2.getParameter(this.timerQueryExt.GPU_DISJOINT_EXT)) {
+        gpuDisjoint = true;
+      }
+      return new Promise((resolve) => {
+        const gathereds: WebDNNWebGLContextPerformance[] = [];
+        const gather = () => {
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const q = this.performanceQueries[0];
+            if (!q) {
+              resolve(gathereds);
+              break;
+            } else {
+              if (gl2.getQueryParameter(q.query, gl2.QUERY_RESULT_AVAILABLE)) {
+                const elapsedNanoSecond = gl2.getQueryParameter(
+                  q.query,
+                  gl2.QUERY_RESULT
+                ) as number;
+                this.performanceQueries.shift();
+                const info = q.info;
+                info.elapsedNanoSecond = elapsedNanoSecond;
+                info.gpuDisjoint = gpuDisjoint;
+                gathereds.push(info);
+              } else {
+                // need wait
+                wait(10).then(gather);
+                break;
+              }
+            }
+          }
+        };
+        gather();
+      });
+    } else {
+      return Promise.reject("Performance query not supported");
     }
   }
 }

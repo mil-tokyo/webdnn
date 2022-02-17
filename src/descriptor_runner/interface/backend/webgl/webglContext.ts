@@ -33,6 +33,15 @@ export interface WebDNNWebGLContextOption {
   deallocateToBytes?: number;
 }
 
+export interface WebDNNWebGLContextPerformance {
+  key: string;
+  kernelName: string;
+  inputs: { name: string; dims: number[] }[];
+  output: { dims: number[] };
+  elapsedNanoSecond: number;
+  gpuDisjoint: boolean;
+}
+
 export interface WebDNNWebGLContext extends BackendContext {
   backend: "webgl";
   cpuContext: WebDNNCPUContext;
@@ -63,4 +72,6 @@ export interface WebDNNWebGLContext extends BackendContext {
     output: WebGLTensor,
     uniforms: WebGLUniformItem[]
   ): Promise<void>;
+  enablePerformanceQuery(key: string | null): void;
+  gatherPerformanceQueryResult(): Promise<WebDNNWebGLContextPerformance[]>;
 }
