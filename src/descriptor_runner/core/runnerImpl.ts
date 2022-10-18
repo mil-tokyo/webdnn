@@ -52,6 +52,8 @@ export class RunnerImpl implements Runner {
 
   useCompatibilityProxy: boolean;
 
+  private inputsWithoutInitializer!: onnx.IValueInfoProto[];
+
   inputs!: InputProxy[];
 
   outputs!: OutputProxy[];
@@ -115,6 +117,9 @@ export class RunnerImpl implements Runner {
         this.copiedInitializerTensors.set(backend, new Map());
       }
     }
+    this.inputsWithoutInitializer = this.model!.graph!.input!.filter(
+      (v) => v.name && !this.initializerTensors.has(v.name)
+    );
     for (const md of this.model!.metadataProps) {
       if (md.key === "WebDNN2.TensorMoveOptions") {
         this.tensorMoveOptions = JSON.parse(md.value!);
@@ -260,8 +265,7 @@ export class RunnerImpl implements Runner {
   }
 
   private initInputProxy() {
-    const graph = nonnull(this.model?.graph);
-    this.inputs = graph.input!.map((input) => {
+    this.inputs = this.inputsWithoutInitializer.map((input) => {
       const { shape, dataType } = this.getIOProxyShape(input);
       return new InputProxy(shape, dataType);
     });
@@ -276,8 +280,7 @@ export class RunnerImpl implements Runner {
   }
 
   getInputNames(): string[] {
-    const graph = nonnull(this.model?.graph);
-    return graph.input!.map((gi) => gi.name!);
+    return this.inputsWithoutInitializer.map((gi) => gi.name!);
   }
 
   getOutputNames(): string[] {
@@ -323,11 +326,11 @@ export class RunnerImpl implements Runner {
     }
 
     // 入力設定
-    if (graph.input!.length !== inputs.length) {
+    if (this.inputsWithoutInitializer.length !== inputs.length) {
       throw new Error("length of inputs mismatch");
     }
     for (let i = 0; i < inputs.length; i++) {
-      const graphInput = graph.input![i];
+      const graphInput = this.inputsWithoutInitializer[i];
       // if (graphInput.type!.tensorType!.elemType !== 1) {
       //   throw new Error("graph input type must be float32");
       // }
