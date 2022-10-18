@@ -32,14 +32,14 @@ def main():
         optimized_model.metadata_props.append(onnx.StringStringEntryProto(key="WebDNN2.TensorMoveOptions", value=json.dumps(optimization_result.tensor_move_options)))
         onnx.save_model(optimized_model, os.path.join(args.dst_dir, f"model-{backend}.onnx"))
         if backend == "wasm":
-            subprocess.check_call(["yarn", "shader:wasm"], shell=SUBPROCESS_SHELL)
+            subprocess.check_call(["yarn", "shader:wasm"], shell=SUBPROCESS_SHELL, cwd=ROOT_DIR)
         if backend == "webgpu":
-            subprocess.check_call(["yarn", "shader:webgpu"], shell=SUBPROCESS_SHELL)
-        subprocess.check_call(["yarn", "makeShaderList"], shell=SUBPROCESS_SHELL)
-        subprocess.check_call(["yarn", f"build:{backend}", "-o", os.path.abspath(args.dst_dir)], shell=SUBPROCESS_SHELL)
+            subprocess.check_call(["yarn", "shader:webgpu"], shell=SUBPROCESS_SHELL, cwd=ROOT_DIR)
+        subprocess.check_call(["yarn", "makeShaderList"], shell=SUBPROCESS_SHELL, cwd=ROOT_DIR)
+        subprocess.check_call(["yarn", f"build:{backend}", "-o", os.path.abspath(args.dst_dir)], shell=SUBPROCESS_SHELL, cwd=ROOT_DIR)
         optimization_result.remove_code(ROOT_DIR)
     # reset shader list file (remove autogen entry)
-    subprocess.check_call(["yarn", "makeShaderList"], shell=SUBPROCESS_SHELL)
+    subprocess.check_call(["yarn", "makeShaderList"], shell=SUBPROCESS_SHELL, cwd=ROOT_DIR)
 
 
 if __name__ == "__main__":
