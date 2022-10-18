@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { onnx } from "onnx-proto";
 import { Backend } from "../interface/core/constants";
+import { WebDNNLogging } from "../logging";
+
+const logger = WebDNNLogging.getLogger("WebDNN.modelTransform");
 
 export function modelTransform(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   model: onnx.ModelProto,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   backendOrder: Backend[]
@@ -17,6 +19,30 @@ export function modelTransform(
    *   }
    * }
    */
+  renameDuplicatedNode(model);
+}
+
+function renameDuplicatedNode(model: onnx.ModelProto): void {
+  const usedNames = new Set<string>();
+  for (const node of model.graph!.node!) {
+    let origName = node.name;
+    if (!origName) {
+      origName = "unnamed";
+    }
+    if (usedNames.has(origName)) {
+      let newName = origName + "_";
+      while (usedNames.has(newName)) {
+        newName = newName + "_";
+      }
+      node.name = newName;
+      usedNames.add(newName);
+      logger.warn(
+        `node name ${origName} is already used: renaming to ${newName}`
+      );
+    } else {
+      usedNames.add(origName);
+    }
+  }
 }
 
 /**
