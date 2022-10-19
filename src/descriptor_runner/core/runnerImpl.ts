@@ -87,7 +87,11 @@ export class RunnerImpl implements Runner {
     return new TensorLoaderImpl(path, this.backendContexts.cpu);
   }
 
-  async loadModel(directory: string, onnxBasename: string): Promise<void> {
+  async loadModel(
+    directory: string,
+    onnxBasename: string,
+    progressCallback?: (loaded: number, total: number) => unknown
+  ): Promise<void> {
     const f = await fetch(directory + onnxBasename),
       b = await f.arrayBuffer();
     this.model = onnx.ModelProto.decode(new Uint8Array(b));
@@ -103,7 +107,7 @@ export class RunnerImpl implements Runner {
       this.initializerTensors.set(name, tensor);
     }
     for (const [name, tensor] of (
-      await this.loadExternalInitializerTensor(directory)
+      await this.loadExternalInitializerTensor(directory, progressCallback)
     ).entries()) {
       this.initializerTensors.set(name, tensor);
     }
@@ -231,14 +235,36 @@ export class RunnerImpl implements Runner {
   }
 
   private async loadExternalInitializerTensor(
-    directory: string
+    directory: string,
+    progressCallback?: (loaded: number, total: number) => unknown
   ): Promise<Map<string, CPUTensor>> {
+    let totalExpectedSize: number | null = null;
+    for (const md of this.model!.metadataProps) {
+      if (md.key === "WebDNN2.WeightSizes") {
+        totalExpectedSize = 0;
+        for (const sizeStr of md.value!.split(":")) {
+          totalExpectedSize += Number(sizeStr);
+        }
+      }
+    }
     for (const md of this.model!.metadataProps) {
       if (md.key === "WebDNN2.WeightPaths") {
-        const paths = md.value!.split(":").map((bn) => directory + bn),
-          loader = this.getTensorLoader(paths);
-        return loader.loadAll();
+        const paths = md.value!.split(":").map((bn) => directory + bn);
+        const loader = this.getTensorLoader(paths);
+        let cb: ((loadedBytes: number) => unknown) | undefined = undefined;
+        if (totalExpectedSize && progressCallback) {
+          const ex = totalExpectedSize;
+          cb = (loadedBytes: number) => {
+            progressCallback(loadedBytes, ex);
+          };
+        }
+        return loader.loadAll(cb);
       }
+    }
+    if (progressCallback) {
+      logger.warn(
+        `progressCallback is currently supported when loading optimized model.`
+      );
     }
     return new Map();
   }

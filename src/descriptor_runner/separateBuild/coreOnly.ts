@@ -24,6 +24,7 @@ export interface InitOption {
     webgl?: WebDNNWebGLContextOption;
     webgpu?: WebDNNWebGPUContextOption;
   };
+  progressCallback?: (loaded: number, total: number) => unknown;
 }
 
 const defaultContexts = {
@@ -198,6 +199,10 @@ export async function load(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     modelNameBackendPart = backendContexts.webgl!.version;
   }
-  await runner.loadModel(directory, `model-${modelNameBackendPart}.onnx`);
+  await runner.loadModel(
+    directory,
+    `model-${modelNameBackendPart}.onnx`,
+    options.progressCallback
+  );
   return runner;
 }

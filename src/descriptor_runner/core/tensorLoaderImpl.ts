@@ -22,9 +22,10 @@ export class TensorLoaderImpl implements TensorLoader {
     }
   }
 
-  async loadAll(): Promise<Map<string, CPUTensor>> {
-    // TODO: progress
-    const fileArray = await this.fetchAllFile(),
+  async loadAll(
+    progressCallback?: (loadedBytes: number) => unknown
+  ): Promise<Map<string, CPUTensor>> {
+    const fileArray = await this.fetchAllFile(progressCallback),
       view = new DataView(
         fileArray.buffer,
         fileArray.byteOffset,
@@ -58,12 +59,18 @@ export class TensorLoaderImpl implements TensorLoader {
     return tensors;
   }
 
-  private async fetchAllFile(): Promise<Uint8Array> {
+  private async fetchAllFile(
+    progressCallback?: (loadedBytes: number) => unknown
+  ): Promise<Uint8Array> {
     const abs: ArrayBuffer[] = [];
+    let loadedBytes = 0;
+    progressCallback?.(loadedBytes);
     for (const path of this.paths) {
       const f = await fetch(path),
         ab = await f.arrayBuffer();
       abs.push(ab);
+      loadedBytes += ab.byteLength;
+      progressCallback?.(loadedBytes);
     }
     const totalLength = arraySum(abs.map((ab) => ab.byteLength)),
       concatArray = new Uint8Array(totalLength);

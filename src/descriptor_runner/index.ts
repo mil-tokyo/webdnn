@@ -28,6 +28,7 @@ export interface InitOption {
     webgl?: WebDNNWebGLContextOption;
     webgpu?: WebDNNWebGPUContextOption;
   };
+  progressCallback?: (loaded: number, total: number) => unknown;
 }
 
 const defaultContexts = {
@@ -138,6 +139,6 @@ export async function load(
   const actualBackendOrder: Backend[] =
       succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"],
     runner = new RunnerImpl(actualBackendOrder, backendContexts);
-  await runner.loadModel(directory, "model.onnx");
+  await runner.loadModel(directory, "model.onnx", options.progressCallback);
   return runner;
 }

@@ -13,6 +13,9 @@ async function loadModel(directory) {
   if (optimized) {
     directory += "optimized/"
     options.optimized = true;
+    options.progressCallback = (loaded, total) => {
+      updateMessage(`Loading model: ${loaded} / ${total} bytes`);
+    };
   }
   runner = await WebDNN.load(directory, options);
 }
