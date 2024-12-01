@@ -1,0 +1,4 @@
+onnx
+onnxruntime
+torch
+torchvision

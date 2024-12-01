@@ -57,6 +57,7 @@ console.log(outputTensor.data);  // Float32Array
 テスト対象のONNXモデルおよび、入出力テンソルの生成
 
 ```
+pip install -r requirements.test.txt
 python test/model_test/make_models.py
 ```
 

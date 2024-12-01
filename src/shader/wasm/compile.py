@@ -37,7 +37,7 @@ with open(f"{DST_DIR}/workerRaw.js", "rt", encoding="utf-8") as f:
     worker_js = f.read()
 
 worker_js_with_wasm = worker_js.replace("WASM_WORKER_WASM_BINARY_BASE64", base64.b64encode(worker_wasm).decode("ascii"))
-worker_js_with_wasm_escaped = worker_js_with_wasm.replace("\\", "\\\\").replace("`", "\\`")
+worker_js_with_wasm_escaped = worker_js_with_wasm.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$")
 
 worker_data_url_src = f"""/* eslint-disable */
 export const wasmWorkerSrcUrl = URL.createObjectURL(new File([`{worker_js_with_wasm_escaped}`], "worker.js", {{type: "text/javascript"}}));

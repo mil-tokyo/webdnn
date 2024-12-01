@@ -57,6 +57,7 @@ See `example/minimum` for the complete minimal code that works.
 Generate ONNX models and input/output tensors to be tested
 
 ```
+pip install -r requirements.test.txt
 python test/model_test/make_models.py
 ```
 
