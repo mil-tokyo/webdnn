@@ -167,8 +167,7 @@ export class TensorLoaderImpl implements TensorLoader {
     byteLength: number
   ): string {
     const view = new Uint8Array(buf, byteOffset, byteLength);
-    // TODO: support UTF-8
-    return String.fromCharCode(...Array.from(view));
+    return new TextDecoder('utf-8').decode(view);
   }
 
   private parseTensorBody(
