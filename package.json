@@ -2,7 +2,16 @@
   "name": "webdnn",
   "version": "2.0.0",
   "description": "WebDNN",
-  "main": "dist/index.js",
+  "main": "dist/webdnn.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/webdnn.js"
+    },
+    "./webdnn-core": "./dist/webdnn-core.js",
+    "./dist/*": "./dist/*"
+  },
   "files": [
     "dist"
   ],
@@ -20,7 +29,7 @@
     "shader:wasm": "python3 src/shader/wasm/compile.py",
     "shader:webgpu": "node src/shader/webgpu/compile.js",
     "makeShaderList": "python3 scripts/make_operator_entries.py",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build:all",
     "server": "npx http-server -c-1",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "pretypecheck": "node scripts/ensure-generated-stubs.mjs",
