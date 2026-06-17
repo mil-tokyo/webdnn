@@ -1,5 +1,10 @@
 """
 compile operator kernels of c++ into wasm, then embed them in single ts file, to distribute single webdnn.js
+
+Requires emscripten (emcc) installed system-globally. See docs/emscripten-setup.md.
+Without emcc this fails by design; ensure-generated-stubs.mjs supplies a worker.ts stub
+so the rest of the toolchain works without emscripten.
+Pinned native dep: eigen 3.3.9 (downloaded on first run).
 """
 
 import base64
