@@ -19,26 +19,26 @@ struct Meta {
   inShape1: i32,
   chIn: i32,
 };
-@group(0) @binding(2) var<storage, read_write> meta: Meta;
+@group(0) @binding(2) var<storage, read_write> metaBuf: Meta;
 
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  let group = meta.group;
-  let batch = meta.batch;
-  let outShape0 = meta.outShape0;
-  let outShape1 = meta.outShape1;
-  let chInPerGroup = meta.chInPerGroup;
-  let kernelShape0 = meta.kernelShape0;
-  let kernelShape1 = meta.kernelShape1;
-  let strides0 = meta.strides0;
-  let strides1 = meta.strides1;
-  let pads0 = meta.pads0;
-  let pads1 = meta.pads1;
-  let dilations0 = meta.dilations0;
-  let dilations1 = meta.dilations1;
-  let inShape0 = meta.inShape0;
-  let inShape1 = meta.inShape1;
-  let chIn = meta.chIn;
+  let group = metaBuf.group;
+  let batch = metaBuf.batch;
+  let outShape0 = metaBuf.outShape0;
+  let outShape1 = metaBuf.outShape1;
+  let chInPerGroup = metaBuf.chInPerGroup;
+  let kernelShape0 = metaBuf.kernelShape0;
+  let kernelShape1 = metaBuf.kernelShape1;
+  let strides0 = metaBuf.strides0;
+  let strides1 = metaBuf.strides1;
+  let pads0 = metaBuf.pads0;
+  let pads1 = metaBuf.pads1;
+  let dilations0 = metaBuf.dilations0;
+  let dilations1 = metaBuf.dilations1;
+  let inShape0 = metaBuf.inShape0;
+  let inShape1 = metaBuf.inShape1;
+  let chIn = metaBuf.chIn;
   let total = group * batch * outShape0 * outShape1 * chInPerGroup * kernelShape0 * kernelShape1;
   for (var idx = i32(global_id.x); idx < total; idx = idx + 4096) {
     var ky = idx / kernelShape1;

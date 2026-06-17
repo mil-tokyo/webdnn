@@ -8,14 +8,14 @@ struct Meta {
   chOutPerGroup: i32,
   cinkhkw: i32,
 };
-@group(0) @binding(3) var<storage, read_write> meta: Meta;
+@group(0) @binding(3) var<storage, read_write> metaBuf: Meta;
 
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  let group = meta.group;
-  let bout = meta.bout;
-  let chOutPerGroup = meta.chOutPerGroup;
-  let cinkhkw = meta.cinkhkw;
+  let group = metaBuf.group;
+  let bout = metaBuf.bout;
+  let chOutPerGroup = metaBuf.chOutPerGroup;
+  let cinkhkw = metaBuf.cinkhkw;
   let total = group * bout * chOutPerGroup;
   for (var idx = i32(global_id.x); idx < total; idx = idx + 4096) {
     let x = idx % chOutPerGroup;

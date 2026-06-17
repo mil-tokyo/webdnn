@@ -4,11 +4,11 @@
 struct Meta {
   len: u32,
 };
-@group(0) @binding(2) var<storage, read_write> meta: Meta;
+@group(0) @binding(2) var<storage, read_write> metaBuf: Meta;
 
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  let len = meta.len;
+  let len = metaBuf.len;
   for (var i = global_id.x; i < len; i = i + 4096u) {
     array_b[i] = max(array_a[i], 0.0);
   }

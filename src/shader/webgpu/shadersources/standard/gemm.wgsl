@@ -16,21 +16,21 @@ struct Meta {
   alpha: f32,
   beta: f32,
 };
-@group(0) @binding(4) var<storage, read_write> meta: Meta;
+@group(0) @binding(4) var<storage, read_write> metaBuf: Meta;
 
 @compute @workgroup_size(8, 8, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  let M = meta.M;
-  let N = meta.N;
-  let K = meta.K;
-  let strideA0 = meta.strideA0;
-  let strideA1 = meta.strideA1;
-  let strideB0 = meta.strideB0;
-  let strideB1 = meta.strideB1;
-  let strideC0 = meta.strideC0;
-  let strideC1 = meta.strideC1;
-  let alpha = meta.alpha;
-  let beta = meta.beta;
+  let M = metaBuf.M;
+  let N = metaBuf.N;
+  let K = metaBuf.K;
+  let strideA0 = metaBuf.strideA0;
+  let strideA1 = metaBuf.strideA1;
+  let strideB0 = metaBuf.strideB0;
+  let strideB1 = metaBuf.strideB1;
+  let strideC0 = metaBuf.strideC0;
+  let strideC1 = metaBuf.strideC1;
+  let alpha = metaBuf.alpha;
+  let beta = metaBuf.beta;
   for (var x = global_id.x; x < N; x = x + 256u) {
     for (var y = global_id.y; y < M; y = y + 256u) {
       var sum = 0.0;

@@ -7,13 +7,13 @@ struct Meta {
   chOut: i32,
   outarea: i32,
 };
-@group(0) @binding(3) var<storage, read_write> meta: Meta;
+@group(0) @binding(3) var<storage, read_write> metaBuf: Meta;
 
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-  let batch = meta.batch;
-  let chOut = meta.chOut;
-  let outarea = meta.outarea;
+  let batch = metaBuf.batch;
+  let chOut = metaBuf.chOut;
+  let outarea = metaBuf.outarea;
   let total = batch * chOut * outarea;
   for (var idx = i32(global_id.x); idx < total; idx = idx + 4096) {
     let x = idx % outarea;

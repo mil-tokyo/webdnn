@@ -14,5 +14,15 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 60_000,
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          args: ["--enable-unsafe-webgpu", "--enable-features=Vulkan"],
+        },
+      },
+    },
+  ],
 });
