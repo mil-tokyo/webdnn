@@ -470,7 +470,7 @@ export async function getImageArray(
 }
 
 function createImageData(
-  array: Uint8ClampedArray,
+  array: Uint8ClampedArray<ArrayBuffer>,
   width: number,
   height: number
 ): ImageData {

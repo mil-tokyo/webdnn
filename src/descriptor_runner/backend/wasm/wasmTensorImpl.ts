@@ -86,7 +86,7 @@ export class WasmTensorImpl extends TensorImpl implements WasmTensor {
 
   async getData(): Promise<DataArrayTypes> {
     const buf = await this.context.readTensor(this.sharedBuffer);
-    return new DataArrayConstructor[this.dataType](buf.buffer);
+    return new DataArrayConstructor[this.dataType](buf.buffer as ArrayBuffer);
   }
 
   async setData(data: DataArrayTypes): Promise<void> {

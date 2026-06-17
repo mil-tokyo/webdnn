@@ -38,12 +38,12 @@ export class TensorLoaderImpl implements TensorLoader {
     const tensors = new Map<string, CPUTensor>();
     let close = false;
     while (!close) {
-      const chunkInfo = this.extractChunk(fileArray.buffer, offset);
+      const chunkInfo = this.extractChunk(fileArray.buffer as ArrayBuffer, offset);
       switch (chunkInfo.signature) {
         case signatureTensor:
           {
             const { name, tensor } = this.parseTensorChunk(
-              fileArray.buffer,
+              fileArray.buffer as ArrayBuffer,
               chunkInfo.bodyByteOffset,
               chunkInfo.bodyByteLength
             );
