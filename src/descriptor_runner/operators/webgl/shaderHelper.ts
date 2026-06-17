@@ -303,7 +303,7 @@ export function shaderGenTensorNDGetUniformItem(
 export function shaderGenTensorOutputUniformItem(
   shape: ReadonlyArray<number>,
   textureShape: ReadonlyArray<number> | WebGLTensor,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   webgl2: boolean
 ): WebGLUniformItem[] {
   let textureShapeArray: ReadonlyArray<number>;

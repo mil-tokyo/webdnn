@@ -14,6 +14,5 @@ export interface WebDNNCPUContext extends BackendContext {
     dataType?: DataType,
     data?: DataArrayTypes
   ): CPUTensor;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   moveTensor(tensor: Tensor, option: {}): Promise<CPUTensor>;
 }

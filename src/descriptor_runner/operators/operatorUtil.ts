@@ -76,7 +76,7 @@ export function getAttrTensor(
   if (v == null) {
     throw new Error(`Attribute ${name} is not int`);
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+   
   const dims = intOrLongToIntVector(v.dims!),
     { rawData } = v;
   if (!rawData) {

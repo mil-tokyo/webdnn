@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+ 
 import { onnx } from "onnx-proto";
 import { Backend } from "../interface/core/constants";
 import { WebDNNLogging } from "../logging";
@@ -7,7 +7,7 @@ const logger = WebDNNLogging.getLogger("WebDNN.modelTransform");
 
 export function modelTransform(
   model: onnx.ModelProto,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   backendOrder: Backend[]
 ): void {
   /*

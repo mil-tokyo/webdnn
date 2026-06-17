@@ -5,7 +5,7 @@ import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WebGPUTensor } from "./webgpuTensor";
 
 // for future use
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+ 
 export interface WebDNNWebGPUContextOption {}
 
 type WorkGroupDim = "x" | "y" | "z";
@@ -42,7 +42,6 @@ export interface WebDNNWebGPUContext extends BackendContext {
     forWriteFromCPU?: boolean,
     forReadToCPU?: boolean
   ): WebGPUTensor;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   moveTensor(tensor: Tensor, option: {}): Promise<WebGPUTensor>;
   hasPipeline(name: string): boolean;
   createPipeline(name: string, shader: Uint32Array, nBuffers: number): void;

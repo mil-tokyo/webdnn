@@ -57,9 +57,9 @@ function loadJS(url: string): Promise<InjectionParams> {
 
 async function loadCPU(
   directory: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   options: InitOption,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   cpuContext: WebDNNCPUContextImpl
 ): Promise<void> {
   const injectionParams = await loadJS(`${directory}op-cpu.js`);
@@ -196,7 +196,7 @@ export async function load(
     runner = new RunnerImpl(actualBackendOrder, backendContexts);
   let modelNameBackendPart: string = actualBackendOrder[0];
   if (modelNameBackendPart === "webgl") {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+     
     modelNameBackendPart = backendContexts.webgl!.version;
   }
   await runner.loadModel(

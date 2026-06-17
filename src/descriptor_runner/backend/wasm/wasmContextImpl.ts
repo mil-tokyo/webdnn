@@ -27,7 +27,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   perfTotalMemory = 0;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   constructor(
     public cpuContext: WebDNNCPUContext,
     option: WebDNNWasmContextOption
@@ -143,7 +143,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   writeTensor(buffer: WasmSharedBuffer, data: DataArrayTypes): void {
     const copyData = new Uint8Array(buffer.byteLength),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       copyDataView = new (data.constructor as any)(copyData.buffer);
     copyDataView.set(data);
     this.worker.postMessage(

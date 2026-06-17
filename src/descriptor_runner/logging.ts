@@ -86,7 +86,7 @@ class WebDNNLoggingAdapterConsole implements WebDNNLoggingAdapter {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   clear(): void {}
 }
 

@@ -28,7 +28,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
 
   pooledMetaBuffer: WebGPUMetaBuffer[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   constructor(
     public cpuContext: WebDNNCPUContext,
     option: WebDNNWebGPUContextOption
@@ -48,9 +48,9 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     if (this.initialized) {
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+     
     const adapter = await navigator.gpu!.requestAdapter();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+     
     this.device = (await adapter!.requestDevice()) as GPUDevice;
     if (!this.device) {
       throw new Error("GPUAdapter.requestDevice() returned null");

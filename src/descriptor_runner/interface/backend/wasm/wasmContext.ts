@@ -5,7 +5,7 @@ import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WasmTensor } from "./wasmTensor";
 
 // for future use
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+ 
 export interface WebDNNWasmContextOption {}
 
 export interface WasmKernelArgumentTensor {
@@ -36,7 +36,6 @@ export interface WebDNNWasmContext extends BackendContext {
   assertsWasmTensor(tensor: Tensor): asserts tensor is WasmTensor;
   assertsWasmTensorArray(tensors: Tensor[]): asserts tensors is WasmTensor[];
   emptyTensor(dims: ReadonlyArray<number>, dataType?: DataType): WasmTensor;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   moveTensor(tensor: Tensor, option: {}): Promise<WasmTensor>;
   runKernel(name: string, args: WasmKernelArgument[]): void;
 }

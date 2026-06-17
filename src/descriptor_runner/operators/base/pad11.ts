@@ -21,7 +21,7 @@ export abstract class Pad11 extends OperatorImpl {
 
   getTensorBackendRequirement(
     nInputs: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     nOutputs: number
   ): (Backend | null)[] {
     if (nInputs === 2) {

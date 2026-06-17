@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+ 
+ 
 import { onnx } from "onnx-proto";
 import {
   Backend,
@@ -386,7 +386,7 @@ export class RunnerImpl implements Runner {
         backendOrderForNode =
           this.forceOperatorBackendOrder[node.name!] || this.backendOrder;
       let firstTry = true;
-      // eslint-disable-next-line no-constant-condition
+       
       while (true) {
         try {
           // テンソルがどこにあるのか調べる

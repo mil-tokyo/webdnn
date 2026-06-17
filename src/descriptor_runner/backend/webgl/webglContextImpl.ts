@@ -517,7 +517,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       if (this.isWebGL2(gl2) && this.timerQueryExt) {
         gl2.endQuery(this.timerQueryExt.TIME_ELAPSED_EXT);
         const info: WebDNNWebGLContextPerformance = {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+           
           key: this.performanceQueryKey!,
           kernelName: name,
           inputs: inputs.map(({ tensor, name }) => ({
@@ -582,7 +582,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       return new Promise((resolve) => {
         const gathereds: WebDNNWebGLContextPerformance[] = [];
         const gather = () => {
-          // eslint-disable-next-line no-constant-condition
+           
           while (true) {
             const q = this.performanceQueries[0];
             if (!q) {

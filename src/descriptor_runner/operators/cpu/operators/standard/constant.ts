@@ -27,7 +27,7 @@ class Constant extends OperatorImpl {
     this.constant = constant;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     const output = context.emptyTensor(
       this.constant.dims,

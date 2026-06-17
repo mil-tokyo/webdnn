@@ -62,9 +62,9 @@ class EachElementwise extends OperatorImpl {
     dIs: DataArrayTypes[],
     dO: DataArrayTypes,
     op: (values: number[]) => number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     outShape: number[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     inAllStrides: number[][]
   ) {
     dO[0] = op(dIs.map((dI) => dI[0]));

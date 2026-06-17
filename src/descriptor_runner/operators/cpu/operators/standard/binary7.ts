@@ -72,9 +72,9 @@ class Binary7 extends OperatorImpl {
     dR: DataArrayTypes,
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     outShape: number[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     inAllStrides: number[][]
   ) {
     dO[0] = op(dL[0], dR[0]);

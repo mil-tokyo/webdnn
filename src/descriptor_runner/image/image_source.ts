@@ -54,12 +54,12 @@ export async function loadImageByDialog(): Promise<HTMLImageElement> {
   input.type = "file";
   input.accept = "image/*";
   // Avoid GC for iOS Safari
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (window as any)._webdnn_image_input = input;
 
   return new Promise<HTMLImageElement>((resolve) => {
     input.onchange = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       delete (window as any)._webdnn_image_input;
       resolve(loadImageFromFileInput(input));
     };
