@@ -8,14 +8,54 @@ Kinds of contributions will be one of the following, but not restricted to:
 - Improvement of performance
 - Documantation
 
-For new layer implementation, at least WebAssembly backend implementation is required. WebGPU backend can only be tested on Mac, so it is not mandatory.
+# Development environment
+
+- Node.js 20+ (see `.nvmrc`)
+- Python 3.10+ via [uv](https://docs.astral.sh/uv/) (for the graph transpiler and test fixtures)
+- emscripten 3.1+ (only for the WebAssembly backend; see [docs/emscripten-setup.md](docs/emscripten-setup.md))
+
+Setup:
+
+```
+npm install
+uv sync            # Python graph transpiler / fixtures
+```
+
+See [docs/architecture.md](docs/architecture.md) for a layer-by-layer overview of the codebase.
+
+# Development workflow
+
+```
+npm run typecheck     # tsc --noEmit
+npm run lint          # eslint
+npm run format        # prettier --write   (format:check for CI)
+npm test              # vitest (unit, no GPU)
+npm run build:all     # WGSL gen + operator entries + Vite build + dts
+```
+
+Pre-commit gates (all must be green): `npm run typecheck`, `npm run lint`,
+`npm run format:check`, `npm run test:unit`.
+
+## Code generation
+
+- **WGSL shaders** — after editing files under `src/shader/webgpu`, run `npm run shader:webgpu` to regenerate the WebGPU operator shaders.
+- **WebAssembly kernels** — changes under `src/shader/wasm` require emscripten (see [docs/emscripten-setup.md](docs/emscripten-setup.md)). The WASM backend is not part of `npm run build:all`; distributing it requires updating `build:all` after emscripten is installed.
+- **ONNX bindings** — regenerate the protobufjs bindings with `npm run gen:onnx`.
 
 # Testing
-If you have added some features, implementing tests corresponding to them is recommended.
 
-`test/webdnn_test` is for tests which can be completed within graph transpiler. `test/runtime` is for tests which generates graph descriptor and compares its behavior on web browsers.
+If you add a feature, adding corresponding tests is recommended. WebDNN has a
+three-layer test strategy described in [docs/testing.md](docs/testing.md).
 
-See how to run test commands in `test/README.md`.
+```
+npm test                          # unit tests (vitest)
+npm run fixtures                  # generate ONNX test fixtures (uv)
+npx playwright install chromium   # one-time, for E2E
+npm run test:e2e                  # Playwright E2E (CPU / WebGPU / WebGL)
+```
+
+`npm run test:e2e` requires the fixtures (`npm run fixtures`) and the Playwright
+Chromium browser to be installed.
 
 # Pull Request
 Send pull request from your fork branch to our master branch. The project organizer checks the request and accepts or gives request for revision.
