@@ -28,7 +28,7 @@ export async function loadImageByUrl(url: string): Promise<HTMLImageElement> {
  * @returns {Promise<HTMLImageElement>} image element
  */
 export async function loadImageFromFileInput(
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<HTMLImageElement> {
   const { files } = input;
   if (!files || files.length == 0) throw new Error("No file is selected");
@@ -54,12 +54,11 @@ export async function loadImageByDialog(): Promise<HTMLImageElement> {
   input.type = "file";
   input.accept = "image/*";
   // Avoid GC for iOS Safari
-   
+
   (window as any)._webdnn_image_input = input;
 
   return new Promise<HTMLImageElement>((resolve) => {
     input.onchange = () => {
-       
       delete (window as any)._webdnn_image_input;
       resolve(loadImageFromFileInput(input));
     };

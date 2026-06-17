@@ -12,7 +12,7 @@ class CPUSplit2 extends Split2 {
   async run(
     context: WebDNNCPUContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const input = inputs[0],
@@ -52,7 +52,7 @@ class CPUSplit13 extends Split13 {
   async run(
     context: WebDNNCPUContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const input = inputs[0],

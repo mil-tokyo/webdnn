@@ -48,7 +48,7 @@ export class InstanceNormalization extends OperatorImpl {
     const maxSumExpTensor = context.emptyTensor(
       [dimBatch * dimCh * 4],
       "float32",
-      { dimPerPixel: 4 }
+      { dimPerPixel: 4 },
     );
     await this.calcStat(
       context,
@@ -59,7 +59,7 @@ export class InstanceNormalization extends OperatorImpl {
       input,
       scale,
       bias,
-      maxSumExpTensor
+      maxSumExpTensor,
     );
 
     // 結果計算
@@ -71,7 +71,7 @@ export class InstanceNormalization extends OperatorImpl {
       reductionLength,
       input,
       maxSumExpTensor,
-      output
+      output,
     );
     maxSumExpTensor.dispose();
     return [output];
@@ -86,7 +86,7 @@ export class InstanceNormalization extends OperatorImpl {
     input: WebGLTensor,
     scale: WebGLTensor,
     bias: WebGLTensor,
-    maxSumExpTensor: WebGLTensor
+    maxSumExpTensor: WebGLTensor,
   ) {
     const kernelName = `instancenormalization_stats_${reductionLength}`,
       kernelSource = `${shaderGenHeader(context.webgl2)}
@@ -124,24 +124,24 @@ void main() {
         "tex_input",
         [chLength * reductionLength, reductionLength, 1],
         input,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_scale",
         scale.strides,
         scale,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_bias",
         bias.strides,
         bias,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [batchLength, chLength],
         maxSumExpTensor,
-        context.webgl2
+        context.webgl2,
       ),
       { name: "epsilon", value: epsilon, type: "float" },
     ];
@@ -153,7 +153,7 @@ void main() {
         { tensor: bias, name: "tex_bias" },
       ],
       maxSumExpTensor,
-      uniforms
+      uniforms,
     );
   }
 
@@ -164,7 +164,7 @@ void main() {
     reductionLength: number,
     input: WebGLTensor,
     maxSumExpTensor: WebGLTensor,
-    output: WebGLTensor
+    output: WebGLTensor,
   ) {
     const kernelName = `instancenormalization_output`,
       kernelSource = `${shaderGenHeader(context.webgl2)}
@@ -189,18 +189,18 @@ void main() {
         "tex_input",
         [chLength * reductionLength, reductionLength, 1],
         input,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_stats",
         [chLength, 1],
         maxSumExpTensor,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [batchLength, chLength, reductionLength],
         output,
-        context.webgl2
+        context.webgl2,
       ),
     ];
     await context.runKernel(
@@ -210,7 +210,7 @@ void main() {
         { tensor: maxSumExpTensor, name: "tex_stats" },
       ],
       output,
-      uniforms
+      uniforms,
     );
   }
 }

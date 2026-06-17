@@ -26,7 +26,6 @@ class ConstantOfShape extends OperatorImpl {
     this.constant = constant;
   }
 
-   
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const input = Array.from(inputs[0].data);

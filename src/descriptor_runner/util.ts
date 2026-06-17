@@ -51,7 +51,7 @@ export function arrayProd(vec: ArrayLike<number>): number {
 
 export function arrayEqual(
   vec1: ArrayLike<number>,
-  vec2: ArrayLike<number>
+  vec2: ArrayLike<number>,
 ): boolean {
   if (vec1.length !== vec2.length) {
     return false;

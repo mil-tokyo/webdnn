@@ -20,7 +20,7 @@ function flatten<T>(arr: ArrayLike<T>): ArrayLike<T> {
   return arr instanceof Array
     ? Array.prototype.concat.apply(
         [],
-        arr.map((arr) => flatten(arr))
+        arr.map((arr) => flatten(arr)),
       )
     : arr;
 }
@@ -40,7 +40,7 @@ function normalizeBiasTuple(arr: number[] | number): number[] {
     return [arr[0], arr[0], arr[0], arr[0]];
   }
   throw new Error(
-    "bias and scale must be scalar number or array of length 1 or 3 or 4."
+    "bias and scale must be scalar number or array of length 1 or 3 or 4.",
   );
 }
 
@@ -86,7 +86,7 @@ export type ImageSource = string | HTMLInputElement | Drawable;
  */
 export function getImageArrayFromImageData(
   imageData: ImageData,
-  options: SourceRect & DestinationRect & ImageArrayOption = {}
+  options: SourceRect & DestinationRect & ImageArrayOption = {},
 ): Float32Array | Int32Array {
   const {
       type = Float32Array,
@@ -283,7 +283,7 @@ export function getImageArrayFromImageData(
  */
 export function getImageArrayFromCanvas(
   canvas: HTMLCanvasElement,
-  options: SourceRect & DestinationRect & ImageArrayOption = {}
+  options: SourceRect & DestinationRect & ImageArrayOption = {},
 ): Float32Array | Int32Array {
   const {
       type = Float32Array,
@@ -326,7 +326,7 @@ export function getImageArrayFromCanvas(
  */
 export function getImageArrayFromDrawable(
   drawable: Drawable,
-  options: SourceRect & DestinationRect & ImageArrayOption = {}
+  options: SourceRect & DestinationRect & ImageArrayOption = {},
 ): Float32Array | Int32Array {
   let srcH: number, srcW: number;
 
@@ -347,7 +347,7 @@ export function getImageArrayFromDrawable(
     return getImageArrayFromCanvas(canvas, options);
   } else
     throw TypeError(
-      'Failed to execute "getImageDataFromDrawable(drawable, options)": "drawable" must be an instanceof Drawable'
+      'Failed to execute "getImageDataFromDrawable(drawable, options)": "drawable" must be an instanceof Drawable',
     );
 
   const {
@@ -439,14 +439,14 @@ export function getImageArrayFromDrawable(
  */
 export async function getImageArray(
   image: ImageSource,
-  options: SourceRect & DestinationRect & ImageArrayOption = {}
+  options: SourceRect & DestinationRect & ImageArrayOption = {},
 ): Promise<Float32Array | Int32Array> {
   if (typeof image === "string") {
     return getImageArrayFromDrawable(await loadImageByUrl(image), options);
   } else if (image instanceof HTMLInputElement) {
     return getImageArrayFromDrawable(
       await loadImageFromFileInput(image),
-      options
+      options,
     );
   } else if (image instanceof HTMLCanvasElement) {
     return getImageArrayFromCanvas(image, options);
@@ -465,14 +465,14 @@ export async function getImageArray(
   }
   throw TypeError(
     'Failed to execute "getImageData(image, options)": "image" must be an instance of string,' +
-      " HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object"
+      " HTMLInputElement, HTMLCanvasElement, HTMLImageElement, HTMLVideoElement, or ImageData object",
   );
 }
 
 function createImageData(
   array: Uint8ClampedArray<ArrayBuffer>,
   width: number,
-  height: number
+  height: number,
 ): ImageData {
   try {
     return new ImageData(array, width, height);
@@ -529,7 +529,7 @@ export function setImageArrayToCanvas(
   imageW: number,
   imageH: number,
   canvas: HTMLCanvasElement,
-  options: SourceRect & DestinationRect & ImageArrayOption = {}
+  options: SourceRect & DestinationRect & ImageArrayOption = {},
 ): void {
   const {
       color = Color.RGB,

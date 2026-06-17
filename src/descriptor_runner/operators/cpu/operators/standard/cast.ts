@@ -38,7 +38,7 @@ class Cast extends OperatorImpl {
         break;
       default:
         throw new Error(
-          `Cast: converting to DataType ${this.to} is not yet supported`
+          `Cast: converting to DataType ${this.to} is not yet supported`,
         );
     }
     const newData = new DataArrayConstructor[outputDataType](input.data.length);

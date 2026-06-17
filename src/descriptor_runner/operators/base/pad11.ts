@@ -21,8 +21,8 @@ export abstract class Pad11 extends OperatorImpl {
 
   getTensorBackendRequirement(
     nInputs: number,
-     
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     if (nInputs === 2) {
       return [this.backend, "cpu"];
@@ -33,7 +33,7 @@ export abstract class Pad11 extends OperatorImpl {
 
   protected calcShape(
     input: Tensor,
-    padTensor: CPUTensor
+    padTensor: CPUTensor,
   ): { outputShape: number[]; pads: number[] } {
     const outputShape: number[] = [];
     const pads: number[] = Array.from(padTensor.data);

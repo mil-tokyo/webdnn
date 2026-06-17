@@ -5,7 +5,7 @@ import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WasmTensor } from "./wasmTensor";
 
 // for future use
- 
+
 export interface WebDNNWasmContextOption {}
 
 export interface WasmKernelArgumentTensor {

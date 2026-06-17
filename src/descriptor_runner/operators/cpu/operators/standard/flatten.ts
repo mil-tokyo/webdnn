@@ -14,7 +14,7 @@ class CPUFlatten extends Flatten {
       output = context.emptyTensor(
         this.calcShape(input),
         input.dataType,
-        input.data
+        input.data,
       );
     return [output];
   }

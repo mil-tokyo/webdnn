@@ -34,7 +34,7 @@ class CpuMatMul extends MatMul {
         resultStrides,
         stridesA,
         stridesB,
-        innerProductLength
+        innerProductLength,
       );
     } else if (resultDims.length === 3) {
       this.calcDim3(
@@ -45,7 +45,7 @@ class CpuMatMul extends MatMul {
         resultStrides,
         stridesA,
         stridesB,
-        innerProductLength
+        innerProductLength,
       );
     } else {
       // TODO: 4次元以上のサポート
@@ -55,7 +55,7 @@ class CpuMatMul extends MatMul {
     const output = context.emptyTensor(
       resultDimsAfterSqueeze,
       "float32",
-      newData
+      newData,
     );
     return [output];
   }
@@ -68,7 +68,7 @@ class CpuMatMul extends MatMul {
     resultStrides: number[],
     stridesA: ReadonlyArray<number>,
     stridesB: ReadonlyArray<number>,
-    innerProductLength: number
+    innerProductLength: number,
   ) {
     for (let m = 0; m < resultDims[0]; m++) {
       for (let n = 0; n < resultDims[1]; n++) {
@@ -91,7 +91,7 @@ class CpuMatMul extends MatMul {
     resultStrides: number[],
     stridesA: ReadonlyArray<number>,
     stridesB: ReadonlyArray<number>,
-    innerProductLength: number
+    innerProductLength: number,
   ) {
     for (let o0 = 0; o0 < resultDims[0]; o0++) {
       for (let m = 0; m < resultDims[1]; m++) {

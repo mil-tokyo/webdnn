@@ -33,11 +33,11 @@ class CpuConvTranspose extends ConvTranspose {
       } = this.calcShape(inputX.dims, inputW.dims),
       // group, batch, inShape[0], inShape[1], chInPerGroup
       inputTransposeData = new Float32Array(
-        chIn * batch * inShape[0] * inShape[1]
+        chIn * batch * inShape[0] * inShape[1],
       ),
       // group, chOutPerGroup, kernelShape[0], kernelShape[1], chInPerGroup
       weightTransposeData = new Float32Array(
-        chOut * kernelShape[0] * kernelShape[1] * chInPerGroup
+        chOut * kernelShape[0] * kernelShape[1] * chInPerGroup,
       ),
       // group, batch, inShape[0], inShape[1], chOutPerGroup, kernelShape[0], kernelShape[1]
       matmulData = new Float32Array(
@@ -46,7 +46,7 @@ class CpuConvTranspose extends ConvTranspose {
           inShape[0] *
           inShape[1] *
           kernelShape[0] *
-          kernelShape[1]
+          kernelShape[1],
       ),
       col2ImData = new Float32Array(batch * chOut * outShape[0] * outShape[1]);
     this.transposeInput(
@@ -55,7 +55,7 @@ class CpuConvTranspose extends ConvTranspose {
       group,
       batch,
       inShape[0] * inShape[1],
-      chInPerGroup
+      chInPerGroup,
     );
     this.transposeWeight(
       inputW.data as Float32Array,
@@ -63,7 +63,7 @@ class CpuConvTranspose extends ConvTranspose {
       group,
       chInPerGroup,
       chOutPerGroup,
-      kernelShape[0] * kernelShape[1]
+      kernelShape[0] * kernelShape[1],
     );
     this.matmul(
       inputTransposeData,
@@ -72,7 +72,7 @@ class CpuConvTranspose extends ConvTranspose {
       group,
       batch * inShape[0] * inShape[1],
       chOutPerGroup * kernelShape[0] * kernelShape[1],
-      chInPerGroup
+      chInPerGroup,
     );
     this.col2im(
       matmulData,
@@ -85,7 +85,7 @@ class CpuConvTranspose extends ConvTranspose {
       strides,
       inShape,
       outShape,
-      chOutPerGroup
+      chOutPerGroup,
     );
     if (inputB) {
       this.bias(
@@ -93,13 +93,13 @@ class CpuConvTranspose extends ConvTranspose {
         col2ImData,
         batch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
     }
     const output = context.emptyTensor(
       [batch, chOut, outShape[0], outShape[1]],
       "float32",
-      col2ImData
+      col2ImData,
     );
     return [output];
   }
@@ -115,7 +115,7 @@ class CpuConvTranspose extends ConvTranspose {
     strides: number[],
     inShape: number[],
     outShape: number[],
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ): void {
     let idx = 0;
     // dI: group, batch, inShape[0], inShape[1], chOutPerGroup, kernelShape[0], kernelShape[1]
@@ -172,7 +172,7 @@ class CpuConvTranspose extends ConvTranspose {
     group: number,
     bin: number,
     cks: number,
-    chInPerGroup: number
+    chInPerGroup: number,
   ) {
     // dTX(group, batch*inShape[0]*inShape[1]=bin, chInPerGroup) * dTW(group, chOutPerGroup*kernelShape[0]*kernelShape[1]=cks, chInPerGroup) -> dI(group, bin, cks)
     for (let g = 0; g < group; g++) {
@@ -196,7 +196,7 @@ class CpuConvTranspose extends ConvTranspose {
     group: number,
     batch: number,
     inarea: number,
-    chInPerGroup: number
+    chInPerGroup: number,
   ) {
     // dX(batch, group, chInPerGroup, inShape[0], inShape[1]) -> dTX(group, batch, inShape[0], inShape[1], chInPerGroup)
     let idx = 0;
@@ -217,7 +217,7 @@ class CpuConvTranspose extends ConvTranspose {
     group: number,
     chInPerGroup: number,
     chOutPerGroup: number,
-    karea: number
+    karea: number,
   ) {
     // dW(group, chInPerGroup, chOutPerGroup, kernelShape[0], kernelShape[1]) -> dTW(group, chOutPerGroup, kernelShape[0], kernelShape[1], cInPerGroup)
     let idx = 0;
@@ -238,7 +238,7 @@ class CpuConvTranspose extends ConvTranspose {
     dO: Float32Array,
     batch: number,
     chOut: number,
-    outarea: number
+    outarea: number,
   ) {
     let idx = 0;
     for (let b = 0; b < batch; b++) {

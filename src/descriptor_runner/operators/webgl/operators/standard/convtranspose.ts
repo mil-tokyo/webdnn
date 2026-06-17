@@ -61,7 +61,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       group,
       batch,
       inShape[0] * inShape[1],
-      chInPerGroup
+      chInPerGroup,
     );
     const weightTransposeData = context.emptyTensor([
       chOut * kernelShape[0] * kernelShape[1] * chInPerGroup,
@@ -73,7 +73,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       group,
       chInPerGroup,
       chOutPerGroup,
-      kernelShape[0] * kernelShape[1]
+      kernelShape[0] * kernelShape[1],
     );
     const matmulData = context.emptyTensor([
       chOut * batch * inShape[0] * inShape[1] * kernelShape[0] * kernelShape[1],
@@ -86,7 +86,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       group,
       batch * inShape[0] * inShape[1],
       chOutPerGroup * kernelShape[0] * kernelShape[1],
-      chInPerGroup
+      chInPerGroup,
     );
     inputTransposeData.dispose();
     weightTransposeData.dispose();
@@ -113,7 +113,7 @@ export class WebGLConvTranspose extends ConvTranspose {
         strides,
         inShape,
         outShape,
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
       await this.bias(
@@ -123,7 +123,7 @@ export class WebGLConvTranspose extends ConvTranspose {
         output,
         batch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
       col2ImData.dispose();
     } else {
@@ -139,7 +139,7 @@ export class WebGLConvTranspose extends ConvTranspose {
         strides,
         inShape,
         outShape,
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
     }
@@ -158,7 +158,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     strides: number[],
     inShape: number[],
     outShape: number[],
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     // dI: group, batch, inShape[0], inShape[1], chOutPerGroup, kernelShape[0], kernelShape[1]
     // dY: batch, group, chOutPerGroup, outShape[0], outShape[1]
@@ -239,7 +239,7 @@ export class WebGLConvTranspose extends ConvTranspose {
       kernelName,
       [{ tensor: dI, name: "tex_input" }],
       dY,
-      uniforms
+      uniforms,
     );
   }
 
@@ -251,7 +251,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     group: number,
     bin: number,
     cks: number,
-    chInPerGroup: number
+    chInPerGroup: number,
   ) {
     /*
        dTX(group, batch*inShape[0]*inShape[1]=bin, chInPerGroup) * dTW(group, chOutPerGroup*kernelShape[0]*kernelShape[1]=cks, chInPerGroup) -> dI(group, bin, cks)
@@ -296,13 +296,13 @@ export class WebGLConvTranspose extends ConvTranspose {
         "tex_input_w",
         [1],
         dTW,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_i",
         [1],
         dTX,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem([dI.length], dI, context.webgl2),
       { name: "GROUP", type: "int", value: group },
@@ -316,7 +316,7 @@ export class WebGLConvTranspose extends ConvTranspose {
         { tensor: dTX, name: "tex_input_i" },
       ],
       dI,
-      uniforms
+      uniforms,
     );
   }
 
@@ -327,7 +327,7 @@ export class WebGLConvTranspose extends ConvTranspose {
     group: number,
     batch: number,
     inarea: number,
-    chInPerGroup: number
+    chInPerGroup: number,
   ) {
     // dX(batch, group, chInPerGroup, inShape[0], inShape[1]) -> dTX(group, batch, inShape[0], inShape[1], chInPerGroup)
     const kernelName = `convtranspose_transpose_input`;
@@ -351,19 +351,19 @@ void main() {
         "tex_input",
         [chInPerGroup * inarea, group * chInPerGroup * inarea, 1, inarea],
         dX,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [group, batch, inarea, chInPerGroup],
         dTX,
-        context.webgl2
+        context.webgl2,
       ),
     ];
     await context.runKernel(
       kernelName,
       [{ tensor: dX, name: "tex_input" }],
       dTX,
-      uniforms
+      uniforms,
     );
   }
 
@@ -374,7 +374,7 @@ void main() {
     group: number,
     chInPerGroup: number,
     chOutPerGroup: number,
-    karea: number
+    karea: number,
   ) {
     // dW(group, chInPerGroup, chOutPerGroup, kernelShape[0], kernelShape[1]) -> dTW(group, chOutPerGroup, kernelShape[0], kernelShape[1], cInPerGroup)
     const kernelName = `convtranspose_transpose_weight`;
@@ -398,19 +398,19 @@ void main() {
         "tex_input",
         [chInPerGroup * chOutPerGroup * karea, karea, 1, chOutPerGroup * karea],
         dW,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [group, chOutPerGroup, karea, chInPerGroup],
         dTW,
-        context.webgl2
+        context.webgl2,
       ),
     ];
     await context.runKernel(
       kernelName,
       [{ tensor: dW, name: "tex_input" }],
       dTW,
-      uniforms
+      uniforms,
     );
   }
 
@@ -421,7 +421,7 @@ void main() {
     dO: WebGLTensor,
     batch: number,
     chOut: number,
-    outarea: number
+    outarea: number,
   ) {
     const kernelName = `convtranspose_bias`;
     if (!context.hasKernel(kernelName)) {
@@ -459,13 +459,13 @@ void main() {
         "tex_input_i",
         [1],
         dI,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         [1],
         dB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem([dO.length], dO, context.webgl2),
       { name: "BATCH", type: "int", value: batch },
@@ -479,7 +479,7 @@ void main() {
         { tensor: dB, name: "tex_input_b" },
       ],
       dO,
-      uniforms
+      uniforms,
     );
   }
 }

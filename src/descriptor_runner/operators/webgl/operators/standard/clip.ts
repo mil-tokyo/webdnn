@@ -66,7 +66,7 @@ export class WebGLClip extends OperatorImpl {
       ...shaderGenTensorElementwiseGetUniformItem(
         "tex_input",
         input,
-        context.webgl2
+        context.webgl2,
       ),
     ];
 
@@ -74,7 +74,7 @@ export class WebGLClip extends OperatorImpl {
       kernelName,
       [{ tensor: input, name: "tex_input" }],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return [outputTensor];
   }

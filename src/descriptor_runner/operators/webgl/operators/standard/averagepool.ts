@@ -26,7 +26,7 @@ class WebGLAveragePool extends AveragePool {
       output = context.emptyTensor(
         [batch, ch, outShape[0], outShape[1]],
         "float32",
-        { dimPerPixel: 1 }
+        { dimPerPixel: 1 },
       );
     await averagepool(
       context,
@@ -39,7 +39,7 @@ class WebGLAveragePool extends AveragePool {
       strides,
       inShape,
       outShape,
-      ch
+      ch,
     );
     return [output];
   }

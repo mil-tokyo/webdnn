@@ -22,7 +22,7 @@ export function instantiateOperator(
   opType: string,
   opset: number,
   backendOrder: Backend[],
-  currentTensorsBackends: Backend[][]
+  currentTensorsBackends: Backend[][],
 ): Operator | null {
   const entries = registeredOperators[opType];
   if (!entries) {

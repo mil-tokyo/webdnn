@@ -38,7 +38,7 @@ export function decodeTensorEightbit(
   bodyByteOffset: number,
   bodyCompressedLength: number,
   dataType: number,
-  numel: number
+  numel: number,
 ): DataArrayTypes {
   if (dataType !== onnx.TensorProto.DataType.FLOAT) {
     throw new Error("Unsupported DataType");
@@ -47,7 +47,7 @@ export function decodeTensorEightbit(
     codeByteLength = view.getUint32(0, true),
     scale = view.getFloat32(4, true),
     decompressed = inflate(
-      new Uint8Array(buf, bodyByteOffset + 8, codeByteLength)
+      new Uint8Array(buf, bodyByteOffset + 8, codeByteLength),
     ),
     scaledTable = new Float32Array(256);
   for (let i = 0; i < 256; i++) {

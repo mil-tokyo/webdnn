@@ -1,4 +1,3 @@
- 
 import { onnx } from "onnx-proto";
 import { Backend } from "../interface/core/constants";
 import { WebDNNLogging } from "../logging";
@@ -7,8 +6,8 @@ const logger = WebDNNLogging.getLogger("WebDNN.modelTransform");
 
 export function modelTransform(
   model: onnx.ModelProto,
-   
-  backendOrder: Backend[]
+
+  backendOrder: Backend[],
 ): void {
   /*
    * TODO: implementation
@@ -37,7 +36,7 @@ function renameDuplicatedNode(model: onnx.ModelProto): void {
       node.name = newName;
       usedNames.add(newName);
       logger.warn(
-        `node name ${origName} is already used: renaming to ${newName}`
+        `node name ${origName} is already used: renaming to ${newName}`,
       );
     } else {
       usedNames.add(origName);
@@ -52,7 +51,7 @@ function renameDuplicatedNode(model: onnx.ModelProto): void {
  */
 export function findTensorReleaseTiming(
   model: onnx.ModelProto,
-  initializerTensorNames: Set<string>
+  initializerTensorNames: Set<string>,
 ): Map<string, string[]> {
   const lastReferencedAt = new Map<string, string>(),
     graph = model.graph!;

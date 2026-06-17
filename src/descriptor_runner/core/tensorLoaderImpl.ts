@@ -14,7 +14,10 @@ const signatureFile = 843990103, // "WDN2"
 export class TensorLoaderImpl implements TensorLoader {
   paths: string[];
 
-  constructor(path: string[] | string, public cpuContext: WebDNNCPUContext) {
+  constructor(
+    path: string[] | string,
+    public cpuContext: WebDNNCPUContext,
+  ) {
     if (typeof path === "string") {
       this.paths = [path];
     } else {
@@ -23,13 +26,13 @@ export class TensorLoaderImpl implements TensorLoader {
   }
 
   async loadAll(
-    progressCallback?: (loadedBytes: number) => unknown
+    progressCallback?: (loadedBytes: number) => unknown,
   ): Promise<Map<string, CPUTensor>> {
     const fileArray = await this.fetchAllFile(progressCallback),
       view = new DataView(
         fileArray.buffer,
         fileArray.byteOffset,
-        fileArray.byteLength
+        fileArray.byteLength,
       );
     if (signatureFile !== view.getUint32(0, true)) {
       throw new Error("Unexpected file signature");
@@ -38,14 +41,17 @@ export class TensorLoaderImpl implements TensorLoader {
     const tensors = new Map<string, CPUTensor>();
     let close = false;
     while (!close) {
-      const chunkInfo = this.extractChunk(fileArray.buffer as ArrayBuffer, offset);
+      const chunkInfo = this.extractChunk(
+        fileArray.buffer as ArrayBuffer,
+        offset,
+      );
       switch (chunkInfo.signature) {
         case signatureTensor:
           {
             const { name, tensor } = this.parseTensorChunk(
               fileArray.buffer as ArrayBuffer,
               chunkInfo.bodyByteOffset,
-              chunkInfo.bodyByteLength
+              chunkInfo.bodyByteLength,
             );
             tensors.set(name, tensor);
           }
@@ -60,7 +66,7 @@ export class TensorLoaderImpl implements TensorLoader {
   }
 
   private async fetchAllFile(
-    progressCallback?: (loadedBytes: number) => unknown
+    progressCallback?: (loadedBytes: number) => unknown,
   ): Promise<Uint8Array> {
     const abs: ArrayBuffer[] = [];
     let loadedBytes = 0;
@@ -86,7 +92,7 @@ export class TensorLoaderImpl implements TensorLoader {
 
   private extractChunk(
     buf: ArrayBuffer,
-    byteOffset: number
+    byteOffset: number,
   ): {
     signature: number;
     nextByteOffset: number;
@@ -110,7 +116,7 @@ export class TensorLoaderImpl implements TensorLoader {
   private parseTensorChunk(
     buf: ArrayBuffer,
     bodyByteOffset: number,
-    bodyByteLength: number
+    bodyByteLength: number,
   ): { name: string; tensor: CPUTensor } {
     const view = new DataView(buf, bodyByteOffset, bodyByteLength);
 
@@ -144,7 +150,7 @@ export class TensorLoaderImpl implements TensorLoader {
       bodyByteOffset + ofs,
       bodyCompressedLength,
       dataType,
-      numel
+      numel,
     );
     let dataTypeString: DataType;
     switch (dataType) {
@@ -164,7 +170,7 @@ export class TensorLoaderImpl implements TensorLoader {
   private parseString(
     buf: ArrayBuffer,
     byteOffset: number,
-    byteLength: number
+    byteLength: number,
   ): string {
     const view = new Uint8Array(buf, byteOffset, byteLength);
     // TODO: support UTF-8
@@ -177,7 +183,7 @@ export class TensorLoaderImpl implements TensorLoader {
     bodyByteOffset: number,
     bodyCompressedLength: number,
     dataType: number,
-    numel: number
+    numel: number,
   ): DataArrayTypes {
     switch (compressionAlgorithm) {
       case 0:
@@ -186,7 +192,7 @@ export class TensorLoaderImpl implements TensorLoader {
           bodyByteOffset,
           bodyCompressedLength,
           dataType,
-          numel
+          numel,
         );
       case 1:
         return decodeTensorEightbit(
@@ -194,7 +200,7 @@ export class TensorLoaderImpl implements TensorLoader {
           bodyByteOffset,
           bodyCompressedLength,
           dataType,
-          numel
+          numel,
         );
       default:
         throw new Error("Unexpected compression algorithm");

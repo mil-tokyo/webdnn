@@ -9,7 +9,7 @@ class EachElementwise extends OperatorImpl {
   constructor(
     private opType: string,
     private op: (values: number[]) => number,
-    private allowDataTypes: DataType[]
+    private allowDataTypes: DataType[],
   ) {
     super("cpu");
   }
@@ -19,19 +19,19 @@ class EachElementwise extends OperatorImpl {
     for (const inputX of inputs) {
       if (inputX.dataType !== inputs[0].dataType) {
         throw new Error(
-          `${this.opType}: input dataTypes mismatch: ${inputX.dataType} !== ${inputs[0].dataType}`
+          `${this.opType}: input dataTypes mismatch: ${inputX.dataType} !== ${inputs[0].dataType}`,
         );
       }
     }
     if (!this.allowDataTypes.includes(inputs[0].dataType)) {
       throw new Error(
-        `${this.opType}: input dataType ${inputs[0].dataType} is not supported`
+        `${this.opType}: input dataType ${inputs[0].dataType} is not supported`,
       );
     }
     // TODO: broadcast不要の場合に特化したパフォーマンス向上
 
     const { dims: outShape, allStrides: inAllStrides } = broadcastMulti(
-        inputs.map((input) => input.dims)
+        inputs.map((input) => input.dims),
       ),
       output = context.emptyTensor(outShape, inputs[0].dataType),
       { op } = this;
@@ -62,10 +62,10 @@ class EachElementwise extends OperatorImpl {
     dIs: DataArrayTypes[],
     dO: DataArrayTypes,
     op: (values: number[]) => number,
-     
+
     outShape: number[],
-     
-    inAllStrides: number[][]
+
+    inAllStrides: number[][],
   ) {
     dO[0] = op(dIs.map((dI) => dI[0]));
   }
@@ -75,7 +75,7 @@ class EachElementwise extends OperatorImpl {
     dO: DataArrayTypes,
     op: (values: number[]) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -92,7 +92,7 @@ class EachElementwise extends OperatorImpl {
     dO: DataArrayTypes,
     op: (values: number[]) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -100,7 +100,7 @@ class EachElementwise extends OperatorImpl {
         const values: number[] = [];
         for (let i = 0; i < dIs.length; i++) {
           values.push(
-            dIs[i][a0 * inAllStrides[i][0] + a1 * inAllStrides[i][1]]
+            dIs[i][a0 * inAllStrides[i][0] + a1 * inAllStrides[i][1]],
           );
         }
         dO[idx++] = op(values);
@@ -113,7 +113,7 @@ class EachElementwise extends OperatorImpl {
     dO: DataArrayTypes,
     op: (values: number[]) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -126,7 +126,7 @@ class EachElementwise extends OperatorImpl {
                 a0 * inAllStrides[i][0] +
                   a1 * inAllStrides[i][1] +
                   a2 * inAllStrides[i][2]
-              ]
+              ],
             );
           }
           dO[idx++] = op(values);
@@ -140,7 +140,7 @@ class EachElementwise extends OperatorImpl {
     dO: DataArrayTypes,
     op: (values: number[]) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -155,7 +155,7 @@ class EachElementwise extends OperatorImpl {
                     a1 * inAllStrides[i][1] +
                     a2 * inAllStrides[i][2] +
                     a3 * inAllStrides[i][3]
-                ]
+                ],
               );
             }
             dO[idx++] = op(values);
@@ -186,7 +186,7 @@ export function getOpEntries(): OperatorEntry[] {
         new EachElementwise(
           "Mean",
           (values) => values.reduce((s, v) => s + v, 0) / values.length,
-          ["float32"]
+          ["float32"],
         ),
     },
     {
@@ -207,7 +207,7 @@ export function getOpEntries(): OperatorEntry[] {
         new EachElementwise(
           "Sum",
           (values) => values.reduce((s, v) => s + v, 0),
-          ["float32", "int32"]
+          ["float32", "int32"],
         ),
     },
   ];

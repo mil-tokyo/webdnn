@@ -30,7 +30,7 @@ export interface DestinationRect {
  */
 export function getImageDataFromCanvas(
   canvas: HTMLCanvasElement,
-  options: SourceRect & DestinationRect = {}
+  options: SourceRect & DestinationRect = {},
 ): ImageData {
   const {
       srcX = 0,
@@ -56,7 +56,7 @@ export function getImageDataFromCanvas(
  */
 export function getImageDataFromDrawable(
   drawable: HTMLVideoElement | HTMLImageElement,
-  options: SourceRect & DestinationRect = {}
+  options: SourceRect & DestinationRect = {},
 ): ImageData {
   let srcH: number, srcW: number;
 
@@ -68,7 +68,7 @@ export function getImageDataFromDrawable(
     srcH = drawable.naturalHeight;
   } else
     throw TypeError(
-      'Failed to execute "getImageDataFromDrawable(drawable, options)": "drawable" must be an instanceof HTMLVideoElement or HTMLImageElement'
+      'Failed to execute "getImageDataFromDrawable(drawable, options)": "drawable" must be an instanceof HTMLVideoElement or HTMLImageElement',
     );
 
   const {
@@ -98,7 +98,7 @@ export function getImageDataFromDrawable(
  */
 function cropAndResizeImageData(
   src: ImageData,
-  options: SourceRect & DestinationRect = {}
+  options: SourceRect & DestinationRect = {},
 ) {
   const {
       srcX = 0,
@@ -140,7 +140,7 @@ function cropAndResizeImageData(
  */
 export function getImageData(
   image: HTMLCanvasElement | HTMLVideoElement | HTMLImageElement,
-  options: SourceRect & DestinationRect = {}
+  options: SourceRect & DestinationRect = {},
 ): ImageData {
   if (image instanceof HTMLCanvasElement) {
     return getImageDataFromCanvas(image, options);
@@ -151,7 +151,7 @@ export function getImageData(
     return getImageDataFromDrawable(image, options);
   }
   throw TypeError(
-    'Failed to execute "getImageData(image, options)": "image" must be an instance of HTMLCanvasElement, HTMLVideoElement, or HTMLImageElement'
+    'Failed to execute "getImageData(image, options)": "image" must be an instance of HTMLCanvasElement, HTMLVideoElement, or HTMLImageElement',
   );
 }
 
@@ -161,7 +161,7 @@ export function getImageData(
 export function setImageDataToCanvas(
   imageData: ImageData,
   canvas: HTMLCanvasElement,
-  options: SourceRect & DestinationRect = {}
+  options: SourceRect & DestinationRect = {},
 ): void {
   const {
       srcX = 0,

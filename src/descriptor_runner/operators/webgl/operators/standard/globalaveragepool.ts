@@ -27,7 +27,7 @@ export class WebGLGlobalAveragePool extends OperatorImpl {
       outShape = [1, 1],
       output = context.emptyTensor(
         [batch, ch, outShape[0], outShape[1]],
-        "float32"
+        "float32",
       );
     await averagepool(
       context,
@@ -40,7 +40,7 @@ export class WebGLGlobalAveragePool extends OperatorImpl {
       [1, 1],
       inShape,
       outShape,
-      ch
+      ch,
     );
     return [output];
   }

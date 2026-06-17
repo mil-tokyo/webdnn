@@ -10,7 +10,7 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 class CPUUnary extends OperatorImpl {
   constructor(
     private op: (value: number) => number,
-    private allowDataTypes: DataType[]
+    private allowDataTypes: DataType[],
   ) {
     super("cpu");
   }
@@ -121,7 +121,7 @@ export function getOpEntries(): OperatorEntry[] {
               return (value * (value + 3)) / 6;
             }
           },
-          ["float32"]
+          ["float32"],
         ),
     },
     {

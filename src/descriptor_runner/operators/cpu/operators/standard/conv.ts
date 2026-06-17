@@ -17,7 +17,7 @@ class CpuConv extends Conv {
     context: WebDNNCPUContext,
     inputXFull: CPUTensor,
     inputW: CPUTensor,
-    inputB?: CPUTensor
+    inputB?: CPUTensor,
   ): Tensor[] {
     if (this.group > 1) {
       throw new Error("Conv: batch splitting with group > 1 is not supported");
@@ -48,7 +48,7 @@ class CpuConv extends Conv {
     const yShape = [allBatch, chOut, outShape[0], outShape[1]];
     if (iterBatch <= 0) {
       throw new Error(
-        `Conv: the size of buffer needed to process single batch exceeds limit. Input shape: ${inputXFull.dims}, weight shape: ${inputW.dims}`
+        `Conv: the size of buffer needed to process single batch exceeds limit. Input shape: ${inputXFull.dims}, weight shape: ${inputW.dims}`,
       );
     }
     const output = context.emptyTensor(yShape);
@@ -61,7 +61,7 @@ class CpuConv extends Conv {
         inputXFull.data.buffer,
         inputXFull.data.byteOffset +
           i * xSizePerBatch * Float32Array.BYTES_PER_ELEMENT,
-        batch * xSizePerBatch
+        batch * xSizePerBatch,
       );
       const inputX = context.emptyTensor(iterXShape, "float32", iterXData);
       const im2colData = new Float32Array(
@@ -71,10 +71,10 @@ class CpuConv extends Conv {
             outShape[1] *
             chInPerGroup *
             kernelShape[0] *
-            kernelShape[1]
+            kernelShape[1],
         ),
         matmulData = new Float32Array(
-          group * batch * outShape[0] * outShape[1] * chOutPerGroup
+          group * batch * outShape[0] * outShape[1] * chOutPerGroup,
         ),
         transposeData = new Float32Array(
           output.data.buffer,
@@ -84,7 +84,7 @@ class CpuConv extends Conv {
               outShape[0] *
               outShape[1] *
               Float32Array.BYTES_PER_ELEMENT,
-          batch * chOut * outShape[0] * outShape[1]
+          batch * chOut * outShape[0] * outShape[1],
         );
       this.im2col(
         inputX.data as Float32Array,
@@ -98,7 +98,7 @@ class CpuConv extends Conv {
         inShape,
         outShape,
         chIn,
-        chInPerGroup
+        chInPerGroup,
       );
       this.matmul(
         im2colData,
@@ -107,7 +107,7 @@ class CpuConv extends Conv {
         group,
         batch * outShape[0] * outShape[1],
         chInPerGroup * kernelShape[0] * kernelShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       this.transpose(
         matmulData,
@@ -115,7 +115,7 @@ class CpuConv extends Conv {
         group,
         batch,
         outShape[0] * outShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
     }
 
@@ -125,7 +125,7 @@ class CpuConv extends Conv {
         output.data as Float32Array,
         allBatch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
     }
     return [output];
@@ -167,10 +167,10 @@ class CpuConv extends Conv {
     }
     const im2colData = new Float32Array(im2colNumel),
       matmulData = new Float32Array(
-        group * batch * outShape[0] * outShape[1] * chOutPerGroup
+        group * batch * outShape[0] * outShape[1] * chOutPerGroup,
       ),
       transposeData = new Float32Array(
-        batch * chOut * outShape[0] * outShape[1]
+        batch * chOut * outShape[0] * outShape[1],
       );
     this.im2col(
       inputX.data as Float32Array,
@@ -184,7 +184,7 @@ class CpuConv extends Conv {
       inShape,
       outShape,
       chIn,
-      chInPerGroup
+      chInPerGroup,
     );
     this.matmul(
       im2colData,
@@ -193,7 +193,7 @@ class CpuConv extends Conv {
       group,
       batch * outShape[0] * outShape[1],
       chInPerGroup * kernelShape[0] * kernelShape[1],
-      chOutPerGroup
+      chOutPerGroup,
     );
     this.transpose(
       matmulData,
@@ -201,7 +201,7 @@ class CpuConv extends Conv {
       group,
       batch,
       outShape[0] * outShape[1],
-      chOutPerGroup
+      chOutPerGroup,
     );
     if (inputB) {
       this.bias(
@@ -209,13 +209,13 @@ class CpuConv extends Conv {
         transposeData,
         batch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
     }
     const output = context.emptyTensor(
       [batch, chOut, outShape[0], outShape[1]],
       "float32",
-      transposeData
+      transposeData,
     );
     return [output];
   }
@@ -232,7 +232,7 @@ class CpuConv extends Conv {
     inShape: number[],
     outShape: number[],
     chIn: number,
-    chInPerGroup: number
+    chInPerGroup: number,
   ): void {
     let idx = 0;
     for (let g = 0; g < group; g++) {
@@ -276,7 +276,7 @@ class CpuConv extends Conv {
     group: number,
     bout: number,
     cinkhkw: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     // DI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
     for (let g = 0; g < group; g++) {
@@ -300,7 +300,7 @@ class CpuConv extends Conv {
     group: number,
     batch: number,
     outarea: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     // DT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
     let idx = 0;
@@ -320,7 +320,7 @@ class CpuConv extends Conv {
     dO: Float32Array,
     batch: number,
     chOut: number,
-    outarea: number
+    outarea: number,
   ) {
     let idx = 0;
     for (let b = 0; b < batch; b++) {

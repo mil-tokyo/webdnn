@@ -27,11 +27,10 @@ class Constant extends OperatorImpl {
     this.constant = constant;
   }
 
-   
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     const output = context.emptyTensor(
       this.constant.dims,
-      this.constant.dataType
+      this.constant.dataType,
     );
     output.data.set(this.constant.data);
     return [output];

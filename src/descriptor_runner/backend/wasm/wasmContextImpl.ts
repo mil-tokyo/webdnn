@@ -27,10 +27,9 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   perfTotalMemory = 0;
 
-   
   constructor(
     public cpuContext: WebDNNCPUContext,
-    option: WebDNNWasmContextOption
+    option: WebDNNWasmContextOption,
   ) {
     if (typeof WebAssembly !== "object") {
       throw new Error("WebAssembly is not supported on this browser.");
@@ -80,7 +79,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
   assertsWasmTensor(tensor: Tensor): asserts tensor is WasmTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
-        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
       );
     }
   }
@@ -89,7 +88,7 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
         throw new Error(
-          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
         );
       }
     }
@@ -143,12 +142,11 @@ export class WebDNNWasmContextImpl implements WebDNNWasmContext {
 
   writeTensor(buffer: WasmSharedBuffer, data: DataArrayTypes): void {
     const copyData = new Uint8Array(buffer.byteLength),
-       
       copyDataView = new (data.constructor as any)(copyData.buffer);
     copyDataView.set(data);
     this.worker.postMessage(
       { type: "write", bufferId: buffer.backendBufferId, data: copyData },
-      [copyData.buffer]
+      [copyData.buffer],
     );
   }
 

@@ -12,7 +12,7 @@ export interface WebDNNCPUContext extends BackendContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    data?: DataArrayTypes
+    data?: DataArrayTypes,
   ): CPUTensor;
   moveTensor(tensor: Tensor, option: {}): Promise<CPUTensor>;
 }

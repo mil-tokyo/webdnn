@@ -30,12 +30,12 @@ export class CpuGlobalAveragePool extends OperatorImpl {
       [1, 1],
       inShape,
       [1, 1],
-      ch
+      ch,
     );
     const output = context.emptyTensor(
       [batch, ch, 1, 1],
       "float32",
-      outputData
+      outputData,
     );
     return [output];
   }

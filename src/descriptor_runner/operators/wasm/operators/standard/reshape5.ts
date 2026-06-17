@@ -10,10 +10,9 @@ class WasmReshape5 extends Reshape5 {
   }
 
   getTensorBackendRequirement(
-     
     nInputs: number,
-     
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     return ["wasm", "cpu"];
   }

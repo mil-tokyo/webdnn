@@ -47,7 +47,7 @@ export abstract class MaxPool extends OperatorImpl {
               pads[2] -
               dilations[0] * (kernelShape[0] - 1) -
               1) /
-              strides[0]
+              strides[0],
           ) + 1,
           Math.ceil(
             (inShape[1] +
@@ -55,7 +55,7 @@ export abstract class MaxPool extends OperatorImpl {
               pads[3] -
               dilations[1] * (kernelShape[1] - 1) -
               1) /
-              strides[1]
+              strides[1],
           ) + 1,
         ];
       } else {
@@ -66,7 +66,7 @@ export abstract class MaxPool extends OperatorImpl {
               pads[2] -
               dilations[0] * (kernelShape[0] - 1) -
               1) /
-              strides[0]
+              strides[0],
           ) + 1,
           Math.floor(
             (inShape[1] +
@@ -74,7 +74,7 @@ export abstract class MaxPool extends OperatorImpl {
               pads[3] -
               dilations[1] * (kernelShape[1] - 1) -
               1) /
-              strides[1]
+              strides[1],
           ) + 1,
         ];
       }
@@ -113,10 +113,10 @@ export abstract class MaxPool extends OperatorImpl {
     } else if (this.autoPad === "VALID") {
       outShape = [
         Math.ceil(
-          (inShape[0] - dilations[0] * (kernelShape[0] - 1)) / strides[0]
+          (inShape[0] - dilations[0] * (kernelShape[0] - 1)) / strides[0],
         ),
         Math.ceil(
-          (inShape[1] - dilations[1] * (kernelShape[1] - 1)) / strides[1]
+          (inShape[1] - dilations[1] * (kernelShape[1] - 1)) / strides[1],
         ),
       ];
       pads = [0, 0, 0, 0];

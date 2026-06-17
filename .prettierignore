@@ -1,0 +1,11 @@
+# Build output
+dist/
+node_modules/
+
+# Generated files (owned by their generators, not formatted)
+src/descriptor_runner/operators/**/opEntries*.ts
+src/descriptor_runner/operators/webgpu/shaders.ts
+src/descriptor_runner/operators/wasm/worker/worker.ts
+
+# Native shader / wasm sources
+src/shader/

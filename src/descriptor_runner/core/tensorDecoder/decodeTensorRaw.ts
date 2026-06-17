@@ -8,7 +8,7 @@ export function decodeTensorRaw(
   bodyByteOffset: number,
   bodyCompressedLength: number,
   dataType: number,
-  numel: number
+  numel: number,
 ): DataArrayTypes {
   let data: DataArrayTypes;
   switch (dataType) {
@@ -25,8 +25,8 @@ export function decodeTensorRaw(
         data[idx] = clipLong(
           new Long(
             view.getUint32(idx * 8, true),
-            view.getUint32(idx * 8 + 4, true)
-          )
+            view.getUint32(idx * 8 + 4, true),
+          ),
         );
       }
       return data;

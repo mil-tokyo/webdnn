@@ -10,7 +10,7 @@ abstract class Split extends OperatorImpl {
   protected calcShapeBase(
     input: Tensor,
     nOutputs: number,
-    splitSrc: ReadonlyArray<number>
+    splitSrc: ReadonlyArray<number>,
   ) {
     let { axis } = this;
     if (axis < 0) {
@@ -24,7 +24,7 @@ abstract class Split extends OperatorImpl {
         splitSrc.length > 0
           ? splitSrc
           : Array.from({ length: nOutputs }, () =>
-              Math.floor(axisLength / nOutputs)
+              Math.floor(axisLength / nOutputs),
             ),
       outerLength = arrayProd(input.dims.slice(0, axis)),
       innerLength = arrayProd(input.dims.slice(axis + 1)),
@@ -89,12 +89,12 @@ export abstract class Split13 extends Split {
   protected calcShape(
     input: Tensor,
     nOutputs: number,
-    splitTensor?: CPUTensor
+    splitTensor?: CPUTensor,
   ) {
     return this.calcShapeBase(
       input,
       nOutputs,
-      splitTensor ? Array.from(splitTensor.data) : []
+      splitTensor ? Array.from(splitTensor.data) : [],
     );
   }
 }

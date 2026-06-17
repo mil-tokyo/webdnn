@@ -7,7 +7,7 @@ export class WebGPUMetaBuffer {
     public context: WebDNNWebGPUContextImpl,
     public tensor: WebGPUTensorImpl,
     private cpuBuffer: Uint8Array,
-    private cpuBufferHash: number
+    private cpuBufferHash: number,
   ) {}
 
   private static buildCPUBuffer(content: WebGPUMetaBufferContent) {
@@ -46,7 +46,7 @@ export class WebGPUMetaBuffer {
   private static findPooled(
     context: WebDNNWebGPUContextImpl,
     cpuBuffer: Uint8Array,
-    cpuBufferHash: number
+    cpuBufferHash: number,
   ): WebGPUMetaBuffer | null {
     const pooled = context.pooledMetaBuffer;
     for (let i = 0; i < pooled.length; i++) {
@@ -73,7 +73,7 @@ export class WebGPUMetaBuffer {
 
   static async createBuffer(
     context: WebDNNWebGPUContextImpl,
-    content: WebGPUMetaBufferContent
+    content: WebGPUMetaBufferContent,
   ): Promise<WebGPUMetaBuffer> {
     const cpuBuffer = WebGPUMetaBuffer.buildCPUBuffer(content),
       cpuBufferHash = WebGPUMetaBuffer.calcBufferHash(cpuBuffer),
@@ -87,7 +87,7 @@ export class WebGPUMetaBuffer {
       [cpuBuffer.length / 4],
       "float32",
       true,
-      false
+      false,
     );
     await tensor.setData(new Float32Array(cpuBuffer.buffer));
     return new WebGPUMetaBuffer(context, tensor, cpuBuffer, cpuBufferHash);

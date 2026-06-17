@@ -1,7 +1,6 @@
 import { getOpEntries as getOpEntriesCPU } from "../operators/cpu/opEntriesAll";
 import { getOpEntries as getOpEntriesWebGPU } from "../operators/webgpu/opEntriesAll";
 
- 
 declare let WebDNN: any;
 
 function injectOperators() {
@@ -11,7 +10,7 @@ function injectOperators() {
     });
   } else {
     console.error(
-      "WebDNN.injectOperators not found. webdnn-core.js seems to be not imported."
+      "WebDNN.injectOperators not found. webdnn-core.js seems to be not imported.",
     );
   }
 }

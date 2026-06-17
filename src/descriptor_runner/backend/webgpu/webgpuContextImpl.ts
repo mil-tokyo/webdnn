@@ -28,10 +28,9 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
 
   pooledMetaBuffer: WebGPUMetaBuffer[] = [];
 
-   
   constructor(
     public cpuContext: WebDNNCPUContext,
-    option: WebDNNWebGPUContextOption
+    option: WebDNNWebGPUContextOption,
   ) {
     if (
       typeof navigator.gpu !== "object" ||
@@ -48,9 +47,9 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     if (this.initialized) {
       return;
     }
-     
+
     const adapter = await navigator.gpu!.requestAdapter();
-     
+
     this.device = (await adapter!.requestDevice()) as GPUDevice;
     if (!this.device) {
       throw new Error("GPUAdapter.requestDevice() returned null");
@@ -66,18 +65,18 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
   assertsWebGPUTensor(tensor: Tensor): asserts tensor is WebGPUTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
-        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
       );
     }
   }
 
   assertsWebGPUTensorArray(
-    tensors: Tensor[]
+    tensors: Tensor[],
   ): asserts tensors is WebGPUTensor[] {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
         throw new Error(
-          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
         );
       }
     }
@@ -87,14 +86,14 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     dims: ReadonlyArray<number>,
     dataType?: DataType,
     forWriteFromCPU?: boolean,
-    forReadToCPU?: boolean
+    forReadToCPU?: boolean,
   ): WebGPUTensor {
     return new WebGPUTensorImpl(
       this,
       dims,
       dataType,
       forWriteFromCPU,
-      forReadToCPU
+      forReadToCPU,
     );
   }
 
@@ -104,7 +103,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       tensor.dims,
       tensor.dataType,
       true,
-      false
+      false,
     );
     await dst.setData(await tensor.getData());
     return dst;
@@ -186,7 +185,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     passEncoder.dispatch(
       request.workGroups.x,
       request.workGroups.y,
-      request.workGroups.z
+      request.workGroups.z,
     );
     // TODO(P3): migrate to current WebGPU API (endPass -> end)
     // @ts-expect-error legacy WebGPU API; rewritten in Phase 3 (WGSL migration)

@@ -8,12 +8,12 @@ export interface Operator {
   run(
     context: BackendContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]>;
   initialize(attribute: onnx.IAttributeProto[]): void;
   getTensorBackendRequirement(
     nInputs: number,
-    nOutputs: number
+    nOutputs: number,
   ): (Backend | null)[];
 }
 

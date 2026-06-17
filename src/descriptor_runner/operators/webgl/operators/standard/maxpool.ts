@@ -24,7 +24,7 @@ export class WebGLMaxPool extends MaxPool {
   async run(
     context: WebDNNWebGLContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
     const inputX = inputs[0];
@@ -52,7 +52,7 @@ export class WebGLMaxPool extends MaxPool {
       } = this.calcShape(inputX.dims),
       output = context.emptyTensor(
         [batch, ch, outShape[0], outShape[1]],
-        "float32"
+        "float32",
       ),
       // ループ回数は定数が必要
       kernelName = `maxpool_${kernelShape[0]}_${kernelShape[1]}`,
@@ -99,7 +99,7 @@ void main() {
         "tex_input",
         inputX.strides,
         inputX,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(output.dims, output, context.webgl2),
       { name: "CH", type: "int", value: ch },
@@ -116,7 +116,7 @@ void main() {
       kernelName,
       [{ tensor: inputX, name: "tex_input" }],
       output,
-      uniforms
+      uniforms,
     );
     return [output];
   }

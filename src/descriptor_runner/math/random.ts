@@ -70,7 +70,7 @@ export class Random {
     // Box–Muller's method
     if (size == null) {
       // scalar number
-       
+
       while (true) {
         const x = this.random();
         const alpha = Math.sqrt(-2 * Math.log(x));
@@ -86,7 +86,6 @@ export class Random {
       // Float32Array
       const v = new Float32Array(size);
       for (let i = 0; i < size; i += 2) {
-         
         while (true) {
           const x = this.random();
           const alpha = Math.sqrt(-2 * Math.log(x));

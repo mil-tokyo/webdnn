@@ -30,12 +30,12 @@ class CpuAveragePool extends AveragePool {
       strides,
       inShape,
       outShape,
-      ch
+      ch,
     );
     const output = context.emptyTensor(
       [batch, ch, outShape[0], outShape[1]],
       "float32",
-      outputData
+      outputData,
     );
     return [output];
   }

@@ -37,7 +37,7 @@ export class WebGLGemm extends Gemm {
     context: WebDNNWebGLContext,
     inputA: WebGLTensor,
     inputB: WebGLTensor,
-    inputC: WebGLTensor
+    inputC: WebGLTensor,
   ): Promise<WebGLTensor[]> {
     const {
         m,
@@ -91,19 +91,19 @@ void main() {
         "tex_input_a",
         [strideA0, strideA1],
         inputA,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         [strideB0, strideB1],
         inputB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_c",
         [strideC0, strideC1],
         inputC,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem([m, n], outputTensor, context.webgl2),
       { name: "alpha", type: "float", value: this.alpha },
@@ -117,7 +117,7 @@ void main() {
         { tensor: inputC, name: "tex_input_c" },
       ],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return [outputTensor];
   }

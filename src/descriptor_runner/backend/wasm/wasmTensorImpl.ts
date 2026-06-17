@@ -22,7 +22,7 @@ export class WasmSharedBuffer implements WasmSharedBufferInterface {
 
   constructor(
     private context: WebDNNWasmContextImpl,
-    public byteLength: number
+    public byteLength: number,
   ) {
     this.refCount = 1;
     this.backendBufferId = WasmSharedBuffer.nextBackendBufferId++;
@@ -58,7 +58,7 @@ export class WasmTensorImpl extends TensorImpl implements WasmTensor {
     private context: WebDNNWasmContextImpl,
     dims: ReadonlyArray<number>,
     dataType: DataType = "float32",
-    sharedBuffer?: WasmSharedBuffer
+    sharedBuffer?: WasmSharedBuffer,
   ) {
     super(dims, dataType, "wasm");
     if (dataType !== "float32") {
@@ -69,7 +69,7 @@ export class WasmTensorImpl extends TensorImpl implements WasmTensor {
     } else {
       this.sharedBuffer = new WasmSharedBuffer(
         this.context,
-        this.length * Float32Array.BYTES_PER_ELEMENT
+        this.length * Float32Array.BYTES_PER_ELEMENT,
       );
     }
   }
@@ -80,7 +80,7 @@ export class WasmTensorImpl extends TensorImpl implements WasmTensor {
       this.context,
       dims,
       this.dataType,
-      this.sharedBuffer
+      this.sharedBuffer,
     );
   }
 

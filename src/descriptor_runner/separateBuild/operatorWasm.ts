@@ -2,7 +2,6 @@ import { getOpEntries as getOpEntriesCPU } from "../operators/cpu/opEntriesAll";
 import { getOpEntries as getOpEntriesWasm } from "../operators/wasm/opEntriesAll";
 import { wasmWorkerSrcUrl } from "../operators/wasm/worker/worker";
 
- 
 declare let WebDNN: any;
 
 function injectOperators() {
@@ -13,7 +12,7 @@ function injectOperators() {
     });
   } else {
     console.error(
-      "WebDNN.injectOperators not found. webdnn-core.js seems to be not imported."
+      "WebDNN.injectOperators not found. webdnn-core.js seems to be not imported.",
     );
   }
 }

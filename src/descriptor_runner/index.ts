@@ -41,12 +41,12 @@ const defaultContexts = {
 
 export async function load(
   directory: string,
-  options: InitOption = {}
+  options: InitOption = {},
 ): Promise<Runner> {
   const { backendOrder = ["webgl", "wasm", "cpu"], optimized } = options;
   if (optimized) {
     throw new Error(
-      "Currently, webdnn.js does not support optimized model. Use webdnn-core.js instead."
+      "Currently, webdnn.js does not support optimized model. Use webdnn-core.js instead.",
     );
   }
   if (!defaultContexts.cpu) {
@@ -68,7 +68,7 @@ export async function load(
             try {
               const ctx = new WebDNNWasmContextImpl(
                 cpuContext,
-                options.backendOptions?.wasm || {}
+                options.backendOptions?.wasm || {},
               );
               await ctx.initialize(wasmWorkerSrcUrl);
               defaultContexts.wasm = ctx;
@@ -89,7 +89,7 @@ export async function load(
             try {
               const ctx = new WebDNNWebGLContextImpl(
                 cpuContext,
-                options.backendOptions?.webgl || {}
+                options.backendOptions?.webgl || {},
               );
               await ctx.initialize();
               defaultContexts.webgl = ctx;
@@ -111,7 +111,7 @@ export async function load(
             try {
               const ctx = new WebDNNWebGPUContextImpl(
                 cpuContext,
-                options.backendOptions?.webgpu || {}
+                options.backendOptions?.webgpu || {},
               );
               await ctx.initialize();
               defaultContexts.webgpu = ctx;
@@ -140,6 +140,10 @@ export async function load(
   const actualBackendOrder: Backend[] =
       succeedBackend === "cpu" ? ["cpu"] : [succeedBackend, "cpu"],
     runner = new RunnerImpl(actualBackendOrder, backendContexts);
-  await runner.loadModel(directory, options.onnxBaseName || "model.onnx", options.progressCallback);
+  await runner.loadModel(
+    directory,
+    options.onnxBaseName || "model.onnx",
+    options.progressCallback,
+  );
   return runner;
 }

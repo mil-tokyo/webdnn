@@ -30,10 +30,9 @@ class WasmSqueeze13 extends Squeeze13 {
   }
 
   getTensorBackendRequirement(
-     
     nInputs: number,
-     
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     return ["wasm", "cpu"];
   }

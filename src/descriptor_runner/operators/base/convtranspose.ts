@@ -32,16 +32,16 @@ export abstract class ConvTranspose extends OperatorImpl {
 
   protected calcShape(
     dimsX: ReadonlyArray<number>,
-    dimsW: ReadonlyArray<number>
+    dimsW: ReadonlyArray<number>,
   ) {
     if (this.autoPad !== "NOTSET") {
       throw new Error(
-        "ConvTranspose: auto_pad !== NOTSET is not yet supported."
+        "ConvTranspose: auto_pad !== NOTSET is not yet supported.",
       );
     }
     if (this.outputShape.length > 0) {
       throw new Error(
-        "ConvTranspose: explicit output_shape is not yet supported."
+        "ConvTranspose: explicit output_shape is not yet supported.",
       );
     }
     const batch = dimsX[0],

@@ -24,7 +24,7 @@ class Gather extends OperatorImpl {
       { axis } = this;
     if (!(data.ndim === 1 && indices.ndim === 0 && axis === 0)) {
       throw new Error(
-        "Gather: currently supports data.ndim === 1 && indices.ndim === 0 && axis === 0"
+        "Gather: currently supports data.ndim === 1 && indices.ndim === 0 && axis === 0",
       );
     }
     const output = context.emptyTensor([], data.dataType);

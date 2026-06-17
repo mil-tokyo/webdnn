@@ -60,7 +60,7 @@ export class WebGLSharedTexture {
     private context: WebDNNWebGLContextImpl,
     public textureWidth: number,
     public textureHeight: number,
-    public dimPerPixel: 1 | 4
+    public dimPerPixel: 1 | 4,
   ) {
     this.refCount = 1;
     const { gl } = this.context;
@@ -94,7 +94,7 @@ export class WebGLSharedTexture {
     } else {
       this.context.limitTexturePool(
         this.context.maxAllocationBytes - byteLength,
-        this.context.deallocateToBytes - byteLength
+        this.context.deallocateToBytes - byteLength,
       );
       this.texture = nonnull(gl.createTexture());
 
@@ -113,10 +113,10 @@ export class WebGLSharedTexture {
               ? gl.R32F
               : gl.RGBA32F
             : dimPerPixel === 1
-            ? gl.R16F
-            : gl.RGBA16F,
+              ? gl.R16F
+              : gl.RGBA16F,
           this.textureWidth,
-          this.textureHeight
+          this.textureHeight,
         );
       } else {
         if (dimPerPixel !== 1) {
@@ -131,7 +131,7 @@ export class WebGLSharedTexture {
           0,
           gl.RGBA,
           gl.UNSIGNED_BYTE,
-          null
+          null,
         );
       }
 
@@ -258,7 +258,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
 
   constructor(
     public cpuContext: WebDNNCPUContext,
-    option: WebDNNWebGLContextOption
+    option: WebDNNWebGLContextOption,
   ) {
     this.maxAllocationBytes = option.maxAllocationBytes || 512 * 1024 * 1024;
     this.deallocateToBytes =
@@ -275,7 +275,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     const initResult = initWebGL(option.versionOrder);
     if (!initResult) {
       throw new Error(
-        "WebGL is not supported or does not have enough capability on this platform."
+        "WebGL is not supported or does not have enough capability on this platform.",
       );
     }
     const { gl, version, webgl2, maxTextureSize } = initResult;
@@ -297,7 +297,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       } else {
         // 浮動小数点数テクスチャが格納できない環境はサポート外
         throw new Error(
-          "Neither EXT_color_buffer_float nor EXT_color_buffer_half_float are supported"
+          "Neither EXT_color_buffer_float nor EXT_color_buffer_half_float are supported",
         );
       }
 
@@ -340,7 +340,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   assertsWebGLTensor(tensor: Tensor): asserts tensor is WebGLTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
-        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
       );
     }
   }
@@ -349,7 +349,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
         throw new Error(
-          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
         );
       }
     }
@@ -358,27 +358,27 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
+    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> },
   ): WebGLTensor {
     return new WebGLTensorImpl(
       this,
       dims,
       dataType,
       option?.dimPerPixel,
-      option?.textureShape
+      option?.textureShape,
     );
   }
 
   async moveTensor(
     tensor: Tensor,
-    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
+    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> },
   ): Promise<WebGLTensor> {
     const dst = new WebGLTensorImpl(
       this,
       tensor.dims,
       tensor.dataType,
       option.dimPerPixel,
-      option.textureShape
+      option.textureShape,
     );
     await dst.setData(await tensor.getData());
     return dst;
@@ -425,7 +425,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     if (!this.vshader) {
       this.vshader = this.createShader(
         gl.VERTEX_SHADER,
-        this.webgl2 ? vertex_shader_source_2 : vertex_shader_source_1
+        this.webgl2 ? vertex_shader_source_2 : vertex_shader_source_1,
       );
     }
     const fshader = this.createShader(gl.FRAGMENT_SHADER, sourceCode),
@@ -446,7 +446,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
     name: string,
     inputs: { tensor: WebGLTensorImpl; name: string }[],
     output: WebGLTensorImpl,
-    uniforms: WebGLUniformItem[]
+    uniforms: WebGLUniformItem[],
   ): Promise<void> {
     this.checkInitialized();
     const gl2 = this.gl;
@@ -488,13 +488,13 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
         case "float":
           gl.uniform1f(
             gl.getUniformLocation(kobj.program, uniform.name),
-            uniform.value
+            uniform.value,
           );
           break;
         case "int":
           gl.uniform1i(
             gl.getUniformLocation(kobj.program, uniform.name),
-            uniform.value
+            uniform.value,
           );
           break;
         default:
@@ -517,7 +517,6 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       if (this.isWebGL2(gl2) && this.timerQueryExt) {
         gl2.endQuery(this.timerQueryExt.TIME_ELAPSED_EXT);
         const info: WebDNNWebGLContextPerformance = {
-           
           key: this.performanceQueryKey!,
           kernelName: name,
           inputs: inputs.map(({ tensor, name }) => ({
@@ -534,7 +533,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
   }
 
   isWebGL2(
-    gl: WebGLRenderingContext | WebGL2RenderingContext
+    gl: WebGLRenderingContext | WebGL2RenderingContext,
   ): gl is WebGL2RenderingContext {
     return this.webgl2;
   }
@@ -582,7 +581,6 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
       return new Promise((resolve) => {
         const gathereds: WebDNNWebGLContextPerformance[] = [];
         const gather = () => {
-           
           while (true) {
             const q = this.performanceQueries[0];
             if (!q) {
@@ -592,7 +590,7 @@ export class WebDNNWebGLContextImpl implements WebDNNWebGLContext {
               if (gl2.getQueryParameter(q.query, gl2.QUERY_RESULT_AVAILABLE)) {
                 const elapsedNanoSecond = gl2.getQueryParameter(
                   q.query,
-                  gl2.QUERY_RESULT
+                  gl2.QUERY_RESULT,
                 ) as number;
                 this.performanceQueries.shift();
                 const info = q.info;

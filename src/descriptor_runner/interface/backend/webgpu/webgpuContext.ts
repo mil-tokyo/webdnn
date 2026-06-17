@@ -5,7 +5,7 @@ import { WebDNNCPUContext } from "../cpu/cpuContext";
 import { WebGPUTensor } from "./webgpuTensor";
 
 // for future use
- 
+
 export interface WebDNNWebGPUContextOption {}
 
 type WorkGroupDim = "x" | "y" | "z";
@@ -33,14 +33,14 @@ export interface WebDNNWebGPUContext extends BackendContext {
   isWebGLTensor(tensor: Tensor): tensor is WebGPUTensor;
   assertsWebGPUTensor(tensor: Tensor): asserts tensor is WebGPUTensor;
   assertsWebGPUTensorArray(
-    tensors: Tensor[]
+    tensors: Tensor[],
   ): asserts tensors is WebGPUTensor[];
 
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
     forWriteFromCPU?: boolean,
-    forReadToCPU?: boolean
+    forReadToCPU?: boolean,
   ): WebGPUTensor;
   moveTensor(tensor: Tensor, option: {}): Promise<WebGPUTensor>;
   hasPipeline(name: string): boolean;

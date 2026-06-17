@@ -10,7 +10,10 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 import { getAttrFloat } from "../../../operatorUtil";
 
 abstract class DynamicUnary extends OperatorImpl {
-  constructor(public opType: string, private allowDataTypes: DataType[]) {
+  constructor(
+    public opType: string,
+    private allowDataTypes: DataType[],
+  ) {
     super("cpu");
   }
 
@@ -21,7 +24,7 @@ abstract class DynamicUnary extends OperatorImpl {
     const input = inputs[0];
     if (!this.allowDataTypes.includes(input.dataType)) {
       throw new Error(
-        `${this.opType}: DataType ${input.dataType} not supported`
+        `${this.opType}: DataType ${input.dataType} not supported`,
       );
     }
     const newData = new DataArrayConstructor[input.dataType](input.data.length),
@@ -110,12 +113,12 @@ class Selu extends DynamicUnary {
     this.alpha = getAttrFloat(
       attribute,
       "alpha",
-      1.6732632423543772848170429916717
+      1.6732632423543772848170429916717,
     );
     this.gamma = getAttrFloat(
       attribute,
       "gamma",
-      1.0507009873554804934193349852946
+      1.0507009873554804934193349852946,
     );
   }
 

@@ -15,7 +15,7 @@ export class WebGPUTensorImpl extends TensorImpl implements WebGPUTensor {
     dims: ReadonlyArray<number>,
     dataType: DataType = "float32",
     public readonly forWriteFromCPU: boolean = false,
-    public readonly forReadToCPU: boolean = true
+    public readonly forReadToCPU: boolean = true,
   ) {
     super(dims, dataType, "webgpu");
     if (dataType !== "float32") {

@@ -5,13 +5,16 @@ declare global {
 }
 
 class WebDNNLogger {
-  constructor(public category: string, public logging: WebDNNLogging) {}
+  constructor(
+    public category: string,
+    public logging: WebDNNLogging,
+  ) {}
   debug(message?: any, ...optionalParams: any[]) {
     this.logging.emit(
       this.category,
       WebDNNLogging.DEBUG,
       message,
-      optionalParams
+      optionalParams,
     );
   }
   info(message?: any, ...optionalParams: any[]) {
@@ -19,7 +22,7 @@ class WebDNNLogger {
       this.category,
       WebDNNLogging.INFO,
       message,
-      optionalParams
+      optionalParams,
     );
   }
   warn(message?: any, ...optionalParams: any[]) {
@@ -27,7 +30,7 @@ class WebDNNLogger {
       this.category,
       WebDNNLogging.WARN,
       message,
-      optionalParams
+      optionalParams,
     );
   }
   error(message?: any, ...optionalParams: any[]) {
@@ -35,7 +38,7 @@ class WebDNNLogger {
       this.category,
       WebDNNLogging.ERROR,
       message,
-      optionalParams
+      optionalParams,
     );
   }
   fatal(message?: any, ...optionalParams: any[]) {
@@ -43,7 +46,7 @@ class WebDNNLogger {
       this.category,
       WebDNNLogging.FATAL,
       message,
-      optionalParams
+      optionalParams,
     );
   }
 }
@@ -53,7 +56,7 @@ interface WebDNNLoggingAdapter {
     category: string,
     severity: number,
     message: any,
-    optionalParams: any[]
+    optionalParams: any[],
   ): void;
 
   clear(): void;
@@ -64,7 +67,7 @@ class WebDNNLoggingAdapterConsole implements WebDNNLoggingAdapter {
     category: string,
     severity: number,
     message: any,
-    optionalParams: any[]
+    optionalParams: any[],
   ): void {
     const messageWithCategory = `${category}: ${message}`;
     switch (severity) {
@@ -86,7 +89,6 @@ class WebDNNLoggingAdapterConsole implements WebDNNLoggingAdapter {
     }
   }
 
-   
   clear(): void {}
 }
 
@@ -105,7 +107,7 @@ class WebDNNLoggingAdapterFile implements WebDNNLoggingAdapter {
     category: string,
     severity: number,
     message: any,
-    optionalParams: any[]
+    optionalParams: any[],
   ): void {
     this.buffer.push({ category, severity, message, optionalParams });
   }
@@ -116,7 +118,7 @@ class WebDNNLoggingAdapterFile implements WebDNNLoggingAdapter {
 
   saveToLocalFile(): void {
     const content: string[] = this.buffer.map(
-      (item) => JSON.stringify(item) + "\n"
+      (item) => JSON.stringify(item) + "\n",
     );
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(content, { type: "text/plain" }));
@@ -205,7 +207,7 @@ export class WebDNNLogging {
     category: string,
     severity: number,
     message: any,
-    optionalParams: any[]
+    optionalParams: any[],
   ): void {
     for (const key of Object.keys(this.adapters)) {
       // TODO: filter by category

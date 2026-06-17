@@ -7,7 +7,7 @@ import { CPUTensor } from "../..";
 abstract class Unsqueeze extends OperatorImpl {
   protected calcShapeBase(
     inputShape: ReadonlyArray<number>,
-    axes: ReadonlyArray<number>
+    axes: ReadonlyArray<number>,
   ): number[] {
     const expandedNdim = inputShape.length + axes.length;
     const expandedShape: number[] = [];

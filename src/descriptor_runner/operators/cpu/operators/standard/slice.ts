@@ -58,7 +58,7 @@ class Slice10 extends OperatorImpl {
       }),
       output = context.emptyTensor(
         rangesWithSize.map(([, , , , dstsize]) => dstsize),
-        data.dataType
+        data.dataType,
       );
     let func;
     switch (data.ndim) {
@@ -82,7 +82,7 @@ class Slice10 extends OperatorImpl {
         break;
       default:
         throw new Error(
-          `Slice: input dimension ${data.ndim} > 6 is not yet supported`
+          `Slice: input dimension ${data.ndim} > 6 is not yet supported`,
         );
     }
     func(data.data, output.data, rangesWithSize, data.strides, output.strides);
@@ -94,7 +94,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let x = 0; x < rangesWithSize[0][4]; x++) {
       dO[x * dstStrides[0]] =
@@ -107,7 +107,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let y = 0; y < rangesWithSize[0][4]; y++) {
       for (let x = 0; x < rangesWithSize[1][4]; x++) {
@@ -125,7 +125,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
       for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {
@@ -149,7 +149,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
       for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {
@@ -182,7 +182,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
       for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {
@@ -220,7 +220,7 @@ class Slice10 extends OperatorImpl {
     dO: DataArrayTypes,
     rangesWithSize: number[][],
     srcStrides: ReadonlyArray<number>,
-    dstStrides: ReadonlyArray<number>
+    dstStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < rangesWithSize[0][4]; d0++) {
       for (let d1 = 0; d1 < rangesWithSize[1][4]; d1++) {

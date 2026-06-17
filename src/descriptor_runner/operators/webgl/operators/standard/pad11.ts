@@ -65,7 +65,7 @@ class WebGLPad11 extends Pad11 {
         indexAdjuster = arange(outShape.length)
           .map(
             (dim) =>
-              `if (ti${dim} < 0) {ti${dim} = 0;} else if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} - 1;}`
+              `if (ti${dim} < 0) {ti${dim} = 0;} else if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} - 1;}`,
           )
           .join("");
         valueGetter = `s = get_tex_input(${tex_input_idxs});`;
@@ -74,7 +74,7 @@ class WebGLPad11 extends Pad11 {
         indexAdjuster = arange(outShape.length)
           .map(
             (dim) =>
-              `if (ti${dim} < 0) {ti${dim} = pad_mod(-ti${dim}, inShape${dim} * 2 - 2); if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} * 2 - ti${dim} - 2;}} else if (ti${dim} >= inShape${dim}) {ti${dim} = pad_mod(ti${dim}, inShape${dim} * 2 - 2); if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} * 2 - ti${dim} - 2;}}`
+              `if (ti${dim} < 0) {ti${dim} = pad_mod(-ti${dim}, inShape${dim} * 2 - 2); if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} * 2 - ti${dim} - 2;}} else if (ti${dim} >= inShape${dim}) {ti${dim} = pad_mod(ti${dim}, inShape${dim} * 2 - 2); if (ti${dim} >= inShape${dim}) {ti${dim} = inShape${dim} * 2 - ti${dim} - 2;}}`,
           )
           .join("");
         valueGetter = `s = get_tex_input(${tex_input_idxs});`;
@@ -109,7 +109,7 @@ return;
         "tex_input",
         input.strides,
         input,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(outShape, output, context.webgl2),
     ];
@@ -132,7 +132,7 @@ return;
       kernelName,
       [{ tensor: input, name: "tex_input" }],
       output,
-      uniforms
+      uniforms,
     );
     return [output];
   }

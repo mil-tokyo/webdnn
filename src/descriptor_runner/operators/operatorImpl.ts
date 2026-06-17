@@ -10,16 +10,15 @@ export abstract class OperatorImpl implements Operator {
   abstract run(
     context: BackendContext,
     inputs: TensorImpl[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<TensorImpl[]>;
 
-   
   initialize(attribute: onnx.IAttributeProto[]): void {}
 
   getTensorBackendRequirement(
     nInputs: number,
-     
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     const backends: Backend[] = [];
     for (let i = 0; i < nInputs; i++) {

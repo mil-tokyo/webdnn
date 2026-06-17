@@ -19,7 +19,7 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 export class WebGLBinary7 extends OperatorImpl {
   constructor(
     public kernelName: string,
-    private binaryCalculationSource: string
+    private binaryCalculationSource: string,
   ) {
     super("webgl");
   }
@@ -99,18 +99,18 @@ ${shaderGenTensorNDGet("tex_input_b", outNdim, context.webgl2)}
         "tex_input_a",
         inAllStrides[0],
         inputA,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         inAllStrides[1],
         inputB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         outShape,
         outputTensor,
-        context.webgl2
+        context.webgl2,
       ),
     ];
 
@@ -121,7 +121,7 @@ ${shaderGenTensorNDGet("tex_input_b", outNdim, context.webgl2)}
         { tensor: inputB, name: "tex_input_b" },
       ],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return [outputTensor];
   }

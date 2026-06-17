@@ -30,7 +30,7 @@ export abstract class Conv extends OperatorImpl {
 
   protected calcShape(
     dimsX: ReadonlyArray<number>,
-    dimsW: ReadonlyArray<number>
+    dimsW: ReadonlyArray<number>,
   ) {
     const batch = dimsX[0],
       dilations = this.dilations.length > 0 ? this.dilations : [1, 1],
@@ -47,7 +47,7 @@ export abstract class Conv extends OperatorImpl {
             pads[2] -
             dilations[0] * (kernelShape[0] - 1) -
             1) /
-            strides[0]
+            strides[0],
         ) + 1,
         Math.floor(
           (inShape[1] +
@@ -55,7 +55,7 @@ export abstract class Conv extends OperatorImpl {
             pads[3] -
             dilations[1] * (kernelShape[1] - 1) -
             1) /
-            strides[1]
+            strides[1],
         ) + 1,
       ],
       chIn = dimsX[1],

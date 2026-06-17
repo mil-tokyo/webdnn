@@ -1,5 +1,3 @@
- 
- 
 import { onnx } from "onnx-proto";
 import {
   Backend,
@@ -74,7 +72,7 @@ export class RunnerImpl implements Runner {
 
   constructor(
     public backendOrder: Backend[],
-    private backendContexts: BackendContexts
+    private backendContexts: BackendContexts,
   ) {
     this.backendName = this.backendOrder[0];
     this.loaded = false;
@@ -90,7 +88,7 @@ export class RunnerImpl implements Runner {
   async loadModel(
     directory: string,
     onnxBasename: string,
-    progressCallback?: (loaded: number, total: number) => unknown
+    progressCallback?: (loaded: number, total: number) => unknown,
   ): Promise<void> {
     const f = await fetch(directory + onnxBasename),
       b = await f.arrayBuffer();
@@ -98,7 +96,7 @@ export class RunnerImpl implements Runner {
     modelTransform(this.model, this.backendOrder);
     if (this.model!.opsetImport.length !== 1) {
       logger.warn(
-        `Specifying multiple opset_import is not supported. Using first one.`
+        `Specifying multiple opset_import is not supported. Using first one.`,
       );
     }
     this.opset = intOrLongToInt(this.model!.opsetImport[0].version!);
@@ -122,7 +120,7 @@ export class RunnerImpl implements Runner {
       }
     }
     this.inputsWithoutInitializer = this.model!.graph!.input!.filter(
-      (v) => v.name && !this.initializerTensors.has(v.name)
+      (v) => v.name && !this.initializerTensors.has(v.name),
     );
     for (const md of this.model!.metadataProps) {
       if (md.key === "WebDNN2.TensorMoveOptions") {
@@ -152,9 +150,9 @@ export class RunnerImpl implements Runner {
               new Float32Array(
                 newBuffer.buffer,
                 0,
-                newBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT
-              )
-            )
+                newBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT,
+              ),
+            ),
           );
         } else if (initializer.floatData) {
           tensors.set(
@@ -162,8 +160,8 @@ export class RunnerImpl implements Runner {
             this.backendContexts.cpu.emptyTensor(
               dims,
               "float32",
-              new Float32Array(initializer.floatData)
-            )
+              new Float32Array(initializer.floatData),
+            ),
           );
         }
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT64) {
@@ -173,20 +171,20 @@ export class RunnerImpl implements Runner {
             view = new DataView(
               rawData.buffer,
               rawData.byteOffset,
-              rawData.byteLength
+              rawData.byteLength,
             ),
             ab = new Int32Array(view.byteLength / 8);
           for (let idx = 0; idx < ab.length; idx++) {
             ab[idx] = clipLong(
               new Long(
                 view.getUint32(idx * 8, true),
-                view.getUint32(idx * 8 + 4, true)
-              )
+                view.getUint32(idx * 8 + 4, true),
+              ),
             );
           }
           tensors.set(
             initializer.name!,
-            this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
+            this.backendContexts.cpu.emptyTensor(dims, "int32", ab),
           );
         } else if (initializer.int64Data) {
           tensors.set(
@@ -194,8 +192,8 @@ export class RunnerImpl implements Runner {
             this.backendContexts.cpu.emptyTensor(
               dims,
               "int32",
-              new Int32Array(intOrLongToIntVector(initializer.int64Data))
-            )
+              new Int32Array(intOrLongToIntVector(initializer.int64Data)),
+            ),
           );
         }
       } else if (initializer.dataType === onnx.TensorProto.DataType.INT32) {
@@ -205,7 +203,7 @@ export class RunnerImpl implements Runner {
             view = new DataView(
               rawData.buffer,
               rawData.byteOffset,
-              rawData.byteLength
+              rawData.byteLength,
             ),
             ab = new Int32Array(view.byteLength / 4);
           for (let idx = 0; idx < ab.length; idx++) {
@@ -213,7 +211,7 @@ export class RunnerImpl implements Runner {
           }
           tensors.set(
             initializer.name!,
-            this.backendContexts.cpu.emptyTensor(dims, "int32", ab)
+            this.backendContexts.cpu.emptyTensor(dims, "int32", ab),
           );
         } else if (initializer.int32Data) {
           tensors.set(
@@ -221,13 +219,13 @@ export class RunnerImpl implements Runner {
             this.backendContexts.cpu.emptyTensor(
               dims,
               "int32",
-              new Int32Array(initializer.int32Data)
-            )
+              new Int32Array(initializer.int32Data),
+            ),
           );
         }
       } else {
         throw new Error(
-          `Unsupported initializer dataType ${initializer.dataType}`
+          `Unsupported initializer dataType ${initializer.dataType}`,
         );
       }
     }
@@ -236,7 +234,7 @@ export class RunnerImpl implements Runner {
 
   private async loadExternalInitializerTensor(
     directory: string,
-    progressCallback?: (loaded: number, total: number) => unknown
+    progressCallback?: (loaded: number, total: number) => unknown,
   ): Promise<Map<string, CPUTensor>> {
     let totalExpectedSize: number | null = null;
     for (const md of this.model!.metadataProps) {
@@ -263,7 +261,7 @@ export class RunnerImpl implements Runner {
     }
     if (progressCallback) {
       logger.warn(
-        `progressCallback is currently supported when loading optimized model.`
+        `progressCallback is currently supported when loading optimized model.`,
       );
     }
     return new Map();
@@ -272,8 +270,8 @@ export class RunnerImpl implements Runner {
   private getIOProxyShape(vi: onnx.IValueInfoProto) {
     const shape = nonnull(
       vi.type?.tensorType?.shape?.dim?.map((d) =>
-        intOrLongToInt(nonnull(d.dimValue))
-      )
+        intOrLongToInt(nonnull(d.dimValue)),
+      ),
     );
     let dataType: DataType;
     switch (vi.type?.tensorType?.elemType) {
@@ -316,7 +314,7 @@ export class RunnerImpl implements Runner {
 
   async run(
     inputs?: CPUTensor[],
-    options: { measurePerformance?: boolean } = {}
+    options: { measurePerformance?: boolean } = {},
   ): Promise<CPUTensor[]> {
     if (!this.model || !this.loaded) {
       throw new Error("not initialized");
@@ -365,7 +363,7 @@ export class RunnerImpl implements Runner {
 
     const tensorReleaseTiming = findTensorReleaseTiming(
         this.model!,
-        new Set(this.initializerTensors.keys())
+        new Set(this.initializerTensors.keys()),
       ),
       nodePerformances: {
         opType: string;
@@ -386,7 +384,7 @@ export class RunnerImpl implements Runner {
         backendOrderForNode =
           this.forceOperatorBackendOrder[node.name!] || this.backendOrder;
       let firstTry = true;
-       
+
       while (true) {
         try {
           // テンソルがどこにあるのか調べる
@@ -413,17 +411,17 @@ export class RunnerImpl implements Runner {
             opType,
             this.opset,
             backendOrderForNode,
-            currentTensorsBackends
+            currentTensorsBackends,
           );
           if (!operator) {
             throw new Error(
-              `Operator implementation for ${opType}, opset=${this.opset} does not exist.`
+              `Operator implementation for ${opType}, opset=${this.opset} does not exist.`,
             );
           }
           operator.initialize(nonnull(node.attribute));
           const tensorBackendRequirement = operator.getTensorBackendRequirement(
               node.input!.length,
-              node.output!.length
+              node.output!.length,
             ),
             // 入力を集める
             operatorInputs: Tensor[] = [];
@@ -455,7 +453,7 @@ export class RunnerImpl implements Runner {
                       ]!.moveTensor(otherT, tensorMoveOption);
                     tensorsForBackends[reqBackend].set(
                       inputName,
-                      movedT as any
+                      movedT as any,
                     );
                     operatorInputs.push(movedT);
                     found = true;
@@ -487,17 +485,17 @@ export class RunnerImpl implements Runner {
               throw new Error();
           }
           logger.debug(
-            `Running ${node.name!}(${opType}) on ${operator.backend}`
+            `Running ${node.name!}(${opType}) on ${operator.backend}`,
           );
           if (options.measurePerformance && operator.backend === "webgl") {
             this.backendContexts["webgl"]?.enablePerformanceQuery(
-              `${node.name}(${opType})`
+              `${node.name}(${opType})`,
             );
           }
           const operatorOutputs = await operator.run(
             context,
             operatorInputs,
-            node.output!.length
+            node.output!.length,
           );
           actualInputDims = operatorInputs.map((t) => t.dims);
           actualOutputDims = operatorOutputs.map((t) => t.dims);
@@ -505,7 +503,7 @@ export class RunnerImpl implements Runner {
             const outputName = node.output![j];
             tensorsForBackends[operatorOutputs[j].backend].set(
               outputName,
-              operatorOutputs[j] as any
+              operatorOutputs[j] as any,
             );
           }
           actualBackend = operator.backend;
@@ -553,7 +551,7 @@ export class RunnerImpl implements Runner {
           if (otherT) {
             const movedT = await this.backendContexts.cpu.moveTensor(
               otherT,
-              {}
+              {},
             );
             tensorsForBackends.cpu.set(outputInfo.name!, movedT as any);
             outputTensor = movedT;

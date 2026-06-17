@@ -57,10 +57,10 @@ function loadJS(url: string): Promise<InjectionParams> {
 
 async function loadCPU(
   directory: string,
-   
+
   options: InitOption,
-   
-  cpuContext: WebDNNCPUContextImpl
+
+  cpuContext: WebDNNCPUContextImpl,
 ): Promise<void> {
   const injectionParams = await loadJS(`${directory}op-cpu.js`);
   registerOperators(injectionParams.operatorEntries);
@@ -69,11 +69,11 @@ async function loadCPU(
 async function loadWasm(
   directory: string,
   options: InitOption,
-  cpuContext: WebDNNCPUContextImpl
+  cpuContext: WebDNNCPUContextImpl,
 ): Promise<WebDNNWasmContextImpl> {
   const ctx = new WebDNNWasmContextImpl(
       cpuContext,
-      options.backendOptions?.wasm || {}
+      options.backendOptions?.wasm || {},
     ),
     injectionParams = await loadJS(`${directory}op-wasm.js`);
   if (typeof injectionParams.wasmWorkerSrcUrl !== "string") {
@@ -87,11 +87,11 @@ async function loadWasm(
 async function loadWebGL(
   directory: string,
   options: InitOption,
-  cpuContext: WebDNNCPUContextImpl
+  cpuContext: WebDNNCPUContextImpl,
 ): Promise<WebDNNWebGLContextImpl> {
   const ctx = new WebDNNWebGLContextImpl(
       cpuContext,
-      options.backendOptions?.webgl || {}
+      options.backendOptions?.webgl || {},
     ),
     injectionParams = await loadJS(`${directory}op-${ctx.version}.js`);
   await ctx.initialize();
@@ -102,11 +102,11 @@ async function loadWebGL(
 async function loadWebGPU(
   directory: string,
   options: InitOption,
-  cpuContext: WebDNNCPUContextImpl
+  cpuContext: WebDNNCPUContextImpl,
 ): Promise<WebDNNWebGPUContextImpl> {
   const ctx = new WebDNNWebGPUContextImpl(
       cpuContext,
-      options.backendOptions?.webgpu || {}
+      options.backendOptions?.webgpu || {},
     ),
     injectionParams = await loadJS(`${directory}op-webgpu.js`);
   await ctx.initialize();
@@ -116,12 +116,12 @@ async function loadWebGPU(
 
 export async function load(
   directory: string,
-  options: InitOption = {}
+  options: InitOption = {},
 ): Promise<Runner> {
   const { backendOrder = ["webgl", "wasm", "cpu"], optimized } = options;
   if (!optimized) {
     throw new Error(
-      "webdnn-core.js only accepts optimized model. Specify directory which contains model-cpu.onnx and specify {optimized: true} in options."
+      "webdnn-core.js only accepts optimized model. Specify directory which contains model-cpu.onnx and specify {optimized: true} in options.",
     );
   }
   if (!defaultContexts.cpu) {
@@ -147,7 +147,7 @@ export async function load(
             backendContexts.wasm = await loadWasm(
               opDirectory,
               options,
-              cpuContext
+              cpuContext,
             );
             succeedBackend = "wasm";
             // eslint-disable-next-line no-empty
@@ -160,7 +160,7 @@ export async function load(
             backendContexts.webgl = await loadWebGL(
               opDirectory,
               options,
-              cpuContext
+              cpuContext,
             );
             succeedBackend = "webgl";
             // eslint-disable-next-line no-empty
@@ -173,7 +173,7 @@ export async function load(
             backendContexts.webgpu = await loadWebGPU(
               opDirectory,
               options,
-              cpuContext
+              cpuContext,
             );
             succeedBackend = "webgpu";
             // eslint-disable-next-line no-empty
@@ -196,13 +196,12 @@ export async function load(
     runner = new RunnerImpl(actualBackendOrder, backendContexts);
   let modelNameBackendPart: string = actualBackendOrder[0];
   if (modelNameBackendPart === "webgl") {
-     
     modelNameBackendPart = backendContexts.webgl!.version;
   }
   await runner.loadModel(
     directory,
     `model-${modelNameBackendPart}.onnx`,
-    options.progressCallback
+    options.progressCallback,
   );
   return runner;
 }

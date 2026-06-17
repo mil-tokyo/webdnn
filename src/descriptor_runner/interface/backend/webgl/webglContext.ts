@@ -58,11 +58,11 @@ export interface WebDNNWebGLContext extends BackendContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
+    option?: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> },
   ): WebGLTensor;
   moveTensor(
     tensor: Tensor,
-    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> }
+    option: { dimPerPixel?: 1 | 4; textureShape?: ReadonlyArray<number> },
   ): Promise<WebGLTensor>;
   addKernel(name: string, sourceCode: string): void;
   hasKernel(name: string): boolean;
@@ -70,7 +70,7 @@ export interface WebDNNWebGLContext extends BackendContext {
     name: string,
     inputs: { tensor: WebGLTensor; name: string }[],
     output: WebGLTensor,
-    uniforms: WebGLUniformItem[]
+    uniforms: WebGLUniformItem[],
   ): Promise<void>;
   enablePerformanceQuery(key: string | null): void;
   gatherPerformanceQueryResult(): Promise<WebDNNWebGLContextPerformance[]>;
