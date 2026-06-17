@@ -8,18 +8,25 @@
 ## 作業ブランチ
 
 - 刷新作業は **`modernization` ブランチ** で行う（`master` には完成フェーズのみ取り込む）。
+- 実行方式: Subagent-Driven（タスクごとに実装サブエージェント + spec/品質レビュー）。
 
 ## 現在地
 
-- **現在フェーズ: Phase 1（ツールチェーン刷新）— 未着手**
-- 直前の状態: 計画策定完了。実装はまだ開始していない。
-- 次に着手する計画書: [docs/superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)
+- **現在フェーズ: Phase 1（ツールチェーン刷新）— 進行中**
+- 完了: P0 ベースライン確立（[docs/baseline.md](baseline.md)、commit 3290804d）。
+- 実装中の計画書: [docs/superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)
+
+### P0 で判明した重要事項（後続フェーズで効く）
+- `@webgpu/glslang` による `shader:webgpu`（GLSL→SPIR-V）は**ビルド自体は現状でも成功**する（実行時にブラウザで動かない問題は別）。
+- webpack ビルドは Node 26 で `NODE_OPTIONS=--openssl-legacy-provider` が必要（Vite 移行で解消見込み）。
+- 全 webpack ビルドの失敗根因は、emscripten 未導入で `operators/wasm/worker/worker.ts` が生成されないこと。emscripten はシステムグローバル導入が必要（P4 / 人手）。
+- 実行環境に yarn・emcc は未インストール。Python は `python3` のみ（`python` 名なし）。
 
 ## 👉 次の一手（NEXT STEP）
 
-**Phase 0+1 計画の Task 1「ベースライン確立」から開始する。**
-- まだ実機での `npm install` やビルド試行は行っていない。
-- 実行方式（Subagent-Driven / Inline）はユーザーと未確定。着手前に確認すること。
+**Phase 0+1 計画の Task 2「yarn → npm 統一」から続行する。**
+- 以降 Task 3〜8（Node 固定 → @webgpu/types → TS5 → ESLint9 → Vite → 統合検証）を順に実装。
+- `python` 名が無い環境のため、Python を呼ぶ npm script は `python3` 前提に直す必要がある（Task 7 周辺で考慮）。
 
 ## フェーズ一覧と進捗
 
