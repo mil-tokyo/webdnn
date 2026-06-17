@@ -23,8 +23,12 @@ WebDNN のテストは 3 層で構成する。**CI では GPU を使わない。
     （例: macOS/Apple Silicon の Chromium は Metal 経由で WebGPU 実行可）では relu/add/gemm/conv を
     自動で WebGPU 実行し `expected.bin` と数値比較。`navigator.gpu` が無ければ skip し第 3 層へ委ねる。
     `playwright.config.ts` で `--enable-unsafe-webgpu` を付与。
+  - `test/e2e/webgl.spec.ts` — **WebGL バックエンド**。WebGL2 が使える環境では自動実行し
+    数値比較。使えなければ skip。
 - 初回のみ `npx playwright install chromium` が必要。
-- WebGL バックエンドはこのヘッドレス E2E では検証しない。実機でヘッド付き実行するか第 3 層の目視で確認する。
+- **WASM バックエンド**は emscripten ビルド成果物（`worker.ts`）が必要なため未自動化。
+  emscripten 導入（[emscripten-setup.md](emscripten-setup.md)）後に第 3 層の目視、または
+  `wasm.spec.ts` の追加で検証する。
 
 ## 第 3 層: 全ブラウザ目視確認（人手）
 

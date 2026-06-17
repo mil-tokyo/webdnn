@@ -12,17 +12,13 @@
 
 ## 現在地
 
-- **現在フェーズ: Phase 3（WebGPU WGSL 移行）— 完了 ✅**
-- 完了済み:
-  - P0 ベースライン確立（[docs/baseline.md](baseline.md)、commit 3290804d）。
-  - P1（npm / Node / @webgpu/types / TS 5.9 / ESLint 9 / Prettier 3 / Vite）。
-  - P2（vitest 20件 / CI（GPUなし）/ uv フィクスチャ / 目視ランナー / Playwright CPU E2E / [docs/testing.md](testing.md)）。
-  - P3（12 GLSL→WGSL / 現行 API 化 / glslang 除去 / gemm・conv フィクスチャ / **実 GPU で WebGPU E2E PASS**）。
-- 到達状態（全て緑）: `typecheck`=0、`lint`=0、`format:check`=0、`build:all`=0（WGSL 生成込み・emscripten 不要）、`test:unit`=20 passed、`test:e2e`=CPU PASS + **WebGPU PASS**（実 chromium/Metal で relu/add/gemm/conv が onnxruntime と一致）、`dist` に 9 バンドル + dts。
+- **現在フェーズ: Phase 4（WebGL/WASM/依存更新）— 完了 ✅（WASM 実ビルドのみ人手 TODO）**
+- 完了済み: P0 / P1 / P2 / P3 / P4。
+  - P3（12 GLSL→WGSL / 現行 API 化 / glslang 除去 / 実 GPU で WebGPU E2E PASS）。
+  - P4（onnx-proto→protobufjs ベンダリング / WebGL E2E PASS / emscripten 手順整備）。
+- 到達状態（全て緑）: `typecheck`=0、`lint`=0、`format:check`=0、`build:all`=0（emscripten 不要）、`test:unit`=20 passed、`test:e2e`=**CPU + WebGPU + WebGL の 3 経路 PASS**（実 chromium/Metal で onnxruntime と一致）、`dist` に 9 バンドル + dts。
 - 完了した計画書:
-  - [P0+P1](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)（全 Task 完了）
-  - [P2](superpowers/plans/2026-06-17-p2-test-infrastructure.md)（全 Task 完了）
-  - [P3](superpowers/plans/2026-06-17-p3-webgpu-wgsl.md)（全 Task 完了）
+  - [P0+P1](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md) / [P2](superpowers/plans/2026-06-17-p2-test-infrastructure.md) / [P3](superpowers/plans/2026-06-17-p3-webgpu-wgsl.md) / [P4](superpowers/plans/2026-06-17-p4-webgl-wasm-deps.md)（全 Task 完了）
 
 ### 後続フェーズへ引き継ぐ重要事項
 - `@webgpu/glslang`（GLSL→SPIR-V）はビルド自体は成功するが、現行ブラウザでは動かない。**P3** で WGSL 化し依存除去。
@@ -35,17 +31,19 @@
 
 ## 👉 次の一手（NEXT STEP）
 
-**Phase 4（WebGL / WASM / CPU 追従・依存更新）の個別計画を作成する。**
-- 内容: WebGL2 コンテキスト取得・拡張の現行化と非推奨 API 確認、`onnx-proto`→protobufjs 生成
-  バインディング移行、emscripten のシステムグローバル導入手順整備と `shader:wasm` 再現性
-  （`worker.ts` スタブ→正規生成、`build:all` へ復帰）。
-- 検証: P2/P3 の Playwright・目視ランナーで WebGL 経路を確認（**実 GPU/Safari は人手**）。
+**Phase 5（ドキュメント・配布整備）の個別計画を作成する。** ← 最終フェーズ
+- 内容: README/README.ja/CONTRIBUTING の更新（対応ブラウザ・新ビルド/テスト手順）、
+  graph_transpiler の `setup.py`→`pyproject.toml`（**uv 移行**）、npm 配布構成
+  （`exports`・型定義・`files`・ESM/CJS 方針）、`prepublishOnly` のフレッシュクローン課題
+  （`build` が makeShaderList を含まない問題）対応、`docs/architecture.md`。
+- 検証: フレッシュクローン相当で `npm ci` → 各 script が通ることを確認。publish は人手。
 - 計画作成は writing-plans、実装は Subagent-Driven。
 
 ## 人手が必要な作業（Claude が実行できないもの）
 
-- 実 GPU 上の WebGL/WebGPU 動作確認（第 3 層目視 / Playwright ヘッド付き）。失敗時はログを Claude へ。
-- emscripten のシステムグローバル導入（**P4**。手順は Claude が提供、実行は手動）。
+- **emscripten のシステムグローバル導入** → `npm run shader:wasm` で `worker.ts` 正規生成 →
+  `build:all` に `shader:wasm` 復帰 → WASM 経路の検証（手順: [emscripten-setup.md](emscripten-setup.md)）。
+- 実 GPU 上の WebGPU/WebGL を **他ブラウザ（Safari/Firefox）** でも目視確認。失敗時はログを Claude へ。
 - `npm publish` / PyPI 公開（手動）。
 
 ## フェーズ一覧と進捗
@@ -59,10 +57,10 @@
   - 計画書: [2026-06-17-p2-test-infrastructure.md](superpowers/plans/2026-06-17-p2-test-infrastructure.md)（全 Task 完了）
 - [x] **P3 WebGPU WGSL 移行** — 12 GLSL→WGSL・現行 API 化・glslang 除去・実GPUでE2E PASS ✅
   - 計画書: [2026-06-17-p3-webgpu-wgsl.md](superpowers/plans/2026-06-17-p3-webgpu-wgsl.md)（全 Task 完了）
-- [ ] **P4 WebGL/WASM/CPU 追従** — WebGL2 現行化・onnx-proto→protobufjs・emscripten 再現性 ← 次フェーズ
+- [x] **P4 WebGL/WASM/CPU 追従** — WebGL E2E PASS・onnx-proto→protobufjs・emscripten 手順整備 ✅（WASM 実ビルドは人手 TODO）
+  - 計画書: [2026-06-17-p4-webgl-wasm-deps.md](superpowers/plans/2026-06-17-p4-webgl-wasm-deps.md)（全 Task 完了）
+- [ ] **P5 ドキュメント・配布整備** — README/CONTRIBUTING・uv 移行・npm 配布構成 ← 次フェーズ
   - 計画書: 未作成（次に作成）
-- [ ] **P5 ドキュメント・配布整備** — README/CONTRIBUTING・uv 移行・npm 配布構成
-  - 計画書: 未作成
 
 ## 既知の積み残し（フェーズをまたぐ TODO）
 
