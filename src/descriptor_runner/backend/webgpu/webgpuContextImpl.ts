@@ -133,9 +133,13 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       pipelineLayout = device.createPipelineLayout({
         bindGroupLayouts: [bindGroupLayout],
       }),
+      // TODO(P3): migrate to current WebGPU API (shader was Uint32Array SPIR-V; new API requires WGSL string)
+      // @ts-expect-error legacy WebGPU API; rewritten in Phase 3 (WGSL migration)
       shaderModule = device.createShaderModule({ code: shader }),
       pipeline = device.createComputePipeline({
         layout: pipelineLayout,
+        // TODO(P3): migrate to current WebGPU API (computeStage -> compute)
+        // @ts-expect-error legacy WebGPU API; rewritten in Phase 3 (WGSL migration)
         computeStage: {
           module: shaderModule,
           entryPoint: "main",
@@ -177,11 +181,15 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       passEncoder = commandEncoder.beginComputePass();
     passEncoder.setBindGroup(0, bindGroup);
     passEncoder.setPipeline(pipeline.pipeline);
+    // TODO(P3): migrate to current WebGPU API (dispatch -> dispatchWorkgroups)
+    // @ts-expect-error legacy WebGPU API; rewritten in Phase 3 (WGSL migration)
     passEncoder.dispatch(
       request.workGroups.x,
       request.workGroups.y,
       request.workGroups.z
     );
+    // TODO(P3): migrate to current WebGPU API (endPass -> end)
+    // @ts-expect-error legacy WebGPU API; rewritten in Phase 3 (WGSL migration)
     passEncoder.endPass();
 
     device.queue.submit([commandEncoder.finish()]);

@@ -40,7 +40,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@webgpu/types": "^0.0.45",
     "onnx-proto": "^4.0.4",
     "pako": "^2.0.3"
   },
@@ -49,6 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
     "@webgpu/glslang": "^0.0.15",
+    "@webgpu/types": "^0.1.70",
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
