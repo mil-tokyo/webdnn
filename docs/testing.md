@@ -17,10 +17,14 @@ WebDNN のテストは 3 層で構成する。**CI では GPU を使わない。
 - 仕組み: `test/model_test/runner/standard.html` を Playwright で開き、backend チェックを
   すべて外して CPU のみ実行 → ランナーが付与する `#summary`（`ALL OK / 0 failed`）を判定。
 - 前提: `npm run fixtures`（フィクスチャ生成）と `npm run build`（`dist/webdnn.js`）。
-- 実行: `npm run test:e2e`。設定は `playwright.config.ts`（`npx http-server` を :8080 で自動起動）。
+- 実行: `npm run test:e2e`（設定は `playwright.config.ts`、`npx http-server` を :8080 で自動起動）。スペックは 2 本:
+  - `test/e2e/model.spec.ts` — CPU バックエンド（どの環境でも実行）。
+  - `test/e2e/webgpu.spec.ts` — **WebGPU バックエンド**。`navigator.gpu` がある開発機
+    （例: macOS/Apple Silicon の Chromium は Metal 経由で WebGPU 実行可）では relu/add/gemm/conv を
+    自動で WebGPU 実行し `expected.bin` と数値比較。`navigator.gpu` が無ければ skip し第 3 層へ委ねる。
+    `playwright.config.ts` で `--enable-unsafe-webgpu` を付与。
 - 初回のみ `npx playwright install chromium` が必要。
-- WebGL/WebGPU バックエンドは実 GPU が要るため、このヘッドレス E2E では検証しない（意図的）。
-  実機でヘッド付き実行するか、第 3 層の目視で確認する。
+- WebGL バックエンドはこのヘッドレス E2E では検証しない。実機でヘッド付き実行するか第 3 層の目視で確認する。
 
 ## 第 3 層: 全ブラウザ目視確認（人手）
 

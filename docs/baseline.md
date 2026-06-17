@@ -134,3 +134,24 @@ P1 で確定した積み残し（後続フェーズへ）:
 - `python3` をハードコード（`makeShaderList`/`shader:wasm`）。**P5** の uv 移行で `uv run` ベースへ。
 - `@webgpu/glslang` は依存に残存。**P3** で除去。
 - クリーンインストール CI では esbuild の postinstall 承認が必要（**P2** で考慮）。
+
+---
+
+## Phase 3 移行後（2026-06-17）
+
+WebGPU バックエンドを現行規格（WGSL + 現行 API）へ全面移行し、**実 GPU で動作を実証**した。
+
+- 12 個の GLSL シェーダ → **WGSL** へ書き換え（`src/shader/webgpu/shadersources/standard/*.wgsl`）。
+- `compile.js` を WGSL 文字列埋め込み生成器に刷新（`webgpuShaders: Record<string,string>`）。
+- `webgpuContextImpl.ts` の旧 API を現行化（`computeStage`→`compute`、`dispatch`→`dispatchWorkgroups`、
+  `endPass`→`end`、シェーダ Uint32Array→WGSL string）。P1 の `@ts-expect-error` 4 箇所を除去。
+- `@webgpu/glslang` を依存から除去。`shader:webgpu` を `build:all` に復帰。
+- 検証フィクスチャに gemm/conv を追加。
+- **発見した重要バグ**: WGSL では `meta` が予約語のため全シェーダがコンパイル失敗していた
+  → 変数名を `metaBuf` に統一して解消。
+- 検証: 開発機（Apple Silicon / Chromium / Metal）で WebGPU E2E が PASS。relu/add/gemm/conv が
+  WebGPU 実行で onnxruntime と数値一致。CPU 経路も回帰なし。
+
+積み残し（後続）:
+- WebGL バックエンドの現行化は **P4**。WebGPU の他ブラウザ（Safari/Firefox）実機確認は人手。
+- `shader:wasm`（emscripten）は引き続き `build:all` 除外（**P4**）。
