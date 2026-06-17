@@ -78,3 +78,5 @@ output
 /playwright-report
 /blob-report
 /playwright/.cache
+
+.venv/
