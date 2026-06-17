@@ -44,6 +44,6 @@ export interface WebDNNWebGPUContext extends BackendContext {
   ): WebGPUTensor;
   moveTensor(tensor: Tensor, option: {}): Promise<WebGPUTensor>;
   hasPipeline(name: string): boolean;
-  createPipeline(name: string, shader: Uint32Array, nBuffers: number): void;
+  createPipeline(name: string, shader: string, nBuffers: number): void;
   run(request: WebGPURunnerRequest): Promise<void>;
 }
