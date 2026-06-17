@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [master, modernization]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Generate the operator entry list (gitignored, pure Python, no native toolchain).
+      # ensure-generated-stubs (pretypecheck/prebuild:js) supplies worker.ts/shaders.ts stubs.
+      - name: Generate operator entry list
+        run: python3 scripts/make_operator_entries.py
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:unit
+      - run: npm run build
+      # NOTE: GPU tests (WebGL/WebGPU via Playwright/visual runner) are intentionally
+      # NOT run in CI — they require real GPUs. See docs/testing.md.
