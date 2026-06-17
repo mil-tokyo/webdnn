@@ -1,5 +1,5 @@
 import { build } from "vite";
-import { copyFileSync } from "node:fs";
+import { copyFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -39,4 +39,6 @@ for (const name of ["op-webgl1-4096.js", "op-webgl1-16384.js", "op-webgl2-4096.j
   copyFileSync(webglBase, resolve(outDir, name));
   console.log("copied", name);
 }
+// Remove the intermediate base bundle so dist/ ships exactly the 9 contract files.
+rmSync(webglBase);
 console.log("done");

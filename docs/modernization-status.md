@@ -39,9 +39,9 @@
 
 上位計画: [docs/modernization-plan.md](modernization-plan.md)
 
-- [ ] **P0 ベースライン確立** — 現状の動作状況を `docs/baseline.md` に記録
-- [ ] **P1 ツールチェーン刷新** — npm / TS5 / ESLint9 flat / Vite / `@webgpu/types` 更新
-  - 計画書: [2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)
+- [x] **P0 ベースライン確立** — 現状の動作状況を `docs/baseline.md` に記録 ✅
+- [x] **P1 ツールチェーン刷新** — npm / TS5 / ESLint9 flat / Vite / `@webgpu/types` 更新 ✅
+  - 計画書: [2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)（全 Task 完了）
 - [ ] **P2 自動テスト基盤** — vitest + 実機Playwright + ブラウザ目視ランナー + CI（GPUなし）
   - 計画書: 未作成（P1 マージ後に作成）
 - [ ] **P3 WebGPU WGSL 移行** — 12 GLSL→WGSL・現行 API 化・glslang 除去
