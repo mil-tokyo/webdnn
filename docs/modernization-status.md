@@ -12,21 +12,28 @@
 
 ## 現在地
 
-- **現在フェーズ: Phase 1（ツールチェーン刷新）— 進行中**
-- 完了: P0 ベースライン確立（[docs/baseline.md](baseline.md)、commit 3290804d）。
-- 実装中の計画書: [docs/superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)
+- **現在フェーズ: Phase 1（ツールチェーン刷新）— 完了 ✅**
+- 完了済み:
+  - P0 ベースライン確立（[docs/baseline.md](baseline.md)、commit 3290804d）。
+  - P1 全タスク（npm / Node 固定 / @webgpu/types 0.1.x / TS 5.9 / ESLint 9 flat / Prettier 3 / Vite）。
+- 到達状態（全て緑）: `npm run typecheck` = 0、`npm run lint` = 0、`npm run format:check` = 0、`npm run build:all` = 0（emscripten 不要）、`dist` に 9 バンドル + dts、ローカルサーバ配信 200。
+- 完了した計画書: [docs/superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)（全 Task 完了）。
 
-### P0 で判明した重要事項（後続フェーズで効く）
-- `@webgpu/glslang` による `shader:webgpu`（GLSL→SPIR-V）は**ビルド自体は現状でも成功**する（実行時にブラウザで動かない問題は別）。
-- webpack ビルドは Node 26 で `NODE_OPTIONS=--openssl-legacy-provider` が必要（Vite 移行で解消見込み）。
-- 全 webpack ビルドの失敗根因は、emscripten 未導入で `operators/wasm/worker/worker.ts` が生成されないこと。emscripten はシステムグローバル導入が必要（P4 / 人手）。
-- 実行環境に yarn・emcc は未インストール。Python は `python3` のみ（`python` 名なし）。
+### 後続フェーズへ引き継ぐ重要事項
+- `@webgpu/glslang`（GLSL→SPIR-V）はビルド自体は成功するが、現行ブラウザでは動かない。**P3** で WGSL 化し依存除去。
+- WebGPU バックエンド旧 API 4 箇所は `@ts-expect-error` + `TODO(P3)` で切り分け済み。**P3** で除去（`webgpuContextImpl.ts`）。
+- `shader:wasm`（emscripten）は `build:all` から除外。emscripten はシステムグローバル導入が必要（**P4** / 人手）。`worker.ts` は現在スタブ。
+- `shader:webgpu` も `build:all` から除外（**P3** で WGSL 生成に置換後に再統合）。
+- `makeShaderList`/`shader:wasm` は `python3` をハードコード。**P5** の uv 移行で `uv run` 化。
+- クリーンインストール CI では esbuild の postinstall 承認が必要（**P2**）。
+- `scripts/ensure-generated-stubs.mjs` が typecheck/build の前提スタブを補う（CI でも利用予定）。
 
 ## 👉 次の一手（NEXT STEP）
 
-**Phase 0+1 計画の Task 2「yarn → npm 統一」から続行する。**
-- 以降 Task 3〜8（Node 固定 → @webgpu/types → TS5 → ESLint9 → Vite → 統合検証）を順に実装。
-- `python` 名が無い環境のため、Python を呼ぶ npm script は `python3` 前提に直す必要がある（Task 7 周辺で考慮）。
+**Phase 2（自動テスト基盤）の個別計画を作成する。**
+- 内容: vitest（CPU/GPU 不要ユニット）+ 実機 Playwright 自動チェック + ブラウザ目視ランナー刷新 + GitHub Actions CI（GPU なし、esbuild postinstall 承認を考慮）。
+- 前提は P1 で整備済み（npm / Vite / typecheck / lint / format:check が全て緑）。
+- 計画作成は writing-plans スキルで行い、その後 Subagent-Driven で実装する。
 
 ## フェーズ一覧と進捗
 

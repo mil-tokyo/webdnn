@@ -107,3 +107,30 @@ c2fdc3eb47b119b7b6000c746b1fe90b1f42b4e9  dist/webdnn.js
 3. **emcc 依存**: WASM バックエンドは emscripten に強く依存しており、未インストール環境では全ビルドに TypeScript エラーが波及する。
 4. **yarn.lock / package-lock.json 二重管理**: リポジトリに yarn.lock が存在するが実際の install は npm で実施。lock ファイルの整合性が取れていない。
 5. **`@webgpu/glslang` 廃止**: devDependency として残っているが現行 WebGPU 仕様（WGSL）では使用不可。
+
+---
+
+## Phase 1 移行後（2026-06-17）
+
+ツールチェーン刷新を完了。以下の状態に到達:
+
+- **パッケージマネージャ**: npm（`package-lock.json`）。`yarn.lock` 廃止。
+- **Node**: `.nvmrc`=26 / `engines.node>=20`。
+- **TypeScript**: 5.9.3。`tsconfig.json` は `module: esnext` / `moduleResolution: bundler` / `noEmit`（型チェック専用）。
+- **Lint/Format**: ESLint 9 flat config（`eslint.config.js`）+ Prettier 3 単体。コードベース全体を Prettier 3 で一度正規化済み（`.prettierignore` 追加）。
+- **ビルド**: webpack（9 config）→ Vite（`scripts/build.mjs`）。`dist` に 9 バンドル（`webdnn.js`/`webdnn-core.js`/`op-*.js`）+ `dist/types/*.d.ts` を生成。WebGL の 4 バリアントは 1 回ビルド→複製。
+- **生成物スタブ**: `scripts/ensure-generated-stubs.mjs` が emscripten/シェーダ未導入でも `worker.ts`/`shaders.ts` のスタブを補い、typecheck/build を再現可能にする。
+
+検証結果（全て緑）:
+- `npm run typecheck` = 0
+- `npm run lint` = 0
+- `npm run format:check` = 0
+- `npm run build:all` = 0（`makeShaderList` + Vite + dts。emscripten 不要）
+- ローカルサーバ配信: `standard.html` 200 / `dist/webdnn.js` 200
+
+P1 で確定した積み残し（後続フェーズへ）:
+- `shader:wasm`（emscripten）と `shader:webgpu`（現状 GLSL→SPIR-V）は `build:all` から除外。前者は **P4**（emscripten 導入）、後者は **P3**（WGSL 化）で再統合する。
+- WebGPU バックエンドの旧 API 4 箇所は `@ts-expect-error` + `TODO(P3)` で切り分け済み。**P3** で除去。
+- `python3` をハードコード（`makeShaderList`/`shader:wasm`）。**P5** の uv 移行で `uv run` ベースへ。
+- `@webgpu/glslang` は依存に残存。**P3** で除去。
+- クリーンインストール CI では esbuild の postinstall 承認が必要（**P2** で考慮）。
