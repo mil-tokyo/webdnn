@@ -12,9 +12,9 @@ import { webgpuShaders } from "../../shaders";
 class WebGPUBinary7 extends OperatorImpl {
   constructor(
     public elementwiseShaderName: string,
-    private elementwiseShaderBinary: Uint32Array,
+    private elementwiseShaderBinary: string,
     public broadcastShaderNames: string[],
-    private broadcastShaderBinaries: Uint32Array[],
+    private broadcastShaderBinaries: string[],
   ) {
     super("webgpu");
   }
