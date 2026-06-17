@@ -7,17 +7,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack -w",
-    "build:all": "npm run shader:wasm && npm run shader:webgpu && npm run makeShaderList && npm run build && npm run build:core",
-    "build:core": "webpack --config webpack-core.config.js",
-    "build:cpu": "webpack --config webpack-cpu.config.js",
-    "build:wasm": "webpack --config webpack-wasm.config.js",
-    "build:webgl1-16384": "webpack --config webpack-webgl1-16384.config.js",
-    "build:webgl1-4096": "webpack --config webpack-webgl1-4096.config.js",
-    "build:webgl2-16384": "webpack --config webpack-webgl2-16384.config.js",
-    "build:webgl2-4096": "webpack --config webpack-webgl2-4096.config.js",
-    "build:webgpu": "webpack --config webpack-webgpu.config.js",
+    "prebuild:js": "node scripts/ensure-generated-stubs.mjs",
+    "build:js": "node scripts/build.mjs",
+    "build:dts": "tsc -p tsconfig.json --emitDeclarationOnly --noEmit false --outDir dist/types",
+    "build": "npm run build:js && npm run build:dts",
+    "build:all": "npm run shader:wasm && npm run shader:webgpu && npm run makeShaderList && npm run build",
+    "dev": "node scripts/build.mjs",
     "lint": "eslint src/descriptor_runner",
     "lint:fix": "eslint --fix src/descriptor_runner",
     "format": "prettier --write \"src/descriptor_runner/**/*.ts\"",
@@ -29,7 +24,7 @@
     "server": "npx http-server -c-1",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "pretypecheck": "node scripts/ensure-generated-stubs.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"tests added in P2\""
   },
   "repository": {
     "type": "git",
@@ -54,11 +49,9 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.2",
     "prettier": "^3.8.4",
-    "ts-loader": "^8.0.17",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.61.1",
-    "webpack": "^5.24.4",
-    "webpack-cli": "^4.5.0"
+    "vite": "^5.4.21"
   },
   "keywords": [
     "deep-neural-networks",
@@ -66,5 +59,8 @@
     "optimization",
     "javascript",
     "webgpu"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
 }
