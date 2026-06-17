@@ -26,7 +26,8 @@
     "pretypecheck": "node scripts/ensure-generated-stubs.mjs",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fixtures": "uv run --project test/fixtures python test/fixtures/generate_fixtures.py"
   },
   "repository": {
     "type": "git",
