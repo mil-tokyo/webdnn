@@ -5,7 +5,7 @@ import {
 } from "../../../../interface/backend/wasm/wasmContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { getAttrFloat } from "../../../operatorUtil";
 
 abstract class WasmDynamicUnary extends OperatorImpl {

@@ -1,6 +1,6 @@
 import { OperatorImpl } from "../operatorImpl";
 import { Tensor } from "../../interface/core/tensor";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { getAttrString } from "../operatorUtil";
 import { Backend } from "../../interface/core/constants";
 import { CPUTensor } from "../../interface/backend/cpu/cpuTensor";

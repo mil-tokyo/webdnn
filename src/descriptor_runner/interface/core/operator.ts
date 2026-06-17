@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { BackendContext } from "./backendContext";
 import { Backend } from "./constants";
 import { Tensor } from "./tensor";

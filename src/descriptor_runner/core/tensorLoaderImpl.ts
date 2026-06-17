@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../onnx/onnx";
 import { CPUTensor } from "..";
 import { WebDNNCPUContext } from "../interface/backend/cpu/cpuContext";
 import { DataArrayTypes, DataType } from "../interface/core/constants";

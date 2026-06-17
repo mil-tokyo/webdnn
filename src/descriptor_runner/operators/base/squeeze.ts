@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrInts } from "../operatorUtil";
 import { Tensor } from "../../interface/core/tensor";

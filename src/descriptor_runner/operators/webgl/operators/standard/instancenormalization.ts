@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { OperatorImpl } from "../../../operatorImpl";
 import { arrayProd, getAttrInt } from "../../../operatorUtil";
 import {

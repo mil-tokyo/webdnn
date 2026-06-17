@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { inflate } from "pako";
 import { DataArrayTypes } from "../../interface/core/constants";
 

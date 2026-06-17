@@ -1,5 +1,5 @@
 import Long from "long";
-import { onnx } from "onnx-proto";
+import { onnx } from "../onnx/onnx";
 import { DataArrayTypes, DataType } from "../interface/core/constants";
 import { clipLong, intOrLongToInt, intOrLongToIntVector } from "../util";
 

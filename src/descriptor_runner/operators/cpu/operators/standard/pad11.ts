@@ -2,7 +2,7 @@ import { DataArrayTypes } from "../../../../interface/core/constants";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { getAttrString } from "../../../operatorUtil";
 import { Pad11 } from "../../../base/pad11";
 
