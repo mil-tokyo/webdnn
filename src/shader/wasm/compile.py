@@ -33,7 +33,9 @@ if not os.path.exists("./lib/eigen-3.3.9"):
 
 srcs = glob.glob(CPP_SRC_DIR + "/**/*.cpp", recursive=True)
 
-subprocess.check_call(["emcc", "-std=c++11", "--pre-js", "pre.js", "-I", "lib/eigen-3.3.9", "-o", f"{DST_DIR}/workerRaw.js", OPTIMIZATION, "-s", "ALLOW_MEMORY_GROWTH=1", *srcs], shell=os.name=='nt')
+# EXPORTED_RUNTIME_METHODS=HEAPU8: emscripten 3.1+/6.x no longer attaches HEAPU8 to
+# the Module object by default; pre.js reads Module.HEAPU8.buffer, so export it explicitly.
+subprocess.check_call(["emcc", "-std=c++11", "--pre-js", "pre.js", "-I", "lib/eigen-3.3.9", "-o", f"{DST_DIR}/workerRaw.js", OPTIMIZATION, "-s", "ALLOW_MEMORY_GROWTH=1", "-s", "EXPORTED_RUNTIME_METHODS=HEAPU8", *srcs], shell=os.name=='nt')
 
 # embed wasm into worker js
 with open(f"{DST_DIR}/workerRaw.wasm", "rb") as f:

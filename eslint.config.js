@@ -10,7 +10,7 @@ export default tseslint.config(
       "node_modules/**",
       "src/descriptor_runner/operators/**/opEntries*.ts",
       "src/descriptor_runner/operators/webgpu/shaders.ts",
-      "src/descriptor_runner/operators/wasm/worker/worker.ts",
+      "src/descriptor_runner/operators/wasm/worker/**",
       "src/descriptor_runner/onnx/**",
       "src/shader/**",
       "scripts/**",

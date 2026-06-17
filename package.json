@@ -26,7 +26,7 @@
     "lint:fix": "eslint --fix src/descriptor_runner",
     "format": "prettier --write \"src/descriptor_runner/**/*.ts\"",
     "format:check": "prettier --check \"src/descriptor_runner/**/*.ts\"",
-    "shader:wasm": "python3 src/shader/wasm/compile.py",
+    "shader:wasm": "bash scripts/build-wasm.sh",
     "shader:webgpu": "node src/shader/webgpu/compile.js",
     "makeShaderList": "python3 scripts/make_operator_entries.py",
     "prepublishOnly": "npm run build:all",
