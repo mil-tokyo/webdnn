@@ -26,6 +26,7 @@
     "pretypecheck": "node scripts/ensure-generated-stubs.mjs",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "fixtures": "uv run --project test/fixtures python test/fixtures/generate_fixtures.py"
   },
@@ -46,6 +47,7 @@
     "pako": "^2.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@types/pako": "^1.0.1",
     "@webgpu/glslang": "^0.0.15",
     "@webgpu/types": "^0.1.70",
