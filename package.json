@@ -36,6 +36,9 @@
     "email": "hidaka@edgeintelligence.jp"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@webgpu/types": "^0.0.45",
     "onnx-proto": "^4.0.4",
