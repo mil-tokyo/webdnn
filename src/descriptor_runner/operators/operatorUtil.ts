@@ -125,12 +125,11 @@ export function getAttrString(
   if (!attr) {
     return defaultValue;
   }
-  // Only ASCII chars are considered
   const v = attr.s;
   if (v == null) {
     throw new Error(`Attribute ${name} is not string`);
   }
-  return String.fromCharCode(...Array.from(v));
+  return new TextDecoder('utf-8').decode(new Uint8Array(v));
 }
 
 export function arraySum(vec: ArrayLike<number>): number {
