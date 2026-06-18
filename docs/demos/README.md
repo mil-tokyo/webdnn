@@ -173,7 +173,7 @@ const [out] = await runner.run([input]);
 
 ## ステータス
 
-- [ ] **01 カメラフィルタ** — 設計中（このカタログの次に spec 化）
+- [x] **01 カメラフィルタ** — コード実装完了・ブラウザでパイプライン検証済（model load / 192²ライブ / HUD / 256²キャプチャ）。light model + ライブ192²/キャプチャ256²。**残: GPUで画風を学習→`styles/styles.json`更新**（[example/style_transfer/README.md](../../example/style_transfer/README.md)）。副産物の知見: core修正（`util.ts` の Long→number 変換）と「export は opset11＋ORT最適化が必須」。
 - [ ] 02 ボードゲーム自己対戦AI — backlog
 - [ ] 03 深度推定 → 擬似3D — backlog（Resize 追加の初回）
 - [ ] 04 背景除去 / 仮想背景 — backlog
