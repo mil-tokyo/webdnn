@@ -81,10 +81,22 @@ export function clipLong(v: Long): number {
 }
 
 export function intOrLongToInt(v: number | Long): number {
+  if (typeof v === "number") {
+    return v;
+  }
   if (v instanceof Long) {
     return clipLong(v);
   }
-  return v;
+  // protobufjs may build Long instances from a different copy of the `long`
+  // package, so `instanceof Long` can be false for a genuine Long. In that case
+  // the value would pass through unconverted and `number + Long` would
+  // string-concatenate downstream (e.g. Conv `pads` -> corrupted output shape).
+  // Reconstruct a local Long from its bit fields so clipLong() works.
+  const l = v as unknown as { low: number; high: number; unsigned?: boolean };
+  if (l && typeof l.low === "number" && typeof l.high === "number") {
+    return clipLong(Long.fromBits(l.low, l.high, Boolean(l.unsigned)));
+  }
+  return Number(v);
 }
 
 export function intOrLongToIntVector(v: (number | Long)[]): number[] {
