@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebDNN リアルタイム画風変換</title>
+  <script src="../../dist/webdnn.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #111; color: #eee; margin: 0; padding-bottom: 24px; }
+    h1 { font-size: 1.2rem; padding: 10px; margin: 0; }
+    #stage { display: inline-block; position: relative; }
+    #out { width: min(90vw, 512px); height: auto; image-rendering: pixelated; background: #000; border-radius: 8px; }
+    #hud { position: absolute; top: 8px; left: 8px; font-size: 12px; background: #000a; padding: 3px 8px; border-radius: 5px; }
+    .controls { margin: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    button, label.btn { background: #2b6; color: #022; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    button.sec { background: #444; color: #eee; }
+    #styles { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 8px; }
+    #styles button { width: 72px; height: 72px; padding: 0; border: 3px solid transparent; background-size: cover; background-position: center; color: #fff; text-shadow: 0 0 3px #000; font-size: 11px; }
+    #styles button.active { border-color: #4cf; }
+    #capture-area:empty { display: none; }
+    #capture-area { margin-top: 12px; }
+    #cap { width: min(90vw, 512px); border-radius: 8px; }
+    #msg { color: #fa6; min-height: 1.2em; }
+  </style>
+</head><body>
+  <h1>WebDNN 画風変換（ブラウザ内・GPU推論）</h1>
+  <div id="stage"><canvas id="out" width="192" height="192"></canvas><span id="hud">…</span></div>
+  <p id="msg"></p>
+  <div class="controls">
+    <button id="cam" class="sec">📷 webカメラ</button>
+    <button id="capture">✨ 高画質キャプチャ</button>
+    <button id="ba" class="sec">⇄ before/after</button>
+    <label class="btn sec">🖼 画像を開く<input id="file" type="file" accept="image/*" hidden /></label>
+  </div>
+  <div id="styles"></div>
+  <div id="capture-area"></div>
+  <video id="sample" loop muted playsinline style="display:none"></video>
+  <video id="webcam" muted playsinline style="display:none"></video>
+  <img id="dropimg" style="display:none" alt="" />
+  <script type="module" src="index.js"></script>
+</body></html>
