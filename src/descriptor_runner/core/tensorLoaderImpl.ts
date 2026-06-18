@@ -173,7 +173,7 @@ export class TensorLoaderImpl implements TensorLoader {
     byteLength: number,
   ): string {
     const view = new Uint8Array(buf, byteOffset, byteLength);
-    return new TextDecoder('utf-8').decode(view);
+    return new TextDecoder("utf-8").decode(view);
   }
 
   private parseTensorBody(

@@ -129,7 +129,7 @@ export function getAttrString(
   if (v == null) {
     throw new Error(`Attribute ${name} is not string`);
   }
-  return new TextDecoder('utf-8').decode(new Uint8Array(v));
+  return new TextDecoder("utf-8").decode(new Uint8Array(v));
 }
 
 export function arraySum(vec: ArrayLike<number>): number {
