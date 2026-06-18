@@ -10,10 +10,9 @@ class CPUReshape5 extends Reshape5 {
   }
 
   getTensorBackendRequirement(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     nInputs: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     return ["cpu", "cpu"];
   }

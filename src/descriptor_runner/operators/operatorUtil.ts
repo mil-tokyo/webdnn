@@ -1,11 +1,11 @@
 import Long from "long";
-import { onnx } from "onnx-proto";
+import { onnx } from "../onnx/onnx";
 import { DataArrayTypes, DataType } from "../interface/core/constants";
 import { clipLong, intOrLongToInt, intOrLongToIntVector } from "../util";
 
 function getAttr(
   attribute: onnx.IAttributeProto[],
-  name: string
+  name: string,
 ): onnx.IAttributeProto | null {
   for (const attr of attribute) {
     if (attr.name === name) {
@@ -19,7 +19,7 @@ function getAttr(
 export function getAttrFloat(
   attribute: onnx.IAttributeProto[],
   name: string,
-  defaultValue: number
+  defaultValue: number,
 ): number {
   const attr = getAttr(attribute, name);
   if (!attr) {
@@ -35,7 +35,7 @@ export function getAttrFloat(
 export function getAttrInt(
   attribute: onnx.IAttributeProto[],
   name: string,
-  defaultValue: number
+  defaultValue: number,
 ): number {
   const attr = getAttr(attribute, name);
   if (!attr) {
@@ -51,7 +51,7 @@ export function getAttrInt(
 export function getAttrInts(
   attribute: onnx.IAttributeProto[],
   name: string,
-  defaultValue: number[]
+  defaultValue: number[],
 ): number[] {
   const attr = getAttr(attribute, name);
   if (!attr) {
@@ -66,7 +66,7 @@ export function getAttrInts(
 
 export function getAttrTensor(
   attribute: onnx.IAttributeProto[],
-  name: string
+  name: string,
 ): { data: DataArrayTypes; dataType: DataType; dims: number[] } | null {
   const attr = getAttr(attribute, name);
   if (!attr) {
@@ -76,7 +76,7 @@ export function getAttrTensor(
   if (v == null) {
     throw new Error(`Attribute ${name} is not int`);
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const dims = intOrLongToIntVector(v.dims!),
     { rawData } = v;
   if (!rawData) {
@@ -89,7 +89,7 @@ export function getAttrTensor(
       const ab = new Float32Array(
         data.buffer,
         0,
-        data.length / Float32Array.BYTES_PER_ELEMENT
+        data.length / Float32Array.BYTES_PER_ELEMENT,
       );
       return { dims, dataType: "float32", data: ab };
     }
@@ -98,15 +98,15 @@ export function getAttrTensor(
       const view = new DataView(
           rawData.buffer,
           rawData.byteOffset,
-          rawData.byteLength
+          rawData.byteLength,
         ),
         ab = new Int32Array(view.byteLength / 8);
       for (let idx = 0; idx < ab.length; idx++) {
         ab[idx] = clipLong(
           new Long(
             view.getUint32(idx * 8, true),
-            view.getUint32(idx * 8 + 4, true)
-          )
+            view.getUint32(idx * 8 + 4, true),
+          ),
         );
       }
       return { dims, dataType: "int32", data: ab };
@@ -119,7 +119,7 @@ export function getAttrTensor(
 export function getAttrString(
   attribute: onnx.IAttributeProto[],
   name: string,
-  defaultValue: string
+  defaultValue: string,
 ): string {
   const attr = getAttr(attribute, name);
   if (!attr) {
@@ -129,7 +129,7 @@ export function getAttrString(
   if (v == null) {
     throw new Error(`Attribute ${name} is not string`);
   }
-  return new TextDecoder('utf-8').decode(new Uint8Array(v));
+  return new TextDecoder("utf-8").decode(new Uint8Array(v));
 }
 
 export function arraySum(vec: ArrayLike<number>): number {
@@ -150,7 +150,7 @@ export function arrayProd(vec: ArrayLike<number>): number {
 
 export function arrayEqual(
   vec1: ArrayLike<number>,
-  vec2: ArrayLike<number>
+  vec2: ArrayLike<number>,
 ): boolean {
   if (vec1.length !== vec2.length) {
     return false;
@@ -177,7 +177,7 @@ export function calcStrides(dims: number[]): number[] {
 
 export function broadcastUni(
   dimsA: ReadonlyArray<number>,
-  dimsB: ReadonlyArray<number>
+  dimsB: ReadonlyArray<number>,
 ): number[] {
   /*
    * 行列Bを行列Aのshapeに合うようにbroadcast

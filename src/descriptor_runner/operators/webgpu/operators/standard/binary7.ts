@@ -12,9 +12,9 @@ import { webgpuShaders } from "../../shaders";
 class WebGPUBinary7 extends OperatorImpl {
   constructor(
     public elementwiseShaderName: string,
-    private elementwiseShaderBinary: Uint32Array,
+    private elementwiseShaderBinary: string,
     public broadcastShaderNames: string[],
-    private broadcastShaderBinaries: Uint32Array[]
+    private broadcastShaderBinaries: string[],
   ) {
     super("webgpu");
   }
@@ -35,7 +35,7 @@ class WebGPUBinary7 extends OperatorImpl {
   private async runElementwise(
     context: WebDNNWebGPUContext,
     inputA: WebGPUTensor,
-    inputB: WebGPUTensor
+    inputB: WebGPUTensor,
   ) {
     const outputTensor = context.emptyTensor(inputA.dims, "float32");
 
@@ -43,7 +43,7 @@ class WebGPUBinary7 extends OperatorImpl {
       context.createPipeline(
         this.elementwiseShaderName,
         this.elementwiseShaderBinary,
-        4
+        4,
       );
     }
 
@@ -66,7 +66,7 @@ class WebGPUBinary7 extends OperatorImpl {
   private async runBroadcast(
     context: WebDNNWebGPUContext,
     inputA: WebGPUTensor,
-    inputB: WebGPUTensor
+    inputB: WebGPUTensor,
   ) {
     const { dims: outShape, allStrides: inAllStrides } = broadcastMulti([
         inputA.dims,
@@ -91,7 +91,7 @@ class WebGPUBinary7 extends OperatorImpl {
       context.createPipeline(
         this.broadcastShaderNames[outNDim],
         this.broadcastShaderBinaries[outNDim],
-        4
+        4,
       );
     }
 
@@ -136,7 +136,7 @@ export function getOpEntries(): OperatorEntry[] {
             webgpuShaders.binary_broadcast_add_2d,
             webgpuShaders.binary_broadcast_add_3d,
             webgpuShaders.binary_broadcast_add_4d,
-          ]
+          ],
         ),
     },
   ];

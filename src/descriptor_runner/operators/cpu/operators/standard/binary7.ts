@@ -8,7 +8,7 @@ import { OperatorEntry } from "../../../../interface/core/operator";
 class Binary7 extends OperatorImpl {
   constructor(
     private op: (lhs: number, rhs: number) => number,
-    private allowDataTypes: DataType[]
+    private allowDataTypes: DataType[],
   ) {
     super("cpu");
   }
@@ -19,12 +19,12 @@ class Binary7 extends OperatorImpl {
       inputB = inputs[1];
     if (inputA.dataType !== inputB.dataType) {
       throw new Error(
-        `Binary: input dataTypes mismatch: ${inputA.dataType} !== ${inputB.dataType}`
+        `Binary: input dataTypes mismatch: ${inputA.dataType} !== ${inputB.dataType}`,
       );
     }
     if (!this.allowDataTypes.includes(inputA.dataType)) {
       throw new Error(
-        `Binary: input dataType ${inputA.dataType} is not supported`
+        `Binary: input dataType ${inputA.dataType} is not supported`,
       );
     }
     // TODO: broadcast不要の場合に特化したパフォーマンス向上
@@ -60,7 +60,7 @@ class Binary7 extends OperatorImpl {
         break;
       default:
         throw new Error(
-          `Binary: input ndim ${outShape.length} > 4 is not yet supported`
+          `Binary: input ndim ${outShape.length} > 4 is not yet supported`,
         );
     }
     func(inputA.data, inputB.data, output.data, op, outShape, inAllStrides);
@@ -72,10 +72,10 @@ class Binary7 extends OperatorImpl {
     dR: DataArrayTypes,
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     outShape: number[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    inAllStrides: number[][]
+
+    inAllStrides: number[][],
   ) {
     dO[0] = op(dL[0], dR[0]);
   }
@@ -86,7 +86,7 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -100,14 +100,14 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
       for (let a1 = 0; a1 < outShape[1]; a1++) {
         dO[idx++] = op(
           dL[a0 * inAllStrides[0][0] + a1 * inAllStrides[0][1]],
-          dR[a0 * inAllStrides[1][0] + a1 * inAllStrides[1][1]]
+          dR[a0 * inAllStrides[1][0] + a1 * inAllStrides[1][1]],
         );
       }
     }
@@ -119,7 +119,7 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -135,7 +135,7 @@ class Binary7 extends OperatorImpl {
               a0 * inAllStrides[1][0] +
                 a1 * inAllStrides[1][1] +
                 a2 * inAllStrides[1][2]
-            ]
+            ],
           );
         }
       }
@@ -148,7 +148,7 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -167,7 +167,7 @@ class Binary7 extends OperatorImpl {
                   a1 * inAllStrides[1][1] +
                   a2 * inAllStrides[1][2] +
                   a3 * inAllStrides[1][3]
-              ]
+              ],
             );
           }
         }
@@ -181,7 +181,7 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -203,7 +203,7 @@ class Binary7 extends OperatorImpl {
                     a2 * inAllStrides[1][2] +
                     a3 * inAllStrides[1][3] +
                     a4 * inAllStrides[1][4]
-                ]
+                ],
               );
             }
           }
@@ -218,7 +218,7 @@ class Binary7 extends OperatorImpl {
     dO: DataArrayTypes,
     op: (lhs: number, rhs: number) => number,
     outShape: number[],
-    inAllStrides: number[][]
+    inAllStrides: number[][],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -243,7 +243,7 @@ class Binary7 extends OperatorImpl {
                       a3 * inAllStrides[1][3] +
                       a4 * inAllStrides[1][4] +
                       a5 * inAllStrides[1][5]
-                  ]
+                  ],
                 );
               }
             }

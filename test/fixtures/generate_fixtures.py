@@ -1,0 +1,112 @@
+"""Generate small, torch-free ONNX fixtures + expected.bin for browser tests.
+
+Run with: npm run fixtures
+Outputs into test/model_test/runner/model/<case>/ and writes cases.json.
+"""
+import json
+import os
+import sys
+
+import numpy as np
+import onnx
+import onnxruntime as ort
+from onnx import TensorProto, helper
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(REPO_ROOT, "src", "graph_transpiler"))
+from webdnn.tensor_export import serialize_tensors  # noqa: E402
+
+OUTPUT_DIR = os.path.join(REPO_ROOT, "test", "model_test", "runner", "model")
+
+
+def make_single_op_model(op_type, input_names, output_name, shape, attrs=None):
+    inputs = [helper.make_tensor_value_info(n, TensorProto.FLOAT, shape) for n in input_names]
+    output = helper.make_tensor_value_info(output_name, TensorProto.FLOAT, shape)
+    node = helper.make_node(op_type, input_names, [output_name], **(attrs or {}))
+    graph = helper.make_graph([node], f"{op_type}_graph", inputs, [output])
+    model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 13)])
+    model.ir_version = 9
+    onnx.checker.check_model(model)
+    return model
+
+
+def dump_case(name, model, feeds):
+    case_dir = os.path.join(OUTPUT_DIR, name)
+    os.makedirs(case_dir, exist_ok=True)
+    onnx.save(model, os.path.join(case_dir, "model.onnx"))
+    sess = ort.InferenceSession(model.SerializeToString(), providers=["CPUExecutionProvider"])
+    output_names = [o.name for o in sess.get_outputs()]
+    outputs = sess.run(output_names, feeds)
+    tensors = {}
+    for n, arr in feeds.items():
+        tensors[n] = np.ascontiguousarray(arr, dtype=np.float32)
+    for n, arr in zip(output_names, outputs):
+        tensors[n] = np.ascontiguousarray(arr, dtype=np.float32)
+    serialize_tensors(os.path.join(case_dir, "expected.bin"), tensors)
+    print("wrote", name)
+
+
+def main():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    rng = np.random.default_rng(0)
+    cases = []
+
+    x = rng.standard_normal((1, 8)).astype(np.float32)
+    dump_case("relu", make_single_op_model("Relu", ["input_0"], "output_0", [1, 8]), {"input_0": x})
+    cases.append({"name": "relu", "large": False})
+
+    a = rng.standard_normal((1, 8)).astype(np.float32)
+    b = rng.standard_normal((1, 8)).astype(np.float32)
+    dump_case("add", make_single_op_model("Add", ["input_0", "input_1"], "output_0", [1, 8]), {"input_0": a, "input_1": b})
+    cases.append({"name": "add", "large": False})
+
+    x2 = rng.standard_normal((1, 8)).astype(np.float32)
+    dump_case("sigmoid", make_single_op_model("Sigmoid", ["input_0"], "output_0", [1, 8]), {"input_0": x2})
+    cases.append({"name": "sigmoid", "large": False})
+
+    # gemm: Y = alpha*(A@B) + beta*C  (A: MxK, B: KxN, C: N) -- exercises the WebGPU gemm shader.
+    M, K, N = 2, 3, 4
+    A = rng.standard_normal((M, K)).astype(np.float32)
+    B = rng.standard_normal((K, N)).astype(np.float32)
+    C = rng.standard_normal((N,)).astype(np.float32)
+    gemm_inputs = [
+        helper.make_tensor_value_info("input_0", TensorProto.FLOAT, [M, K]),
+        helper.make_tensor_value_info("input_1", TensorProto.FLOAT, [K, N]),
+        helper.make_tensor_value_info("input_2", TensorProto.FLOAT, [N]),
+    ]
+    gemm_out = helper.make_tensor_value_info("output_0", TensorProto.FLOAT, [M, N])
+    gemm_node = helper.make_node(
+        "Gemm", ["input_0", "input_1", "input_2"], ["output_0"], alpha=1.0, beta=1.0
+    )
+    gemm_graph = helper.make_graph([gemm_node], "gemm_graph", gemm_inputs, [gemm_out])
+    gemm_model = helper.make_model(gemm_graph, opset_imports=[helper.make_opsetid("", 13)])
+    gemm_model.ir_version = 9
+    onnx.checker.check_model(gemm_model)
+    dump_case("gemm", gemm_model, {"input_0": A, "input_1": B, "input_2": C})
+    cases.append({"name": "gemm", "large": False})
+
+    # conv: 1 batch, 1 in-ch, 1 out-ch, 3x3 input, 2x2 kernel, no pad, stride 1 -- WebGPU conv shaders.
+    Xc = rng.standard_normal((1, 1, 3, 3)).astype(np.float32)
+    Wc = rng.standard_normal((1, 1, 2, 2)).astype(np.float32)
+    conv_inputs = [
+        helper.make_tensor_value_info("input_0", TensorProto.FLOAT, [1, 1, 3, 3]),
+        helper.make_tensor_value_info("input_1", TensorProto.FLOAT, [1, 1, 2, 2]),
+    ]
+    conv_out = helper.make_tensor_value_info("output_0", TensorProto.FLOAT, [1, 1, 2, 2])
+    conv_node = helper.make_node(
+        "Conv", ["input_0", "input_1"], ["output_0"], kernel_shape=[2, 2]
+    )
+    conv_graph = helper.make_graph([conv_node], "conv_graph", conv_inputs, [conv_out])
+    conv_model = helper.make_model(conv_graph, opset_imports=[helper.make_opsetid("", 13)])
+    conv_model.ir_version = 9
+    onnx.checker.check_model(conv_model)
+    dump_case("conv", conv_model, {"input_0": Xc, "input_1": Wc})
+    cases.append({"name": "conv", "large": False})
+
+    with open(os.path.join(OUTPUT_DIR, "cases.json"), "w", newline="\n") as f:
+        json.dump(cases, f, indent=2)
+    print("wrote cases.json with", len(cases), "cases")
+
+
+if __name__ == "__main__":
+    main()

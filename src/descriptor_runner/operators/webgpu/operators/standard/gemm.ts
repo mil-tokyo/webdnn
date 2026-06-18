@@ -26,7 +26,7 @@ export class WebGPUGemm extends Gemm {
     context: WebDNNWebGPUContext,
     inputA: WebGPUTensor,
     inputB: WebGPUTensor,
-    inputC: WebGPUTensor
+    inputC: WebGPUTensor,
   ): Promise<WebGPUTensor[]> {
     if (inputA.dataType !== "float32") {
       throw new Error();

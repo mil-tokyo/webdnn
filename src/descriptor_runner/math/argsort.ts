@@ -21,7 +21,6 @@ export function argmax(arr: number[] | Float32Array, k = 1): number[] {
   for (let i = 0; i < arr.length; i++) workspace[i] = i;
 
   while (stack.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [from, to] = stack.pop()!,
       pivot = arr[to - 1];
     let left = from,
@@ -30,7 +29,6 @@ export function argmax(arr: number[] | Float32Array, k = 1): number[] {
 
     if (from >= to - 1) continue;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       while (arr[left] > pivot && left <= right) left++;
       while (arr[right] <= pivot && left <= right) right--;
@@ -71,7 +69,7 @@ export function argmax(arr: number[] | Float32Array, k = 1): number[] {
  */
 export function argmin(
   arr: number[] | Float32Array | Int32Array,
-  k = 1
+  k = 1,
 ): number[] {
   // Top-k Quicksort
 
@@ -81,7 +79,6 @@ export function argmin(
   for (let i = 0; i < arr.length; i++) workspace[i] = i;
 
   while (stack.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [from, to] = stack.pop()!,
       pivot = arr[to - 1];
     let left = from,
@@ -90,7 +87,6 @@ export function argmin(
 
     if (from >= to - 1) continue;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       while (arr[left] < pivot && left <= right) left++;
       while (arr[right] >= pivot && left <= right) right--;

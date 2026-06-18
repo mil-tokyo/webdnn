@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { DataArrayTypes, DataType } from "../../../../interface/core/constants";
 import { OperatorImpl } from "../../../operatorImpl";
 import { getAttrTensor } from "../../../operatorUtil";
@@ -26,7 +26,6 @@ class ConstantOfShape extends OperatorImpl {
     this.constant = constant;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const input = Array.from(inputs[0].data);

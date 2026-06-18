@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { DataArrayTypes, DataType } from "../../../../interface/core/constants";
 import { OperatorImpl } from "../../../operatorImpl";
 import { getAttrTensor } from "../../../operatorUtil";
@@ -27,11 +27,10 @@ class Constant extends OperatorImpl {
     this.constant = constant;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async run(context: WebDNNCPUContext, inputs: Tensor[]): Promise<Tensor[]> {
     const output = context.emptyTensor(
       this.constant.dims,
-      this.constant.dataType
+      this.constant.dataType,
     );
     output.data.set(this.constant.data);
     return [output];

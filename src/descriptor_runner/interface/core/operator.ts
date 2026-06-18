@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { BackendContext } from "./backendContext";
 import { Backend } from "./constants";
 import { Tensor } from "./tensor";
@@ -8,12 +8,12 @@ export interface Operator {
   run(
     context: BackendContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]>;
   initialize(attribute: onnx.IAttributeProto[]): void;
   getTensorBackendRequirement(
     nInputs: number,
-    nOutputs: number
+    nOutputs: number,
   ): (Backend | null)[];
 }
 

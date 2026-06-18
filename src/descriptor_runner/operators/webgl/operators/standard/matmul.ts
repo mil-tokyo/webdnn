@@ -52,7 +52,7 @@ export class WebGLMatMul extends MatMul {
         resultStrides,
         stridesA,
         stridesB,
-        innerProductLength
+        innerProductLength,
       );
     } else if (resultDims.length === 3) {
       await this.calcDim3(
@@ -64,7 +64,7 @@ export class WebGLMatMul extends MatMul {
         resultStrides,
         stridesA,
         stridesB,
-        innerProductLength
+        innerProductLength,
       );
     } else {
       // TODO: 4次元以上のサポート
@@ -83,7 +83,7 @@ export class WebGLMatMul extends MatMul {
     resultStrides: number[],
     stridesA: ReadonlyArray<number>,
     stridesB: ReadonlyArray<number>,
-    innerProductLength: number
+    innerProductLength: number,
   ) {
     const kernelSource = context.webgl2
         ? `${shaderGenHeader(context.webgl2)}
@@ -163,13 +163,13 @@ void main() {
         "tex_input_a",
         stridesA,
         dA,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         stridesB,
         dB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(resultDims, dC, context.webgl2),
     ];
@@ -180,7 +180,7 @@ void main() {
         { tensor: dB, name: "tex_input_b" },
       ],
       dC,
-      uniforms
+      uniforms,
     );
   }
 
@@ -193,7 +193,7 @@ void main() {
     resultStrides: number[],
     stridesA: ReadonlyArray<number>,
     stridesB: ReadonlyArray<number>,
-    innerProductLength: number
+    innerProductLength: number,
   ) {
     const kernelSource = context.webgl2
         ? `${shaderGenHeader(context.webgl2)}
@@ -279,13 +279,13 @@ void main() {
         "tex_input_a",
         stridesA,
         dA,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         stridesB,
         dB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(resultDims, dC, context.webgl2),
     ];
@@ -296,7 +296,7 @@ void main() {
         { tensor: dB, name: "tex_input_b" },
       ],
       dC,
-      uniforms
+      uniforms,
     );
   }
 }

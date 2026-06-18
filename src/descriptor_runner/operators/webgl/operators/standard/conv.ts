@@ -94,7 +94,7 @@ export class WebGLConv extends Conv {
           chOut,
           chOutPerGroup,
           chunkOffset,
-          chunkSize
+          chunkSize,
         );
         const matmulChunkData = context.emptyTensor([
           group * batch * chunkSize * outShape[1] * chOutPerGroup,
@@ -107,7 +107,7 @@ export class WebGLConv extends Conv {
           group,
           batch * chunkSize * outShape[1],
           chInPerGroup * kernelShape[0] * kernelShape[1],
-          chOutPerGroup
+          chOutPerGroup,
         );
         im2colData.dispose();
         matmulOutputs.push(matmulChunkData);
@@ -122,7 +122,7 @@ export class WebGLConv extends Conv {
         group * batch,
         outShape[0],
         outShape[1] * chOutPerGroup,
-        chunkInfos
+        chunkInfos,
       );
       matmulOutputs.forEach((mO) => mO.dispose());
     } else {
@@ -150,7 +150,7 @@ export class WebGLConv extends Conv {
         chIn,
         chInPerGroup,
         chOut,
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData = context.emptyTensor([
         group * batch * outShape[0] * outShape[1] * chOutPerGroup,
@@ -163,7 +163,7 @@ export class WebGLConv extends Conv {
         group,
         batch * outShape[0] * outShape[1],
         chInPerGroup * kernelShape[0] * kernelShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       im2colData.dispose();
     }
@@ -186,7 +186,7 @@ export class WebGLConv extends Conv {
         group,
         batch,
         outShape[0] * outShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
       await this.bias(
@@ -196,7 +196,7 @@ export class WebGLConv extends Conv {
         output,
         batch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
       transposeData.dispose();
     } else {
@@ -207,7 +207,7 @@ export class WebGLConv extends Conv {
         group,
         batch,
         outShape[0] * outShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
     }
@@ -229,7 +229,7 @@ export class WebGLConv extends Conv {
     chIn: number,
     chInPerGroup: number,
     chOut: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     const kernelName = `conv_im2col`;
     if (!context.hasKernel(kernelName)) {
@@ -314,7 +314,7 @@ export class WebGLConv extends Conv {
       kernelName,
       [{ tensor: dX, name: "tex_input" }],
       dI,
-      uniforms
+      uniforms,
     );
   }
 
@@ -335,7 +335,7 @@ export class WebGLConv extends Conv {
     chOut: number,
     chOutPerGroup: number,
     outShape0Offset: number,
-    outShape0ChunkSize: number
+    outShape0ChunkSize: number,
   ) {
     const kernelName = `conv_im2col_split`;
     if (!context.hasKernel(kernelName)) {
@@ -424,7 +424,7 @@ export class WebGLConv extends Conv {
       kernelName,
       [{ tensor: dX, name: "tex_input" }],
       dI,
-      uniforms
+      uniforms,
     );
   }
 
@@ -436,7 +436,7 @@ export class WebGLConv extends Conv {
     group: number,
     bout: number,
     cinkhkw: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     /*
      * DI(group, bout, cinkhkw) * dW(group, coutpergroup, cinkhkw) -> dT(group, bout, coutpergroup)
@@ -481,13 +481,13 @@ export class WebGLConv extends Conv {
         "tex_input_w",
         [1],
         dW,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_i",
         [1],
         dI,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem([dT.length], dT, context.webgl2),
       { name: "GROUP", type: "int", value: group },
@@ -501,7 +501,7 @@ export class WebGLConv extends Conv {
         { tensor: dI, name: "tex_input_i" },
       ],
       dT,
-      uniforms
+      uniforms,
     );
   }
 
@@ -512,7 +512,7 @@ export class WebGLConv extends Conv {
     outerLength: number,
     concatLength: number,
     innerLength: number,
-    chunks: { offset: number; length: number }[]
+    chunks: { offset: number; length: number }[],
   ): Promise<void> {
     const kernelName = `conv_concat_${chunks.length}`;
     if (!context.hasKernel(kernelName)) {
@@ -564,7 +564,7 @@ else {
       ...shaderGenTensorOutputUniformItem(
         [outerLength, concatLength, innerLength],
         dO,
-        context.webgl2
+        context.webgl2,
       ),
     ];
     for (let i = 0; i < chunks.length; i++) {
@@ -573,8 +573,8 @@ else {
           `tex_input_${i}`,
           [chunks[i].length * innerLength, innerLength, 1],
           dCs[i],
-          context.webgl2
-        )
+          context.webgl2,
+        ),
       );
       uniforms.push({
         name: `CHUNK_OFS${i}`,
@@ -586,7 +586,7 @@ else {
       kernelName,
       dCs.map((dC, i) => ({ tensor: dC, name: `tex_input_${i}` })),
       dO,
-      uniforms
+      uniforms,
     );
   }
 
@@ -597,7 +597,7 @@ else {
     group: number,
     batch: number,
     outarea: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     // DT(group, batch, outh, outw, choutpergroup) -> dO(batch, group, choutpergroup, outh, outw)
 
@@ -647,7 +647,7 @@ else {
       kernelName,
       [{ tensor: dT, name: "tex_input" }],
       dO,
-      uniforms
+      uniforms,
     );
   }
 
@@ -658,7 +658,7 @@ else {
     dO: WebGLTensor,
     batch: number,
     chOut: number,
-    outarea: number
+    outarea: number,
   ) {
     const kernelName = `conv_bias`;
     if (!context.hasKernel(kernelName)) {
@@ -696,13 +696,13 @@ else {
         "tex_input_i",
         [1],
         dI,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorNDGetUniformItem(
         "tex_input_b",
         [1],
         dB,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem([dO.length], dO, context.webgl2),
       { name: "BATCH", type: "int", value: batch },
@@ -716,7 +716,7 @@ else {
         { tensor: dB, name: "tex_input_b" },
       ],
       dO,
-      uniforms
+      uniforms,
     );
   }
 }

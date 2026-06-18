@@ -5,7 +5,7 @@ import { calcStrides } from "../operatorUtil";
 export abstract class MatMul extends OperatorImpl {
   protected calcShape(
     dimsA: ReadonlyArray<number>,
-    dimsB: ReadonlyArray<number>
+    dimsB: ReadonlyArray<number>,
   ) {
     /*
      *Matmulの出力shape、入力stride計算

@@ -1,21 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
     "pretty": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "newLine": "lf",
-    "outDir": "dist",
-    "lib": [
-      "es2019",
-      "dom"
-    ],
-    "typeRoots": ["./node_modules/@webgpu/types", "./node_modules/@types"]
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "types": ["@webgpu/types"]
   },
-  "include": [
-    "src/descriptor_runner"
-  ]
+  "include": ["src/descriptor_runner"]
 }

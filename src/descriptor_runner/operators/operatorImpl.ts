@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../onnx/onnx";
 import { Backend } from "../interface/core/constants";
 import { TensorImpl } from "../core/tensorImpl";
 import { Operator } from "../interface/core/operator";
@@ -10,16 +10,15 @@ export abstract class OperatorImpl implements Operator {
   abstract run(
     context: BackendContext,
     inputs: TensorImpl[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<TensorImpl[]>;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
   initialize(attribute: onnx.IAttributeProto[]): void {}
 
   getTensorBackendRequirement(
     nInputs: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     const backends: Backend[] = [];
     for (let i = 0; i < nInputs; i++) {

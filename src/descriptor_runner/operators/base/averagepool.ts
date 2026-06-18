@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { Backend } from "../../interface/core/constants";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrInt, getAttrInts, getAttrString } from "../operatorUtil";
@@ -38,19 +38,19 @@ export abstract class AveragePool extends OperatorImpl {
       if (this.ceilMode) {
         outShape = [
           Math.ceil(
-            (inShape[0] + pads[0] + pads[2] - kernelShape[0]) / strides[0]
+            (inShape[0] + pads[0] + pads[2] - kernelShape[0]) / strides[0],
           ) + 1,
           Math.ceil(
-            (inShape[1] + pads[1] + pads[3] - kernelShape[1]) / strides[1]
+            (inShape[1] + pads[1] + pads[3] - kernelShape[1]) / strides[1],
           ) + 1,
         ];
       } else {
         outShape = [
           Math.floor(
-            (inShape[0] + pads[0] + pads[2] - kernelShape[0]) / strides[0]
+            (inShape[0] + pads[0] + pads[2] - kernelShape[0]) / strides[0],
           ) + 1,
           Math.floor(
-            (inShape[1] + pads[1] + pads[3] - kernelShape[1]) / strides[1]
+            (inShape[1] + pads[1] + pads[3] - kernelShape[1]) / strides[1],
           ) + 1,
         ];
       }

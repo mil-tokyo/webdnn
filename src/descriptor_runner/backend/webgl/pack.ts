@@ -1,6 +1,6 @@
 export function packToFloat32Array(
   src: ArrayLike<number>,
-  length: number
+  length: number,
 ): Float32Array {
   const buffer = new Float32Array(length);
   buffer.set(src);
@@ -9,7 +9,7 @@ export function packToFloat32Array(
 
 export function packToFloat16Array(
   src: ArrayLike<number>,
-  length: number
+  length: number,
 ): Uint16Array {
   const srcLength = src.length;
   let srcUInt32: Uint32Array;
@@ -39,7 +39,7 @@ export function packToFloat16Array(
 
 export function packToInt32Array(
   src: ArrayLike<number>,
-  length: number
+  length: number,
 ): Int32Array {
   const buffer = new Int32Array(length);
   buffer.set(src);
@@ -48,7 +48,7 @@ export function packToInt32Array(
 
 export function packToUint8Array(
   src: ArrayLike<number>,
-  length: number
+  length: number,
 ): Uint8Array {
   const buffer = new Uint8Array(length);
   buffer.set(src);
@@ -57,7 +57,7 @@ export function packToUint8Array(
 
 export function unpackFromFloat32Array(
   src: Float32Array,
-  length: number
+  length: number,
 ): Float32Array {
   const buffer = new Float32Array(length);
   const srcView = new Float32Array(src.buffer, src.byteOffset, length);
@@ -67,7 +67,7 @@ export function unpackFromFloat32Array(
 
 export function unpackFromFloat16Array(
   src: Uint16Array,
-  length: number
+  length: number,
 ): Float32Array {
   const buffer = new Float32Array(length);
   const bufferUInt32 = new Uint32Array(buffer.buffer);
@@ -89,7 +89,7 @@ export function unpackFromFloat16Array(
 
 export function unpackFromInt32Array(
   src: Int32Array,
-  length: number
+  length: number,
 ): Int32Array {
   const buffer = new Int32Array(length);
   const srcView = new Int32Array(src.buffer, src.byteOffset, length);
@@ -99,7 +99,7 @@ export function unpackFromInt32Array(
 
 export function unpackFromUint8Array(
   src: Uint8Array,
-  length: number
+  length: number,
 ): Uint8Array {
   const buffer = new Uint8Array(length);
   const srcView = new Uint8Array(src.buffer, src.byteOffset, length);

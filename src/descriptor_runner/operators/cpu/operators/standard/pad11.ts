@@ -2,7 +2,7 @@ import { DataArrayTypes } from "../../../../interface/core/constants";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { getAttrString } from "../../../operatorUtil";
 import { Pad11 } from "../../../base/pad11";
 
@@ -56,7 +56,7 @@ class CPUPad11 extends Pad11 {
             break;
           default:
             throw new Error(
-              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`,
             );
         }
         break;
@@ -82,7 +82,7 @@ class CPUPad11 extends Pad11 {
             break;
           default:
             throw new Error(
-              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`,
             );
         }
         break;
@@ -108,7 +108,7 @@ class CPUPad11 extends Pad11 {
             break;
           default:
             throw new Error(
-              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`
+              `Pad: input.ndim = ${input.ndim} > 6 is not yet supported`,
             );
         }
         break;
@@ -121,7 +121,7 @@ class CPUPad11 extends Pad11 {
       input.strides,
       output.strides,
       pads,
-      constantValue
+      constantValue,
     );
     return [output];
   }
@@ -134,7 +134,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       const i0 = d0 - pads[0];
@@ -156,7 +156,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -181,7 +181,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -225,7 +225,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -276,7 +276,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -334,7 +334,7 @@ class CPUPad11 extends Pad11 {
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
     pads: ReadonlyArray<number>,
-    constantValue: number
+    constantValue: number,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -398,7 +398,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0] = inputShape;
     const [outputShape0] = outputShape;
@@ -430,7 +430,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1] = inputShape;
     const [outputShape0, outputShape1] = outputShape;
@@ -476,7 +476,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2] = inputShape;
     const [outputShape0, outputShape1, outputShape2] = outputShape;
@@ -538,7 +538,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2, inputShape3] = inputShape;
     const [outputShape0, outputShape1, outputShape2, outputShape3] =
@@ -625,7 +625,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2, inputShape3, inputShape4] =
       inputShape;
@@ -745,7 +745,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [
       inputShape0,
@@ -890,7 +890,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0] = inputShape;
     const [outputShape0] = outputShape;
@@ -916,7 +916,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1] = inputShape;
     const [outputShape0, outputShape1] = outputShape;
@@ -950,7 +950,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2] = inputShape;
     const [outputShape0, outputShape1, outputShape2] = outputShape;
@@ -994,7 +994,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2, inputShape3] = inputShape;
     const [outputShape0, outputShape1, outputShape2, outputShape3] =
@@ -1058,7 +1058,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [inputShape0, inputShape1, inputShape2, inputShape3, inputShape4] =
       inputShape;
@@ -1148,7 +1148,7 @@ class CPUPad11 extends Pad11 {
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
     outputStrides: ReadonlyArray<number>,
-    pads: ReadonlyArray<number>
+    pads: ReadonlyArray<number>,
   ) {
     const [
       inputShape0,

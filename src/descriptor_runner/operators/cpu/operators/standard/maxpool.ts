@@ -12,7 +12,7 @@ class CpuMaxPool extends MaxPool {
   async run(
     context: WebDNNCPUContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]> {
     context.assertsCPUTensorArray(inputs);
     const inputX = inputs[0];
@@ -45,12 +45,12 @@ class CpuMaxPool extends MaxPool {
       strides,
       inShape,
       outShape,
-      ch
+      ch,
     );
     const output = context.emptyTensor(
       [batch, ch, outShape[0], outShape[1]],
       "float32",
-      outputData
+      outputData,
     );
     return [output];
   }
@@ -65,7 +65,7 @@ class CpuMaxPool extends MaxPool {
     strides: number[],
     inShape: number[],
     outShape: number[],
-    ch: number
+    ch: number,
   ): void {
     /*
      *Batch,

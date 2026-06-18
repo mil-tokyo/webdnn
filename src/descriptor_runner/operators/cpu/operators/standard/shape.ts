@@ -19,7 +19,7 @@ class Shape extends OperatorImpl {
 
   getTensorBackendRequirement(
     nInputs: number,
-    nOutputs: number
+    nOutputs: number,
   ): (Backend | null)[] {
     // メタデータしか使わないので、どのバックエンドに存在してもよい
     return [null];

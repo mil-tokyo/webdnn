@@ -13,7 +13,7 @@ export abstract class TensorImpl implements Tensor {
   constructor(
     dims: ReadonlyArray<number>,
     readonly dataType: DataType,
-    readonly backend: Backend
+    readonly backend: Backend,
   ) {
     this.dims = dims.slice(); // 呼び出し元で誤って書き換えることを防止
     this.ndim = dims.length;

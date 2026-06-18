@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { OperatorImpl } from "../../../operatorImpl";
 import { getAttrInt, getAttrInts } from "../../../operatorUtil";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
@@ -24,7 +24,7 @@ abstract class ReduceOp extends OperatorImpl {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ) => void,
     private opFinalAxis?: (
       dI: DataArrayTypes,
@@ -32,8 +32,8 @@ abstract class ReduceOp extends OperatorImpl {
       outerLength: number,
       innerLength: number,
       reductionLength: number,
-      totalReductionLength: number
-    ) => void
+      totalReductionLength: number,
+    ) => void,
   ) {
     super("cpu");
   }
@@ -41,7 +41,7 @@ abstract class ReduceOp extends OperatorImpl {
   protected async runCore(
     context: WebDNNCPUContext,
     input: CPUTensor,
-    sortedAxes: number[]
+    sortedAxes: number[],
   ): Promise<Tensor[]> {
     let lastOutputData = input.data;
     let lastShape = input.dims;
@@ -55,7 +55,7 @@ abstract class ReduceOp extends OperatorImpl {
       const outerLength = arrayProd(lastShape.slice(0, axis));
       const innerLength = arrayProd(lastShape.slice(axis + 1));
       const newOutputData = new DataArrayConstructor[input.dataType](
-        outerLength * innerLength
+        outerLength * innerLength,
       );
       if (i < sortedAxes.length - 1) {
         this.opNotFinalAxis(
@@ -63,7 +63,7 @@ abstract class ReduceOp extends OperatorImpl {
           newOutputData,
           outerLength,
           innerLength,
-          reductionLength
+          reductionLength,
         );
       } else {
         if (this.opFinalAxis) {
@@ -73,7 +73,7 @@ abstract class ReduceOp extends OperatorImpl {
             outerLength,
             innerLength,
             reductionLength,
-            totalReductionLength
+            totalReductionLength,
           );
         } else {
           this.opNotFinalAxis(
@@ -81,7 +81,7 @@ abstract class ReduceOp extends OperatorImpl {
             newOutputData,
             outerLength,
             innerLength,
-            reductionLength
+            reductionLength,
           );
         }
       }
@@ -97,7 +97,7 @@ abstract class ReduceOp extends OperatorImpl {
     const output = context.emptyTensor(
       finalShape,
       input.dataType,
-      lastOutputData
+      lastOutputData,
     );
     return [output];
   }
@@ -150,7 +150,7 @@ class ReduceSum13 extends ReduceOp {
     let sortedAxes: number[];
     if (axes.length > 0) {
       sortedAxes = Array.from(axes.data).map((a) =>
-        a >= 0 ? a : input.ndim + a
+        a >= 0 ? a : input.ndim + a,
       );
       sortedAxes.sort((a, b) => a - b);
     } else {
@@ -175,7 +175,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ) => void,
     opFinalAxis?: (
       dI: DataArrayTypes,
@@ -183,9 +183,9 @@ export function getOpEntries(): OperatorEntry[] {
       outerLength: number,
       innerLength: number,
       reductionLength: number,
-      totalReductionLength: number
+      totalReductionLength: number,
     ) => void,
-    reduceSum13?: boolean
+    reduceSum13?: boolean,
   ) => {
     opEntries.push({
       opType: opType,
@@ -210,20 +210,20 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
           let s = 0;
           for (let r = 0; r < reductionLength; r++) {
             s += Math.abs(
-              dI[(outer * reductionLength + r) * innerLength + inner]
+              dI[(outer * reductionLength + r) * innerLength + inner],
             );
           }
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceL2",
@@ -232,7 +232,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -250,7 +250,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -262,7 +262,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = Math.sqrt(s);
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceLogSum",
@@ -271,7 +271,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -288,7 +288,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -299,7 +299,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = Math.log(s);
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceLogSumExp",
@@ -308,14 +308,14 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
           let s = 0;
           for (let r = 0; r < reductionLength; r++) {
             s += Math.exp(
-              dI[(outer * reductionLength + r) * innerLength + inner]
+              dI[(outer * reductionLength + r) * innerLength + inner],
             );
           }
           dO[outer * innerLength + inner] = s;
@@ -327,20 +327,20 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
           let s = 0;
           for (let r = 0; r < reductionLength; r++) {
             s += Math.exp(
-              dI[(outer * reductionLength + r) * innerLength + inner]
+              dI[(outer * reductionLength + r) * innerLength + inner],
             );
           }
           dO[outer * innerLength + inner] = Math.log(s);
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceMax",
@@ -349,7 +349,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -363,7 +363,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceMean",
@@ -372,7 +372,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -391,7 +391,7 @@ export function getOpEntries(): OperatorEntry[] {
       outerLength: number,
       innerLength: number,
       reductionLength: number,
-      totalReductionLength: number
+      totalReductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -402,7 +402,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s / totalReductionLength;
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceMin",
@@ -411,7 +411,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -425,7 +425,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceProd",
@@ -434,7 +434,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -445,7 +445,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
   );
   addOps(
     "ReduceSum",
@@ -454,7 +454,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -467,7 +467,7 @@ export function getOpEntries(): OperatorEntry[] {
       }
     },
     undefined,
-    true
+    true,
   );
   addOps(
     "ReduceSumSquare",
@@ -476,7 +476,7 @@ export function getOpEntries(): OperatorEntry[] {
       dO: DataArrayTypes,
       outerLength: number,
       innerLength: number,
-      reductionLength: number
+      reductionLength: number,
     ): void => {
       for (let outer = 0; outer < outerLength; outer++) {
         for (let inner = 0; inner < innerLength; inner++) {
@@ -488,7 +488,7 @@ export function getOpEntries(): OperatorEntry[] {
           dO[outer * innerLength + inner] = s;
         }
       }
-    }
+    },
   );
   return opEntries;
 }

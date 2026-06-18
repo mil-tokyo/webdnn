@@ -5,7 +5,10 @@ import { webgpuShaders } from "../../shaders";
 import { OperatorEntry } from "../../../../interface/core/operator";
 
 export class WebGPUUnary extends OperatorImpl {
-  constructor(public shaderName: string, private shaderBinary: Uint32Array) {
+  constructor(
+    public shaderName: string,
+    private shaderBinary: string,
+  ) {
     super("webgpu");
   }
 

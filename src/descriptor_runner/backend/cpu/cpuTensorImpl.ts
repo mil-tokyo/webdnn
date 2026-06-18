@@ -18,7 +18,7 @@ export class CPUTensorImpl extends TensorImpl implements CPUTensor {
   constructor(
     dims: ReadonlyArray<number>,
     dataType: DataType = "float32",
-    data?: DataArrayTypes
+    data?: DataArrayTypes,
   ) {
     super(dims, dataType, "cpu");
     this.data = data || new DataArrayConstructor[dataType](this.length);

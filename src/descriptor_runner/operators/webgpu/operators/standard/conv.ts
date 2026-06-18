@@ -57,7 +57,7 @@ class WebGPUConv extends Conv {
       chIn,
       chInPerGroup,
       chOut,
-      chOutPerGroup
+      chOutPerGroup,
     );
     const matmulData = context.emptyTensor([
       group * batch * outShape[0] * outShape[1] * chOutPerGroup,
@@ -70,7 +70,7 @@ class WebGPUConv extends Conv {
       group,
       batch * outShape[0] * outShape[1],
       chInPerGroup * kernelShape[0] * kernelShape[1],
-      chOutPerGroup
+      chOutPerGroup,
     );
     im2colData.dispose();
     const output = context.emptyTensor([
@@ -91,7 +91,7 @@ class WebGPUConv extends Conv {
         group,
         batch,
         outShape[0] * outShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
       await this.bias(
@@ -101,7 +101,7 @@ class WebGPUConv extends Conv {
         output,
         batch,
         chOut,
-        outShape[0] * outShape[1]
+        outShape[0] * outShape[1],
       );
       transposeData.dispose();
     } else {
@@ -112,7 +112,7 @@ class WebGPUConv extends Conv {
         group,
         batch,
         outShape[0] * outShape[1],
-        chOutPerGroup
+        chOutPerGroup,
       );
       matmulData.dispose();
     }
@@ -134,7 +134,7 @@ class WebGPUConv extends Conv {
     chIn: number,
     chInPerGroup: number,
     chOut: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     const shaderName = "conv_im2col";
 
@@ -177,7 +177,7 @@ class WebGPUConv extends Conv {
     group: number,
     bout: number,
     cinkhkw: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     const shaderName = "conv_matmul";
 
@@ -207,7 +207,7 @@ class WebGPUConv extends Conv {
     group: number,
     batch: number,
     outarea: number,
-    chOutPerGroup: number
+    chOutPerGroup: number,
   ) {
     const shaderName = "conv_transpose";
 
@@ -237,7 +237,7 @@ class WebGPUConv extends Conv {
     dO: WebGPUTensor,
     batch: number,
     chOut: number,
-    outarea: number
+    outarea: number,
   ) {
     const shaderName = "conv_bias";
 

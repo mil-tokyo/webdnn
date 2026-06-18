@@ -29,7 +29,7 @@ class Tile6 extends OperatorImpl {
         input.dims,
         outputShape,
         input.strides,
-        output.strides
+        output.strides,
       );
     } else if (input.ndim === 2) {
       this.copy2d(
@@ -38,7 +38,7 @@ class Tile6 extends OperatorImpl {
         input.dims,
         outputShape,
         input.strides,
-        output.strides
+        output.strides,
       );
     } else if (input.ndim === 3) {
       this.copy3d(
@@ -47,7 +47,7 @@ class Tile6 extends OperatorImpl {
         input.dims,
         outputShape,
         input.strides,
-        output.strides
+        output.strides,
       );
     } else if (input.ndim === 4) {
       this.copy4d(
@@ -56,11 +56,11 @@ class Tile6 extends OperatorImpl {
         input.dims,
         outputShape,
         input.strides,
-        output.strides
+        output.strides,
       );
     } else {
       throw new Error(
-        `Tile: input.ndim = ${input.ndim} > 4 is not yet supported`
+        `Tile: input.ndim = ${input.ndim} > 4 is not yet supported`,
       );
     }
     return [output];
@@ -72,7 +72,7 @@ class Tile6 extends OperatorImpl {
     inputShape: ReadonlyArray<number>,
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
-    outputStrides: ReadonlyArray<number>
+    outputStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       dO[d0 * outputStrides[0]] = dI[(d0 % inputShape[0]) * inputStrides[0]];
@@ -85,7 +85,7 @@ class Tile6 extends OperatorImpl {
     inputShape: ReadonlyArray<number>,
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
-    outputStrides: ReadonlyArray<number>
+    outputStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -104,7 +104,7 @@ class Tile6 extends OperatorImpl {
     inputShape: ReadonlyArray<number>,
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
-    outputStrides: ReadonlyArray<number>
+    outputStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {
@@ -130,7 +130,7 @@ class Tile6 extends OperatorImpl {
     inputShape: ReadonlyArray<number>,
     outputShape: ReadonlyArray<number>,
     inputStrides: ReadonlyArray<number>,
-    outputStrides: ReadonlyArray<number>
+    outputStrides: ReadonlyArray<number>,
   ) {
     for (let d0 = 0; d0 < outputShape[0]; d0++) {
       for (let d1 = 0; d1 < outputShape[1]; d1++) {

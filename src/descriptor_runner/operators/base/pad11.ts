@@ -1,6 +1,6 @@
 import { OperatorImpl } from "../operatorImpl";
 import { Tensor } from "../../interface/core/tensor";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { getAttrString } from "../operatorUtil";
 import { Backend } from "../../interface/core/constants";
 import { CPUTensor } from "../../interface/backend/cpu/cpuTensor";
@@ -21,8 +21,8 @@ export abstract class Pad11 extends OperatorImpl {
 
   getTensorBackendRequirement(
     nInputs: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     if (nInputs === 2) {
       return [this.backend, "cpu"];
@@ -33,7 +33,7 @@ export abstract class Pad11 extends OperatorImpl {
 
   protected calcShape(
     input: Tensor,
-    padTensor: CPUTensor
+    padTensor: CPUTensor,
   ): { outputShape: number[]; pads: number[] } {
     const outputShape: number[] = [];
     const pads: number[] = Array.from(padTensor.data);

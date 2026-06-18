@@ -7,7 +7,6 @@ import { CPUTensorImpl } from "./cpuTensorImpl";
 export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   backend = "cpu" as const;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async initialize(): Promise<void> {}
 
   isCPUTensor(tensor: Tensor): tensor is CPUTensor {
@@ -17,7 +16,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   assertsCPUTensor(tensor: Tensor): asserts tensor is CPUTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
-        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
       );
     }
   }
@@ -26,7 +25,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
         throw new Error(
-          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
         );
       }
     }
@@ -35,7 +34,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
   emptyTensor(
     dims: ReadonlyArray<number>,
     dataType?: DataType,
-    data?: DataArrayTypes
+    data?: DataArrayTypes,
   ): CPUTensor {
     return new CPUTensorImpl(dims, dataType, data);
   }
@@ -44,7 +43,7 @@ export class WebDNNCPUContextImpl implements WebDNNCPUContext {
     const dst = new CPUTensorImpl(
       tensor.dims,
       tensor.dataType,
-      await tensor.getData()
+      await tensor.getData(),
     );
     return dst;
   }

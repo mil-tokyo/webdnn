@@ -8,7 +8,7 @@ export function averagepool(
   strides: number[],
   inShape: number[],
   outShape: number[],
-  ch: number
+  ch: number,
 ): void {
   let idx = 0;
   for (let b = 0; b < batch; b++) {

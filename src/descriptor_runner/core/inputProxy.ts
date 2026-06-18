@@ -8,7 +8,10 @@ export class InputProxy implements ArrayLike<number> {
 
   readonly dims: ReadonlyArray<number>;
 
-  constructor(dims: ReadonlyArray<number>, public readonly dataType: DataType) {
+  constructor(
+    dims: ReadonlyArray<number>,
+    public readonly dataType: DataType,
+  ) {
     this.dims = dims;
     const length = arrayProd(dims);
     this.length = length;

@@ -72,3 +72,11 @@ output
 /src/descriptor_runner/operators/webgpu/opEntriesAll.ts
 /src/descriptor_runner/custom
 /src/shader/wasm/lib
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+.venv/

@@ -16,7 +16,7 @@ export class WebGLUnary extends OperatorImpl {
   constructor(
     public kernelName: string,
     private unaryCalculationSource: string,
-    private unaryCalculationSourceWebGL1?: string
+    private unaryCalculationSourceWebGL1?: string,
   ) {
     super("webgl");
   }
@@ -62,7 +62,7 @@ export class WebGLUnary extends OperatorImpl {
       ...shaderGenTensorElementwiseGetUniformItem(
         "tex_input",
         input,
-        context.webgl2
+        context.webgl2,
       ),
     ];
 
@@ -70,7 +70,7 @@ export class WebGLUnary extends OperatorImpl {
       this.kernelName,
       [{ tensor: input, name: "tex_input" }],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return [outputTensor];
   }
@@ -98,7 +98,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "acosh",
           "float v = acosh(s);",
-          "float v = log(s + sqrt(s * s - 1.0));"
+          "float v = log(s + sqrt(s * s - 1.0));",
         ),
     },
     {
@@ -115,7 +115,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "asinh",
           "float v = asinh(s);",
-          "float v = log(s + sqrt(s * s + 1.0));"
+          "float v = log(s + sqrt(s * s + 1.0));",
         ),
     },
     {
@@ -132,7 +132,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "atanh",
           "float v = atanh(s);",
-          "float v = log((s + 1.0) / (1.0 - s)) * 0.5;"
+          "float v = log((s + 1.0) / (1.0 - s)) * 0.5;",
         ),
     },
     {
@@ -155,7 +155,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "cosh",
           "float v = cosh(s);",
-          "float v = (exp(s) + exp(-s)) * 0.5;"
+          "float v = (exp(s) + exp(-s)) * 0.5;",
         ),
     },
     {
@@ -177,7 +177,7 @@ export function getOpEntries(): OperatorEntry[] {
       factory: () =>
         new WebGLUnary(
           "hardswish",
-          "float v; if (s <= -3.0) { v = 0.0; } else if (s >= 3.0) { v = s; } else { v = s * (s + 3.0) / 6.0; }"
+          "float v; if (s <= -3.0) { v = 0.0; } else if (s >= 3.0) { v = s; } else { v = s * (s + 3.0) / 6.0; }",
         ),
     },
     {
@@ -212,7 +212,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "round",
           "float v = round(s);",
-          "float v = floor(s + 0.5);"
+          "float v = floor(s + 0.5);",
         ),
     },
     {
@@ -223,7 +223,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "sigmoid",
           "float v = (tanh(s * 0.5) + 1.0) * 0.5;",
-          "float v = 1.0 / (1.0 + exp(-s));"
+          "float v = 1.0 / (1.0 + exp(-s));",
         ),
     },
     {
@@ -271,7 +271,7 @@ export function getOpEntries(): OperatorEntry[] {
         new WebGLUnary(
           "tanh",
           "float v = tanh(s);",
-          "float vt = exp(-2.0 * s); float v = (1.0 - vt) / (1.0 + vt);"
+          "float vt = exp(-2.0 * s); float v = (1.0 - vt) / (1.0 + vt);",
         ),
     },
   ];

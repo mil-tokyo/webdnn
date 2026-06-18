@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrInts } from "../operatorUtil";
 import { Tensor } from "../../interface/core/tensor";
@@ -7,7 +7,7 @@ import { CPUTensor } from "../..";
 abstract class Unsqueeze extends OperatorImpl {
   protected calcShapeBase(
     inputShape: ReadonlyArray<number>,
-    axes: ReadonlyArray<number>
+    axes: ReadonlyArray<number>,
   ): number[] {
     const expandedNdim = inputShape.length + axes.length;
     const expandedShape: number[] = [];

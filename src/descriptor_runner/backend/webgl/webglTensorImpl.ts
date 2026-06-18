@@ -35,7 +35,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     dataType: DataType = "float32",
     public readonly dimPerPixel: 1 | 4 = 1,
     textureShape?: ReadonlyArray<number>,
-    sharedTexture?: WebGLSharedTexture
+    sharedTexture?: WebGLSharedTexture,
   ) {
     super(dims, dataType, "webgl");
     if (dataType !== "float32") {
@@ -59,7 +59,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       this.textureWidth > this.context.maxTextureSize
     ) {
       throw new Error(
-        `Cannot allocate texture of size ${this.length} in this environment. Please split large tensor in the model.`
+        `Cannot allocate texture of size ${this.length} in this environment. Please split large tensor in the model.`,
       );
     }
     if (sharedTexture) {
@@ -69,7 +69,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         this.context,
         this.textureWidth,
         this.textureHeight,
-        this.dimPerPixel
+        this.dimPerPixel,
       );
     }
   }
@@ -86,7 +86,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       this.dataType,
       this.dimPerPixel,
       [this.textureHeight, this.textureWidth],
-      this.sharedTexture
+      this.sharedTexture,
     );
   }
 
@@ -110,7 +110,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     if (this.context.isWebGL2(gl)) {
       if (this.context.supportsTexture32bit) {
         const buf = new Float32Array(
-          this.textureHeight * this.textureWidth * this.dimPerPixel
+          this.textureHeight * this.textureWidth * this.dimPerPixel,
         );
         gl.readPixels(
           0,
@@ -119,13 +119,13 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           this.textureHeight,
           this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
           gl.FLOAT,
-          buf
+          buf,
         );
         data = unpackFromFloat32Array(buf, this.length);
       } else {
         // 16bit
         const buf = new Uint16Array(
-          this.textureHeight * this.textureWidth * this.dimPerPixel
+          this.textureHeight * this.textureWidth * this.dimPerPixel,
         );
         gl.readPixels(
           0,
@@ -134,7 +134,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           this.textureHeight,
           this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
           gl.HALF_FLOAT,
-          buf
+          buf,
         );
         data = unpackFromFloat16Array(buf, this.length);
       }
@@ -147,7 +147,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         this.textureHeight,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        buf
+        buf,
       );
       data = this.unpackColor(buf);
     }
@@ -188,7 +188,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       if (this.context.supportsTexture32bit) {
         const buf = packToFloat32Array(
           data,
-          this.textureWidth * this.textureHeight * this.dimPerPixel
+          this.textureWidth * this.textureHeight * this.dimPerPixel,
         );
         gl.texSubImage2D(
           gl.TEXTURE_2D,
@@ -199,12 +199,12 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           this.textureHeight,
           this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
           gl.FLOAT,
-          buf
+          buf,
         );
       } else {
         const buf = packToFloat16Array(
           data,
-          this.textureWidth * this.textureHeight * this.dimPerPixel
+          this.textureWidth * this.textureHeight * this.dimPerPixel,
         );
         gl.texSubImage2D(
           gl.TEXTURE_2D,
@@ -215,7 +215,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
           this.textureHeight,
           this.dimPerPixel === 1 ? gl.RED : gl.RGBA,
           gl.HALF_FLOAT,
-          buf
+          buf,
         );
       }
     } else {
@@ -229,7 +229,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         this.textureHeight,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        buf
+        buf,
       );
     }
 
@@ -277,7 +277,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     if (this.isBoundToDrawFrameBuffer)
       throw Error(
         "This buffer is already registered as draw buffer. " +
-          "You may forgot to unbind the binding while previous operations."
+          "You may forgot to unbind the binding while previous operations.",
       );
 
     const { gl } = this.context;
@@ -303,12 +303,12 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
     if (this.readTextureUnitIndices.length > 0)
       throw Error(
         "This buffer is already registered as read buffer. " +
-          "You cannot bind a texture as both read and draw texture buffer at same time."
+          "You cannot bind a texture as both read and draw texture buffer at same time.",
       );
     if (this.isBoundToDrawFrameBuffer)
       throw Error(
         "This buffer is already registered as draw buffer. " +
-          "You may forgot to unbind the binding while previous operations."
+          "You may forgot to unbind the binding while previous operations.",
       );
 
     const { gl } = this.context;
@@ -320,7 +320,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
       this.getTexture(),
-      0
+      0,
     );
 
     this.isBoundToDrawFrameBuffer = true;
@@ -336,7 +336,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
       null,
-      0
+      0,
     );
 
     this.isBoundToDrawFrameBuffer = false;
@@ -347,7 +347,7 @@ export class WebGLTensorImpl extends TensorImpl implements WebGLTensor {
         this.context,
         this.dims,
         "float32",
-        4
+        4,
       ),
       inputPixels = this.length,
       outputPixels = Math.ceil(outputTensor.length / 4),
@@ -390,12 +390,12 @@ void main() {
         "tex_input",
         [1],
         [this.textureHeight, this.textureWidth],
-        this.context.webgl2
+        this.context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [outputPixels],
         [outputTensor.textureHeight, outputTensor.textureWidth],
-        this.context.webgl2
+        this.context.webgl2,
       ),
       { name: "input_pixels", type: "int", value: inputPixels },
     ];
@@ -404,7 +404,7 @@ void main() {
       kernelName,
       [{ tensor: this, name: "tex_input" }],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return outputTensor;
   }

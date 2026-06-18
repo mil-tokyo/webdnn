@@ -1,7 +1,7 @@
 import { OperatorImpl } from "../operatorImpl";
 import { Tensor } from "../../interface/core/tensor";
 import { arrayProd, getAttrInt } from "../operatorUtil";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 
 export abstract class Flatten extends OperatorImpl {
   initialize(attribute: onnx.IAttributeProto[]): void {

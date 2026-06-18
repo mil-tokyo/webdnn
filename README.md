@@ -2,44 +2,47 @@
 
 [日本語](README.ja.md)
 
-This is the alpha version of WebDNN version 2. The main difference between WebDNN 1.x and WebDNN 2.x is that WebDNN 2.x only accepts ONNX models as input, allowing ONNX models to be loaded directly into a web browser without Python preprocessing. In addition, offline model optimization is also possible.
+WebDNN version 2 runs neural network inference directly in the web browser. The major difference from WebDNN 1.x is that WebDNN 2.x accepts ONNX models as input, allowing an ONNX model to be loaded straight into the browser without Python preprocessing. Offline model optimization is also available.
 
 [Version 1.x](https://github.com/mil-tokyo/webdnn/tree/v1.2.11)
 
-# Supported backends (acceleration technologies)
+## Supported backends (acceleration technologies)
 
-WebGL is available in most modern browsers.
+- **WebGPU** — current WGSL-based implementation. Works on modern Chrome / Edge (and on Safari / Firefox where WebGPU is enabled).
+- **WebGL** — uses WebGL2 when available, with a WebGL1 fallback.
+- **WebAssembly** — requires an emscripten build of the kernels. See [docs/emscripten-setup.md](docs/emscripten-setup.md).
 
-- WebGPU
-  - The draft version implemented in Chrome Canary.
-  - The WebGPU in iOS13 is not supported because it requires shaders based on the deprecated WSL language.
-- WebGL
-  - Use WebGL2 if available; also supports Safari, which only supports WebGL1.
-- WebAssembly
+## Environment
 
-# Environment setting
+- Node.js 20+ (see `.nvmrc`)
+- Python 3.10+ via [uv](https://docs.astral.sh/uv/) — only needed for model optimization and generating test fixtures
+- emscripten 3.1+ — only needed to build the WebAssembly backend
 
-The environment which runs node.js 14, python 3.6+ and emscripten 2.0+.
+## Setup
 
 ```
-yarn
-python setup.py develop
+npm install
+uv sync            # only if you use the Python graph transpiler / optimizer
 ```
 
-# Build
+## Build
+
 ```
-yarn build:all
+npm run build:all
 ```
 
-Build outputs:
-- `dist/webdnn.js`
-  - Library that can load unoptimized ONNX models
-- `dist/webdnn-core.js`
-  - Library that can load optimized ONNX models by WebDNN
+Build outputs (in `dist/`):
 
-# Basic usage
+- `dist/webdnn.js` — UMD bundle (global `WebDNN`) that loads unoptimized ONNX models
+- `dist/webdnn-core.js` — loads ONNX models optimized offline by WebDNN
+- `dist/op-*.js` — operator bundles, loaded dynamically at runtime
+- `dist/types/` — TypeScript type declarations
 
-Load `dist/webdnn.js` with the `<script>` tag to globally add a `WebDNN` object. Assuming that the ONNX model `model_directory/model.onnx` exists, and run the model with a input tensor of the shape `[1, 2]`.
+`build:all` runs WGSL shader generation (`shader:webgpu`) and operator-entry generation (`makeShaderList`, requires Python 3) before the Vite build. The WebAssembly backend is not built by `build:all`; building it requires emscripten (see [docs/emscripten-setup.md](docs/emscripten-setup.md)).
+
+## Basic usage
+
+Load `dist/webdnn.js` with a `<script>` tag to add a global `WebDNN` object. Assuming the ONNX model `model_directory/model.onnx` exists, run it with an input tensor of shape `[1, 2]`:
 
 ```javascript
 const runner = await WebDNN.load("model_directory/");
@@ -47,34 +50,26 @@ const inputDataArray = new Float32Array([5.1, -2.3]);
 const inputTensor = new WebDNN.CPUTensor([1, 2], "float32", inputDataArray);
 const [outputTensor] = await runner.run([inputTensor]);
 
-console.log(outputTensor.data);  // Float32Array
+console.log(outputTensor.data); // Float32Array
 ```
 
-See `example/minimum` for the complete minimal code that works.
+See `example/minimum` for a complete minimal working example.
 
-# Test
+## Test
 
-Generate ONNX models and input/output tensors to be tested
-
-```
-pip install -r requirements.test.txt
-python test/model_test/make_models.py
-```
-
-Run on web browser
+See [docs/testing.md](docs/testing.md) for the full testing guide.
 
 ```
-yarn server
+npm test            # unit tests (vitest, no GPU required)
+npm run fixtures    # generate ONNX test fixtures (uv, Python)
+npm run test:e2e    # Playwright E2E (CPU / WebGPU / WebGL, automated)
+npm run server      # static server for the manual browser runner
 ```
 
-Open <http://localhost:8080/test/model_test/runner/standard.html> with web browser, check the backend you want to test, and click the Test button to run the test.
+For the manual browser runner, open
+<http://localhost:8080/test/model_test/runner/standard.html>, check the backend
+you want to test, and click the Test button.
 
-Use
-
-```
-python test/model_test/make_models.py --optimize
-```
-
-<http://localhost:8080/test/model_test/runner/optimized.html>
-
-when testing, including model optimization. However, the execution time of `make_models.py` takes a long time.
+`npm run fixtures` generates the ONNX models and input/output tensors used by the
+tests. (The legacy `test/model_test/make_models.py`, which depends on PyTorch,
+remains only for large-model generation and is not part of the standard flow.)

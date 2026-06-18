@@ -37,12 +37,19 @@ async function runTest(optimized) {
       }
     }
     let allOk = true;
+    let pass = 0;
+    let fail = 0;
     const allResults = {};
     for (const caseDir of caseDirs) {
       for (const backendOrder of backendOrders) {
         console.log("test", caseDir, backendOrder);
         const msg = await runTestOne(caseDir, backendOrder, optimized);
         const ok = !msg;
+        if (ok) {
+          pass++;
+        } else {
+          fail++;
+        }
         allOk &= ok;
         allResults[caseDir] = ok;
         resultList.innerHTML += `<li><span class="${
@@ -61,6 +68,18 @@ async function runTest(optimized) {
       console.error("failed", allResults);
       resultList.innerHTML += `<li><span class="result-fail">Some cases failed.</span></li>`;
     }
+    // Machine- and human-readable overall summary (consumed by the Playwright harness).
+    const previousSummary = document.getElementById("summary");
+    if (previousSummary) {
+      resultDom.removeChild(previousSummary);
+    }
+    const summary = document.createElement("p");
+    summary.id = "summary";
+    summary.className = allOk ? "result-ok" : "result-fail";
+    summary.textContent = `SUMMARY: ${pass} passed / ${fail} failed / ${
+      pass + fail
+    } total — ${allOk ? "ALL OK" : "HAS FAILURES"}`;
+    resultDom.appendChild(summary);
   } catch (error) {
     console.error(error);
     alert(error.message);

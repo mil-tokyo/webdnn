@@ -72,7 +72,7 @@ export function shaderGenOutputVec4(expr: string, webgl2: boolean): string {
 export function shaderGenTensorNDGet(
   name: string,
   ndim: number,
-  webgl2: boolean
+  webgl2: boolean,
 ): string {
   let args: string, flat_index: string, uniforms: string;
   switch (ndim) {
@@ -175,7 +175,7 @@ return texelFetch(${name}, ivec2(x, y), 0).r;
 export function shaderGenTensorNDGetVec4(
   name: string,
   ndim: number,
-  webgl2: boolean
+  webgl2: boolean,
 ): string {
   let args: string, flat_index: string, uniforms: string;
   switch (ndim) {
@@ -269,7 +269,7 @@ export function shaderGenTensorNDGetUniformItem(
   name: string,
   strides: ReadonlyArray<number>,
   textureShape: ReadonlyArray<number> | WebGLTensor,
-  webgl2: boolean
+  webgl2: boolean,
 ): WebGLUniformItem[] {
   let textureShapeArray: ReadonlyArray<number>;
   if (isWebGLTensor(textureShape)) {
@@ -303,8 +303,8 @@ export function shaderGenTensorNDGetUniformItem(
 export function shaderGenTensorOutputUniformItem(
   shape: ReadonlyArray<number>,
   textureShape: ReadonlyArray<number> | WebGLTensor,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  webgl2: boolean
+
+  webgl2: boolean,
 ): WebGLUniformItem[] {
   let textureShapeArray: ReadonlyArray<number>;
   if (isWebGLTensor(textureShape)) {
@@ -446,7 +446,7 @@ export function shaderGenTensorOutputCoordsWithReturn(ndim: number): string {
 
 export function shaderGenTensorElementwiseGet(
   name: string,
-  webgl2: boolean
+  webgl2: boolean,
 ): string {
   if (webgl2) {
     return `
@@ -472,7 +472,7 @@ float get_${name}() {
 export function shaderGenTensorElementwiseGetUniformItem(
   name: string,
   textureShape: ReadonlyArray<number> | WebGLTensor,
-  webgl2: boolean
+  webgl2: boolean,
 ): WebGLUniformItem[] {
   let textureShapeArray: ReadonlyArray<number>;
   if (isWebGLTensor(textureShape)) {

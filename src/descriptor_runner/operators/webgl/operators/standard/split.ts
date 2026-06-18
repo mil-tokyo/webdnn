@@ -24,7 +24,7 @@ export class WebGLSplit2 extends Split2 {
   async run(
     context: WebDNNWebGLContext,
     inputs: Tensor[],
-    nOutputs: number
+    nOutputs: number,
   ): Promise<Tensor[]> {
     context.assertsWebGLTensorArray(inputs);
     const input = inputs[0],
@@ -60,12 +60,12 @@ void main() {
             "tex_input",
             [inOuterStride, inConcatStride, 1],
             input,
-            context.webgl2
+            context.webgl2,
           ),
           ...shaderGenTensorOutputUniformItem(
             [outerLength, dim, innerLength],
             ot,
-            context.webgl2
+            context.webgl2,
           ),
           { name: "offset", type: "int", value: offset },
         ];
@@ -73,7 +73,7 @@ void main() {
         kernelName,
         [{ tensor: input, name: "tex_input" }],
         ot,
-        uniforms
+        uniforms,
       );
       outputs.push(ot);
     }

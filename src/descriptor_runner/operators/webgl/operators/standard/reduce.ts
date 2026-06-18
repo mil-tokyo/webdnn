@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { OperatorImpl } from "../../../operatorImpl";
 import {
   WebDNNWebGLContext,
@@ -27,7 +27,7 @@ export class ReduceOp extends OperatorImpl {
     private opType: string,
     private shaderInit: string,
     private shaderAccum: string,
-    private shaderOutput: string
+    private shaderOutput: string,
   ) {
     super("webgl");
   }
@@ -50,7 +50,7 @@ export class ReduceOp extends OperatorImpl {
     }
     if (axis !== input.ndim - 1) {
       throw new Error(
-        `${this.opType}: currently only reducing final axis is supported`
+        `${this.opType}: currently only reducing final axis is supported`,
       );
     }
     // 最終軸のreductionに特化した実装
@@ -90,19 +90,19 @@ void main() {
         "tex_input",
         [reductionLength, 1],
         input,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(
         [outerLength],
         output,
-        context.webgl2
+        context.webgl2,
       ),
     ];
     await context.runKernel(
       kernelName,
       [{ tensor: input, name: "tex_input" }],
       output,
-      uniforms
+      uniforms,
     );
     return [output];
   }

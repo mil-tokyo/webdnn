@@ -36,7 +36,7 @@ class CPUTranspose extends Transpose {
         break;
       default:
         throw new Error(
-          `Transpose: ndim ${input.ndim} > 4 is not yet supported`
+          `Transpose: ndim ${input.ndim} > 4 is not yet supported`,
         );
     }
     func(input.data, output.data, outShape, inStrides);
@@ -47,7 +47,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -59,7 +59,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -73,7 +73,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -90,7 +90,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -114,7 +114,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {
@@ -141,7 +141,7 @@ class CPUTranspose extends Transpose {
     dI: DataArrayTypes,
     dO: DataArrayTypes,
     outShape: number[],
-    inStrides: number[]
+    inStrides: number[],
   ) {
     let idx = 0;
     for (let a0 = 0; a0 < outShape[0]; a0++) {

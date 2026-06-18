@@ -2,30 +2,43 @@
   "name": "webdnn",
   "version": "2.0.0",
   "description": "WebDNN",
-  "main": "dist/index.js",
+  "main": "dist/webdnn.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/webdnn.js"
+    },
+    "./webdnn-core": "./dist/webdnn-core.js",
+    "./dist/*": "./dist/*"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack -w",
-    "build:all": "npm run shader:wasm && npm run shader:webgpu && npm run makeShaderList && npm run build && npm run build:core",
-    "build:core": "webpack --config webpack-core.config.js",
-    "build:cpu": "webpack --config webpack-cpu.config.js",
-    "build:wasm": "webpack --config webpack-wasm.config.js",
-    "build:webgl1-16384": "webpack --config webpack-webgl1-16384.config.js",
-    "build:webgl1-4096": "webpack --config webpack-webgl1-4096.config.js",
-    "build:webgl2-16384": "webpack --config webpack-webgl2-16384.config.js",
-    "build:webgl2-4096": "webpack --config webpack-webgl2-4096.config.js",
-    "build:webgpu": "webpack --config webpack-webgpu.config.js",
-    "eslint": "eslint ./src/descriptor_runner/**/*.ts",
-    "eslint:fix": "eslint --fix ./src/descriptor_runner/**/*.ts",
-    "shader:wasm": "python src/shader/wasm/compile.py",
+    "prebuild:js": "node scripts/ensure-generated-stubs.mjs",
+    "build:js": "node scripts/build.mjs",
+    "build:dts": "tsc -p tsconfig.json --emitDeclarationOnly --noEmit false --outDir dist/types",
+    "build": "npm run build:js && npm run build:dts",
+    "build:all": "npm run shader:webgpu && npm run makeShaderList && npm run build",
+    "dev": "node scripts/build.mjs",
+    "lint": "eslint src/descriptor_runner",
+    "lint:fix": "eslint --fix src/descriptor_runner",
+    "format": "prettier --write \"src/descriptor_runner/**/*.ts\"",
+    "format:check": "prettier --check \"src/descriptor_runner/**/*.ts\"",
+    "shader:wasm": "bash scripts/build-wasm.sh",
     "shader:webgpu": "node src/shader/webgpu/compile.js",
-    "makeShaderList": "python scripts/make_operator_entries.py",
-    "prepublishOnly": "npm run build",
+    "makeShaderList": "python3 scripts/make_operator_entries.py",
+    "prepublishOnly": "npm run build:all",
     "server": "npx http-server -c-1",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "pretypecheck": "node scripts/ensure-generated-stubs.mjs",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:e2e": "playwright test",
+    "test:watch": "vitest",
+    "fixtures": "uv run --project test/fixtures python test/fixtures/generate_fixtures.py",
+    "gen:onnx": "node scripts/gen-onnx-proto.mjs"
   },
   "repository": {
     "type": "git",
@@ -36,24 +49,25 @@
     "email": "hidaka@edgeintelligence.jp"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "@webgpu/types": "^0.0.45",
-    "onnx-proto": "^4.0.4",
-    "pako": "^2.0.3"
+    "pako": "^2.0.3",
+    "protobufjs": "^7.6.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@types/pako": "^1.0.1",
-    "@typescript-eslint/eslint-plugin": "^4.23.0",
-    "@typescript-eslint/parser": "^4.23.0",
-    "@webgpu/glslang": "^0.0.15",
-    "eslint": "^7.26.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "prettier": "^2.3.0",
-    "ts-loader": "^8.0.17",
-    "typescript": "^4.2.3",
-    "webpack": "^5.24.4",
-    "webpack-cli": "^4.5.0"
+    "@webgpu/types": "^0.1.70",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^9.1.2",
+    "prettier": "^3.8.4",
+    "protobufjs-cli": "^1.3.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.1",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
   },
   "keywords": [
     "deep-neural-networks",
@@ -61,5 +75,8 @@
     "optimization",
     "javascript",
     "webgpu"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
 }

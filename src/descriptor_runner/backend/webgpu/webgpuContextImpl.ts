@@ -28,10 +28,9 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
 
   pooledMetaBuffer: WebGPUMetaBuffer[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(
     public cpuContext: WebDNNCPUContext,
-    option: WebDNNWebGPUContextOption
+    option: WebDNNWebGPUContextOption,
   ) {
     if (
       typeof navigator.gpu !== "object" ||
@@ -48,9 +47,9 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     if (this.initialized) {
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     const adapter = await navigator.gpu!.requestAdapter();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     this.device = (await adapter!.requestDevice()) as GPUDevice;
     if (!this.device) {
       throw new Error("GPUAdapter.requestDevice() returned null");
@@ -66,18 +65,18 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
   assertsWebGPUTensor(tensor: Tensor): asserts tensor is WebGPUTensor {
     if (tensor.backend !== this.backend) {
       throw new Error(
-        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+        `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
       );
     }
   }
 
   assertsWebGPUTensorArray(
-    tensors: Tensor[]
+    tensors: Tensor[],
   ): asserts tensors is WebGPUTensor[] {
     for (const tensor of tensors) {
       if (tensor.backend !== this.backend) {
         throw new Error(
-          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`
+          `Tensor backend ${this.backend} is expected, but ${tensor.backend} is given.`,
         );
       }
     }
@@ -87,14 +86,14 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     dims: ReadonlyArray<number>,
     dataType?: DataType,
     forWriteFromCPU?: boolean,
-    forReadToCPU?: boolean
+    forReadToCPU?: boolean,
   ): WebGPUTensor {
     return new WebGPUTensorImpl(
       this,
       dims,
       dataType,
       forWriteFromCPU,
-      forReadToCPU
+      forReadToCPU,
     );
   }
 
@@ -104,7 +103,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       tensor.dims,
       tensor.dataType,
       true,
-      false
+      false,
     );
     await dst.setData(await tensor.getData());
     return dst;
@@ -114,7 +113,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
     return this.pipelines.has(name);
   }
 
-  createPipeline(name: string, shader: Uint32Array, nBuffers: number): void {
+  createPipeline(name: string, shader: string, nBuffers: number): void {
     if (this.hasPipeline(name)) {
       return;
     }
@@ -136,7 +135,7 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       shaderModule = device.createShaderModule({ code: shader }),
       pipeline = device.createComputePipeline({
         layout: pipelineLayout,
-        computeStage: {
+        compute: {
           module: shaderModule,
           entryPoint: "main",
         },
@@ -177,12 +176,12 @@ export class WebDNNWebGPUContextImpl implements WebDNNWebGPUContext {
       passEncoder = commandEncoder.beginComputePass();
     passEncoder.setBindGroup(0, bindGroup);
     passEncoder.setPipeline(pipeline.pipeline);
-    passEncoder.dispatch(
+    passEncoder.dispatchWorkgroups(
       request.workGroups.x,
       request.workGroups.y,
-      request.workGroups.z
+      request.workGroups.z,
     );
-    passEncoder.endPass();
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 

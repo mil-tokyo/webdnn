@@ -31,13 +31,13 @@ class WasmBinary7 extends OperatorImpl {
       { type: "tensor", value: inputB },
       { type: "tensor", value: output },
       ...outShape.map(
-        (v) => ({ type: "int32", value: v } as WasmKernelArgumentInt32)
+        (v) => ({ type: "int32", value: v }) as WasmKernelArgumentInt32,
       ),
       ...inAllStrides[0].map(
-        (v) => ({ type: "int32", value: v } as WasmKernelArgumentInt32)
+        (v) => ({ type: "int32", value: v }) as WasmKernelArgumentInt32,
       ),
       ...inAllStrides[1].map(
-        (v) => ({ type: "int32", value: v } as WasmKernelArgumentInt32)
+        (v) => ({ type: "int32", value: v }) as WasmKernelArgumentInt32,
       ),
     ];
     context.runKernel(`kernel_${this.kernelName}_d${outShape.length}`, args);

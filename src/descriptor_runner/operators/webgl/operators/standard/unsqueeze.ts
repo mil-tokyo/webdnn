@@ -25,7 +25,7 @@ export class WebGLUnsqueeze13 extends Unsqueeze13 {
 
   getTensorBackendRequirement(
     nInputs: number,
-    nOutputs: number
+    nOutputs: number,
   ): (Backend | null)[] {
     return [this.backend, "cpu"];
   }

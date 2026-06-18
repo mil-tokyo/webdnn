@@ -30,10 +30,9 @@ class WasmUnsqueeze13 extends Unsqueeze13 {
   }
 
   getTensorBackendRequirement(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     nInputs: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    nOutputs: number
+
+    nOutputs: number,
   ): (Backend | null)[] {
     return ["wasm", "cpu"];
   }

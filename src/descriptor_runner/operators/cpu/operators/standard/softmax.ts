@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { OperatorImpl } from "../../../operatorImpl";
 import { getAttrInt } from "../../../operatorUtil";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
@@ -27,7 +27,7 @@ class Softmax extends OperatorImpl {
     }
     if (axis !== input.ndim - 1) {
       throw new Error(
-        "Softmax: currently only reducing final axis is supported"
+        "Softmax: currently only reducing final axis is supported",
       );
     }
     // 最終軸のreductionに特化した実装

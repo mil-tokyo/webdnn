@@ -1,4 +1,4 @@
-import { onnx } from "onnx-proto";
+import { onnx } from "../../onnx/onnx";
 import { Backend } from "../../interface/core/constants";
 import { OperatorImpl } from "../operatorImpl";
 import { getAttrFloat, getAttrInt } from "../operatorUtil";

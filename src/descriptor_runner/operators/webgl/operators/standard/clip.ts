@@ -11,7 +11,7 @@ import {
   shaderGenTensorElementwiseGetUniformItem,
 } from "../../shaderHelper";
 import { OperatorEntry } from "../../../../interface/core/operator";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { getAttrFloat } from "../../../operatorUtil";
 
 export class WebGLClip extends OperatorImpl {
@@ -66,7 +66,7 @@ export class WebGLClip extends OperatorImpl {
       ...shaderGenTensorElementwiseGetUniformItem(
         "tex_input",
         input,
-        context.webgl2
+        context.webgl2,
       ),
     ];
 
@@ -74,7 +74,7 @@ export class WebGLClip extends OperatorImpl {
       kernelName,
       [{ tensor: input, name: "tex_input" }],
       outputTensor,
-      uniforms
+      uniforms,
     );
     return [outputTensor];
   }

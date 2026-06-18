@@ -24,7 +24,7 @@ export async function averagepool(
   strides: number[],
   inShape: number[],
   outShape: number[],
-  ch: number
+  ch: number,
 ): Promise<void> {
   // ループ回数は定数が必要
   const kernelName = `averagepool_${kernelShape[0]}_${kernelShape[1]}_${countIncludePad}`;
@@ -70,7 +70,7 @@ export async function averagepool(
       "tex_input",
       dX.strides,
       dX,
-      context.webgl2
+      context.webgl2,
     ),
     ...shaderGenTensorOutputUniformItem(dI.dims, dI, context.webgl2),
     { name: "CH", type: "int", value: ch },
@@ -85,6 +85,6 @@ export async function averagepool(
     kernelName,
     [{ tensor: dX, name: "tex_input" }],
     dI,
-    uniforms
+    uniforms,
   );
 }

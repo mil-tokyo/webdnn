@@ -3,7 +3,7 @@ import { OperatorImpl } from "../../../operatorImpl";
 import { WebDNNCPUContext } from "../../../../interface/backend/cpu/cpuContext";
 import { Tensor } from "../../../../interface/core/tensor";
 import { OperatorEntry } from "../../../../interface/core/operator";
-import { onnx } from "onnx-proto";
+import { onnx } from "../../../../onnx/onnx";
 import { getAttrFloat } from "../../../operatorUtil";
 
 class CPUClip extends OperatorImpl {

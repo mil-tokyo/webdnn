@@ -32,7 +32,7 @@ class WasmGemm extends Gemm {
           { type: "int32", value: m },
           { type: "int32", value: n },
           { type: "int32", value: k },
-        ]
+        ],
       );
     } else {
       context.runKernel(
@@ -46,7 +46,7 @@ class WasmGemm extends Gemm {
           { type: "int32", value: m },
           { type: "int32", value: n },
           { type: "int32", value: k },
-        ]
+        ],
       );
     }
     return [output];

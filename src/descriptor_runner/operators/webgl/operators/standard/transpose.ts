@@ -74,7 +74,7 @@ void main() {
         "tex_input",
         inStrides,
         input,
-        context.webgl2
+        context.webgl2,
       ),
       ...shaderGenTensorOutputUniformItem(outShape, output, context.webgl2),
     ];
@@ -82,7 +82,7 @@ void main() {
       kernelName,
       [{ tensor: input, name: "tex_input" }],
       output,
-      uniforms
+      uniforms,
     );
     return [output];
   }
