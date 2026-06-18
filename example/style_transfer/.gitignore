@@ -1,0 +1,3 @@
+# local smoke/benchmark scaffolding (not part of the demo)
+_smoke*.html
+styles/_*/
