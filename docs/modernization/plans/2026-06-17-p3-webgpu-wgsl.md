@@ -8,7 +8,7 @@
 
 **Tech Stack:** WGSL, 現行 WebGPU API（`@webgpu/types@0.1.70`）, Node 生成スクリプト, P2 の Playwright/vitest/uv フィクスチャ。
 
-**上位計画:** [docs/modernization-plan.md](../../modernization-plan.md) Phase 3。前提（P1 ツールチェーン・P2 テスト基盤）は完了済み。
+**上位計画:** [docs/modernization-plan.md](../modernization-plan.md) Phase 3。前提（P1 ツールチェーン・P2 テスト基盤）は完了済み。
 
 **スコープ確定事項:**
 - WebGPU バックエンドが対応する ONNX op は **Relu / Add / Gemm / Conv** の 4 種（operator ファイル: `unary.ts` / `binary7.ts` / `gemm.ts` / `conv.ts`）。

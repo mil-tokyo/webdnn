@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node LTS, npm, TypeScript 5.x, ESLint 9 (flat config), Prettier, Vite (build API by script), `@webgpu/types` 0.1.x。ランタイム本体は TypeScript（`src/descriptor_runner/`）。
 
-**全体方針:** これは上位計画 [docs/modernization-plan.md](../../modernization-plan.md) の Phase 0 と Phase 1 を対象とする。Phase 2〜5 は本計画マージ後に各フェーズ個別の計画として作成する。
+**全体方針:** これは上位計画 [docs/modernization-plan.md](../modernization-plan.md) の Phase 0 と Phase 1 を対象とする。Phase 2〜5 は本計画マージ後に各フェーズ個別の計画として作成する。
 
 **重要な前提（実行者向け）:**
 - 本フェーズは**挙動を変えない**。成果物（dist）は Phase 0 で記録したベースラインと機能的に同等であること。

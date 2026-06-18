@@ -1,9 +1,10 @@
-# モダナイゼーション進捗ステータス（living document）
+# モダナイゼーション進捗ステータス（アーカイブ / 完了記録）
 
-> このファイルは刷新作業の **現在地と「次の一手」の単一の真実**。
-> 1ステップでも進めたら必ずここを更新すること。CLAUDE.md からの入口。
+> **📦 ARCHIVED**: 刷新作業（P0–P5）は完了済み。このファイルは当時の進捗トラッカーを
+> 最終状態で凍結した歴史的記録であり、living document ではない。現行の開発手順は
+> リポジトリ root の [CLAUDE.md](../../CLAUDE.md) と [docs/](../) を参照。
 
-最終更新: 2026-06-18
+最終更新: 2026-06-18（完了時点で凍結）
 
 ## 作業ブランチ
 
@@ -19,7 +20,7 @@
   - P5（README/README.ja/CONTRIBUTING 刷新 + `docs/architecture.md` 追加 / `setup.py`→`pyproject.toml`（uv）移行 / npm 配布構成 `main`・`types`・`exports` を Vite 実出力へ整合 / `prepublishOnly=build:all`）。
 - 到達状態（全て緑）: `typecheck`=0、`lint`=0、`format:check`=0、`build:all`=0、`test:unit`=20 passed、`test:e2e`=**CPU + WebGPU + WebGL + WASM の 4 経路すべて PASS**（実 chromium/Metal/emcc 6.0 で onnxruntime と一致）、`dist` に 9 バンドル + dts、`npm pack` は dist のみ、`uv sync` + `import webdnn` OK。
 - 完了した計画書:
-  - [P0+P1](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md) / [P2](superpowers/plans/2026-06-17-p2-test-infrastructure.md) / [P3](superpowers/plans/2026-06-17-p3-webgpu-wgsl.md) / [P4](superpowers/plans/2026-06-17-p4-webgl-wasm-deps.md) / [P5](superpowers/plans/2026-06-18-p5-docs-distribution.md)（全 Task 完了）
+  - [P0+P1](plans/2026-06-17-p0-p1-baseline-and-toolchain.md) / [P2](plans/2026-06-17-p2-test-infrastructure.md) / [P3](plans/2026-06-17-p3-webgpu-wgsl.md) / [P4](plans/2026-06-17-p4-webgl-wasm-deps.md) / [P5](plans/2026-06-18-p5-docs-distribution.md)（全 Task 完了）
 
 ### 後続フェーズへ引き継ぐ重要事項
 - `@webgpu/glslang`（GLSL→SPIR-V）はビルド自体は成功するが、現行ブラウザでは動かない。**P3** で WGSL 化し依存除去。
@@ -59,15 +60,15 @@
 
 - [x] **P0 ベースライン確立** — 現状の動作状況を `docs/baseline.md` に記録 ✅
 - [x] **P1 ツールチェーン刷新** — npm / TS5 / ESLint9 flat / Vite / `@webgpu/types` 更新 ✅
-  - 計画書: [2026-06-17-p0-p1-baseline-and-toolchain.md](superpowers/plans/2026-06-17-p0-p1-baseline-and-toolchain.md)（全 Task 完了）
+  - 計画書: [2026-06-17-p0-p1-baseline-and-toolchain.md](plans/2026-06-17-p0-p1-baseline-and-toolchain.md)（全 Task 完了）
 - [x] **P2 自動テスト基盤** — vitest + 実機Playwright(CPU) + ブラウザ目視ランナー + CI（GPUなし）✅
-  - 計画書: [2026-06-17-p2-test-infrastructure.md](superpowers/plans/2026-06-17-p2-test-infrastructure.md)（全 Task 完了）
+  - 計画書: [2026-06-17-p2-test-infrastructure.md](plans/2026-06-17-p2-test-infrastructure.md)（全 Task 完了）
 - [x] **P3 WebGPU WGSL 移行** — 12 GLSL→WGSL・現行 API 化・glslang 除去・実GPUでE2E PASS ✅
-  - 計画書: [2026-06-17-p3-webgpu-wgsl.md](superpowers/plans/2026-06-17-p3-webgpu-wgsl.md)（全 Task 完了）
+  - 計画書: [2026-06-17-p3-webgpu-wgsl.md](plans/2026-06-17-p3-webgpu-wgsl.md)（全 Task 完了）
 - [x] **P4 WebGL/WASM/CPU 追従** — WebGL+WASM E2E PASS・onnx-proto→protobufjs・emscripten 導入&検証済み ✅
-  - 計画書: [2026-06-17-p4-webgl-wasm-deps.md](superpowers/plans/2026-06-17-p4-webgl-wasm-deps.md)（全 Task 完了）
+  - 計画書: [2026-06-17-p4-webgl-wasm-deps.md](plans/2026-06-17-p4-webgl-wasm-deps.md)（全 Task 完了）
 - [x] **P5 ドキュメント・配布整備** — README/CONTRIBUTING/architecture・uv 移行・npm 配布構成整合 ✅
-  - 計画書: [2026-06-18-p5-docs-distribution.md](superpowers/plans/2026-06-18-p5-docs-distribution.md)（全 Task 完了）
+  - 計画書: [2026-06-18-p5-docs-distribution.md](plans/2026-06-18-p5-docs-distribution.md)（全 Task 完了）
 
 ## 既知の積み残し（フェーズをまたぐ TODO）
 

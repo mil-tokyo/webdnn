@@ -8,7 +8,7 @@
 
 **Tech Stack:** vitest（Node 環境）, @playwright/test, GitHub Actions, uv（フィクスチャ生成用の pinned Python: onnx / onnxruntime / numpy。torch は使わない）, 既存の `WDN2` バイナリ形式（`serialize_tensors`）。
 
-**上位計画:** [docs/modernization-plan.md](../../modernization-plan.md) の Phase 2。前提（npm / Vite / typecheck / lint / format:check 緑）は P1 で整備済み。
+**上位計画:** [docs/modernization-plan.md](../modernization-plan.md) の Phase 2。前提（npm / Vite / typecheck / lint / format:check 緑）は P1 で整備済み。
 
 **重要な前提（実行者向け）:**
 - CI には **GPU テストを含めない**。CI = lint + typecheck + unit + build のみ。

@@ -8,7 +8,7 @@
 
 **Tech Stack:** protobufjs + protobufjs-cli（pbjs/pbts）, 公式 onnx.proto, 既存 WebGL2 バックエンド, emscripten（手動導入）, P2/P3 のテスト基盤。
 
-**上位計画:** [docs/modernization-plan.md](../../modernization-plan.md) Phase 4。前提 P1/P2/P3 完了済み。
+**上位計画:** [docs/modernization-plan.md](../modernization-plan.md) Phase 4。前提 P1/P2/P3 完了済み。
 
 **スコープ確定事項（探索済み）:**
 - `onnx-proto` を import するファイルは **38 個**。使用シンボル: `onnx.IAttributeProto`(型)、`onnx.TensorProto.DataType`(enum)、`onnx.ModelProto`(型)、`onnx.IValueInfoProto`(型)、`onnx.ModelProto.decode`(実行時 1 箇所)。

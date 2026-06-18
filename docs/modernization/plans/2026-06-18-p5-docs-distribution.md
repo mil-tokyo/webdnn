@@ -8,7 +8,7 @@
 
 **Tech Stack:** Markdown ドキュメント, uv + pyproject.toml（PEP 621）, npm package.json（exports/types）。
 
-**上位計画:** [docs/modernization-plan.md](../../modernization-plan.md) Phase 5。前提 P1〜P4 完了済み。
+**上位計画:** [docs/modernization-plan.md](../modernization-plan.md) Phase 5。前提 P1〜P4 完了済み。
 
 **現状（探索済み）:**
 - `README.md`/`README.ja.md` は旧情報（yarn・node 14・python 3.6・emscripten 2.0・「WebGPU は Chrome Canary のドラフト」「WSL」）。
