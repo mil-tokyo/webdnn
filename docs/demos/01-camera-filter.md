@@ -3,6 +3,11 @@
 > 2026-06-18。ギャラリー構想とオペレータ予算は [README.md](README.md) を参照。本書は1本目の実装仕様。
 > 実現性: 🟢（自作 ConvTranspose 版は新規op不要）。
 
+> **⚠️ Phase 0 実測で確定した改訂あり**（[01-camera-filter-plan.md](01-camera-filter-plan.md) の「Phase 0 結果 & 設計改訂」が最新の正）:
+> モデルは **light**（base16/res3/endk3, 270K params）、解像度は **ライブ192²＋256²キャプチャ**、
+> export は **opset 11＋ORT最適化**、前提として **core修正**（`util.ts` の Long→number 変換）。
+> 以下 §4/§5/§7 の heavy・256²インタラクティブ記述はこの改訂で上書きされる。
+
 ## 1. 目的・客層
 
 webカメラ/画像をリアルタイムに画風変換し、`<canvas>` に表示する。

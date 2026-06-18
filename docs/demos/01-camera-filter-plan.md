@@ -12,6 +12,35 @@
 
 ---
 
+## Phase 0 結果 & 設計改訂（2026-06-18 実測確定）
+
+Phase 0（端から端までの動作確認）完了。実機 **Apple M2 / WebGL(ANGLE-Metal)** で確定：
+
+**動作前提（2点の修正が必須・実装済）**
+- **export は opset 11**（Pad=pad11, opsetMin11）＋ **ORT BASIC 最適化**で legacy exporter の
+  Identity/Cast/Concat/ConstantOfShape 等の足場を定数畳み込みし、WebDNN対応op
+  （Conv/ConvTranspose/InstanceNormalization/Relu/Add/Pad）だけに圧縮 → `export_to_onnx.py` 済。
+- **core バグ修正**: `src/descriptor_runner/util.ts` の `intOrLongToInt` が protobufjs の Long を
+  `instanceof` で取りこぼし、`number+Long` が文字列連結 → Conv `pads` が壊れ出力形状が爆発していた。
+  bit-field から再構成して修正済（`test/unit/util.test.ts`）。
+
+**性能実測（M2 WebGL, steady-state）**
+
+| 解像度 | heavy(1.68M) | light(270K) |
+|---|---|---|
+| 128² | 167ms / 6fps | 36ms / 28fps |
+| 192² | 1740ms / 0.6fps | 85ms / 12fps |
+| 256² | 2500ms / 0.4fps | 142ms / 7fps |
+
+**確定した設計改訂（以降のタスクはこれに従う）**
+- **モデル = light**: `TransformerNet(base=16, num_res=3, end_k=3)`（270K params）。
+  spec §4 の heavy 構成、Task 1.x の学習/export は **light フラグ**で（`--base 16 --num-res 3 --end-k 3`）。
+- **解像度モード = ライブ192²（~12fps）＋ 256²キャプチャ（ボタンで高品質1枚 ~142ms）**。
+  spec §7 と Task 2–4 の「256²インタラクティブ」「192²自動フォールバック」は**不採用**（上表で確定）。
+  → index.js は描画ループ(192²)に加え「capture」ボタンで 256² runner を1回走らせて別canvasに出す。
+- 旧 `model.onnx` は `weights` なしでも export 可。Conv のim2col限界は dist 再ビルドで解消済
+  （`IM2COL_NUMEL_LIMIT=511*1024*1024`、Long修正が効くまでは誤発火していた）。
+
 ## File Structure
 
 ```
@@ -179,8 +208,9 @@ def export(weights, out_dir, size=256):
     onnx_path = os.path.join(out_dir, "model.onnx")
     with torch.no_grad():
         torch.onnx.export(
-            model, dummy, onnx_path, input_names=["input"],
-            output_names=["output"], opset_version=10,
+            model, (dummy,), onnx_path, input_names=["input"],
+            output_names=["output"], opset_version=11,  # Pad は WebDNN pad11(opsetMin=11)。10だとPad未解決で読込失敗
+            dynamo=False,  # torch 2.12+ は dynamo=True 既定(onnxscript要)。legacy exporterで opset11 を出力
         )
     # ブラウザ4バックエンド突合用の期待値（resnet例と同じ仕組み）
     serialize_tensors(os.path.join(out_dir, "expected.bin"),
