@@ -32,8 +32,9 @@
 
 ## 👉 次の一手（NEXT STEP）
 
-**自動実装可能な刷新（P0–P5）は完了。WASM も emcc 6.0 で検証済み。残るは限定的な人手 TODO と `master` 取り込み判断。**
-- 人手 TODO（下記セクション参照）: Safari/Firefox 実機確認、npm/PyPI publish。
+**自動実装可能な刷新（P0–P5）は完了。全バックエンドを実機4ブラウザで目視確認済み。残るは `master` 取り込みと publish のみ。**
+- ✅ **実機目視確認 完了（2026-06-18）**: Chrome / Edge / Safari / Firefox で `standard.html` を実行し全ケース `ALL OK`。
+- 残: `modernization`→`master` マージ判断、npm/PyPI publish（いずれも人手）。
 - `modernization` ブランチは **まだ `master` にマージしていない**。完了フェーズの取り込み判断は人手。
 
 ## WASM バックエンド: 検証済み ✅（2026-06-18）
@@ -48,8 +49,8 @@
 
 ## 人手が必要な作業（Claude が実行できないもの）
 
-- 実 GPU 上の WebGPU/WebGL を **他ブラウザ（Safari/Firefox）** でも目視確認。失敗時はログを Claude へ。
-- `npm publish` / PyPI 公開（手動）。
+- ~~実 GPU 上の WebGPU/WebGL を他ブラウザ（Safari/Firefox）でも目視確認~~ → ✅ 完了（2026-06-18, 全ケース ALL OK）。
+- `npm publish` / PyPI 公開（手動。Claude は実行しない）。
 - （WASM ビルドには emsdk が必要。導入済み。CI など未導入環境ではスタブで動作。）
 
 ## フェーズ一覧と進捗
