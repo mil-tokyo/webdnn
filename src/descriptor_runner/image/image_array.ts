@@ -68,10 +68,7 @@ export interface ImageArrayOption {
  * Types which are drawable at `HTMLCanvasElement`
  */
 export type Drawable =
-  | HTMLImageElement
-  | HTMLVideoElement
-  | HTMLCanvasElement
-  | ImageData;
+  HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageData;
 
 /**
  * All type of image source which `WebDNN.Image` can be handled. For `string`, only the url of image resource is valid.

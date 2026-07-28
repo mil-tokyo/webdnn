@@ -11,10 +11,7 @@ export interface WebGLUniformItem {
 }
 
 export type WebDNNWebGLVersion =
-  | "webgl2-16384"
-  | "webgl2-4096"
-  | "webgl1-16384"
-  | "webgl1-4096";
+  "webgl2-16384" | "webgl2-4096" | "webgl1-16384" | "webgl1-4096";
 
 export interface WebDNNWebGLContextOption {
   /**
