@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "pako": "^2.0.3",
-    "protobufjs": "^7.6.4"
+    "protobufjs": "^7.6.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
