@@ -3,6 +3,9 @@
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "bundler",
+    // TypeScript 6 (TS5011) requires rootDir to be explicit when emitting.
+    // This is the directory tsc previously inferred, so the dist/types layout is unchanged.
+    "rootDir": "src/descriptor_runner",
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,

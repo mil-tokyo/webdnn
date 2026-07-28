@@ -1,8 +1,9 @@
-/*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
-import * as $protobuf from "protobufjs/minimal";
+/*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-mixed-operators, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars, default-case, jsdoc/require-param*/
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
 const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Object = $util.global.Object, $undefined = $util.global.undefined, $Error = $util.global.Error, $Array = $util.global.Array, $TypeError = $util.global.TypeError, $String = $util.global.String, $Number = $util.global.Number, $parseInt = $util.global.parseInt, $BigInt = $util.global.BigInt, $isFinite = $util.global.isFinite;
 
 // Exported root namespace
 const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
@@ -33,7 +34,7 @@ export const onnx = $root.onnx = (() => {
      * @property {number} IR_VERSION=10 IR_VERSION value
      */
     onnx.Version = (function() {
-        const valuesById = {}, values = Object.create(valuesById);
+        const valuesById = $Object.create(null), values = $Object.create(valuesById);
         values[valuesById[0] = "_START_VERSION"] = 0;
         values[valuesById[1] = "IR_VERSION_2017_10_10"] = 1;
         values[valuesById[2] = "IR_VERSION_2017_10_30"] = 2;
@@ -52,8 +53,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of an AttributeProto.
-         * @memberof onnx
-         * @interface IAttributeProto
+         * @typedef {Object} onnx.AttributeProto.$Properties
          * @property {string|null} [name] AttributeProto name
          * @property {string|null} [refAttrName] AttributeProto refAttrName
          * @property {string|null} [docString] AttributeProto docString
@@ -61,28 +61,62 @@ export const onnx = $root.onnx = (() => {
          * @property {number|null} [f] AttributeProto f
          * @property {number|Long|null} [i] AttributeProto i
          * @property {Uint8Array|null} [s] AttributeProto s
-         * @property {onnx.ITensorProto|null} [t] AttributeProto t
-         * @property {onnx.IGraphProto|null} [g] AttributeProto g
-         * @property {onnx.ISparseTensorProto|null} [sparseTensor] AttributeProto sparseTensor
-         * @property {onnx.ITypeProto|null} [tp] AttributeProto tp
+         * @property {onnx.TensorProto.$Properties|null} [t] AttributeProto t
+         * @property {onnx.GraphProto.$Properties|null} [g] AttributeProto g
+         * @property {onnx.SparseTensorProto.$Properties|null} [sparseTensor] AttributeProto sparseTensor
+         * @property {onnx.TypeProto.$Properties|null} [tp] AttributeProto tp
          * @property {Array.<number>|null} [floats] AttributeProto floats
          * @property {Array.<number|Long>|null} [ints] AttributeProto ints
          * @property {Array.<Uint8Array>|null} [strings] AttributeProto strings
-         * @property {Array.<onnx.ITensorProto>|null} [tensors] AttributeProto tensors
-         * @property {Array.<onnx.IGraphProto>|null} [graphs] AttributeProto graphs
-         * @property {Array.<onnx.ISparseTensorProto>|null} [sparseTensors] AttributeProto sparseTensors
-         * @property {Array.<onnx.ITypeProto>|null} [typeProtos] AttributeProto typeProtos
+         * @property {Array.<onnx.TensorProto.$Properties>|null} [tensors] AttributeProto tensors
+         * @property {Array.<onnx.GraphProto.$Properties>|null} [graphs] AttributeProto graphs
+         * @property {Array.<onnx.SparseTensorProto.$Properties>|null} [sparseTensors] AttributeProto sparseTensors
+         * @property {Array.<onnx.TypeProto.$Properties>|null} [typeProtos] AttributeProto typeProtos
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of an AttributeProto.
+         * @memberof onnx
+         * @interface IAttributeProto
+         * @augments onnx.AttributeProto.$Properties
+         * @deprecated Use onnx.AttributeProto.$Properties instead.
+         */
+
+        /**
+         * Shape of an AttributeProto.
+         * @typedef {{
+         *   name?: string|null;
+         *   refAttrName?: string|null;
+         *   docString?: string|null;
+         *   type?: onnx.AttributeProto.AttributeType|null;
+         *   f?: number|null;
+         *   i?: number|Long|null;
+         *   s?: Uint8Array|null;
+         *   t?: onnx.TensorProto.$Shape|null;
+         *   g?: onnx.GraphProto.$Shape|null;
+         *   sparseTensor?: onnx.SparseTensorProto.$Shape|null;
+         *   tp?: onnx.TypeProto.$Shape|null;
+         *   floats?: Array.<number>|null;
+         *   ints?: Array.<number|Long>|null;
+         *   strings?: Array.<Uint8Array>|null;
+         *   tensors?: Array.<onnx.TensorProto.$Shape>|null;
+         *   graphs?: Array.<onnx.GraphProto.$Shape>|null;
+         *   sparseTensors?: Array.<onnx.SparseTensorProto.$Shape>|null;
+         *   typeProtos?: Array.<onnx.TypeProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.AttributeProto.$Shape
          */
 
         /**
          * Constructs a new AttributeProto.
          * @memberof onnx
          * @classdesc Represents an AttributeProto.
-         * @implements IAttributeProto
          * @constructor
-         * @param {onnx.IAttributeProto=} [properties] Properties to set
+         * @param {onnx.AttributeProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function AttributeProto(properties) {
+        const AttributeProto = function (properties) {
             this.floats = [];
             this.ints = [];
             this.strings = [];
@@ -91,10 +125,10 @@ export const onnx = $root.onnx = (() => {
             this.sparseTensors = [];
             this.typeProtos = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * AttributeProto name.
@@ -154,7 +188,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto t.
-         * @member {onnx.ITensorProto|null|undefined} t
+         * @member {onnx.TensorProto.$Properties|null|undefined} t
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -162,7 +196,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto g.
-         * @member {onnx.IGraphProto|null|undefined} g
+         * @member {onnx.GraphProto.$Properties|null|undefined} g
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -170,7 +204,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto sparseTensor.
-         * @member {onnx.ISparseTensorProto|null|undefined} sparseTensor
+         * @member {onnx.SparseTensorProto.$Properties|null|undefined} sparseTensor
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -178,7 +212,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto tp.
-         * @member {onnx.ITypeProto|null|undefined} tp
+         * @member {onnx.TypeProto.$Properties|null|undefined} tp
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -210,7 +244,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto tensors.
-         * @member {Array.<onnx.ITensorProto>} tensors
+         * @member {Array.<onnx.TensorProto.$Properties>} tensors
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -218,7 +252,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto graphs.
-         * @member {Array.<onnx.IGraphProto>} graphs
+         * @member {Array.<onnx.GraphProto.$Properties>} graphs
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -226,7 +260,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto sparseTensors.
-         * @member {Array.<onnx.ISparseTensorProto>} sparseTensors
+         * @member {Array.<onnx.SparseTensorProto.$Properties>} sparseTensors
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -234,7 +268,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * AttributeProto typeProtos.
-         * @member {Array.<onnx.ITypeProto>} typeProtos
+         * @member {Array.<onnx.TypeProto.$Properties>} typeProtos
          * @memberof onnx.AttributeProto
          * @instance
          */
@@ -245,10 +279,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.AttributeProto
          * @static
-         * @param {onnx.IAttributeProto=} [properties] Properties to set
+         * @param {onnx.AttributeProto.$Properties=} [properties] Properties to set
          * @returns {onnx.AttributeProto} AttributeProto instance
+         * @type {{
+         *   (properties: onnx.AttributeProto.$Shape): onnx.AttributeProto & onnx.AttributeProto.$Shape;
+         *   (properties?: onnx.AttributeProto.$Properties): onnx.AttributeProto;
+         * }}
          */
-        AttributeProto.create = function create(properties) {
+        AttributeProto.create = function(properties) {
             return new AttributeProto(properties);
         };
 
@@ -257,29 +295,29 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.AttributeProto
          * @static
-         * @param {onnx.IAttributeProto} message AttributeProto message or plain object to encode
+         * @param {onnx.AttributeProto.$Properties} message AttributeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        AttributeProto.encode = function encode(message, writer, q) {
+        AttributeProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-            if (message.f != null && Object.hasOwnProperty.call(message, "f"))
+            if (message.f != null && $Object.hasOwnProperty.call(message, "f"))
                 writer.uint32(/* id 2, wireType 5 =*/21).float(message.f);
-            if (message.i != null && Object.hasOwnProperty.call(message, "i"))
+            if (message.i != null && $Object.hasOwnProperty.call(message, "i"))
                 writer.uint32(/* id 3, wireType 0 =*/24).int64(message.i);
-            if (message.s != null && Object.hasOwnProperty.call(message, "s"))
+            if (message.s != null && $Object.hasOwnProperty.call(message, "s"))
                 writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.s);
-            if (message.t != null && Object.hasOwnProperty.call(message, "t"))
-                $root.onnx.TensorProto.encode(message.t, writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
-            if (message.g != null && Object.hasOwnProperty.call(message, "g"))
-                $root.onnx.GraphProto.encode(message.g, writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
+            if (message.t != null && $Object.hasOwnProperty.call(message, "t"))
+                $root.onnx.TensorProto.encode(message.t, writer.uint32(/* id 5, wireType 2 =*/42).fork(), _depth + 1).ldelim();
+            if (message.g != null && $Object.hasOwnProperty.call(message, "g"))
+                $root.onnx.GraphProto.encode(message.g, writer.uint32(/* id 6, wireType 2 =*/50).fork(), _depth + 1).ldelim();
             if (message.floats != null && message.floats.length)
                 for (let i = 0; i < message.floats.length; ++i)
                     writer.uint32(/* id 7, wireType 5 =*/61).float(message.floats[i]);
@@ -291,26 +329,29 @@ export const onnx = $root.onnx = (() => {
                     writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.strings[i]);
             if (message.tensors != null && message.tensors.length)
                 for (let i = 0; i < message.tensors.length; ++i)
-                    $root.onnx.TensorProto.encode(message.tensors[i], writer.uint32(/* id 10, wireType 2 =*/82).fork(), q + 1).ldelim();
+                    $root.onnx.TensorProto.encode(message.tensors[i], writer.uint32(/* id 10, wireType 2 =*/82).fork(), _depth + 1).ldelim();
             if (message.graphs != null && message.graphs.length)
                 for (let i = 0; i < message.graphs.length; ++i)
-                    $root.onnx.GraphProto.encode(message.graphs[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), q + 1).ldelim();
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+                    $root.onnx.GraphProto.encode(message.graphs[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), _depth + 1).ldelim();
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 13, wireType 2 =*/106).string(message.docString);
-            if (message.tp != null && Object.hasOwnProperty.call(message, "tp"))
-                $root.onnx.TypeProto.encode(message.tp, writer.uint32(/* id 14, wireType 2 =*/114).fork(), q + 1).ldelim();
+            if (message.tp != null && $Object.hasOwnProperty.call(message, "tp"))
+                $root.onnx.TypeProto.encode(message.tp, writer.uint32(/* id 14, wireType 2 =*/114).fork(), _depth + 1).ldelim();
             if (message.typeProtos != null && message.typeProtos.length)
                 for (let i = 0; i < message.typeProtos.length; ++i)
-                    $root.onnx.TypeProto.encode(message.typeProtos[i], writer.uint32(/* id 15, wireType 2 =*/122).fork(), q + 1).ldelim();
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                    $root.onnx.TypeProto.encode(message.typeProtos[i], writer.uint32(/* id 15, wireType 2 =*/122).fork(), _depth + 1).ldelim();
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 20, wireType 0 =*/160).int32(message.type);
-            if (message.refAttrName != null && Object.hasOwnProperty.call(message, "refAttrName"))
+            if (message.refAttrName != null && $Object.hasOwnProperty.call(message, "refAttrName"))
                 writer.uint32(/* id 21, wireType 2 =*/170).string(message.refAttrName);
-            if (message.sparseTensor != null && Object.hasOwnProperty.call(message, "sparseTensor"))
-                $root.onnx.SparseTensorProto.encode(message.sparseTensor, writer.uint32(/* id 22, wireType 2 =*/178).fork(), q + 1).ldelim();
+            if (message.sparseTensor != null && $Object.hasOwnProperty.call(message, "sparseTensor"))
+                $root.onnx.SparseTensorProto.encode(message.sparseTensor, writer.uint32(/* id 22, wireType 2 =*/178).fork(), _depth + 1).ldelim();
             if (message.sparseTensors != null && message.sparseTensors.length)
                 for (let i = 0; i < message.sparseTensors.length; ++i)
-                    $root.onnx.SparseTensorProto.encode(message.sparseTensors[i], writer.uint32(/* id 23, wireType 2 =*/186).fork(), q + 1).ldelim();
+                    $root.onnx.SparseTensorProto.encode(message.sparseTensors[i], writer.uint32(/* id 23, wireType 2 =*/186).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -319,12 +360,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.AttributeProto
          * @static
-         * @param {onnx.IAttributeProto} message AttributeProto message or plain object to encode
+         * @param {onnx.AttributeProto.$Properties} message AttributeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        AttributeProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        AttributeProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -334,124 +375,176 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.AttributeProto} AttributeProto
+         * @returns {onnx.AttributeProto & onnx.AttributeProto.$Shape} AttributeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        AttributeProto.decode = function decode(reader, length, error, long) {
+        AttributeProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.AttributeProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.AttributeProto(), value;
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
-                switch (tag >>> 3) {
+                }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
                 case 1: {
+                        if (wireType !== 2)
+                            break;
                         message.name = reader.string();
-                        break;
+                        continue;
                     }
                 case 21: {
+                        if (wireType !== 2)
+                            break;
                         message.refAttrName = reader.string();
-                        break;
+                        continue;
                     }
                 case 13: {
+                        if (wireType !== 2)
+                            break;
                         message.docString = reader.string();
-                        break;
+                        continue;
                     }
                 case 20: {
-                        message.type = reader.int32();
-                        break;
+                        if (wireType !== 0)
+                            break;
+                        value = reader.int32();
+                        if ($root.onnx.AttributeProto.AttributeType[value] !== $undefined)
+                            message.type = value;
+                        else if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                        continue;
                     }
                 case 2: {
+                        if (wireType !== 5)
+                            break;
                         message.f = reader.float();
-                        break;
+                        continue;
                     }
                 case 3: {
+                        if (wireType !== 0)
+                            break;
                         message.i = reader.int64();
-                        break;
+                        continue;
                     }
                 case 4: {
+                        if (wireType !== 2)
+                            break;
                         message.s = reader.bytes();
-                        break;
+                        continue;
                     }
                 case 5: {
-                        message.t = $root.onnx.TensorProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
+                        if (wireType !== 2)
+                            break;
+                        message.t = $root.onnx.TensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.t);
+                        continue;
                     }
                 case 6: {
-                        message.g = $root.onnx.GraphProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
+                        if (wireType !== 2)
+                            break;
+                        message.g = $root.onnx.GraphProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.g);
+                        continue;
                     }
                 case 22: {
-                        message.sparseTensor = $root.onnx.SparseTensorProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
+                        if (wireType !== 2)
+                            break;
+                        message.sparseTensor = $root.onnx.SparseTensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.sparseTensor);
+                        continue;
                     }
                 case 14: {
-                        message.tp = $root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
+                        if (wireType !== 2)
+                            break;
+                        message.tp = $root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.tp);
+                        continue;
                     }
                 case 7: {
+                        if (wireType === 2) {
+                            if (!(message.floats && message.floats.length))
+                                message.floats = [];
+                            reader.floats(message.floats);
+                            continue;
+                        }
+                        if (wireType !== 5)
+                            break;
                         if (!(message.floats && message.floats.length))
                             message.floats = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.floats.push(reader.float());
-                        } else
-                            message.floats.push(reader.float());
-                        break;
+                        message.floats.push(reader.float());
+                        continue;
                     }
                 case 8: {
+                        if (wireType === 2) {
+                            if (!(message.ints && message.ints.length))
+                                message.ints = [];
+                            reader.int64s(message.ints);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
                         if (!(message.ints && message.ints.length))
                             message.ints = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.ints.push(reader.int64());
-                        } else
-                            message.ints.push(reader.int64());
-                        break;
+                        message.ints.push(reader.int64());
+                        continue;
                     }
                 case 9: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.strings && message.strings.length))
                             message.strings = [];
                         message.strings.push(reader.bytes());
-                        break;
+                        continue;
                     }
                 case 10: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.tensors && message.tensors.length))
                             message.tensors = [];
-                        message.tensors.push($root.onnx.TensorProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.tensors.push($root.onnx.TensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 11: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.graphs && message.graphs.length))
                             message.graphs = [];
-                        message.graphs.push($root.onnx.GraphProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.graphs.push($root.onnx.GraphProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 23: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.sparseTensors && message.sparseTensors.length))
                             message.sparseTensors = [];
-                        message.sparseTensors.push($root.onnx.SparseTensorProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.sparseTensors.push($root.onnx.SparseTensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 15: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.typeProtos && message.typeProtos.length))
                             message.typeProtos = [];
-                        message.typeProtos.push($root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.typeProtos.push($root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
                 }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -461,11 +554,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.AttributeProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.AttributeProto} AttributeProto
+         * @returns {onnx.AttributeProto & onnx.AttributeProto.$Shape} AttributeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        AttributeProto.decodeDelimited = function decodeDelimited(reader) {
+        AttributeProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -479,23 +572,23 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        AttributeProto.verify = function verify(message, long) {
+        AttributeProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.refAttrName != null && Object.hasOwnProperty.call(message, "refAttrName"))
+            if (message.refAttrName != null && $Object.hasOwnProperty.call(message, "refAttrName"))
                 if (!$util.isString(message.refAttrName))
                     return "refAttrName: string expected";
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
                 switch (message.type) {
                 default:
                     return "type: enum value expected";
@@ -516,88 +609,88 @@ export const onnx = $root.onnx = (() => {
                 case 14:
                     break;
                 }
-            if (message.f != null && Object.hasOwnProperty.call(message, "f"))
+            if (message.f != null && $Object.hasOwnProperty.call(message, "f"))
                 if (typeof message.f !== "number")
                     return "f: number expected";
-            if (message.i != null && Object.hasOwnProperty.call(message, "i"))
+            if (message.i != null && $Object.hasOwnProperty.call(message, "i"))
                 if (!$util.isInteger(message.i) && !(message.i && $util.isInteger(message.i.low) && $util.isInteger(message.i.high)))
                     return "i: integer|Long expected";
-            if (message.s != null && Object.hasOwnProperty.call(message, "s"))
+            if (message.s != null && $Object.hasOwnProperty.call(message, "s"))
                 if (!(message.s && typeof message.s.length === "number" || $util.isString(message.s)))
                     return "s: buffer expected";
-            if (message.t != null && Object.hasOwnProperty.call(message, "t")) {
-                let error = $root.onnx.TensorProto.verify(message.t, long + 1);
+            if (message.t != null && $Object.hasOwnProperty.call(message, "t")) {
+                let error = $root.onnx.TensorProto.verify(message.t, _depth + 1);
                 if (error)
                     return "t." + error;
             }
-            if (message.g != null && Object.hasOwnProperty.call(message, "g")) {
-                let error = $root.onnx.GraphProto.verify(message.g, long + 1);
+            if (message.g != null && $Object.hasOwnProperty.call(message, "g")) {
+                let error = $root.onnx.GraphProto.verify(message.g, _depth + 1);
                 if (error)
                     return "g." + error;
             }
-            if (message.sparseTensor != null && Object.hasOwnProperty.call(message, "sparseTensor")) {
-                let error = $root.onnx.SparseTensorProto.verify(message.sparseTensor, long + 1);
+            if (message.sparseTensor != null && $Object.hasOwnProperty.call(message, "sparseTensor")) {
+                let error = $root.onnx.SparseTensorProto.verify(message.sparseTensor, _depth + 1);
                 if (error)
                     return "sparseTensor." + error;
             }
-            if (message.tp != null && Object.hasOwnProperty.call(message, "tp")) {
-                let error = $root.onnx.TypeProto.verify(message.tp, long + 1);
+            if (message.tp != null && $Object.hasOwnProperty.call(message, "tp")) {
+                let error = $root.onnx.TypeProto.verify(message.tp, _depth + 1);
                 if (error)
                     return "tp." + error;
             }
-            if (message.floats != null && Object.hasOwnProperty.call(message, "floats")) {
-                if (!Array.isArray(message.floats))
+            if (message.floats != null && $Object.hasOwnProperty.call(message, "floats")) {
+                if (!$Array.isArray(message.floats))
                     return "floats: array expected";
                 for (let i = 0; i < message.floats.length; ++i)
                     if (typeof message.floats[i] !== "number")
                         return "floats: number[] expected";
             }
-            if (message.ints != null && Object.hasOwnProperty.call(message, "ints")) {
-                if (!Array.isArray(message.ints))
+            if (message.ints != null && $Object.hasOwnProperty.call(message, "ints")) {
+                if (!$Array.isArray(message.ints))
                     return "ints: array expected";
                 for (let i = 0; i < message.ints.length; ++i)
                     if (!$util.isInteger(message.ints[i]) && !(message.ints[i] && $util.isInteger(message.ints[i].low) && $util.isInteger(message.ints[i].high)))
                         return "ints: integer|Long[] expected";
             }
-            if (message.strings != null && Object.hasOwnProperty.call(message, "strings")) {
-                if (!Array.isArray(message.strings))
+            if (message.strings != null && $Object.hasOwnProperty.call(message, "strings")) {
+                if (!$Array.isArray(message.strings))
                     return "strings: array expected";
                 for (let i = 0; i < message.strings.length; ++i)
                     if (!(message.strings[i] && typeof message.strings[i].length === "number" || $util.isString(message.strings[i])))
                         return "strings: buffer[] expected";
             }
-            if (message.tensors != null && Object.hasOwnProperty.call(message, "tensors")) {
-                if (!Array.isArray(message.tensors))
+            if (message.tensors != null && $Object.hasOwnProperty.call(message, "tensors")) {
+                if (!$Array.isArray(message.tensors))
                     return "tensors: array expected";
                 for (let i = 0; i < message.tensors.length; ++i) {
-                    let error = $root.onnx.TensorProto.verify(message.tensors[i], long + 1);
+                    let error = $root.onnx.TensorProto.verify(message.tensors[i], _depth + 1);
                     if (error)
                         return "tensors." + error;
                 }
             }
-            if (message.graphs != null && Object.hasOwnProperty.call(message, "graphs")) {
-                if (!Array.isArray(message.graphs))
+            if (message.graphs != null && $Object.hasOwnProperty.call(message, "graphs")) {
+                if (!$Array.isArray(message.graphs))
                     return "graphs: array expected";
                 for (let i = 0; i < message.graphs.length; ++i) {
-                    let error = $root.onnx.GraphProto.verify(message.graphs[i], long + 1);
+                    let error = $root.onnx.GraphProto.verify(message.graphs[i], _depth + 1);
                     if (error)
                         return "graphs." + error;
                 }
             }
-            if (message.sparseTensors != null && Object.hasOwnProperty.call(message, "sparseTensors")) {
-                if (!Array.isArray(message.sparseTensors))
+            if (message.sparseTensors != null && $Object.hasOwnProperty.call(message, "sparseTensors")) {
+                if (!$Array.isArray(message.sparseTensors))
                     return "sparseTensors: array expected";
                 for (let i = 0; i < message.sparseTensors.length; ++i) {
-                    let error = $root.onnx.SparseTensorProto.verify(message.sparseTensors[i], long + 1);
+                    let error = $root.onnx.SparseTensorProto.verify(message.sparseTensors[i], _depth + 1);
                     if (error)
                         return "sparseTensors." + error;
                 }
             }
-            if (message.typeProtos != null && Object.hasOwnProperty.call(message, "typeProtos")) {
-                if (!Array.isArray(message.typeProtos))
+            if (message.typeProtos != null && $Object.hasOwnProperty.call(message, "typeProtos")) {
+                if (!$Array.isArray(message.typeProtos))
                     return "typeProtos: array expected";
                 for (let i = 0; i < message.typeProtos.length; ++i) {
-                    let error = $root.onnx.TypeProto.verify(message.typeProtos[i], long + 1);
+                    let error = $root.onnx.TypeProto.verify(message.typeProtos[i], _depth + 1);
                     if (error)
                         return "typeProtos." + error;
                 }
@@ -613,29 +706,23 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.AttributeProto} AttributeProto
          */
-        AttributeProto.fromObject = function fromObject(object, long) {
+        AttributeProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.AttributeProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.AttributeProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.AttributeProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.AttributeProto();
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.refAttrName != null)
-                message.refAttrName = String(object.refAttrName);
+                message.refAttrName = $String(object.refAttrName);
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             switch (object.type) {
-            default:
-                if (typeof object.type === "number") {
-                    message.type = object.type;
-                    break;
-                }
-                break;
             case "UNDEFINED":
             case 0:
                 message.type = 0;
@@ -696,14 +783,15 @@ export const onnx = $root.onnx = (() => {
             case 14:
                 message.type = 14;
                 break;
+            default:
             }
             if (object.f != null)
-                message.f = Number(object.f);
+                message.f = $Number(object.f);
             if (object.i != null)
                 if ($util.Long)
                     message.i = $util.Long.fromValue(object.i, false);
                 else if (typeof object.i === "string")
-                    message.i = parseInt(object.i, 10);
+                    message.i = $parseInt(object.i, 10);
                 else if (typeof object.i === "number")
                     message.i = object.i;
                 else if (typeof object.i === "object")
@@ -715,49 +803,49 @@ export const onnx = $root.onnx = (() => {
                     message.s = object.s;
             if (object.t != null) {
                 if (!$util.isObject(object.t))
-                    throw TypeError(".onnx.AttributeProto.t: object expected");
-                message.t = $root.onnx.TensorProto.fromObject(object.t, long + 1);
+                    throw $TypeError(".onnx.AttributeProto.t: object expected");
+                message.t = $root.onnx.TensorProto.fromObject(object.t, _depth + 1);
             }
             if (object.g != null) {
                 if (!$util.isObject(object.g))
-                    throw TypeError(".onnx.AttributeProto.g: object expected");
-                message.g = $root.onnx.GraphProto.fromObject(object.g, long + 1);
+                    throw $TypeError(".onnx.AttributeProto.g: object expected");
+                message.g = $root.onnx.GraphProto.fromObject(object.g, _depth + 1);
             }
             if (object.sparseTensor != null) {
                 if (!$util.isObject(object.sparseTensor))
-                    throw TypeError(".onnx.AttributeProto.sparseTensor: object expected");
-                message.sparseTensor = $root.onnx.SparseTensorProto.fromObject(object.sparseTensor, long + 1);
+                    throw $TypeError(".onnx.AttributeProto.sparseTensor: object expected");
+                message.sparseTensor = $root.onnx.SparseTensorProto.fromObject(object.sparseTensor, _depth + 1);
             }
             if (object.tp != null) {
                 if (!$util.isObject(object.tp))
-                    throw TypeError(".onnx.AttributeProto.tp: object expected");
-                message.tp = $root.onnx.TypeProto.fromObject(object.tp, long + 1);
+                    throw $TypeError(".onnx.AttributeProto.tp: object expected");
+                message.tp = $root.onnx.TypeProto.fromObject(object.tp, _depth + 1);
             }
             if (object.floats) {
-                if (!Array.isArray(object.floats))
-                    throw TypeError(".onnx.AttributeProto.floats: array expected");
-                message.floats = [];
+                if (!$Array.isArray(object.floats))
+                    throw $TypeError(".onnx.AttributeProto.floats: array expected");
+                message.floats = $Array(object.floats.length);
                 for (let i = 0; i < object.floats.length; ++i)
-                    message.floats[i] = Number(object.floats[i]);
+                    message.floats[i] = $Number(object.floats[i]);
             }
             if (object.ints) {
-                if (!Array.isArray(object.ints))
-                    throw TypeError(".onnx.AttributeProto.ints: array expected");
-                message.ints = [];
+                if (!$Array.isArray(object.ints))
+                    throw $TypeError(".onnx.AttributeProto.ints: array expected");
+                message.ints = $Array(object.ints.length);
                 for (let i = 0; i < object.ints.length; ++i)
                     if ($util.Long)
                         message.ints[i] = $util.Long.fromValue(object.ints[i], false);
                     else if (typeof object.ints[i] === "string")
-                        message.ints[i] = parseInt(object.ints[i], 10);
+                        message.ints[i] = $parseInt(object.ints[i], 10);
                     else if (typeof object.ints[i] === "number")
                         message.ints[i] = object.ints[i];
                     else if (typeof object.ints[i] === "object")
                         message.ints[i] = new $util.LongBits(object.ints[i].low >>> 0, object.ints[i].high >>> 0).toNumber();
             }
             if (object.strings) {
-                if (!Array.isArray(object.strings))
-                    throw TypeError(".onnx.AttributeProto.strings: array expected");
-                message.strings = [];
+                if (!$Array.isArray(object.strings))
+                    throw $TypeError(".onnx.AttributeProto.strings: array expected");
+                message.strings = $Array(object.strings.length);
                 for (let i = 0; i < object.strings.length; ++i)
                     if (typeof object.strings[i] === "string")
                         $util.base64.decode(object.strings[i], message.strings[i] = $util.newBuffer($util.base64.length(object.strings[i])), 0);
@@ -765,43 +853,43 @@ export const onnx = $root.onnx = (() => {
                         message.strings[i] = object.strings[i];
             }
             if (object.tensors) {
-                if (!Array.isArray(object.tensors))
-                    throw TypeError(".onnx.AttributeProto.tensors: array expected");
-                message.tensors = [];
+                if (!$Array.isArray(object.tensors))
+                    throw $TypeError(".onnx.AttributeProto.tensors: array expected");
+                message.tensors = $Array(object.tensors.length);
                 for (let i = 0; i < object.tensors.length; ++i) {
                     if (!$util.isObject(object.tensors[i]))
-                        throw TypeError(".onnx.AttributeProto.tensors: object expected");
-                    message.tensors[i] = $root.onnx.TensorProto.fromObject(object.tensors[i], long + 1);
+                        throw $TypeError(".onnx.AttributeProto.tensors: object expected");
+                    message.tensors[i] = $root.onnx.TensorProto.fromObject(object.tensors[i], _depth + 1);
                 }
             }
             if (object.graphs) {
-                if (!Array.isArray(object.graphs))
-                    throw TypeError(".onnx.AttributeProto.graphs: array expected");
-                message.graphs = [];
+                if (!$Array.isArray(object.graphs))
+                    throw $TypeError(".onnx.AttributeProto.graphs: array expected");
+                message.graphs = $Array(object.graphs.length);
                 for (let i = 0; i < object.graphs.length; ++i) {
                     if (!$util.isObject(object.graphs[i]))
-                        throw TypeError(".onnx.AttributeProto.graphs: object expected");
-                    message.graphs[i] = $root.onnx.GraphProto.fromObject(object.graphs[i], long + 1);
+                        throw $TypeError(".onnx.AttributeProto.graphs: object expected");
+                    message.graphs[i] = $root.onnx.GraphProto.fromObject(object.graphs[i], _depth + 1);
                 }
             }
             if (object.sparseTensors) {
-                if (!Array.isArray(object.sparseTensors))
-                    throw TypeError(".onnx.AttributeProto.sparseTensors: array expected");
-                message.sparseTensors = [];
+                if (!$Array.isArray(object.sparseTensors))
+                    throw $TypeError(".onnx.AttributeProto.sparseTensors: array expected");
+                message.sparseTensors = $Array(object.sparseTensors.length);
                 for (let i = 0; i < object.sparseTensors.length; ++i) {
                     if (!$util.isObject(object.sparseTensors[i]))
-                        throw TypeError(".onnx.AttributeProto.sparseTensors: object expected");
-                    message.sparseTensors[i] = $root.onnx.SparseTensorProto.fromObject(object.sparseTensors[i], long + 1);
+                        throw $TypeError(".onnx.AttributeProto.sparseTensors: object expected");
+                    message.sparseTensors[i] = $root.onnx.SparseTensorProto.fromObject(object.sparseTensors[i], _depth + 1);
                 }
             }
             if (object.typeProtos) {
-                if (!Array.isArray(object.typeProtos))
-                    throw TypeError(".onnx.AttributeProto.typeProtos: array expected");
-                message.typeProtos = [];
+                if (!$Array.isArray(object.typeProtos))
+                    throw $TypeError(".onnx.AttributeProto.typeProtos: array expected");
+                message.typeProtos = $Array(object.typeProtos.length);
                 for (let i = 0; i < object.typeProtos.length; ++i) {
                     if (!$util.isObject(object.typeProtos[i]))
-                        throw TypeError(".onnx.AttributeProto.typeProtos: object expected");
-                    message.typeProtos[i] = $root.onnx.TypeProto.fromObject(object.typeProtos[i], long + 1);
+                        throw $TypeError(".onnx.AttributeProto.typeProtos: object expected");
+                    message.typeProtos[i] = $root.onnx.TypeProto.fromObject(object.typeProtos[i], _depth + 1);
                 }
             }
             return message;
@@ -816,13 +904,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        AttributeProto.toObject = function toObject(message, options, q) {
+        AttributeProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.floats = [];
@@ -838,90 +926,90 @@ export const onnx = $root.onnx = (() => {
                 object.f = 0;
                 if ($util.Long) {
                     let long = new $util.Long(0, 0, false);
-                    object.i = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                    object.i = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                 } else
-                    object.i = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
-                if (options.bytes === String)
+                    object.i = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
+                if (options.bytes === $String)
                     object.s = "";
                 else {
                     object.s = [];
-                    if (options.bytes !== Array)
+                    if (options.bytes !== $Array)
                         object.s = $util.newBuffer(object.s);
                 }
                 object.t = null;
                 object.g = null;
                 object.docString = "";
                 object.tp = null;
-                object.type = options.enums === String ? "UNDEFINED" : 0;
+                object.type = options.enums === $String ? "UNDEFINED" : 0;
                 object.refAttrName = "";
                 object.sparseTensor = null;
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.f != null && Object.hasOwnProperty.call(message, "f"))
-                object.f = options.json && !isFinite(message.f) ? String(message.f) : message.f;
-            if (message.i != null && Object.hasOwnProperty.call(message, "i"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.i = typeof message.i === "number" ? BigInt(message.i) : $util.Long.fromBits(message.i.low >>> 0, message.i.high >>> 0, false).toBigInt();
+            if (message.f != null && $Object.hasOwnProperty.call(message, "f"))
+                object.f = options.json && !$isFinite(message.f) ? $String(message.f) : message.f;
+            if (message.i != null && $Object.hasOwnProperty.call(message, "i"))
+                if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                    object.i = typeof message.i === "number" ? $BigInt(message.i) : $util.Long.fromBits(message.i.low >>> 0, message.i.high >>> 0, false).toBigInt();
                 else if (typeof message.i === "number")
-                    object.i = options.longs === String ? String(message.i) : message.i;
+                    object.i = options.longs === $String ? $String(message.i) : message.i;
                 else
-                    object.i = options.longs === String ? $util.Long.prototype.toString.call(message.i) : options.longs === Number ? new $util.LongBits(message.i.low >>> 0, message.i.high >>> 0).toNumber() : message.i;
-            if (message.s != null && Object.hasOwnProperty.call(message, "s"))
-                object.s = options.bytes === String ? $util.base64.encode(message.s, 0, message.s.length) : options.bytes === Array ? Array.prototype.slice.call(message.s) : message.s;
-            if (message.t != null && Object.hasOwnProperty.call(message, "t"))
-                object.t = $root.onnx.TensorProto.toObject(message.t, options, q + 1);
-            if (message.g != null && Object.hasOwnProperty.call(message, "g"))
-                object.g = $root.onnx.GraphProto.toObject(message.g, options, q + 1);
+                    object.i = options.longs === $String ? $util.Long.prototype.toString.call(message.i) : options.longs === $Number ? new $util.LongBits(message.i.low >>> 0, message.i.high >>> 0).toNumber() : message.i;
+            if (message.s != null && $Object.hasOwnProperty.call(message, "s"))
+                object.s = options.bytes === $String ? $util.base64.encode(message.s, 0, message.s.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.s) : message.s;
+            if (message.t != null && $Object.hasOwnProperty.call(message, "t"))
+                object.t = $root.onnx.TensorProto.toObject(message.t, options, _depth + 1);
+            if (message.g != null && $Object.hasOwnProperty.call(message, "g"))
+                object.g = $root.onnx.GraphProto.toObject(message.g, options, _depth + 1);
             if (message.floats && message.floats.length) {
-                object.floats = [];
+                object.floats = $Array(message.floats.length);
                 for (let j = 0; j < message.floats.length; ++j)
-                    object.floats[j] = options.json && !isFinite(message.floats[j]) ? String(message.floats[j]) : message.floats[j];
+                    object.floats[j] = options.json && !$isFinite(message.floats[j]) ? $String(message.floats[j]) : message.floats[j];
             }
             if (message.ints && message.ints.length) {
-                object.ints = [];
+                object.ints = $Array(message.ints.length);
                 for (let j = 0; j < message.ints.length; ++j)
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.ints[j] = typeof message.ints[j] === "number" ? BigInt(message.ints[j]) : $util.Long.fromBits(message.ints[j].low >>> 0, message.ints[j].high >>> 0, false).toBigInt();
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.ints[j] = typeof message.ints[j] === "number" ? $BigInt(message.ints[j]) : $util.Long.fromBits(message.ints[j].low >>> 0, message.ints[j].high >>> 0, false).toBigInt();
                     else if (typeof message.ints[j] === "number")
-                        object.ints[j] = options.longs === String ? String(message.ints[j]) : message.ints[j];
+                        object.ints[j] = options.longs === $String ? $String(message.ints[j]) : message.ints[j];
                     else
-                        object.ints[j] = options.longs === String ? $util.Long.prototype.toString.call(message.ints[j]) : options.longs === Number ? new $util.LongBits(message.ints[j].low >>> 0, message.ints[j].high >>> 0).toNumber() : message.ints[j];
+                        object.ints[j] = options.longs === $String ? $util.Long.prototype.toString.call(message.ints[j]) : options.longs === $Number ? new $util.LongBits(message.ints[j].low >>> 0, message.ints[j].high >>> 0).toNumber() : message.ints[j];
             }
             if (message.strings && message.strings.length) {
-                object.strings = [];
+                object.strings = $Array(message.strings.length);
                 for (let j = 0; j < message.strings.length; ++j)
-                    object.strings[j] = options.bytes === String ? $util.base64.encode(message.strings[j], 0, message.strings[j].length) : options.bytes === Array ? Array.prototype.slice.call(message.strings[j]) : message.strings[j];
+                    object.strings[j] = options.bytes === $String ? $util.base64.encode(message.strings[j], 0, message.strings[j].length) : options.bytes === $Array ? $Array.prototype.slice.call(message.strings[j]) : message.strings[j];
             }
             if (message.tensors && message.tensors.length) {
-                object.tensors = [];
+                object.tensors = $Array(message.tensors.length);
                 for (let j = 0; j < message.tensors.length; ++j)
-                    object.tensors[j] = $root.onnx.TensorProto.toObject(message.tensors[j], options, q + 1);
+                    object.tensors[j] = $root.onnx.TensorProto.toObject(message.tensors[j], options, _depth + 1);
             }
             if (message.graphs && message.graphs.length) {
-                object.graphs = [];
+                object.graphs = $Array(message.graphs.length);
                 for (let j = 0; j < message.graphs.length; ++j)
-                    object.graphs[j] = $root.onnx.GraphProto.toObject(message.graphs[j], options, q + 1);
+                    object.graphs[j] = $root.onnx.GraphProto.toObject(message.graphs[j], options, _depth + 1);
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
-            if (message.tp != null && Object.hasOwnProperty.call(message, "tp"))
-                object.tp = $root.onnx.TypeProto.toObject(message.tp, options, q + 1);
+            if (message.tp != null && $Object.hasOwnProperty.call(message, "tp"))
+                object.tp = $root.onnx.TypeProto.toObject(message.tp, options, _depth + 1);
             if (message.typeProtos && message.typeProtos.length) {
-                object.typeProtos = [];
+                object.typeProtos = $Array(message.typeProtos.length);
                 for (let j = 0; j < message.typeProtos.length; ++j)
-                    object.typeProtos[j] = $root.onnx.TypeProto.toObject(message.typeProtos[j], options, q + 1);
+                    object.typeProtos[j] = $root.onnx.TypeProto.toObject(message.typeProtos[j], options, _depth + 1);
             }
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = options.enums === String ? $root.onnx.AttributeProto.AttributeType[message.type] === undefined ? message.type : $root.onnx.AttributeProto.AttributeType[message.type] : message.type;
-            if (message.refAttrName != null && Object.hasOwnProperty.call(message, "refAttrName"))
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
+                object.type = options.enums === $String ? $root.onnx.AttributeProto.AttributeType[message.type] === $undefined ? message.type : $root.onnx.AttributeProto.AttributeType[message.type] : message.type;
+            if (message.refAttrName != null && $Object.hasOwnProperty.call(message, "refAttrName"))
                 object.refAttrName = message.refAttrName;
-            if (message.sparseTensor != null && Object.hasOwnProperty.call(message, "sparseTensor"))
-                object.sparseTensor = $root.onnx.SparseTensorProto.toObject(message.sparseTensor, options, q + 1);
+            if (message.sparseTensor != null && $Object.hasOwnProperty.call(message, "sparseTensor"))
+                object.sparseTensor = $root.onnx.SparseTensorProto.toObject(message.sparseTensor, options, _depth + 1);
             if (message.sparseTensors && message.sparseTensors.length) {
-                object.sparseTensors = [];
+                object.sparseTensors = $Array(message.sparseTensors.length);
                 for (let j = 0; j < message.sparseTensors.length; ++j)
-                    object.sparseTensors[j] = $root.onnx.SparseTensorProto.toObject(message.sparseTensors[j], options, q + 1);
+                    object.sparseTensors[j] = $root.onnx.SparseTensorProto.toObject(message.sparseTensors[j], options, _depth + 1);
             }
             return object;
         };
@@ -933,23 +1021,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        AttributeProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        AttributeProto.prototype.toJSON = function() {
+            return AttributeProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for AttributeProto
+         * Gets the type url for AttributeProto
          * @function getTypeUrl
          * @memberof onnx.AttributeProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        AttributeProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.AttributeProto";
+        AttributeProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.AttributeProto";
         };
 
         /**
@@ -973,7 +1060,7 @@ export const onnx = $root.onnx = (() => {
          * @property {number} TYPE_PROTOS=14 TYPE_PROTOS value
          */
         AttributeProto.AttributeType = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
+            const valuesById = $Object.create(null), values = $Object.create(valuesById);
             values[valuesById[0] = "UNDEFINED"] = 0;
             values[valuesById[1] = "FLOAT"] = 1;
             values[valuesById[2] = "INT"] = 2;
@@ -999,29 +1086,48 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a ValueInfoProto.
+         * @typedef {Object} onnx.ValueInfoProto.$Properties
+         * @property {string|null} [name] ValueInfoProto name
+         * @property {onnx.TypeProto.$Properties|null} [type] ValueInfoProto type
+         * @property {string|null} [docString] ValueInfoProto docString
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] ValueInfoProto metadataProps
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a ValueInfoProto.
          * @memberof onnx
          * @interface IValueInfoProto
-         * @property {string|null} [name] ValueInfoProto name
-         * @property {onnx.ITypeProto|null} [type] ValueInfoProto type
-         * @property {string|null} [docString] ValueInfoProto docString
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] ValueInfoProto metadataProps
+         * @augments onnx.ValueInfoProto.$Properties
+         * @deprecated Use onnx.ValueInfoProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a ValueInfoProto.
+         * @typedef {{
+         *   name?: string|null;
+         *   type?: onnx.TypeProto.$Shape|null;
+         *   docString?: string|null;
+         *   metadataProps?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.ValueInfoProto.$Shape
          */
 
         /**
          * Constructs a new ValueInfoProto.
          * @memberof onnx
          * @classdesc Represents a ValueInfoProto.
-         * @implements IValueInfoProto
          * @constructor
-         * @param {onnx.IValueInfoProto=} [properties] Properties to set
+         * @param {onnx.ValueInfoProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function ValueInfoProto(properties) {
+        const ValueInfoProto = function (properties) {
             this.metadataProps = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * ValueInfoProto name.
@@ -1033,7 +1139,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ValueInfoProto type.
-         * @member {onnx.ITypeProto|null|undefined} type
+         * @member {onnx.TypeProto.$Properties|null|undefined} type
          * @memberof onnx.ValueInfoProto
          * @instance
          */
@@ -1049,7 +1155,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ValueInfoProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.ValueInfoProto
          * @instance
          */
@@ -1060,10 +1166,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.ValueInfoProto
          * @static
-         * @param {onnx.IValueInfoProto=} [properties] Properties to set
+         * @param {onnx.ValueInfoProto.$Properties=} [properties] Properties to set
          * @returns {onnx.ValueInfoProto} ValueInfoProto instance
+         * @type {{
+         *   (properties: onnx.ValueInfoProto.$Shape): onnx.ValueInfoProto & onnx.ValueInfoProto.$Shape;
+         *   (properties?: onnx.ValueInfoProto.$Properties): onnx.ValueInfoProto;
+         * }}
          */
-        ValueInfoProto.create = function create(properties) {
+        ValueInfoProto.create = function(properties) {
             return new ValueInfoProto(properties);
         };
 
@@ -1072,26 +1182,29 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.ValueInfoProto
          * @static
-         * @param {onnx.IValueInfoProto} message ValueInfoProto message or plain object to encode
+         * @param {onnx.ValueInfoProto.$Properties} message ValueInfoProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ValueInfoProto.encode = function encode(message, writer, q) {
+        ValueInfoProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.onnx.TypeProto.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
+                $root.onnx.TypeProto.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.docString);
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -1100,12 +1213,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.ValueInfoProto
          * @static
-         * @param {onnx.IValueInfoProto} message ValueInfoProto message or plain object to encode
+         * @param {onnx.ValueInfoProto.$Properties} message ValueInfoProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ValueInfoProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        ValueInfoProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -1115,46 +1228,62 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.ValueInfoProto} ValueInfoProto
+         * @returns {onnx.ValueInfoProto & onnx.ValueInfoProto.$Shape} ValueInfoProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ValueInfoProto.decode = function decode(reader, length, error, long) {
+        ValueInfoProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.ValueInfoProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.ValueInfoProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.type = $root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        message.docString = reader.string();
-                        break;
-                    }
-                case 4: {
-                        if (!(message.metadataProps && message.metadataProps.length))
-                            message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.name = reader.string();
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.type = $root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.type);
+                        continue;
+                    }
+                case 3: {
+                        if (wireType !== 2)
+                            break;
+                        message.docString = reader.string();
+                        continue;
+                    }
+                case 4: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.metadataProps && message.metadataProps.length))
+                            message.metadataProps = [];
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -1164,11 +1293,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.ValueInfoProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.ValueInfoProto} ValueInfoProto
+         * @returns {onnx.ValueInfoProto & onnx.ValueInfoProto.$Shape} ValueInfoProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ValueInfoProto.decodeDelimited = function decodeDelimited(reader) {
+        ValueInfoProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -1182,29 +1311,29 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ValueInfoProto.verify = function verify(message, long) {
+        ValueInfoProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
-                let error = $root.onnx.TypeProto.verify(message.type, long + 1);
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type")) {
+                let error = $root.onnx.TypeProto.verify(message.type, _depth + 1);
                 if (error)
                     return "type." + error;
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
@@ -1220,33 +1349,33 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.ValueInfoProto} ValueInfoProto
          */
-        ValueInfoProto.fromObject = function fromObject(object, long) {
+        ValueInfoProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.ValueInfoProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.ValueInfoProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.ValueInfoProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.ValueInfoProto();
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.type != null) {
                 if (!$util.isObject(object.type))
-                    throw TypeError(".onnx.ValueInfoProto.type: object expected");
-                message.type = $root.onnx.TypeProto.fromObject(object.type, long + 1);
+                    throw $TypeError(".onnx.ValueInfoProto.type: object expected");
+                message.type = $root.onnx.TypeProto.fromObject(object.type, _depth + 1);
             }
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.ValueInfoProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.ValueInfoProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.ValueInfoProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.ValueInfoProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             return message;
@@ -1261,13 +1390,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ValueInfoProto.toObject = function toObject(message, options, q) {
+        ValueInfoProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults)
                 object.metadataProps = [];
@@ -1276,16 +1405,16 @@ export const onnx = $root.onnx = (() => {
                 object.type = null;
                 object.docString = "";
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = $root.onnx.TypeProto.toObject(message.type, options, q + 1);
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.type != null && $Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.onnx.TypeProto.toObject(message.type, options, _depth + 1);
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             return object;
         };
@@ -1297,23 +1426,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        ValueInfoProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        ValueInfoProto.prototype.toJSON = function() {
+            return ValueInfoProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for ValueInfoProto
+         * Gets the type url for ValueInfoProto
          * @function getTypeUrl
          * @memberof onnx.ValueInfoProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        ValueInfoProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.ValueInfoProto";
+        ValueInfoProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.ValueInfoProto";
         };
 
         return ValueInfoProto;
@@ -1323,37 +1451,61 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a NodeProto.
-         * @memberof onnx
-         * @interface INodeProto
+         * @typedef {Object} onnx.NodeProto.$Properties
          * @property {Array.<string>|null} [input] NodeProto input
          * @property {Array.<string>|null} [output] NodeProto output
          * @property {string|null} [name] NodeProto name
          * @property {string|null} [opType] NodeProto opType
          * @property {string|null} [domain] NodeProto domain
          * @property {string|null} [overload] NodeProto overload
-         * @property {Array.<onnx.IAttributeProto>|null} [attribute] NodeProto attribute
+         * @property {Array.<onnx.AttributeProto.$Properties>|null} [attribute] NodeProto attribute
          * @property {string|null} [docString] NodeProto docString
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] NodeProto metadataProps
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] NodeProto metadataProps
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a NodeProto.
+         * @memberof onnx
+         * @interface INodeProto
+         * @augments onnx.NodeProto.$Properties
+         * @deprecated Use onnx.NodeProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a NodeProto.
+         * @typedef {{
+         *   input?: Array.<string>|null;
+         *   output?: Array.<string>|null;
+         *   name?: string|null;
+         *   opType?: string|null;
+         *   domain?: string|null;
+         *   overload?: string|null;
+         *   attribute?: Array.<onnx.AttributeProto.$Shape>|null;
+         *   docString?: string|null;
+         *   metadataProps?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.NodeProto.$Shape
          */
 
         /**
          * Constructs a new NodeProto.
          * @memberof onnx
          * @classdesc Represents a NodeProto.
-         * @implements INodeProto
          * @constructor
-         * @param {onnx.INodeProto=} [properties] Properties to set
+         * @param {onnx.NodeProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function NodeProto(properties) {
+        const NodeProto = function (properties) {
             this.input = [];
             this.output = [];
             this.attribute = [];
             this.metadataProps = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * NodeProto input.
@@ -1405,7 +1557,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * NodeProto attribute.
-         * @member {Array.<onnx.IAttributeProto>} attribute
+         * @member {Array.<onnx.AttributeProto.$Properties>} attribute
          * @memberof onnx.NodeProto
          * @instance
          */
@@ -1421,7 +1573,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * NodeProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.NodeProto
          * @instance
          */
@@ -1432,10 +1584,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.NodeProto
          * @static
-         * @param {onnx.INodeProto=} [properties] Properties to set
+         * @param {onnx.NodeProto.$Properties=} [properties] Properties to set
          * @returns {onnx.NodeProto} NodeProto instance
+         * @type {{
+         *   (properties: onnx.NodeProto.$Shape): onnx.NodeProto & onnx.NodeProto.$Shape;
+         *   (properties?: onnx.NodeProto.$Properties): onnx.NodeProto;
+         * }}
          */
-        NodeProto.create = function create(properties) {
+        NodeProto.create = function(properties) {
             return new NodeProto(properties);
         };
 
@@ -1444,39 +1600,42 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.NodeProto
          * @static
-         * @param {onnx.INodeProto} message NodeProto message or plain object to encode
+         * @param {onnx.NodeProto.$Properties} message NodeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        NodeProto.encode = function encode(message, writer, q) {
+        NodeProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             if (message.input != null && message.input.length)
                 for (let i = 0; i < message.input.length; ++i)
                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.input[i]);
             if (message.output != null && message.output.length)
                 for (let i = 0; i < message.output.length; ++i)
                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.output[i]);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
-            if (message.opType != null && Object.hasOwnProperty.call(message, "opType"))
+            if (message.opType != null && $Object.hasOwnProperty.call(message, "opType"))
                 writer.uint32(/* id 4, wireType 2 =*/34).string(message.opType);
             if (message.attribute != null && message.attribute.length)
                 for (let i = 0; i < message.attribute.length; ++i)
-                    $root.onnx.AttributeProto.encode(message.attribute[i], writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+                    $root.onnx.AttributeProto.encode(message.attribute[i], writer.uint32(/* id 5, wireType 2 =*/42).fork(), _depth + 1).ldelim();
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.docString);
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 writer.uint32(/* id 7, wireType 2 =*/58).string(message.domain);
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 writer.uint32(/* id 8, wireType 2 =*/66).string(message.overload);
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 9, wireType 2 =*/74).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -1485,12 +1644,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.NodeProto
          * @static
-         * @param {onnx.INodeProto} message NodeProto message or plain object to encode
+         * @param {onnx.NodeProto.$Properties} message NodeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        NodeProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        NodeProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -1500,72 +1659,98 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.NodeProto} NodeProto
+         * @returns {onnx.NodeProto & onnx.NodeProto.$Shape} NodeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        NodeProto.decode = function decode(reader, length, error, long) {
+        NodeProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.NodeProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.NodeProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
-                switch (tag >>> 3) {
+                }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
                 case 1: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.input && message.input.length))
                             message.input = [];
                         message.input.push(reader.string());
-                        break;
+                        continue;
                     }
                 case 2: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.output && message.output.length))
                             message.output = [];
                         message.output.push(reader.string());
-                        break;
+                        continue;
                     }
                 case 3: {
+                        if (wireType !== 2)
+                            break;
                         message.name = reader.string();
-                        break;
+                        continue;
                     }
                 case 4: {
+                        if (wireType !== 2)
+                            break;
                         message.opType = reader.string();
-                        break;
+                        continue;
                     }
                 case 7: {
+                        if (wireType !== 2)
+                            break;
                         message.domain = reader.string();
-                        break;
+                        continue;
                     }
                 case 8: {
+                        if (wireType !== 2)
+                            break;
                         message.overload = reader.string();
-                        break;
+                        continue;
                     }
                 case 5: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.attribute && message.attribute.length))
                             message.attribute = [];
-                        message.attribute.push($root.onnx.AttributeProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.attribute.push($root.onnx.AttributeProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 6: {
+                        if (wireType !== 2)
+                            break;
                         message.docString = reader.string();
-                        break;
+                        continue;
                     }
                 case 9: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.metadataProps && message.metadataProps.length))
                             message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
                 }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -1575,11 +1760,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.NodeProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.NodeProto} NodeProto
+         * @returns {onnx.NodeProto & onnx.NodeProto.$Shape} NodeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        NodeProto.decodeDelimited = function decodeDelimited(reader) {
+        NodeProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -1593,56 +1778,56 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        NodeProto.verify = function verify(message, long) {
+        NodeProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.input != null && Object.hasOwnProperty.call(message, "input")) {
-                if (!Array.isArray(message.input))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.input != null && $Object.hasOwnProperty.call(message, "input")) {
+                if (!$Array.isArray(message.input))
                     return "input: array expected";
                 for (let i = 0; i < message.input.length; ++i)
                     if (!$util.isString(message.input[i]))
                         return "input: string[] expected";
             }
-            if (message.output != null && Object.hasOwnProperty.call(message, "output")) {
-                if (!Array.isArray(message.output))
+            if (message.output != null && $Object.hasOwnProperty.call(message, "output")) {
+                if (!$Array.isArray(message.output))
                     return "output: array expected";
                 for (let i = 0; i < message.output.length; ++i)
                     if (!$util.isString(message.output[i]))
                         return "output: string[] expected";
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.opType != null && Object.hasOwnProperty.call(message, "opType"))
+            if (message.opType != null && $Object.hasOwnProperty.call(message, "opType"))
                 if (!$util.isString(message.opType))
                     return "opType: string expected";
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 if (!$util.isString(message.domain))
                     return "domain: string expected";
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 if (!$util.isString(message.overload))
                     return "overload: string expected";
-            if (message.attribute != null && Object.hasOwnProperty.call(message, "attribute")) {
-                if (!Array.isArray(message.attribute))
+            if (message.attribute != null && $Object.hasOwnProperty.call(message, "attribute")) {
+                if (!$Array.isArray(message.attribute))
                     return "attribute: array expected";
                 for (let i = 0; i < message.attribute.length; ++i) {
-                    let error = $root.onnx.AttributeProto.verify(message.attribute[i], long + 1);
+                    let error = $root.onnx.AttributeProto.verify(message.attribute[i], _depth + 1);
                     if (error)
                         return "attribute." + error;
                 }
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
@@ -1658,58 +1843,58 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.NodeProto} NodeProto
          */
-        NodeProto.fromObject = function fromObject(object, long) {
+        NodeProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.NodeProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.NodeProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.NodeProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.NodeProto();
             if (object.input) {
-                if (!Array.isArray(object.input))
-                    throw TypeError(".onnx.NodeProto.input: array expected");
-                message.input = [];
+                if (!$Array.isArray(object.input))
+                    throw $TypeError(".onnx.NodeProto.input: array expected");
+                message.input = $Array(object.input.length);
                 for (let i = 0; i < object.input.length; ++i)
-                    message.input[i] = String(object.input[i]);
+                    message.input[i] = $String(object.input[i]);
             }
             if (object.output) {
-                if (!Array.isArray(object.output))
-                    throw TypeError(".onnx.NodeProto.output: array expected");
-                message.output = [];
+                if (!$Array.isArray(object.output))
+                    throw $TypeError(".onnx.NodeProto.output: array expected");
+                message.output = $Array(object.output.length);
                 for (let i = 0; i < object.output.length; ++i)
-                    message.output[i] = String(object.output[i]);
+                    message.output[i] = $String(object.output[i]);
             }
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.opType != null)
-                message.opType = String(object.opType);
+                message.opType = $String(object.opType);
             if (object.domain != null)
-                message.domain = String(object.domain);
+                message.domain = $String(object.domain);
             if (object.overload != null)
-                message.overload = String(object.overload);
+                message.overload = $String(object.overload);
             if (object.attribute) {
-                if (!Array.isArray(object.attribute))
-                    throw TypeError(".onnx.NodeProto.attribute: array expected");
-                message.attribute = [];
+                if (!$Array.isArray(object.attribute))
+                    throw $TypeError(".onnx.NodeProto.attribute: array expected");
+                message.attribute = $Array(object.attribute.length);
                 for (let i = 0; i < object.attribute.length; ++i) {
                     if (!$util.isObject(object.attribute[i]))
-                        throw TypeError(".onnx.NodeProto.attribute: object expected");
-                    message.attribute[i] = $root.onnx.AttributeProto.fromObject(object.attribute[i], long + 1);
+                        throw $TypeError(".onnx.NodeProto.attribute: object expected");
+                    message.attribute[i] = $root.onnx.AttributeProto.fromObject(object.attribute[i], _depth + 1);
                 }
             }
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.NodeProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.NodeProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.NodeProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.NodeProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             return message;
@@ -1724,13 +1909,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        NodeProto.toObject = function toObject(message, options, q) {
+        NodeProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.input = [];
@@ -1746,34 +1931,34 @@ export const onnx = $root.onnx = (() => {
                 object.overload = "";
             }
             if (message.input && message.input.length) {
-                object.input = [];
+                object.input = $Array(message.input.length);
                 for (let j = 0; j < message.input.length; ++j)
                     object.input[j] = message.input[j];
             }
             if (message.output && message.output.length) {
-                object.output = [];
+                object.output = $Array(message.output.length);
                 for (let j = 0; j < message.output.length; ++j)
                     object.output[j] = message.output[j];
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.opType != null && Object.hasOwnProperty.call(message, "opType"))
+            if (message.opType != null && $Object.hasOwnProperty.call(message, "opType"))
                 object.opType = message.opType;
             if (message.attribute && message.attribute.length) {
-                object.attribute = [];
+                object.attribute = $Array(message.attribute.length);
                 for (let j = 0; j < message.attribute.length; ++j)
-                    object.attribute[j] = $root.onnx.AttributeProto.toObject(message.attribute[j], options, q + 1);
+                    object.attribute[j] = $root.onnx.AttributeProto.toObject(message.attribute[j], options, _depth + 1);
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 object.domain = message.domain;
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 object.overload = message.overload;
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             return object;
         };
@@ -1785,23 +1970,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        NodeProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        NodeProto.prototype.toJSON = function() {
+            return NodeProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for NodeProto
+         * Gets the type url for NodeProto
          * @function getTypeUrl
          * @memberof onnx.NodeProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        NodeProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.NodeProto";
+        NodeProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.NodeProto";
         };
 
         return NodeProto;
@@ -1811,34 +1995,53 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a TrainingInfoProto.
+         * @typedef {Object} onnx.TrainingInfoProto.$Properties
+         * @property {onnx.GraphProto.$Properties|null} [initialization] TrainingInfoProto initialization
+         * @property {onnx.GraphProto.$Properties|null} [algorithm] TrainingInfoProto algorithm
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [initializationBinding] TrainingInfoProto initializationBinding
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [updateBinding] TrainingInfoProto updateBinding
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a TrainingInfoProto.
          * @memberof onnx
          * @interface ITrainingInfoProto
-         * @property {onnx.IGraphProto|null} [initialization] TrainingInfoProto initialization
-         * @property {onnx.IGraphProto|null} [algorithm] TrainingInfoProto algorithm
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [initializationBinding] TrainingInfoProto initializationBinding
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [updateBinding] TrainingInfoProto updateBinding
+         * @augments onnx.TrainingInfoProto.$Properties
+         * @deprecated Use onnx.TrainingInfoProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a TrainingInfoProto.
+         * @typedef {{
+         *   initialization?: onnx.GraphProto.$Shape|null;
+         *   algorithm?: onnx.GraphProto.$Shape|null;
+         *   initializationBinding?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   updateBinding?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.TrainingInfoProto.$Shape
          */
 
         /**
          * Constructs a new TrainingInfoProto.
          * @memberof onnx
          * @classdesc Represents a TrainingInfoProto.
-         * @implements ITrainingInfoProto
          * @constructor
-         * @param {onnx.ITrainingInfoProto=} [properties] Properties to set
+         * @param {onnx.TrainingInfoProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function TrainingInfoProto(properties) {
+        const TrainingInfoProto = function (properties) {
             this.initializationBinding = [];
             this.updateBinding = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * TrainingInfoProto initialization.
-         * @member {onnx.IGraphProto|null|undefined} initialization
+         * @member {onnx.GraphProto.$Properties|null|undefined} initialization
          * @memberof onnx.TrainingInfoProto
          * @instance
          */
@@ -1846,7 +2049,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TrainingInfoProto algorithm.
-         * @member {onnx.IGraphProto|null|undefined} algorithm
+         * @member {onnx.GraphProto.$Properties|null|undefined} algorithm
          * @memberof onnx.TrainingInfoProto
          * @instance
          */
@@ -1854,7 +2057,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TrainingInfoProto initializationBinding.
-         * @member {Array.<onnx.IStringStringEntryProto>} initializationBinding
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} initializationBinding
          * @memberof onnx.TrainingInfoProto
          * @instance
          */
@@ -1862,7 +2065,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TrainingInfoProto updateBinding.
-         * @member {Array.<onnx.IStringStringEntryProto>} updateBinding
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} updateBinding
          * @memberof onnx.TrainingInfoProto
          * @instance
          */
@@ -1873,10 +2076,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.TrainingInfoProto
          * @static
-         * @param {onnx.ITrainingInfoProto=} [properties] Properties to set
+         * @param {onnx.TrainingInfoProto.$Properties=} [properties] Properties to set
          * @returns {onnx.TrainingInfoProto} TrainingInfoProto instance
+         * @type {{
+         *   (properties: onnx.TrainingInfoProto.$Shape): onnx.TrainingInfoProto & onnx.TrainingInfoProto.$Shape;
+         *   (properties?: onnx.TrainingInfoProto.$Properties): onnx.TrainingInfoProto;
+         * }}
          */
-        TrainingInfoProto.create = function create(properties) {
+        TrainingInfoProto.create = function(properties) {
             return new TrainingInfoProto(properties);
         };
 
@@ -1885,27 +2092,30 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.TrainingInfoProto
          * @static
-         * @param {onnx.ITrainingInfoProto} message TrainingInfoProto message or plain object to encode
+         * @param {onnx.TrainingInfoProto.$Properties} message TrainingInfoProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TrainingInfoProto.encode = function encode(message, writer, q) {
+        TrainingInfoProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.initialization != null && Object.hasOwnProperty.call(message, "initialization"))
-                $root.onnx.GraphProto.encode(message.initialization, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.algorithm != null && Object.hasOwnProperty.call(message, "algorithm"))
-                $root.onnx.GraphProto.encode(message.algorithm, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.initialization != null && $Object.hasOwnProperty.call(message, "initialization"))
+                $root.onnx.GraphProto.encode(message.initialization, writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+            if (message.algorithm != null && $Object.hasOwnProperty.call(message, "algorithm"))
+                $root.onnx.GraphProto.encode(message.algorithm, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
             if (message.initializationBinding != null && message.initializationBinding.length)
                 for (let i = 0; i < message.initializationBinding.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.initializationBinding[i], writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.initializationBinding[i], writer.uint32(/* id 3, wireType 2 =*/26).fork(), _depth + 1).ldelim();
             if (message.updateBinding != null && message.updateBinding.length)
                 for (let i = 0; i < message.updateBinding.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.updateBinding[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.updateBinding[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -1914,12 +2124,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.TrainingInfoProto
          * @static
-         * @param {onnx.ITrainingInfoProto} message TrainingInfoProto message or plain object to encode
+         * @param {onnx.TrainingInfoProto.$Properties} message TrainingInfoProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TrainingInfoProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        TrainingInfoProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -1929,48 +2139,64 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.TrainingInfoProto} TrainingInfoProto
+         * @returns {onnx.TrainingInfoProto & onnx.TrainingInfoProto.$Shape} TrainingInfoProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TrainingInfoProto.decode = function decode(reader, length, error, long) {
+        TrainingInfoProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TrainingInfoProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TrainingInfoProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.initialization = $root.onnx.GraphProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.algorithm = $root.onnx.GraphProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        if (!(message.initializationBinding && message.initializationBinding.length))
-                            message.initializationBinding = [];
-                        message.initializationBinding.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 4: {
-                        if (!(message.updateBinding && message.updateBinding.length))
-                            message.updateBinding = [];
-                        message.updateBinding.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.initialization = $root.onnx.GraphProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.initialization);
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.algorithm = $root.onnx.GraphProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.algorithm);
+                        continue;
+                    }
+                case 3: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.initializationBinding && message.initializationBinding.length))
+                            message.initializationBinding = [];
+                        message.initializationBinding.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 4: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.updateBinding && message.updateBinding.length))
+                            message.updateBinding = [];
+                        message.updateBinding.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -1980,11 +2206,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TrainingInfoProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.TrainingInfoProto} TrainingInfoProto
+         * @returns {onnx.TrainingInfoProto & onnx.TrainingInfoProto.$Shape} TrainingInfoProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TrainingInfoProto.decodeDelimited = function decodeDelimited(reader) {
+        TrainingInfoProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -1998,37 +2224,37 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TrainingInfoProto.verify = function verify(message, long) {
+        TrainingInfoProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.initialization != null && Object.hasOwnProperty.call(message, "initialization")) {
-                let error = $root.onnx.GraphProto.verify(message.initialization, long + 1);
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.initialization != null && $Object.hasOwnProperty.call(message, "initialization")) {
+                let error = $root.onnx.GraphProto.verify(message.initialization, _depth + 1);
                 if (error)
                     return "initialization." + error;
             }
-            if (message.algorithm != null && Object.hasOwnProperty.call(message, "algorithm")) {
-                let error = $root.onnx.GraphProto.verify(message.algorithm, long + 1);
+            if (message.algorithm != null && $Object.hasOwnProperty.call(message, "algorithm")) {
+                let error = $root.onnx.GraphProto.verify(message.algorithm, _depth + 1);
                 if (error)
                     return "algorithm." + error;
             }
-            if (message.initializationBinding != null && Object.hasOwnProperty.call(message, "initializationBinding")) {
-                if (!Array.isArray(message.initializationBinding))
+            if (message.initializationBinding != null && $Object.hasOwnProperty.call(message, "initializationBinding")) {
+                if (!$Array.isArray(message.initializationBinding))
                     return "initializationBinding: array expected";
                 for (let i = 0; i < message.initializationBinding.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.initializationBinding[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.initializationBinding[i], _depth + 1);
                     if (error)
                         return "initializationBinding." + error;
                 }
             }
-            if (message.updateBinding != null && Object.hasOwnProperty.call(message, "updateBinding")) {
-                if (!Array.isArray(message.updateBinding))
+            if (message.updateBinding != null && $Object.hasOwnProperty.call(message, "updateBinding")) {
+                if (!$Array.isArray(message.updateBinding))
                     return "updateBinding: array expected";
                 for (let i = 0; i < message.updateBinding.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.updateBinding[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.updateBinding[i], _depth + 1);
                     if (error)
                         return "updateBinding." + error;
                 }
@@ -2044,44 +2270,44 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.TrainingInfoProto} TrainingInfoProto
          */
-        TrainingInfoProto.fromObject = function fromObject(object, long) {
+        TrainingInfoProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.TrainingInfoProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.TrainingInfoProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.TrainingInfoProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.TrainingInfoProto();
             if (object.initialization != null) {
                 if (!$util.isObject(object.initialization))
-                    throw TypeError(".onnx.TrainingInfoProto.initialization: object expected");
-                message.initialization = $root.onnx.GraphProto.fromObject(object.initialization, long + 1);
+                    throw $TypeError(".onnx.TrainingInfoProto.initialization: object expected");
+                message.initialization = $root.onnx.GraphProto.fromObject(object.initialization, _depth + 1);
             }
             if (object.algorithm != null) {
                 if (!$util.isObject(object.algorithm))
-                    throw TypeError(".onnx.TrainingInfoProto.algorithm: object expected");
-                message.algorithm = $root.onnx.GraphProto.fromObject(object.algorithm, long + 1);
+                    throw $TypeError(".onnx.TrainingInfoProto.algorithm: object expected");
+                message.algorithm = $root.onnx.GraphProto.fromObject(object.algorithm, _depth + 1);
             }
             if (object.initializationBinding) {
-                if (!Array.isArray(object.initializationBinding))
-                    throw TypeError(".onnx.TrainingInfoProto.initializationBinding: array expected");
-                message.initializationBinding = [];
+                if (!$Array.isArray(object.initializationBinding))
+                    throw $TypeError(".onnx.TrainingInfoProto.initializationBinding: array expected");
+                message.initializationBinding = $Array(object.initializationBinding.length);
                 for (let i = 0; i < object.initializationBinding.length; ++i) {
                     if (!$util.isObject(object.initializationBinding[i]))
-                        throw TypeError(".onnx.TrainingInfoProto.initializationBinding: object expected");
-                    message.initializationBinding[i] = $root.onnx.StringStringEntryProto.fromObject(object.initializationBinding[i], long + 1);
+                        throw $TypeError(".onnx.TrainingInfoProto.initializationBinding: object expected");
+                    message.initializationBinding[i] = $root.onnx.StringStringEntryProto.fromObject(object.initializationBinding[i], _depth + 1);
                 }
             }
             if (object.updateBinding) {
-                if (!Array.isArray(object.updateBinding))
-                    throw TypeError(".onnx.TrainingInfoProto.updateBinding: array expected");
-                message.updateBinding = [];
+                if (!$Array.isArray(object.updateBinding))
+                    throw $TypeError(".onnx.TrainingInfoProto.updateBinding: array expected");
+                message.updateBinding = $Array(object.updateBinding.length);
                 for (let i = 0; i < object.updateBinding.length; ++i) {
                     if (!$util.isObject(object.updateBinding[i]))
-                        throw TypeError(".onnx.TrainingInfoProto.updateBinding: object expected");
-                    message.updateBinding[i] = $root.onnx.StringStringEntryProto.fromObject(object.updateBinding[i], long + 1);
+                        throw $TypeError(".onnx.TrainingInfoProto.updateBinding: object expected");
+                    message.updateBinding[i] = $root.onnx.StringStringEntryProto.fromObject(object.updateBinding[i], _depth + 1);
                 }
             }
             return message;
@@ -2096,13 +2322,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TrainingInfoProto.toObject = function toObject(message, options, q) {
+        TrainingInfoProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.initializationBinding = [];
@@ -2112,19 +2338,19 @@ export const onnx = $root.onnx = (() => {
                 object.initialization = null;
                 object.algorithm = null;
             }
-            if (message.initialization != null && Object.hasOwnProperty.call(message, "initialization"))
-                object.initialization = $root.onnx.GraphProto.toObject(message.initialization, options, q + 1);
-            if (message.algorithm != null && Object.hasOwnProperty.call(message, "algorithm"))
-                object.algorithm = $root.onnx.GraphProto.toObject(message.algorithm, options, q + 1);
+            if (message.initialization != null && $Object.hasOwnProperty.call(message, "initialization"))
+                object.initialization = $root.onnx.GraphProto.toObject(message.initialization, options, _depth + 1);
+            if (message.algorithm != null && $Object.hasOwnProperty.call(message, "algorithm"))
+                object.algorithm = $root.onnx.GraphProto.toObject(message.algorithm, options, _depth + 1);
             if (message.initializationBinding && message.initializationBinding.length) {
-                object.initializationBinding = [];
+                object.initializationBinding = $Array(message.initializationBinding.length);
                 for (let j = 0; j < message.initializationBinding.length; ++j)
-                    object.initializationBinding[j] = $root.onnx.StringStringEntryProto.toObject(message.initializationBinding[j], options, q + 1);
+                    object.initializationBinding[j] = $root.onnx.StringStringEntryProto.toObject(message.initializationBinding[j], options, _depth + 1);
             }
             if (message.updateBinding && message.updateBinding.length) {
-                object.updateBinding = [];
+                object.updateBinding = $Array(message.updateBinding.length);
                 for (let j = 0; j < message.updateBinding.length; ++j)
-                    object.updateBinding[j] = $root.onnx.StringStringEntryProto.toObject(message.updateBinding[j], options, q + 1);
+                    object.updateBinding[j] = $root.onnx.StringStringEntryProto.toObject(message.updateBinding[j], options, _depth + 1);
             }
             return object;
         };
@@ -2136,23 +2362,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        TrainingInfoProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        TrainingInfoProto.prototype.toJSON = function() {
+            return TrainingInfoProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for TrainingInfoProto
+         * Gets the type url for TrainingInfoProto
          * @function getTypeUrl
          * @memberof onnx.TrainingInfoProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        TrainingInfoProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.TrainingInfoProto";
+        TrainingInfoProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.TrainingInfoProto";
         };
 
         return TrainingInfoProto;
@@ -2162,39 +2387,65 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a ModelProto.
-         * @memberof onnx
-         * @interface IModelProto
+         * @typedef {Object} onnx.ModelProto.$Properties
          * @property {number|Long|null} [irVersion] ModelProto irVersion
-         * @property {Array.<onnx.IOperatorSetIdProto>|null} [opsetImport] ModelProto opsetImport
+         * @property {Array.<onnx.OperatorSetIdProto.$Properties>|null} [opsetImport] ModelProto opsetImport
          * @property {string|null} [producerName] ModelProto producerName
          * @property {string|null} [producerVersion] ModelProto producerVersion
          * @property {string|null} [domain] ModelProto domain
          * @property {number|Long|null} [modelVersion] ModelProto modelVersion
          * @property {string|null} [docString] ModelProto docString
-         * @property {onnx.IGraphProto|null} [graph] ModelProto graph
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] ModelProto metadataProps
-         * @property {Array.<onnx.ITrainingInfoProto>|null} [trainingInfo] ModelProto trainingInfo
-         * @property {Array.<onnx.IFunctionProto>|null} [functions] ModelProto functions
+         * @property {onnx.GraphProto.$Properties|null} [graph] ModelProto graph
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] ModelProto metadataProps
+         * @property {Array.<onnx.TrainingInfoProto.$Properties>|null} [trainingInfo] ModelProto trainingInfo
+         * @property {Array.<onnx.FunctionProto.$Properties>|null} [functions] ModelProto functions
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a ModelProto.
+         * @memberof onnx
+         * @interface IModelProto
+         * @augments onnx.ModelProto.$Properties
+         * @deprecated Use onnx.ModelProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a ModelProto.
+         * @typedef {{
+         *   irVersion?: number|Long|null;
+         *   opsetImport?: Array.<onnx.OperatorSetIdProto.$Shape>|null;
+         *   producerName?: string|null;
+         *   producerVersion?: string|null;
+         *   domain?: string|null;
+         *   modelVersion?: number|Long|null;
+         *   docString?: string|null;
+         *   graph?: onnx.GraphProto.$Shape|null;
+         *   metadataProps?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   trainingInfo?: Array.<onnx.TrainingInfoProto.$Shape>|null;
+         *   functions?: Array.<onnx.FunctionProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.ModelProto.$Shape
          */
 
         /**
          * Constructs a new ModelProto.
          * @memberof onnx
          * @classdesc Represents a ModelProto.
-         * @implements IModelProto
          * @constructor
-         * @param {onnx.IModelProto=} [properties] Properties to set
+         * @param {onnx.ModelProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function ModelProto(properties) {
+        const ModelProto = function (properties) {
             this.opsetImport = [];
             this.metadataProps = [];
             this.trainingInfo = [];
             this.functions = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * ModelProto irVersion.
@@ -2206,7 +2457,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ModelProto opsetImport.
-         * @member {Array.<onnx.IOperatorSetIdProto>} opsetImport
+         * @member {Array.<onnx.OperatorSetIdProto.$Properties>} opsetImport
          * @memberof onnx.ModelProto
          * @instance
          */
@@ -2254,7 +2505,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ModelProto graph.
-         * @member {onnx.IGraphProto|null|undefined} graph
+         * @member {onnx.GraphProto.$Properties|null|undefined} graph
          * @memberof onnx.ModelProto
          * @instance
          */
@@ -2262,7 +2513,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ModelProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.ModelProto
          * @instance
          */
@@ -2270,7 +2521,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ModelProto trainingInfo.
-         * @member {Array.<onnx.ITrainingInfoProto>} trainingInfo
+         * @member {Array.<onnx.TrainingInfoProto.$Properties>} trainingInfo
          * @memberof onnx.ModelProto
          * @instance
          */
@@ -2278,7 +2529,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * ModelProto functions.
-         * @member {Array.<onnx.IFunctionProto>} functions
+         * @member {Array.<onnx.FunctionProto.$Properties>} functions
          * @memberof onnx.ModelProto
          * @instance
          */
@@ -2289,10 +2540,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.ModelProto
          * @static
-         * @param {onnx.IModelProto=} [properties] Properties to set
+         * @param {onnx.ModelProto.$Properties=} [properties] Properties to set
          * @returns {onnx.ModelProto} ModelProto instance
+         * @type {{
+         *   (properties: onnx.ModelProto.$Shape): onnx.ModelProto & onnx.ModelProto.$Shape;
+         *   (properties?: onnx.ModelProto.$Properties): onnx.ModelProto;
+         * }}
          */
-        ModelProto.create = function create(properties) {
+        ModelProto.create = function(properties) {
             return new ModelProto(properties);
         };
 
@@ -2301,43 +2556,46 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.ModelProto
          * @static
-         * @param {onnx.IModelProto} message ModelProto message or plain object to encode
+         * @param {onnx.ModelProto.$Properties} message ModelProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ModelProto.encode = function encode(message, writer, q) {
+        ModelProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.irVersion != null && Object.hasOwnProperty.call(message, "irVersion"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.irVersion != null && $Object.hasOwnProperty.call(message, "irVersion"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int64(message.irVersion);
-            if (message.producerName != null && Object.hasOwnProperty.call(message, "producerName"))
+            if (message.producerName != null && $Object.hasOwnProperty.call(message, "producerName"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.producerName);
-            if (message.producerVersion != null && Object.hasOwnProperty.call(message, "producerVersion"))
+            if (message.producerVersion != null && $Object.hasOwnProperty.call(message, "producerVersion"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.producerVersion);
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 writer.uint32(/* id 4, wireType 2 =*/34).string(message.domain);
-            if (message.modelVersion != null && Object.hasOwnProperty.call(message, "modelVersion"))
+            if (message.modelVersion != null && $Object.hasOwnProperty.call(message, "modelVersion"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int64(message.modelVersion);
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.docString);
-            if (message.graph != null && Object.hasOwnProperty.call(message, "graph"))
-                $root.onnx.GraphProto.encode(message.graph, writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
+            if (message.graph != null && $Object.hasOwnProperty.call(message, "graph"))
+                $root.onnx.GraphProto.encode(message.graph, writer.uint32(/* id 7, wireType 2 =*/58).fork(), _depth + 1).ldelim();
             if (message.opsetImport != null && message.opsetImport.length)
                 for (let i = 0; i < message.opsetImport.length; ++i)
-                    $root.onnx.OperatorSetIdProto.encode(message.opsetImport[i], writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
+                    $root.onnx.OperatorSetIdProto.encode(message.opsetImport[i], writer.uint32(/* id 8, wireType 2 =*/66).fork(), _depth + 1).ldelim();
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), _depth + 1).ldelim();
             if (message.trainingInfo != null && message.trainingInfo.length)
                 for (let i = 0; i < message.trainingInfo.length; ++i)
-                    $root.onnx.TrainingInfoProto.encode(message.trainingInfo[i], writer.uint32(/* id 20, wireType 2 =*/162).fork(), q + 1).ldelim();
+                    $root.onnx.TrainingInfoProto.encode(message.trainingInfo[i], writer.uint32(/* id 20, wireType 2 =*/162).fork(), _depth + 1).ldelim();
             if (message.functions != null && message.functions.length)
                 for (let i = 0; i < message.functions.length; ++i)
-                    $root.onnx.FunctionProto.encode(message.functions[i], writer.uint32(/* id 25, wireType 2 =*/202).fork(), q + 1).ldelim();
+                    $root.onnx.FunctionProto.encode(message.functions[i], writer.uint32(/* id 25, wireType 2 =*/202).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -2346,12 +2604,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.ModelProto
          * @static
-         * @param {onnx.IModelProto} message ModelProto message or plain object to encode
+         * @param {onnx.ModelProto.$Properties} message ModelProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ModelProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        ModelProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -2361,80 +2619,110 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.ModelProto} ModelProto
+         * @returns {onnx.ModelProto & onnx.ModelProto.$Shape} ModelProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ModelProto.decode = function decode(reader, length, error, long) {
+        ModelProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.ModelProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.ModelProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.irVersion = reader.int64();
-                        break;
-                    }
-                case 8: {
-                        if (!(message.opsetImport && message.opsetImport.length))
-                            message.opsetImport = [];
-                        message.opsetImport.push($root.onnx.OperatorSetIdProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 2: {
-                        message.producerName = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.producerVersion = reader.string();
-                        break;
-                    }
-                case 4: {
-                        message.domain = reader.string();
-                        break;
-                    }
-                case 5: {
-                        message.modelVersion = reader.int64();
-                        break;
-                    }
-                case 6: {
-                        message.docString = reader.string();
-                        break;
-                    }
-                case 7: {
-                        message.graph = $root.onnx.GraphProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 14: {
-                        if (!(message.metadataProps && message.metadataProps.length))
-                            message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 20: {
-                        if (!(message.trainingInfo && message.trainingInfo.length))
-                            message.trainingInfo = [];
-                        message.trainingInfo.push($root.onnx.TrainingInfoProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 25: {
-                        if (!(message.functions && message.functions.length))
-                            message.functions = [];
-                        message.functions.push($root.onnx.FunctionProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 0)
+                            break;
+                        message.irVersion = reader.int64();
+                        continue;
+                    }
+                case 8: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.opsetImport && message.opsetImport.length))
+                            message.opsetImport = [];
+                        message.opsetImport.push($root.onnx.OperatorSetIdProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.producerName = reader.string();
+                        continue;
+                    }
+                case 3: {
+                        if (wireType !== 2)
+                            break;
+                        message.producerVersion = reader.string();
+                        continue;
+                    }
+                case 4: {
+                        if (wireType !== 2)
+                            break;
+                        message.domain = reader.string();
+                        continue;
+                    }
+                case 5: {
+                        if (wireType !== 0)
+                            break;
+                        message.modelVersion = reader.int64();
+                        continue;
+                    }
+                case 6: {
+                        if (wireType !== 2)
+                            break;
+                        message.docString = reader.string();
+                        continue;
+                    }
+                case 7: {
+                        if (wireType !== 2)
+                            break;
+                        message.graph = $root.onnx.GraphProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.graph);
+                        continue;
+                    }
+                case 14: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.metadataProps && message.metadataProps.length))
+                            message.metadataProps = [];
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 20: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.trainingInfo && message.trainingInfo.length))
+                            message.trainingInfo = [];
+                        message.trainingInfo.push($root.onnx.TrainingInfoProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 25: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.functions && message.functions.length))
+                            message.functions = [];
+                        message.functions.push($root.onnx.FunctionProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -2444,11 +2732,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.ModelProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.ModelProto} ModelProto
+         * @returns {onnx.ModelProto & onnx.ModelProto.$Shape} ModelProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ModelProto.decodeDelimited = function decodeDelimited(reader) {
+        ModelProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -2462,68 +2750,68 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ModelProto.verify = function verify(message, long) {
+        ModelProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.irVersion != null && Object.hasOwnProperty.call(message, "irVersion"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.irVersion != null && $Object.hasOwnProperty.call(message, "irVersion"))
                 if (!$util.isInteger(message.irVersion) && !(message.irVersion && $util.isInteger(message.irVersion.low) && $util.isInteger(message.irVersion.high)))
                     return "irVersion: integer|Long expected";
-            if (message.opsetImport != null && Object.hasOwnProperty.call(message, "opsetImport")) {
-                if (!Array.isArray(message.opsetImport))
+            if (message.opsetImport != null && $Object.hasOwnProperty.call(message, "opsetImport")) {
+                if (!$Array.isArray(message.opsetImport))
                     return "opsetImport: array expected";
                 for (let i = 0; i < message.opsetImport.length; ++i) {
-                    let error = $root.onnx.OperatorSetIdProto.verify(message.opsetImport[i], long + 1);
+                    let error = $root.onnx.OperatorSetIdProto.verify(message.opsetImport[i], _depth + 1);
                     if (error)
                         return "opsetImport." + error;
                 }
             }
-            if (message.producerName != null && Object.hasOwnProperty.call(message, "producerName"))
+            if (message.producerName != null && $Object.hasOwnProperty.call(message, "producerName"))
                 if (!$util.isString(message.producerName))
                     return "producerName: string expected";
-            if (message.producerVersion != null && Object.hasOwnProperty.call(message, "producerVersion"))
+            if (message.producerVersion != null && $Object.hasOwnProperty.call(message, "producerVersion"))
                 if (!$util.isString(message.producerVersion))
                     return "producerVersion: string expected";
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 if (!$util.isString(message.domain))
                     return "domain: string expected";
-            if (message.modelVersion != null && Object.hasOwnProperty.call(message, "modelVersion"))
+            if (message.modelVersion != null && $Object.hasOwnProperty.call(message, "modelVersion"))
                 if (!$util.isInteger(message.modelVersion) && !(message.modelVersion && $util.isInteger(message.modelVersion.low) && $util.isInteger(message.modelVersion.high)))
                     return "modelVersion: integer|Long expected";
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.graph != null && Object.hasOwnProperty.call(message, "graph")) {
-                let error = $root.onnx.GraphProto.verify(message.graph, long + 1);
+            if (message.graph != null && $Object.hasOwnProperty.call(message, "graph")) {
+                let error = $root.onnx.GraphProto.verify(message.graph, _depth + 1);
                 if (error)
                     return "graph." + error;
             }
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
             }
-            if (message.trainingInfo != null && Object.hasOwnProperty.call(message, "trainingInfo")) {
-                if (!Array.isArray(message.trainingInfo))
+            if (message.trainingInfo != null && $Object.hasOwnProperty.call(message, "trainingInfo")) {
+                if (!$Array.isArray(message.trainingInfo))
                     return "trainingInfo: array expected";
                 for (let i = 0; i < message.trainingInfo.length; ++i) {
-                    let error = $root.onnx.TrainingInfoProto.verify(message.trainingInfo[i], long + 1);
+                    let error = $root.onnx.TrainingInfoProto.verify(message.trainingInfo[i], _depth + 1);
                     if (error)
                         return "trainingInfo." + error;
                 }
             }
-            if (message.functions != null && Object.hasOwnProperty.call(message, "functions")) {
-                if (!Array.isArray(message.functions))
+            if (message.functions != null && $Object.hasOwnProperty.call(message, "functions")) {
+                if (!$Array.isArray(message.functions))
                     return "functions: array expected";
                 for (let i = 0; i < message.functions.length; ++i) {
-                    let error = $root.onnx.FunctionProto.verify(message.functions[i], long + 1);
+                    let error = $root.onnx.FunctionProto.verify(message.functions[i], _depth + 1);
                     if (error)
                         return "functions." + error;
                 }
@@ -2539,85 +2827,85 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.ModelProto} ModelProto
          */
-        ModelProto.fromObject = function fromObject(object, long) {
+        ModelProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.ModelProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.ModelProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.ModelProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.ModelProto();
             if (object.irVersion != null)
                 if ($util.Long)
                     message.irVersion = $util.Long.fromValue(object.irVersion, false);
                 else if (typeof object.irVersion === "string")
-                    message.irVersion = parseInt(object.irVersion, 10);
+                    message.irVersion = $parseInt(object.irVersion, 10);
                 else if (typeof object.irVersion === "number")
                     message.irVersion = object.irVersion;
                 else if (typeof object.irVersion === "object")
                     message.irVersion = new $util.LongBits(object.irVersion.low >>> 0, object.irVersion.high >>> 0).toNumber();
             if (object.opsetImport) {
-                if (!Array.isArray(object.opsetImport))
-                    throw TypeError(".onnx.ModelProto.opsetImport: array expected");
-                message.opsetImport = [];
+                if (!$Array.isArray(object.opsetImport))
+                    throw $TypeError(".onnx.ModelProto.opsetImport: array expected");
+                message.opsetImport = $Array(object.opsetImport.length);
                 for (let i = 0; i < object.opsetImport.length; ++i) {
                     if (!$util.isObject(object.opsetImport[i]))
-                        throw TypeError(".onnx.ModelProto.opsetImport: object expected");
-                    message.opsetImport[i] = $root.onnx.OperatorSetIdProto.fromObject(object.opsetImport[i], long + 1);
+                        throw $TypeError(".onnx.ModelProto.opsetImport: object expected");
+                    message.opsetImport[i] = $root.onnx.OperatorSetIdProto.fromObject(object.opsetImport[i], _depth + 1);
                 }
             }
             if (object.producerName != null)
-                message.producerName = String(object.producerName);
+                message.producerName = $String(object.producerName);
             if (object.producerVersion != null)
-                message.producerVersion = String(object.producerVersion);
+                message.producerVersion = $String(object.producerVersion);
             if (object.domain != null)
-                message.domain = String(object.domain);
+                message.domain = $String(object.domain);
             if (object.modelVersion != null)
                 if ($util.Long)
                     message.modelVersion = $util.Long.fromValue(object.modelVersion, false);
                 else if (typeof object.modelVersion === "string")
-                    message.modelVersion = parseInt(object.modelVersion, 10);
+                    message.modelVersion = $parseInt(object.modelVersion, 10);
                 else if (typeof object.modelVersion === "number")
                     message.modelVersion = object.modelVersion;
                 else if (typeof object.modelVersion === "object")
                     message.modelVersion = new $util.LongBits(object.modelVersion.low >>> 0, object.modelVersion.high >>> 0).toNumber();
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.graph != null) {
                 if (!$util.isObject(object.graph))
-                    throw TypeError(".onnx.ModelProto.graph: object expected");
-                message.graph = $root.onnx.GraphProto.fromObject(object.graph, long + 1);
+                    throw $TypeError(".onnx.ModelProto.graph: object expected");
+                message.graph = $root.onnx.GraphProto.fromObject(object.graph, _depth + 1);
             }
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.ModelProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.ModelProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.ModelProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.ModelProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             if (object.trainingInfo) {
-                if (!Array.isArray(object.trainingInfo))
-                    throw TypeError(".onnx.ModelProto.trainingInfo: array expected");
-                message.trainingInfo = [];
+                if (!$Array.isArray(object.trainingInfo))
+                    throw $TypeError(".onnx.ModelProto.trainingInfo: array expected");
+                message.trainingInfo = $Array(object.trainingInfo.length);
                 for (let i = 0; i < object.trainingInfo.length; ++i) {
                     if (!$util.isObject(object.trainingInfo[i]))
-                        throw TypeError(".onnx.ModelProto.trainingInfo: object expected");
-                    message.trainingInfo[i] = $root.onnx.TrainingInfoProto.fromObject(object.trainingInfo[i], long + 1);
+                        throw $TypeError(".onnx.ModelProto.trainingInfo: object expected");
+                    message.trainingInfo[i] = $root.onnx.TrainingInfoProto.fromObject(object.trainingInfo[i], _depth + 1);
                 }
             }
             if (object.functions) {
-                if (!Array.isArray(object.functions))
-                    throw TypeError(".onnx.ModelProto.functions: array expected");
-                message.functions = [];
+                if (!$Array.isArray(object.functions))
+                    throw $TypeError(".onnx.ModelProto.functions: array expected");
+                message.functions = $Array(object.functions.length);
                 for (let i = 0; i < object.functions.length; ++i) {
                     if (!$util.isObject(object.functions[i]))
-                        throw TypeError(".onnx.ModelProto.functions: object expected");
-                    message.functions[i] = $root.onnx.FunctionProto.fromObject(object.functions[i], long + 1);
+                        throw $TypeError(".onnx.ModelProto.functions: object expected");
+                    message.functions[i] = $root.onnx.FunctionProto.fromObject(object.functions[i], _depth + 1);
                 }
             }
             return message;
@@ -2632,13 +2920,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ModelProto.toObject = function toObject(message, options, q) {
+        ModelProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.opsetImport = [];
@@ -2649,63 +2937,63 @@ export const onnx = $root.onnx = (() => {
             if (options.defaults) {
                 if ($util.Long) {
                     let long = new $util.Long(0, 0, false);
-                    object.irVersion = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                    object.irVersion = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                 } else
-                    object.irVersion = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
+                    object.irVersion = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                 object.producerName = "";
                 object.producerVersion = "";
                 object.domain = "";
                 if ($util.Long) {
                     let long = new $util.Long(0, 0, false);
-                    object.modelVersion = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                    object.modelVersion = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                 } else
-                    object.modelVersion = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
+                    object.modelVersion = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                 object.docString = "";
                 object.graph = null;
             }
-            if (message.irVersion != null && Object.hasOwnProperty.call(message, "irVersion"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.irVersion = typeof message.irVersion === "number" ? BigInt(message.irVersion) : $util.Long.fromBits(message.irVersion.low >>> 0, message.irVersion.high >>> 0, false).toBigInt();
+            if (message.irVersion != null && $Object.hasOwnProperty.call(message, "irVersion"))
+                if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                    object.irVersion = typeof message.irVersion === "number" ? $BigInt(message.irVersion) : $util.Long.fromBits(message.irVersion.low >>> 0, message.irVersion.high >>> 0, false).toBigInt();
                 else if (typeof message.irVersion === "number")
-                    object.irVersion = options.longs === String ? String(message.irVersion) : message.irVersion;
+                    object.irVersion = options.longs === $String ? $String(message.irVersion) : message.irVersion;
                 else
-                    object.irVersion = options.longs === String ? $util.Long.prototype.toString.call(message.irVersion) : options.longs === Number ? new $util.LongBits(message.irVersion.low >>> 0, message.irVersion.high >>> 0).toNumber() : message.irVersion;
-            if (message.producerName != null && Object.hasOwnProperty.call(message, "producerName"))
+                    object.irVersion = options.longs === $String ? $util.Long.prototype.toString.call(message.irVersion) : options.longs === $Number ? new $util.LongBits(message.irVersion.low >>> 0, message.irVersion.high >>> 0).toNumber() : message.irVersion;
+            if (message.producerName != null && $Object.hasOwnProperty.call(message, "producerName"))
                 object.producerName = message.producerName;
-            if (message.producerVersion != null && Object.hasOwnProperty.call(message, "producerVersion"))
+            if (message.producerVersion != null && $Object.hasOwnProperty.call(message, "producerVersion"))
                 object.producerVersion = message.producerVersion;
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 object.domain = message.domain;
-            if (message.modelVersion != null && Object.hasOwnProperty.call(message, "modelVersion"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.modelVersion = typeof message.modelVersion === "number" ? BigInt(message.modelVersion) : $util.Long.fromBits(message.modelVersion.low >>> 0, message.modelVersion.high >>> 0, false).toBigInt();
+            if (message.modelVersion != null && $Object.hasOwnProperty.call(message, "modelVersion"))
+                if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                    object.modelVersion = typeof message.modelVersion === "number" ? $BigInt(message.modelVersion) : $util.Long.fromBits(message.modelVersion.low >>> 0, message.modelVersion.high >>> 0, false).toBigInt();
                 else if (typeof message.modelVersion === "number")
-                    object.modelVersion = options.longs === String ? String(message.modelVersion) : message.modelVersion;
+                    object.modelVersion = options.longs === $String ? $String(message.modelVersion) : message.modelVersion;
                 else
-                    object.modelVersion = options.longs === String ? $util.Long.prototype.toString.call(message.modelVersion) : options.longs === Number ? new $util.LongBits(message.modelVersion.low >>> 0, message.modelVersion.high >>> 0).toNumber() : message.modelVersion;
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+                    object.modelVersion = options.longs === $String ? $util.Long.prototype.toString.call(message.modelVersion) : options.longs === $Number ? new $util.LongBits(message.modelVersion.low >>> 0, message.modelVersion.high >>> 0).toNumber() : message.modelVersion;
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
-            if (message.graph != null && Object.hasOwnProperty.call(message, "graph"))
-                object.graph = $root.onnx.GraphProto.toObject(message.graph, options, q + 1);
+            if (message.graph != null && $Object.hasOwnProperty.call(message, "graph"))
+                object.graph = $root.onnx.GraphProto.toObject(message.graph, options, _depth + 1);
             if (message.opsetImport && message.opsetImport.length) {
-                object.opsetImport = [];
+                object.opsetImport = $Array(message.opsetImport.length);
                 for (let j = 0; j < message.opsetImport.length; ++j)
-                    object.opsetImport[j] = $root.onnx.OperatorSetIdProto.toObject(message.opsetImport[j], options, q + 1);
+                    object.opsetImport[j] = $root.onnx.OperatorSetIdProto.toObject(message.opsetImport[j], options, _depth + 1);
             }
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             if (message.trainingInfo && message.trainingInfo.length) {
-                object.trainingInfo = [];
+                object.trainingInfo = $Array(message.trainingInfo.length);
                 for (let j = 0; j < message.trainingInfo.length; ++j)
-                    object.trainingInfo[j] = $root.onnx.TrainingInfoProto.toObject(message.trainingInfo[j], options, q + 1);
+                    object.trainingInfo[j] = $root.onnx.TrainingInfoProto.toObject(message.trainingInfo[j], options, _depth + 1);
             }
             if (message.functions && message.functions.length) {
-                object.functions = [];
+                object.functions = $Array(message.functions.length);
                 for (let j = 0; j < message.functions.length; ++j)
-                    object.functions[j] = $root.onnx.FunctionProto.toObject(message.functions[j], options, q + 1);
+                    object.functions[j] = $root.onnx.FunctionProto.toObject(message.functions[j], options, _depth + 1);
             }
             return object;
         };
@@ -2717,23 +3005,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        ModelProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        ModelProto.prototype.toJSON = function() {
+            return ModelProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for ModelProto
+         * Gets the type url for ModelProto
          * @function getTypeUrl
          * @memberof onnx.ModelProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        ModelProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.ModelProto";
+        ModelProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.ModelProto";
         };
 
         return ModelProto;
@@ -2743,26 +3030,39 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a StringStringEntryProto.
-         * @memberof onnx
-         * @interface IStringStringEntryProto
+         * @typedef {Object} onnx.StringStringEntryProto.$Properties
          * @property {string|null} [key] StringStringEntryProto key
          * @property {string|null} [value] StringStringEntryProto value
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a StringStringEntryProto.
+         * @memberof onnx
+         * @interface IStringStringEntryProto
+         * @augments onnx.StringStringEntryProto.$Properties
+         * @deprecated Use onnx.StringStringEntryProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a StringStringEntryProto.
+         * @typedef {onnx.StringStringEntryProto.$Properties} onnx.StringStringEntryProto.$Shape
          */
 
         /**
          * Constructs a new StringStringEntryProto.
          * @memberof onnx
          * @classdesc Represents a StringStringEntryProto.
-         * @implements IStringStringEntryProto
          * @constructor
-         * @param {onnx.IStringStringEntryProto=} [properties] Properties to set
+         * @param {onnx.StringStringEntryProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function StringStringEntryProto(properties) {
+        const StringStringEntryProto = function (properties) {
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * StringStringEntryProto key.
@@ -2785,10 +3085,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.StringStringEntryProto
          * @static
-         * @param {onnx.IStringStringEntryProto=} [properties] Properties to set
+         * @param {onnx.StringStringEntryProto.$Properties=} [properties] Properties to set
          * @returns {onnx.StringStringEntryProto} StringStringEntryProto instance
+         * @type {{
+         *   (properties: onnx.StringStringEntryProto.$Shape): onnx.StringStringEntryProto & onnx.StringStringEntryProto.$Shape;
+         *   (properties?: onnx.StringStringEntryProto.$Properties): onnx.StringStringEntryProto;
+         * }}
          */
-        StringStringEntryProto.create = function create(properties) {
+        StringStringEntryProto.create = function(properties) {
             return new StringStringEntryProto(properties);
         };
 
@@ -2797,21 +3101,24 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.StringStringEntryProto
          * @static
-         * @param {onnx.IStringStringEntryProto} message StringStringEntryProto message or plain object to encode
+         * @param {onnx.StringStringEntryProto.$Properties} message StringStringEntryProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        StringStringEntryProto.encode = function encode(message, writer, q) {
+        StringStringEntryProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.key != null && $Object.hasOwnProperty.call(message, "key"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.key);
-            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+            if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.value);
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -2820,12 +3127,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.StringStringEntryProto
          * @static
-         * @param {onnx.IStringStringEntryProto} message StringStringEntryProto message or plain object to encode
+         * @param {onnx.StringStringEntryProto.$Properties} message StringStringEntryProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        StringStringEntryProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        StringStringEntryProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -2835,36 +3142,48 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.StringStringEntryProto} StringStringEntryProto
+         * @returns {onnx.StringStringEntryProto & onnx.StringStringEntryProto.$Shape} StringStringEntryProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        StringStringEntryProto.decode = function decode(reader, length, error, long) {
+        StringStringEntryProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.StringStringEntryProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.StringStringEntryProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.key = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.value = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.key = reader.string();
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.value = reader.string();
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -2874,11 +3193,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.StringStringEntryProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.StringStringEntryProto} StringStringEntryProto
+         * @returns {onnx.StringStringEntryProto & onnx.StringStringEntryProto.$Shape} StringStringEntryProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        StringStringEntryProto.decodeDelimited = function decodeDelimited(reader) {
+        StringStringEntryProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -2892,17 +3211,17 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        StringStringEntryProto.verify = function verify(message, long) {
+        StringStringEntryProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.key != null && $Object.hasOwnProperty.call(message, "key"))
                 if (!$util.isString(message.key))
                     return "key: string expected";
-            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+            if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
                 if (!$util.isString(message.value))
                     return "value: string expected";
             return null;
@@ -2916,20 +3235,20 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.StringStringEntryProto} StringStringEntryProto
          */
-        StringStringEntryProto.fromObject = function fromObject(object, long) {
+        StringStringEntryProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.StringStringEntryProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.StringStringEntryProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.StringStringEntryProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.StringStringEntryProto();
             if (object.key != null)
-                message.key = String(object.key);
+                message.key = $String(object.key);
             if (object.value != null)
-                message.value = String(object.value);
+                message.value = $String(object.value);
             return message;
         };
 
@@ -2942,21 +3261,21 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        StringStringEntryProto.toObject = function toObject(message, options, q) {
+        StringStringEntryProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.defaults) {
                 object.key = "";
                 object.value = "";
             }
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
+            if (message.key != null && $Object.hasOwnProperty.call(message, "key"))
                 object.key = message.key;
-            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+            if (message.value != null && $Object.hasOwnProperty.call(message, "value"))
                 object.value = message.value;
             return object;
         };
@@ -2968,23 +3287,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        StringStringEntryProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        StringStringEntryProto.prototype.toJSON = function() {
+            return StringStringEntryProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for StringStringEntryProto
+         * Gets the type url for StringStringEntryProto
          * @function getTypeUrl
          * @memberof onnx.StringStringEntryProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        StringStringEntryProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.StringStringEntryProto";
+        StringStringEntryProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.StringStringEntryProto";
         };
 
         return StringStringEntryProto;
@@ -2994,27 +3312,40 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a TensorAnnotation.
+         * @typedef {Object} onnx.TensorAnnotation.$Properties
+         * @property {string|null} [tensorName] TensorAnnotation tensorName
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [quantParameterTensorNames] TensorAnnotation quantParameterTensorNames
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a TensorAnnotation.
          * @memberof onnx
          * @interface ITensorAnnotation
-         * @property {string|null} [tensorName] TensorAnnotation tensorName
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [quantParameterTensorNames] TensorAnnotation quantParameterTensorNames
+         * @augments onnx.TensorAnnotation.$Properties
+         * @deprecated Use onnx.TensorAnnotation.$Properties instead.
+         */
+
+        /**
+         * Shape of a TensorAnnotation.
+         * @typedef {onnx.TensorAnnotation.$Properties} onnx.TensorAnnotation.$Shape
          */
 
         /**
          * Constructs a new TensorAnnotation.
          * @memberof onnx
          * @classdesc Represents a TensorAnnotation.
-         * @implements ITensorAnnotation
          * @constructor
-         * @param {onnx.ITensorAnnotation=} [properties] Properties to set
+         * @param {onnx.TensorAnnotation.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function TensorAnnotation(properties) {
+        const TensorAnnotation = function (properties) {
             this.quantParameterTensorNames = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * TensorAnnotation tensorName.
@@ -3026,7 +3357,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TensorAnnotation quantParameterTensorNames.
-         * @member {Array.<onnx.IStringStringEntryProto>} quantParameterTensorNames
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} quantParameterTensorNames
          * @memberof onnx.TensorAnnotation
          * @instance
          */
@@ -3037,10 +3368,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.TensorAnnotation
          * @static
-         * @param {onnx.ITensorAnnotation=} [properties] Properties to set
+         * @param {onnx.TensorAnnotation.$Properties=} [properties] Properties to set
          * @returns {onnx.TensorAnnotation} TensorAnnotation instance
+         * @type {{
+         *   (properties: onnx.TensorAnnotation.$Shape): onnx.TensorAnnotation & onnx.TensorAnnotation.$Shape;
+         *   (properties?: onnx.TensorAnnotation.$Properties): onnx.TensorAnnotation;
+         * }}
          */
-        TensorAnnotation.create = function create(properties) {
+        TensorAnnotation.create = function(properties) {
             return new TensorAnnotation(properties);
         };
 
@@ -3049,22 +3384,25 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.TensorAnnotation
          * @static
-         * @param {onnx.ITensorAnnotation} message TensorAnnotation message or plain object to encode
+         * @param {onnx.TensorAnnotation.$Properties} message TensorAnnotation message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorAnnotation.encode = function encode(message, writer, q) {
+        TensorAnnotation.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.tensorName != null && Object.hasOwnProperty.call(message, "tensorName"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.tensorName != null && $Object.hasOwnProperty.call(message, "tensorName"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.tensorName);
             if (message.quantParameterTensorNames != null && message.quantParameterTensorNames.length)
                 for (let i = 0; i < message.quantParameterTensorNames.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.quantParameterTensorNames[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.quantParameterTensorNames[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -3073,12 +3411,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.TensorAnnotation
          * @static
-         * @param {onnx.ITensorAnnotation} message TensorAnnotation message or plain object to encode
+         * @param {onnx.TensorAnnotation.$Properties} message TensorAnnotation message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorAnnotation.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        TensorAnnotation.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -3088,38 +3426,50 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.TensorAnnotation} TensorAnnotation
+         * @returns {onnx.TensorAnnotation & onnx.TensorAnnotation.$Shape} TensorAnnotation
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorAnnotation.decode = function decode(reader, length, error, long) {
+        TensorAnnotation.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TensorAnnotation();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TensorAnnotation();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.tensorName = reader.string();
-                        break;
-                    }
-                case 2: {
-                        if (!(message.quantParameterTensorNames && message.quantParameterTensorNames.length))
-                            message.quantParameterTensorNames = [];
-                        message.quantParameterTensorNames.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.tensorName = reader.string();
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.quantParameterTensorNames && message.quantParameterTensorNames.length))
+                            message.quantParameterTensorNames = [];
+                        message.quantParameterTensorNames.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -3129,11 +3479,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TensorAnnotation
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.TensorAnnotation} TensorAnnotation
+         * @returns {onnx.TensorAnnotation & onnx.TensorAnnotation.$Shape} TensorAnnotation
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorAnnotation.decodeDelimited = function decodeDelimited(reader) {
+        TensorAnnotation.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -3147,21 +3497,21 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TensorAnnotation.verify = function verify(message, long) {
+        TensorAnnotation.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.tensorName != null && Object.hasOwnProperty.call(message, "tensorName"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.tensorName != null && $Object.hasOwnProperty.call(message, "tensorName"))
                 if (!$util.isString(message.tensorName))
                     return "tensorName: string expected";
-            if (message.quantParameterTensorNames != null && Object.hasOwnProperty.call(message, "quantParameterTensorNames")) {
-                if (!Array.isArray(message.quantParameterTensorNames))
+            if (message.quantParameterTensorNames != null && $Object.hasOwnProperty.call(message, "quantParameterTensorNames")) {
+                if (!$Array.isArray(message.quantParameterTensorNames))
                     return "quantParameterTensorNames: array expected";
                 for (let i = 0; i < message.quantParameterTensorNames.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.quantParameterTensorNames[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.quantParameterTensorNames[i], _depth + 1);
                     if (error)
                         return "quantParameterTensorNames." + error;
                 }
@@ -3177,26 +3527,26 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.TensorAnnotation} TensorAnnotation
          */
-        TensorAnnotation.fromObject = function fromObject(object, long) {
+        TensorAnnotation.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.TensorAnnotation)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.TensorAnnotation: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.TensorAnnotation: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.TensorAnnotation();
             if (object.tensorName != null)
-                message.tensorName = String(object.tensorName);
+                message.tensorName = $String(object.tensorName);
             if (object.quantParameterTensorNames) {
-                if (!Array.isArray(object.quantParameterTensorNames))
-                    throw TypeError(".onnx.TensorAnnotation.quantParameterTensorNames: array expected");
-                message.quantParameterTensorNames = [];
+                if (!$Array.isArray(object.quantParameterTensorNames))
+                    throw $TypeError(".onnx.TensorAnnotation.quantParameterTensorNames: array expected");
+                message.quantParameterTensorNames = $Array(object.quantParameterTensorNames.length);
                 for (let i = 0; i < object.quantParameterTensorNames.length; ++i) {
                     if (!$util.isObject(object.quantParameterTensorNames[i]))
-                        throw TypeError(".onnx.TensorAnnotation.quantParameterTensorNames: object expected");
-                    message.quantParameterTensorNames[i] = $root.onnx.StringStringEntryProto.fromObject(object.quantParameterTensorNames[i], long + 1);
+                        throw $TypeError(".onnx.TensorAnnotation.quantParameterTensorNames: object expected");
+                    message.quantParameterTensorNames[i] = $root.onnx.StringStringEntryProto.fromObject(object.quantParameterTensorNames[i], _depth + 1);
                 }
             }
             return message;
@@ -3211,24 +3561,24 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TensorAnnotation.toObject = function toObject(message, options, q) {
+        TensorAnnotation.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults)
                 object.quantParameterTensorNames = [];
             if (options.defaults)
                 object.tensorName = "";
-            if (message.tensorName != null && Object.hasOwnProperty.call(message, "tensorName"))
+            if (message.tensorName != null && $Object.hasOwnProperty.call(message, "tensorName"))
                 object.tensorName = message.tensorName;
             if (message.quantParameterTensorNames && message.quantParameterTensorNames.length) {
-                object.quantParameterTensorNames = [];
+                object.quantParameterTensorNames = $Array(message.quantParameterTensorNames.length);
                 for (let j = 0; j < message.quantParameterTensorNames.length; ++j)
-                    object.quantParameterTensorNames[j] = $root.onnx.StringStringEntryProto.toObject(message.quantParameterTensorNames[j], options, q + 1);
+                    object.quantParameterTensorNames[j] = $root.onnx.StringStringEntryProto.toObject(message.quantParameterTensorNames[j], options, _depth + 1);
             }
             return object;
         };
@@ -3240,23 +3590,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        TensorAnnotation.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        TensorAnnotation.prototype.toJSON = function() {
+            return TensorAnnotation.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for TensorAnnotation
+         * Gets the type url for TensorAnnotation
          * @function getTypeUrl
          * @memberof onnx.TensorAnnotation
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        TensorAnnotation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.TensorAnnotation";
+        TensorAnnotation.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.TensorAnnotation";
         };
 
         return TensorAnnotation;
@@ -3266,29 +3615,54 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a GraphProto.
+         * @typedef {Object} onnx.GraphProto.$Properties
+         * @property {Array.<onnx.NodeProto.$Properties>|null} [node] GraphProto node
+         * @property {string|null} [name] GraphProto name
+         * @property {Array.<onnx.TensorProto.$Properties>|null} [initializer] GraphProto initializer
+         * @property {Array.<onnx.SparseTensorProto.$Properties>|null} [sparseInitializer] GraphProto sparseInitializer
+         * @property {string|null} [docString] GraphProto docString
+         * @property {Array.<onnx.ValueInfoProto.$Properties>|null} [input] GraphProto input
+         * @property {Array.<onnx.ValueInfoProto.$Properties>|null} [output] GraphProto output
+         * @property {Array.<onnx.ValueInfoProto.$Properties>|null} [valueInfo] GraphProto valueInfo
+         * @property {Array.<onnx.TensorAnnotation.$Properties>|null} [quantizationAnnotation] GraphProto quantizationAnnotation
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] GraphProto metadataProps
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a GraphProto.
          * @memberof onnx
          * @interface IGraphProto
-         * @property {Array.<onnx.INodeProto>|null} [node] GraphProto node
-         * @property {string|null} [name] GraphProto name
-         * @property {Array.<onnx.ITensorProto>|null} [initializer] GraphProto initializer
-         * @property {Array.<onnx.ISparseTensorProto>|null} [sparseInitializer] GraphProto sparseInitializer
-         * @property {string|null} [docString] GraphProto docString
-         * @property {Array.<onnx.IValueInfoProto>|null} [input] GraphProto input
-         * @property {Array.<onnx.IValueInfoProto>|null} [output] GraphProto output
-         * @property {Array.<onnx.IValueInfoProto>|null} [valueInfo] GraphProto valueInfo
-         * @property {Array.<onnx.ITensorAnnotation>|null} [quantizationAnnotation] GraphProto quantizationAnnotation
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] GraphProto metadataProps
+         * @augments onnx.GraphProto.$Properties
+         * @deprecated Use onnx.GraphProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a GraphProto.
+         * @typedef {{
+         *   node?: Array.<onnx.NodeProto.$Shape>|null;
+         *   name?: string|null;
+         *   initializer?: Array.<onnx.TensorProto.$Shape>|null;
+         *   sparseInitializer?: Array.<onnx.SparseTensorProto.$Shape>|null;
+         *   docString?: string|null;
+         *   input?: Array.<onnx.ValueInfoProto.$Shape>|null;
+         *   output?: Array.<onnx.ValueInfoProto.$Shape>|null;
+         *   valueInfo?: Array.<onnx.ValueInfoProto.$Shape>|null;
+         *   quantizationAnnotation?: Array.<onnx.TensorAnnotation.$Shape>|null;
+         *   metadataProps?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.GraphProto.$Shape
          */
 
         /**
          * Constructs a new GraphProto.
          * @memberof onnx
          * @classdesc Represents a GraphProto.
-         * @implements IGraphProto
          * @constructor
-         * @param {onnx.IGraphProto=} [properties] Properties to set
+         * @param {onnx.GraphProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function GraphProto(properties) {
+        const GraphProto = function (properties) {
             this.node = [];
             this.initializer = [];
             this.sparseInitializer = [];
@@ -3298,14 +3672,14 @@ export const onnx = $root.onnx = (() => {
             this.quantizationAnnotation = [];
             this.metadataProps = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * GraphProto node.
-         * @member {Array.<onnx.INodeProto>} node
+         * @member {Array.<onnx.NodeProto.$Properties>} node
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3321,7 +3695,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto initializer.
-         * @member {Array.<onnx.ITensorProto>} initializer
+         * @member {Array.<onnx.TensorProto.$Properties>} initializer
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3329,7 +3703,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto sparseInitializer.
-         * @member {Array.<onnx.ISparseTensorProto>} sparseInitializer
+         * @member {Array.<onnx.SparseTensorProto.$Properties>} sparseInitializer
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3345,7 +3719,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto input.
-         * @member {Array.<onnx.IValueInfoProto>} input
+         * @member {Array.<onnx.ValueInfoProto.$Properties>} input
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3353,7 +3727,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto output.
-         * @member {Array.<onnx.IValueInfoProto>} output
+         * @member {Array.<onnx.ValueInfoProto.$Properties>} output
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3361,7 +3735,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto valueInfo.
-         * @member {Array.<onnx.IValueInfoProto>} valueInfo
+         * @member {Array.<onnx.ValueInfoProto.$Properties>} valueInfo
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3369,7 +3743,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto quantizationAnnotation.
-         * @member {Array.<onnx.ITensorAnnotation>} quantizationAnnotation
+         * @member {Array.<onnx.TensorAnnotation.$Properties>} quantizationAnnotation
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3377,7 +3751,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * GraphProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.GraphProto
          * @instance
          */
@@ -3388,10 +3762,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.GraphProto
          * @static
-         * @param {onnx.IGraphProto=} [properties] Properties to set
+         * @param {onnx.GraphProto.$Properties=} [properties] Properties to set
          * @returns {onnx.GraphProto} GraphProto instance
+         * @type {{
+         *   (properties: onnx.GraphProto.$Shape): onnx.GraphProto & onnx.GraphProto.$Shape;
+         *   (properties?: onnx.GraphProto.$Properties): onnx.GraphProto;
+         * }}
          */
-        GraphProto.create = function create(properties) {
+        GraphProto.create = function(properties) {
             return new GraphProto(properties);
         };
 
@@ -3400,45 +3778,48 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.GraphProto
          * @static
-         * @param {onnx.IGraphProto} message GraphProto message or plain object to encode
+         * @param {onnx.GraphProto.$Properties} message GraphProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        GraphProto.encode = function encode(message, writer, q) {
+        GraphProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             if (message.node != null && message.node.length)
                 for (let i = 0; i < message.node.length; ++i)
-                    $root.onnx.NodeProto.encode(message.node[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                    $root.onnx.NodeProto.encode(message.node[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
             if (message.initializer != null && message.initializer.length)
                 for (let i = 0; i < message.initializer.length; ++i)
-                    $root.onnx.TensorProto.encode(message.initializer[i], writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+                    $root.onnx.TensorProto.encode(message.initializer[i], writer.uint32(/* id 5, wireType 2 =*/42).fork(), _depth + 1).ldelim();
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 10, wireType 2 =*/82).string(message.docString);
             if (message.input != null && message.input.length)
                 for (let i = 0; i < message.input.length; ++i)
-                    $root.onnx.ValueInfoProto.encode(message.input[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), q + 1).ldelim();
+                    $root.onnx.ValueInfoProto.encode(message.input[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), _depth + 1).ldelim();
             if (message.output != null && message.output.length)
                 for (let i = 0; i < message.output.length; ++i)
-                    $root.onnx.ValueInfoProto.encode(message.output[i], writer.uint32(/* id 12, wireType 2 =*/98).fork(), q + 1).ldelim();
+                    $root.onnx.ValueInfoProto.encode(message.output[i], writer.uint32(/* id 12, wireType 2 =*/98).fork(), _depth + 1).ldelim();
             if (message.valueInfo != null && message.valueInfo.length)
                 for (let i = 0; i < message.valueInfo.length; ++i)
-                    $root.onnx.ValueInfoProto.encode(message.valueInfo[i], writer.uint32(/* id 13, wireType 2 =*/106).fork(), q + 1).ldelim();
+                    $root.onnx.ValueInfoProto.encode(message.valueInfo[i], writer.uint32(/* id 13, wireType 2 =*/106).fork(), _depth + 1).ldelim();
             if (message.quantizationAnnotation != null && message.quantizationAnnotation.length)
                 for (let i = 0; i < message.quantizationAnnotation.length; ++i)
-                    $root.onnx.TensorAnnotation.encode(message.quantizationAnnotation[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), q + 1).ldelim();
+                    $root.onnx.TensorAnnotation.encode(message.quantizationAnnotation[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), _depth + 1).ldelim();
             if (message.sparseInitializer != null && message.sparseInitializer.length)
                 for (let i = 0; i < message.sparseInitializer.length; ++i)
-                    $root.onnx.SparseTensorProto.encode(message.sparseInitializer[i], writer.uint32(/* id 15, wireType 2 =*/122).fork(), q + 1).ldelim();
+                    $root.onnx.SparseTensorProto.encode(message.sparseInitializer[i], writer.uint32(/* id 15, wireType 2 =*/122).fork(), _depth + 1).ldelim();
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 16, wireType 2 =*/130).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 16, wireType 2 =*/130).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -3447,12 +3828,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.GraphProto
          * @static
-         * @param {onnx.IGraphProto} message GraphProto message or plain object to encode
+         * @param {onnx.GraphProto.$Properties} message GraphProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        GraphProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        GraphProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -3462,84 +3843,112 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.GraphProto} GraphProto
+         * @returns {onnx.GraphProto & onnx.GraphProto.$Shape} GraphProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        GraphProto.decode = function decode(reader, length, error, long) {
+        GraphProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.GraphProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.GraphProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (!(message.node && message.node.length))
-                            message.node = [];
-                        message.node.push($root.onnx.NodeProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 5: {
-                        if (!(message.initializer && message.initializer.length))
-                            message.initializer = [];
-                        message.initializer.push($root.onnx.TensorProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 15: {
-                        if (!(message.sparseInitializer && message.sparseInitializer.length))
-                            message.sparseInitializer = [];
-                        message.sparseInitializer.push($root.onnx.SparseTensorProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 10: {
-                        message.docString = reader.string();
-                        break;
-                    }
-                case 11: {
-                        if (!(message.input && message.input.length))
-                            message.input = [];
-                        message.input.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 12: {
-                        if (!(message.output && message.output.length))
-                            message.output = [];
-                        message.output.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 13: {
-                        if (!(message.valueInfo && message.valueInfo.length))
-                            message.valueInfo = [];
-                        message.valueInfo.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 14: {
-                        if (!(message.quantizationAnnotation && message.quantizationAnnotation.length))
-                            message.quantizationAnnotation = [];
-                        message.quantizationAnnotation.push($root.onnx.TensorAnnotation.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 16: {
-                        if (!(message.metadataProps && message.metadataProps.length))
-                            message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.node && message.node.length))
+                            message.node = [];
+                        message.node.push($root.onnx.NodeProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.name = reader.string();
+                        continue;
+                    }
+                case 5: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.initializer && message.initializer.length))
+                            message.initializer = [];
+                        message.initializer.push($root.onnx.TensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 15: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.sparseInitializer && message.sparseInitializer.length))
+                            message.sparseInitializer = [];
+                        message.sparseInitializer.push($root.onnx.SparseTensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 10: {
+                        if (wireType !== 2)
+                            break;
+                        message.docString = reader.string();
+                        continue;
+                    }
+                case 11: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.input && message.input.length))
+                            message.input = [];
+                        message.input.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 12: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.output && message.output.length))
+                            message.output = [];
+                        message.output.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 13: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.valueInfo && message.valueInfo.length))
+                            message.valueInfo = [];
+                        message.valueInfo.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 14: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.quantizationAnnotation && message.quantizationAnnotation.length))
+                            message.quantizationAnnotation = [];
+                        message.quantizationAnnotation.push($root.onnx.TensorAnnotation.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                case 16: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.metadataProps && message.metadataProps.length))
+                            message.metadataProps = [];
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -3549,11 +3958,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.GraphProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.GraphProto} GraphProto
+         * @returns {onnx.GraphProto & onnx.GraphProto.$Shape} GraphProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        GraphProto.decodeDelimited = function decodeDelimited(reader) {
+        GraphProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -3567,87 +3976,87 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        GraphProto.verify = function verify(message, long) {
+        GraphProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.node != null && Object.hasOwnProperty.call(message, "node")) {
-                if (!Array.isArray(message.node))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.node != null && $Object.hasOwnProperty.call(message, "node")) {
+                if (!$Array.isArray(message.node))
                     return "node: array expected";
                 for (let i = 0; i < message.node.length; ++i) {
-                    let error = $root.onnx.NodeProto.verify(message.node[i], long + 1);
+                    let error = $root.onnx.NodeProto.verify(message.node[i], _depth + 1);
                     if (error)
                         return "node." + error;
                 }
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.initializer != null && Object.hasOwnProperty.call(message, "initializer")) {
-                if (!Array.isArray(message.initializer))
+            if (message.initializer != null && $Object.hasOwnProperty.call(message, "initializer")) {
+                if (!$Array.isArray(message.initializer))
                     return "initializer: array expected";
                 for (let i = 0; i < message.initializer.length; ++i) {
-                    let error = $root.onnx.TensorProto.verify(message.initializer[i], long + 1);
+                    let error = $root.onnx.TensorProto.verify(message.initializer[i], _depth + 1);
                     if (error)
                         return "initializer." + error;
                 }
             }
-            if (message.sparseInitializer != null && Object.hasOwnProperty.call(message, "sparseInitializer")) {
-                if (!Array.isArray(message.sparseInitializer))
+            if (message.sparseInitializer != null && $Object.hasOwnProperty.call(message, "sparseInitializer")) {
+                if (!$Array.isArray(message.sparseInitializer))
                     return "sparseInitializer: array expected";
                 for (let i = 0; i < message.sparseInitializer.length; ++i) {
-                    let error = $root.onnx.SparseTensorProto.verify(message.sparseInitializer[i], long + 1);
+                    let error = $root.onnx.SparseTensorProto.verify(message.sparseInitializer[i], _depth + 1);
                     if (error)
                         return "sparseInitializer." + error;
                 }
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.input != null && Object.hasOwnProperty.call(message, "input")) {
-                if (!Array.isArray(message.input))
+            if (message.input != null && $Object.hasOwnProperty.call(message, "input")) {
+                if (!$Array.isArray(message.input))
                     return "input: array expected";
                 for (let i = 0; i < message.input.length; ++i) {
-                    let error = $root.onnx.ValueInfoProto.verify(message.input[i], long + 1);
+                    let error = $root.onnx.ValueInfoProto.verify(message.input[i], _depth + 1);
                     if (error)
                         return "input." + error;
                 }
             }
-            if (message.output != null && Object.hasOwnProperty.call(message, "output")) {
-                if (!Array.isArray(message.output))
+            if (message.output != null && $Object.hasOwnProperty.call(message, "output")) {
+                if (!$Array.isArray(message.output))
                     return "output: array expected";
                 for (let i = 0; i < message.output.length; ++i) {
-                    let error = $root.onnx.ValueInfoProto.verify(message.output[i], long + 1);
+                    let error = $root.onnx.ValueInfoProto.verify(message.output[i], _depth + 1);
                     if (error)
                         return "output." + error;
                 }
             }
-            if (message.valueInfo != null && Object.hasOwnProperty.call(message, "valueInfo")) {
-                if (!Array.isArray(message.valueInfo))
+            if (message.valueInfo != null && $Object.hasOwnProperty.call(message, "valueInfo")) {
+                if (!$Array.isArray(message.valueInfo))
                     return "valueInfo: array expected";
                 for (let i = 0; i < message.valueInfo.length; ++i) {
-                    let error = $root.onnx.ValueInfoProto.verify(message.valueInfo[i], long + 1);
+                    let error = $root.onnx.ValueInfoProto.verify(message.valueInfo[i], _depth + 1);
                     if (error)
                         return "valueInfo." + error;
                 }
             }
-            if (message.quantizationAnnotation != null && Object.hasOwnProperty.call(message, "quantizationAnnotation")) {
-                if (!Array.isArray(message.quantizationAnnotation))
+            if (message.quantizationAnnotation != null && $Object.hasOwnProperty.call(message, "quantizationAnnotation")) {
+                if (!$Array.isArray(message.quantizationAnnotation))
                     return "quantizationAnnotation: array expected";
                 for (let i = 0; i < message.quantizationAnnotation.length; ++i) {
-                    let error = $root.onnx.TensorAnnotation.verify(message.quantizationAnnotation[i], long + 1);
+                    let error = $root.onnx.TensorAnnotation.verify(message.quantizationAnnotation[i], _depth + 1);
                     if (error)
                         return "quantizationAnnotation." + error;
                 }
             }
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
@@ -3663,98 +4072,98 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.GraphProto} GraphProto
          */
-        GraphProto.fromObject = function fromObject(object, long) {
+        GraphProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.GraphProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.GraphProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.GraphProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.GraphProto();
             if (object.node) {
-                if (!Array.isArray(object.node))
-                    throw TypeError(".onnx.GraphProto.node: array expected");
-                message.node = [];
+                if (!$Array.isArray(object.node))
+                    throw $TypeError(".onnx.GraphProto.node: array expected");
+                message.node = $Array(object.node.length);
                 for (let i = 0; i < object.node.length; ++i) {
                     if (!$util.isObject(object.node[i]))
-                        throw TypeError(".onnx.GraphProto.node: object expected");
-                    message.node[i] = $root.onnx.NodeProto.fromObject(object.node[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.node: object expected");
+                    message.node[i] = $root.onnx.NodeProto.fromObject(object.node[i], _depth + 1);
                 }
             }
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.initializer) {
-                if (!Array.isArray(object.initializer))
-                    throw TypeError(".onnx.GraphProto.initializer: array expected");
-                message.initializer = [];
+                if (!$Array.isArray(object.initializer))
+                    throw $TypeError(".onnx.GraphProto.initializer: array expected");
+                message.initializer = $Array(object.initializer.length);
                 for (let i = 0; i < object.initializer.length; ++i) {
                     if (!$util.isObject(object.initializer[i]))
-                        throw TypeError(".onnx.GraphProto.initializer: object expected");
-                    message.initializer[i] = $root.onnx.TensorProto.fromObject(object.initializer[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.initializer: object expected");
+                    message.initializer[i] = $root.onnx.TensorProto.fromObject(object.initializer[i], _depth + 1);
                 }
             }
             if (object.sparseInitializer) {
-                if (!Array.isArray(object.sparseInitializer))
-                    throw TypeError(".onnx.GraphProto.sparseInitializer: array expected");
-                message.sparseInitializer = [];
+                if (!$Array.isArray(object.sparseInitializer))
+                    throw $TypeError(".onnx.GraphProto.sparseInitializer: array expected");
+                message.sparseInitializer = $Array(object.sparseInitializer.length);
                 for (let i = 0; i < object.sparseInitializer.length; ++i) {
                     if (!$util.isObject(object.sparseInitializer[i]))
-                        throw TypeError(".onnx.GraphProto.sparseInitializer: object expected");
-                    message.sparseInitializer[i] = $root.onnx.SparseTensorProto.fromObject(object.sparseInitializer[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.sparseInitializer: object expected");
+                    message.sparseInitializer[i] = $root.onnx.SparseTensorProto.fromObject(object.sparseInitializer[i], _depth + 1);
                 }
             }
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.input) {
-                if (!Array.isArray(object.input))
-                    throw TypeError(".onnx.GraphProto.input: array expected");
-                message.input = [];
+                if (!$Array.isArray(object.input))
+                    throw $TypeError(".onnx.GraphProto.input: array expected");
+                message.input = $Array(object.input.length);
                 for (let i = 0; i < object.input.length; ++i) {
                     if (!$util.isObject(object.input[i]))
-                        throw TypeError(".onnx.GraphProto.input: object expected");
-                    message.input[i] = $root.onnx.ValueInfoProto.fromObject(object.input[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.input: object expected");
+                    message.input[i] = $root.onnx.ValueInfoProto.fromObject(object.input[i], _depth + 1);
                 }
             }
             if (object.output) {
-                if (!Array.isArray(object.output))
-                    throw TypeError(".onnx.GraphProto.output: array expected");
-                message.output = [];
+                if (!$Array.isArray(object.output))
+                    throw $TypeError(".onnx.GraphProto.output: array expected");
+                message.output = $Array(object.output.length);
                 for (let i = 0; i < object.output.length; ++i) {
                     if (!$util.isObject(object.output[i]))
-                        throw TypeError(".onnx.GraphProto.output: object expected");
-                    message.output[i] = $root.onnx.ValueInfoProto.fromObject(object.output[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.output: object expected");
+                    message.output[i] = $root.onnx.ValueInfoProto.fromObject(object.output[i], _depth + 1);
                 }
             }
             if (object.valueInfo) {
-                if (!Array.isArray(object.valueInfo))
-                    throw TypeError(".onnx.GraphProto.valueInfo: array expected");
-                message.valueInfo = [];
+                if (!$Array.isArray(object.valueInfo))
+                    throw $TypeError(".onnx.GraphProto.valueInfo: array expected");
+                message.valueInfo = $Array(object.valueInfo.length);
                 for (let i = 0; i < object.valueInfo.length; ++i) {
                     if (!$util.isObject(object.valueInfo[i]))
-                        throw TypeError(".onnx.GraphProto.valueInfo: object expected");
-                    message.valueInfo[i] = $root.onnx.ValueInfoProto.fromObject(object.valueInfo[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.valueInfo: object expected");
+                    message.valueInfo[i] = $root.onnx.ValueInfoProto.fromObject(object.valueInfo[i], _depth + 1);
                 }
             }
             if (object.quantizationAnnotation) {
-                if (!Array.isArray(object.quantizationAnnotation))
-                    throw TypeError(".onnx.GraphProto.quantizationAnnotation: array expected");
-                message.quantizationAnnotation = [];
+                if (!$Array.isArray(object.quantizationAnnotation))
+                    throw $TypeError(".onnx.GraphProto.quantizationAnnotation: array expected");
+                message.quantizationAnnotation = $Array(object.quantizationAnnotation.length);
                 for (let i = 0; i < object.quantizationAnnotation.length; ++i) {
                     if (!$util.isObject(object.quantizationAnnotation[i]))
-                        throw TypeError(".onnx.GraphProto.quantizationAnnotation: object expected");
-                    message.quantizationAnnotation[i] = $root.onnx.TensorAnnotation.fromObject(object.quantizationAnnotation[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.quantizationAnnotation: object expected");
+                    message.quantizationAnnotation[i] = $root.onnx.TensorAnnotation.fromObject(object.quantizationAnnotation[i], _depth + 1);
                 }
             }
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.GraphProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.GraphProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.GraphProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.GraphProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             return message;
@@ -3769,13 +4178,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        GraphProto.toObject = function toObject(message, options, q) {
+        GraphProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.node = [];
@@ -3792,48 +4201,48 @@ export const onnx = $root.onnx = (() => {
                 object.docString = "";
             }
             if (message.node && message.node.length) {
-                object.node = [];
+                object.node = $Array(message.node.length);
                 for (let j = 0; j < message.node.length; ++j)
-                    object.node[j] = $root.onnx.NodeProto.toObject(message.node[j], options, q + 1);
+                    object.node[j] = $root.onnx.NodeProto.toObject(message.node[j], options, _depth + 1);
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
             if (message.initializer && message.initializer.length) {
-                object.initializer = [];
+                object.initializer = $Array(message.initializer.length);
                 for (let j = 0; j < message.initializer.length; ++j)
-                    object.initializer[j] = $root.onnx.TensorProto.toObject(message.initializer[j], options, q + 1);
+                    object.initializer[j] = $root.onnx.TensorProto.toObject(message.initializer[j], options, _depth + 1);
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
             if (message.input && message.input.length) {
-                object.input = [];
+                object.input = $Array(message.input.length);
                 for (let j = 0; j < message.input.length; ++j)
-                    object.input[j] = $root.onnx.ValueInfoProto.toObject(message.input[j], options, q + 1);
+                    object.input[j] = $root.onnx.ValueInfoProto.toObject(message.input[j], options, _depth + 1);
             }
             if (message.output && message.output.length) {
-                object.output = [];
+                object.output = $Array(message.output.length);
                 for (let j = 0; j < message.output.length; ++j)
-                    object.output[j] = $root.onnx.ValueInfoProto.toObject(message.output[j], options, q + 1);
+                    object.output[j] = $root.onnx.ValueInfoProto.toObject(message.output[j], options, _depth + 1);
             }
             if (message.valueInfo && message.valueInfo.length) {
-                object.valueInfo = [];
+                object.valueInfo = $Array(message.valueInfo.length);
                 for (let j = 0; j < message.valueInfo.length; ++j)
-                    object.valueInfo[j] = $root.onnx.ValueInfoProto.toObject(message.valueInfo[j], options, q + 1);
+                    object.valueInfo[j] = $root.onnx.ValueInfoProto.toObject(message.valueInfo[j], options, _depth + 1);
             }
             if (message.quantizationAnnotation && message.quantizationAnnotation.length) {
-                object.quantizationAnnotation = [];
+                object.quantizationAnnotation = $Array(message.quantizationAnnotation.length);
                 for (let j = 0; j < message.quantizationAnnotation.length; ++j)
-                    object.quantizationAnnotation[j] = $root.onnx.TensorAnnotation.toObject(message.quantizationAnnotation[j], options, q + 1);
+                    object.quantizationAnnotation[j] = $root.onnx.TensorAnnotation.toObject(message.quantizationAnnotation[j], options, _depth + 1);
             }
             if (message.sparseInitializer && message.sparseInitializer.length) {
-                object.sparseInitializer = [];
+                object.sparseInitializer = $Array(message.sparseInitializer.length);
                 for (let j = 0; j < message.sparseInitializer.length; ++j)
-                    object.sparseInitializer[j] = $root.onnx.SparseTensorProto.toObject(message.sparseInitializer[j], options, q + 1);
+                    object.sparseInitializer[j] = $root.onnx.SparseTensorProto.toObject(message.sparseInitializer[j], options, _depth + 1);
             }
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             return object;
         };
@@ -3845,23 +4254,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        GraphProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        GraphProto.prototype.toJSON = function() {
+            return GraphProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for GraphProto
+         * Gets the type url for GraphProto
          * @function getTypeUrl
          * @memberof onnx.GraphProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        GraphProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.GraphProto";
+        GraphProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.GraphProto";
         };
 
         return GraphProto;
@@ -3871,11 +4279,10 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a TensorProto.
-         * @memberof onnx
-         * @interface ITensorProto
+         * @typedef {Object} onnx.TensorProto.$Properties
          * @property {Array.<number|Long>|null} [dims] TensorProto dims
          * @property {number|null} [dataType] TensorProto dataType
-         * @property {onnx.TensorProto.ISegment|null} [segment] TensorProto segment
+         * @property {onnx.TensorProto.Segment.$Properties|null} [segment] TensorProto segment
          * @property {Array.<number>|null} [floatData] TensorProto floatData
          * @property {Array.<number>|null} [int32Data] TensorProto int32Data
          * @property {Array.<Uint8Array>|null} [stringData] TensorProto stringData
@@ -3883,22 +4290,36 @@ export const onnx = $root.onnx = (() => {
          * @property {string|null} [name] TensorProto name
          * @property {string|null} [docString] TensorProto docString
          * @property {Uint8Array|null} [rawData] TensorProto rawData
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [externalData] TensorProto externalData
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [externalData] TensorProto externalData
          * @property {onnx.TensorProto.DataLocation|null} [dataLocation] TensorProto dataLocation
          * @property {Array.<number>|null} [doubleData] TensorProto doubleData
          * @property {Array.<number|Long>|null} [uint64Data] TensorProto uint64Data
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] TensorProto metadataProps
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] TensorProto metadataProps
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a TensorProto.
+         * @memberof onnx
+         * @interface ITensorProto
+         * @augments onnx.TensorProto.$Properties
+         * @deprecated Use onnx.TensorProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a TensorProto.
+         * @typedef {onnx.TensorProto.$Properties} onnx.TensorProto.$Shape
          */
 
         /**
          * Constructs a new TensorProto.
          * @memberof onnx
          * @classdesc Represents a TensorProto.
-         * @implements ITensorProto
          * @constructor
-         * @param {onnx.ITensorProto=} [properties] Properties to set
+         * @param {onnx.TensorProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function TensorProto(properties) {
+        const TensorProto = function (properties) {
             this.dims = [];
             this.floatData = [];
             this.int32Data = [];
@@ -3909,10 +4330,10 @@ export const onnx = $root.onnx = (() => {
             this.uint64Data = [];
             this.metadataProps = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * TensorProto dims.
@@ -3932,7 +4353,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TensorProto segment.
-         * @member {onnx.TensorProto.ISegment|null|undefined} segment
+         * @member {onnx.TensorProto.Segment.$Properties|null|undefined} segment
          * @memberof onnx.TensorProto
          * @instance
          */
@@ -3996,7 +4417,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TensorProto externalData.
-         * @member {Array.<onnx.IStringStringEntryProto>} externalData
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} externalData
          * @memberof onnx.TensorProto
          * @instance
          */
@@ -4028,7 +4449,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TensorProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.TensorProto
          * @instance
          */
@@ -4039,10 +4460,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.TensorProto
          * @static
-         * @param {onnx.ITensorProto=} [properties] Properties to set
+         * @param {onnx.TensorProto.$Properties=} [properties] Properties to set
          * @returns {onnx.TensorProto} TensorProto instance
+         * @type {{
+         *   (properties: onnx.TensorProto.$Shape): onnx.TensorProto & onnx.TensorProto.$Shape;
+         *   (properties?: onnx.TensorProto.$Properties): onnx.TensorProto;
+         * }}
          */
-        TensorProto.create = function create(properties) {
+        TensorProto.create = function(properties) {
             return new TensorProto(properties);
         };
 
@@ -4051,71 +4476,54 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.TensorProto
          * @static
-         * @param {onnx.ITensorProto} message TensorProto message or plain object to encode
+         * @param {onnx.TensorProto.$Properties} message TensorProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorProto.encode = function encode(message, writer, q) {
+        TensorProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             if (message.dims != null && message.dims.length)
                 for (let i = 0; i < message.dims.length; ++i)
                     writer.uint32(/* id 1, wireType 0 =*/8).int64(message.dims[i]);
-            if (message.dataType != null && Object.hasOwnProperty.call(message, "dataType"))
+            if (message.dataType != null && $Object.hasOwnProperty.call(message, "dataType"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.dataType);
-            if (message.segment != null && Object.hasOwnProperty.call(message, "segment"))
-                $root.onnx.TensorProto.Segment.encode(message.segment, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.floatData != null && message.floatData.length) {
-                writer.uint32(/* id 4, wireType 2 =*/34).fork();
-                for (let i = 0; i < message.floatData.length; ++i)
-                    writer.float(message.floatData[i]);
-                writer.ldelim();
-            }
-            if (message.int32Data != null && message.int32Data.length) {
-                writer.uint32(/* id 5, wireType 2 =*/42).fork();
-                for (let i = 0; i < message.int32Data.length; ++i)
-                    writer.int32(message.int32Data[i]);
-                writer.ldelim();
-            }
+            if (message.segment != null && $Object.hasOwnProperty.call(message, "segment"))
+                $root.onnx.TensorProto.Segment.encode(message.segment, writer.uint32(/* id 3, wireType 2 =*/26).fork(), _depth + 1).ldelim();
+            if (message.floatData != null && message.floatData.length)
+                writer.uint32(/* id 4, wireType 2 =*/34).floats(message.floatData);
+            if (message.int32Data != null && message.int32Data.length)
+                writer.uint32(/* id 5, wireType 2 =*/42).int32s(message.int32Data);
             if (message.stringData != null && message.stringData.length)
                 for (let i = 0; i < message.stringData.length; ++i)
                     writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.stringData[i]);
-            if (message.int64Data != null && message.int64Data.length) {
-                writer.uint32(/* id 7, wireType 2 =*/58).fork();
-                for (let i = 0; i < message.int64Data.length; ++i)
-                    writer.int64(message.int64Data[i]);
-                writer.ldelim();
-            }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.int64Data != null && message.int64Data.length)
+                writer.uint32(/* id 7, wireType 2 =*/58).int64s(message.int64Data);
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 8, wireType 2 =*/66).string(message.name);
-            if (message.rawData != null && Object.hasOwnProperty.call(message, "rawData"))
+            if (message.rawData != null && $Object.hasOwnProperty.call(message, "rawData"))
                 writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.rawData);
-            if (message.doubleData != null && message.doubleData.length) {
-                writer.uint32(/* id 10, wireType 2 =*/82).fork();
-                for (let i = 0; i < message.doubleData.length; ++i)
-                    writer.double(message.doubleData[i]);
-                writer.ldelim();
-            }
-            if (message.uint64Data != null && message.uint64Data.length) {
-                writer.uint32(/* id 11, wireType 2 =*/90).fork();
-                for (let i = 0; i < message.uint64Data.length; ++i)
-                    writer.uint64(message.uint64Data[i]);
-                writer.ldelim();
-            }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.doubleData != null && message.doubleData.length)
+                writer.uint32(/* id 10, wireType 2 =*/82).doubles(message.doubleData);
+            if (message.uint64Data != null && message.uint64Data.length)
+                writer.uint32(/* id 11, wireType 2 =*/90).uint64s(message.uint64Data);
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 12, wireType 2 =*/98).string(message.docString);
             if (message.externalData != null && message.externalData.length)
                 for (let i = 0; i < message.externalData.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.externalData[i], writer.uint32(/* id 13, wireType 2 =*/106).fork(), q + 1).ldelim();
-            if (message.dataLocation != null && Object.hasOwnProperty.call(message, "dataLocation"))
+                    $root.onnx.StringStringEntryProto.encode(message.externalData[i], writer.uint32(/* id 13, wireType 2 =*/106).fork(), _depth + 1).ldelim();
+            if (message.dataLocation != null && $Object.hasOwnProperty.call(message, "dataLocation"))
                 writer.uint32(/* id 14, wireType 0 =*/112).int32(message.dataLocation);
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 16, wireType 2 =*/130).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 16, wireType 2 =*/130).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -4124,12 +4532,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.TensorProto
          * @static
-         * @param {onnx.ITensorProto} message TensorProto message or plain object to encode
+         * @param {onnx.TensorProto.$Properties} message TensorProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        TensorProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -4139,136 +4547,186 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.TensorProto} TensorProto
+         * @returns {onnx.TensorProto & onnx.TensorProto.$Shape} TensorProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorProto.decode = function decode(reader, length, error, long) {
+        TensorProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TensorProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TensorProto(), value;
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
-                switch (tag >>> 3) {
+                }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
                 case 1: {
+                        if (wireType === 2) {
+                            if (!(message.dims && message.dims.length))
+                                message.dims = [];
+                            reader.int64s(message.dims);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
                         if (!(message.dims && message.dims.length))
                             message.dims = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.dims.push(reader.int64());
-                        } else
-                            message.dims.push(reader.int64());
-                        break;
+                        message.dims.push(reader.int64());
+                        continue;
                     }
                 case 2: {
+                        if (wireType !== 0)
+                            break;
                         message.dataType = reader.int32();
-                        break;
+                        continue;
                     }
                 case 3: {
-                        message.segment = $root.onnx.TensorProto.Segment.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
+                        if (wireType !== 2)
+                            break;
+                        message.segment = $root.onnx.TensorProto.Segment.decode(reader, reader.uint32(), $undefined, _depth + 1, message.segment);
+                        continue;
                     }
                 case 4: {
+                        if (wireType === 2) {
+                            if (!(message.floatData && message.floatData.length))
+                                message.floatData = [];
+                            reader.floats(message.floatData);
+                            continue;
+                        }
+                        if (wireType !== 5)
+                            break;
                         if (!(message.floatData && message.floatData.length))
                             message.floatData = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.floatData.push(reader.float());
-                        } else
-                            message.floatData.push(reader.float());
-                        break;
+                        message.floatData.push(reader.float());
+                        continue;
                     }
                 case 5: {
+                        if (wireType === 2) {
+                            if (!(message.int32Data && message.int32Data.length))
+                                message.int32Data = [];
+                            reader.int32s(message.int32Data);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
                         if (!(message.int32Data && message.int32Data.length))
                             message.int32Data = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.int32Data.push(reader.int32());
-                        } else
-                            message.int32Data.push(reader.int32());
-                        break;
+                        message.int32Data.push(reader.int32());
+                        continue;
                     }
                 case 6: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.stringData && message.stringData.length))
                             message.stringData = [];
                         message.stringData.push(reader.bytes());
-                        break;
+                        continue;
                     }
                 case 7: {
+                        if (wireType === 2) {
+                            if (!(message.int64Data && message.int64Data.length))
+                                message.int64Data = [];
+                            reader.int64s(message.int64Data);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
                         if (!(message.int64Data && message.int64Data.length))
                             message.int64Data = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.int64Data.push(reader.int64());
-                        } else
-                            message.int64Data.push(reader.int64());
-                        break;
+                        message.int64Data.push(reader.int64());
+                        continue;
                     }
                 case 8: {
+                        if (wireType !== 2)
+                            break;
                         message.name = reader.string();
-                        break;
+                        continue;
                     }
                 case 12: {
+                        if (wireType !== 2)
+                            break;
                         message.docString = reader.string();
-                        break;
+                        continue;
                     }
                 case 9: {
+                        if (wireType !== 2)
+                            break;
                         message.rawData = reader.bytes();
-                        break;
+                        continue;
                     }
                 case 13: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.externalData && message.externalData.length))
                             message.externalData = [];
-                        message.externalData.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.externalData.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 14: {
-                        message.dataLocation = reader.int32();
-                        break;
+                        if (wireType !== 0)
+                            break;
+                        value = reader.int32();
+                        if ($root.onnx.TensorProto.DataLocation[value] !== $undefined)
+                            message.dataLocation = value;
+                        else if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                        continue;
                     }
                 case 10: {
+                        if (wireType === 2) {
+                            if (!(message.doubleData && message.doubleData.length))
+                                message.doubleData = [];
+                            reader.doubles(message.doubleData);
+                            continue;
+                        }
+                        if (wireType !== 1)
+                            break;
                         if (!(message.doubleData && message.doubleData.length))
                             message.doubleData = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.doubleData.push(reader.double());
-                        } else
-                            message.doubleData.push(reader.double());
-                        break;
+                        message.doubleData.push(reader.double());
+                        continue;
                     }
                 case 11: {
+                        if (wireType === 2) {
+                            if (!(message.uint64Data && message.uint64Data.length))
+                                message.uint64Data = [];
+                            reader.uint64s(message.uint64Data);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
                         if (!(message.uint64Data && message.uint64Data.length))
                             message.uint64Data = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.uint64Data.push(reader.uint64());
-                        } else
-                            message.uint64Data.push(reader.uint64());
-                        break;
+                        message.uint64Data.push(reader.uint64());
+                        continue;
                     }
                 case 16: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.metadataProps && message.metadataProps.length))
                             message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
                 }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -4278,11 +4736,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TensorProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.TensorProto} TensorProto
+         * @returns {onnx.TensorProto & onnx.TensorProto.$Shape} TensorProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorProto.decodeDelimited = function decodeDelimited(reader) {
+        TensorProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -4296,75 +4754,75 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TensorProto.verify = function verify(message, long) {
+        TensorProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.dims != null && Object.hasOwnProperty.call(message, "dims")) {
-                if (!Array.isArray(message.dims))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.dims != null && $Object.hasOwnProperty.call(message, "dims")) {
+                if (!$Array.isArray(message.dims))
                     return "dims: array expected";
                 for (let i = 0; i < message.dims.length; ++i)
                     if (!$util.isInteger(message.dims[i]) && !(message.dims[i] && $util.isInteger(message.dims[i].low) && $util.isInteger(message.dims[i].high)))
                         return "dims: integer|Long[] expected";
             }
-            if (message.dataType != null && Object.hasOwnProperty.call(message, "dataType"))
+            if (message.dataType != null && $Object.hasOwnProperty.call(message, "dataType"))
                 if (!$util.isInteger(message.dataType))
                     return "dataType: integer expected";
-            if (message.segment != null && Object.hasOwnProperty.call(message, "segment")) {
-                let error = $root.onnx.TensorProto.Segment.verify(message.segment, long + 1);
+            if (message.segment != null && $Object.hasOwnProperty.call(message, "segment")) {
+                let error = $root.onnx.TensorProto.Segment.verify(message.segment, _depth + 1);
                 if (error)
                     return "segment." + error;
             }
-            if (message.floatData != null && Object.hasOwnProperty.call(message, "floatData")) {
-                if (!Array.isArray(message.floatData))
+            if (message.floatData != null && $Object.hasOwnProperty.call(message, "floatData")) {
+                if (!$Array.isArray(message.floatData))
                     return "floatData: array expected";
                 for (let i = 0; i < message.floatData.length; ++i)
                     if (typeof message.floatData[i] !== "number")
                         return "floatData: number[] expected";
             }
-            if (message.int32Data != null && Object.hasOwnProperty.call(message, "int32Data")) {
-                if (!Array.isArray(message.int32Data))
+            if (message.int32Data != null && $Object.hasOwnProperty.call(message, "int32Data")) {
+                if (!$Array.isArray(message.int32Data))
                     return "int32Data: array expected";
                 for (let i = 0; i < message.int32Data.length; ++i)
                     if (!$util.isInteger(message.int32Data[i]))
                         return "int32Data: integer[] expected";
             }
-            if (message.stringData != null && Object.hasOwnProperty.call(message, "stringData")) {
-                if (!Array.isArray(message.stringData))
+            if (message.stringData != null && $Object.hasOwnProperty.call(message, "stringData")) {
+                if (!$Array.isArray(message.stringData))
                     return "stringData: array expected";
                 for (let i = 0; i < message.stringData.length; ++i)
                     if (!(message.stringData[i] && typeof message.stringData[i].length === "number" || $util.isString(message.stringData[i])))
                         return "stringData: buffer[] expected";
             }
-            if (message.int64Data != null && Object.hasOwnProperty.call(message, "int64Data")) {
-                if (!Array.isArray(message.int64Data))
+            if (message.int64Data != null && $Object.hasOwnProperty.call(message, "int64Data")) {
+                if (!$Array.isArray(message.int64Data))
                     return "int64Data: array expected";
                 for (let i = 0; i < message.int64Data.length; ++i)
                     if (!$util.isInteger(message.int64Data[i]) && !(message.int64Data[i] && $util.isInteger(message.int64Data[i].low) && $util.isInteger(message.int64Data[i].high)))
                         return "int64Data: integer|Long[] expected";
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.rawData != null && Object.hasOwnProperty.call(message, "rawData"))
+            if (message.rawData != null && $Object.hasOwnProperty.call(message, "rawData"))
                 if (!(message.rawData && typeof message.rawData.length === "number" || $util.isString(message.rawData)))
                     return "rawData: buffer expected";
-            if (message.externalData != null && Object.hasOwnProperty.call(message, "externalData")) {
-                if (!Array.isArray(message.externalData))
+            if (message.externalData != null && $Object.hasOwnProperty.call(message, "externalData")) {
+                if (!$Array.isArray(message.externalData))
                     return "externalData: array expected";
                 for (let i = 0; i < message.externalData.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.externalData[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.externalData[i], _depth + 1);
                     if (error)
                         return "externalData." + error;
                 }
             }
-            if (message.dataLocation != null && Object.hasOwnProperty.call(message, "dataLocation"))
+            if (message.dataLocation != null && $Object.hasOwnProperty.call(message, "dataLocation"))
                 switch (message.dataLocation) {
                 default:
                     return "dataLocation: enum value expected";
@@ -4372,25 +4830,25 @@ export const onnx = $root.onnx = (() => {
                 case 1:
                     break;
                 }
-            if (message.doubleData != null && Object.hasOwnProperty.call(message, "doubleData")) {
-                if (!Array.isArray(message.doubleData))
+            if (message.doubleData != null && $Object.hasOwnProperty.call(message, "doubleData")) {
+                if (!$Array.isArray(message.doubleData))
                     return "doubleData: array expected";
                 for (let i = 0; i < message.doubleData.length; ++i)
                     if (typeof message.doubleData[i] !== "number")
                         return "doubleData: number[] expected";
             }
-            if (message.uint64Data != null && Object.hasOwnProperty.call(message, "uint64Data")) {
-                if (!Array.isArray(message.uint64Data))
+            if (message.uint64Data != null && $Object.hasOwnProperty.call(message, "uint64Data")) {
+                if (!$Array.isArray(message.uint64Data))
                     return "uint64Data: array expected";
                 for (let i = 0; i < message.uint64Data.length; ++i)
                     if (!$util.isInteger(message.uint64Data[i]) && !(message.uint64Data[i] && $util.isInteger(message.uint64Data[i].low) && $util.isInteger(message.uint64Data[i].high)))
                         return "uint64Data: integer|Long[] expected";
             }
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
@@ -4406,25 +4864,25 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.TensorProto} TensorProto
          */
-        TensorProto.fromObject = function fromObject(object, long) {
+        TensorProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.TensorProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.TensorProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.TensorProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.TensorProto();
             if (object.dims) {
-                if (!Array.isArray(object.dims))
-                    throw TypeError(".onnx.TensorProto.dims: array expected");
-                message.dims = [];
+                if (!$Array.isArray(object.dims))
+                    throw $TypeError(".onnx.TensorProto.dims: array expected");
+                message.dims = $Array(object.dims.length);
                 for (let i = 0; i < object.dims.length; ++i)
                     if ($util.Long)
                         message.dims[i] = $util.Long.fromValue(object.dims[i], false);
                     else if (typeof object.dims[i] === "string")
-                        message.dims[i] = parseInt(object.dims[i], 10);
+                        message.dims[i] = $parseInt(object.dims[i], 10);
                     else if (typeof object.dims[i] === "number")
                         message.dims[i] = object.dims[i];
                     else if (typeof object.dims[i] === "object")
@@ -4434,27 +4892,27 @@ export const onnx = $root.onnx = (() => {
                 message.dataType = object.dataType | 0;
             if (object.segment != null) {
                 if (!$util.isObject(object.segment))
-                    throw TypeError(".onnx.TensorProto.segment: object expected");
-                message.segment = $root.onnx.TensorProto.Segment.fromObject(object.segment, long + 1);
+                    throw $TypeError(".onnx.TensorProto.segment: object expected");
+                message.segment = $root.onnx.TensorProto.Segment.fromObject(object.segment, _depth + 1);
             }
             if (object.floatData) {
-                if (!Array.isArray(object.floatData))
-                    throw TypeError(".onnx.TensorProto.floatData: array expected");
-                message.floatData = [];
+                if (!$Array.isArray(object.floatData))
+                    throw $TypeError(".onnx.TensorProto.floatData: array expected");
+                message.floatData = $Array(object.floatData.length);
                 for (let i = 0; i < object.floatData.length; ++i)
-                    message.floatData[i] = Number(object.floatData[i]);
+                    message.floatData[i] = $Number(object.floatData[i]);
             }
             if (object.int32Data) {
-                if (!Array.isArray(object.int32Data))
-                    throw TypeError(".onnx.TensorProto.int32Data: array expected");
-                message.int32Data = [];
+                if (!$Array.isArray(object.int32Data))
+                    throw $TypeError(".onnx.TensorProto.int32Data: array expected");
+                message.int32Data = $Array(object.int32Data.length);
                 for (let i = 0; i < object.int32Data.length; ++i)
                     message.int32Data[i] = object.int32Data[i] | 0;
             }
             if (object.stringData) {
-                if (!Array.isArray(object.stringData))
-                    throw TypeError(".onnx.TensorProto.stringData: array expected");
-                message.stringData = [];
+                if (!$Array.isArray(object.stringData))
+                    throw $TypeError(".onnx.TensorProto.stringData: array expected");
+                message.stringData = $Array(object.stringData.length);
                 for (let i = 0; i < object.stringData.length; ++i)
                     if (typeof object.stringData[i] === "string")
                         $util.base64.decode(object.stringData[i], message.stringData[i] = $util.newBuffer($util.base64.length(object.stringData[i])), 0);
@@ -4462,45 +4920,39 @@ export const onnx = $root.onnx = (() => {
                         message.stringData[i] = object.stringData[i];
             }
             if (object.int64Data) {
-                if (!Array.isArray(object.int64Data))
-                    throw TypeError(".onnx.TensorProto.int64Data: array expected");
-                message.int64Data = [];
+                if (!$Array.isArray(object.int64Data))
+                    throw $TypeError(".onnx.TensorProto.int64Data: array expected");
+                message.int64Data = $Array(object.int64Data.length);
                 for (let i = 0; i < object.int64Data.length; ++i)
                     if ($util.Long)
                         message.int64Data[i] = $util.Long.fromValue(object.int64Data[i], false);
                     else if (typeof object.int64Data[i] === "string")
-                        message.int64Data[i] = parseInt(object.int64Data[i], 10);
+                        message.int64Data[i] = $parseInt(object.int64Data[i], 10);
                     else if (typeof object.int64Data[i] === "number")
                         message.int64Data[i] = object.int64Data[i];
                     else if (typeof object.int64Data[i] === "object")
                         message.int64Data[i] = new $util.LongBits(object.int64Data[i].low >>> 0, object.int64Data[i].high >>> 0).toNumber();
             }
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.rawData != null)
                 if (typeof object.rawData === "string")
                     $util.base64.decode(object.rawData, message.rawData = $util.newBuffer($util.base64.length(object.rawData)), 0);
                 else if (object.rawData.length >= 0)
                     message.rawData = object.rawData;
             if (object.externalData) {
-                if (!Array.isArray(object.externalData))
-                    throw TypeError(".onnx.TensorProto.externalData: array expected");
-                message.externalData = [];
+                if (!$Array.isArray(object.externalData))
+                    throw $TypeError(".onnx.TensorProto.externalData: array expected");
+                message.externalData = $Array(object.externalData.length);
                 for (let i = 0; i < object.externalData.length; ++i) {
                     if (!$util.isObject(object.externalData[i]))
-                        throw TypeError(".onnx.TensorProto.externalData: object expected");
-                    message.externalData[i] = $root.onnx.StringStringEntryProto.fromObject(object.externalData[i], long + 1);
+                        throw $TypeError(".onnx.TensorProto.externalData: object expected");
+                    message.externalData[i] = $root.onnx.StringStringEntryProto.fromObject(object.externalData[i], _depth + 1);
                 }
             }
             switch (object.dataLocation) {
-            default:
-                if (typeof object.dataLocation === "number") {
-                    message.dataLocation = object.dataLocation;
-                    break;
-                }
-                break;
             case "DEFAULT":
             case 0:
                 message.dataLocation = 0;
@@ -4509,36 +4961,37 @@ export const onnx = $root.onnx = (() => {
             case 1:
                 message.dataLocation = 1;
                 break;
+            default:
             }
             if (object.doubleData) {
-                if (!Array.isArray(object.doubleData))
-                    throw TypeError(".onnx.TensorProto.doubleData: array expected");
-                message.doubleData = [];
+                if (!$Array.isArray(object.doubleData))
+                    throw $TypeError(".onnx.TensorProto.doubleData: array expected");
+                message.doubleData = $Array(object.doubleData.length);
                 for (let i = 0; i < object.doubleData.length; ++i)
-                    message.doubleData[i] = Number(object.doubleData[i]);
+                    message.doubleData[i] = $Number(object.doubleData[i]);
             }
             if (object.uint64Data) {
-                if (!Array.isArray(object.uint64Data))
-                    throw TypeError(".onnx.TensorProto.uint64Data: array expected");
-                message.uint64Data = [];
+                if (!$Array.isArray(object.uint64Data))
+                    throw $TypeError(".onnx.TensorProto.uint64Data: array expected");
+                message.uint64Data = $Array(object.uint64Data.length);
                 for (let i = 0; i < object.uint64Data.length; ++i)
                     if ($util.Long)
                         message.uint64Data[i] = $util.Long.fromValue(object.uint64Data[i], true);
                     else if (typeof object.uint64Data[i] === "string")
-                        message.uint64Data[i] = parseInt(object.uint64Data[i], 10);
+                        message.uint64Data[i] = $parseInt(object.uint64Data[i], 10);
                     else if (typeof object.uint64Data[i] === "number")
                         message.uint64Data[i] = object.uint64Data[i];
                     else if (typeof object.uint64Data[i] === "object")
                         message.uint64Data[i] = new $util.LongBits(object.uint64Data[i].low >>> 0, object.uint64Data[i].high >>> 0).toNumber(true);
             }
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.TensorProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.TensorProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.TensorProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.TensorProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             return message;
@@ -4553,13 +5006,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TensorProto.toObject = function toObject(message, options, q) {
+        TensorProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.dims = [];
@@ -4576,87 +5029,87 @@ export const onnx = $root.onnx = (() => {
                 object.dataType = 0;
                 object.segment = null;
                 object.name = "";
-                if (options.bytes === String)
+                if (options.bytes === $String)
                     object.rawData = "";
                 else {
                     object.rawData = [];
-                    if (options.bytes !== Array)
+                    if (options.bytes !== $Array)
                         object.rawData = $util.newBuffer(object.rawData);
                 }
                 object.docString = "";
-                object.dataLocation = options.enums === String ? "DEFAULT" : 0;
+                object.dataLocation = options.enums === $String ? "DEFAULT" : 0;
             }
             if (message.dims && message.dims.length) {
-                object.dims = [];
+                object.dims = $Array(message.dims.length);
                 for (let j = 0; j < message.dims.length; ++j)
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.dims[j] = typeof message.dims[j] === "number" ? BigInt(message.dims[j]) : $util.Long.fromBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0, false).toBigInt();
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.dims[j] = typeof message.dims[j] === "number" ? $BigInt(message.dims[j]) : $util.Long.fromBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0, false).toBigInt();
                     else if (typeof message.dims[j] === "number")
-                        object.dims[j] = options.longs === String ? String(message.dims[j]) : message.dims[j];
+                        object.dims[j] = options.longs === $String ? $String(message.dims[j]) : message.dims[j];
                     else
-                        object.dims[j] = options.longs === String ? $util.Long.prototype.toString.call(message.dims[j]) : options.longs === Number ? new $util.LongBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0).toNumber() : message.dims[j];
+                        object.dims[j] = options.longs === $String ? $util.Long.prototype.toString.call(message.dims[j]) : options.longs === $Number ? new $util.LongBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0).toNumber() : message.dims[j];
             }
-            if (message.dataType != null && Object.hasOwnProperty.call(message, "dataType"))
+            if (message.dataType != null && $Object.hasOwnProperty.call(message, "dataType"))
                 object.dataType = message.dataType;
-            if (message.segment != null && Object.hasOwnProperty.call(message, "segment"))
-                object.segment = $root.onnx.TensorProto.Segment.toObject(message.segment, options, q + 1);
+            if (message.segment != null && $Object.hasOwnProperty.call(message, "segment"))
+                object.segment = $root.onnx.TensorProto.Segment.toObject(message.segment, options, _depth + 1);
             if (message.floatData && message.floatData.length) {
-                object.floatData = [];
+                object.floatData = $Array(message.floatData.length);
                 for (let j = 0; j < message.floatData.length; ++j)
-                    object.floatData[j] = options.json && !isFinite(message.floatData[j]) ? String(message.floatData[j]) : message.floatData[j];
+                    object.floatData[j] = options.json && !$isFinite(message.floatData[j]) ? $String(message.floatData[j]) : message.floatData[j];
             }
             if (message.int32Data && message.int32Data.length) {
-                object.int32Data = [];
+                object.int32Data = $Array(message.int32Data.length);
                 for (let j = 0; j < message.int32Data.length; ++j)
                     object.int32Data[j] = message.int32Data[j];
             }
             if (message.stringData && message.stringData.length) {
-                object.stringData = [];
+                object.stringData = $Array(message.stringData.length);
                 for (let j = 0; j < message.stringData.length; ++j)
-                    object.stringData[j] = options.bytes === String ? $util.base64.encode(message.stringData[j], 0, message.stringData[j].length) : options.bytes === Array ? Array.prototype.slice.call(message.stringData[j]) : message.stringData[j];
+                    object.stringData[j] = options.bytes === $String ? $util.base64.encode(message.stringData[j], 0, message.stringData[j].length) : options.bytes === $Array ? $Array.prototype.slice.call(message.stringData[j]) : message.stringData[j];
             }
             if (message.int64Data && message.int64Data.length) {
-                object.int64Data = [];
+                object.int64Data = $Array(message.int64Data.length);
                 for (let j = 0; j < message.int64Data.length; ++j)
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.int64Data[j] = typeof message.int64Data[j] === "number" ? BigInt(message.int64Data[j]) : $util.Long.fromBits(message.int64Data[j].low >>> 0, message.int64Data[j].high >>> 0, false).toBigInt();
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.int64Data[j] = typeof message.int64Data[j] === "number" ? $BigInt(message.int64Data[j]) : $util.Long.fromBits(message.int64Data[j].low >>> 0, message.int64Data[j].high >>> 0, false).toBigInt();
                     else if (typeof message.int64Data[j] === "number")
-                        object.int64Data[j] = options.longs === String ? String(message.int64Data[j]) : message.int64Data[j];
+                        object.int64Data[j] = options.longs === $String ? $String(message.int64Data[j]) : message.int64Data[j];
                     else
-                        object.int64Data[j] = options.longs === String ? $util.Long.prototype.toString.call(message.int64Data[j]) : options.longs === Number ? new $util.LongBits(message.int64Data[j].low >>> 0, message.int64Data[j].high >>> 0).toNumber() : message.int64Data[j];
+                        object.int64Data[j] = options.longs === $String ? $util.Long.prototype.toString.call(message.int64Data[j]) : options.longs === $Number ? new $util.LongBits(message.int64Data[j].low >>> 0, message.int64Data[j].high >>> 0).toNumber() : message.int64Data[j];
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.rawData != null && Object.hasOwnProperty.call(message, "rawData"))
-                object.rawData = options.bytes === String ? $util.base64.encode(message.rawData, 0, message.rawData.length) : options.bytes === Array ? Array.prototype.slice.call(message.rawData) : message.rawData;
+            if (message.rawData != null && $Object.hasOwnProperty.call(message, "rawData"))
+                object.rawData = options.bytes === $String ? $util.base64.encode(message.rawData, 0, message.rawData.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.rawData) : message.rawData;
             if (message.doubleData && message.doubleData.length) {
-                object.doubleData = [];
+                object.doubleData = $Array(message.doubleData.length);
                 for (let j = 0; j < message.doubleData.length; ++j)
-                    object.doubleData[j] = options.json && !isFinite(message.doubleData[j]) ? String(message.doubleData[j]) : message.doubleData[j];
+                    object.doubleData[j] = options.json && !$isFinite(message.doubleData[j]) ? $String(message.doubleData[j]) : message.doubleData[j];
             }
             if (message.uint64Data && message.uint64Data.length) {
-                object.uint64Data = [];
+                object.uint64Data = $Array(message.uint64Data.length);
                 for (let j = 0; j < message.uint64Data.length; ++j)
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.uint64Data[j] = typeof message.uint64Data[j] === "number" ? BigInt(message.uint64Data[j]) : $util.Long.fromBits(message.uint64Data[j].low >>> 0, message.uint64Data[j].high >>> 0, true).toBigInt();
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.uint64Data[j] = typeof message.uint64Data[j] === "number" ? $BigInt(message.uint64Data[j]) : $util.Long.fromBits(message.uint64Data[j].low >>> 0, message.uint64Data[j].high >>> 0, true).toBigInt();
                     else if (typeof message.uint64Data[j] === "number")
-                        object.uint64Data[j] = options.longs === String ? String(message.uint64Data[j]) : message.uint64Data[j];
+                        object.uint64Data[j] = options.longs === $String ? $String(message.uint64Data[j]) : message.uint64Data[j];
                     else
-                        object.uint64Data[j] = options.longs === String ? $util.Long.prototype.toString.call(message.uint64Data[j]) : options.longs === Number ? new $util.LongBits(message.uint64Data[j].low >>> 0, message.uint64Data[j].high >>> 0).toNumber(true) : message.uint64Data[j];
+                        object.uint64Data[j] = options.longs === $String ? $util.Long.prototype.toString.call(message.uint64Data[j]) : options.longs === $Number ? new $util.LongBits(message.uint64Data[j].low >>> 0, message.uint64Data[j].high >>> 0).toNumber(true) : message.uint64Data[j];
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
             if (message.externalData && message.externalData.length) {
-                object.externalData = [];
+                object.externalData = $Array(message.externalData.length);
                 for (let j = 0; j < message.externalData.length; ++j)
-                    object.externalData[j] = $root.onnx.StringStringEntryProto.toObject(message.externalData[j], options, q + 1);
+                    object.externalData[j] = $root.onnx.StringStringEntryProto.toObject(message.externalData[j], options, _depth + 1);
             }
-            if (message.dataLocation != null && Object.hasOwnProperty.call(message, "dataLocation"))
-                object.dataLocation = options.enums === String ? $root.onnx.TensorProto.DataLocation[message.dataLocation] === undefined ? message.dataLocation : $root.onnx.TensorProto.DataLocation[message.dataLocation] : message.dataLocation;
+            if (message.dataLocation != null && $Object.hasOwnProperty.call(message, "dataLocation"))
+                object.dataLocation = options.enums === $String ? $root.onnx.TensorProto.DataLocation[message.dataLocation] === $undefined ? message.dataLocation : $root.onnx.TensorProto.DataLocation[message.dataLocation] : message.dataLocation;
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             return object;
         };
@@ -4668,23 +5121,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        TensorProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        TensorProto.prototype.toJSON = function() {
+            return TensorProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for TensorProto
+         * Gets the type url for TensorProto
          * @function getTypeUrl
          * @memberof onnx.TensorProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        TensorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.TensorProto";
+        TensorProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.TensorProto";
         };
 
         /**
@@ -4716,7 +5168,7 @@ export const onnx = $root.onnx = (() => {
          * @property {number} INT4=22 INT4 value
          */
         TensorProto.DataType = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
+            const valuesById = $Object.create(null), values = $Object.create(valuesById);
             values[valuesById[0] = "UNDEFINED"] = 0;
             values[valuesById[1] = "FLOAT"] = 1;
             values[valuesById[2] = "UINT8"] = 2;
@@ -4747,26 +5199,39 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Properties of a Segment.
-             * @memberof onnx.TensorProto
-             * @interface ISegment
+             * @typedef {Object} onnx.TensorProto.Segment.$Properties
              * @property {number|Long|null} [begin] Segment begin
              * @property {number|Long|null} [end] Segment end
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a Segment.
+             * @memberof onnx.TensorProto
+             * @interface ISegment
+             * @augments onnx.TensorProto.Segment.$Properties
+             * @deprecated Use onnx.TensorProto.Segment.$Properties instead.
+             */
+
+            /**
+             * Shape of a Segment.
+             * @typedef {onnx.TensorProto.Segment.$Properties} onnx.TensorProto.Segment.$Shape
              */
 
             /**
              * Constructs a new Segment.
              * @memberof onnx.TensorProto
              * @classdesc Represents a Segment.
-             * @implements ISegment
              * @constructor
-             * @param {onnx.TensorProto.ISegment=} [properties] Properties to set
+             * @param {onnx.TensorProto.Segment.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Segment(properties) {
+            const Segment = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Segment begin.
@@ -4789,10 +5254,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TensorProto.Segment
              * @static
-             * @param {onnx.TensorProto.ISegment=} [properties] Properties to set
+             * @param {onnx.TensorProto.Segment.$Properties=} [properties] Properties to set
              * @returns {onnx.TensorProto.Segment} Segment instance
+             * @type {{
+             *   (properties: onnx.TensorProto.Segment.$Shape): onnx.TensorProto.Segment & onnx.TensorProto.Segment.$Shape;
+             *   (properties?: onnx.TensorProto.Segment.$Properties): onnx.TensorProto.Segment;
+             * }}
              */
-            Segment.create = function create(properties) {
+            Segment.create = function(properties) {
                 return new Segment(properties);
             };
 
@@ -4801,21 +5270,24 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TensorProto.Segment
              * @static
-             * @param {onnx.TensorProto.ISegment} message Segment message or plain object to encode
+             * @param {onnx.TensorProto.Segment.$Properties} message Segment message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Segment.encode = function encode(message, writer, q) {
+            Segment.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.begin != null && Object.hasOwnProperty.call(message, "begin"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.begin != null && $Object.hasOwnProperty.call(message, "begin"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int64(message.begin);
-                if (message.end != null && Object.hasOwnProperty.call(message, "end"))
+                if (message.end != null && $Object.hasOwnProperty.call(message, "end"))
                     writer.uint32(/* id 2, wireType 0 =*/16).int64(message.end);
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -4824,12 +5296,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TensorProto.Segment
              * @static
-             * @param {onnx.TensorProto.ISegment} message Segment message or plain object to encode
+             * @param {onnx.TensorProto.Segment.$Properties} message Segment message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Segment.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Segment.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -4839,36 +5311,48 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TensorProto.Segment} Segment
+             * @returns {onnx.TensorProto.Segment & onnx.TensorProto.Segment.$Shape} Segment
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Segment.decode = function decode(reader, length, error, long) {
+            Segment.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TensorProto.Segment();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TensorProto.Segment();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.begin = reader.int64();
-                            break;
-                        }
-                    case 2: {
-                            message.end = reader.int64();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 0)
+                                break;
+                            message.begin = reader.int64();
+                            continue;
+                        }
+                    case 2: {
+                            if (wireType !== 0)
+                                break;
+                            message.end = reader.int64();
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -4878,11 +5362,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TensorProto.Segment
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TensorProto.Segment} Segment
+             * @returns {onnx.TensorProto.Segment & onnx.TensorProto.Segment.$Shape} Segment
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Segment.decodeDelimited = function decodeDelimited(reader) {
+            Segment.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -4896,17 +5380,17 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Segment.verify = function verify(message, long) {
+            Segment.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.begin != null && Object.hasOwnProperty.call(message, "begin"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.begin != null && $Object.hasOwnProperty.call(message, "begin"))
                     if (!$util.isInteger(message.begin) && !(message.begin && $util.isInteger(message.begin.low) && $util.isInteger(message.begin.high)))
                         return "begin: integer|Long expected";
-                if (message.end != null && Object.hasOwnProperty.call(message, "end"))
+                if (message.end != null && $Object.hasOwnProperty.call(message, "end"))
                     if (!$util.isInteger(message.end) && !(message.end && $util.isInteger(message.end.low) && $util.isInteger(message.end.high)))
                         return "end: integer|Long expected";
                 return null;
@@ -4920,21 +5404,21 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TensorProto.Segment} Segment
              */
-            Segment.fromObject = function fromObject(object, long) {
+            Segment.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TensorProto.Segment)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TensorProto.Segment: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TensorProto.Segment: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TensorProto.Segment();
                 if (object.begin != null)
                     if ($util.Long)
                         message.begin = $util.Long.fromValue(object.begin, false);
                     else if (typeof object.begin === "string")
-                        message.begin = parseInt(object.begin, 10);
+                        message.begin = $parseInt(object.begin, 10);
                     else if (typeof object.begin === "number")
                         message.begin = object.begin;
                     else if (typeof object.begin === "object")
@@ -4943,7 +5427,7 @@ export const onnx = $root.onnx = (() => {
                     if ($util.Long)
                         message.end = $util.Long.fromValue(object.end, false);
                     else if (typeof object.end === "string")
-                        message.end = parseInt(object.end, 10);
+                        message.end = $parseInt(object.end, 10);
                     else if (typeof object.end === "number")
                         message.end = object.end;
                     else if (typeof object.end === "object")
@@ -4960,40 +5444,40 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Segment.toObject = function toObject(message, options, q) {
+            Segment.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults) {
                     if ($util.Long) {
                         let long = new $util.Long(0, 0, false);
-                        object.begin = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                        object.begin = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                     } else
-                        object.begin = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
+                        object.begin = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                     if ($util.Long) {
                         let long = new $util.Long(0, 0, false);
-                        object.end = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                        object.end = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                     } else
-                        object.end = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
+                        object.end = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                 }
-                if (message.begin != null && Object.hasOwnProperty.call(message, "begin"))
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.begin = typeof message.begin === "number" ? BigInt(message.begin) : $util.Long.fromBits(message.begin.low >>> 0, message.begin.high >>> 0, false).toBigInt();
+                if (message.begin != null && $Object.hasOwnProperty.call(message, "begin"))
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.begin = typeof message.begin === "number" ? $BigInt(message.begin) : $util.Long.fromBits(message.begin.low >>> 0, message.begin.high >>> 0, false).toBigInt();
                     else if (typeof message.begin === "number")
-                        object.begin = options.longs === String ? String(message.begin) : message.begin;
+                        object.begin = options.longs === $String ? $String(message.begin) : message.begin;
                     else
-                        object.begin = options.longs === String ? $util.Long.prototype.toString.call(message.begin) : options.longs === Number ? new $util.LongBits(message.begin.low >>> 0, message.begin.high >>> 0).toNumber() : message.begin;
-                if (message.end != null && Object.hasOwnProperty.call(message, "end"))
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.end = typeof message.end === "number" ? BigInt(message.end) : $util.Long.fromBits(message.end.low >>> 0, message.end.high >>> 0, false).toBigInt();
+                        object.begin = options.longs === $String ? $util.Long.prototype.toString.call(message.begin) : options.longs === $Number ? new $util.LongBits(message.begin.low >>> 0, message.begin.high >>> 0).toNumber() : message.begin;
+                if (message.end != null && $Object.hasOwnProperty.call(message, "end"))
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.end = typeof message.end === "number" ? $BigInt(message.end) : $util.Long.fromBits(message.end.low >>> 0, message.end.high >>> 0, false).toBigInt();
                     else if (typeof message.end === "number")
-                        object.end = options.longs === String ? String(message.end) : message.end;
+                        object.end = options.longs === $String ? $String(message.end) : message.end;
                     else
-                        object.end = options.longs === String ? $util.Long.prototype.toString.call(message.end) : options.longs === Number ? new $util.LongBits(message.end.low >>> 0, message.end.high >>> 0).toNumber() : message.end;
+                        object.end = options.longs === $String ? $util.Long.prototype.toString.call(message.end) : options.longs === $Number ? new $util.LongBits(message.end.low >>> 0, message.end.high >>> 0).toNumber() : message.end;
                 return object;
             };
 
@@ -5004,23 +5488,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Segment.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Segment.prototype.toJSON = function() {
+                return Segment.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Segment
+             * Gets the type url for Segment
              * @function getTypeUrl
              * @memberof onnx.TensorProto.Segment
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Segment.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TensorProto.Segment";
+            Segment.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TensorProto.Segment";
             };
 
             return Segment;
@@ -5034,7 +5517,7 @@ export const onnx = $root.onnx = (() => {
          * @property {number} EXTERNAL=1 EXTERNAL value
          */
         TensorProto.DataLocation = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
+            const valuesById = $Object.create(null), values = $Object.create(valuesById);
             values[valuesById[0] = "DEFAULT"] = 0;
             values[valuesById[1] = "EXTERNAL"] = 1;
             return values;
@@ -5047,32 +5530,45 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a SparseTensorProto.
+         * @typedef {Object} onnx.SparseTensorProto.$Properties
+         * @property {onnx.TensorProto.$Properties|null} [values] SparseTensorProto values
+         * @property {onnx.TensorProto.$Properties|null} [indices] SparseTensorProto indices
+         * @property {Array.<number|Long>|null} [dims] SparseTensorProto dims
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a SparseTensorProto.
          * @memberof onnx
          * @interface ISparseTensorProto
-         * @property {onnx.ITensorProto|null} [values] SparseTensorProto values
-         * @property {onnx.ITensorProto|null} [indices] SparseTensorProto indices
-         * @property {Array.<number|Long>|null} [dims] SparseTensorProto dims
+         * @augments onnx.SparseTensorProto.$Properties
+         * @deprecated Use onnx.SparseTensorProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a SparseTensorProto.
+         * @typedef {onnx.SparseTensorProto.$Properties} onnx.SparseTensorProto.$Shape
          */
 
         /**
          * Constructs a new SparseTensorProto.
          * @memberof onnx
          * @classdesc Represents a SparseTensorProto.
-         * @implements ISparseTensorProto
          * @constructor
-         * @param {onnx.ISparseTensorProto=} [properties] Properties to set
+         * @param {onnx.SparseTensorProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function SparseTensorProto(properties) {
+        const SparseTensorProto = function (properties) {
             this.dims = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * SparseTensorProto values.
-         * @member {onnx.ITensorProto|null|undefined} values
+         * @member {onnx.TensorProto.$Properties|null|undefined} values
          * @memberof onnx.SparseTensorProto
          * @instance
          */
@@ -5080,7 +5576,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * SparseTensorProto indices.
-         * @member {onnx.ITensorProto|null|undefined} indices
+         * @member {onnx.TensorProto.$Properties|null|undefined} indices
          * @memberof onnx.SparseTensorProto
          * @instance
          */
@@ -5099,10 +5595,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.SparseTensorProto
          * @static
-         * @param {onnx.ISparseTensorProto=} [properties] Properties to set
+         * @param {onnx.SparseTensorProto.$Properties=} [properties] Properties to set
          * @returns {onnx.SparseTensorProto} SparseTensorProto instance
+         * @type {{
+         *   (properties: onnx.SparseTensorProto.$Shape): onnx.SparseTensorProto & onnx.SparseTensorProto.$Shape;
+         *   (properties?: onnx.SparseTensorProto.$Properties): onnx.SparseTensorProto;
+         * }}
          */
-        SparseTensorProto.create = function create(properties) {
+        SparseTensorProto.create = function(properties) {
             return new SparseTensorProto(properties);
         };
 
@@ -5111,24 +5611,27 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.SparseTensorProto
          * @static
-         * @param {onnx.ISparseTensorProto} message SparseTensorProto message or plain object to encode
+         * @param {onnx.SparseTensorProto.$Properties} message SparseTensorProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        SparseTensorProto.encode = function encode(message, writer, q) {
+        SparseTensorProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.values != null && Object.hasOwnProperty.call(message, "values"))
-                $root.onnx.TensorProto.encode(message.values, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.indices != null && Object.hasOwnProperty.call(message, "indices"))
-                $root.onnx.TensorProto.encode(message.indices, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.values != null && $Object.hasOwnProperty.call(message, "values"))
+                $root.onnx.TensorProto.encode(message.values, writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+            if (message.indices != null && $Object.hasOwnProperty.call(message, "indices"))
+                $root.onnx.TensorProto.encode(message.indices, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
             if (message.dims != null && message.dims.length)
                 for (let i = 0; i < message.dims.length; ++i)
                     writer.uint32(/* id 3, wireType 0 =*/24).int64(message.dims[i]);
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -5137,12 +5640,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.SparseTensorProto
          * @static
-         * @param {onnx.ISparseTensorProto} message SparseTensorProto message or plain object to encode
+         * @param {onnx.SparseTensorProto.$Properties} message SparseTensorProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        SparseTensorProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        SparseTensorProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -5152,47 +5655,62 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.SparseTensorProto} SparseTensorProto
+         * @returns {onnx.SparseTensorProto & onnx.SparseTensorProto.$Shape} SparseTensorProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        SparseTensorProto.decode = function decode(reader, length, error, long) {
+        SparseTensorProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.SparseTensorProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.SparseTensorProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.values = $root.onnx.TensorProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.indices = $root.onnx.TensorProto.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        if (!(message.dims && message.dims.length))
-                            message.dims = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.dims.push(reader.int64());
-                        } else
-                            message.dims.push(reader.int64());
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.values = $root.onnx.TensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.values);
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 2)
+                            break;
+                        message.indices = $root.onnx.TensorProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.indices);
+                        continue;
+                    }
+                case 3: {
+                        if (wireType === 2) {
+                            if (!(message.dims && message.dims.length))
+                                message.dims = [];
+                            reader.int64s(message.dims);
+                            continue;
+                        }
+                        if (wireType !== 0)
+                            break;
+                        if (!(message.dims && message.dims.length))
+                            message.dims = [];
+                        message.dims.push(reader.int64());
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -5202,11 +5720,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.SparseTensorProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.SparseTensorProto} SparseTensorProto
+         * @returns {onnx.SparseTensorProto & onnx.SparseTensorProto.$Shape} SparseTensorProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        SparseTensorProto.decodeDelimited = function decodeDelimited(reader) {
+        SparseTensorProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -5220,25 +5738,25 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        SparseTensorProto.verify = function verify(message, long) {
+        SparseTensorProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.values != null && Object.hasOwnProperty.call(message, "values")) {
-                let error = $root.onnx.TensorProto.verify(message.values, long + 1);
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.values != null && $Object.hasOwnProperty.call(message, "values")) {
+                let error = $root.onnx.TensorProto.verify(message.values, _depth + 1);
                 if (error)
                     return "values." + error;
             }
-            if (message.indices != null && Object.hasOwnProperty.call(message, "indices")) {
-                let error = $root.onnx.TensorProto.verify(message.indices, long + 1);
+            if (message.indices != null && $Object.hasOwnProperty.call(message, "indices")) {
+                let error = $root.onnx.TensorProto.verify(message.indices, _depth + 1);
                 if (error)
                     return "indices." + error;
             }
-            if (message.dims != null && Object.hasOwnProperty.call(message, "dims")) {
-                if (!Array.isArray(message.dims))
+            if (message.dims != null && $Object.hasOwnProperty.call(message, "dims")) {
+                if (!$Array.isArray(message.dims))
                     return "dims: array expected";
                 for (let i = 0; i < message.dims.length; ++i)
                     if (!$util.isInteger(message.dims[i]) && !(message.dims[i] && $util.isInteger(message.dims[i].low) && $util.isInteger(message.dims[i].high)))
@@ -5255,35 +5773,35 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.SparseTensorProto} SparseTensorProto
          */
-        SparseTensorProto.fromObject = function fromObject(object, long) {
+        SparseTensorProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.SparseTensorProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.SparseTensorProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.SparseTensorProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.SparseTensorProto();
             if (object.values != null) {
                 if (!$util.isObject(object.values))
-                    throw TypeError(".onnx.SparseTensorProto.values: object expected");
-                message.values = $root.onnx.TensorProto.fromObject(object.values, long + 1);
+                    throw $TypeError(".onnx.SparseTensorProto.values: object expected");
+                message.values = $root.onnx.TensorProto.fromObject(object.values, _depth + 1);
             }
             if (object.indices != null) {
                 if (!$util.isObject(object.indices))
-                    throw TypeError(".onnx.SparseTensorProto.indices: object expected");
-                message.indices = $root.onnx.TensorProto.fromObject(object.indices, long + 1);
+                    throw $TypeError(".onnx.SparseTensorProto.indices: object expected");
+                message.indices = $root.onnx.TensorProto.fromObject(object.indices, _depth + 1);
             }
             if (object.dims) {
-                if (!Array.isArray(object.dims))
-                    throw TypeError(".onnx.SparseTensorProto.dims: array expected");
-                message.dims = [];
+                if (!$Array.isArray(object.dims))
+                    throw $TypeError(".onnx.SparseTensorProto.dims: array expected");
+                message.dims = $Array(object.dims.length);
                 for (let i = 0; i < object.dims.length; ++i)
                     if ($util.Long)
                         message.dims[i] = $util.Long.fromValue(object.dims[i], false);
                     else if (typeof object.dims[i] === "string")
-                        message.dims[i] = parseInt(object.dims[i], 10);
+                        message.dims[i] = $parseInt(object.dims[i], 10);
                     else if (typeof object.dims[i] === "number")
                         message.dims[i] = object.dims[i];
                     else if (typeof object.dims[i] === "object")
@@ -5301,13 +5819,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        SparseTensorProto.toObject = function toObject(message, options, q) {
+        SparseTensorProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults)
                 object.dims = [];
@@ -5315,19 +5833,19 @@ export const onnx = $root.onnx = (() => {
                 object.values = null;
                 object.indices = null;
             }
-            if (message.values != null && Object.hasOwnProperty.call(message, "values"))
-                object.values = $root.onnx.TensorProto.toObject(message.values, options, q + 1);
-            if (message.indices != null && Object.hasOwnProperty.call(message, "indices"))
-                object.indices = $root.onnx.TensorProto.toObject(message.indices, options, q + 1);
+            if (message.values != null && $Object.hasOwnProperty.call(message, "values"))
+                object.values = $root.onnx.TensorProto.toObject(message.values, options, _depth + 1);
+            if (message.indices != null && $Object.hasOwnProperty.call(message, "indices"))
+                object.indices = $root.onnx.TensorProto.toObject(message.indices, options, _depth + 1);
             if (message.dims && message.dims.length) {
-                object.dims = [];
+                object.dims = $Array(message.dims.length);
                 for (let j = 0; j < message.dims.length; ++j)
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.dims[j] = typeof message.dims[j] === "number" ? BigInt(message.dims[j]) : $util.Long.fromBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0, false).toBigInt();
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.dims[j] = typeof message.dims[j] === "number" ? $BigInt(message.dims[j]) : $util.Long.fromBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0, false).toBigInt();
                     else if (typeof message.dims[j] === "number")
-                        object.dims[j] = options.longs === String ? String(message.dims[j]) : message.dims[j];
+                        object.dims[j] = options.longs === $String ? $String(message.dims[j]) : message.dims[j];
                     else
-                        object.dims[j] = options.longs === String ? $util.Long.prototype.toString.call(message.dims[j]) : options.longs === Number ? new $util.LongBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0).toNumber() : message.dims[j];
+                        object.dims[j] = options.longs === $String ? $util.Long.prototype.toString.call(message.dims[j]) : options.longs === $Number ? new $util.LongBits(message.dims[j].low >>> 0, message.dims[j].high >>> 0).toNumber() : message.dims[j];
             }
             return object;
         };
@@ -5339,23 +5857,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        SparseTensorProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        SparseTensorProto.prototype.toJSON = function() {
+            return SparseTensorProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for SparseTensorProto
+         * Gets the type url for SparseTensorProto
          * @function getTypeUrl
          * @memberof onnx.SparseTensorProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        SparseTensorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.SparseTensorProto";
+        SparseTensorProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.SparseTensorProto";
         };
 
         return SparseTensorProto;
@@ -5365,30 +5882,46 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a TensorShapeProto.
+         * @typedef {Object} onnx.TensorShapeProto.$Properties
+         * @property {Array.<onnx.TensorShapeProto.Dimension.$Properties>|null} [dim] TensorShapeProto dim
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a TensorShapeProto.
          * @memberof onnx
          * @interface ITensorShapeProto
-         * @property {Array.<onnx.TensorShapeProto.IDimension>|null} [dim] TensorShapeProto dim
+         * @augments onnx.TensorShapeProto.$Properties
+         * @deprecated Use onnx.TensorShapeProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a TensorShapeProto.
+         * @typedef {{
+         *   dim?: Array.<onnx.TensorShapeProto.Dimension.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.TensorShapeProto.$Shape
          */
 
         /**
          * Constructs a new TensorShapeProto.
          * @memberof onnx
          * @classdesc Represents a TensorShapeProto.
-         * @implements ITensorShapeProto
          * @constructor
-         * @param {onnx.ITensorShapeProto=} [properties] Properties to set
+         * @param {onnx.TensorShapeProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function TensorShapeProto(properties) {
+        const TensorShapeProto = function (properties) {
             this.dim = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * TensorShapeProto dim.
-         * @member {Array.<onnx.TensorShapeProto.IDimension>} dim
+         * @member {Array.<onnx.TensorShapeProto.Dimension.$Properties>} dim
          * @memberof onnx.TensorShapeProto
          * @instance
          */
@@ -5399,10 +5932,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.TensorShapeProto
          * @static
-         * @param {onnx.ITensorShapeProto=} [properties] Properties to set
+         * @param {onnx.TensorShapeProto.$Properties=} [properties] Properties to set
          * @returns {onnx.TensorShapeProto} TensorShapeProto instance
+         * @type {{
+         *   (properties: onnx.TensorShapeProto.$Shape): onnx.TensorShapeProto & onnx.TensorShapeProto.$Shape;
+         *   (properties?: onnx.TensorShapeProto.$Properties): onnx.TensorShapeProto;
+         * }}
          */
-        TensorShapeProto.create = function create(properties) {
+        TensorShapeProto.create = function(properties) {
             return new TensorShapeProto(properties);
         };
 
@@ -5411,20 +5948,23 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.TensorShapeProto
          * @static
-         * @param {onnx.ITensorShapeProto} message TensorShapeProto message or plain object to encode
+         * @param {onnx.TensorShapeProto.$Properties} message TensorShapeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorShapeProto.encode = function encode(message, writer, q) {
+        TensorShapeProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             if (message.dim != null && message.dim.length)
                 for (let i = 0; i < message.dim.length; ++i)
-                    $root.onnx.TensorShapeProto.Dimension.encode(message.dim[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
+                    $root.onnx.TensorShapeProto.Dimension.encode(message.dim[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -5433,12 +5973,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.TensorShapeProto
          * @static
-         * @param {onnx.ITensorShapeProto} message TensorShapeProto message or plain object to encode
+         * @param {onnx.TensorShapeProto.$Properties} message TensorShapeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TensorShapeProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        TensorShapeProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -5448,34 +5988,44 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.TensorShapeProto} TensorShapeProto
+         * @returns {onnx.TensorShapeProto & onnx.TensorShapeProto.$Shape} TensorShapeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorShapeProto.decode = function decode(reader, length, error, long) {
+        TensorShapeProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TensorShapeProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TensorShapeProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (!(message.dim && message.dim.length))
-                            message.dim = [];
-                        message.dim.push($root.onnx.TensorShapeProto.Dimension.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        if (!(message.dim && message.dim.length))
+                            message.dim = [];
+                        message.dim.push($root.onnx.TensorShapeProto.Dimension.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -5485,11 +6035,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TensorShapeProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.TensorShapeProto} TensorShapeProto
+         * @returns {onnx.TensorShapeProto & onnx.TensorShapeProto.$Shape} TensorShapeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TensorShapeProto.decodeDelimited = function decodeDelimited(reader) {
+        TensorShapeProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -5503,18 +6053,18 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TensorShapeProto.verify = function verify(message, long) {
+        TensorShapeProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.dim != null && Object.hasOwnProperty.call(message, "dim")) {
-                if (!Array.isArray(message.dim))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.dim != null && $Object.hasOwnProperty.call(message, "dim")) {
+                if (!$Array.isArray(message.dim))
                     return "dim: array expected";
                 for (let i = 0; i < message.dim.length; ++i) {
-                    let error = $root.onnx.TensorShapeProto.Dimension.verify(message.dim[i], long + 1);
+                    let error = $root.onnx.TensorShapeProto.Dimension.verify(message.dim[i], _depth + 1);
                     if (error)
                         return "dim." + error;
                 }
@@ -5530,24 +6080,24 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.TensorShapeProto} TensorShapeProto
          */
-        TensorShapeProto.fromObject = function fromObject(object, long) {
+        TensorShapeProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.TensorShapeProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.TensorShapeProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.TensorShapeProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.TensorShapeProto();
             if (object.dim) {
-                if (!Array.isArray(object.dim))
-                    throw TypeError(".onnx.TensorShapeProto.dim: array expected");
-                message.dim = [];
+                if (!$Array.isArray(object.dim))
+                    throw $TypeError(".onnx.TensorShapeProto.dim: array expected");
+                message.dim = $Array(object.dim.length);
                 for (let i = 0; i < object.dim.length; ++i) {
                     if (!$util.isObject(object.dim[i]))
-                        throw TypeError(".onnx.TensorShapeProto.dim: object expected");
-                    message.dim[i] = $root.onnx.TensorShapeProto.Dimension.fromObject(object.dim[i], long + 1);
+                        throw $TypeError(".onnx.TensorShapeProto.dim: object expected");
+                    message.dim[i] = $root.onnx.TensorShapeProto.Dimension.fromObject(object.dim[i], _depth + 1);
                 }
             }
             return message;
@@ -5562,20 +6112,20 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TensorShapeProto.toObject = function toObject(message, options, q) {
+        TensorShapeProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults)
                 object.dim = [];
             if (message.dim && message.dim.length) {
-                object.dim = [];
+                object.dim = $Array(message.dim.length);
                 for (let j = 0; j < message.dim.length; ++j)
-                    object.dim[j] = $root.onnx.TensorShapeProto.Dimension.toObject(message.dim[j], options, q + 1);
+                    object.dim[j] = $root.onnx.TensorShapeProto.Dimension.toObject(message.dim[j], options, _depth + 1);
             }
             return object;
         };
@@ -5587,50 +6137,70 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        TensorShapeProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        TensorShapeProto.prototype.toJSON = function() {
+            return TensorShapeProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for TensorShapeProto
+         * Gets the type url for TensorShapeProto
          * @function getTypeUrl
          * @memberof onnx.TensorShapeProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        TensorShapeProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.TensorShapeProto";
+        TensorShapeProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.TensorShapeProto";
         };
 
         TensorShapeProto.Dimension = (function() {
 
             /**
              * Properties of a Dimension.
-             * @memberof onnx.TensorShapeProto
-             * @interface IDimension
+             * @typedef {Object} onnx.TensorShapeProto.Dimension.$Properties
              * @property {number|Long|null} [dimValue] Dimension dimValue
              * @property {string|null} [dimParam] Dimension dimParam
              * @property {string|null} [denotation] Dimension denotation
+             * @property {"dimValue"|"dimParam"} [value] Dimension value
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a Dimension.
+             * @memberof onnx.TensorShapeProto
+             * @interface IDimension
+             * @augments onnx.TensorShapeProto.Dimension.$Properties
+             * @deprecated Use onnx.TensorShapeProto.Dimension.$Properties instead.
+             */
+
+            /**
+             * Narrowed shape of a Dimension.
+             * @typedef {{
+             *   dimValue?: number|Long|null;
+             *   dimParam?: string|null;
+             *   denotation?: string|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * } & (
+             *   ({ value?: undefined; dimValue?: null; dimParam?: null }|{ value?: "dimValue"; dimValue: number|Long; dimParam?: null }|{ value?: "dimParam"; dimValue?: null; dimParam: string })
+             * )} onnx.TensorShapeProto.Dimension.$Shape
              */
 
             /**
              * Constructs a new Dimension.
              * @memberof onnx.TensorShapeProto
              * @classdesc Represents a Dimension.
-             * @implements IDimension
              * @constructor
-             * @param {onnx.TensorShapeProto.IDimension=} [properties] Properties to set
+             * @param {onnx.TensorShapeProto.Dimension.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Dimension(properties) {
+            const Dimension = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Dimension dimValue.
@@ -5665,7 +6235,7 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TensorShapeProto.Dimension
              * @instance
              */
-            Object.defineProperty(Dimension.prototype, "value", {
+            $Object.defineProperty(Dimension.prototype, "value", {
                 get: $util.oneOfGetter($oneOfFields = ["dimValue", "dimParam"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
@@ -5675,10 +6245,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TensorShapeProto.Dimension
              * @static
-             * @param {onnx.TensorShapeProto.IDimension=} [properties] Properties to set
+             * @param {onnx.TensorShapeProto.Dimension.$Properties=} [properties] Properties to set
              * @returns {onnx.TensorShapeProto.Dimension} Dimension instance
+             * @type {{
+             *   (properties: onnx.TensorShapeProto.Dimension.$Shape): onnx.TensorShapeProto.Dimension & onnx.TensorShapeProto.Dimension.$Shape;
+             *   (properties?: onnx.TensorShapeProto.Dimension.$Properties): onnx.TensorShapeProto.Dimension;
+             * }}
              */
-            Dimension.create = function create(properties) {
+            Dimension.create = function(properties) {
                 return new Dimension(properties);
             };
 
@@ -5687,23 +6261,26 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TensorShapeProto.Dimension
              * @static
-             * @param {onnx.TensorShapeProto.IDimension} message Dimension message or plain object to encode
+             * @param {onnx.TensorShapeProto.Dimension.$Properties} message Dimension message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Dimension.encode = function encode(message, writer, q) {
+            Dimension.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.dimValue != null && Object.hasOwnProperty.call(message, "dimValue"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.dimValue != null && $Object.hasOwnProperty.call(message, "dimValue"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int64(message.dimValue);
-                if (message.dimParam != null && Object.hasOwnProperty.call(message, "dimParam"))
+                if (message.dimParam != null && $Object.hasOwnProperty.call(message, "dimParam"))
                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.dimParam);
-                if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+                if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.denotation);
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -5712,12 +6289,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TensorShapeProto.Dimension
              * @static
-             * @param {onnx.TensorShapeProto.IDimension} message Dimension message or plain object to encode
+             * @param {onnx.TensorShapeProto.Dimension.$Properties} message Dimension message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Dimension.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Dimension.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -5727,40 +6304,56 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TensorShapeProto.Dimension} Dimension
+             * @returns {onnx.TensorShapeProto.Dimension & onnx.TensorShapeProto.Dimension.$Shape} Dimension
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Dimension.decode = function decode(reader, length, error, long) {
+            Dimension.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TensorShapeProto.Dimension();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TensorShapeProto.Dimension();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.dimValue = reader.int64();
-                            break;
-                        }
-                    case 2: {
-                            message.dimParam = reader.string();
-                            break;
-                        }
-                    case 3: {
-                            message.denotation = reader.string();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 0)
+                                break;
+                            message.dimValue = reader.int64();
+                            message.value = "dimValue";
+                            continue;
+                        }
+                    case 2: {
+                            if (wireType !== 2)
+                                break;
+                            message.dimParam = reader.string();
+                            message.value = "dimParam";
+                            continue;
+                        }
+                    case 3: {
+                            if (wireType !== 2)
+                                break;
+                            message.denotation = reader.string();
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -5770,11 +6363,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TensorShapeProto.Dimension
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TensorShapeProto.Dimension} Dimension
+             * @returns {onnx.TensorShapeProto.Dimension & onnx.TensorShapeProto.Dimension.$Shape} Dimension
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Dimension.decodeDelimited = function decodeDelimited(reader) {
+            Dimension.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -5788,27 +6381,27 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Dimension.verify = function verify(message, long) {
+            Dimension.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
                 let properties = {};
-                if (message.dimValue != null && Object.hasOwnProperty.call(message, "dimValue")) {
+                if (message.dimValue != null && $Object.hasOwnProperty.call(message, "dimValue")) {
                     properties.value = 1;
                     if (!$util.isInteger(message.dimValue) && !(message.dimValue && $util.isInteger(message.dimValue.low) && $util.isInteger(message.dimValue.high)))
                         return "dimValue: integer|Long expected";
                 }
-                if (message.dimParam != null && Object.hasOwnProperty.call(message, "dimParam")) {
+                if (message.dimParam != null && $Object.hasOwnProperty.call(message, "dimParam")) {
                     if (properties.value === 1)
                         return "value: multiple values";
                     properties.value = 1;
                     if (!$util.isString(message.dimParam))
                         return "dimParam: string expected";
                 }
-                if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+                if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                     if (!$util.isString(message.denotation))
                         return "denotation: string expected";
                 return null;
@@ -5822,29 +6415,29 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TensorShapeProto.Dimension} Dimension
              */
-            Dimension.fromObject = function fromObject(object, long) {
+            Dimension.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TensorShapeProto.Dimension)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TensorShapeProto.Dimension: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TensorShapeProto.Dimension: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TensorShapeProto.Dimension();
                 if (object.dimValue != null)
                     if ($util.Long)
                         message.dimValue = $util.Long.fromValue(object.dimValue, false);
                     else if (typeof object.dimValue === "string")
-                        message.dimValue = parseInt(object.dimValue, 10);
+                        message.dimValue = $parseInt(object.dimValue, 10);
                     else if (typeof object.dimValue === "number")
                         message.dimValue = object.dimValue;
                     else if (typeof object.dimValue === "object")
                         message.dimValue = new $util.LongBits(object.dimValue.low >>> 0, object.dimValue.high >>> 0).toNumber();
                 if (object.dimParam != null)
-                    message.dimParam = String(object.dimParam);
+                    message.dimParam = $String(object.dimParam);
                 if (object.denotation != null)
-                    message.denotation = String(object.denotation);
+                    message.denotation = $String(object.denotation);
                 return message;
             };
 
@@ -5857,32 +6450,32 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Dimension.toObject = function toObject(message, options, q) {
+            Dimension.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults)
                     object.denotation = "";
-                if (message.dimValue != null && Object.hasOwnProperty.call(message, "dimValue")) {
-                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                        object.dimValue = typeof message.dimValue === "number" ? BigInt(message.dimValue) : $util.Long.fromBits(message.dimValue.low >>> 0, message.dimValue.high >>> 0, false).toBigInt();
+                if (message.dimValue != null && $Object.hasOwnProperty.call(message, "dimValue")) {
+                    if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                        object.dimValue = typeof message.dimValue === "number" ? $BigInt(message.dimValue) : $util.Long.fromBits(message.dimValue.low >>> 0, message.dimValue.high >>> 0, false).toBigInt();
                     else if (typeof message.dimValue === "number")
-                        object.dimValue = options.longs === String ? String(message.dimValue) : message.dimValue;
+                        object.dimValue = options.longs === $String ? $String(message.dimValue) : message.dimValue;
                     else
-                        object.dimValue = options.longs === String ? $util.Long.prototype.toString.call(message.dimValue) : options.longs === Number ? new $util.LongBits(message.dimValue.low >>> 0, message.dimValue.high >>> 0).toNumber() : message.dimValue;
+                        object.dimValue = options.longs === $String ? $util.Long.prototype.toString.call(message.dimValue) : options.longs === $Number ? new $util.LongBits(message.dimValue.low >>> 0, message.dimValue.high >>> 0).toNumber() : message.dimValue;
                     if (options.oneofs)
                         object.value = "dimValue";
                 }
-                if (message.dimParam != null && Object.hasOwnProperty.call(message, "dimParam")) {
+                if (message.dimParam != null && $Object.hasOwnProperty.call(message, "dimParam")) {
                     object.dimParam = message.dimParam;
                     if (options.oneofs)
                         object.value = "dimParam";
                 }
-                if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+                if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                     object.denotation = message.denotation;
                 return object;
             };
@@ -5894,23 +6487,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Dimension.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Dimension.prototype.toJSON = function() {
+                return Dimension.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Dimension
+             * Gets the type url for Dimension
              * @function getTypeUrl
              * @memberof onnx.TensorShapeProto.Dimension
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Dimension.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TensorShapeProto.Dimension";
+            Dimension.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TensorShapeProto.Dimension";
             };
 
             return Dimension;
@@ -5923,34 +6515,58 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a TypeProto.
+         * @typedef {Object} onnx.TypeProto.$Properties
+         * @property {onnx.TypeProto.Tensor.$Properties|null} [tensorType] TypeProto tensorType
+         * @property {onnx.TypeProto.Sequence.$Properties|null} [sequenceType] TypeProto sequenceType
+         * @property {onnx.TypeProto.Map.$Properties|null} [mapType] TypeProto mapType
+         * @property {onnx.TypeProto.Optional.$Properties|null} [optionalType] TypeProto optionalType
+         * @property {onnx.TypeProto.SparseTensor.$Properties|null} [sparseTensorType] TypeProto sparseTensorType
+         * @property {string|null} [denotation] TypeProto denotation
+         * @property {"tensorType"|"sequenceType"|"mapType"|"optionalType"|"sparseTensorType"} [value] TypeProto value
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a TypeProto.
          * @memberof onnx
          * @interface ITypeProto
-         * @property {onnx.TypeProto.ITensor|null} [tensorType] TypeProto tensorType
-         * @property {onnx.TypeProto.ISequence|null} [sequenceType] TypeProto sequenceType
-         * @property {onnx.TypeProto.IMap|null} [mapType] TypeProto mapType
-         * @property {onnx.TypeProto.IOptional|null} [optionalType] TypeProto optionalType
-         * @property {onnx.TypeProto.ISparseTensor|null} [sparseTensorType] TypeProto sparseTensorType
-         * @property {string|null} [denotation] TypeProto denotation
+         * @augments onnx.TypeProto.$Properties
+         * @deprecated Use onnx.TypeProto.$Properties instead.
+         */
+
+        /**
+         * Narrowed shape of a TypeProto.
+         * @typedef {{
+         *   tensorType?: onnx.TypeProto.Tensor.$Shape|null;
+         *   sequenceType?: onnx.TypeProto.Sequence.$Shape|null;
+         *   mapType?: onnx.TypeProto.Map.$Shape|null;
+         *   optionalType?: onnx.TypeProto.Optional.$Shape|null;
+         *   sparseTensorType?: onnx.TypeProto.SparseTensor.$Shape|null;
+         *   denotation?: string|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * } & (
+         *   ({ value?: undefined; tensorType?: null; sequenceType?: null; mapType?: null; optionalType?: null; sparseTensorType?: null }|{ value?: "tensorType"; tensorType: onnx.TypeProto.Tensor.$Shape; sequenceType?: null; mapType?: null; optionalType?: null; sparseTensorType?: null }|{ value?: "sequenceType"; tensorType?: null; sequenceType: onnx.TypeProto.Sequence.$Shape; mapType?: null; optionalType?: null; sparseTensorType?: null }|{ value?: "mapType"; tensorType?: null; sequenceType?: null; mapType: onnx.TypeProto.Map.$Shape; optionalType?: null; sparseTensorType?: null }|{ value?: "optionalType"; tensorType?: null; sequenceType?: null; mapType?: null; optionalType: onnx.TypeProto.Optional.$Shape; sparseTensorType?: null }|{ value?: "sparseTensorType"; tensorType?: null; sequenceType?: null; mapType?: null; optionalType?: null; sparseTensorType: onnx.TypeProto.SparseTensor.$Shape })
+         * )} onnx.TypeProto.$Shape
          */
 
         /**
          * Constructs a new TypeProto.
          * @memberof onnx
          * @classdesc Represents a TypeProto.
-         * @implements ITypeProto
          * @constructor
-         * @param {onnx.ITypeProto=} [properties] Properties to set
+         * @param {onnx.TypeProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function TypeProto(properties) {
+        const TypeProto = function (properties) {
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * TypeProto tensorType.
-         * @member {onnx.TypeProto.ITensor|null|undefined} tensorType
+         * @member {onnx.TypeProto.Tensor.$Properties|null|undefined} tensorType
          * @memberof onnx.TypeProto
          * @instance
          */
@@ -5958,7 +6574,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TypeProto sequenceType.
-         * @member {onnx.TypeProto.ISequence|null|undefined} sequenceType
+         * @member {onnx.TypeProto.Sequence.$Properties|null|undefined} sequenceType
          * @memberof onnx.TypeProto
          * @instance
          */
@@ -5966,7 +6582,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TypeProto mapType.
-         * @member {onnx.TypeProto.IMap|null|undefined} mapType
+         * @member {onnx.TypeProto.Map.$Properties|null|undefined} mapType
          * @memberof onnx.TypeProto
          * @instance
          */
@@ -5974,7 +6590,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TypeProto optionalType.
-         * @member {onnx.TypeProto.IOptional|null|undefined} optionalType
+         * @member {onnx.TypeProto.Optional.$Properties|null|undefined} optionalType
          * @memberof onnx.TypeProto
          * @instance
          */
@@ -5982,7 +6598,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * TypeProto sparseTensorType.
-         * @member {onnx.TypeProto.ISparseTensor|null|undefined} sparseTensorType
+         * @member {onnx.TypeProto.SparseTensor.$Properties|null|undefined} sparseTensorType
          * @memberof onnx.TypeProto
          * @instance
          */
@@ -6005,7 +6621,7 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TypeProto
          * @instance
          */
-        Object.defineProperty(TypeProto.prototype, "value", {
+        $Object.defineProperty(TypeProto.prototype, "value", {
             get: $util.oneOfGetter($oneOfFields = ["tensorType", "sequenceType", "mapType", "optionalType", "sparseTensorType"]),
             set: $util.oneOfSetter($oneOfFields)
         });
@@ -6015,10 +6631,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.TypeProto
          * @static
-         * @param {onnx.ITypeProto=} [properties] Properties to set
+         * @param {onnx.TypeProto.$Properties=} [properties] Properties to set
          * @returns {onnx.TypeProto} TypeProto instance
+         * @type {{
+         *   (properties: onnx.TypeProto.$Shape): onnx.TypeProto & onnx.TypeProto.$Shape;
+         *   (properties?: onnx.TypeProto.$Properties): onnx.TypeProto;
+         * }}
          */
-        TypeProto.create = function create(properties) {
+        TypeProto.create = function(properties) {
             return new TypeProto(properties);
         };
 
@@ -6027,29 +6647,32 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.TypeProto
          * @static
-         * @param {onnx.ITypeProto} message TypeProto message or plain object to encode
+         * @param {onnx.TypeProto.$Properties} message TypeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TypeProto.encode = function encode(message, writer, q) {
+        TypeProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.tensorType != null && Object.hasOwnProperty.call(message, "tensorType"))
-                $root.onnx.TypeProto.Tensor.encode(message.tensorType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.sequenceType != null && Object.hasOwnProperty.call(message, "sequenceType"))
-                $root.onnx.TypeProto.Sequence.encode(message.sequenceType, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.mapType != null && Object.hasOwnProperty.call(message, "mapType"))
-                $root.onnx.TypeProto.Map.encode(message.mapType, writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
-            if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.tensorType != null && $Object.hasOwnProperty.call(message, "tensorType"))
+                $root.onnx.TypeProto.Tensor.encode(message.tensorType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+            if (message.sequenceType != null && $Object.hasOwnProperty.call(message, "sequenceType"))
+                $root.onnx.TypeProto.Sequence.encode(message.sequenceType, writer.uint32(/* id 4, wireType 2 =*/34).fork(), _depth + 1).ldelim();
+            if (message.mapType != null && $Object.hasOwnProperty.call(message, "mapType"))
+                $root.onnx.TypeProto.Map.encode(message.mapType, writer.uint32(/* id 5, wireType 2 =*/42).fork(), _depth + 1).ldelim();
+            if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.denotation);
-            if (message.sparseTensorType != null && Object.hasOwnProperty.call(message, "sparseTensorType"))
-                $root.onnx.TypeProto.SparseTensor.encode(message.sparseTensorType, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
-            if (message.optionalType != null && Object.hasOwnProperty.call(message, "optionalType"))
-                $root.onnx.TypeProto.Optional.encode(message.optionalType, writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
+            if (message.sparseTensorType != null && $Object.hasOwnProperty.call(message, "sparseTensorType"))
+                $root.onnx.TypeProto.SparseTensor.encode(message.sparseTensorType, writer.uint32(/* id 8, wireType 2 =*/66).fork(), _depth + 1).ldelim();
+            if (message.optionalType != null && $Object.hasOwnProperty.call(message, "optionalType"))
+                $root.onnx.TypeProto.Optional.encode(message.optionalType, writer.uint32(/* id 9, wireType 2 =*/74).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -6058,12 +6681,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.TypeProto
          * @static
-         * @param {onnx.ITypeProto} message TypeProto message or plain object to encode
+         * @param {onnx.TypeProto.$Properties} message TypeProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TypeProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        TypeProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -6073,52 +6696,77 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.TypeProto} TypeProto
+         * @returns {onnx.TypeProto & onnx.TypeProto.$Shape} TypeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TypeProto.decode = function decode(reader, length, error, long) {
+        TypeProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.tensorType = $root.onnx.TypeProto.Tensor.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        message.sequenceType = $root.onnx.TypeProto.Sequence.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 5: {
-                        message.mapType = $root.onnx.TypeProto.Map.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 9: {
-                        message.optionalType = $root.onnx.TypeProto.Optional.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 8: {
-                        message.sparseTensorType = $root.onnx.TypeProto.SparseTensor.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 6: {
-                        message.denotation = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.tensorType = $root.onnx.TypeProto.Tensor.decode(reader, reader.uint32(), $undefined, _depth + 1, message.tensorType);
+                        message.value = "tensorType";
+                        continue;
+                    }
+                case 4: {
+                        if (wireType !== 2)
+                            break;
+                        message.sequenceType = $root.onnx.TypeProto.Sequence.decode(reader, reader.uint32(), $undefined, _depth + 1, message.sequenceType);
+                        message.value = "sequenceType";
+                        continue;
+                    }
+                case 5: {
+                        if (wireType !== 2)
+                            break;
+                        message.mapType = $root.onnx.TypeProto.Map.decode(reader, reader.uint32(), $undefined, _depth + 1, message.mapType);
+                        message.value = "mapType";
+                        continue;
+                    }
+                case 9: {
+                        if (wireType !== 2)
+                            break;
+                        message.optionalType = $root.onnx.TypeProto.Optional.decode(reader, reader.uint32(), $undefined, _depth + 1, message.optionalType);
+                        message.value = "optionalType";
+                        continue;
+                    }
+                case 8: {
+                        if (wireType !== 2)
+                            break;
+                        message.sparseTensorType = $root.onnx.TypeProto.SparseTensor.decode(reader, reader.uint32(), $undefined, _depth + 1, message.sparseTensorType);
+                        message.value = "sparseTensorType";
+                        continue;
+                    }
+                case 6: {
+                        if (wireType !== 2)
+                            break;
+                        message.denotation = reader.string();
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -6128,11 +6776,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.TypeProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.TypeProto} TypeProto
+         * @returns {onnx.TypeProto & onnx.TypeProto.$Shape} TypeProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TypeProto.decodeDelimited = function decodeDelimited(reader) {
+        TypeProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -6146,63 +6794,63 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TypeProto.verify = function verify(message, long) {
+        TypeProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
             let properties = {};
-            if (message.tensorType != null && Object.hasOwnProperty.call(message, "tensorType")) {
+            if (message.tensorType != null && $Object.hasOwnProperty.call(message, "tensorType")) {
                 properties.value = 1;
                 {
-                    let error = $root.onnx.TypeProto.Tensor.verify(message.tensorType, long + 1);
+                    let error = $root.onnx.TypeProto.Tensor.verify(message.tensorType, _depth + 1);
                     if (error)
                         return "tensorType." + error;
                 }
             }
-            if (message.sequenceType != null && Object.hasOwnProperty.call(message, "sequenceType")) {
+            if (message.sequenceType != null && $Object.hasOwnProperty.call(message, "sequenceType")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    let error = $root.onnx.TypeProto.Sequence.verify(message.sequenceType, long + 1);
+                    let error = $root.onnx.TypeProto.Sequence.verify(message.sequenceType, _depth + 1);
                     if (error)
                         return "sequenceType." + error;
                 }
             }
-            if (message.mapType != null && Object.hasOwnProperty.call(message, "mapType")) {
+            if (message.mapType != null && $Object.hasOwnProperty.call(message, "mapType")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    let error = $root.onnx.TypeProto.Map.verify(message.mapType, long + 1);
+                    let error = $root.onnx.TypeProto.Map.verify(message.mapType, _depth + 1);
                     if (error)
                         return "mapType." + error;
                 }
             }
-            if (message.optionalType != null && Object.hasOwnProperty.call(message, "optionalType")) {
+            if (message.optionalType != null && $Object.hasOwnProperty.call(message, "optionalType")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    let error = $root.onnx.TypeProto.Optional.verify(message.optionalType, long + 1);
+                    let error = $root.onnx.TypeProto.Optional.verify(message.optionalType, _depth + 1);
                     if (error)
                         return "optionalType." + error;
                 }
             }
-            if (message.sparseTensorType != null && Object.hasOwnProperty.call(message, "sparseTensorType")) {
+            if (message.sparseTensorType != null && $Object.hasOwnProperty.call(message, "sparseTensorType")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    let error = $root.onnx.TypeProto.SparseTensor.verify(message.sparseTensorType, long + 1);
+                    let error = $root.onnx.TypeProto.SparseTensor.verify(message.sparseTensorType, _depth + 1);
                     if (error)
                         return "sparseTensorType." + error;
                 }
             }
-            if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+            if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                 if (!$util.isString(message.denotation))
                     return "denotation: string expected";
             return null;
@@ -6216,43 +6864,43 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.TypeProto} TypeProto
          */
-        TypeProto.fromObject = function fromObject(object, long) {
+        TypeProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.TypeProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.TypeProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.TypeProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.TypeProto();
             if (object.tensorType != null) {
                 if (!$util.isObject(object.tensorType))
-                    throw TypeError(".onnx.TypeProto.tensorType: object expected");
-                message.tensorType = $root.onnx.TypeProto.Tensor.fromObject(object.tensorType, long + 1);
+                    throw $TypeError(".onnx.TypeProto.tensorType: object expected");
+                message.tensorType = $root.onnx.TypeProto.Tensor.fromObject(object.tensorType, _depth + 1);
             }
             if (object.sequenceType != null) {
                 if (!$util.isObject(object.sequenceType))
-                    throw TypeError(".onnx.TypeProto.sequenceType: object expected");
-                message.sequenceType = $root.onnx.TypeProto.Sequence.fromObject(object.sequenceType, long + 1);
+                    throw $TypeError(".onnx.TypeProto.sequenceType: object expected");
+                message.sequenceType = $root.onnx.TypeProto.Sequence.fromObject(object.sequenceType, _depth + 1);
             }
             if (object.mapType != null) {
                 if (!$util.isObject(object.mapType))
-                    throw TypeError(".onnx.TypeProto.mapType: object expected");
-                message.mapType = $root.onnx.TypeProto.Map.fromObject(object.mapType, long + 1);
+                    throw $TypeError(".onnx.TypeProto.mapType: object expected");
+                message.mapType = $root.onnx.TypeProto.Map.fromObject(object.mapType, _depth + 1);
             }
             if (object.optionalType != null) {
                 if (!$util.isObject(object.optionalType))
-                    throw TypeError(".onnx.TypeProto.optionalType: object expected");
-                message.optionalType = $root.onnx.TypeProto.Optional.fromObject(object.optionalType, long + 1);
+                    throw $TypeError(".onnx.TypeProto.optionalType: object expected");
+                message.optionalType = $root.onnx.TypeProto.Optional.fromObject(object.optionalType, _depth + 1);
             }
             if (object.sparseTensorType != null) {
                 if (!$util.isObject(object.sparseTensorType))
-                    throw TypeError(".onnx.TypeProto.sparseTensorType: object expected");
-                message.sparseTensorType = $root.onnx.TypeProto.SparseTensor.fromObject(object.sparseTensorType, long + 1);
+                    throw $TypeError(".onnx.TypeProto.sparseTensorType: object expected");
+                message.sparseTensorType = $root.onnx.TypeProto.SparseTensor.fromObject(object.sparseTensorType, _depth + 1);
             }
             if (object.denotation != null)
-                message.denotation = String(object.denotation);
+                message.denotation = $String(object.denotation);
             return message;
         };
 
@@ -6265,40 +6913,40 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TypeProto.toObject = function toObject(message, options, q) {
+        TypeProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.defaults)
                 object.denotation = "";
-            if (message.tensorType != null && Object.hasOwnProperty.call(message, "tensorType")) {
-                object.tensorType = $root.onnx.TypeProto.Tensor.toObject(message.tensorType, options, q + 1);
+            if (message.tensorType != null && $Object.hasOwnProperty.call(message, "tensorType")) {
+                object.tensorType = $root.onnx.TypeProto.Tensor.toObject(message.tensorType, options, _depth + 1);
                 if (options.oneofs)
                     object.value = "tensorType";
             }
-            if (message.sequenceType != null && Object.hasOwnProperty.call(message, "sequenceType")) {
-                object.sequenceType = $root.onnx.TypeProto.Sequence.toObject(message.sequenceType, options, q + 1);
+            if (message.sequenceType != null && $Object.hasOwnProperty.call(message, "sequenceType")) {
+                object.sequenceType = $root.onnx.TypeProto.Sequence.toObject(message.sequenceType, options, _depth + 1);
                 if (options.oneofs)
                     object.value = "sequenceType";
             }
-            if (message.mapType != null && Object.hasOwnProperty.call(message, "mapType")) {
-                object.mapType = $root.onnx.TypeProto.Map.toObject(message.mapType, options, q + 1);
+            if (message.mapType != null && $Object.hasOwnProperty.call(message, "mapType")) {
+                object.mapType = $root.onnx.TypeProto.Map.toObject(message.mapType, options, _depth + 1);
                 if (options.oneofs)
                     object.value = "mapType";
             }
-            if (message.denotation != null && Object.hasOwnProperty.call(message, "denotation"))
+            if (message.denotation != null && $Object.hasOwnProperty.call(message, "denotation"))
                 object.denotation = message.denotation;
-            if (message.sparseTensorType != null && Object.hasOwnProperty.call(message, "sparseTensorType")) {
-                object.sparseTensorType = $root.onnx.TypeProto.SparseTensor.toObject(message.sparseTensorType, options, q + 1);
+            if (message.sparseTensorType != null && $Object.hasOwnProperty.call(message, "sparseTensorType")) {
+                object.sparseTensorType = $root.onnx.TypeProto.SparseTensor.toObject(message.sparseTensorType, options, _depth + 1);
                 if (options.oneofs)
                     object.value = "sparseTensorType";
             }
-            if (message.optionalType != null && Object.hasOwnProperty.call(message, "optionalType")) {
-                object.optionalType = $root.onnx.TypeProto.Optional.toObject(message.optionalType, options, q + 1);
+            if (message.optionalType != null && $Object.hasOwnProperty.call(message, "optionalType")) {
+                object.optionalType = $root.onnx.TypeProto.Optional.toObject(message.optionalType, options, _depth + 1);
                 if (options.oneofs)
                     object.value = "optionalType";
             }
@@ -6312,49 +6960,65 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        TypeProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        TypeProto.prototype.toJSON = function() {
+            return TypeProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for TypeProto
+         * Gets the type url for TypeProto
          * @function getTypeUrl
          * @memberof onnx.TypeProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        TypeProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.TypeProto";
+        TypeProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.TypeProto";
         };
 
         TypeProto.Tensor = (function() {
 
             /**
              * Properties of a Tensor.
+             * @typedef {Object} onnx.TypeProto.Tensor.$Properties
+             * @property {number|null} [elemType] Tensor elemType
+             * @property {onnx.TensorShapeProto.$Properties|null} [shape] Tensor shape
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a Tensor.
              * @memberof onnx.TypeProto
              * @interface ITensor
-             * @property {number|null} [elemType] Tensor elemType
-             * @property {onnx.ITensorShapeProto|null} [shape] Tensor shape
+             * @augments onnx.TypeProto.Tensor.$Properties
+             * @deprecated Use onnx.TypeProto.Tensor.$Properties instead.
+             */
+
+            /**
+             * Shape of a Tensor.
+             * @typedef {{
+             *   elemType?: number|null;
+             *   shape?: onnx.TensorShapeProto.$Shape|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * }} onnx.TypeProto.Tensor.$Shape
              */
 
             /**
              * Constructs a new Tensor.
              * @memberof onnx.TypeProto
              * @classdesc Represents a Tensor.
-             * @implements ITensor
              * @constructor
-             * @param {onnx.TypeProto.ITensor=} [properties] Properties to set
+             * @param {onnx.TypeProto.Tensor.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Tensor(properties) {
+            const Tensor = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Tensor elemType.
@@ -6366,7 +7030,7 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Tensor shape.
-             * @member {onnx.ITensorShapeProto|null|undefined} shape
+             * @member {onnx.TensorShapeProto.$Properties|null|undefined} shape
              * @memberof onnx.TypeProto.Tensor
              * @instance
              */
@@ -6377,10 +7041,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TypeProto.Tensor
              * @static
-             * @param {onnx.TypeProto.ITensor=} [properties] Properties to set
+             * @param {onnx.TypeProto.Tensor.$Properties=} [properties] Properties to set
              * @returns {onnx.TypeProto.Tensor} Tensor instance
+             * @type {{
+             *   (properties: onnx.TypeProto.Tensor.$Shape): onnx.TypeProto.Tensor & onnx.TypeProto.Tensor.$Shape;
+             *   (properties?: onnx.TypeProto.Tensor.$Properties): onnx.TypeProto.Tensor;
+             * }}
              */
-            Tensor.create = function create(properties) {
+            Tensor.create = function(properties) {
                 return new Tensor(properties);
             };
 
@@ -6389,21 +7057,24 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TypeProto.Tensor
              * @static
-             * @param {onnx.TypeProto.ITensor} message Tensor message or plain object to encode
+             * @param {onnx.TypeProto.Tensor.$Properties} message Tensor message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Tensor.encode = function encode(message, writer, q) {
+            Tensor.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.elemType);
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape"))
-                    $root.onnx.TensorShapeProto.encode(message.shape, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape"))
+                    $root.onnx.TensorShapeProto.encode(message.shape, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -6412,12 +7083,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TypeProto.Tensor
              * @static
-             * @param {onnx.TypeProto.ITensor} message Tensor message or plain object to encode
+             * @param {onnx.TypeProto.Tensor.$Properties} message Tensor message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Tensor.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Tensor.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -6427,36 +7098,48 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TypeProto.Tensor} Tensor
+             * @returns {onnx.TypeProto.Tensor & onnx.TypeProto.Tensor.$Shape} Tensor
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Tensor.decode = function decode(reader, length, error, long) {
+            Tensor.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto.Tensor();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto.Tensor();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.elemType = reader.int32();
-                            break;
-                        }
-                    case 2: {
-                            message.shape = $root.onnx.TensorShapeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 0)
+                                break;
+                            message.elemType = reader.int32();
+                            continue;
+                        }
+                    case 2: {
+                            if (wireType !== 2)
+                                break;
+                            message.shape = $root.onnx.TensorShapeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.shape);
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -6466,11 +7149,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TypeProto.Tensor
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TypeProto.Tensor} Tensor
+             * @returns {onnx.TypeProto.Tensor & onnx.TypeProto.Tensor.$Shape} Tensor
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Tensor.decodeDelimited = function decodeDelimited(reader) {
+            Tensor.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -6484,18 +7167,18 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Tensor.verify = function verify(message, long) {
+            Tensor.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     if (!$util.isInteger(message.elemType))
                         return "elemType: integer expected";
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape")) {
-                    let error = $root.onnx.TensorShapeProto.verify(message.shape, long + 1);
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape")) {
+                    let error = $root.onnx.TensorShapeProto.verify(message.shape, _depth + 1);
                     if (error)
                         return "shape." + error;
                 }
@@ -6510,22 +7193,22 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TypeProto.Tensor} Tensor
              */
-            Tensor.fromObject = function fromObject(object, long) {
+            Tensor.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TypeProto.Tensor)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TypeProto.Tensor: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TypeProto.Tensor: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TypeProto.Tensor();
                 if (object.elemType != null)
                     message.elemType = object.elemType | 0;
                 if (object.shape != null) {
                     if (!$util.isObject(object.shape))
-                        throw TypeError(".onnx.TypeProto.Tensor.shape: object expected");
-                    message.shape = $root.onnx.TensorShapeProto.fromObject(object.shape, long + 1);
+                        throw $TypeError(".onnx.TypeProto.Tensor.shape: object expected");
+                    message.shape = $root.onnx.TensorShapeProto.fromObject(object.shape, _depth + 1);
                 }
                 return message;
             };
@@ -6539,22 +7222,22 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Tensor.toObject = function toObject(message, options, q) {
+            Tensor.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults) {
                     object.elemType = 0;
                     object.shape = null;
                 }
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     object.elemType = message.elemType;
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape"))
-                    object.shape = $root.onnx.TensorShapeProto.toObject(message.shape, options, q + 1);
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape"))
+                    object.shape = $root.onnx.TensorShapeProto.toObject(message.shape, options, _depth + 1);
                 return object;
             };
 
@@ -6565,23 +7248,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Tensor.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Tensor.prototype.toJSON = function() {
+                return Tensor.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Tensor
+             * Gets the type url for Tensor
              * @function getTypeUrl
              * @memberof onnx.TypeProto.Tensor
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Tensor.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TypeProto.Tensor";
+            Tensor.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TypeProto.Tensor";
             };
 
             return Tensor;
@@ -6591,29 +7273,45 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Properties of a Sequence.
+             * @typedef {Object} onnx.TypeProto.Sequence.$Properties
+             * @property {onnx.TypeProto.$Properties|null} [elemType] Sequence elemType
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a Sequence.
              * @memberof onnx.TypeProto
              * @interface ISequence
-             * @property {onnx.ITypeProto|null} [elemType] Sequence elemType
+             * @augments onnx.TypeProto.Sequence.$Properties
+             * @deprecated Use onnx.TypeProto.Sequence.$Properties instead.
+             */
+
+            /**
+             * Shape of a Sequence.
+             * @typedef {{
+             *   elemType?: onnx.TypeProto.$Shape|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * }} onnx.TypeProto.Sequence.$Shape
              */
 
             /**
              * Constructs a new Sequence.
              * @memberof onnx.TypeProto
              * @classdesc Represents a Sequence.
-             * @implements ISequence
              * @constructor
-             * @param {onnx.TypeProto.ISequence=} [properties] Properties to set
+             * @param {onnx.TypeProto.Sequence.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Sequence(properties) {
+            const Sequence = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Sequence elemType.
-             * @member {onnx.ITypeProto|null|undefined} elemType
+             * @member {onnx.TypeProto.$Properties|null|undefined} elemType
              * @memberof onnx.TypeProto.Sequence
              * @instance
              */
@@ -6624,10 +7322,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TypeProto.Sequence
              * @static
-             * @param {onnx.TypeProto.ISequence=} [properties] Properties to set
+             * @param {onnx.TypeProto.Sequence.$Properties=} [properties] Properties to set
              * @returns {onnx.TypeProto.Sequence} Sequence instance
+             * @type {{
+             *   (properties: onnx.TypeProto.Sequence.$Shape): onnx.TypeProto.Sequence & onnx.TypeProto.Sequence.$Shape;
+             *   (properties?: onnx.TypeProto.Sequence.$Properties): onnx.TypeProto.Sequence;
+             * }}
              */
-            Sequence.create = function create(properties) {
+            Sequence.create = function(properties) {
                 return new Sequence(properties);
             };
 
@@ -6636,19 +7338,22 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TypeProto.Sequence
              * @static
-             * @param {onnx.TypeProto.ISequence} message Sequence message or plain object to encode
+             * @param {onnx.TypeProto.Sequence.$Properties} message Sequence message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Sequence.encode = function encode(message, writer, q) {
+            Sequence.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
-                    $root.onnx.TypeProto.encode(message.elemType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
+                    $root.onnx.TypeProto.encode(message.elemType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -6657,12 +7362,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TypeProto.Sequence
              * @static
-             * @param {onnx.TypeProto.ISequence} message Sequence message or plain object to encode
+             * @param {onnx.TypeProto.Sequence.$Properties} message Sequence message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Sequence.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Sequence.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -6672,32 +7377,42 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TypeProto.Sequence} Sequence
+             * @returns {onnx.TypeProto.Sequence & onnx.TypeProto.Sequence.$Shape} Sequence
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Sequence.decode = function decode(reader, length, error, long) {
+            Sequence.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto.Sequence();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto.Sequence();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.elemType = $root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 2)
+                                break;
+                            message.elemType = $root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.elemType);
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -6707,11 +7422,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TypeProto.Sequence
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TypeProto.Sequence} Sequence
+             * @returns {onnx.TypeProto.Sequence & onnx.TypeProto.Sequence.$Shape} Sequence
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Sequence.decodeDelimited = function decodeDelimited(reader) {
+            Sequence.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -6725,15 +7440,15 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Sequence.verify = function verify(message, long) {
+            Sequence.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType")) {
-                    let error = $root.onnx.TypeProto.verify(message.elemType, long + 1);
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType")) {
+                    let error = $root.onnx.TypeProto.verify(message.elemType, _depth + 1);
                     if (error)
                         return "elemType." + error;
                 }
@@ -6748,20 +7463,20 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TypeProto.Sequence} Sequence
              */
-            Sequence.fromObject = function fromObject(object, long) {
+            Sequence.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TypeProto.Sequence)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TypeProto.Sequence: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TypeProto.Sequence: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TypeProto.Sequence();
                 if (object.elemType != null) {
                     if (!$util.isObject(object.elemType))
-                        throw TypeError(".onnx.TypeProto.Sequence.elemType: object expected");
-                    message.elemType = $root.onnx.TypeProto.fromObject(object.elemType, long + 1);
+                        throw $TypeError(".onnx.TypeProto.Sequence.elemType: object expected");
+                    message.elemType = $root.onnx.TypeProto.fromObject(object.elemType, _depth + 1);
                 }
                 return message;
             };
@@ -6775,18 +7490,18 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Sequence.toObject = function toObject(message, options, q) {
+            Sequence.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults)
                     object.elemType = null;
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
-                    object.elemType = $root.onnx.TypeProto.toObject(message.elemType, options, q + 1);
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
+                    object.elemType = $root.onnx.TypeProto.toObject(message.elemType, options, _depth + 1);
                 return object;
             };
 
@@ -6797,23 +7512,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Sequence.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Sequence.prototype.toJSON = function() {
+                return Sequence.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Sequence
+             * Gets the type url for Sequence
              * @function getTypeUrl
              * @memberof onnx.TypeProto.Sequence
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Sequence.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TypeProto.Sequence";
+            Sequence.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TypeProto.Sequence";
             };
 
             return Sequence;
@@ -6823,26 +7537,43 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Properties of a Map.
+             * @typedef {Object} onnx.TypeProto.Map.$Properties
+             * @property {number|null} [keyType] Map keyType
+             * @property {onnx.TypeProto.$Properties|null} [valueType] Map valueType
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a Map.
              * @memberof onnx.TypeProto
              * @interface IMap
-             * @property {number|null} [keyType] Map keyType
-             * @property {onnx.ITypeProto|null} [valueType] Map valueType
+             * @augments onnx.TypeProto.Map.$Properties
+             * @deprecated Use onnx.TypeProto.Map.$Properties instead.
+             */
+
+            /**
+             * Shape of a Map.
+             * @typedef {{
+             *   keyType?: number|null;
+             *   valueType?: onnx.TypeProto.$Shape|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * }} onnx.TypeProto.Map.$Shape
              */
 
             /**
              * Constructs a new Map.
              * @memberof onnx.TypeProto
              * @classdesc Represents a Map.
-             * @implements IMap
              * @constructor
-             * @param {onnx.TypeProto.IMap=} [properties] Properties to set
+             * @param {onnx.TypeProto.Map.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Map(properties) {
+            const Map = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Map keyType.
@@ -6854,7 +7585,7 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Map valueType.
-             * @member {onnx.ITypeProto|null|undefined} valueType
+             * @member {onnx.TypeProto.$Properties|null|undefined} valueType
              * @memberof onnx.TypeProto.Map
              * @instance
              */
@@ -6865,10 +7596,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TypeProto.Map
              * @static
-             * @param {onnx.TypeProto.IMap=} [properties] Properties to set
+             * @param {onnx.TypeProto.Map.$Properties=} [properties] Properties to set
              * @returns {onnx.TypeProto.Map} Map instance
+             * @type {{
+             *   (properties: onnx.TypeProto.Map.$Shape): onnx.TypeProto.Map & onnx.TypeProto.Map.$Shape;
+             *   (properties?: onnx.TypeProto.Map.$Properties): onnx.TypeProto.Map;
+             * }}
              */
-            Map.create = function create(properties) {
+            Map.create = function(properties) {
                 return new Map(properties);
             };
 
@@ -6877,21 +7612,24 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TypeProto.Map
              * @static
-             * @param {onnx.TypeProto.IMap} message Map message or plain object to encode
+             * @param {onnx.TypeProto.Map.$Properties} message Map message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Map.encode = function encode(message, writer, q) {
+            Map.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.keyType != null && Object.hasOwnProperty.call(message, "keyType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.keyType != null && $Object.hasOwnProperty.call(message, "keyType"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.keyType);
-                if (message.valueType != null && Object.hasOwnProperty.call(message, "valueType"))
-                    $root.onnx.TypeProto.encode(message.valueType, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+                if (message.valueType != null && $Object.hasOwnProperty.call(message, "valueType"))
+                    $root.onnx.TypeProto.encode(message.valueType, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -6900,12 +7638,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TypeProto.Map
              * @static
-             * @param {onnx.TypeProto.IMap} message Map message or plain object to encode
+             * @param {onnx.TypeProto.Map.$Properties} message Map message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Map.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Map.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -6915,36 +7653,48 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TypeProto.Map} Map
+             * @returns {onnx.TypeProto.Map & onnx.TypeProto.Map.$Shape} Map
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Map.decode = function decode(reader, length, error, long) {
+            Map.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto.Map();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto.Map();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.keyType = reader.int32();
-                            break;
-                        }
-                    case 2: {
-                            message.valueType = $root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 0)
+                                break;
+                            message.keyType = reader.int32();
+                            continue;
+                        }
+                    case 2: {
+                            if (wireType !== 2)
+                                break;
+                            message.valueType = $root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.valueType);
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -6954,11 +7704,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TypeProto.Map
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TypeProto.Map} Map
+             * @returns {onnx.TypeProto.Map & onnx.TypeProto.Map.$Shape} Map
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Map.decodeDelimited = function decodeDelimited(reader) {
+            Map.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -6972,18 +7722,18 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Map.verify = function verify(message, long) {
+            Map.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.keyType != null && Object.hasOwnProperty.call(message, "keyType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.keyType != null && $Object.hasOwnProperty.call(message, "keyType"))
                     if (!$util.isInteger(message.keyType))
                         return "keyType: integer expected";
-                if (message.valueType != null && Object.hasOwnProperty.call(message, "valueType")) {
-                    let error = $root.onnx.TypeProto.verify(message.valueType, long + 1);
+                if (message.valueType != null && $Object.hasOwnProperty.call(message, "valueType")) {
+                    let error = $root.onnx.TypeProto.verify(message.valueType, _depth + 1);
                     if (error)
                         return "valueType." + error;
                 }
@@ -6998,22 +7748,22 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TypeProto.Map} Map
              */
-            Map.fromObject = function fromObject(object, long) {
+            Map.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TypeProto.Map)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TypeProto.Map: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TypeProto.Map: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TypeProto.Map();
                 if (object.keyType != null)
                     message.keyType = object.keyType | 0;
                 if (object.valueType != null) {
                     if (!$util.isObject(object.valueType))
-                        throw TypeError(".onnx.TypeProto.Map.valueType: object expected");
-                    message.valueType = $root.onnx.TypeProto.fromObject(object.valueType, long + 1);
+                        throw $TypeError(".onnx.TypeProto.Map.valueType: object expected");
+                    message.valueType = $root.onnx.TypeProto.fromObject(object.valueType, _depth + 1);
                 }
                 return message;
             };
@@ -7027,22 +7777,22 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Map.toObject = function toObject(message, options, q) {
+            Map.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults) {
                     object.keyType = 0;
                     object.valueType = null;
                 }
-                if (message.keyType != null && Object.hasOwnProperty.call(message, "keyType"))
+                if (message.keyType != null && $Object.hasOwnProperty.call(message, "keyType"))
                     object.keyType = message.keyType;
-                if (message.valueType != null && Object.hasOwnProperty.call(message, "valueType"))
-                    object.valueType = $root.onnx.TypeProto.toObject(message.valueType, options, q + 1);
+                if (message.valueType != null && $Object.hasOwnProperty.call(message, "valueType"))
+                    object.valueType = $root.onnx.TypeProto.toObject(message.valueType, options, _depth + 1);
                 return object;
             };
 
@@ -7053,23 +7803,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Map.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Map.prototype.toJSON = function() {
+                return Map.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Map
+             * Gets the type url for Map
              * @function getTypeUrl
              * @memberof onnx.TypeProto.Map
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Map.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TypeProto.Map";
+            Map.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TypeProto.Map";
             };
 
             return Map;
@@ -7079,29 +7828,45 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Properties of an Optional.
+             * @typedef {Object} onnx.TypeProto.Optional.$Properties
+             * @property {onnx.TypeProto.$Properties|null} [elemType] Optional elemType
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of an Optional.
              * @memberof onnx.TypeProto
              * @interface IOptional
-             * @property {onnx.ITypeProto|null} [elemType] Optional elemType
+             * @augments onnx.TypeProto.Optional.$Properties
+             * @deprecated Use onnx.TypeProto.Optional.$Properties instead.
+             */
+
+            /**
+             * Shape of an Optional.
+             * @typedef {{
+             *   elemType?: onnx.TypeProto.$Shape|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * }} onnx.TypeProto.Optional.$Shape
              */
 
             /**
              * Constructs a new Optional.
              * @memberof onnx.TypeProto
              * @classdesc Represents an Optional.
-             * @implements IOptional
              * @constructor
-             * @param {onnx.TypeProto.IOptional=} [properties] Properties to set
+             * @param {onnx.TypeProto.Optional.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function Optional(properties) {
+            const Optional = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * Optional elemType.
-             * @member {onnx.ITypeProto|null|undefined} elemType
+             * @member {onnx.TypeProto.$Properties|null|undefined} elemType
              * @memberof onnx.TypeProto.Optional
              * @instance
              */
@@ -7112,10 +7877,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TypeProto.Optional
              * @static
-             * @param {onnx.TypeProto.IOptional=} [properties] Properties to set
+             * @param {onnx.TypeProto.Optional.$Properties=} [properties] Properties to set
              * @returns {onnx.TypeProto.Optional} Optional instance
+             * @type {{
+             *   (properties: onnx.TypeProto.Optional.$Shape): onnx.TypeProto.Optional & onnx.TypeProto.Optional.$Shape;
+             *   (properties?: onnx.TypeProto.Optional.$Properties): onnx.TypeProto.Optional;
+             * }}
              */
-            Optional.create = function create(properties) {
+            Optional.create = function(properties) {
                 return new Optional(properties);
             };
 
@@ -7124,19 +7893,22 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TypeProto.Optional
              * @static
-             * @param {onnx.TypeProto.IOptional} message Optional message or plain object to encode
+             * @param {onnx.TypeProto.Optional.$Properties} message Optional message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Optional.encode = function encode(message, writer, q) {
+            Optional.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
-                    $root.onnx.TypeProto.encode(message.elemType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
+                    $root.onnx.TypeProto.encode(message.elemType, writer.uint32(/* id 1, wireType 2 =*/10).fork(), _depth + 1).ldelim();
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -7145,12 +7917,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TypeProto.Optional
              * @static
-             * @param {onnx.TypeProto.IOptional} message Optional message or plain object to encode
+             * @param {onnx.TypeProto.Optional.$Properties} message Optional message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Optional.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            Optional.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -7160,32 +7932,42 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TypeProto.Optional} Optional
+             * @returns {onnx.TypeProto.Optional & onnx.TypeProto.Optional.$Shape} Optional
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Optional.decode = function decode(reader, length, error, long) {
+            Optional.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto.Optional();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto.Optional();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.elemType = $root.onnx.TypeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 2)
+                                break;
+                            message.elemType = $root.onnx.TypeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.elemType);
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -7195,11 +7977,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TypeProto.Optional
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TypeProto.Optional} Optional
+             * @returns {onnx.TypeProto.Optional & onnx.TypeProto.Optional.$Shape} Optional
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Optional.decodeDelimited = function decodeDelimited(reader) {
+            Optional.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -7213,15 +7995,15 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Optional.verify = function verify(message, long) {
+            Optional.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType")) {
-                    let error = $root.onnx.TypeProto.verify(message.elemType, long + 1);
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType")) {
+                    let error = $root.onnx.TypeProto.verify(message.elemType, _depth + 1);
                     if (error)
                         return "elemType." + error;
                 }
@@ -7236,20 +8018,20 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TypeProto.Optional} Optional
              */
-            Optional.fromObject = function fromObject(object, long) {
+            Optional.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TypeProto.Optional)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TypeProto.Optional: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TypeProto.Optional: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TypeProto.Optional();
                 if (object.elemType != null) {
                     if (!$util.isObject(object.elemType))
-                        throw TypeError(".onnx.TypeProto.Optional.elemType: object expected");
-                    message.elemType = $root.onnx.TypeProto.fromObject(object.elemType, long + 1);
+                        throw $TypeError(".onnx.TypeProto.Optional.elemType: object expected");
+                    message.elemType = $root.onnx.TypeProto.fromObject(object.elemType, _depth + 1);
                 }
                 return message;
             };
@@ -7263,18 +8045,18 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Optional.toObject = function toObject(message, options, q) {
+            Optional.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults)
                     object.elemType = null;
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
-                    object.elemType = $root.onnx.TypeProto.toObject(message.elemType, options, q + 1);
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
+                    object.elemType = $root.onnx.TypeProto.toObject(message.elemType, options, _depth + 1);
                 return object;
             };
 
@@ -7285,23 +8067,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            Optional.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            Optional.prototype.toJSON = function() {
+                return Optional.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for Optional
+             * Gets the type url for Optional
              * @function getTypeUrl
              * @memberof onnx.TypeProto.Optional
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            Optional.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TypeProto.Optional";
+            Optional.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TypeProto.Optional";
             };
 
             return Optional;
@@ -7311,26 +8092,43 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * Properties of a SparseTensor.
+             * @typedef {Object} onnx.TypeProto.SparseTensor.$Properties
+             * @property {number|null} [elemType] SparseTensor elemType
+             * @property {onnx.TensorShapeProto.$Properties|null} [shape] SparseTensor shape
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+             */
+
+            /**
+             * Properties of a SparseTensor.
              * @memberof onnx.TypeProto
              * @interface ISparseTensor
-             * @property {number|null} [elemType] SparseTensor elemType
-             * @property {onnx.ITensorShapeProto|null} [shape] SparseTensor shape
+             * @augments onnx.TypeProto.SparseTensor.$Properties
+             * @deprecated Use onnx.TypeProto.SparseTensor.$Properties instead.
+             */
+
+            /**
+             * Shape of a SparseTensor.
+             * @typedef {{
+             *   elemType?: number|null;
+             *   shape?: onnx.TensorShapeProto.$Shape|null;
+             *   $unknowns?: Array.<Uint8Array>;
+             * }} onnx.TypeProto.SparseTensor.$Shape
              */
 
             /**
              * Constructs a new SparseTensor.
              * @memberof onnx.TypeProto
              * @classdesc Represents a SparseTensor.
-             * @implements ISparseTensor
              * @constructor
-             * @param {onnx.TypeProto.ISparseTensor=} [properties] Properties to set
+             * @param {onnx.TypeProto.SparseTensor.$Properties=} [properties] Properties to set
+             * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
              */
-            function SparseTensor(properties) {
+            const SparseTensor = function (properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
-            }
+            };
 
             /**
              * SparseTensor elemType.
@@ -7342,7 +8140,7 @@ export const onnx = $root.onnx = (() => {
 
             /**
              * SparseTensor shape.
-             * @member {onnx.ITensorShapeProto|null|undefined} shape
+             * @member {onnx.TensorShapeProto.$Properties|null|undefined} shape
              * @memberof onnx.TypeProto.SparseTensor
              * @instance
              */
@@ -7353,10 +8151,14 @@ export const onnx = $root.onnx = (() => {
              * @function create
              * @memberof onnx.TypeProto.SparseTensor
              * @static
-             * @param {onnx.TypeProto.ISparseTensor=} [properties] Properties to set
+             * @param {onnx.TypeProto.SparseTensor.$Properties=} [properties] Properties to set
              * @returns {onnx.TypeProto.SparseTensor} SparseTensor instance
+             * @type {{
+             *   (properties: onnx.TypeProto.SparseTensor.$Shape): onnx.TypeProto.SparseTensor & onnx.TypeProto.SparseTensor.$Shape;
+             *   (properties?: onnx.TypeProto.SparseTensor.$Properties): onnx.TypeProto.SparseTensor;
+             * }}
              */
-            SparseTensor.create = function create(properties) {
+            SparseTensor.create = function(properties) {
                 return new SparseTensor(properties);
             };
 
@@ -7365,21 +8167,24 @@ export const onnx = $root.onnx = (() => {
              * @function encode
              * @memberof onnx.TypeProto.SparseTensor
              * @static
-             * @param {onnx.TypeProto.ISparseTensor} message SparseTensor message or plain object to encode
+             * @param {onnx.TypeProto.SparseTensor.$Properties} message SparseTensor message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            SparseTensor.encode = function encode(message, writer, q) {
+            SparseTensor.encode = function (message, writer, _depth) {
                 if (!writer)
                     writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.elemType);
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape"))
-                    $root.onnx.TensorShapeProto.encode(message.shape, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape"))
+                    $root.onnx.TensorShapeProto.encode(message.shape, writer.uint32(/* id 2, wireType 2 =*/18).fork(), _depth + 1).ldelim();
+                if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                    for (let i = 0; i < message.$unknowns.length; ++i)
+                        writer.raw(message.$unknowns[i]);
                 return writer;
             };
 
@@ -7388,12 +8193,12 @@ export const onnx = $root.onnx = (() => {
              * @function encodeDelimited
              * @memberof onnx.TypeProto.SparseTensor
              * @static
-             * @param {onnx.TypeProto.ISparseTensor} message SparseTensor message or plain object to encode
+             * @param {onnx.TypeProto.SparseTensor.$Properties} message SparseTensor message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            SparseTensor.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+            SparseTensor.encodeDelimited = function(message, writer) {
+                return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
             };
 
             /**
@@ -7403,36 +8208,48 @@ export const onnx = $root.onnx = (() => {
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {onnx.TypeProto.SparseTensor} SparseTensor
+             * @returns {onnx.TypeProto.SparseTensor & onnx.TypeProto.SparseTensor.$Shape} SparseTensor
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            SparseTensor.decode = function decode(reader, length, error, long) {
+            SparseTensor.decode = function (reader, length, _end, _depth, _target) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.TypeProto.SparseTensor();
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $Reader.recursionLimit)
+                    throw $Error("max depth exceeded");
+                let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.TypeProto.SparseTensor();
                 while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.elemType = reader.int32();
-                            break;
-                        }
-                    case 2: {
-                            message.shape = $root.onnx.TensorShapeProto.decode(reader, reader.uint32(), undefined, long + 1);
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7, long);
+                    let start = reader.pos;
+                    let tag = reader.tag();
+                    if (tag === _end) {
+                        _end = $undefined;
                         break;
                     }
+                    let wireType = tag & 7;
+                    switch (tag >>>= 3) {
+                    case 1: {
+                            if (wireType !== 0)
+                                break;
+                            message.elemType = reader.int32();
+                            continue;
+                        }
+                    case 2: {
+                            if (wireType !== 2)
+                                break;
+                            message.shape = $root.onnx.TensorShapeProto.decode(reader, reader.uint32(), $undefined, _depth + 1, message.shape);
+                            continue;
+                        }
+                    }
+                    reader.skipType(wireType, _depth, tag);
+                    if (!reader.discardUnknown) {
+                        $util.makeProp(message, "$unknowns", false);
+                        (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                    }
                 }
+                if (_end !== $undefined)
+                    throw $Error("missing end group");
                 return message;
             };
 
@@ -7442,11 +8259,11 @@ export const onnx = $root.onnx = (() => {
              * @memberof onnx.TypeProto.SparseTensor
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {onnx.TypeProto.SparseTensor} SparseTensor
+             * @returns {onnx.TypeProto.SparseTensor & onnx.TypeProto.SparseTensor.$Shape} SparseTensor
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            SparseTensor.decodeDelimited = function decodeDelimited(reader) {
+            SparseTensor.decodeDelimited = function(reader) {
                 if (!(reader instanceof $Reader))
                     reader = new $Reader(reader);
                 return this.decode(reader, reader.uint32());
@@ -7460,18 +8277,18 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            SparseTensor.verify = function verify(message, long) {
+            SparseTensor.verify = function (message, _depth) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    return "max depth exceeded";
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     if (!$util.isInteger(message.elemType))
                         return "elemType: integer expected";
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape")) {
-                    let error = $root.onnx.TensorShapeProto.verify(message.shape, long + 1);
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape")) {
+                    let error = $root.onnx.TensorShapeProto.verify(message.shape, _depth + 1);
                     if (error)
                         return "shape." + error;
                 }
@@ -7486,22 +8303,22 @@ export const onnx = $root.onnx = (() => {
              * @param {Object.<string,*>} object Plain object
              * @returns {onnx.TypeProto.SparseTensor} SparseTensor
              */
-            SparseTensor.fromObject = function fromObject(object, long) {
+            SparseTensor.fromObject = function (object, _depth) {
                 if (object instanceof $root.onnx.TypeProto.SparseTensor)
                     return object;
                 if (!$util.isObject(object))
-                    throw TypeError(".onnx.TypeProto.SparseTensor: object expected");
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
+                    throw $TypeError(".onnx.TypeProto.SparseTensor: object expected");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let message = new $root.onnx.TypeProto.SparseTensor();
                 if (object.elemType != null)
                     message.elemType = object.elemType | 0;
                 if (object.shape != null) {
                     if (!$util.isObject(object.shape))
-                        throw TypeError(".onnx.TypeProto.SparseTensor.shape: object expected");
-                    message.shape = $root.onnx.TensorShapeProto.fromObject(object.shape, long + 1);
+                        throw $TypeError(".onnx.TypeProto.SparseTensor.shape: object expected");
+                    message.shape = $root.onnx.TensorShapeProto.fromObject(object.shape, _depth + 1);
                 }
                 return message;
             };
@@ -7515,22 +8332,22 @@ export const onnx = $root.onnx = (() => {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            SparseTensor.toObject = function toObject(message, options, q) {
+            SparseTensor.toObject = function (message, options, _depth) {
                 if (!options)
                     options = {};
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
+                if (_depth === $undefined)
+                    _depth = 0;
+                if (_depth > $util.recursionLimit)
+                    throw $Error("max depth exceeded");
                 let object = {};
                 if (options.defaults) {
                     object.elemType = 0;
                     object.shape = null;
                 }
-                if (message.elemType != null && Object.hasOwnProperty.call(message, "elemType"))
+                if (message.elemType != null && $Object.hasOwnProperty.call(message, "elemType"))
                     object.elemType = message.elemType;
-                if (message.shape != null && Object.hasOwnProperty.call(message, "shape"))
-                    object.shape = $root.onnx.TensorShapeProto.toObject(message.shape, options, q + 1);
+                if (message.shape != null && $Object.hasOwnProperty.call(message, "shape"))
+                    object.shape = $root.onnx.TensorShapeProto.toObject(message.shape, options, _depth + 1);
                 return object;
             };
 
@@ -7541,23 +8358,22 @@ export const onnx = $root.onnx = (() => {
              * @instance
              * @returns {Object.<string,*>} JSON object
              */
-            SparseTensor.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            SparseTensor.prototype.toJSON = function() {
+                return SparseTensor.toObject(this, $protobuf.util.toJSONOptions);
             };
 
             /**
-             * Gets the default type url for SparseTensor
+             * Gets the type url for SparseTensor
              * @function getTypeUrl
              * @memberof onnx.TypeProto.SparseTensor
              * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
+             * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+             * @returns {string} The type url
              */
-            SparseTensor.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/onnx.TypeProto.SparseTensor";
+            SparseTensor.getTypeUrl = function(prefix) {
+                if (prefix === $undefined)
+                    prefix = "type.googleapis.com";
+                return prefix + "/onnx.TypeProto.SparseTensor";
             };
 
             return SparseTensor;
@@ -7570,26 +8386,39 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of an OperatorSetIdProto.
-         * @memberof onnx
-         * @interface IOperatorSetIdProto
+         * @typedef {Object} onnx.OperatorSetIdProto.$Properties
          * @property {string|null} [domain] OperatorSetIdProto domain
          * @property {number|Long|null} [version] OperatorSetIdProto version
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of an OperatorSetIdProto.
+         * @memberof onnx
+         * @interface IOperatorSetIdProto
+         * @augments onnx.OperatorSetIdProto.$Properties
+         * @deprecated Use onnx.OperatorSetIdProto.$Properties instead.
+         */
+
+        /**
+         * Shape of an OperatorSetIdProto.
+         * @typedef {onnx.OperatorSetIdProto.$Properties} onnx.OperatorSetIdProto.$Shape
          */
 
         /**
          * Constructs a new OperatorSetIdProto.
          * @memberof onnx
          * @classdesc Represents an OperatorSetIdProto.
-         * @implements IOperatorSetIdProto
          * @constructor
-         * @param {onnx.IOperatorSetIdProto=} [properties] Properties to set
+         * @param {onnx.OperatorSetIdProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function OperatorSetIdProto(properties) {
+        const OperatorSetIdProto = function (properties) {
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * OperatorSetIdProto domain.
@@ -7612,10 +8441,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.OperatorSetIdProto
          * @static
-         * @param {onnx.IOperatorSetIdProto=} [properties] Properties to set
+         * @param {onnx.OperatorSetIdProto.$Properties=} [properties] Properties to set
          * @returns {onnx.OperatorSetIdProto} OperatorSetIdProto instance
+         * @type {{
+         *   (properties: onnx.OperatorSetIdProto.$Shape): onnx.OperatorSetIdProto & onnx.OperatorSetIdProto.$Shape;
+         *   (properties?: onnx.OperatorSetIdProto.$Properties): onnx.OperatorSetIdProto;
+         * }}
          */
-        OperatorSetIdProto.create = function create(properties) {
+        OperatorSetIdProto.create = function(properties) {
             return new OperatorSetIdProto(properties);
         };
 
@@ -7624,21 +8457,24 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.OperatorSetIdProto
          * @static
-         * @param {onnx.IOperatorSetIdProto} message OperatorSetIdProto message or plain object to encode
+         * @param {onnx.OperatorSetIdProto.$Properties} message OperatorSetIdProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        OperatorSetIdProto.encode = function encode(message, writer, q) {
+        OperatorSetIdProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.domain);
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+            if (message.version != null && $Object.hasOwnProperty.call(message, "version"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int64(message.version);
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -7647,12 +8483,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.OperatorSetIdProto
          * @static
-         * @param {onnx.IOperatorSetIdProto} message OperatorSetIdProto message or plain object to encode
+         * @param {onnx.OperatorSetIdProto.$Properties} message OperatorSetIdProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        OperatorSetIdProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        OperatorSetIdProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -7662,36 +8498,48 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.OperatorSetIdProto} OperatorSetIdProto
+         * @returns {onnx.OperatorSetIdProto & onnx.OperatorSetIdProto.$Shape} OperatorSetIdProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        OperatorSetIdProto.decode = function decode(reader, length, error, long) {
+        OperatorSetIdProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.OperatorSetIdProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.OperatorSetIdProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.domain = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.version = reader.int64();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
                 }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
+                case 1: {
+                        if (wireType !== 2)
+                            break;
+                        message.domain = reader.string();
+                        continue;
+                    }
+                case 2: {
+                        if (wireType !== 0)
+                            break;
+                        message.version = reader.int64();
+                        continue;
+                    }
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -7701,11 +8549,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.OperatorSetIdProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.OperatorSetIdProto} OperatorSetIdProto
+         * @returns {onnx.OperatorSetIdProto & onnx.OperatorSetIdProto.$Shape} OperatorSetIdProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        OperatorSetIdProto.decodeDelimited = function decodeDelimited(reader) {
+        OperatorSetIdProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -7719,17 +8567,17 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        OperatorSetIdProto.verify = function verify(message, long) {
+        OperatorSetIdProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 if (!$util.isString(message.domain))
                     return "domain: string expected";
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+            if (message.version != null && $Object.hasOwnProperty.call(message, "version"))
                 if (!$util.isInteger(message.version) && !(message.version && $util.isInteger(message.version.low) && $util.isInteger(message.version.high)))
                     return "version: integer|Long expected";
             return null;
@@ -7743,23 +8591,23 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.OperatorSetIdProto} OperatorSetIdProto
          */
-        OperatorSetIdProto.fromObject = function fromObject(object, long) {
+        OperatorSetIdProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.OperatorSetIdProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.OperatorSetIdProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.OperatorSetIdProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.OperatorSetIdProto();
             if (object.domain != null)
-                message.domain = String(object.domain);
+                message.domain = $String(object.domain);
             if (object.version != null)
                 if ($util.Long)
                     message.version = $util.Long.fromValue(object.version, false);
                 else if (typeof object.version === "string")
-                    message.version = parseInt(object.version, 10);
+                    message.version = $parseInt(object.version, 10);
                 else if (typeof object.version === "number")
                     message.version = object.version;
                 else if (typeof object.version === "object")
@@ -7776,31 +8624,31 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        OperatorSetIdProto.toObject = function toObject(message, options, q) {
+        OperatorSetIdProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.defaults) {
                 object.domain = "";
                 if ($util.Long) {
                     let long = new $util.Long(0, 0, false);
-                    object.version = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
+                    object.version = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
                 } else
-                    object.version = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
+                    object.version = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
             }
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 object.domain = message.domain;
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.version = typeof message.version === "number" ? BigInt(message.version) : $util.Long.fromBits(message.version.low >>> 0, message.version.high >>> 0, false).toBigInt();
+            if (message.version != null && $Object.hasOwnProperty.call(message, "version"))
+                if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                    object.version = typeof message.version === "number" ? $BigInt(message.version) : $util.Long.fromBits(message.version.low >>> 0, message.version.high >>> 0, false).toBigInt();
                 else if (typeof message.version === "number")
-                    object.version = options.longs === String ? String(message.version) : message.version;
+                    object.version = options.longs === $String ? $String(message.version) : message.version;
                 else
-                    object.version = options.longs === String ? $util.Long.prototype.toString.call(message.version) : options.longs === Number ? new $util.LongBits(message.version.low >>> 0, message.version.high >>> 0).toNumber() : message.version;
+                    object.version = options.longs === $String ? $util.Long.prototype.toString.call(message.version) : options.longs === $Number ? new $util.LongBits(message.version.low >>> 0, message.version.high >>> 0).toNumber() : message.version;
             return object;
         };
 
@@ -7811,23 +8659,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        OperatorSetIdProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        OperatorSetIdProto.prototype.toJSON = function() {
+            return OperatorSetIdProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for OperatorSetIdProto
+         * Gets the type url for OperatorSetIdProto
          * @function getTypeUrl
          * @memberof onnx.OperatorSetIdProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        OperatorSetIdProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.OperatorSetIdProto";
+        OperatorSetIdProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.OperatorSetIdProto";
         };
 
         return OperatorSetIdProto;
@@ -7841,7 +8688,7 @@ export const onnx = $root.onnx = (() => {
      * @property {number} STABLE=1 STABLE value
      */
     onnx.OperatorStatus = (function() {
-        const valuesById = {}, values = Object.create(valuesById);
+        const valuesById = $Object.create(null), values = $Object.create(valuesById);
         values[valuesById[0] = "EXPERIMENTAL"] = 0;
         values[valuesById[1] = "STABLE"] = 1;
         return values;
@@ -7851,31 +8698,58 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * Properties of a FunctionProto.
-         * @memberof onnx
-         * @interface IFunctionProto
+         * @typedef {Object} onnx.FunctionProto.$Properties
          * @property {string|null} [name] FunctionProto name
          * @property {Array.<string>|null} [input] FunctionProto input
          * @property {Array.<string>|null} [output] FunctionProto output
          * @property {Array.<string>|null} [attribute] FunctionProto attribute
-         * @property {Array.<onnx.IAttributeProto>|null} [attributeProto] FunctionProto attributeProto
-         * @property {Array.<onnx.INodeProto>|null} [node] FunctionProto node
+         * @property {Array.<onnx.AttributeProto.$Properties>|null} [attributeProto] FunctionProto attributeProto
+         * @property {Array.<onnx.NodeProto.$Properties>|null} [node] FunctionProto node
          * @property {string|null} [docString] FunctionProto docString
-         * @property {Array.<onnx.IOperatorSetIdProto>|null} [opsetImport] FunctionProto opsetImport
+         * @property {Array.<onnx.OperatorSetIdProto.$Properties>|null} [opsetImport] FunctionProto opsetImport
          * @property {string|null} [domain] FunctionProto domain
          * @property {string|null} [overload] FunctionProto overload
-         * @property {Array.<onnx.IValueInfoProto>|null} [valueInfo] FunctionProto valueInfo
-         * @property {Array.<onnx.IStringStringEntryProto>|null} [metadataProps] FunctionProto metadataProps
+         * @property {Array.<onnx.ValueInfoProto.$Properties>|null} [valueInfo] FunctionProto valueInfo
+         * @property {Array.<onnx.StringStringEntryProto.$Properties>|null} [metadataProps] FunctionProto metadataProps
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+         */
+
+        /**
+         * Properties of a FunctionProto.
+         * @memberof onnx
+         * @interface IFunctionProto
+         * @augments onnx.FunctionProto.$Properties
+         * @deprecated Use onnx.FunctionProto.$Properties instead.
+         */
+
+        /**
+         * Shape of a FunctionProto.
+         * @typedef {{
+         *   name?: string|null;
+         *   input?: Array.<string>|null;
+         *   output?: Array.<string>|null;
+         *   attribute?: Array.<string>|null;
+         *   attributeProto?: Array.<onnx.AttributeProto.$Shape>|null;
+         *   node?: Array.<onnx.NodeProto.$Shape>|null;
+         *   docString?: string|null;
+         *   opsetImport?: Array.<onnx.OperatorSetIdProto.$Shape>|null;
+         *   domain?: string|null;
+         *   overload?: string|null;
+         *   valueInfo?: Array.<onnx.ValueInfoProto.$Shape>|null;
+         *   metadataProps?: Array.<onnx.StringStringEntryProto.$Shape>|null;
+         *   $unknowns?: Array.<Uint8Array>;
+         * }} onnx.FunctionProto.$Shape
          */
 
         /**
          * Constructs a new FunctionProto.
          * @memberof onnx
          * @classdesc Represents a FunctionProto.
-         * @implements IFunctionProto
          * @constructor
-         * @param {onnx.IFunctionProto=} [properties] Properties to set
+         * @param {onnx.FunctionProto.$Properties=} [properties] Properties to set
+         * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
          */
-        function FunctionProto(properties) {
+        const FunctionProto = function (properties) {
             this.input = [];
             this.output = [];
             this.attribute = [];
@@ -7885,10 +8759,10 @@ export const onnx = $root.onnx = (() => {
             this.valueInfo = [];
             this.metadataProps = [];
             if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
-        }
+        };
 
         /**
          * FunctionProto name.
@@ -7924,7 +8798,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * FunctionProto attributeProto.
-         * @member {Array.<onnx.IAttributeProto>} attributeProto
+         * @member {Array.<onnx.AttributeProto.$Properties>} attributeProto
          * @memberof onnx.FunctionProto
          * @instance
          */
@@ -7932,7 +8806,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * FunctionProto node.
-         * @member {Array.<onnx.INodeProto>} node
+         * @member {Array.<onnx.NodeProto.$Properties>} node
          * @memberof onnx.FunctionProto
          * @instance
          */
@@ -7948,7 +8822,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * FunctionProto opsetImport.
-         * @member {Array.<onnx.IOperatorSetIdProto>} opsetImport
+         * @member {Array.<onnx.OperatorSetIdProto.$Properties>} opsetImport
          * @memberof onnx.FunctionProto
          * @instance
          */
@@ -7972,7 +8846,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * FunctionProto valueInfo.
-         * @member {Array.<onnx.IValueInfoProto>} valueInfo
+         * @member {Array.<onnx.ValueInfoProto.$Properties>} valueInfo
          * @memberof onnx.FunctionProto
          * @instance
          */
@@ -7980,7 +8854,7 @@ export const onnx = $root.onnx = (() => {
 
         /**
          * FunctionProto metadataProps.
-         * @member {Array.<onnx.IStringStringEntryProto>} metadataProps
+         * @member {Array.<onnx.StringStringEntryProto.$Properties>} metadataProps
          * @memberof onnx.FunctionProto
          * @instance
          */
@@ -7991,10 +8865,14 @@ export const onnx = $root.onnx = (() => {
          * @function create
          * @memberof onnx.FunctionProto
          * @static
-         * @param {onnx.IFunctionProto=} [properties] Properties to set
+         * @param {onnx.FunctionProto.$Properties=} [properties] Properties to set
          * @returns {onnx.FunctionProto} FunctionProto instance
+         * @type {{
+         *   (properties: onnx.FunctionProto.$Shape): onnx.FunctionProto & onnx.FunctionProto.$Shape;
+         *   (properties?: onnx.FunctionProto.$Properties): onnx.FunctionProto;
+         * }}
          */
-        FunctionProto.create = function create(properties) {
+        FunctionProto.create = function(properties) {
             return new FunctionProto(properties);
         };
 
@@ -8003,18 +8881,18 @@ export const onnx = $root.onnx = (() => {
          * @function encode
          * @memberof onnx.FunctionProto
          * @static
-         * @param {onnx.IFunctionProto} message FunctionProto message or plain object to encode
+         * @param {onnx.FunctionProto.$Properties} message FunctionProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FunctionProto.encode = function encode(message, writer, q) {
+        FunctionProto.encode = function (message, writer, _depth) {
             if (!writer)
                 writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.input != null && message.input.length)
                 for (let i = 0; i < message.input.length; ++i)
@@ -8027,25 +8905,28 @@ export const onnx = $root.onnx = (() => {
                     writer.uint32(/* id 6, wireType 2 =*/50).string(message.attribute[i]);
             if (message.node != null && message.node.length)
                 for (let i = 0; i < message.node.length; ++i)
-                    $root.onnx.NodeProto.encode(message.node[i], writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+                    $root.onnx.NodeProto.encode(message.node[i], writer.uint32(/* id 7, wireType 2 =*/58).fork(), _depth + 1).ldelim();
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 writer.uint32(/* id 8, wireType 2 =*/66).string(message.docString);
             if (message.opsetImport != null && message.opsetImport.length)
                 for (let i = 0; i < message.opsetImport.length; ++i)
-                    $root.onnx.OperatorSetIdProto.encode(message.opsetImport[i], writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+                    $root.onnx.OperatorSetIdProto.encode(message.opsetImport[i], writer.uint32(/* id 9, wireType 2 =*/74).fork(), _depth + 1).ldelim();
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 writer.uint32(/* id 10, wireType 2 =*/82).string(message.domain);
             if (message.attributeProto != null && message.attributeProto.length)
                 for (let i = 0; i < message.attributeProto.length; ++i)
-                    $root.onnx.AttributeProto.encode(message.attributeProto[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), q + 1).ldelim();
+                    $root.onnx.AttributeProto.encode(message.attributeProto[i], writer.uint32(/* id 11, wireType 2 =*/90).fork(), _depth + 1).ldelim();
             if (message.valueInfo != null && message.valueInfo.length)
                 for (let i = 0; i < message.valueInfo.length; ++i)
-                    $root.onnx.ValueInfoProto.encode(message.valueInfo[i], writer.uint32(/* id 12, wireType 2 =*/98).fork(), q + 1).ldelim();
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+                    $root.onnx.ValueInfoProto.encode(message.valueInfo[i], writer.uint32(/* id 12, wireType 2 =*/98).fork(), _depth + 1).ldelim();
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 writer.uint32(/* id 13, wireType 2 =*/106).string(message.overload);
             if (message.metadataProps != null && message.metadataProps.length)
                 for (let i = 0; i < message.metadataProps.length; ++i)
-                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), q + 1).ldelim();
+                    $root.onnx.StringStringEntryProto.encode(message.metadataProps[i], writer.uint32(/* id 14, wireType 2 =*/114).fork(), _depth + 1).ldelim();
+            if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                for (let i = 0; i < message.$unknowns.length; ++i)
+                    writer.raw(message.$unknowns[i]);
             return writer;
         };
 
@@ -8054,12 +8935,12 @@ export const onnx = $root.onnx = (() => {
          * @function encodeDelimited
          * @memberof onnx.FunctionProto
          * @static
-         * @param {onnx.IFunctionProto} message FunctionProto message or plain object to encode
+         * @param {onnx.FunctionProto.$Properties} message FunctionProto message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FunctionProto.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer && writer.len ? writer.fork() : writer).ldelim();
+        FunctionProto.encodeDelimited = function(message, writer) {
+            return this.encode(message, (writer || $Writer.create()).fork()).ldelim();
         };
 
         /**
@@ -8069,92 +8950,124 @@ export const onnx = $root.onnx = (() => {
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {onnx.FunctionProto} FunctionProto
+         * @returns {onnx.FunctionProto & onnx.FunctionProto.$Shape} FunctionProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FunctionProto.decode = function decode(reader, length, error, long) {
+        FunctionProto.decode = function (reader, length, _end, _depth, _target) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.onnx.FunctionProto();
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $Reader.recursionLimit)
+                throw $Error("max depth exceeded");
+            let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.onnx.FunctionProto();
             while (reader.pos < end) {
-                let tag = reader.uint32();
-                if (tag === error)
+                let start = reader.pos;
+                let tag = reader.tag();
+                if (tag === _end) {
+                    _end = $undefined;
                     break;
-                switch (tag >>> 3) {
+                }
+                let wireType = tag & 7;
+                switch (tag >>>= 3) {
                 case 1: {
+                        if (wireType !== 2)
+                            break;
                         message.name = reader.string();
-                        break;
+                        continue;
                     }
                 case 4: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.input && message.input.length))
                             message.input = [];
                         message.input.push(reader.string());
-                        break;
+                        continue;
                     }
                 case 5: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.output && message.output.length))
                             message.output = [];
                         message.output.push(reader.string());
-                        break;
+                        continue;
                     }
                 case 6: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.attribute && message.attribute.length))
                             message.attribute = [];
                         message.attribute.push(reader.string());
-                        break;
+                        continue;
                     }
                 case 11: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.attributeProto && message.attributeProto.length))
                             message.attributeProto = [];
-                        message.attributeProto.push($root.onnx.AttributeProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.attributeProto.push($root.onnx.AttributeProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 7: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.node && message.node.length))
                             message.node = [];
-                        message.node.push($root.onnx.NodeProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.node.push($root.onnx.NodeProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 8: {
+                        if (wireType !== 2)
+                            break;
                         message.docString = reader.string();
-                        break;
+                        continue;
                     }
                 case 9: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.opsetImport && message.opsetImport.length))
                             message.opsetImport = [];
-                        message.opsetImport.push($root.onnx.OperatorSetIdProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.opsetImport.push($root.onnx.OperatorSetIdProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 10: {
+                        if (wireType !== 2)
+                            break;
                         message.domain = reader.string();
-                        break;
+                        continue;
                     }
                 case 13: {
+                        if (wireType !== 2)
+                            break;
                         message.overload = reader.string();
-                        break;
+                        continue;
                     }
                 case 12: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.valueInfo && message.valueInfo.length))
                             message.valueInfo = [];
-                        message.valueInfo.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.valueInfo.push($root.onnx.ValueInfoProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
                 case 14: {
+                        if (wireType !== 2)
+                            break;
                         if (!(message.metadataProps && message.metadataProps.length))
                             message.metadataProps = [];
-                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
+                        message.metadataProps.push($root.onnx.StringStringEntryProto.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                        continue;
                     }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
+                }
+                reader.skipType(wireType, _depth, tag);
+                if (!reader.discardUnknown) {
+                    $util.makeProp(message, "$unknowns", false);
+                    (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
                 }
             }
+            if (_end !== $undefined)
+                throw $Error("missing end group");
             return message;
         };
 
@@ -8164,11 +9077,11 @@ export const onnx = $root.onnx = (() => {
          * @memberof onnx.FunctionProto
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {onnx.FunctionProto} FunctionProto
+         * @returns {onnx.FunctionProto & onnx.FunctionProto.$Shape} FunctionProto
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FunctionProto.decodeDelimited = function decodeDelimited(reader) {
+        FunctionProto.decodeDelimited = function(reader) {
             if (!(reader instanceof $Reader))
                 reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -8182,87 +9095,87 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FunctionProto.verify = function verify(message, long) {
+        FunctionProto.verify = function (message, _depth) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                return "max depth exceeded";
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.input != null && Object.hasOwnProperty.call(message, "input")) {
-                if (!Array.isArray(message.input))
+            if (message.input != null && $Object.hasOwnProperty.call(message, "input")) {
+                if (!$Array.isArray(message.input))
                     return "input: array expected";
                 for (let i = 0; i < message.input.length; ++i)
                     if (!$util.isString(message.input[i]))
                         return "input: string[] expected";
             }
-            if (message.output != null && Object.hasOwnProperty.call(message, "output")) {
-                if (!Array.isArray(message.output))
+            if (message.output != null && $Object.hasOwnProperty.call(message, "output")) {
+                if (!$Array.isArray(message.output))
                     return "output: array expected";
                 for (let i = 0; i < message.output.length; ++i)
                     if (!$util.isString(message.output[i]))
                         return "output: string[] expected";
             }
-            if (message.attribute != null && Object.hasOwnProperty.call(message, "attribute")) {
-                if (!Array.isArray(message.attribute))
+            if (message.attribute != null && $Object.hasOwnProperty.call(message, "attribute")) {
+                if (!$Array.isArray(message.attribute))
                     return "attribute: array expected";
                 for (let i = 0; i < message.attribute.length; ++i)
                     if (!$util.isString(message.attribute[i]))
                         return "attribute: string[] expected";
             }
-            if (message.attributeProto != null && Object.hasOwnProperty.call(message, "attributeProto")) {
-                if (!Array.isArray(message.attributeProto))
+            if (message.attributeProto != null && $Object.hasOwnProperty.call(message, "attributeProto")) {
+                if (!$Array.isArray(message.attributeProto))
                     return "attributeProto: array expected";
                 for (let i = 0; i < message.attributeProto.length; ++i) {
-                    let error = $root.onnx.AttributeProto.verify(message.attributeProto[i], long + 1);
+                    let error = $root.onnx.AttributeProto.verify(message.attributeProto[i], _depth + 1);
                     if (error)
                         return "attributeProto." + error;
                 }
             }
-            if (message.node != null && Object.hasOwnProperty.call(message, "node")) {
-                if (!Array.isArray(message.node))
+            if (message.node != null && $Object.hasOwnProperty.call(message, "node")) {
+                if (!$Array.isArray(message.node))
                     return "node: array expected";
                 for (let i = 0; i < message.node.length; ++i) {
-                    let error = $root.onnx.NodeProto.verify(message.node[i], long + 1);
+                    let error = $root.onnx.NodeProto.verify(message.node[i], _depth + 1);
                     if (error)
                         return "node." + error;
                 }
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 if (!$util.isString(message.docString))
                     return "docString: string expected";
-            if (message.opsetImport != null && Object.hasOwnProperty.call(message, "opsetImport")) {
-                if (!Array.isArray(message.opsetImport))
+            if (message.opsetImport != null && $Object.hasOwnProperty.call(message, "opsetImport")) {
+                if (!$Array.isArray(message.opsetImport))
                     return "opsetImport: array expected";
                 for (let i = 0; i < message.opsetImport.length; ++i) {
-                    let error = $root.onnx.OperatorSetIdProto.verify(message.opsetImport[i], long + 1);
+                    let error = $root.onnx.OperatorSetIdProto.verify(message.opsetImport[i], _depth + 1);
                     if (error)
                         return "opsetImport." + error;
                 }
             }
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 if (!$util.isString(message.domain))
                     return "domain: string expected";
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 if (!$util.isString(message.overload))
                     return "overload: string expected";
-            if (message.valueInfo != null && Object.hasOwnProperty.call(message, "valueInfo")) {
-                if (!Array.isArray(message.valueInfo))
+            if (message.valueInfo != null && $Object.hasOwnProperty.call(message, "valueInfo")) {
+                if (!$Array.isArray(message.valueInfo))
                     return "valueInfo: array expected";
                 for (let i = 0; i < message.valueInfo.length; ++i) {
-                    let error = $root.onnx.ValueInfoProto.verify(message.valueInfo[i], long + 1);
+                    let error = $root.onnx.ValueInfoProto.verify(message.valueInfo[i], _depth + 1);
                     if (error)
                         return "valueInfo." + error;
                 }
             }
-            if (message.metadataProps != null && Object.hasOwnProperty.call(message, "metadataProps")) {
-                if (!Array.isArray(message.metadataProps))
+            if (message.metadataProps != null && $Object.hasOwnProperty.call(message, "metadataProps")) {
+                if (!$Array.isArray(message.metadataProps))
                     return "metadataProps: array expected";
                 for (let i = 0; i < message.metadataProps.length; ++i) {
-                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], long + 1);
+                    let error = $root.onnx.StringStringEntryProto.verify(message.metadataProps[i], _depth + 1);
                     if (error)
                         return "metadataProps." + error;
                 }
@@ -8278,93 +9191,93 @@ export const onnx = $root.onnx = (() => {
          * @param {Object.<string,*>} object Plain object
          * @returns {onnx.FunctionProto} FunctionProto
          */
-        FunctionProto.fromObject = function fromObject(object, long) {
+        FunctionProto.fromObject = function (object, _depth) {
             if (object instanceof $root.onnx.FunctionProto)
                 return object;
             if (!$util.isObject(object))
-                throw TypeError(".onnx.FunctionProto: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
+                throw $TypeError(".onnx.FunctionProto: object expected");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let message = new $root.onnx.FunctionProto();
             if (object.name != null)
-                message.name = String(object.name);
+                message.name = $String(object.name);
             if (object.input) {
-                if (!Array.isArray(object.input))
-                    throw TypeError(".onnx.FunctionProto.input: array expected");
-                message.input = [];
+                if (!$Array.isArray(object.input))
+                    throw $TypeError(".onnx.FunctionProto.input: array expected");
+                message.input = $Array(object.input.length);
                 for (let i = 0; i < object.input.length; ++i)
-                    message.input[i] = String(object.input[i]);
+                    message.input[i] = $String(object.input[i]);
             }
             if (object.output) {
-                if (!Array.isArray(object.output))
-                    throw TypeError(".onnx.FunctionProto.output: array expected");
-                message.output = [];
+                if (!$Array.isArray(object.output))
+                    throw $TypeError(".onnx.FunctionProto.output: array expected");
+                message.output = $Array(object.output.length);
                 for (let i = 0; i < object.output.length; ++i)
-                    message.output[i] = String(object.output[i]);
+                    message.output[i] = $String(object.output[i]);
             }
             if (object.attribute) {
-                if (!Array.isArray(object.attribute))
-                    throw TypeError(".onnx.FunctionProto.attribute: array expected");
-                message.attribute = [];
+                if (!$Array.isArray(object.attribute))
+                    throw $TypeError(".onnx.FunctionProto.attribute: array expected");
+                message.attribute = $Array(object.attribute.length);
                 for (let i = 0; i < object.attribute.length; ++i)
-                    message.attribute[i] = String(object.attribute[i]);
+                    message.attribute[i] = $String(object.attribute[i]);
             }
             if (object.attributeProto) {
-                if (!Array.isArray(object.attributeProto))
-                    throw TypeError(".onnx.FunctionProto.attributeProto: array expected");
-                message.attributeProto = [];
+                if (!$Array.isArray(object.attributeProto))
+                    throw $TypeError(".onnx.FunctionProto.attributeProto: array expected");
+                message.attributeProto = $Array(object.attributeProto.length);
                 for (let i = 0; i < object.attributeProto.length; ++i) {
                     if (!$util.isObject(object.attributeProto[i]))
-                        throw TypeError(".onnx.FunctionProto.attributeProto: object expected");
-                    message.attributeProto[i] = $root.onnx.AttributeProto.fromObject(object.attributeProto[i], long + 1);
+                        throw $TypeError(".onnx.FunctionProto.attributeProto: object expected");
+                    message.attributeProto[i] = $root.onnx.AttributeProto.fromObject(object.attributeProto[i], _depth + 1);
                 }
             }
             if (object.node) {
-                if (!Array.isArray(object.node))
-                    throw TypeError(".onnx.FunctionProto.node: array expected");
-                message.node = [];
+                if (!$Array.isArray(object.node))
+                    throw $TypeError(".onnx.FunctionProto.node: array expected");
+                message.node = $Array(object.node.length);
                 for (let i = 0; i < object.node.length; ++i) {
                     if (!$util.isObject(object.node[i]))
-                        throw TypeError(".onnx.FunctionProto.node: object expected");
-                    message.node[i] = $root.onnx.NodeProto.fromObject(object.node[i], long + 1);
+                        throw $TypeError(".onnx.FunctionProto.node: object expected");
+                    message.node[i] = $root.onnx.NodeProto.fromObject(object.node[i], _depth + 1);
                 }
             }
             if (object.docString != null)
-                message.docString = String(object.docString);
+                message.docString = $String(object.docString);
             if (object.opsetImport) {
-                if (!Array.isArray(object.opsetImport))
-                    throw TypeError(".onnx.FunctionProto.opsetImport: array expected");
-                message.opsetImport = [];
+                if (!$Array.isArray(object.opsetImport))
+                    throw $TypeError(".onnx.FunctionProto.opsetImport: array expected");
+                message.opsetImport = $Array(object.opsetImport.length);
                 for (let i = 0; i < object.opsetImport.length; ++i) {
                     if (!$util.isObject(object.opsetImport[i]))
-                        throw TypeError(".onnx.FunctionProto.opsetImport: object expected");
-                    message.opsetImport[i] = $root.onnx.OperatorSetIdProto.fromObject(object.opsetImport[i], long + 1);
+                        throw $TypeError(".onnx.FunctionProto.opsetImport: object expected");
+                    message.opsetImport[i] = $root.onnx.OperatorSetIdProto.fromObject(object.opsetImport[i], _depth + 1);
                 }
             }
             if (object.domain != null)
-                message.domain = String(object.domain);
+                message.domain = $String(object.domain);
             if (object.overload != null)
-                message.overload = String(object.overload);
+                message.overload = $String(object.overload);
             if (object.valueInfo) {
-                if (!Array.isArray(object.valueInfo))
-                    throw TypeError(".onnx.FunctionProto.valueInfo: array expected");
-                message.valueInfo = [];
+                if (!$Array.isArray(object.valueInfo))
+                    throw $TypeError(".onnx.FunctionProto.valueInfo: array expected");
+                message.valueInfo = $Array(object.valueInfo.length);
                 for (let i = 0; i < object.valueInfo.length; ++i) {
                     if (!$util.isObject(object.valueInfo[i]))
-                        throw TypeError(".onnx.FunctionProto.valueInfo: object expected");
-                    message.valueInfo[i] = $root.onnx.ValueInfoProto.fromObject(object.valueInfo[i], long + 1);
+                        throw $TypeError(".onnx.FunctionProto.valueInfo: object expected");
+                    message.valueInfo[i] = $root.onnx.ValueInfoProto.fromObject(object.valueInfo[i], _depth + 1);
                 }
             }
             if (object.metadataProps) {
-                if (!Array.isArray(object.metadataProps))
-                    throw TypeError(".onnx.FunctionProto.metadataProps: array expected");
-                message.metadataProps = [];
+                if (!$Array.isArray(object.metadataProps))
+                    throw $TypeError(".onnx.FunctionProto.metadataProps: array expected");
+                message.metadataProps = $Array(object.metadataProps.length);
                 for (let i = 0; i < object.metadataProps.length; ++i) {
                     if (!$util.isObject(object.metadataProps[i]))
-                        throw TypeError(".onnx.FunctionProto.metadataProps: object expected");
-                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], long + 1);
+                        throw $TypeError(".onnx.FunctionProto.metadataProps: object expected");
+                    message.metadataProps[i] = $root.onnx.StringStringEntryProto.fromObject(object.metadataProps[i], _depth + 1);
                 }
             }
             return message;
@@ -8379,13 +9292,13 @@ export const onnx = $root.onnx = (() => {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FunctionProto.toObject = function toObject(message, options, q) {
+        FunctionProto.toObject = function (message, options, _depth) {
             if (!options)
                 options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
+            if (_depth === $undefined)
+                _depth = 0;
+            if (_depth > $util.recursionLimit)
+                throw $Error("max depth exceeded");
             let object = {};
             if (options.arrays || options.defaults) {
                 object.input = [];
@@ -8403,53 +9316,53 @@ export const onnx = $root.onnx = (() => {
                 object.domain = "";
                 object.overload = "";
             }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            if (message.name != null && $Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
             if (message.input && message.input.length) {
-                object.input = [];
+                object.input = $Array(message.input.length);
                 for (let j = 0; j < message.input.length; ++j)
                     object.input[j] = message.input[j];
             }
             if (message.output && message.output.length) {
-                object.output = [];
+                object.output = $Array(message.output.length);
                 for (let j = 0; j < message.output.length; ++j)
                     object.output[j] = message.output[j];
             }
             if (message.attribute && message.attribute.length) {
-                object.attribute = [];
+                object.attribute = $Array(message.attribute.length);
                 for (let j = 0; j < message.attribute.length; ++j)
                     object.attribute[j] = message.attribute[j];
             }
             if (message.node && message.node.length) {
-                object.node = [];
+                object.node = $Array(message.node.length);
                 for (let j = 0; j < message.node.length; ++j)
-                    object.node[j] = $root.onnx.NodeProto.toObject(message.node[j], options, q + 1);
+                    object.node[j] = $root.onnx.NodeProto.toObject(message.node[j], options, _depth + 1);
             }
-            if (message.docString != null && Object.hasOwnProperty.call(message, "docString"))
+            if (message.docString != null && $Object.hasOwnProperty.call(message, "docString"))
                 object.docString = message.docString;
             if (message.opsetImport && message.opsetImport.length) {
-                object.opsetImport = [];
+                object.opsetImport = $Array(message.opsetImport.length);
                 for (let j = 0; j < message.opsetImport.length; ++j)
-                    object.opsetImport[j] = $root.onnx.OperatorSetIdProto.toObject(message.opsetImport[j], options, q + 1);
+                    object.opsetImport[j] = $root.onnx.OperatorSetIdProto.toObject(message.opsetImport[j], options, _depth + 1);
             }
-            if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+            if (message.domain != null && $Object.hasOwnProperty.call(message, "domain"))
                 object.domain = message.domain;
             if (message.attributeProto && message.attributeProto.length) {
-                object.attributeProto = [];
+                object.attributeProto = $Array(message.attributeProto.length);
                 for (let j = 0; j < message.attributeProto.length; ++j)
-                    object.attributeProto[j] = $root.onnx.AttributeProto.toObject(message.attributeProto[j], options, q + 1);
+                    object.attributeProto[j] = $root.onnx.AttributeProto.toObject(message.attributeProto[j], options, _depth + 1);
             }
             if (message.valueInfo && message.valueInfo.length) {
-                object.valueInfo = [];
+                object.valueInfo = $Array(message.valueInfo.length);
                 for (let j = 0; j < message.valueInfo.length; ++j)
-                    object.valueInfo[j] = $root.onnx.ValueInfoProto.toObject(message.valueInfo[j], options, q + 1);
+                    object.valueInfo[j] = $root.onnx.ValueInfoProto.toObject(message.valueInfo[j], options, _depth + 1);
             }
-            if (message.overload != null && Object.hasOwnProperty.call(message, "overload"))
+            if (message.overload != null && $Object.hasOwnProperty.call(message, "overload"))
                 object.overload = message.overload;
             if (message.metadataProps && message.metadataProps.length) {
-                object.metadataProps = [];
+                object.metadataProps = $Array(message.metadataProps.length);
                 for (let j = 0; j < message.metadataProps.length; ++j)
-                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, q + 1);
+                    object.metadataProps[j] = $root.onnx.StringStringEntryProto.toObject(message.metadataProps[j], options, _depth + 1);
             }
             return object;
         };
@@ -8461,23 +9374,22 @@ export const onnx = $root.onnx = (() => {
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
-        FunctionProto.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        FunctionProto.prototype.toJSON = function() {
+            return FunctionProto.toObject(this, $protobuf.util.toJSONOptions);
         };
 
         /**
-         * Gets the default type url for FunctionProto
+         * Gets the type url for FunctionProto
          * @function getTypeUrl
          * @memberof onnx.FunctionProto
          * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
+         * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+         * @returns {string} The type url
          */
-        FunctionProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/onnx.FunctionProto";
+        FunctionProto.getTypeUrl = function(prefix) {
+            if (prefix === $undefined)
+                prefix = "type.googleapis.com";
+            return prefix + "/onnx.FunctionProto";
         };
 
         return FunctionProto;
@@ -8486,4 +9398,6 @@ export const onnx = $root.onnx = (() => {
     return onnx;
 })();
 
-export { $root as default };
+export {
+  $root as default
+};

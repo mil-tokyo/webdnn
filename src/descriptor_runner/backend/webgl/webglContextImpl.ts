@@ -177,13 +177,13 @@ export class WebGLSharedTexture {
 
 function initWebGL(versionOrder?: WebDNNWebGLVersion[]) {
   const canvas = document.createElement("canvas");
-  let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
   for (const version of versionOrder || [
     "webgl2-16384",
     "webgl2-4096",
     "webgl1-16384",
     "webgl1-4096",
   ]) {
+    let gl: WebGLRenderingContext | WebGL2RenderingContext | null;
     let webgl2 = false;
     if (version.startsWith("webgl2")) {
       gl = canvas.getContext("webgl2");

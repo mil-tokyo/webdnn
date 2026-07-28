@@ -27,7 +27,7 @@ WebDNN v2.0.0-alpha — ブラウザ向け ONNX 推論ランタイム。Python �
 ```bash
 npm install          # 依存インストール（パッケージマネージャは npm）
 npm run typecheck    # 型チェック（tsc --noEmit）
-npm run lint         # ESLint 9 (flat config)
+npm run lint         # ESLint 10 (flat config, eslint.config.mjs)
 npm run format       # Prettier 3
 npm test             # ユニットテスト（vitest, GPU/DOM 不要）
 npm run build        # Vite ビルド（dist に 9 バンドル + 型定義）
